@@ -265,13 +265,16 @@ public class IdProvider {
 
   @VisibleForTesting
   protected void addReleaseId(int releaseDatasetKey, int attempt, SimpleNameWithNidx sn){
-    if (!attempt2dataset.containsKey(attempt)) {
-      attempt2dataset.put(attempt, releaseDatasetKey);
-    }
     if (sn.getNamesIndexId() == null) {
       LOG.info("Existing release id {}:{} without a names index id. Skip!", releaseDatasetKey, sn.getId());
     } else {
-      ids.add(ReleasedIds.ReleasedId.create(sn, attempt));
+      try {
+        var rl = ReleasedId.create(sn, attempt);
+        attempt2dataset.putIfAbsent(attempt, releaseDatasetKey);
+        ids.add(rl);
+      } catch (IllegalArgumentException e) {
+        // expected for temp UUID, swallow
+      }
     }
   }
 
@@ -406,7 +409,7 @@ public class IdProvider {
 
     if (n.getStatus() != null && n.getStatus().isSynonym()) {
       // block synonyms with different accepted names aka parent
-      if (!Objects.equals(n.getParent(), r.parent)) {
+      if (!StringUtils.equalsIgnoreCase(n.getParent(), r.parent)) {
         return 0;
       }
     }
@@ -425,11 +428,15 @@ public class IdProvider {
     score += matchTypeScore(r.matchType);
 
     // exact same authorship
-    if (Objects.equals(n.getAuthorship(), r.authorship)) {
-      score += 8;
+    if (StringUtils.equalsDigitOrAsciiLettersIgnoreCase(n.getAuthorship(), r.authorship)) {
+      score += 6;
     }
-    //TODO: make sure misapplied names never match non misapplied names
-    // names index ids are for NAMES only, not for usage related namePhrase & accordingTo !!!
+    // name phrase is key for misapplied names!
+    if (StringUtils.equalsDigitOrAsciiLettersIgnoreCase(n.getPhrase(), r.phrase)) {
+      score += 5;
+    } else if (n.getStatus() == MISAPPLIED) {
+      return 0;
+    }
 
     return score;
   }

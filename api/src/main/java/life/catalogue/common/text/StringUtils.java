@@ -28,6 +28,7 @@ public class StringUtils {
   private static final Pattern HEX = Pattern.compile("^[0-9abcdefABCDEF]+$");
   private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
   private static final CharMatcher NON_DIGITLETTER = CharMatcher.javaLetterOrDigit().negate();
+  private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
   private StringUtils() {}
 
@@ -43,13 +44,26 @@ public class StringUtils {
     return false;
   }
 
+  public static boolean equalsIgnoreCase(String s1, String s2) {
+    if (s1 == null || s2 == null) {
+      return Objects.equals(s1, s2);
+    }
+    return s1.equalsIgnoreCase(s2);
+  }
+
   public static boolean equalsIgnoreCaseAndSpace(String s1, String s2) {
     if (s1 == null || s2 == null) {
       return Objects.equals(s1, s2);
     }
-    String n1 = s1.replaceAll("\\s+", "").toLowerCase();
-    String n2 = s2.replaceAll("\\s+", "").toLowerCase();
-    return n1.equals(n2);
+    String n1 = WHITESPACE.matcher(s1).replaceAll("");
+    String n2 = WHITESPACE.matcher(s2).replaceAll("");
+    return n1.equalsIgnoreCase(n2);
+  }
+
+  public static boolean equalsDigitOrAsciiLettersIgnoreCase(String s1, String s2) {
+    s1 = digitOrAsciiLetters(s1);
+    s2 = digitOrAsciiLetters(s2);
+    return equalsIgnoreCaseAndSpace(s1, s2);
   }
 
   /**

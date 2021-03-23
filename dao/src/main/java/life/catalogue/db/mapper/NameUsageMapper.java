@@ -208,15 +208,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   /**
    * Iterate over all usages ordered by their canonical names index id.
-   * Returns not all properties, just the ones needed by the IdProvider:
-   *
-   *   id
-   *   nxId
-   *   matchType
-   *   rank
-   *   authorship
-   *   status
-   *   parent (real name, not id)
    */
   Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
 

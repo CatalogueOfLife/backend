@@ -32,17 +32,15 @@ public class ReleasedIds {
     public final MatchType matchType;
     public final Rank rank;
     public final String authorship;
+    public final String phrase;
     public final TaxonomicStatus status;
     public final String parent;
 
-    public static ReleasedId create(SimpleNameWithNidx sn, int attempt) {
-      int id1;
-      try {
-        id1 = IdConverter.LATIN29.decode(sn.getId());
-      } catch (IllegalArgumentException e) {
-        id1 = -1;
-      }
-      return new ReleasedId(id1, attempt, sn);
+    /**
+     * @throws IllegalArgumentException if the string id cannot be converted into an int, e.g. if it was a temp UUID
+     */
+    public static ReleasedId create(SimpleNameWithNidx sn, int attempt) throws IllegalArgumentException {
+      return new ReleasedId(IdConverter.LATIN29.decode(sn.getId()), attempt, sn);
     }
 
     public ReleasedId(int id, int attempt, SimpleNameWithNidx sn) {
@@ -52,6 +50,7 @@ public class ReleasedIds {
       this.matchType = sn.getNamesIndexMatchType();
       this.rank = sn.getRank();
       this.authorship = sn.getAuthorship();
+      this.phrase = sn.getPhrase();
       this.status = sn.getStatus();
       this.parent = sn.getParent();
     }

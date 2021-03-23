@@ -16,8 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static life.catalogue.api.vocab.TaxonomicStatus.*;
-import static org.gbif.nameparser.api.Rank.GENUS;
-import static org.gbif.nameparser.api.Rank.SPECIES;
+import static org.gbif.nameparser.api.Rank.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -123,6 +122,35 @@ public class IdProviderTest {
     IdTestProvider provider = new IdTestProvider();
     IdProvider.IdReport report = provider.run();
     assertEquals(1, report.created.size());
+    assertEquals(1, report.deleted.size());
+    assertEquals(2, report.resurrected.size());
+
+    assertID(10, testNames.get(0)); // resurrected
+    assertID(20, testNames.get(1)); // current Mill. matches Mill
+    assertID(21, testNames.get(2)); // different synonym parent
+  }
+
+  @Test
+  @Ignore("work in progress")
+  public void misappliedAndUnparsable() throws Exception {
+    // 1st attempt
+    prevIdsByAttempt.put(1, List.of(
+      sn(2, 2, GENUS, "Abies", null, ACCEPTED),
+      sn(10, 10, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
+      sn(11, 11, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(12, 12, SPECIES, "Picea alba ", null, SYNONYM, "Abies alba")
+    ));
+
+    // test names
+    testNames = new ArrayList<>(List.of(
+      sn(10, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
+      sn(11, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(11, SPECIES, "Abies alba", "Mill", SYNONYM, "Abies albi")
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    IdProvider.IdReport report = provider.run();
+    assertEquals(1, report.created.size());
     assertEquals(2, report.deleted.size());
     assertEquals(2, report.resurrected.size());
 
@@ -131,22 +159,48 @@ public class IdProviderTest {
     assertID(21, testNames.get(2)); // different synonym parent
   }
 
+  @Test
+  public void unmatched() throws Exception {
+    // 1st attempt
+    prevIdsByAttempt.put(1, List.of(
+      sn(10, SPECIES_AGGREGATE, "Abies alba", null, ACCEPTED),
+      sn(10, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
+      sn(11, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(100, 11, SPECIES, "Abies alba", "Mill.", PROVISIONALLY_ACCEPTED)
+    ));
+
+    // test names
+    testNames = new ArrayList<>(List.of(
+      sn(10, SPECIES, "Abies alba", null, ACCEPTED),
+      sn(11, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    IdProvider.IdReport report = provider.run();
+    assertEquals(1, report.created.size());
+    assertEquals(0, report.deleted.size());
+    assertEquals(0, report.resurrected.size());
+
+    assertID(101, testNames.get(0)); // new
+    assertID(100, testNames.get(1)); // existing
+  }
+
   void assertID(int id, SimpleNameWithNidx n){
     assertEquals((Integer)id, n.getCanonicalId());
   }
-  static SimpleNameWithNidx sn(int id, int nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
+  static SimpleNameWithNidx sn(int id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
     return sn(id, nidx, rank, name, authorship, status, null);
   }
-  static SimpleNameWithNidx sn(int id, int nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+  static SimpleNameWithNidx sn(int id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
     return sn(IdConverter.LATIN29.encode(id), nidx, rank, name, authorship, status, parent);
   }
-  static SimpleNameWithNidx sn(int nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
+  static SimpleNameWithNidx sn(Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
     return sn(UUID.randomUUID().toString(), nidx, rank, name, authorship, status, null);
   }
-  static SimpleNameWithNidx sn(int nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+  static SimpleNameWithNidx sn(Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
     return sn(UUID.randomUUID().toString(), nidx, rank, name, authorship, status, parent);
   }
-  static SimpleNameWithNidx sn(String id, int nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+  static SimpleNameWithNidx sn(String id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
     SimpleNameWithNidx sn = new SimpleNameWithNidx();
     sn.setNamesIndexId(nidx);
     sn.setNamesIndexMatchType(MatchType.EXACT);

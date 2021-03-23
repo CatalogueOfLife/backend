@@ -116,6 +116,10 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
 
   @Override
   public String toString() {
+    return labelBuilder().toString();
+  }
+
+  public StringBuilder labelBuilder() {
     StringBuilder sb = new StringBuilder();
     if (status != null) {
       sb.append(status);
@@ -141,7 +145,7 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
       }
       sb.append("]");
     }
-    return sb.toString();
+    return sb;
   }
 
   @Override

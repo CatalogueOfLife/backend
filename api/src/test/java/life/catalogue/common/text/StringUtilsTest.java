@@ -13,14 +13,48 @@ public class StringUtilsTest {
 
 
   @Test
-  public void equalsIgnoreSPace() {
+  public void equalsIgnoreSpace() {
+    assertFalse(StringUtils.equalsIgnoreCaseAndSpace(null, "gdu23"));
+    assertFalse(StringUtils.equalsIgnoreCaseAndSpace("gdu23", null));
+    assertTrue(StringUtils.equalsIgnoreCaseAndSpace(null, null));
     assertTrue(StringUtils.equalsIgnoreCaseAndSpace("gdu23", "gdu23"));
+
     assertTrue(StringUtils.equalsIgnoreCaseAndSpace("gDU23", "G du 23"));
     assertFalse(StringUtils.equalsIgnoreCaseAndSpace("gDU23", "G-du 23"));
   }
 
   @Test
-  public void testRihtSplit() {
+  public void equalsIgnoreCase() {
+    assertFalse(StringUtils.equalsIgnoreCase(null, "gdu23"));
+    assertFalse(StringUtils.equalsIgnoreCase("gdu23", null));
+    assertTrue(StringUtils.equalsIgnoreCase(null, null));
+    assertTrue(StringUtils.equalsIgnoreCase("gdu23", "gdu23"));
+
+    assertFalse(StringUtils.equalsIgnoreCase("gDU23", "G du 23"));
+    assertFalse(StringUtils.equalsIgnoreCase("gDU23", "G-du 23"));
+    assertTrue(StringUtils.equalsIgnoreCase("gDU23", "Gdu23"));
+    assertTrue(StringUtils.equalsIgnoreCase("gDU23.#&", "Gdu23.#&"));
+    assertFalse(StringUtils.equalsIgnoreCase("gDU23.#&", "Gdu23#&"));
+  }
+
+  @Test
+  public void equalsIgnoreNonDigitLetters() {
+    assertFalse(StringUtils.equalsDigitOrAsciiLettersIgnoreCase(null, "gdu23"));
+    assertFalse(StringUtils.equalsDigitOrAsciiLettersIgnoreCase("gdu23", null));
+    assertTrue(StringUtils.equalsDigitOrAsciiLettersIgnoreCase(null, null));
+    assertTrue(StringUtils.equalsDigitOrAsciiLettersIgnoreCase("gdu23", "gdu23"));
+
+    assertTrue(StringUtils.equalsDigitOrAsciiLettersIgnoreCase("g   DU 23", "G du 23"));
+    assertTrue(StringUtils.equalsDigitOrAsciiLettersIgnoreCase("g DU.23", "G-du 23"));
+    assertTrue(StringUtils.equalsDigitOrAsciiLettersIgnoreCase("gDU23", "Gdu23"));
+    assertTrue(StringUtils.equalsDigitOrAsciiLettersIgnoreCase("gDU23.#&", "Gdu23.#&"));
+    assertTrue(StringUtils.equalsDigitOrAsciiLettersIgnoreCase("L.", "L"));
+
+    assertFalse(StringUtils.equalsDigitOrAsciiLettersIgnoreCase("gDU23.#&a", "Gdu23#&"));
+  }
+
+  @Test
+  public void testRightSplit() {
     assertArrayEquals(new String[]{"Carl", "s"}, StringUtils.splitRight("Carlas", 'a'));
     assertArrayEquals(new String[]{"dwc:genus", "Abies"}, StringUtils.splitRight("dwc:genus:Abies", ':'));
   }
