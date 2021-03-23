@@ -87,7 +87,7 @@ public class ProjectContribution {
   }
 
   public void add(ArchivedDataset d) {
-    add(d.getContact());
+    // we do not include the contact - its not a contributor and often void of a name
     if (d.getAuthors() != null) {
       d.getAuthors().forEach(this::add);
     }
@@ -100,14 +100,14 @@ public class ProjectContribution {
   }
 
   public void add(Person p) {
-    if (p != null) {
+    if (p != null && p.getName() != null) {
       contributor.add(new Contributor(p));
     }
   }
 
-  public void add(Organisation p) {
-    if (p != null) {
-      organisations.add(new ContributorOrg(p));
+  public void add(Organisation o) {
+    if (o != null && !o.isEmpty()) {
+      organisations.add(new ContributorOrg(o));
     }
   }
 

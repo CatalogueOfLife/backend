@@ -34,7 +34,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setLicense(License.CC0);
     d.setCitation("cf5twv867cwcgewcwe");
     d.setGeographicScope("North Africa");
-    d.setContact(Person.parse("Me"));
     d.getOrganisations().add(new Organisation("bla"));
     d.getOrganisations().add(new Organisation("bla"));
     d.getOrganisations().add(new Organisation("bla"));
