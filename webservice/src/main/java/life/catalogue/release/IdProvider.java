@@ -317,7 +317,7 @@ public class IdProvider {
     // make sure we have the names sorted by their nidx
     group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())));
     // now split the canonical group into subgroups for each nidx to match them individually
-    for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNamesIndexId))) {
+    for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())))) {
       issueIDs(idGroup.get(0).getNamesIndexId(), idGroup);
     }
   }
