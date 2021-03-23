@@ -130,7 +130,7 @@ public interface DatasetPartitionMapper {
       createManagedSequences(key);
     }
     // things specific to managed and released datasets only
-    if (origin.isProject()) {
+    if (origin.isManagedOrRelease()) {
       PROJECT_TABLES.forEach(t -> createTable(t, key));
     }
   }
@@ -223,7 +223,7 @@ public interface DatasetPartitionMapper {
     // custom fks
     FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, key, fk)));
     // things specific to managed datasets only
-    if (origin.isProject()) {
+    if (origin.isManagedOrRelease()) {
       PROJECT_TABLES.forEach(t -> createPk(t, key));
       PROJECT_TABLES.forEach(t -> attachTable(t, key));
       createFk("verbatim_source", key, new FK("id", "name_usage", true, true));

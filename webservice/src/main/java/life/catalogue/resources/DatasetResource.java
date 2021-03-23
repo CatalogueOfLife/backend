@@ -1,8 +1,6 @@
 package life.catalogue.resources;
 
-import com.google.common.base.Preconditions;
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -25,7 +23,6 @@ import life.catalogue.img.ImgConfig;
 import life.catalogue.release.ReleaseManager;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -223,7 +220,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Produces("image/png")
   public BufferedImage sourceLogo(@PathParam("key") int datasetKey, @PathParam("id") int id, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
     DatasetOrigin origin = DatasetInfoCache.CACHE.origin(datasetKey);
-    if (!origin.isProject()) {
+    if (!origin.isManagedOrRelease()) {
       throw new IllegalArgumentException("Dataset "+datasetKey+" is not a project");
     } else if (origin == DatasetOrigin.RELEASED) {
       return imgService.archiveDatasetLogo(id, datasetKey, scale);

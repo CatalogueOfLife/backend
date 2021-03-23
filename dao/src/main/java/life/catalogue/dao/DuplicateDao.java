@@ -70,10 +70,10 @@ public class DuplicateDao {
       Preconditions.checkArgument(projectKey != null, "projectKey is required if parameter withDecision is used");
     }
     if (sourceDatasetKey != null){
-      Preconditions.checkArgument(DatasetInfoCache.CACHE.origin(datasetKey).isProject(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
+      Preconditions.checkArgument(DatasetInfoCache.CACHE.origin(datasetKey).isManagedOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
     }
     if (sectorKey != null){
-      Preconditions.checkArgument(DatasetInfoCache.CACHE.origin(datasetKey).isProject(), "datasetKey must be a project or release if parameter sectorKey is used");
+      Preconditions.checkArgument(DatasetInfoCache.CACHE.origin(datasetKey).isManagedOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
     }
     page = ObjectUtils.defaultIfNull(page, new Page());
     // load all duplicate usages or names

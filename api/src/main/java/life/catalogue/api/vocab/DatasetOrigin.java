@@ -23,7 +23,7 @@ public enum DatasetOrigin {
   /**
    * @return true if the origin is a project with decisions and sectors, i.e. the origin is either managed or released.
    */
-  public boolean isProject() {
+  public boolean isManagedOrRelease() {
     return this != EXTERNAL;
   }
 

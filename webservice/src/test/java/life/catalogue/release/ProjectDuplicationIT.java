@@ -40,10 +40,10 @@ public class ProjectDuplicationIT {
   public final static TestDataRule dataRule = TestDataRule.draft();
   public final static PgImportRule importRule = PgImportRule.create(
     NomCode.BOTANICAL,
-    DataFormat.ACEF,  1,
-    DataFormat.COLDP, 0,
+      DataFormat.ACEF,  1,
+      DataFormat.COLDP, 0,
     NomCode.ZOOLOGICAL,
-    DataFormat.ACEF,  5, 6
+      DataFormat.ACEF,  5, 6
   );
   public final static TreeRepoRule treeRepoRule = new TreeRepoRule();
 
@@ -93,19 +93,9 @@ public class ProjectDuplicationIT {
     SectorSyncIT.setupNamesIndex(PgSetupRule.getSqlSessionFactory());
     SectorSyncIT.syncAll(siDao);
 
-    // create project
-    Dataset d;
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      d = dm.get(Datasets.COL);
-      d.setTitle(d.getTitle() + " copy");
-      d.setKey(1100);
-      d.setAlias(d.getAlias() + " copy");
-      dm.createWithKey(d);
-      session.commit();
-    }
-
-    ProjectDuplication dupe = releaseManager.buildDuplication(d.getKey(), Users.TESTER);
+    ProjectDuplication dupe = releaseManager.buildDuplication(Datasets.COL, Users.TESTER);
+    final int datasetKey = dupe.newDatasetKey;
+    System.out.println(String.format("Copy dataset %s into %s", Datasets.COL, datasetKey));
     dupe.run();
     assertEquals(ImportState.FINISHED, dupe.getMetrics().getState());
   }
