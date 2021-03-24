@@ -47,7 +47,7 @@
   </sql>
 
   <sql id="SELECT_SIMPLE">
-    u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, u.parent_id
+    u.id, n.scientific_name, n.authorship, u.name_phrase, n.rank, n.code, u.status, u.parent_id
   </sql>
 
   <sql id="COLS_COPY">
@@ -133,13 +133,15 @@
     <id property="id" column="id"/>
     <result property="parent" column="parent_id"/>
     <result property="name" column="scientific_name"/>
+    <result property="phrase" column="name_phrase" />
   </resultMap>
 
   <resultMap id="simpleNidxResultMap" type="SimpleNameWithNidx" autoMapping="true">
     <id property="id" column="id"/>
+    <result property="name" column="scientific_name"/>
+    <result property="phrase" column="name_phrase" />
     <result property="namesIndexId" column="index_id" />
     <result property="namesIndexMatchType" column="type" />
-    <result property="phrase" column="name_phrase" />
   </resultMap>
 
   <resultMap id="idResultMap" type="UsageNameID" autoMapping="false">

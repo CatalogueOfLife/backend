@@ -8,7 +8,6 @@ public class SimpleNameWithNidx extends SimpleName {
   private Integer canonicalId;
   private Integer namesIndexId;
   private MatchType namesIndexMatchType;
-  private String phrase;
 
   public MatchType getNamesIndexMatchType() {
     return namesIndexMatchType;
@@ -34,14 +33,6 @@ public class SimpleNameWithNidx extends SimpleName {
     this.canonicalId = canonicalId;
   }
 
-  public String getPhrase() {
-    return phrase;
-  }
-
-  public void setPhrase(String phrase) {
-    this.phrase = phrase;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -50,22 +41,17 @@ public class SimpleNameWithNidx extends SimpleName {
     SimpleNameWithNidx that = (SimpleNameWithNidx) o;
     return Objects.equals(canonicalId, that.canonicalId) &&
       namesIndexMatchType == that.namesIndexMatchType &&
-      Objects.equals(phrase, that.phrase) &&
       Objects.equals(namesIndexId, that.namesIndexId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), canonicalId, namesIndexMatchType, namesIndexId, phrase);
+    return Objects.hash(super.hashCode(), canonicalId, namesIndexMatchType, namesIndexId);
   }
 
   @Override
   public String toString() {
     var sb = super.labelBuilder();
-    if (phrase != null) {
-      sb.append(" ");
-      sb.append(phrase);
-    }
     sb.append("| nidx ");
     sb.append(canonicalId);
     sb.append('-');

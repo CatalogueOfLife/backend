@@ -12,7 +12,6 @@ import static life.catalogue.api.vocab.TaxonomicStatus.*;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.IterUtils;
-import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.common.io.TabWriter;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -73,7 +72,7 @@ public class IdProvider {
   private IntSet resurrected = new IntOpenHashSet();
   private IntSet created = new IntOpenHashSet();
   private IntSet deleted = new IntOpenHashSet();
-  private final SortedMap<String, List<InstableName>> instable = new TreeMap<>();
+  private final SortedMap<String, List<InstableName>> unstable = new TreeMap<>();
   protected IdMapMapper idm;
   protected NameUsageMapper num;
 
@@ -93,11 +92,21 @@ public class IdProvider {
   }
   public static class InstableName {
     public final boolean del;
-    public final String label;
+    public final int datasetKey;
+    public final String id;
+    public final String fullname;
+    public final Rank rank;
+    public final TaxonomicStatus status;
+    public final String parent;
 
-    public InstableName(boolean del, SimpleName sn) {
+    public InstableName(boolean del, DSID<String> key, SimpleName sn) {
       this.del = del;
-      this.label = sn.toString();
+      this.datasetKey = key.getDatasetKey();
+      this.id = key.getId();
+      this.fullname = sn.getFullName();
+      this.rank = sn.getRank();
+      this.status = sn.getStatus();
+      this.parent = sn.getParent();
     }
 
     public boolean isDel() {
@@ -131,9 +140,9 @@ public class IdProvider {
       // read ID from this release & ID mapping
       reportFile(dir,"created.tsv", created, false, false);
       // clear instable names, removing the ones with just deletions
-      instable.entrySet().removeIf(entry -> entry.getValue().parallelStream().allMatch(n -> n.del));
+      unstable.entrySet().removeIf(entry -> entry.getValue().parallelStream().allMatch(n -> n.del));
       try(Writer writer = UTF8IoUtils.writerFromFile(new File(dir, "unstable.txt"))) {
-        for (var entry : instable.entrySet()) {
+        for (var entry : unstable.entrySet()) {
           writer.write(entry.getKey() + "\n");
           entry.getValue().sort(Comparator.comparing(InstableName::isDel));
           entry.getValue().forEach(n -> writeInstableName(writer, n));
@@ -149,7 +158,20 @@ public class IdProvider {
       writer.write(' ');
       writer.write(n.del ? '-' : '+');
       writer.write(' ');
-      writer.write(n.label);
+      writer.write(n.fullname);
+      writer.write(" [");
+      writer.write(String.valueOf(n.status));
+      writer.write(' ');
+      writer.write(String.valueOf(n.rank));
+      writer.write(' ');
+      writer.write(n.datasetKey);
+      writer.write(':');
+      writer.write(n.id);
+      if (n.parent != null && n.status.isSynonym()) {
+        writer.write(" parent=");
+        writer.write(n.parent);
+      }
+      writer.write(']');
       writer.write('\n');
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -176,16 +198,22 @@ public class IdProvider {
   private void reportId(int id, boolean isOld, TabWriter tsv, boolean deletion){
     try {
       String ID = IdConverter.LATIN29.encode(id);
-      int datasetKey = 0;
+      int datasetKey = -1;
       SimpleName sn;
+      DSID<String> key = null;
       if (isOld) {
         ReleasedId rid = this.ids.byId(id);
         datasetKey = attempt2dataset.get(rid.attempt);
-        sn = num.getSimple(DSID.of(datasetKey, ID));
+        key = DSID.of(datasetKey, ID);
+        sn = num.getSimple(key);
       } else {
         // usages do not exist yet in the release - we gotta use the id map and look them up in the project!
         sn = num.getSimpleByIdMap(DSID.of(projectKey, ID));
+        if (sn != null) {
+          key = DSID.of(projectKey, sn.getId());
+        }
       }
+
       if (sn == null) {
         if (isOld) {
           LOG.warn("Old ID {}-{} [{}] reported without name usage", datasetKey, ID, id);
@@ -213,10 +241,10 @@ public class IdProvider {
         // populate unstable names report
         // expects deleted names to come first, so we can avoid adding many created ids for those which have not also been deleted
         if (deletion) {
-          instable.putIfAbsent(sn.getName(), new ArrayList<>());
+          unstable.putIfAbsent(sn.getName(), new ArrayList<>());
         }
-        if (instable.containsKey(sn.getName())) {
-          instable.get(sn.getName()).add(new InstableName(deletion, sn));
+        if (unstable.containsKey(sn.getName())) {
+          unstable.get(sn.getName()).add(new InstableName(deletion, key, sn));
         }
       }
 

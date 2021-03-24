@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -13,13 +14,14 @@ import java.util.Objects;
  * It combines the source usage ID with the full scientific name in order to best deal with changing identifiers in sources.
  */
 public class SimpleName implements Comparable<SimpleName>, RankedID {
-  private static Comparator<String> nullSafeStringComparator = Comparator.nullsLast(String::compareTo);
-  private static Comparator<Enum> nullSafeEnumComparator = Comparator.nullsLast(Enum::compareTo);
+  private final static Comparator<String> nullSafeStringComparator = Comparator.nullsLast(String::compareTo);
+  private final static Comparator<Enum> nullSafeEnumComparator = Comparator.nullsLast(Enum::compareTo);
 
   static final Comparator<SimpleName> NATURAL_ORDER =
       Comparator.comparing(SimpleName::getRank, nullSafeEnumComparator)
           .thenComparing(SimpleName::getName, nullSafeStringComparator)
           .thenComparing(SimpleName::getAuthorship, nullSafeStringComparator)
+          .thenComparing(SimpleName::getPhrase, nullSafeStringComparator)
           .thenComparing(SimpleName::getStatus, nullSafeEnumComparator);
 
   private String id;
@@ -27,6 +29,7 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
   @NotNull
   private String name;
   private String authorship;
+  private String phrase;
   @NotNull
   private Rank rank;
   private NomCode code;
@@ -39,6 +42,7 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
     this.id = other.id;
     this.name = other.name;
     this.authorship = other.authorship;
+    this.phrase = other.phrase;
     this.rank = other.rank;
     this.code = other.code;
     this.status = other.status;
@@ -82,6 +86,14 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
     this.authorship = authorship;
   }
 
+  public String getPhrase() {
+    return phrase;
+  }
+
+  public void setPhrase(String phrase) {
+    this.phrase = phrase;
+  }
+
   public Rank getRank() {
     return rank;
   }
@@ -119,7 +131,34 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
     return labelBuilder().toString();
   }
 
-  public StringBuilder labelBuilder() {
+  @JsonIgnore
+  public String getFullName() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(name);
+    if (authorship != null) {
+      sb.append(" ");
+      sb.append(authorship);
+    }
+    if (phrase != null) {
+      sb.append(" ");
+      sb.append(phrase);
+    }
+    return sb.toString();
+  }
+
+  private void appendFullName(StringBuilder sb) {
+    sb.append(name);
+    if (authorship != null) {
+      sb.append(" ");
+      sb.append(authorship);
+    }
+    if (phrase != null) {
+      sb.append(" ");
+      sb.append(phrase);
+    }
+  }
+
+  protected StringBuilder labelBuilder() {
     StringBuilder sb = new StringBuilder();
     if (status != null) {
       sb.append(status);
@@ -129,11 +168,7 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
       sb.append(rank);
       sb.append(" ");
     }
-    sb.append(name);
-    if (authorship != null) {
-      sb.append(" ");
-      sb.append(authorship);
-    }
+    appendFullName(sb);
     if (id != null || parent != null) {
       sb.append(" [");
       if (id != null) {
@@ -161,12 +196,13 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
         rank == that.rank &&
         code == that.code &&
         status == that.status &&
+        Objects.equals(phrase, that.phrase) &&
         Objects.equals(parent, that.parent);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, authorship, rank, code, status, parent);
+    return Objects.hash(id, name, authorship, rank, code, status, phrase, parent);
   }
 
   public int compareTo(SimpleName other) {
