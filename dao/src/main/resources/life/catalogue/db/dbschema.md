@@ -10,6 +10,10 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+```
+ALTER TYPE EDITORIALDECISION_MODE ADD VALUE 'IGNORE' BEFORE 'BLOCK';
+```
+
 ### 2021-03-16 like escape function
 ```
 CREATE OR REPLACE FUNCTION escape_like(text) RETURNS text AS $$

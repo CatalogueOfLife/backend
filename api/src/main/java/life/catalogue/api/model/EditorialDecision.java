@@ -31,6 +31,12 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
   private String note;
   
   public static enum Mode {
+
+    /**
+     * Ignores the subject, but still includes all it's descendants.
+     */
+    IGNORE,
+
     /**
      * Blocks the subject and all its descendants.
      */

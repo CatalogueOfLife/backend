@@ -6,10 +6,7 @@ import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.IgnoreReason;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.dao.CatCopy;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
@@ -23,6 +20,7 @@ import org.gbif.nameparser.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -293,7 +291,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     if (decisions.containsKey(u.getId())) {
       applyDecision(u, decisions.get(u.getId()));
     }
-    if (skipUsage(u)) {
+    if (skipUsage(u, decisions.get(u.getId()))) {
       // skip this taxon, but include children
       LOG.info("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().getLabel(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
       // use taxons parent also as the parentID for this so children link one level up
@@ -341,7 +339,11 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     ignoredCounter.compute(reason, (k, v) -> v == null ? 1 : v+1);
   }
 
-  private boolean skipUsage(NameUsageBase u) {
+  private boolean skipUsage(NameUsageBase u, @Nullable EditorialDecision decision) {
+    if (decision != null && decision.getMode() == EditorialDecision.Mode.IGNORE) {
+      return true;
+    }
+
     Name n = u.getName();
     if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
       incIgnored(IgnoreReason.RANK);
@@ -355,12 +357,9 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         incIgnored(IgnoreReason.reasonByNameType(n.getType()));
         return true;
     }
-    if (n.getNomStatus() != null) {
-      switch (n.getNomStatus()) {
-        case CHRESONYM:
-          incIgnored(IgnoreReason.CHRESONYM);
-          return true;
-      }
+    if (n.getNomStatus() != null && n.getNomStatus() == NomStatus.CHRESONYM) {
+      incIgnored(IgnoreReason.CHRESONYM);
+      return true;
     }
     if (n.getCultivarEpithet() != null || n.getCode() == NomCode.CULTIVARS || n.getRank().isCultivarRank()) {
       incIgnored(IgnoreReason.INCONSISTENT_NAME);
