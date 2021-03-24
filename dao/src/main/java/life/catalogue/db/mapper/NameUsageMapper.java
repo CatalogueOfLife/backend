@@ -32,10 +32,10 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   SimpleName getSimple(@Param("key") DSID<String> key);
 
   /**
-   * Retrieves a simple name usage from a project by using a new release usage ID
+   * Retrieves a simple name usage from a project by using the stable usage ID
    * and the id map table
-   * @param key usage key with dataset being the project and ID being the released id
-   * @return simple name with parent keys being the released id, resolved via the id map
+   * @param key usage key with dataset being the project and ID being the stable id
+   * @return simple name with parent keys being the stable id, resolved via the id map
    */
   SimpleName getSimpleByIdMap(@Param("key") DSID<String> key);
 

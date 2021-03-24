@@ -185,8 +185,6 @@ public class IdProvider {
       } else {
         // usages do not exist yet in the release - we gotta use the id map and look them up in the project!
         sn = num.getSimpleByIdMap(DSID.of(projectKey, ID));
-        // use the new identifier, not the projects temporary one
-        sn.setId(ID);
       }
       if (sn == null) {
         if (isOld) {
@@ -203,6 +201,8 @@ public class IdProvider {
         });
 
       } else {
+        // always use the new stable identifier, not the projects temporary one
+        sn.setId(ID);
         tsv.write(new String[]{
           ID,
           VocabularyUtils.toString(sn.getRank()),
@@ -210,7 +210,7 @@ public class IdProvider {
           sn.getName(),
           sn.getAuthorship()
         });
-        // populate instable names report
+        // populate unstable names report
         // expects deleted names to come first, so we can avoid adding many created ids for those which have not also been deleted
         if (deletion) {
           instable.putIfAbsent(sn.getName(), new ArrayList<>());
