@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
@@ -83,6 +84,12 @@ public class NameUsageResource {
   }
 
   @GET
+  @Path("{id}/source")
+  public VerbatimSource source(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(VerbatimSourceMapper.class).get(DSID.of(datasetKey, id));
+  }
+
+  @GET
   @Timed
   @Path("pattern")
   public List<SimpleName> searchDatasetByRegex(@PathParam("key") int datasetKey,
@@ -139,4 +146,5 @@ public class NameUsageResource {
     query.setDatasetFilter(datasetKey);
     return query;
   }
+
 }
