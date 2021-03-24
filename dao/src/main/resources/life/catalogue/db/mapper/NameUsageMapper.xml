@@ -169,9 +169,10 @@
 
   <select id="getSimpleByIdMap" resultMap="simpleResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT <include refid="SELECT_SIMPLE"/>
+    SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, coalesce(idp.id2, u.parent_id) AS parent_id
     FROM <include refid="FROM_SIMPLE"/>
       JOIN idmap_name_usage_${partition} idmap ON idmap.id=u.id
+      LEFT JOIN idmap_name_usage_${partition} idp ON idp.id=u.parent_id
     WHERE idmap.id2 = #{key.id}
   </select>
 
