@@ -1,6 +1,8 @@
 package life.catalogue.api.jackson;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
@@ -14,6 +16,7 @@ import org.gbif.dwc.terms.TermFactory;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -77,6 +80,19 @@ public class ApiModuleTest {
     String json = ApiModule.MAPPER.writeValueAsString(did1);
     DSIDValue did2 = ApiModule.MAPPER.readValue(json, DSIDValue.class);
     assertEquals(did1, did2);
+  }
+
+  @Test
+  public void testTrailingComma() throws IOException {
+    List<Integer> nums = List.of(1,2,3,4);
+    String json = ApiModule.MAPPER.writeValueAsString(nums);
+    assertEquals("[1,2,3,4]", json);
+    List<Integer> nums2 = ApiModule.MAPPER.readValue(json, new TypeReference<List<Integer>>() {});
+    assertEquals(nums2, nums);
+
+    // parse trailing commas
+    nums2 = ApiModule.MAPPER.readValue("[1,2,3,4,]", new TypeReference<List<Integer>>() {});
+    assertEquals(nums2, nums);
   }
 
   @Test

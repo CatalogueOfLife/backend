@@ -41,6 +41,7 @@ public class EsNameUsage {
   @MapToType(ESDataType.KEYWORD)
   private UUID publisherKey;
   private Rank rank;
+  private Origin origin;
   private NameType type;
   private NomCode nomCode;
   private NomStatus nomStatus;
@@ -182,6 +183,14 @@ public class EsNameUsage {
     this.rank = rank;
   }
 
+  public Origin getOrigin() {
+    return origin;
+  }
+
+  public void setOrigin(Origin origin) {
+    this.origin = origin;
+  }
+
   public NameType getType() {
     return type;
   }
@@ -298,7 +307,7 @@ public class EsNameUsage {
   public int hashCode() {
     return Objects.hash(acceptedName, authorship, authorshipComplete, authorshipYear, classification, classificationIds, datasetKey,
         decisions, documentId, extinct, issues, nameFields, nameId, nameStrings, nomCode, nomStatus, payload,
-        publishedInId, publisherKey, rank, scientificName, sectorDatasetKey, sectorKey, status, type, usageId);
+        publishedInId, publisherKey, rank, origin, scientificName, sectorDatasetKey, sectorKey, status, type, usageId);
   }
 
   @Override
@@ -328,10 +337,13 @@ public class EsNameUsage {
         && Objects.equals(nameFields, other.nameFields)
         && Objects.equals(nameId, other.nameId)
         && Objects.equals(nameStrings, other.nameStrings)
-        && nomCode == other.nomCode && nomStatus == other.nomStatus
+        && nomCode == other.nomCode
+        && nomStatus == other.nomStatus
         && Objects.equals(payload, other.payload)
         && Objects.equals(publishedInId, other.publishedInId)
-        && Objects.equals(publisherKey, other.publisherKey) && rank == other.rank
+        && Objects.equals(publisherKey, other.publisherKey)
+        && rank == other.rank
+        && origin == other.origin
         && Objects.equals(scientificName, other.scientificName)
         && Objects.equals(sectorDatasetKey, other.sectorDatasetKey)
         && Objects.equals(sectorKey, other.sectorKey)

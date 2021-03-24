@@ -58,6 +58,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     // Match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
     nuw1.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING));
+    nuw1.getUsage().setOrigin(Origin.IMPLICIT_NAME);
     insert(client, indexName(), converter.toDocument(nuw1));
 
     // Match
@@ -93,8 +94,17 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     refreshIndex(client, indexName());
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName(), nsr, new Page());
-
     assertEquals(3, result.getResult().size());
+
+    // search for origin
+    nsr.addFilter(NameUsageSearchParameter.ORIGIN, Origin.IMPLICIT_NAME);
+    result = svc.search(indexName(), nsr, new Page());
+    assertEquals(1, result.getResult().size());
+
+    nsr.clearFilter(NameUsageSearchParameter.ORIGIN);
+    nsr.addFilter(NameUsageSearchParameter.ORIGIN, Origin.BASIONYM_PLACEHOLDER);
+    result = svc.search(indexName(), nsr, new Page());
+    assertEquals(0, result.getResult().size());
   }
 
   @Test

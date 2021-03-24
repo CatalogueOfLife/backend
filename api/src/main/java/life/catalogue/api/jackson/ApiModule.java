@@ -2,6 +2,7 @@ package life.catalogue.api.jackson;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -43,9 +44,10 @@ public class ApiModule extends SimpleModule {
     // keep all capital fields as such, dont lowercase them!!
     mapper.enable(MapperFeature.USE_STD_BEAN_NAMING);
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    
+
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+    mapper.enable(JsonParser.Feature.ALLOW_TRAILING_COMMA);
 
     mapper.registerModule(new JavaTimeModule());
     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);

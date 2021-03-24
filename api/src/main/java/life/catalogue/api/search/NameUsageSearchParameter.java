@@ -104,7 +104,12 @@ public enum NameUsageSearchParameter {
    * Allows to built an alphabetical index to all search results,
    * see https://github.com/CatalogueOfLife/backend/issues/236
    */
-  ALPHAINDEX(String.class);
+  ALPHAINDEX(String.class),
+
+  /**
+   * The name usage origin
+   */
+  ORIGIN(Origin.class);
 
   private final Class<?> type;
 
