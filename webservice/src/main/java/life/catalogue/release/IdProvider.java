@@ -185,6 +185,8 @@ public class IdProvider {
       } else {
         // usages do not exist yet in the release - we gotta use the id map and look them up in the project!
         sn = num.getSimpleByIdMap(DSID.of(projectKey, ID));
+        // use the new identifier, not the projects temporary one
+        sn.setId(ID);
       }
       if (sn == null) {
         if (isOld) {
