@@ -3,972 +3,978 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.catalogueoflife</groupId>
-    <artifactId>motherpom</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+  <groupId>org.catalogueoflife</groupId>
+  <artifactId>motherpom</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
-    <name>COL backend services</name>
-    <url>http://github.org/Sp2000/${project.artifactId}</url>
+  <name>COL backend services</name>
+  <url>http://github.org/Sp2000/${project.artifactId}</url>
 
-    <scm>
-        <connection>scm:git:git@github.com:CatalogueOfLife/backend.git</connection>
-        <url>https://github.com/CatalogueOfLife/backend</url>
-        <developerConnection>scm:git:git@github.com:CatalogueOfLife/backend.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
+  <scm>
+    <connection>scm:git:git@github.com:CatalogueOfLife/backend.git</connection>
+    <url>https://github.com/CatalogueOfLife/backend</url>
+    <developerConnection>scm:git:git@github.com:CatalogueOfLife/backend.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
 
-    <prerequisites>
-        <maven>${minimumMavenVersion}</maven>
-    </prerequisites>
+  <prerequisites>
+    <maven>${minimumMavenVersion}</maven>
+  </prerequisites>
 
-    <properties>
-        <!-- build settings -->
-        <minimumMavenVersion>3.3</minimumMavenVersion>
-        <jdkLevel>11</jdkLevel>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  <properties>
+    <!-- build settings -->
+    <minimumMavenVersion>3.3</minimumMavenVersion>
+    <jdkLevel>11</jdkLevel>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- Library dependencies Check for available updates: mvn versions:display-dependency-updates We make
-            use of the Dropwizard BOM (Bill of materials) to manage versions for the major libraries which also imports
-            the BOM for jersey and jackson. Before adding a specific version here make sure it is not already covered
-            by these BOMs (use the right versions):
+    <!-- Library dependencies Check for available updates: mvn versions:display-dependency-updates We make
+        use of the Dropwizard BOM (Bill of materials) to manage versions for the major libraries which also imports
+        the BOM for jersey and jackson. Before adding a specific version here make sure it is not already covered
+        by these BOMs (use the right versions):
 
-            Main two Dropwizard BOMs:
-            https://github.com/dropwizard/dropwizard/blob/v2.0.2/dropwizard-bom/pom.xml
-            io.dropwizard:dropwizard-dependencies
-            Which also imports the Jersey BOM: https://github.com/jersey/jersey/blob/2.25.1/bom/pom.xml
-            and Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.9.6/pom.xml
+        Main two Dropwizard BOMs:
+        https://github.com/dropwizard/dropwizard/blob/v2.0.2/dropwizard-bom/pom.xml
+        io.dropwizard:dropwizard-dependencies
+        Which also imports the Jersey BOM: https://github.com/jersey/jersey/blob/2.25.1/bom/pom.xml
+        and Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.9.6/pom.xml
 
-            These BOMs manage dependency
-            versions for many things including: commons-lang3, guava, jersey, commons-text, servlet api, httpclient,
-            liquibase, freemarker, jetty, jackson, metrics, etc. -->
-        <antlr.version>4.7.2</antlr.version>
-        <asm.version></asm.version>
-        <assertj.version>3.11.1</assertj.version>
-        <!-- 2.0.0j11 is a modified 2.0.0 release using GraalVM 2.3.0 with ASM 7.x hosted at GBIF -->
-        <citeproc.version>2.0.0j11</citeproc.version>
-        <citeproc-styles.version>2.0.0</citeproc-styles.version>
-        <commons-collections4.version>4.3</commons-collections4.version>
-        <commons-compress.version>1.19</commons-compress.version>
-        <commons-io.version>2.6</commons-io.version>
-        <dropwizard.version>2.0.2</dropwizard.version>
-        <dwc-api.version>1.33</dwc-api.version>
-        <dwca-io.version>2.9</dwca-io.version>
-        <elasticsearch.version>7.4.2</elasticsearch.version>
-        <fastutil.version>8.3.0</fastutil.version>
-        <gbif-api.version>0.99</gbif-api.version>
-        <graalvm.version>19.3.0</graalvm.version>
-        <hikaricp.version>3.3.1</hikaricp.version>
-        <hk2.version>2.5.0-b32</hk2.version>
-        <!-- even though managed in DW BOM, it conflicts with ES BOM and we gotta manage this manually -->
-        <httpcore.version>4.4.12</httpcore.version>
-        <icu4j.version>64.2</icu4j.version>
-        <java-diff-utils.version>4.0</java-diff-utils.version>
-        <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
-        <javers.version>5.6.3</javers.version>
-        <jbibtex.version>1.0.17</jbibtex.version>
-        <jjwt.version>0.10.7</jjwt.version>
-        <junit.version>4.12</junit.version>
-        <kryo-serializers.version>0.45</kryo-serializers.version>
-        <kryo.version>5.0.0-RC5</kryo.version>
-        <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
-        <logstash-logback.version>6.4</logstash-logback.version>
-        <mapdb.version>3.0.5</mapdb.version>
-        <mockito.version>3.1.0</mockito.version>
-        <mybatis.version>3.5.2</mybatis.version>
-        <name-parser.version>3.6.2-SNAPSHOT</name-parser.version>
-        <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
-        <neo4j.version>3.4.17</neo4j.version>
-        <poi.version>4.1.2</poi.version>
-        <postgresql.version>42.2.16</postgresql.version>
-        <pgjdbc-ng.version>0.8.4</pgjdbc-ng.version>
-        <stax2.version>4.2</stax2.version>
-        <text-tree.version>1.0.0</text-tree.version>
-        <tika.version>1.22</tika.version>
-        <twelvemonkeys.version>3.4.2</twelvemonkeys.version>
-        <validation-api.version>2.0.0.Final</validation-api.version>
-        <woodstox.version>4.4.1</woodstox.version>
-        <imgscalr.version>4.2</imgscalr.version>
-        <univocity-parsers.version>2.8.3</univocity-parsers.version>
-        <!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
-        <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
-        <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <maven-dependency-plugin.version>3.1.1</maven-dependency-plugin.version>
-        <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
-        <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
-        <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
-        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
-        <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
-        <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
-        <maven-source-plugin.version>3.2.0</maven-source-plugin.version>
-        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-        <maven-git-commit-id-plugin.version>4.0.0</maven-git-commit-id-plugin.version>
-        <versions-maven-plugin.version>2.7</versions-maven-plugin.version>
+        These BOMs manage dependency
+        versions for many things including: commons-lang3, guava, jersey, commons-text, servlet api, httpclient,
+        liquibase, freemarker, jetty, jackson, metrics, etc. -->
+    <antlr.version>4.7.2</antlr.version>
+    <asm.version></asm.version>
+    <assertj.version>3.11.1</assertj.version>
+    <!-- 2.0.0j11 is a modified 2.0.0 release using GraalVM 2.3.0 with ASM 7.x hosted at GBIF -->
+    <citeproc.version>2.0.0j11</citeproc.version>
+    <citeproc-styles.version>2.0.0</citeproc-styles.version>
+    <commons-collections4.version>4.3</commons-collections4.version>
+    <commons-compress.version>1.19</commons-compress.version>
+    <commons-io.version>2.6</commons-io.version>
+    <dropwizard.version>2.0.2</dropwizard.version>
+    <dwc-api.version>1.33</dwc-api.version>
+    <dwca-io.version>2.9</dwca-io.version>
+    <elasticsearch.version>7.4.2</elasticsearch.version>
+    <fastutil.version>8.3.0</fastutil.version>
+    <ganglia.version>1.0.7</ganglia.version>
+    <gbif-api.version>0.99</gbif-api.version>
+    <graalvm.version>19.3.0</graalvm.version>
+    <hikaricp.version>3.3.1</hikaricp.version>
+    <hk2.version>2.5.0-b32</hk2.version>
+    <!-- even though managed in DW BOM, it conflicts with ES BOM and we gotta manage this manually -->
+    <httpcore.version>4.4.12</httpcore.version>
+    <icu4j.version>64.2</icu4j.version>
+    <java-diff-utils.version>4.0</java-diff-utils.version>
+    <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+    <javers.version>5.6.3</javers.version>
+    <jbibtex.version>1.0.17</jbibtex.version>
+    <jjwt.version>0.10.7</jjwt.version>
+    <junit.version>4.12</junit.version>
+    <kryo-serializers.version>0.45</kryo-serializers.version>
+    <kryo.version>5.0.0-RC5</kryo.version>
+    <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
+    <logstash-logback.version>6.4</logstash-logback.version>
+    <mapdb.version>3.0.5</mapdb.version>
+    <mockito.version>3.1.0</mockito.version>
+    <mybatis.version>3.5.2</mybatis.version>
+    <name-parser.version>3.6.2-SNAPSHOT</name-parser.version>
+    <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
+    <neo4j.version>3.4.17</neo4j.version>
+    <poi.version>4.1.2</poi.version>
+    <postgresql.version>42.2.16</postgresql.version>
+    <pgjdbc-ng.version>0.8.4</pgjdbc-ng.version>
+    <stax2.version>4.2</stax2.version>
+    <text-tree.version>1.0.0</text-tree.version>
+    <tika.version>1.22</tika.version>
+    <twelvemonkeys.version>3.4.2</twelvemonkeys.version>
+    <validation-api.version>2.0.0.Final</validation-api.version>
+    <woodstox.version>4.4.1</woodstox.version>
+    <imgscalr.version>4.2</imgscalr.version>
+    <univocity-parsers.version>2.8.3</univocity-parsers.version>
+    <!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
+    <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
+    <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
+    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+    <maven-dependency-plugin.version>3.1.1</maven-dependency-plugin.version>
+    <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
+    <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+    <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+    <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+    <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
+    <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
+    <maven-source-plugin.version>3.2.0</maven-source-plugin.version>
+    <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+    <maven-git-commit-id-plugin.version>4.0.0</maven-git-commit-id-plugin.version>
+    <versions-maven-plugin.version>2.7</versions-maven-plugin.version>
 
-        <!-- default maven properties to define the postgres server for running tests.
-        To use a different server please activate a personal profile -->
-        <db.host>localhost</db.host>
-        <db.database>colplus</db.database>
-        <db.port>5432</db.port>
-        <db.user>postgres</db.user>
-        <db.password>postgres</db.password>
-        <!-- default to a local instance -->
-        <es.hosts>localhost</es.hosts>
-        <es.ports>9200</es.ports>
-        <es.index>name_usage_test</es.index>
+    <!-- default maven properties to define the postgres server for running tests.
+    To use a different server please activate a personal profile -->
+    <db.host>localhost</db.host>
+    <db.database>colplus</db.database>
+    <db.port>5432</db.port>
+    <db.user>postgres</db.user>
+    <db.password>postgres</db.password>
+    <!-- default to a local instance -->
+    <es.hosts>localhost</es.hosts>
+    <es.ports>9200</es.ports>
+    <es.index>name_usage_test</es.index>
 
-        <gbif.api>https://api.gbif.org/v1/</gbif.api>
-        <gbif.appkey>col.plus</gbif.appkey>
-        <gbif.secret>secret</gbif.secret>
-        <img.repo>${project.build.directory}/img-repo</img.repo>
-    </properties>
+    <gbif.api>https://api.gbif.org/v1/</gbif.api>
+    <gbif.appkey>col.plus</gbif.appkey>
+    <gbif.secret>secret</gbif.secret>
+    <img.repo>${project.build.directory}/img-repo</img.repo>
+  </properties>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>https://raw.github.com/gbif/motherpom/master/LICENSE</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://raw.github.com/gbif/motherpom/master/LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
-    <organization>
-        <name>Species 2000</name>
-        <url>http://www.sp2000.org/</url>
-    </organization>
+  <organization>
+    <name>Species 2000</name>
+    <url>http://www.sp2000.org/</url>
+  </organization>
 
-    <issueManagement>
-        <system>github</system>
-        <url>https://github.com/CatalogueOfLife/backend/issues</url>
-    </issueManagement>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/CatalogueOfLife/backend/issues</url>
+  </issueManagement>
 
-    <repositories>
-        <repository>
-            <id>gbif-all</id>
-            <url>http://repository.gbif.org/repository/gbif</url>
-            <snapshots>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>gbif-thirdparty</id>
-            <url>http://repository.gbif.org/repository/thirdparty</url>
-        </repository>
-    </repositories>
+  <repositories>
+    <repository>
+      <id>gbif-all</id>
+      <url>http://repository.gbif.org/repository/gbif</url>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>gbif-thirdparty</id>
+      <url>http://repository.gbif.org/repository/thirdparty</url>
+    </repository>
+  </repositories>
 
-    <modules>
-        <module>api</module>
-        <module>dao</module>
-        <module>parser</module>
-        <module>webservice</module>
-    </modules>
+  <modules>
+    <module>api</module>
+    <module>dao</module>
+    <module>parser</module>
+    <module>webservice</module>
+  </modules>
 
-    <distributionManagement>
-        <repository>
-            <id>gbif-release</id>
-            <url>http://repository.gbif.org/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>gbif-snapshot</id>
-            <url>http://repository.gbif.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
+  <distributionManagement>
+    <repository>
+      <id>gbif-release</id>
+      <url>http://repository.gbif.org/content/repositories/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>gbif-snapshot</id>
+      <url>http://repository.gbif.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Colplus -->
-            <dependency>
-                <groupId>org.catalogueoflife</groupId>
-                <artifactId>api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.catalogueoflife</groupId>
-                <artifactId>api</artifactId>
-                <version>${project.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.catalogueoflife</groupId>
-                <artifactId>dao</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.catalogueoflife</groupId>
-                <artifactId>dao</artifactId>
-                <version>${project.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.catalogueoflife</groupId>
-                <artifactId>parser</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+  <dependencyManagement>
+    <dependencies>
+      <!-- Colplus -->
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>api</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>dao</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>dao</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>parser</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
-            <!-- Dropwizard -->
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-core</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-auth</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-client</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-forms</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-jersey</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-util</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-lifecycle</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-logging</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-testing</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-client</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
+      <!-- Dropwizard -->
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-core</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-auth</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-client</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-forms</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-jersey</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-util</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-lifecycle</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-logging</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-testing</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-client</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>info.ganglia.gmetric4j</groupId>
+        <artifactId>gmetric4j</artifactId>
+        <version>${ganglia.version}</version>
+      </dependency>
 
-            <!-- Dropwizard Bill of materials.
-                 There are 2 BOMs now: https://github.com/dropwizard/dropwizard/pull/2897
-                 One for the dropwizard modules, one for the transitive dependencies to external projects.
-                Imports all versions just like Dropwizard uses.
-                See properties section above for details!
-            -->
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-bom</artifactId>
-                <version>${dropwizard.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <!-- https://github.com/dropwizard/dropwizard/blob/v2.0.2/dropwizard-dependencies/pom.xml -->
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-dependencies</artifactId>
-                <version>${dropwizard.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+      <!-- Dropwizard Bill of materials.
+           There are 2 BOMs now: https://github.com/dropwizard/dropwizard/pull/2897
+           One for the dropwizard modules, one for the transitive dependencies to external projects.
+          Imports all versions just like Dropwizard uses.
+          See properties section above for details!
+      -->
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-bom</artifactId>
+        <version>${dropwizard.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <!-- https://github.com/dropwizard/dropwizard/blob/v2.0.2/dropwizard-dependencies/pom.xml -->
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-dependencies</artifactId>
+        <version>${dropwizard.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
 
-          <!-- jackson additions to DW BOM -->
-          <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.10.2</version>
-          </dependency>
+      <!-- jackson additions to DW BOM -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-xml</artifactId>
+        <version>2.10.2</version>
+      </dependency>
 
-          <!-- HK2 dependency injection - follow closely the version used by Jersey via Dropwizard -->
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-api</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-locator</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-utils</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
+      <!-- HK2 dependency injection - follow closely the version used by Jersey via Dropwizard -->
+      <dependency>
+        <groupId>org.glassfish.hk2</groupId>
+        <artifactId>hk2-api</artifactId>
+        <version>${hk2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.hk2</groupId>
+        <artifactId>hk2-locator</artifactId>
+        <version>${hk2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.hk2</groupId>
+        <artifactId>hk2-utils</artifactId>
+        <version>${hk2.version}</version>
+      </dependency>
 
-            <!-- javax -->
-            <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>${javax.ws.rs-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${validation-api.version}</version>
-            </dependency>
+      <!-- javax -->
+      <dependency>
+        <groupId>javax.ws.rs</groupId>
+        <artifactId>javax.ws.rs-api</artifactId>
+        <version>${javax.ws.rs-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.validation</groupId>
+        <artifactId>validation-api</artifactId>
+        <version>${validation-api.version}</version>
+      </dependency>
 
-            <!-- Tvelve Monkeys image format extensions -->
-            <dependency>
-                <groupId>com.twelvemonkeys.imageio</groupId>
-                <artifactId>imageio-jpeg</artifactId>
-                <version>${twelvemonkeys.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.twelvemonkeys.imageio</groupId>
-                <artifactId>imageio-tiff</artifactId>
-                <version>${twelvemonkeys.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.twelvemonkeys.imageio</groupId>
-                <artifactId>imageio-bmp</artifactId>
-                <version>${twelvemonkeys.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.twelvemonkeys.imageio</groupId>
-                <artifactId>imageio-psd</artifactId>
-                <version>${twelvemonkeys.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.twelvemonkeys.imageio</groupId>
-                <artifactId>imageio-pict</artifactId>
-                <version>${twelvemonkeys.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.twelvemonkeys.imageio</groupId>
-                <artifactId>imageio-icns</artifactId>
-                <version>${twelvemonkeys.version}</version>
-            </dependency>
+      <!-- Tvelve Monkeys image format extensions -->
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-jpeg</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-tiff</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-bmp</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-psd</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-pict</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-icns</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
 
-            <!-- JWT -->
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-api</artifactId>
-                <version>${jjwt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-impl</artifactId>
-                <version>${jjwt.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-jackson</artifactId>
-                <version>${jjwt.version}</version>
-                <scope>runtime</scope>
-            </dependency>
+      <!-- JWT -->
+      <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+        <version>${jjwt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-impl</artifactId>
+        <version>${jjwt.version}</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-jackson</artifactId>
+        <version>${jjwt.version}</version>
+        <scope>runtime</scope>
+      </dependency>
 
-            <!-- GBIF -->
-            <dependency>
-                <groupId>org.gbif</groupId>
-                <artifactId>dwc-api</artifactId>
-                <version>${dwc-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.gbif</groupId>
-                <artifactId>gbif-api</artifactId>
-                <version>${gbif-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.gbif</groupId>
-                <artifactId>name-parser-api</artifactId>
-                <version>${name-parser.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.gbif</groupId>
-                <artifactId>name-parser</artifactId>
-                <version>${name-parser.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>org.gbif</groupId>
-              <artifactId>dwca-io</artifactId>
-              <version>${dwca-io.version}</version>
-            </dependency>
+      <!-- GBIF -->
+      <dependency>
+        <groupId>org.gbif</groupId>
+        <artifactId>dwc-api</artifactId>
+        <version>${dwc-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gbif</groupId>
+        <artifactId>gbif-api</artifactId>
+        <version>${gbif-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gbif</groupId>
+        <artifactId>name-parser-api</artifactId>
+        <version>${name-parser.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gbif</groupId>
+        <artifactId>name-parser</artifactId>
+        <version>${name-parser.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gbif</groupId>
+        <artifactId>dwca-io</artifactId>
+        <version>${dwca-io.version}</version>
+      </dependency>
 
-            <!-- mybatis / DB -->
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>${postgresql.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.zaxxer</groupId>
-                <artifactId>HikariCP</artifactId>
-                <version>${hikaricp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mybatis</groupId>
-                <artifactId>mybatis</artifactId>
-                <version>${mybatis.version}</version>
-            </dependency>
+      <!-- mybatis / DB -->
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${postgresql.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP</artifactId>
+        <version>${hikaricp.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mybatis</groupId>
+        <artifactId>mybatis</artifactId>
+        <version>${mybatis.version}</version>
+      </dependency>
 
-            <!-- neo4j -->
-            <dependency>
-                <groupId>org.neo4j</groupId>
-                <artifactId>neo4j</artifactId>
-                <version>${neo4j.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <!-- turn off usage reporting to normalizer -->
-                        <groupId>org.neo4j</groupId>
-                        <artifactId>neo4j-udc</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.neo4j</groupId>
-                <artifactId>neo4j-kernel</artifactId>
-                <version>${neo4j.version}</version>
-            </dependency>
-            <!-- somehow missing from neo4j-kernel deps on java 11: https://github.com/Sp2000/colplus-backend/issues/573 -->
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.64</version>
-            </dependency>
-            <dependency>
-                <groupId>org.neo4j</groupId>
-                <artifactId>neo4j-cypher</artifactId>
-                <version>${neo4j.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <!-- uses old ASM version and we dont use it anyways -->
-                        <groupId>org.neo4j</groupId>
-                        <artifactId>neo4j-codegen</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.neo4j</groupId>
-                <artifactId>neo4j-slf4j</artifactId>
-                <version>${neo4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.neo4j</groupId>
-                <artifactId>graph-algorithms-algo</artifactId>
-                <version>${neo4j-algorithms.version}</version>
-            </dependency>
+      <!-- neo4j -->
+      <dependency>
+        <groupId>org.neo4j</groupId>
+        <artifactId>neo4j</artifactId>
+        <version>${neo4j.version}</version>
+        <exclusions>
+          <exclusion>
+            <!-- turn off usage reporting to normalizer -->
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-udc</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j</groupId>
+        <artifactId>neo4j-kernel</artifactId>
+        <version>${neo4j.version}</version>
+      </dependency>
+      <!-- somehow missing from neo4j-kernel deps on java 11: https://github.com/Sp2000/colplus-backend/issues/573 -->
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk15on</artifactId>
+        <version>1.64</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j</groupId>
+        <artifactId>neo4j-cypher</artifactId>
+        <version>${neo4j.version}</version>
+        <exclusions>
+          <exclusion>
+            <!-- uses old ASM version and we dont use it anyways -->
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-codegen</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j</groupId>
+        <artifactId>neo4j-slf4j</artifactId>
+        <version>${neo4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j</groupId>
+        <artifactId>graph-algorithms-algo</artifactId>
+        <version>${neo4j-algorithms.version}</version>
+      </dependency>
 
-            <!-- mapdb & kryo -->
-            <dependency>
-                <groupId>org.mapdb</groupId>
-                <artifactId>mapdb</artifactId>
-                <version>${mapdb.version}</version>
-            </dependency>
-            <!-- we use kryo to serialize data into binary which is > 10 times faster than jackson even with smile -->
-            <dependency>
-                <groupId>com.esotericsoftware</groupId>
-                <artifactId>kryo</artifactId>
-                <version>${kryo.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>de.javakaffee</groupId>
-                <artifactId>kryo-serializers</artifactId>
-                <version>${kryo-serializers.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.esotericsoftware</groupId>
-                <artifactId>reflectasm</artifactId>
-                <version>${kryo-reflectasm.version}</version>
-                <type>bundle</type>
-            </dependency>
+      <!-- mapdb & kryo -->
+      <dependency>
+        <groupId>org.mapdb</groupId>
+        <artifactId>mapdb</artifactId>
+        <version>${mapdb.version}</version>
+      </dependency>
+      <!-- we use kryo to serialize data into binary which is > 10 times faster than jackson even with smile -->
+      <dependency>
+        <groupId>com.esotericsoftware</groupId>
+        <artifactId>kryo</artifactId>
+        <version>${kryo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>de.javakaffee</groupId>
+        <artifactId>kryo-serializers</artifactId>
+        <version>${kryo-serializers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.esotericsoftware</groupId>
+        <artifactId>reflectasm</artifactId>
+        <version>${kryo-reflectasm.version}</version>
+        <type>bundle</type>
+      </dependency>
 
-            <!-- elastic -->
-            <dependency>
-                <groupId>org.elasticsearch.client</groupId>
-                <artifactId>elasticsearch-rest-client</artifactId>
-                <version>${elasticsearch.version}</version>
-            </dependency>
-            <!-- httpcore needs at least 4.4.7 for dropwizard. ES 6.5 uses 4.4.5 still -->
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpcore-nio</artifactId>
-                <version>${httpcore.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpcore</artifactId>
-                <version>${httpcore.version}</version>
-            </dependency>
+      <!-- elastic -->
+      <dependency>
+        <groupId>org.elasticsearch.client</groupId>
+        <artifactId>elasticsearch-rest-client</artifactId>
+        <version>${elasticsearch.version}</version>
+      </dependency>
+      <!-- httpcore needs at least 4.4.7 for dropwizard. ES 6.5 uses 4.4.5 still -->
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore-nio</artifactId>
+        <version>${httpcore.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>${httpcore.version}</version>
+      </dependency>
 
-            <!-- unicode, transliterations
-                Consider much simpler https://github.com/jirutka/unidecode
-            -->
-            <dependency>
-                <groupId>com.ibm.icu</groupId>
-                <artifactId>icu4j</artifactId>
-                <version>${icu4j.version}</version>
-            </dependency>
+      <!-- unicode, transliterations
+          Consider much simpler https://github.com/jirutka/unidecode
+      -->
+      <dependency>
+        <groupId>com.ibm.icu</groupId>
+        <artifactId>icu4j</artifactId>
+        <version>${icu4j.version}</version>
+      </dependency>
 
-            <!-- logging -->
-            <dependency>
-                <groupId>net.logstash.logback</groupId>
-                <artifactId>logstash-logback-encoder</artifactId>
-                <version>${logstash-logback.version}</version>
-            </dependency>
+      <!-- logging -->
+      <dependency>
+        <groupId>net.logstash.logback</groupId>
+        <artifactId>logstash-logback-encoder</artifactId>
+        <version>${logstash-logback.version}</version>
+      </dependency>
 
-            <!-- commons -->
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons-io.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-compress</artifactId>
-                <version>${commons-compress.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-collections4</artifactId>
-                <version>${commons-collections4.version}</version>
-            </dependency>
+      <!-- commons -->
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${commons-compress.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-collections4</artifactId>
+        <version>${commons-collections4.version}</version>
+      </dependency>
 
-            <!-- other -->
-            <dependency>
-                <groupId>io.github.java-diff-utils</groupId>
-                <artifactId>java-diff-utils</artifactId>
-                <version>${java-diff-utils.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tika</groupId>
-                <artifactId>tika-core</artifactId>
-                <version>${tika.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>org.apache.poi</groupId>
-              <artifactId>poi-ooxml</artifactId>
-              <version>${poi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.imgscalr</groupId>
-                <artifactId>imgscalr-lib</artifactId>
-                <version>${imgscalr.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.univocity</groupId>
-                <artifactId>univocity-parsers</artifactId>
-                <version>${univocity-parsers.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>de.undercouch</groupId>
-                <artifactId>citeproc-java</artifactId>
-                <version>${citeproc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jbibtex</groupId>
-                <artifactId>jbibtex</artifactId>
-                <version>${jbibtex.version}</version>
-            </dependency>
-            <!-- required by jbibtex -->
-            <dependency>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-runtime</artifactId>
-                <version>${antlr.version}</version>
-            </dependency>
+      <!-- other -->
+      <dependency>
+        <groupId>io.github.java-diff-utils</groupId>
+        <artifactId>java-diff-utils</artifactId>
+        <version>${java-diff-utils.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tika</groupId>
+        <artifactId>tika-core</artifactId>
+        <version>${tika.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>${poi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.imgscalr</groupId>
+        <artifactId>imgscalr-lib</artifactId>
+        <version>${imgscalr.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.univocity</groupId>
+        <artifactId>univocity-parsers</artifactId>
+        <version>${univocity-parsers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>de.undercouch</groupId>
+        <artifactId>citeproc-java</artifactId>
+        <version>${citeproc.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jbibtex</groupId>
+        <artifactId>jbibtex</artifactId>
+        <version>${jbibtex.version}</version>
+      </dependency>
+      <!-- required by jbibtex -->
+      <dependency>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-runtime</artifactId>
+        <version>${antlr.version}</version>
+      </dependency>
 
-            <!--
-            citeproc depends on graalvm.js 19.2 that includes an old ASM 6.x version. Force a newer one
-            -->
-            <dependency>
-                <groupId>org.graalvm.js</groupId>
-                <artifactId>js</artifactId>
-                <version>${graalvm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.citationstyles</groupId>
-                <artifactId>styles</artifactId>
-                <version>${citeproc-styles.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.citationstyles</groupId>
-                <artifactId>locales</artifactId>
-                <version>${citeproc-styles.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.woodstox</groupId>
-                <artifactId>woodstox-core-asl</artifactId>
-                <version>${woodstox.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.woodstox</groupId>
-                <artifactId>stax2-api</artifactId>
-                <version>${stax2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>it.unimi.dsi</groupId>
-                <artifactId>fastutil</artifactId>
-                <version>${fastutil.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.javers</groupId>
-                <artifactId>javers-core</artifactId>
-                <version>${javers.version}</version>
-            </dependency>
+      <!--
+      citeproc depends on graalvm.js 19.2 that includes an old ASM 6.x version. Force a newer one
+      -->
+      <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js</artifactId>
+        <version>${graalvm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.citationstyles</groupId>
+        <artifactId>styles</artifactId>
+        <version>${citeproc-styles.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.citationstyles</groupId>
+        <artifactId>locales</artifactId>
+        <version>${citeproc-styles.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.woodstox</groupId>
+        <artifactId>woodstox-core-asl</artifactId>
+        <version>${woodstox.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.woodstox</groupId>
+        <artifactId>stax2-api</artifactId>
+        <version>${stax2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>it.unimi.dsi</groupId>
+        <artifactId>fastutil</artifactId>
+        <version>${fastutil.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.javers</groupId>
+        <artifactId>javers-core</artifactId>
+        <version>${javers.version}</version>
+      </dependency>
 
-            <!-- TEST SCOPE -->
+      <!-- TEST SCOPE -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${maven-clean-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>pl.project13.maven</groupId>
+          <artifactId>git-commit-id-plugin</artifactId>
+          <version>${maven-git-commit-id-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin.version}</version>
+          <configuration>
+            <release>${jdkLevel}</release>
+            <showDeprecation>true</showDeprecation>
+            <showWarnings>true</showWarnings>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${maven-dependency-plugin.version}</version>
+          <!-- following is needed until 3.1.2 is released -->
+          <dependencies>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
+              <groupId>org.apache.maven.shared</groupId>
+              <artifactId>maven-dependency-analyzer</artifactId>
+              <version>1.11.1</version>
             </dependency>
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>${assertj.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${mockito.version}</version>
-                <scope>test</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${maven-enforcer-plugin.version}</version>
+          <executions>
+            <execution>
+              <id>enforce-maven-3</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <requireMavenVersion>
+                    <version>[${minimumMavenVersion},)</version>
+                  </requireMavenVersion>
+                  <requireJavaVersion>
+                    <version>[${jdkLevel},)</version>
+                  </requireJavaVersion>
+                </rules>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+          <executions>
+            <execution>
+              <id>integration-test</id>
+              <goals>
+                <goal>integration-test</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>verify</id>
+              <goals>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <!-- Use a single forked process to execute all tests See https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html -->
+            <forkCount>1</forkCount>
+            <reuseForks>false</reuseForks>
+            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+            <!-- mem settings may not be necessary but the 3rd arg is. See here: -->
+            <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
+            <!-- And here: https://talk.openmrs.org/t/error-could-not-find-or-load-main-class-org-apache-maven-surefire-booter-forkedbooter/20509 -->
+            <argLine>
+              -Djdk.net.URLClassPath.disableClassPathURLCheck=true
+              --illegal-access=permit
+            </argLine>
+            <runOrder>random</runOrder>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>${maven-install-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>${exec-maven-plugin.version}</version>
+          <!-- TODO: https://medium.com/@Leejjon_net/migrate-a-jersey-based-micro-service-to-java-11-and-deploy-to-app-engine-7ba41a835992#ff49 -->
+          <configuration>
+            <mainClass>${mainClass}</mainClass>
+            <arguments>
+              <argument>server</argument>
+              <argument>${project.build.outputDirectory}/config.yaml</argument>
+            </arguments>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${maven-shade-plugin.version}</version>
+          <configuration>
+            <createDependencyReducedPom>false</createDependencyReducedPom>
+            <transformers>
+              <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+              <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                <mainClass>${mainClass}</mainClass>
+              </transformer>
+              <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                <resource>config.yaml</resource>
+              </transformer>
+            </transformers>
+            <!-- exclude signed Manifests -->
+            <filters>
+              <filter>
+                <artifact>*:*</artifact>
+                <excludes>
+                  <exclude>META-INF/*.SF</exclude>
+                  <exclude>META-INF/*.DSA</exclude>
+                  <exclude>META-INF/*.RSA</exclude>
+                </excludes>
+              </filter>
+            </filters>
+          </configuration>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven-jar-plugin.version}</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addDefaultSpecificationEntries>true
+                </addDefaultSpecificationEntries>
+                <addDefaultImplementationEntries>true
+                </addDefaultImplementationEntries>
+                <addClasspath>true</addClasspath>
+              </manifest>
+            </archive>
+          </configuration>
+          <executions>
+            <execution>
+              <id>attach-test-jar</id>
+              <goals>
+                <goal>test-jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${maven-resources-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <!-- Note: http://jira.codehaus.org/browse/MSOURCES-45, http://jira.codehaus.org/browse/MSOURCES-50 -->
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${maven-source-plugin.version}</version>
+          <executions>
+            <execution>
+              <id>attach-sources</id>
+              <phase>package</phase>
+              <goals>
+                <goal>jar-no-fork</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+          <configuration>
+            <useSystemClassLoader>false</useSystemClassLoader>
+            <!-- Use a new forked process for each test See https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html -->
+            <forkCount>1</forkCount>
+            <reuseForks>false</reuseForks>
+            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+            <!-- use default JVM settings <argLine>-Xmx256m</argLine> -->
+            <runOrder>random</runOrder>
+            <argLine>
+              --illegal-access=permit
+            </argLine>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>true</filtering>
-            </testResource>
-        </testResources>
+            <includes>
+              <!-- include regular unit tests -->
+              <include>**/*Test.java</include>
+              <!-- include test suites -->
+              <include>**/*TestSuite.java</include>
+            </includes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>${versions-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>${maven-release-plugin.version}</version>
+          <configuration>
+            <goals>deploy</goals>
+            <preparationGoals>install</preparationGoals>
+            <resume>false</resume>
+            <useReleaseProfile>true</useReleaseProfile>
+            <releaseProfiles>col-release</releaseProfiles>
+            <tagNameFormat>${project.artifactId}-@{project.version}</tagNameFormat>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
 
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-clean-plugin</artifactId>
-                    <version>${maven-clean-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>pl.project13.maven</groupId>
-                    <artifactId>git-commit-id-plugin</artifactId>
-                    <version>${maven-git-commit-id-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven-compiler-plugin.version}</version>
-                    <configuration>
-                        <release>${jdkLevel}</release>
-                        <showDeprecation>true</showDeprecation>
-                        <showWarnings>true</showWarnings>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>${maven-dependency-plugin.version}</version>
-                    <!-- following is needed until 3.1.2 is released -->
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.maven.shared</groupId>
-                            <artifactId>maven-dependency-analyzer</artifactId>
-                            <version>1.11.1</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>${maven-enforcer-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>enforce-maven-3</id>
-                            <goals>
-                                <goal>enforce</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <requireMavenVersion>
-                                        <version>[${minimumMavenVersion},)</version>
-                                    </requireMavenVersion>
-                                    <requireJavaVersion>
-                                        <version>[${jdkLevel},)</version>
-                                    </requireJavaVersion>
-                                </rules>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${maven-surefire-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>integration-test</id>
-                            <goals>
-                                <goal>integration-test</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>verify</id>
-                            <goals>
-                                <goal>verify</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <!-- Use a single forked process to execute all tests See https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html -->
-                        <forkCount>1</forkCount>
-                        <reuseForks>false</reuseForks>
-                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                        <!-- mem settings may not be necessary but the 3rd arg is. See here: -->
-                        <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
-                        <!-- And here: https://talk.openmrs.org/t/error-could-not-find-or-load-main-class-org-apache-maven-surefire-booter-forkedbooter/20509 -->
-                        <argLine>
-                            -Djdk.net.URLClassPath.disableClassPathURLCheck=true
-                            --illegal-access=permit
-                        </argLine>
-                        <runOrder>random</runOrder>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-install-plugin</artifactId>
-                    <version>${maven-install-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>${exec-maven-plugin.version}</version>
-                    <!-- TODO: https://medium.com/@Leejjon_net/migrate-a-jersey-based-micro-service-to-java-11-and-deploy-to-app-engine-7ba41a835992#ff49 -->
-                    <configuration>
-                        <mainClass>${mainClass}</mainClass>
-                        <arguments>
-                            <argument>server</argument>
-                            <argument>${project.build.outputDirectory}/config.yaml</argument>
-                        </arguments>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>${maven-shade-plugin.version}</version>
-                    <configuration>
-                        <createDependencyReducedPom>false</createDependencyReducedPom>
-                        <transformers>
-                            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                <mainClass>${mainClass}</mainClass>
-                            </transformer>
-                            <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
-                                <resource>config.yaml</resource>
-                            </transformer>
-                        </transformers>
-                        <!-- exclude signed Manifests -->
-                        <filters>
-                            <filter>
-                                <artifact>*:*</artifact>
-                                <excludes>
-                                    <exclude>META-INF/*.SF</exclude>
-                                    <exclude>META-INF/*.DSA</exclude>
-                                    <exclude>META-INF/*.RSA</exclude>
-                                </excludes>
-                            </filter>
-                        </filters>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>shade</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>${maven-jar-plugin.version}</version>
-                    <configuration>
-                        <archive>
-                            <manifest>
-                                <addDefaultSpecificationEntries>true
-                                </addDefaultSpecificationEntries>
-                                <addDefaultImplementationEntries>true
-                                </addDefaultImplementationEntries>
-                                <addClasspath>true</addClasspath>
-                            </manifest>
-                        </archive>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>attach-test-jar</id>
-                            <goals>
-                                <goal>test-jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>${maven-resources-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <!-- Note: http://jira.codehaus.org/browse/MSOURCES-45, http://jira.codehaus.org/browse/MSOURCES-50 -->
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>${maven-source-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>jar-no-fork</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven-surefire-plugin.version}</version>
-                    <configuration>
-                        <useSystemClassLoader>false</useSystemClassLoader>
-                        <!-- Use a new forked process for each test See https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html -->
-                        <forkCount>1</forkCount>
-                        <reuseForks>false</reuseForks>
-                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                        <!-- use default JVM settings <argLine>-Xmx256m</argLine> -->
-                        <runOrder>random</runOrder>
-                        <argLine>
-                            --illegal-access=permit
-                        </argLine>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>${maven-jar-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>${maven-source-plugin.version}</version>
+      </plugin>
+      <!-- run integration tests (*IT) during verify -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+      </plugin>
+    </plugins>
+  </build>
 
-                        <includes>
-                            <!-- include regular unit tests -->
-                            <include>**/*Test.java</include>
-                            <!-- include test suites -->
-                            <include>**/*TestSuite.java</include>
-                        </includes>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>versions-maven-plugin</artifactId>
-                    <version>${versions-maven-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>${maven-release-plugin.version}</version>
-                    <configuration>
-                        <goals>deploy</goals>
-                        <preparationGoals>install</preparationGoals>
-                        <resume>false</resume>
-                        <useReleaseProfile>true</useReleaseProfile>
-                        <releaseProfiles>col-release</releaseProfiles>
-                        <tagNameFormat>${project.artifactId}-@{project.version}</tagNameFormat>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
+  <profiles>
+    <!-- automatically used by the release plugin -->
+    <profile>
+      <id>col-release</id>
+      <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>${maven-jar-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${maven-source-plugin.version}</version>
-            </plugin>
-            <!-- run integration tests (*IT) during verify -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-            </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>[${minimumMavenVersion},)</version>
+                </requireMavenVersion>
+                <requireJavaVersion>
+                  <version>[${jdkLevel},)</version>
+                </requireJavaVersion>
+                <requirePluginVersions>
+                  <message>Best Practice is to always define plugin versions!
+                  </message>
+                </requirePluginVersions>
+                <requireReleaseDeps>
+                  <message>No Snapshot dependencies allowed!</message>
+                </requireReleaseDeps>
+              </rules>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                  <goal>test-jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
-    </build>
-
-    <profiles>
-        <!-- automatically used by the release plugin -->
-        <profile>
-            <id>col-release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>enforce</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <rules>
-                                <requireMavenVersion>
-                                    <version>[${minimumMavenVersion},)</version>
-                                </requireMavenVersion>
-                                <requireJavaVersion>
-                                    <version>[${jdkLevel},)</version>
-                                </requireJavaVersion>
-                                <requirePluginVersions>
-                                    <message>Best Practice is to always define plugin versions!
-                                    </message>
-                                </requirePluginVersions>
-                                <requireReleaseDeps>
-                                    <message>No Snapshot dependencies allowed!</message>
-                                </requireReleaseDeps>
-                            </rules>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                    <goal>test-jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

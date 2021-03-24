@@ -13,6 +13,8 @@ import life.catalogue.db.PgDbConfig;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
 import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
+import life.catalogue.dw.metrics.GangliaBundleConfiguration;
+import life.catalogue.dw.metrics.GangliaConfiguration;
 import life.catalogue.es.EsConfig;
 import life.catalogue.img.ImgConfig;
 import org.slf4j.Logger;
@@ -26,7 +28,7 @@ import java.net.URI;
 import java.util.Properties;
 
 
-public class WsServerConfig extends Configuration implements CorsBundleConfiguration {
+public class WsServerConfig extends Configuration implements CorsBundleConfiguration, GangliaBundleConfiguration {
   private static final Logger LOG = LoggerFactory.getLogger(WsServerConfig.class);
   
   public Properties version;
@@ -72,7 +74,11 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @Valid
   @NotNull
   public CorsConfiguration cors = new CorsConfiguration();
-  
+
+  @Valid
+  @NotNull
+  public GangliaConfiguration ganglia = new GangliaConfiguration();
+
   @Valid
   @NotNull
   // https://www.dropwizard.io/en/latest/manual/configuration.html#man-configuration-clients-http
@@ -135,7 +141,13 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public CorsConfiguration getCorsConfiguration() {
     return cors;
   }
-  
+
+  @Override
+  @JsonIgnore
+  public GangliaConfiguration getGangliaConfiguration() {
+    return ganglia;
+  }
+
 
   public WsServerConfig() {
     try {

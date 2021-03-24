@@ -33,6 +33,7 @@ import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.es.ManagedEsClient;
 import life.catalogue.dw.health.*;
 import life.catalogue.dw.jersey.ColJerseyBundle;
+import life.catalogue.dw.metrics.GangliaBundle;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
@@ -98,6 +99,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addBundle(coljersey);
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new CorsBundle());
+    bootstrap.addBundle(new GangliaBundle());
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
     bootstrap.addBundle(auth);
     // register CoLTerms
