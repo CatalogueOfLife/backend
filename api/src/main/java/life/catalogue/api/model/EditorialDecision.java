@@ -33,11 +33,6 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
   public static enum Mode {
 
     /**
-     * Ignores the subject, but still includes all it's descendants.
-     */
-    IGNORE,
-
-    /**
      * Blocks the subject and all its descendants.
      */
     BLOCK,
@@ -59,7 +54,12 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
      *
      * If configured, Name updates will be ignored!!!
      */
-    UPDATE_RECURSIVE
+    UPDATE_RECURSIVE,
+
+    /**
+     * Ignores the subject, but still includes all it's descendants.
+     */
+    IGNORE
   }
 
   public EditorialDecision() {
