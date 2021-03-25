@@ -778,7 +778,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       sb.append(getId());
     }
     
-    if (this.type != null) {
+    if (type != null) {
       if (sb.length() > 0) {
         sb.append(" ");
       }
@@ -786,13 +786,18 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       if (isParsed()) {
         sb.append("Parsed ");
       }
-      sb.append(this.type);
+      sb.append(type);
       sb.append("]");
     }
     if (sb.length() > 0) {
       sb.append(" ");
     }
     sb.append(getLabel(false));
+    if (rank != null) {
+      sb.append(" [");
+      sb.append(rank);
+      sb.append("]");
+    }
     return sb.toString();
   }
 

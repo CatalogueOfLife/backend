@@ -268,6 +268,15 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     return getLabel(false);
   }
 
+  @JsonIgnore
+  public String getLabelWithRank() {
+    var sb = getLabelBuilder(false);
+    sb.append(" [");
+    sb.append(rank);
+    sb.append("]");
+    return sb.toString();
+  }
+
   public String getLabel(boolean html) {
     return getLabelBuilder(html).toString();
   }

@@ -1,9 +1,6 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DSIDValue;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.NameMatch;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
@@ -16,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class DatasetMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetMatcher.class);
@@ -23,6 +21,7 @@ public class DatasetMatcher {
   private final NameIndex ni;
   private int total = 0;
   private int updated = 0;
+  private int nomatch = 0;
   private int datasets = 0;
 
   public DatasetMatcher(SqlSessionFactory factory, NameIndex ni) {
@@ -38,6 +37,7 @@ public class DatasetMatcher {
   public void match(int datasetKey, boolean allowInserts) {
     int totalBefore = total;
     int updatedBefore = updated;
+    int nomatchBefore = nomatch;
 
     try (SqlSession session = factory.openSession(false);
          BulkMatchHandler h = new BulkMatchHandler(datasetKey, allowInserts)
@@ -48,7 +48,8 @@ public class DatasetMatcher {
       boolean update = nmm.exists(datasetKey);
       LOG.info("{} name matches for {}", update ? "Update" : "Create", datasetKey);
       nm.processDatasetWithNidx(datasetKey).forEach(h);
-      LOG.info("Updated {} out of {} name matches for dataset {}", updated-updatedBefore, total-totalBefore, datasetKey);
+      LOG.info("{} {} name matches for {} names with {} no matches for dataset {}", update ? "Updated" : "Created",
+        updated-updatedBefore, total-totalBefore, nomatch-nomatchBefore, datasetKey);
 
       if (update) {
         int del = nmm.deleteOrphaned(datasetKey, null);
@@ -75,35 +76,34 @@ public class DatasetMatcher {
 
   class BulkMatchHandler implements Consumer<NameMapper.NameWithNidx>, AutoCloseable {
     private final int datasetKey;
-    private final int updatedStart;
-    private final int totalStart;
     private final boolean allowInserts;
     private final SqlSession batchSession;
     private final SqlSession session;
     private final NameMatchMapper nm;
-    private final VerbatimRecordMapper vm;
-    private final VerbatimRecordMapper vmGet;
-    private final DSIDValue<Integer> key;
-  
+    private int _total = 0;
+    private int _updated = 0;
+    private int _nomatch = 0;
+
     BulkMatchHandler(int datasetKey, boolean allowInserts) {
       this.datasetKey = datasetKey;
       this.allowInserts = allowInserts;
-      this.updatedStart = updated;
-      this.totalStart = total;
       this.batchSession = factory.openSession(ExecutorType.BATCH, false);
       this.session = factory.openSession(false);
       this.nm = batchSession.getMapper(NameMatchMapper.class);
-      this.vm = batchSession.getMapper(VerbatimRecordMapper.class);
-      this.vmGet = session.getMapper(VerbatimRecordMapper.class);
-      key = DSID.of(datasetKey, -1);
     }
   
     @Override
     public void accept(NameMapper.NameWithNidx n) {
-      total++;
+      _total++;
       Integer oldId = n.namesIndexId;
       NameMatch m = ni.match(n, allowInserts, false);
-
+      if (!m.hasMatch()) {
+        _nomatch++;
+        LOG.debug("No match for {} from dataset {} with {} alternatives: {}", n.toStringComplete(), datasetKey,
+          m.getAlternatives() == null ? 0 : m.getAlternatives().size(),
+          m.getAlternatives() == null ? "" : m.getAlternatives().stream().map(IndexName::getLabelWithRank).collect(Collectors.joining("; "))
+        );
+      }
       Integer newKey = m.hasMatch() ? m.getName().getKey() : null;
       if (!Objects.equals(oldId, newKey)) {
         if (oldId == null) {
@@ -113,9 +113,9 @@ public class DatasetMatcher {
         } else {
           nm.delete(n);
         }
-        if ( (updated++ - updatedStart) % 10000 == 0) {
+        if (_updated++ % 10000 == 0) {
           batchSession.commit();
-          LOG.debug("Updated {} out of {} name matches for dataset {}", updated - updatedStart, total-totalStart, datasetKey);
+          LOG.debug("Updated {} name matches for {} names with {} no matches for dataset {}", _updated, _total, _nomatch, datasetKey);
         }
       }
     }
@@ -125,6 +125,9 @@ public class DatasetMatcher {
       batchSession.commit();
       batchSession.close();
       session.close();
+      total += _total;
+      updated += _updated;
+      nomatch += _nomatch;
     }
   }
 }
