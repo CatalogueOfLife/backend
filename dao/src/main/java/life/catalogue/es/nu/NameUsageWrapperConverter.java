@@ -146,7 +146,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     name.setDatasetKey(null);
     name.setId(null);
     name.setScientificName(null);
-    name.setRank(null);
     name.setNomStatus(null);
     name.setPublishedInId(null);
     name.setType(null);
@@ -192,7 +191,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     name.setDatasetKey(doc.getDatasetKey());
     name.setId(doc.getNameId());
     name.setScientificName(doc.getScientificName());
-    name.setRank(doc.getRank());
     name.setNomStatus(doc.getNomStatus());
     name.setPublishedInId(doc.getPublishedInId());
     name.setType(doc.getType());

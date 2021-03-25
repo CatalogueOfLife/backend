@@ -11,7 +11,7 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 ```
-ALTER TYPE EDITORIALDECISION_MODE ADD VALUE 'IGNORE' BEFORE 'BLOCK';
+ALTER TYPE EDITORIALDECISION_MODE ADD VALUE 'IGNORE' AFTER 'UPDATE_RECURSIVE';
 ```
 
 ### 2021-03-16 like escape function
