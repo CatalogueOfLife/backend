@@ -14,13 +14,43 @@ import org.junit.Test;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
 
 public class MetadataParserTest {
-  
+
+  @Test
+  public void milliBase() throws Exception {
+    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/worms-MilliBase.yaml"));
+    DatasetWithSettings d = m.get();
+    assertEquals("MilliBase", d.getTitle());
+    assertEquals("WoRMS_Myriapoda", d.getAlias());
+    assertEquals("MilliBase is a global taxonomic database, managed by a group of diplopod experts that aims to capture all described millipede, pauropod and symphylan species with the associated literature, the authorities and original descriptions of species, genera and all units of higher classification", d.getDescription());
+    assertEquals(List.of(
+        new Organisation("Field Museum of Natural History"),
+        new Organisation("Bavarian State Collection of Zoology (ZSM)")
+      ), d.getOrganisations());
+    assertEquals(new Person(null, null, "info@marinespecies.org", null), d.getContact());
+    assertEquals(List.of(
+        new Person("Sierwald, P."),
+        new Person("Spelda, J.")
+      ), d.getAuthors());
+    assertEquals(Collections.emptyList(), d.getEditors());
+    assertEquals(License.CC_BY_NC, d.getLicense());
+    assertEquals("ver. (02/2021)", d.getVersion());
+    assertEquals(LocalDate.of(2021, 2, 3), d.getReleased());
+    assertEquals(URI.create("http://www.millibase.org"), d.getWebsite());
+    assertEquals(URI.create("http://www.millibase.org/images/logo_sp2000.jpg"), d.getLogo());
+    assertEquals("Sierwald, P.; Spelda, J. (2021). MilliBase. Accessed at http://www.millibase.org on 2021-02-03. doi:10.14284/370", d.getCitation());
+    assertEquals(Gazetteer.MRGID, d.getGazetteer());
+    assertNull(d.getCompleteness());
+    assertNull(d.getConfidence());
+    assertNull(d.getCode());
+  }
+
   @Test
   public void cycad() throws Exception {
     Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/cycads.yaml"));

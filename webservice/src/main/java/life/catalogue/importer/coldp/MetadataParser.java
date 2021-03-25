@@ -1,25 +1,13 @@
 package life.catalogue.importer.coldp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.ImmutableList;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import life.catalogue.api.jackson.FastutilsSerde;
-import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
-import life.catalogue.api.vocab.Country;
-import life.catalogue.api.vocab.License;
 import life.catalogue.importer.dwca.EmlParser;
-import life.catalogue.jackson.EnumParserSerde;
 import life.catalogue.jackson.YamlMapper;
-import life.catalogue.parser.CountryParser;
-import life.catalogue.parser.LicenseParser;
-import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,23 +54,43 @@ public class MetadataParser {
       super.setEditors(parsePersons(editors));
     }
 
+    @JsonProperty("authorsAndEditors")
+    public void setAuthorsAndEditors(Object authorsAndEditors) {
+      setAuthorsAlt(authorsAndEditors);
+    }
+
+    @JsonProperty("authorsUnparsed")
+    public void setAuthorsUnparsed(Object authors) {
+      setAuthorsAlt(authors);
+    }
+
     @JsonProperty("organisations")
-    public void setOrgsAlt(List<?> orgs) {
-      List<Organisation> organisations = new ArrayList<>();
-      if (orgs != null) {
-        for (Object org : orgs) {
-          if (org != null) {
-            if (org instanceof Organisation) {
-              organisations.add((Organisation)org);
-            } else if (org instanceof String) {
-              organisations.add(new Organisation((String)org));
-            } else if (org instanceof Map) {
-              organisations.add(YamlMapper.MAPPER.convertValue(org, Organisation.class));
+    public void setOrgsAlt(Object obj) {
+      super.setOrganisations((parseOrganisations(obj)));
+    }
+
+    List<Organisation> parseOrganisations(Object obj) {
+      if (obj != null) {
+        if (obj instanceof List) {
+          List<Organisation> orgs = new ArrayList<>();
+          for (Object ob : (List) obj) {
+            Organisation o = parseOrg(ob);
+            if (o != null) {
+              orgs.add(o);
             }
           }
+          return orgs;
+
+        } else if (obj instanceof String){
+          return split((String)obj).stream()
+            .map(this::parseOrg)
+            .collect(Collectors.toList());
+        } else {
+          Organisation o = parseOrg(obj);
+          if (o != null) return List.of(o);
         }
       }
-      setOrganisations(organisations);
+      return null;
     }
 
     List<Person> parsePersons(Object obj) {
@@ -97,12 +105,24 @@ public class MetadataParser {
           }
           return persons;
 
+        } else if (obj instanceof String){
+          return split((String)obj).stream()
+            .map(this::parsePerson)
+            .collect(Collectors.toList());
         } else {
           Person p = parsePerson(obj);
           if (p != null) return List.of(p);
         }
       }
       return null;
+    }
+
+    List<?> split(String x) {
+      if (x == null) return Collections.emptyList();
+      if (x.contains(";")) {
+        return Arrays.stream(x.split(";")).map(String::trim).collect(Collectors.toList());
+      }
+      return List.of(x.trim());
     }
 
     Person parsePerson(Object obj) {
@@ -121,14 +141,19 @@ public class MetadataParser {
       return null;
     }
 
-    @JsonProperty("authorsAndEditors")
-    public void setAuthorsAndEditors(List<Person> authorsAndEditors) {
-      if (authorsAndEditors == null || authorsAndEditors.isEmpty()) {
-        setAuthors(Collections.emptyList());
-      } else {
-        setAuthors(authorsAndEditors);
+    Organisation parseOrg(Object org) {
+      if (org != null) {
+        if (org instanceof Organisation) {
+          return (Organisation)org;
+        } else if (org instanceof String) {
+          return new Organisation((String)org);
+        } else if (org instanceof Map) {
+          return YamlMapper.MAPPER.convertValue(org, Organisation.class);
+        }
       }
+      return null;
     }
+
 
     @JsonProperty("taxonomicScope")
     public void setTaxonomicScope(String scope) {
