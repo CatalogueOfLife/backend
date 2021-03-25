@@ -86,6 +86,8 @@ public class NameIndexImpl implements NameIndex {
           candidates.remove(m.getName());
         }
         m.setAlternatives(candidates);
+      } else {
+        m.setAlternatives(null);
       }
       
     } else {
