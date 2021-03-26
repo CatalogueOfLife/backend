@@ -13,6 +13,15 @@
     )
   </select>
 
+  <select id="get" resultType="Integer">
+    SELECT index_id
+    FROM name_match
+    WHERE dataset_key = #{datasetKey}
+    <if test="sectorKey != null">
+      AND sector_key = #{sectorKey}
+    </if>
+  </select>
+
   <select id="processIndexIds" resultType="Integer">
     SELECT DISTINCT index_id
     FROM name_match

@@ -26,6 +26,7 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -110,6 +111,11 @@ public class NameIndexImpl implements NameIndex {
   @Override
   public IndexName get(Integer key) {
     return store.get(key);
+  }
+
+  @Override
+  public Collection<IndexName> byCanonical(Integer key) {
+    return store.byCanonical(key);
   }
 
   static Rank normRank(Rank r) {

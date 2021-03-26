@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * NameIndexStore implementation that is backed by a mapdb using kryo serialization.
@@ -33,6 +34,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
   private DB db;
   private Map<String, int[]> names;
   private Map<Integer, IndexName> keys;
+  private Map<Integer, int[]> canonical;
 
   /**
    * We use a separate kryo pool for the names index to avoid too often changes to the serialisation format
@@ -101,6 +103,12 @@ public class NameIndexMapDBStore implements NameIndexStore {
       //.valueInline()
       //.valuesOutsideNodesEnable()
       .createOrOpen();
+    canonical = db.hashMap("canonical")
+      .keySerializer(Serializer.INTEGER)
+      .valueSerializer(Serializer.INT_ARRAY)
+      //.valueInline()
+      //.valuesOutsideNodesEnable()
+      .createOrOpen();
   }
 
 
@@ -116,6 +124,17 @@ public class NameIndexMapDBStore implements NameIndexStore {
   public IndexName get(Integer key) {
     avail();
     return keys.get(key);
+  }
+
+  @Override
+  public Collection<IndexName> byCanonical(Integer key) {
+    if (canonical.containsKey(key)) {
+      return Arrays.stream(canonical.get(key))
+        .boxed()
+        .map(this::get)
+        .collect(Collectors.toList());
+    }
+    return null;
   }
 
   @Override
@@ -161,6 +180,8 @@ public class NameIndexMapDBStore implements NameIndexStore {
     check(name);
 
     keys.put(name.getKey(), name);
+
+    // update names
     int[] group;
     if (names.containsKey(key)) {
       group = names.get(key);
@@ -174,6 +195,17 @@ public class NameIndexMapDBStore implements NameIndexStore {
       group = new int[]{name.getKey()};
     }
     names.put(key, group);
+
+    // update canonical
+    if (name.getCanonicalId() != null && !name.getCanonicalId().equals(name.getKey())) {
+      if (canonical.containsKey(name.getCanonicalId())) {
+        group = canonical.get(name.getCanonicalId());
+        group = ArrayUtils.add(group, name.getKey());
+      } else {
+        group = new int[]{name.getKey()};
+      }
+      canonical.put(name.getCanonicalId(), group);
+    }
   }
 
   void check(IndexName n){

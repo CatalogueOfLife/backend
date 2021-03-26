@@ -19,6 +19,7 @@ import life.catalogue.common.text.StringUtils;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.IdMapMapper;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.release.ReleasedIds.ReleasedId;
 import org.apache.ibatis.session.SqlSession;
@@ -75,6 +76,7 @@ public class IdProvider {
   private final SortedMap<String, List<InstableName>> unstable = new TreeMap<>();
   protected IdMapMapper idm;
   protected NameUsageMapper num;
+  protected NameMatchMapper nmm;
 
   public IdProvider(int projectKey, int attempt, ReleaseConfig cfg, SqlSessionFactory factory) {
     this.projectKey = projectKey;
@@ -90,7 +92,7 @@ public class IdProvider {
     LOG.info("Reused {} stable IDs for project release {}-{}, resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, resurrected.size(), created.size(), deleted.size());
     return getReport();
   }
-  public static class InstableName {
+  public static class InstableName implements DSID<String> {
     public final boolean del;
     public final int datasetKey;
     public final String id;
@@ -111,6 +113,26 @@ public class IdProvider {
 
     public boolean isDel() {
       return del;
+    }
+
+    @Override
+    public String getId() {
+      return id;
+    }
+
+    @Override
+    public void setId(String id) {
+      throw new UnsupportedOperationException(getClass().getSimpleName() + " is final");
+    }
+
+    @Override
+    public Integer getDatasetKey() {
+      return datasetKey;
+    }
+
+    @Override
+    public void setDatasetKey(Integer key) {
+      throw new UnsupportedOperationException(getClass().getSimpleName() + " is final");
     }
   }
 
@@ -141,7 +163,10 @@ public class IdProvider {
       reportFile(dir,"created.tsv", created, false, false);
       // clear instable names, removing the ones with just deletions
       unstable.entrySet().removeIf(entry -> entry.getValue().parallelStream().allMatch(n -> n.del));
-      try(Writer writer = UTF8IoUtils.writerFromFile(new File(dir, "unstable.txt"))) {
+      try (Writer writer = UTF8IoUtils.writerFromFile(new File(dir, "unstable.txt"));
+          SqlSession session = factory.openSession(true)
+      ) {
+        nmm = session.getMapper(NameMatchMapper.class);
         for (var entry : unstable.entrySet()) {
           writer.write(entry.getKey() + "\n");
           entry.getValue().sort(Comparator.comparing(InstableName::isDel));
@@ -167,6 +192,19 @@ public class IdProvider {
       writer.write(n.datasetKey);
       writer.write(':');
       writer.write(n.id);
+
+      NameMatch match = nmm.get(n);
+      writer.write(" nidx=");
+      if (match != null) {
+        writer.write(match.getName().getKey());
+        writer.write('/');
+        writer.write(match.getName().getCanonicalId());
+        writer.write(' ');
+        writer.write(String.valueOf(match.getType()));
+      } else {
+        writer.write("null");
+      }
+
       if (n.parent != null && n.status.isSynonym()) {
         writer.write(" parent=");
         writer.write(n.parent);

@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
@@ -32,7 +33,13 @@ public interface NameMatchMapper extends CopyDataset, SectorProcessable<Integer>
    * Lists all distinct index ids from the name match table.
    */
   Cursor<Integer> processIndexIds(@Param("datasetKey") int datasetKey,
-                         @Nullable @Param("sectorKey") Integer sectorKey);
+                                  @Param("sectorKey") @Nullable Integer sectorKey);
+
+  /**
+   * Retrieve a single name match for a given name key.
+   * Alternatives will always be null as they are not stored.
+   */
+  NameMatch get(@Param("key") DSID<String> key);
 
   /**
    * @param key the name key

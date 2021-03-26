@@ -28,6 +28,11 @@ public interface NameIndex extends Managed, AutoCloseable {
    */
   IndexName get(Integer key);
 
+  /**
+   * List all index names for a given canonical name key
+   */
+  Collection<IndexName> byCanonical(Integer key);
+
   Iterable<IndexName> all();
 
   /**

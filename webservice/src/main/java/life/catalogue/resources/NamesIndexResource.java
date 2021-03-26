@@ -1,9 +1,6 @@
 package life.catalogue.resources;
 
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameMatch;
-import life.catalogue.api.model.ParsedNameUsage;
+import life.catalogue.api.model.*;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
@@ -11,11 +8,9 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.Collection;
 import java.util.Optional;
 
 @Path("/nidx")
@@ -29,7 +24,19 @@ public class NamesIndexResource {
   public NamesIndexResource(NameIndex ni) {
     this.ni = ni;
   }
-  
+
+  @GET
+  @Path("{key}")
+  public IndexName get(@PathParam("key") int key) {
+    return ni.get(key);
+  }
+
+  @GET
+  @Path("{key}/group")
+  public Collection<IndexName> byCanonical(@PathParam("key") int key) {
+    return ni.byCanonical(key);
+  }
+
   @GET
   @Path("/match")
   public NameMatch match(@QueryParam("q") String q,

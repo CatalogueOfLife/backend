@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class NameIndexMapDBStoreTest {
   AtomicInteger keyGen = new AtomicInteger();
@@ -66,9 +67,27 @@ public class NameIndexMapDBStoreTest {
     }
   }
 
+  @Test
+  public void byCanonical() throws Exception {
+    addNameList("a", 4);
+
+    addName("b", 10, 10); // the canonical itself
+    addName("b", 12, 10);
+    addName("b", 13, 10);
+    assertEquals(7, db.count());
+
+    assertNull(db.byCanonical(1));
+    assertEquals(2, db.byCanonical(10).size());
+  }
+
   private void addName(String key, int id) {
+    addName(key, id, null);
+  }
+
+  private void addName(String key, int id, Integer canonicalID) {
     IndexName n = new IndexName(TestEntityGenerator.newName());
     n.setKey(id);
+    n.setCanonicalId(canonicalID);
     db.add(key, n);
   }
 

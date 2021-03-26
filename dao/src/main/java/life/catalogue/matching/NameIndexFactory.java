@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -43,6 +44,11 @@ public class NameIndexFactory {
       @Override
       public IndexName get(Integer key) {
         return null;
+      }
+
+      @Override
+      public Collection<IndexName> byCanonical(Integer key) {
+        return Collections.emptyList();
       }
 
       @Override
@@ -92,6 +98,11 @@ public class NameIndexFactory {
           m.setType(MatchType.VARIANT);
         }
         return m;
+      }
+
+      @Override
+      public Collection<IndexName> byCanonical(Integer key) {
+        return Objects.equals(n.getCanonicalId(), key) ? List.of(n) : Collections.emptyList();
       }
 
       @Override
