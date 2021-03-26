@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * A junit test rule that creates a {@link HikariDataSource} and SqlSessionFactory for the colplus postgres db and stops it the end.
+ * A junit test rule that creates a {@link HikariDataSource} and SqlSessionFactory for the clb postgres db and stops it the end.
  * By default the rule inits a new db and creates a draft col partition needed to host the names index,
  * but it can also be configured to run without wiping.
  *

@@ -41,6 +41,7 @@ public class NamesIndexCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";
   private static final String BUILD_SCHEMA = "build";
+  int threads = 4;
 
   public NamesIndexCmd() {
     super("nidx", "Rebuilt names index and rematch all datasets");
@@ -55,7 +56,12 @@ public class NamesIndexCmd extends AbstractPromptCmd {
       .dest(ARG_THREADS)
       .type(Integer.class)
       .required(false)
-      .help("number of threads to use for rematching. Defaults to 1");
+      .help("number of threads to use for rematching. Defaults to " + threads);
+  }
+
+  @Override
+  public String describeCmd(Namespace namespace, WsServerConfig cfg) {
+    return String.format("Rebuilt names index and rematch all datasets with data in pg schema %s in db %s.\n", BUILD_SCHEMA, cfg.db.database);
   }
 
   private static File indexFileToday(WsServerConfig cfg){
@@ -67,45 +73,40 @@ public class NamesIndexCmd extends AbstractPromptCmd {
         throw new IllegalStateException("NamesIndex file already exists: " + f.getAbsolutePath());
       }
       f.getParentFile().mkdirs();
+      System.out.println("Creating new names index at " + f.getAbsolutePath());
+    } else {
+      System.out.println("Creating new in memory names index");
     }
     return f;
   }
 
-  public void prePromt(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg){
-    File idxFile = indexFileToday(cfg);
-    System.out.println("Creating new names index at " + idxFile.getAbsolutePath());
-    LOG.info("Rebuilt names index and rematch all datasets with data in pg schema {}", BUILD_SCHEMA);
-  }
-
   @Override
   public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
-    int threads = 4;
     if (namespace.getInt(ARG_THREADS) != null) {
       threads = namespace.getInt(ARG_THREADS);
       Preconditions.checkArgument(threads > 0, "Needs at least one matcher thread");
     }
+    LOG.warn("Rebuilt names index and rematch all datasets with data in pg schema {} with {} threads", BUILD_SCHEMA, threads);
 
     try (HikariDataSource dataSource = cfg.db.pool()) {
-      SqlSessionFactory factory = MybatisFactory.configure(dataSource, "namesIndexCmd");
-      File idxFile = indexFileToday(cfg);
-      NameIndex ni = NameIndexFactory.persistentOrMemory(idxFile, factory, AuthorshipNormalizer.INSTANCE);
-      LOG.warn("Rebuilt names index and rematch all datasets with data in pg schema {}", BUILD_SCHEMA);
+      // use a factory that changes the default pg search_path to "build" so we don't interfer with the index current live
+      SqlSessionFactory factory = new SqlSessionFactoryWithPath(MybatisFactory.configure(dataSource, "namesIndexCmd"), BUILD_SCHEMA);
 
       LOG.info("Prepare pg schema {}", BUILD_SCHEMA);
       try (Connection c = dataSource.getConnection();
            Statement st = c.createStatement()
       ) {
         // setup build schema
-        st.execute(String.format("DROP SCHEMA IF EXIST %s CASCADE", BUILD_SCHEMA));
+        st.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", BUILD_SCHEMA));
         st.execute(String.format("CREATE SCHEMA %s", BUILD_SCHEMA));
-        st.execute(String.format("CREATE TABLE %s.names_index (LIKE public.names_index INCLUDING DEFAULTS)", BUILD_SCHEMA));
         st.execute(String.format("CREATE TABLE %s.name_match (LIKE public.name_match INCLUDING DEFAULTS)", BUILD_SCHEMA));
-        c.commit();
+        st.execute(String.format("CREATE TABLE %s.names_index (LIKE public.names_index INCLUDING DEFAULTS)", BUILD_SCHEMA));
+        st.execute(String.format("CREATE SEQUENCE %s.names_index_id_seq START 1", BUILD_SCHEMA));
+        st.execute(String.format("ALTER TABLE %s.names_index ALTER COLUMN id SET DEFAULT nextval('%s.names_index_id_seq')", BUILD_SCHEMA, BUILD_SCHEMA));
       }
 
-      SqlSessionFactory buildFactory = new SqlSessionFactoryWithPath(factory, BUILD_SCHEMA);
-      RematchJob job = RematchJob.all(Users.MATCHER, buildFactory, ni);
-      job.execute();
+      NameIndex ni = NameIndexFactory.persistentOrMemory(indexFileToday(cfg), factory, AuthorshipNormalizer.INSTANCE);
+      ni.start();
 
       IntSet keys;
       try (SqlSession session = factory.openSession()) {
@@ -117,7 +118,7 @@ public class NamesIndexCmd extends AbstractPromptCmd {
       final AtomicInteger nomatch = new AtomicInteger(0);
       ExecutorService exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("dataset-matcher"));
       for (int key : keys) {
-        CompletableFuture.supplyAsync(() -> rematchDataset(key, buildFactory, ni), exec)
+        CompletableFuture.supplyAsync(() -> rematchDataset(key, factory, ni), exec)
           .exceptionally(ex -> {
             counter.incrementAndGet();
             LOG.error("Error matching dataset {}", key, ex.getCause());
@@ -131,12 +132,12 @@ public class NamesIndexCmd extends AbstractPromptCmd {
       }
       ExecutorUtils.shutdown(exec);
 
-      LOG.info("Successfully rebuild names index with final size {} at {}, rematching all {} datasets",
-        ni.size(), idxFile, counter);
+      LOG.info("Successfully rebuild names index with final size {}, rematching all {} datasets",
+        ni.size(), counter);
     }
   }
 
-  DatasetMatcher rematchDataset(int key, SqlSessionFactory factory, NameIndex ni){
+  private DatasetMatcher rematchDataset(int key, SqlSessionFactory factory, NameIndex ni){
     LoggingUtils.setDatasetMDC(key, getClass());
     DatasetMatcher matcher = new DatasetMatcher(factory, ni);
     matcher.match(key, true);

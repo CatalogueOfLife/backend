@@ -3,7 +3,13 @@ package life.catalogue.db;
 import org.apache.ibatis.session.*;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
+/**
+ * A sql session factory that set the postgres search_path before any session is returned.
+ * Beware that this search_path remains on the db connection if a db pool is used
+ * and the connection is reused!
+ */
 public class SqlSessionFactoryWithPath implements SqlSessionFactory {
   private final SqlSessionFactory factory;
   private final String schema;
@@ -15,7 +21,12 @@ public class SqlSessionFactoryWithPath implements SqlSessionFactory {
 
   private SqlSession setPath(SqlSession session) {
     if (schema != null) {
-      session.update(String.format("SET search_path TO %s, public", schema));
+      try {
+        var st = session.getConnection().createStatement();
+        st.execute(String.format("SET search_path TO %s, public", schema));
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
     }
     return session;
   }
