@@ -14,6 +14,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.db.MybatisFactory;
+import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.matching.DatasetMatcher;
@@ -22,6 +23,8 @@ import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.RematchJob;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -41,6 +44,9 @@ public class NamesIndexCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";
   private static final String BUILD_SCHEMA = "build";
+  private static final String SCHEMA_SETUP = "nidx/rebuild-schema.sql";
+  private static final String SCHEMA_POST = "nidx/rebuild-post.sql";
+
   int threads = 4;
 
   public NamesIndexCmd() {
@@ -93,16 +99,10 @@ public class NamesIndexCmd extends AbstractPromptCmd {
       SqlSessionFactory factory = new SqlSessionFactoryWithPath(MybatisFactory.configure(dataSource, "namesIndexCmd"), BUILD_SCHEMA);
 
       LOG.info("Prepare pg schema {}", BUILD_SCHEMA);
-      try (Connection c = dataSource.getConnection();
-           Statement st = c.createStatement()
-      ) {
-        // setup build schema
-        st.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", BUILD_SCHEMA));
-        st.execute(String.format("CREATE SCHEMA %s", BUILD_SCHEMA));
-        st.execute(String.format("CREATE TABLE %s.name_match (LIKE public.name_match INCLUDING DEFAULTS)", BUILD_SCHEMA));
-        st.execute(String.format("CREATE TABLE %s.names_index (LIKE public.names_index INCLUDING DEFAULTS)", BUILD_SCHEMA));
-        st.execute(String.format("CREATE SEQUENCE %s.names_index_id_seq START 1", BUILD_SCHEMA));
-        st.execute(String.format("ALTER TABLE %s.names_index ALTER COLUMN id SET DEFAULT nextval('%s.names_index_id_seq')", BUILD_SCHEMA, BUILD_SCHEMA));
+
+      try (Connection c = dataSource.getConnection()) {
+        ScriptRunner runner = PgConfig.scriptRunner(c);
+        runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
       }
 
       NameIndex ni = NameIndexFactory.persistentOrMemory(indexFileToday(cfg), factory, AuthorshipNormalizer.INSTANCE);
@@ -134,6 +134,12 @@ public class NamesIndexCmd extends AbstractPromptCmd {
 
       LOG.info("Successfully rebuild names index with final size {}, rematching all {} datasets",
         ni.size(), counter);
+
+      LOG.info("Building postgres indices for new names index");
+      try (Connection c = dataSource.getConnection()) {
+        ScriptRunner runner = PgConfig.scriptRunner(c);
+        runner.runScript(Resources.getResourceAsReader(SCHEMA_POST));
+      }
     }
   }
 
