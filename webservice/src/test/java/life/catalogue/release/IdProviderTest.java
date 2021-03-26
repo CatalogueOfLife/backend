@@ -75,11 +75,12 @@ public class IdProviderTest {
     @Override
     protected void loadPreviousReleaseIds() {
       // dont do anything. load release ids manually
+      final LoadStats stats = new LoadStats();
       for (Map.Entry<Integer, List<SimpleNameWithNidx>> rel : prevIdsByAttempt.entrySet()) {
         int attempt = rel.getKey();
         int datasetKey = 1000 + attempt;
         for (SimpleNameWithNidx sn : rel.getValue()) {
-          addReleaseId(datasetKey,attempt, sn);
+          addReleaseId(datasetKey,attempt, sn, stats);
         }
       }
     }

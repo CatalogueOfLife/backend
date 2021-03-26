@@ -292,6 +292,8 @@ public class IdProvider {
   }
 
   private void prepare(){
+    File dir = cfg.reportDir(projectKey, attempt);
+    dir.mkdirs();
     if (cfg.restart) {
       LOG.info("Use ID provider with no previous IDs");
       // populate ids from db
@@ -304,6 +306,17 @@ public class IdProvider {
     LOG.info("Max existing id = {}. Start ID sequence with {} ({})", ids.maxKey(), keySequence, encode(keySequence.get()));
   }
 
+  static class LoadStats {
+    AtomicInteger counter = new AtomicInteger();
+    AtomicInteger nomatches = new AtomicInteger();
+    AtomicInteger temporary = new AtomicInteger();
+
+    @Override
+    public String toString() {
+      return String.format("%s usages with %s temporary ids and %s missing matches ", counter, nomatches, temporary);
+    }
+  }
+
   @VisibleForTesting
   protected void loadPreviousReleaseIds(){
     try (SqlSession session = factory.openSession(true)) {
@@ -312,28 +325,30 @@ public class IdProvider {
       dsr.setReleasedFrom(projectKey);
       List<Dataset> releases = dm.search(dsr, null, new Page(0, 1000));
       releases.sort(Comparator.comparing(Dataset::getImportAttempt).reversed());
+      final LoadStats stats = new LoadStats();
       for (Dataset rel : releases) {
         if (cfg.since != null && rel.getCreated().isBefore(cfg.since)) {
           LOG.info("Ignore old release {} with unstable ids", rel.getKey());
           continue;
         }
-        AtomicInteger counter = new AtomicInteger();
+        final int sizeBefore = ids.size();
         if (rel.getImportAttempt() == null) {
           throw new IllegalStateException("Release "+rel.getKey()+" of project "+projectKey+" has no importAttempt");
         }
         final int attempt = rel.getImportAttempt();
-        session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
-          counter.incrementAndGet();
-          addReleaseId(rel.getKey(), attempt, sn);
-        });
-        LOG.info("Read {} usages from previous release {}, key={}. Total released ids = {}", counter, rel.getImportAttempt(), rel.getKey(), ids.size());
+        session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey())
+          .forEach(sn -> addReleaseId(rel.getKey(), attempt, sn, stats));
+        LOG.info("Read {} from previous release {} key={}. Adding {} new released ids to a total of {}",
+          stats, rel.getImportAttempt(), rel.getKey(), ids.size()-sizeBefore, ids.size());
       }
     }
   }
 
   @VisibleForTesting
-  protected void addReleaseId(int releaseDatasetKey, int attempt, SimpleNameWithNidx sn){
+  protected void addReleaseId(int releaseDatasetKey, int attempt, SimpleNameWithNidx sn, LoadStats stats){
+    stats.counter.incrementAndGet();
     if (sn.getNamesIndexId() == null) {
+      stats.nomatches.incrementAndGet();
       LOG.info("Existing release id {}:{} without a names index id. Skip!", releaseDatasetKey, sn.getId());
     } else {
       try {
@@ -342,6 +357,7 @@ public class IdProvider {
         ids.add(rl);
       } catch (IllegalArgumentException e) {
         // expected for temp UUID, swallow
+        stats.temporary.incrementAndGet();
       }
     }
   }
@@ -358,14 +374,16 @@ public class IdProvider {
     LOG.info("Map name usage IDs");
     final int lastRelIds = ids.maxAttemptIdCount();
     AtomicInteger counter = new AtomicInteger();
-    try (SqlSession writeSession = factory.openSession(false)) {
+    try (SqlSession writeSession = factory.openSession(false);
+         Writer nomatchWriter = UTF8IoUtils.writerFromFile(new File(cfg.reportDir, "nomatch.txt"))
+    ) {
       idm = writeSession.getMapper(IdMapMapper.class);
       final int batchSize = 10000;
       Integer lastCanonID = null;
       List<SimpleNameWithNidx> group = new ArrayList<>();
       for (SimpleNameWithNidx u : names) {
         if (!Objects.equals(lastCanonID, u.getCanonicalId()) && !group.isEmpty()) {
-          mapCanonicalGroup(group);
+          mapCanonicalGroup(group, nomatchWriter);
           int before = counter.get() / batchSize;
           int after = counter.addAndGet(group.size()) / batchSize;
           if (before != after) {
@@ -376,29 +394,36 @@ public class IdProvider {
         lastCanonID = u.getCanonicalId();
         group.add(u);
       }
-      mapCanonicalGroup(group);
+      mapCanonicalGroup(group, nomatchWriter);
       writeSession.commit();
+
+    } catch (IOException e) {
+      LOG.error("Failed to write ID reports for project " + projectKey, e);
     }
     // ids remaining from the current attempt will be deleted
     deleted = ids.maxAttemptIds();
     reused = lastRelIds - deleted.size();
   }
 
-  private void mapCanonicalGroup(List<SimpleNameWithNidx> group){
+  private void mapCanonicalGroup(List<SimpleNameWithNidx> group, Writer nomatchWriter) throws IOException {
     // make sure we have the names sorted by their nidx
     group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())));
     // now split the canonical group into subgroups for each nidx to match them individually
     for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())))) {
-      issueIDs(idGroup.get(0).getNamesIndexId(), idGroup);
+      issueIDs(idGroup.get(0).getNamesIndexId(), idGroup, nomatchWriter);
     }
   }
 
   /**
    * Populates sn.canonicalId with either an existing or new int based ID
    */
-  private void issueIDs(Integer nidx, List<SimpleNameWithNidx> names) {
+  private void issueIDs(Integer nidx, List<SimpleNameWithNidx> names, Writer nomatchWriter) throws IOException {
     if (nidx == null) {
       LOG.info("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
+      for (SimpleNameWithNidx n : names) {
+        nomatchWriter.write(n.getLabel());
+        nomatchWriter.write("\n");
+      }
 
     } else {
       // convenient "hack": we keep the new identifiers as the canonicalID property of SimpleNameWithNidx

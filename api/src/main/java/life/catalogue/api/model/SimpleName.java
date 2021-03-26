@@ -126,11 +126,6 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
     this.code = code;
   }
 
-  @Override
-  public String toString() {
-    return labelBuilder().toString();
-  }
-
   @JsonIgnore
   public String getFullName() {
     StringBuilder sb = new StringBuilder();
@@ -144,6 +139,11 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
       sb.append(phrase);
     }
     return sb.toString();
+  }
+
+  @JsonIgnore
+  public String getLabel() {
+    return labelBuilder().toString();
   }
 
   private void appendFullName(StringBuilder sb) {
@@ -181,6 +181,11 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
       sb.append("]");
     }
     return sb;
+  }
+
+  @Override
+  public String toString() {
+    return getLabel();
   }
 
   @Override
