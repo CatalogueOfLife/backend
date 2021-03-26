@@ -255,6 +255,14 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   }
 
   /**
+   * @return true if this represents a canonical name in the index
+   */
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public boolean isCanonical() {
+    return key != null && key.equals(canonicalId);
+  }
+
+  /**
    * Full name.O
    * @return same as canonicalNameComplete but formatted with basic html tags
    */

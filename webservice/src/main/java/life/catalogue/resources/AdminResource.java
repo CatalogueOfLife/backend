@@ -222,9 +222,9 @@ public class AdminResource {
   @Path("/rematch")
   public BackgroundJob rematch(@QueryParam("datasetKey") List<Integer> datasetKeys, @Auth User user) {
     if (datasetKeys == null || datasetKeys.isEmpty()) {
-      return runJob(RematchJob.all(user,factory,ni));
+      throw new IllegalArgumentException("At least one datasetKey parameter is required");
     } else {
-      return runJob(RematchJob.some(user,factory,ni, datasetKeys.stream().mapToInt(i->i).toArray()));
+      return runJob(RematchJob.some(user.getKey(),factory,ni, datasetKeys.stream().mapToInt(i->i).toArray()));
     }
   }
 

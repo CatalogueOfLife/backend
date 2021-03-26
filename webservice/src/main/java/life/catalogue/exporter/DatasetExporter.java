@@ -42,7 +42,7 @@ abstract class DatasetExporter extends DatasetBlockingJob {
         throw new IllegalArgumentException("Dataset "+datasetKey+" does not have any data");
       }
     }
-    LOG.info("Created {} job {} for dataset {} to {}", getClass().getSimpleName(), getKey(), datasetKey, archive);
+    LOG.info("Created {} job {} by user {} for dataset {} to {}", getClass().getSimpleName(), getUserKey(), getKey(), datasetKey, archive);
   }
 
   static File archive(File exportDir, UUID key) {

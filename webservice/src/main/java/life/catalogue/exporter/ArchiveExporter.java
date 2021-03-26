@@ -53,7 +53,6 @@ abstract class ArchiveExporter extends DatasetExporter {
           return r == null ? null : r.getCitation();
         }
       });
-    LOG.info("Created exporter job {} for dataset {} to {}", getKey(), datasetKey, archive);
   }
 
   @Override

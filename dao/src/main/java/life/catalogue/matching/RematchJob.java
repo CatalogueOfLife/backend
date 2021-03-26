@@ -7,6 +7,9 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.concurrent.BackgroundJob;
+import life.catalogue.common.concurrent.ExecutorUtils;
+import life.catalogue.common.concurrent.NamedThreadFactory;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.apache.commons.lang3.ArrayUtils;
@@ -16,6 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntPredicate;
 
 public class RematchJob extends BackgroundJob {
@@ -26,30 +33,25 @@ public class RematchJob extends BackgroundJob {
   @JsonProperty
   private final int[] datasetKeys;
 
-  public static RematchJob all(User user, SqlSessionFactory factory, NameIndex ni){
-    LOG.warn("Rematch all datasets with data using the existing names index");
+  public static RematchJob all(int userKey, SqlSessionFactory factory, NameIndex ni){
+    LOG.warn("Rematch all datasets with data using a names index of size {}", ni.size());
     // load dataset keys to rematch
     try (SqlSession session = factory.openSession(true)) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-      IntSet keys = new IntOpenHashSet(dm.keys());
-      keys.remove(Datasets.COL);
-      keys.removeIf((IntPredicate) key -> !dpm.exists(key));
-      // make sure COL gets processed first so we get low keys for the higher ranks in COL
-      return new RematchJob(user, factory, ni, ArrayUtils.insert(0, keys.toIntArray(), Datasets.COL));
+      IntSet keys = DaoUtils.listDatasetWithPartitions(session);
+      return new RematchJob(userKey, factory, ni, keys.toIntArray());
     }
   }
 
-  public static RematchJob one(User user, SqlSessionFactory factory, NameIndex ni, int datasetKey){
-    return new RematchJob(user, factory, ni, datasetKey);
+  public static RematchJob one(int userKey, SqlSessionFactory factory, NameIndex ni, int datasetKey){
+    return new RematchJob(userKey, factory, ni, datasetKey);
   }
 
-  public static RematchJob some(User user, SqlSessionFactory factory, NameIndex ni, int... datasetKeys){
-    return new RematchJob(user, factory, ni, datasetKeys);
+  public static RematchJob some(int userKey, SqlSessionFactory factory, NameIndex ni, int... datasetKeys){
+    return new RematchJob(userKey, factory, ni, datasetKeys);
   }
 
-  private RematchJob(User user, SqlSessionFactory factory, NameIndex ni, int... datasetKeys) {
-    super(user.getKey());
+  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, int... datasetKeys) {
+    super(userKey);
     this.datasetKeys = Preconditions.checkNotNull(datasetKeys);
     this.factory = factory;
     this.ni = ni.assertOnline();

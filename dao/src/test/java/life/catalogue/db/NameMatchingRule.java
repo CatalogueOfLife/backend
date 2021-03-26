@@ -35,7 +35,7 @@ public class NameMatchingRule extends ExternalResource {
     nidx = NameIndexFactory.memory(factory, AuthorshipNormalizer.INSTANCE);
     nidx.start();
     LOG.info("Rematch all names");
-    RematchJob.all(TestDataRule.TEST_USER, factory, nidx).run();
+    RematchJob.all(TestDataRule.TEST_USER.getKey(), factory, nidx).run();
   }
 
   public NameIndex getIndex() {

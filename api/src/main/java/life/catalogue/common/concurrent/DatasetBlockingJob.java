@@ -1,6 +1,7 @@
 package life.catalogue.common.concurrent;
 
 import life.catalogue.api.exception.UnavailableException;
+import life.catalogue.common.util.LoggingUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +33,11 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
     // try to acquire a lock, otherwise fail
     if (DatasetLock.lock(datasetKey, getKey())) {
       try {
+        LoggingUtils.setDatasetMDC(datasetKey, getClass());
         runWithLock();
       } finally {
         DatasetLock.unlock(datasetKey);
+        LoggingUtils.removeDatasetMDC();
       }
     } else {
       Optional<UUID> process = DatasetLock.isLocked(datasetKey);

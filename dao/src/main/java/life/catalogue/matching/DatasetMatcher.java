@@ -48,12 +48,14 @@ public class DatasetMatcher {
       boolean update = nmm.exists(datasetKey);
       LOG.info("{} name matches for {}", update ? "Update" : "Create", datasetKey);
       nm.processDatasetWithNidx(datasetKey).forEach(h);
-      LOG.info("{} {} name matches for {} names with {} no matches for dataset {}", update ? "Updated" : "Created",
+      LOG.info("{} {} name matches for {} names and {} not matching for dataset {}", update ? "Updated" : "Created",
         updated-updatedBefore, total-totalBefore, nomatch-nomatchBefore, datasetKey);
 
       if (update) {
         int del = nmm.deleteOrphaned(datasetKey, null);
-        LOG.info("Removed {} orphaned name matches for {}", del, datasetKey);
+        if (del > 0) {
+          LOG.info("Removed {} orphaned name matches for {}", del, datasetKey);
+        }
       }
       datasets++;
 
@@ -68,6 +70,10 @@ public class DatasetMatcher {
 
   public int getUpdated() {
     return updated;
+  }
+
+  public int getNomatch() {
+    return nomatch;
   }
 
   public int getDatasets() {

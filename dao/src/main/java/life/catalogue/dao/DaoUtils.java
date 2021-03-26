@@ -1,13 +1,18 @@
 package life.catalogue.dao;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
+import life.catalogue.matching.RematchJob;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.IntPredicate;
 
 public class DaoUtils {
 
@@ -72,4 +77,17 @@ public class DaoUtils {
     }
     return d;
   }
+
+  /**
+   * List keys of all datasets that have data partitions.
+   */
+  public static IntSet listDatasetWithPartitions(SqlSession session) {
+    DatasetMapper dm = session.getMapper(DatasetMapper.class);
+    DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
+    IntSet keys = new IntOpenHashSet(dm.keys());
+    // only keep the dataset with data partitions
+    keys.removeIf((IntPredicate) key -> !dpm.exists(key));
+    return keys;
+  }
+
 }

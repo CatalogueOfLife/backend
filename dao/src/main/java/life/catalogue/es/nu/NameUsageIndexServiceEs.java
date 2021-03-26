@@ -10,6 +10,7 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.common.concurrent.ExecutorUtils;
 import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.common.func.BatchConsumer;
+import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.NameUsageProcessor;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -82,10 +83,11 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
-    LOG.info("Start indexing dataset {}", datasetKey);
-    NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     Stats stats = new Stats();
     try (SqlSession lockSession = factory.openSession()) {
+      LoggingUtils.setDatasetMDC(datasetKey, getClass());
+      LOG.info("Start indexing dataset {}", datasetKey);
+      NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
       // we lock the main dataset tables so they are only accessible by select statements, but not any modifying statements.
       DaoUtils.aquireTableLock(datasetKey, lockSession);
       if (clearIndex) {
@@ -107,12 +109,17 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       }
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.names = indexer.documentsIndexed();
+
+      LOG.info("Successfully indexed dataset {} into index {}. Usages: {}. Bare names: {}. Total: {}.",
+        datasetKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
+      return stats;
+
     } catch (IOException e) {
       throw new EsException(e);
+
+    } finally {
+      LoggingUtils.removeDatasetMDC();
     }
-    LOG.info("Successfully indexed dataset {} into index {}. Usages: {}. Bare names: {}. Total: {}.",
-        datasetKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
-    return stats;
   }
 
   @Override
@@ -252,7 +259,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
     }
 
-    final AtomicInteger counter = new AtomicInteger(1);
+    final AtomicInteger counter = new AtomicInteger(0);
     ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
     for (Integer datasetKey : keys) {
       CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, false), exec)
