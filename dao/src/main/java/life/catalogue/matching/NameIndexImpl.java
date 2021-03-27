@@ -234,7 +234,7 @@ public class NameIndexImpl implements NameIndex {
 
       // log a warning if we still have more than one match so we can maybe refine the algorithm in the future
       if (compareRank && matches.size() > 1) {
-        LOG.info("Ambiguous match ({} hits) for {} {}", matches.size(), query.getRank(), query.getLabel());
+        LOG.debug("Ambiguous match ({} hits) for {} {}", matches.size(), query.getRank(), query.getLabel());
       }
       // we pick the lowest key to guarantee a stable outcome in all cases - even if we dont have a canonical (should not really happen)
       IndexName earliest = matches.get(0);

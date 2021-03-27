@@ -14,7 +14,8 @@ public enum MatchType {
   VARIANT,
 
   /**
-   * Name matched to canonical name only, but could not be inserted.
+   * Name matched to canonical name only even though it had an authorship, but could not be inserted.
+   * Can only happen if insertion is not allowed, e.g. via external API requests.
    */
   CANONICAL,
 

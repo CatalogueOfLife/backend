@@ -64,11 +64,10 @@ public class NamesIndexCmd extends AbstractPromptCmd {
     return String.format("Rebuilt names index and rematch all datasets with data in pg schema %s in db %s.\n", BUILD_SCHEMA, cfg.db.database);
   }
 
-  private static File indexFileToday(WsServerConfig cfg){
+  private static File indexBuildFile(WsServerConfig cfg){
     File f = null;
     if (cfg.namesIndexFile != null) {
-      String date = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
-      f = new File(cfg.namesIndexFile.getParent(), "nidx-" + date);
+      f = new File(cfg.namesIndexFile.getParent(), "nidx-build");
       if (f.exists()) {
         throw new IllegalStateException("NamesIndex file already exists: " + f.getAbsolutePath());
       }
@@ -99,7 +98,7 @@ public class NamesIndexCmd extends AbstractPromptCmd {
         runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
       }
 
-      NameIndex ni = NameIndexFactory.persistentOrMemory(indexFileToday(cfg), factory, AuthorshipNormalizer.INSTANCE);
+      NameIndex ni = NameIndexFactory.persistentOrMemory(indexBuildFile(cfg), factory, AuthorshipNormalizer.INSTANCE);
       ni.start();
 
       IntSet keys;
@@ -125,9 +124,10 @@ public class NamesIndexCmd extends AbstractPromptCmd {
           });
       }
       ExecutorUtils.shutdown(exec);
+      LOG.info("Successfully rebuild names index with final size {}, rematching all {} datasets", ni.size(), counter);
 
-      LOG.info("Successfully rebuild names index with final size {}, rematching all {} datasets",
-        ni.size(), counter);
+      LOG.info("Shutting down names index");
+      ni.close();
 
       LOG.info("Building postgres indices for new names index");
       try (Connection c = dataSource.getConnection()) {
