@@ -5,7 +5,7 @@
 <mapper namespace="life.catalogue.db.mapper.NamesIndexMapper">
 
   <sql id="SELECT">
-    id, canonical_id, <include refid="COLS"/>, created, modified
+    id, canonical_id, <include refid="life.catalogue.db.mapper.NamesIndexMapper.COLS"/>, created, modified
   </sql>
 
   <sql id="COLS">

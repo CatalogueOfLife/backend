@@ -212,7 +212,7 @@ public class IdProvider {
       writer.write(']');
       writer.write('\n');
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      LOG.error("Failed to report unstable name {}", n.fullname, e);
     }
   }
 

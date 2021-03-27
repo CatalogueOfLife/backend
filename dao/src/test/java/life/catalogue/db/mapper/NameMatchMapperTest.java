@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.MatchType;
@@ -33,6 +34,11 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
     Name n = TestEntityGenerator.newName(id);
     n.setHomotypicNameId(basionym.getId());
     return n;
+  }
+
+  @Test
+  public void get() throws Exception {
+    mapper().get(DSID.of(datasetKey, "1"));
   }
 
   @Test

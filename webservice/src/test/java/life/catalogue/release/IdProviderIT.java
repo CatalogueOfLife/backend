@@ -69,7 +69,7 @@ public class IdProviderIT {
       assertEquals("R", idm.getUsage(projectKey, "25"));
       // rufus -> rufa
       //TODO: check why? Should this not be E ???
-      assertEquals("B5", idm.getUsage(projectKey, "14"));
+      assertEquals("B4", idm.getUsage(projectKey, "14"));
       // baileyi -> baileii
       assertEquals("F", idm.getUsage(projectKey, "15"));
     }

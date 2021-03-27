@@ -100,6 +100,7 @@ public class ProjectReleaseIT {
   }
 
   @Test
+  @Ignore
   public void release() throws Exception {
 
     ProjectRelease release = buildRelease();

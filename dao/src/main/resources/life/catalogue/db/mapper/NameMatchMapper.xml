@@ -4,6 +4,11 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.NameMatchMapper">
 
+  <resultMap id="nameMatchResultMap" type="NameMatch" autoMapping="true">
+    <result property="type" column="type"/>
+    <association property="name" javaType="IndexName" resultMap="life.catalogue.db.mapper.NamesIndexMapper.nameResultMap"/>
+  </resultMap>
+
   <select id="exists" resultType="boolean">
     SELECT exists(
       SELECT name_id
@@ -13,13 +18,10 @@
     )
   </select>
 
-  <select id="get" resultType="Integer">
-    SELECT index_id
-    FROM name_match
-    WHERE dataset_key = #{datasetKey}
-    <if test="sectorKey != null">
-      AND sector_key = #{sectorKey}
-    </if>
+  <select id="get" resultMap="nameMatchResultMap">
+    SELECT nm.type, <include refid="life.catalogue.db.mapper.NamesIndexMapper.SELECT"/>
+    FROM name_match nm LEFT JOIN names_index n ON n.id=nm.index_id
+    WHERE nm.dataset_key = #{key.datasetKey} AND nm.name_id = #{key.id}
   </select>
 
   <select id="processIndexIds" resultType="Integer">
