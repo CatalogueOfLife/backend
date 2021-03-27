@@ -15,6 +15,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * Rematches an entire dataset, using 2 separate db connections for read & write
+ */
 public class DatasetMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetMatcher.class);
   private final SqlSessionFactory factory;
@@ -88,7 +91,6 @@ public class DatasetMatcher {
     private final int datasetKey;
     private final boolean allowInserts;
     private final SqlSession batchSession;
-    private final SqlSession session;
     private final NameMatchMapper nm;
     private int _total = 0;
     private int _updated = 0;
@@ -98,7 +100,6 @@ public class DatasetMatcher {
       this.datasetKey = datasetKey;
       this.allowInserts = allowInserts;
       this.batchSession = factory.openSession(ExecutorType.BATCH, false);
-      this.session = factory.openSession(false);
       this.nm = batchSession.getMapper(NameMatchMapper.class);
     }
   
@@ -134,7 +135,6 @@ public class DatasetMatcher {
     public void close() throws Exception {
       batchSession.commit();
       batchSession.close();
-      session.close();
       total += _total;
       updated += _updated;
       nomatch += _nomatch;
