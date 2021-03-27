@@ -5,6 +5,8 @@ import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -16,6 +18,7 @@ import java.util.concurrent.TimeUnit;
  * The command will look at the existing name partition tables to find the datasets with data.
  */
 public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig> {
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractPromptCmd.class);
   private static final String ARG_PROMPT = "prompt";
 
   protected WsServerConfig cfg;
@@ -56,6 +59,7 @@ public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig
     }
     this.cfg = cfg;
     execute(bootstrap, namespace, cfg);
+    LOG.info("{} command completed successfully", getClass().getSimpleName());
     System.out.println("Done !!!");
   }
 

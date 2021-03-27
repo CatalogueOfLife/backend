@@ -1,13 +1,10 @@
 package life.catalogue.command;
 
 import com.google.common.base.Preconditions;
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.setup.Bootstrap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.Users;
 import life.catalogue.common.concurrent.ExecutorUtils;
 import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -16,11 +13,9 @@ import life.catalogue.dao.DaoUtils;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.matching.DatasetMatcher;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.matching.RematchJob;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.apache.ibatis.io.Resources;
@@ -32,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.sql.Connection;
-import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
