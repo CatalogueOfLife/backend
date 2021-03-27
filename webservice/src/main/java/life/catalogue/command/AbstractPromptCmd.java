@@ -58,6 +58,9 @@ public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig
       TimeUnit.SECONDS.sleep(prompt);
     }
     this.cfg = cfg;
+    // we dont deal with shortlived requests in commands and rather want to minimize connection usage
+    // if we reuse the ws configs we will use too many idle connections doe to the high mimimum setting
+    cfg.db.minimumIdle = 0;
     execute(bootstrap, namespace, cfg);
     LOG.info("{} command completed successfully", getClass().getSimpleName());
     System.out.println("Done !!!");
