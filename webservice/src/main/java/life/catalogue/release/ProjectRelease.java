@@ -91,7 +91,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     // map ids
     updateState(ImportState.MATCHING);
-    IdProvider idProvider = new IdProvider(datasetKey, metrics.getAttempt(), cfg, factory);
+    IdProvider idProvider = new IdProvider(datasetKey, metrics.getAttempt(), newDatasetKey, cfg, factory);
     idProvider.run();
   }
 

@@ -42,7 +42,7 @@ public class IdProviderIT {
   @Before
   public void init() throws IOException {
     cfg = new ReleaseConfig();
-    provider = new IdProvider(projectKey, 1, cfg, PgSetupRule.getSqlSessionFactory());
+    provider = new IdProvider(projectKey, 1, -1, cfg, PgSetupRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);

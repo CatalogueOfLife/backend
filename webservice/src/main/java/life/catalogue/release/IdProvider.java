@@ -66,6 +66,7 @@ public class IdProvider {
 
   private final int projectKey;
   private final int attempt;
+  private final int releaseDatasetKey;
   private final SqlSessionFactory factory;
   private final ReleaseConfig cfg;
   private final ReleasedIds ids = new ReleasedIds();
@@ -81,7 +82,8 @@ public class IdProvider {
   protected NameUsageMapper num;
   protected NameMatchMapper nmm;
 
-  public IdProvider(int projectKey, int attempt, ReleaseConfig cfg, SqlSessionFactory factory) {
+  public IdProvider(int projectKey, int attempt, int releaseDatasetKey, ReleaseConfig cfg, SqlSessionFactory factory) {
+    this.releaseDatasetKey = releaseDatasetKey;
     this.projectKey = projectKey;
     this.attempt = attempt;
     this.factory = factory;
@@ -92,7 +94,7 @@ public class IdProvider {
     prepare();
     mapIds();
     report();
-    LOG.info("Reused {} stable IDs for project release {}-{}, resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, resurrected.size(), created.size(), deleted.size());
+    LOG.info("Reused {} stable IDs for project release {}-{} ({}), resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, releaseDatasetKey, resurrected.size(), created.size(), deleted.size());
     return getReport();
   }
   public static class InstableName implements DSID<String> {
@@ -172,7 +174,7 @@ public class IdProvider {
         nmm = session.getMapper(NameMatchMapper.class);
         for (var entry : unstable.entrySet()) {
           writer.write(entry.getKey() + "\n");
-          entry.getValue().sort(Comparator.comparing(InstableName::isDel));
+          entry.getValue().sort(Comparator.comparing(InstableName::isDel).reversed());
           entry.getValue().forEach(n -> writeInstableName(writer, n));
         }
       }
@@ -192,7 +194,7 @@ public class IdProvider {
       writer.write(' ');
       writer.write(String.valueOf(n.rank));
       writer.write(' ');
-      writer.write(n.datasetKey);
+      writer.write(String.valueOf(n.datasetKey));
       writer.write(':');
       writer.write(n.id);
 
@@ -251,7 +253,7 @@ public class IdProvider {
         // usages do not exist yet in the release - we gotta use the id map and look them up in the project!
         sn = num.getSimpleByIdMap(DSID.of(projectKey, ID));
         if (sn != null) {
-          key = DSID.of(projectKey, sn.getId());
+          key = DSID.of(releaseDatasetKey, ID);
         }
       }
 
