@@ -22,7 +22,7 @@ public class NameUsageSuggestionTest {
     s.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     assertEquals("Acanthocephala (prov. phylum)", s.getSuggestion());
 
-    s.setParentOrAcceptedName("Animalia");
+    s.setContext("Animalia");
     assertEquals("Acanthocephala (prov. phylum in Animalia)", s.getSuggestion());
 
     s.setStatus(TaxonomicStatus.ACCEPTED);

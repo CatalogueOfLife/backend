@@ -1,5 +1,6 @@
 package life.catalogue.api.search;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -13,9 +14,10 @@ public class NameUsageSuggestion {
 
   // The name matching the search phrase: an accepted name/synonym/bare name
   private String match;
-  // The parent taxon's accepted name if this is a suggestion for an accepted name, else the accepted name if this is a suggestion for
-  // anyhing but an accepted name.
-  private String parentOrAcceptedName;
+  // The classification context to report in the suggestion hint.
+  // For accepted names this is the first taxon above genus level, mostly the family.
+  // For synonyms it is the accepted name
+  private String context;
   private String usageId;
   private String acceptedUsageId;
   private Rank rank;
@@ -31,14 +33,14 @@ public class NameUsageSuggestion {
     if (status == null || status.isBareName()) {
       return match + " (bare name)";
     } else if (status.isSynonym()) {
-      return String.format("%s (%s of %s)", match, status.name().toLowerCase(), parentOrAcceptedName);
+      return String.format("%s (%s of %s)", match, status.name().toLowerCase(), context);
     } else {
       StringBuilder sb = new StringBuilder();
       sb.append(match);
 
       boolean prov = status == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
       boolean showRank = rank != null && (prov || rank.isSupraspecific());
-      boolean showAcc = parentOrAcceptedName != null;
+      boolean showAcc = context != null;
 
       if (showRank || prov || showAcc) {
         sb.append(" (");
@@ -55,7 +57,7 @@ public class NameUsageSuggestion {
           if (showRank || prov) {
             sb.append(" in ");
           }
-          sb.append(parentOrAcceptedName);
+          sb.append(context);
         }
         sb.append(")");
       }
@@ -71,12 +73,13 @@ public class NameUsageSuggestion {
     this.match = match;
   }
 
-  public String getParentOrAcceptedName() {
-    return parentOrAcceptedName;
+  @JsonIgnore
+  public String getContext() {
+    return context;
   }
 
-  public void setParentOrAcceptedName(String name) {
-    this.parentOrAcceptedName = name;
+  public void setContext(String name) {
+    this.context = name;
   }
 
   public String getUsageId() {
@@ -129,7 +132,7 @@ public class NameUsageSuggestion {
 
   @Override
   public int hashCode() {
-    return Objects.hash(parentOrAcceptedName, match, nomCode, rank, score, status, usageId, acceptedUsageId);
+    return Objects.hash(context, match, nomCode, rank, score, status, usageId, acceptedUsageId);
   }
 
   @Override
@@ -141,7 +144,7 @@ public class NameUsageSuggestion {
     if (getClass() != obj.getClass())
       return false;
     NameUsageSuggestion other = (NameUsageSuggestion) obj;
-    return Objects.equals(parentOrAcceptedName, other.parentOrAcceptedName)
+    return Objects.equals(context, other.context)
         && Objects.equals(match, other.match)
         && nomCode == other.nomCode
         && rank == other.rank

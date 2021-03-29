@@ -521,7 +521,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestResponse response = suggest(query);
 
     assertEquals("Larus fuscus", response.getSuggestions().get(0).getMatch());
-    assertEquals("Larus", response.getSuggestions().get(0).getParentOrAcceptedName());
+    assertEquals("Larus", response.getSuggestions().get(0).getContext());
     assertEquals("Larus fuscus (Larus)", response.getSuggestions().get(0).getSuggestion());
 
   }
@@ -544,7 +544,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestResponse response = suggest(query);
 
     assertEquals("Mustelidae", response.getSuggestions().get(0).getMatch());
-    assertEquals("Carnivora", response.getSuggestions().get(0).getParentOrAcceptedName());
+    assertEquals("Carnivora", response.getSuggestions().get(0).getContext());
     assertEquals("Mustelidae (Carnivora)", response.getSuggestions().get(0).getSuggestion());
 
   }

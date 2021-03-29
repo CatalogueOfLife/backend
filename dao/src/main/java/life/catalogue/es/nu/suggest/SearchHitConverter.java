@@ -25,10 +25,12 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
     EsNameUsage doc = hit.getSource();
     if (doc.getStatus() != null && doc.getStatus().isSynonym()) { // a synonym
       suggestion.setMatch(doc.getScientificName());
-      suggestion.setParentOrAcceptedName(doc.getAcceptedName());
-      if (doc.getClassificationIds() == null || doc.getClassificationIds().size() > 1) {
+      suggestion.setContext(doc.getAcceptedName());
+      if (doc.getClassificationIds() == null || doc.getClassificationIds().size() < 2) {
         // That's corrupt data but let's not make the suggestion service trip over it
         LOG.warn("Missing classification for synonym {} {}", doc.getScientificName(), doc.getUsageId());
+      } else {
+        // the first entry is the synonym itself, the 2nd the accepted name
         suggestion.setAcceptedUsageId(doc.getClassificationIds().get(doc.getClassificationIds().size() - 2));
       }
     } else {
@@ -36,11 +38,10 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
       if (doc.getClassification() == null) {
         // That's corrupt data but let's not make the suggestion service trip over it
         LOG.warn("Missing classification for {} {}", doc.getScientificName(), doc.getUsageId());
-        suggestion.setParentOrAcceptedName("MISSING");
       } else if (doc.getClassification().size() > 1) { // not a kingdom
         EsMonomial parent = findFirstAboveGenus(doc.getClassification());
         if (parent != null) {
-          suggestion.setParentOrAcceptedName(parent.getName());
+          suggestion.setContext(parent.getName());
         }
       }
     }

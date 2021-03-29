@@ -49,10 +49,12 @@ public class EsNameUsage {
   private TaxonomicStatus status;
   private Set<Issue> issues;
   private Set<Environment> environments;
-  @Analyzers(KEYWORD)
-  private List<String> classificationIds;
   private Boolean extinct;
 
+  // The first entry in the classification list represents the usage itself
+  @Analyzers(KEYWORD)
+  private List<String> classificationIds;
+  // The first entry in the classification list represents the usage itself
   @MapToType(ESDataType.OBJECT)
   private List<EsMonomial> classification;
   
