@@ -17,7 +17,7 @@
   <update id="createIdMapTable" parameterType="map">
     CREATE TABLE ${table}_${key} (
       id TEXT PRIMARY KEY,
-      id2 TEXT NOT NULL
+      id2 TEXT NOT NULL UNIQUE
     )
   </update>
 

@@ -1,15 +1,14 @@
 package life.catalogue.release;
 
 import com.google.common.annotations.VisibleForTesting;
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.MatchType;
-
-import static java.util.Comparator.*;
-import static life.catalogue.api.vocab.TaxonomicStatus.*;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.id.IdConverter;
@@ -33,6 +32,10 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsLast;
+import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
 
 /**
  * Generates a usage id mapping table that maps all name usages from the project source
@@ -328,7 +331,7 @@ public class IdProvider {
       final LoadStats stats = new LoadStats();
       for (Dataset rel : releases) {
         if (cfg.since != null && rel.getCreated().isBefore(cfg.since)) {
-          LOG.info("Ignore old release {} with unstable ids", rel.getKey());
+          LOG.info("Ignore old release {} before {}", rel.getKey(), cfg.since);
           continue;
         }
         final int sizeBefore = ids.size();

@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -194,7 +195,6 @@ public abstract class AbstractProjectCopy implements Runnable {
   private void copyData() {
     LOG.info("Copy data into dataset {}", newDatasetKey);
     updateState(ImportState.INSERTING);
-
     try (SqlSession session = factory.openSession(true)) {
       copyTable(Sector.class, SectorMapper.class, session);
       copyTable(EditorialDecision.class, DecisionMapper.class, session);
