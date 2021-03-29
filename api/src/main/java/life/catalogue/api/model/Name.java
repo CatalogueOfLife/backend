@@ -41,7 +41,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   // matches only uninomials or binomials without any authorship
   private static String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
   @VisibleForTesting
-  static Pattern UNI_OR_BI_NOMEN_ONLY = Pattern.compile("^[A-ZÆŒ]"+EPITHET+"(?: "+EPITHET+")?$");
+  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^[A-ZÆŒ]"+EPITHET+"(?: "+EPITHET+"(?: "+EPITHET+")?)?$");
 
   private Integer sectorKey;
   private Integer verbatimKey;
@@ -721,7 +721,10 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
         return sb.toString();
 
       } else {
-        return NameFormatter.inItalics(scientificName);
+        m = LINNEAN_NAME_NO_AUTHOR.matcher(scientificName);
+        if (m.find()) {
+          return NameFormatter.inItalics(scientificName);
+        }
       }
     }
     //TODO: Candidatus or Ca.

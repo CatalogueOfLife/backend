@@ -124,23 +124,29 @@ public class NameTest extends SerdeTestBase<Name> {
   }
 
   @Test
-  public void binomenPattern() throws Exception {
-    Matcher m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies");
+  public void linneanPattern() throws Exception {
+    Matcher m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies");
     assertTrue(m.find());
 
-    m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies alba");
+    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba");
     assertTrue(m.find());
 
-    m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies alba Mill.");
+    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba Mill.");
     assertFalse(m.find());
 
-    m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies DC");
+    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies DC");
     assertFalse(m.find());
 
-    m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies 4-color");
+    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies 4-color");
     assertTrue(m.find());
 
-    m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies alba alpina");
+    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba alpina");
+    assertTrue(m.find());
+
+    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba subsp. alpina");
+    assertFalse(m.find());
+
+    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba ssp.");
     assertFalse(m.find());
   }
 
