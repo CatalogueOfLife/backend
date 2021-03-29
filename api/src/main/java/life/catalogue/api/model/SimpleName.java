@@ -126,28 +126,17 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
     this.code = code;
   }
 
-  @JsonIgnore
-  public String getFullName() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(name);
-    if (authorship != null) {
-      sb.append(" ");
-      sb.append(authorship);
-    }
-    if (phrase != null) {
-      sb.append(" ");
-      sb.append(phrase);
-    }
-    return sb.toString();
-  }
-
-  @JsonIgnore
   public String getLabel() {
-    return labelBuilder().toString();
+    return appendFullName(new StringBuilder(), false).toString();
   }
 
-  private void appendFullName(StringBuilder sb) {
-    sb.append(name);
+  public String getLabelHtml() {
+    return appendFullName(new StringBuilder(), true).toString();
+  }
+
+
+  private StringBuilder appendFullName(StringBuilder sb, boolean html) {
+    sb.append(html ? Name.scientificNameHtml(name, rank) : name);
     if (authorship != null) {
       sb.append(" ");
       sb.append(authorship);
@@ -156,9 +145,10 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
       sb.append(" ");
       sb.append(phrase);
     }
+    return sb;
   }
 
-  protected StringBuilder labelBuilder() {
+  public StringBuilder toStringBuilder() {
     StringBuilder sb = new StringBuilder();
     if (status != null) {
       sb.append(status);
@@ -168,7 +158,7 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
       sb.append(rank);
       sb.append(" ");
     }
-    appendFullName(sb);
+    appendFullName(sb, false);
     if (id != null || parent != null) {
       sb.append(" [");
       if (id != null) {
@@ -185,7 +175,7 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
 
   @Override
   public String toString() {
-    return getLabel();
+    return toStringBuilder().toString();
   }
 
   @Override

@@ -7,6 +7,8 @@ import life.catalogue.api.jackson.SerdeTestBase;
 import org.gbif.nameparser.api.*;
 import org.junit.Test;
 
+import java.util.regex.Matcher;
+
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
@@ -119,6 +121,27 @@ public class NameTest extends SerdeTestBase<Name> {
 
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel(false));
     assertEquals("<i>Abies × alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel(true));
+  }
+
+  @Test
+  public void binomenPattern() throws Exception {
+    Matcher m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies");
+    assertTrue(m.find());
+
+    m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies alba");
+    assertTrue(m.find());
+
+    m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies alba Mill.");
+    assertFalse(m.find());
+
+    m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies DC");
+    assertFalse(m.find());
+
+    m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies 4-color");
+    assertTrue(m.find());
+
+    m = Name.UNI_OR_BI_NOMEN_ONLY.matcher("Abies alba alpina");
+    assertFalse(m.find());
   }
 
   @Test

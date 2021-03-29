@@ -1,6 +1,5 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.MatchType;
 
 import java.util.Objects;
@@ -52,7 +51,7 @@ public class SimpleNameWithNidx extends SimpleName {
 
   @Override
   public String toString() {
-    var sb = super.labelBuilder();
+    var sb = super.toStringBuilder();
     sb.append("| nidx ");
     sb.append(canonicalId);
     sb.append('-');

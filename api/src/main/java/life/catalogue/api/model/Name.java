@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.api.util.ObjectUtils;
@@ -37,6 +38,10 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, LinneanName, ScientificName {
 
   private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?(\\b.+)?$");
+  // matches only uninomials or binomials without any authorship
+  private static String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
+  @VisibleForTesting
+  static Pattern UNI_OR_BI_NOMEN_ONLY = Pattern.compile("^[A-ZÆŒ]"+EPITHET+"(?: "+EPITHET+")?$");
 
   private Integer sectorKey;
   private Integer verbatimKey;
@@ -690,13 +695,13 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * Adds italics around the epithets but not rank markers or higher ranked names.
    */
   String scientificNameHtml() {
-    return scientificNameHtml(scientificName, rank, isParsed());
+    return scientificNameHtml(scientificName, rank);
   }
 
   /**
    * Adds italics around the epithets but not rank markers or higher ranked names.
    */
-  public static String scientificNameHtml(String scientificName, Rank rank, boolean isParsed){
+  public static String scientificNameHtml(String scientificName, Rank rank){
     // only genus names and below are shown in italics
     if (scientificName != null && rank != null && rank.ordinal() >= Rank.GENUS.ordinal()) {
       Matcher m = RANK_MATCHER.matcher(scientificName);
@@ -715,7 +720,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
         }
         return sb.toString();
 
-      } else if(isParsed) {
+      } else {
         return NameFormatter.inItalics(scientificName);
       }
     }

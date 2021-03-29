@@ -316,7 +316,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
    * Adds italics around the epithets but not rank markers or higher ranked names.
    */
   String scientificNameHtml(){
-    return Name.scientificNameHtml(scientificName, rank, isParsed());
+    return Name.scientificNameHtml(scientificName, rank);
   }
 
   @Override

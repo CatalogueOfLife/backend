@@ -108,7 +108,7 @@ public class IdProvider {
       this.del = del;
       this.datasetKey = key.getDatasetKey();
       this.id = key.getId();
-      this.fullname = sn.getFullName();
+      this.fullname = sn.getLabel();
       this.rank = sn.getRank();
       this.status = sn.getStatus();
       this.parent = sn.getParent();
@@ -424,7 +424,7 @@ public class IdProvider {
     if (nidx == null) {
       LOG.info("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
       for (SimpleNameWithNidx n : names) {
-        nomatchWriter.write(n.getLabel());
+        nomatchWriter.write(n.toStringBuilder().toString());
         nomatchWriter.write("\n");
       }
 
