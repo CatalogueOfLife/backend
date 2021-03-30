@@ -1,5 +1,6 @@
 package life.catalogue.jackson;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
@@ -13,11 +14,13 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.jackson.FastutilsSerde;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.License;
 import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.LicenseParser;
+import org.gbif.nameparser.api.Authorship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +72,19 @@ public class YamlMapper {
       ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
       ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
       super.setupModule(ctxt);
+      ctxt.setMixInAnnotations(Person.class, PersonMixIn.class);
+      ctxt.setMixInAnnotations(Organisation.class, OrganisationMixIn.class);
     }
+  }
+
+  abstract class PersonMixIn {
+    @JsonIgnore
+    abstract String getName();
+  }
+
+  abstract class OrganisationMixIn {
+    @JsonIgnore
+    abstract String getLabel();
   }
 
 }

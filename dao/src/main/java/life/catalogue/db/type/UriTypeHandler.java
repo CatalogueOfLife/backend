@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
@@ -36,8 +37,9 @@ public class UriTypeHandler extends BaseTypeHandler<URI> {
   public URI getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
     return toURI(cs.getString(columnIndex));
   }
-  
-  private static URI toURI(String val) throws SQLException {
+
+  @VisibleForTesting
+  protected static URI toURI(String val) throws SQLException {
     if (Strings.isNullOrEmpty(val)) {
       return null;
     }

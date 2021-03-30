@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * Stores objects as arrays in postgres.
- * An optional nullValue parameter can be given to avoid nulls in the db and e.g. use empty arrray instead.
+ * An optional nullValue parameter can be given to avoid nulls in the db and e.g. use empty array instead.
  */
 public abstract class CustomArrayAbstractTypeHandler<T> extends BaseTypeHandler<List<T>> {
   protected final String typeName;
@@ -66,13 +66,14 @@ public abstract class CustomArrayAbstractTypeHandler<T> extends BaseTypeHandler<
   public abstract T fromAttributes(List<String> cols) throws SQLException;
 
   public List<T> toObj(Array pgArray) throws SQLException {
-    List<T> result = new ArrayList<>();
     if (pgArray != null) {
+      List<T> result = new ArrayList<>();
       Object[] objs = (Object[]) pgArray.getArray();
       for (Object o : objs) {
         result.add(fromAttributes(CustomAbstractTypeHandler.toCols(o)));
       }
+      return result;
     }
-    return result;
+    return null;
   }
 }

@@ -3,6 +3,9 @@ package life.catalogue.dw.jersey.filter;
 import javax.ws.rs.NameBinding;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.*;
 
 
 /**
@@ -11,5 +14,6 @@ import java.lang.annotation.RetentionPolicy;
  */
 
 @NameBinding
+@Target({METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface VaryAccept {}

@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
  * Metadata about a dataset or a subset of it if parentKey is given.
  */
 public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetadata {
-  private static final List<PropertyDescriptor> METADATA_PROPS;
+  public static final Map<String, Object> NULL_TYPES;
+  public static final List<PropertyDescriptor> METADATA_PROPS;
   static {
     try {
       Set<String> metadata = Arrays.stream(Introspector.getBeanInfo(DatasetMetadata.class).getMethodDescriptors())
@@ -35,6 +36,26 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
       METADATA_PROPS = Arrays.stream(Introspector.getBeanInfo(DatasetMetadata.class).getPropertyDescriptors())
         .filter(p -> metadata.contains(p.getReadMethod().getName()))
         .collect(Collectors.toUnmodifiableList());
+
+      Map<String, Object> nullTypes = new HashMap<>();
+      for (PropertyDescriptor p : METADATA_PROPS) {
+        Object nullType = null;
+        if (p.getPropertyType().equals(URI.class)) {
+          nullType = URI.create("null:null");
+        } else if (p.getPropertyType().equals(String.class)) {
+          nullType = "";
+        } else if (p.getPropertyType().equals(Integer.class)) {
+          nullType = Integer.MIN_VALUE;
+        } else if (p.getPropertyType().equals(Person.class)) {
+          nullType = new Person("null");
+        } else if (p.getPropertyType().equals(LocalDate.class)) {
+          nullType = LocalDate.of(1900,1,1);
+        }
+        if (nullType != null) {
+          nullTypes.put(p.getName(), nullType);
+        }
+      }
+      NULL_TYPES = Map.copyOf(nullTypes);
 
     } catch (IntrospectionException e) {
       throw new RuntimeException(e);
@@ -122,7 +143,11 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
     try {
       for (PropertyDescriptor prop : METADATA_PROPS){
         Object val = prop.getReadMethod().invoke(patch);
-        if (val != null && !(val instanceof Collection && ((Collection)val).isEmpty())) {
+        if (val != null) {
+          if (NULL_TYPES.containsKey(prop.getName())) {
+            Object nullType = NULL_TYPES.get(prop.getName());
+            val = val.equals(nullType) ? null : val;
+          }
           prop.getWriteMethod().invoke(this, val);
         }
       }
