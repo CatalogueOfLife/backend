@@ -14,6 +14,6 @@ import static java.lang.annotation.ElementType.*;
  */
 
 @NameBinding
-@Target({METHOD})
+@Target({TYPE, METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface VaryAccept {}
