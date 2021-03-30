@@ -76,25 +76,25 @@
     #{obj.modifiedBy}
   </sql>
 
-  <select id="processDataset" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100"
+  <select id="processDataset" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap" resultOrdered="true" fetchSize="100"
           resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM dataset_patch d
     WHERE dataset_key = #{datasetKey}
   </select>
 
-  <select id="get" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+  <select id="get" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
     SELECT <include refid="SELECT"/>
     FROM dataset_patch d
     WHERE key = #{key} and dataset_key = #{datasetKey}
   </select>
 
-  <insert id="create" parameterType="Dataset" useGeneratedKeys="false">
+  <insert id="create" parameterType="ArchivedDataset" useGeneratedKeys="false">
     INSERT INTO dataset_patch ( key, dataset_key,<include refid="COLS"/>, created, modified)
     VALUES ( #{obj.key}, #{datasetKey},<include refid="PROPS"/>, now(), now())
   </insert>
 
-  <update id="update" parameterType="Dataset">
+  <update id="update" parameterType="ArchivedDataset">
     UPDATE dataset_patch
     SET (<include refid="COLS"/>, modified)
     = (<include refid="PROPS"/>, now())

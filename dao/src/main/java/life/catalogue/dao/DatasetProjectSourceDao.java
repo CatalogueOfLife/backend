@@ -98,7 +98,7 @@ public class DatasetProjectSourceDao {
    * @return the same dataset instance d as given
    */
   private ArchivedDataset patch(ArchivedDataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm, DatasetSettings settings){
-    Dataset patch = pm.get(projectKey, d.getKey());
+    ArchivedDataset patch = pm.get(projectKey, d.getKey());
     if (patch != null) {
       LOG.info("Apply dataset patch from project {} to {}: {}", patchProject.getKey(), d.getKey(), d.getTitle());
       d.applyPatch(patch);

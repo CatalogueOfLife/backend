@@ -1,16 +1,17 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.annotations.Param;
 
-public interface DatasetPatchMapper extends DatasetProcessable<Dataset> {
+public interface DatasetPatchMapper extends DatasetProcessable<ArchivedDataset> {
 
-  void create(@Param("datasetKey") int datasetKey, @Param("obj") Dataset obj);
+  void create(@Param("datasetKey") int datasetKey, @Param("obj") ArchivedDataset obj);
 
-  Dataset get(@Param("datasetKey") int datasetKey, @Param("key") Integer key);
+  ArchivedDataset get(@Param("datasetKey") int datasetKey, @Param("key") Integer key);
 
-  int update(@Param("datasetKey")  int datasetKey, @Param("obj") Dataset obj);
+  int update(@Param("datasetKey")  int datasetKey, @Param("obj") ArchivedDataset obj);
 
   int delete(@Param("datasetKey")  int datasetKey, @Param("key") Integer key);
 

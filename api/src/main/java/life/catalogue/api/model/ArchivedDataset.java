@@ -105,7 +105,16 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   }
 
   /**
-   * Applies a dataset metadata patch, setting all non null fields
+   * Applies a dataset metadata patch, setting all non null fields.
+   * In order for a patch to specify that a certain field should become NULL, we need to define other values than null which means "do not patch".
+   * Depending on the data type these are:
+   * Integer: -1
+   * String: ""
+   * Collection: empty collection
+   * License: never null
+   * LocalDate: 1900-01-01
+   * Person: ???
+   * URI: ???
    * @param patch
    */
   public void applyPatch(DatasetMetadata patch) {
