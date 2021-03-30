@@ -5,6 +5,8 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.VocabularyUtils;
@@ -411,11 +413,44 @@ public class IdProvider {
   }
 
   private void mapCanonicalGroup(List<SimpleNameWithNidx> group, Writer nomatchWriter) throws IOException {
-    // make sure we have the names sorted by their nidx
-    group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())));
-    // now split the canonical group into subgroups for each nidx to match them individually
-    for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())))) {
-      issueIDs(idGroup.get(0).getNamesIndexId(), idGroup, nomatchWriter);
+    if (!group.isEmpty()) {
+      removeDuplicateIdxEntries(group);
+      // make sure we have the names sorted by their nidx
+      group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())));
+      // now split the canonical group into subgroups for each nidx to match them individually
+      for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())))) {
+        issueIDs(idGroup.get(0).getNamesIndexId(), idGroup, nomatchWriter);
+      }
+    }
+  }
+
+  /**
+   * A temporary "hack" to remove the redundant names index entries that get created by the current NamesIndex implementation.
+   * It reduces the names with the exact same name & authorship to a single index id (the lowest).
+   */
+  private void removeDuplicateIdxEntries(List<SimpleNameWithNidx> group) {
+    // first determine which is the lowest nidx for each full name
+    Set<Integer> originalIds = new HashSet<>();
+    Object2IntMap<String> name2nidx = new Object2IntOpenHashMap<>();
+    for (SimpleNameWithNidx n : group) {
+      originalIds.add(n.getNamesIndexId());
+      if (n.getNamesIndexId() == null) continue;
+      String label = n.getLabel().toLowerCase();
+      name2nidx.putIfAbsent(label, n.getNamesIndexId());
+      if (name2nidx.get(label)>n.getNamesIndexId()) {
+        name2nidx.put(label, n.getNamesIndexId());
+      }
+    }
+    if (originalIds.size() != name2nidx.size()) {
+      LOG.info("Reducing canonical group {} with {} distinct nidx values to {}", group.get(0).getName(), originalIds.size(), name2nidx.size());
+      // now update redundant nidx
+      for (SimpleNameWithNidx n : group) {
+        String label = n.getLabel().toLowerCase();
+        if (name2nidx.containsKey(label) && (n.getNamesIndexId() == null || name2nidx.getInt(label) != n.getNamesIndexId())) {
+          LOG.debug("Updated names index match from {} to {} for {}", n.getNamesIndexId(), name2nidx.getInt(label), label);
+          n.setNamesIndexId(name2nidx.getInt(label));
+        }
+      }
     }
   }
 
