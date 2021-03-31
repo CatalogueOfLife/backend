@@ -2,6 +2,7 @@ package life.catalogue.command;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -17,7 +18,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
@@ -25,7 +29,30 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
   private static final String ARG_KEY = "key";
   private Integer key;
   private SectorImportDao sid;
+  private Set<SectorAttempt> done = new HashSet<>();
 
+  static class SectorAttempt {
+    final int id;
+    final int attempt;
+
+    SectorAttempt(Sector s) {
+      this.id = s.getId();
+      this.attempt = s.getSyncAttempt();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof SectorAttempt)) return false;
+      SectorAttempt that = (SectorAttempt) o;
+      return id == that.id && attempt == that.attempt;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(id, attempt);
+    }
+  }
 
   public UpdReleaseMetricCmd() {
     super("update-release-metrics", "Update all release sector metrics for the given projects dataset key");
@@ -79,6 +106,7 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
     final AtomicInteger counter = new AtomicInteger(0);
     final AtomicInteger created = new AtomicInteger(0);
     final AtomicInteger updated = new AtomicInteger(0);
+    final AtomicInteger before = new AtomicInteger(0);
     try (SqlSession session = factory.openSession()) {
       final SectorMapper sm = session.getMapper(SectorMapper.class);
       final SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
@@ -88,30 +116,38 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
           LOG.warn("Ignore sector {} without last sync attempt from release {}", s.getId(), rel.getKey());
 
         } else {
-          SectorImport si = sim.get(s, s.getSyncAttempt());
-          if (si == null) {
-            si = new SectorImport();
-            si.setSectorKey(s.getId());
-            si.setDatasetKey(key); // datasetKey must be the project, thats where we store all metrics !!!
-            si.setAttempt(s.getSyncAttempt());
-            si.setJob(getClass().getSimpleName());
-            si.setState(ImportState.ANALYZING);
-            si.setCreatedBy(user.getKey());
-            // how can we approximately recreate with those timestamps ?
-            si.setStarted(LocalDateTime.now());
-            sim.create(si);
-            created.incrementAndGet();
-          } else {
-            if (si.getState() != ImportState.FINISHED) {
-              LOG.warn("Sector import {} from release {} has state {}. Update metrics anyways.", si.attempt(), rel.getKey(), si.getState());
-            }
-            updated.incrementAndGet();
-          }
+          SectorAttempt sa = new SectorAttempt(s);
+          if (done.contains(sa)) {
+            before.incrementAndGet();
+            LOG.debug("Ignore sector import {}:{} which we updated before already", s.getId(), s.getSyncAttempt());
 
-          sid.updateMetrics(si, rel.getKey());
-          si.setState(ImportState.FINISHED);
-          si.setFinished(LocalDateTime.now());
-          sim.update(si);
+          } else {
+            done.add(sa);
+            SectorImport si = sim.get(s, s.getSyncAttempt());
+            if (si == null) {
+              si = new SectorImport();
+              si.setSectorKey(s.getId());
+              si.setDatasetKey(key); // datasetKey must be the project, thats where we store all metrics !!!
+              si.setAttempt(s.getSyncAttempt());
+              si.setJob(getClass().getSimpleName());
+              si.setState(ImportState.ANALYZING);
+              si.setCreatedBy(user.getKey());
+              // how can we approximately recreate with those timestamps ?
+              si.setStarted(LocalDateTime.now());
+              sim.create(si);
+              created.incrementAndGet();
+            } else {
+              if (si.getState() != ImportState.FINISHED) {
+                LOG.warn("Sector import {} from release {} has state {}. Update metrics anyways.", si.attempt(), rel.getKey(), si.getState());
+              }
+              updated.incrementAndGet();
+            }
+
+            sid.updateMetrics(si, rel.getKey());
+            si.setState(ImportState.FINISHED);
+            si.setFinished(LocalDateTime.now());
+            sim.update(si);
+          }
         }
       });
     }
