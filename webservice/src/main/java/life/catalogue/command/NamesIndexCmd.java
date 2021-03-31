@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class NamesIndexCmd extends AbstractPromptCmd {
+public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";
   private static final String BUILD_SCHEMA = "build";
@@ -80,60 +80,58 @@ public class NamesIndexCmd extends AbstractPromptCmd {
   }
 
   @Override
-  public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
-    if (namespace.getInt(ARG_THREADS) != null) {
-      threads = namespace.getInt(ARG_THREADS);
+  public void execute() throws Exception {
+    if (ns.getInt(ARG_THREADS) != null) {
+      threads = ns.getInt(ARG_THREADS);
       Preconditions.checkArgument(threads > 0, "Needs at least one matcher thread");
     }
     LOG.warn("Rebuilt names index and rematch all datasets with data in pg schema {} with {} threads", BUILD_SCHEMA, threads);
 
-    try (HikariDataSource dataSource = cfg.db.pool()) {
-      // use a factory that changes the default pg search_path to "build" so we don't interfer with the index current live
-      SqlSessionFactory factory = new SqlSessionFactoryWithPath(MybatisFactory.configure(dataSource, "namesIndexCmd"), BUILD_SCHEMA);
+    // use a factory that changes the default pg search_path to "build" so we don't interfere with the index current live
+    factory = new SqlSessionFactoryWithPath(factory, BUILD_SCHEMA);
 
-      LOG.info("Prepare pg schema {}", BUILD_SCHEMA);
+    LOG.info("Prepare pg schema {}", BUILD_SCHEMA);
 
-      try (Connection c = dataSource.getConnection()) {
-        ScriptRunner runner = PgConfig.scriptRunner(c);
-        runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
-      }
+    try (Connection c = dataSource.getConnection()) {
+      ScriptRunner runner = PgConfig.scriptRunner(c);
+      runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
+    }
 
-      NameIndex ni = NameIndexFactory.persistentOrMemory(indexBuildFile(cfg), factory, AuthorshipNormalizer.INSTANCE);
-      ni.start();
+    NameIndex ni = NameIndexFactory.persistentOrMemory(indexBuildFile(cfg), factory, AuthorshipNormalizer.INSTANCE);
+    ni.start();
 
-      IntSet keys;
-      try (SqlSession session = factory.openSession()) {
-        keys = DaoUtils.listDatasetWithPartitions(session);
-      }
+    IntSet keys;
+    try (SqlSession session = factory.openSession()) {
+      keys = DaoUtils.listDatasetWithPartitions(session);
+    }
 
-      final AtomicInteger counter = new AtomicInteger(0);
-      final AtomicInteger total = new AtomicInteger(0);
-      final AtomicInteger nomatch = new AtomicInteger(0);
-      ExecutorService exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("dataset-matcher"));
-      for (int key : keys) {
-        CompletableFuture.supplyAsync(() -> rematchDataset(key, factory, ni), exec)
-          .exceptionally(ex -> {
-            counter.incrementAndGet();
-            LOG.error("Error matching dataset {}", key, ex.getCause());
-            return null;
-          })
-          .thenAccept(m -> {
-            LOG.info("Indexed {}/{} dataset {}. Total usages {} with {} not matching",
-              counter.incrementAndGet(), keys.size(), key, total.addAndGet(m.getTotal()), nomatch.addAndGet(m.getNomatch())
-            );
-          });
-      }
-      ExecutorUtils.shutdown(exec);
-      LOG.info("Successfully rebuild names index with final size {}, rematching all {} datasets", ni.size(), counter);
+    final AtomicInteger counter = new AtomicInteger(0);
+    final AtomicInteger total = new AtomicInteger(0);
+    final AtomicInteger nomatch = new AtomicInteger(0);
+    ExecutorService exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("dataset-matcher"));
+    for (int key : keys) {
+      CompletableFuture.supplyAsync(() -> rematchDataset(key, factory, ni), exec)
+        .exceptionally(ex -> {
+          counter.incrementAndGet();
+          LOG.error("Error matching dataset {}", key, ex.getCause());
+          return null;
+        })
+        .thenAccept(m -> {
+          LOG.info("Indexed {}/{} dataset {}. Total usages {} with {} not matching",
+            counter.incrementAndGet(), keys.size(), key, total.addAndGet(m.getTotal()), nomatch.addAndGet(m.getNomatch())
+          );
+        });
+    }
+    ExecutorUtils.shutdown(exec);
+    LOG.info("Successfully rebuild names index with final size {}, rematching all {} datasets", ni.size(), counter);
 
-      LOG.info("Shutting down names index");
-      ni.close();
+    LOG.info("Shutting down names index");
+    ni.close();
 
-      LOG.info("Building postgres indices for new names index");
-      try (Connection c = dataSource.getConnection()) {
-        ScriptRunner runner = PgConfig.scriptRunner(c);
-        runner.runScript(Resources.getResourceAsReader(SCHEMA_POST));
-      }
+    LOG.info("Building postgres indices for new names index");
+    try (Connection c = dataSource.getConnection()) {
+      ScriptRunner runner = PgConfig.scriptRunner(c);
+      runner.runScript(Resources.getResourceAsReader(SCHEMA_POST));
     }
   }
 

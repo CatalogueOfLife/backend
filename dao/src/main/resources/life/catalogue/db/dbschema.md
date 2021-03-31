@@ -15,10 +15,8 @@ and done it manually. So we can as well log changes here.
 ALTER TABLE sector_import DROP CONSTRAINT sector_import_dataset_key_sector_key_fkey;
 ```
 
-The following will fix the COL prod data - not to be run on other installations
-```
-tbd...
-```
+The COL prod data should be fixed by running the UpdReleaseMetricCmd !!!
+
 
 ### 2021-03-23 ignore decision
 ```

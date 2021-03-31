@@ -90,9 +90,8 @@
 
   <insert id="create" parameterType="SectorImport">
     <selectKey keyProperty="imp.attempt" resultType="integer" order="BEFORE">
-      SELECT coalesce(max(attempt)+1, 1)
-      FROM sector_import
-      WHERE sector_key=#{imp.sectorKey}
+      <if test="imp.attempt == null">SELECT coalesce(max(attempt)+1, 1) FROM sector_import WHERE sector_key=#{imp.sectorKey}</if>
+      <if test="imp.attempt != null">SELECT #{imp.attempt}</if>
     </selectKey>
     INSERT INTO sector_import (<include refid="COLS"/>, attempt)
     VALUES (<include refid="PROPS"/>, #{imp.attempt})

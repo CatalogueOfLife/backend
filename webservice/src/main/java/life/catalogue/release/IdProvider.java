@@ -74,6 +74,7 @@ public class IdProvider {
   private final ReleasedIds ids = new ReleasedIds();
   private final Int2IntMap attempt2dataset = new Int2IntOpenHashMap();
   private final AtomicInteger keySequence = new AtomicInteger();
+  private final File reportDir;
   // id changes in this release
   private int reused = 0;
   private IntSet resurrected = new IntOpenHashSet();
@@ -90,6 +91,8 @@ public class IdProvider {
     this.attempt = attempt;
     this.factory = factory;
     this.cfg = cfg;
+    reportDir = cfg.reportDir(projectKey, attempt);
+    reportDir.mkdirs();
   }
 
   public IdReport run() {
@@ -162,7 +165,6 @@ public class IdProvider {
   protected void report() {
     try {
       File dir = cfg.reportDir(projectKey, attempt);
-      dir.mkdirs();
       // read the following IDs from previous releases
       reportFile(dir,"deleted.tsv", deleted, true, true);
       reportFile(dir,"resurrected.tsv", resurrected, true, false);
@@ -382,7 +384,7 @@ public class IdProvider {
     final int lastRelIds = ids.maxAttemptIdCount();
     AtomicInteger counter = new AtomicInteger();
     try (SqlSession writeSession = factory.openSession(false);
-         Writer nomatchWriter = UTF8IoUtils.writerFromFile(new File(cfg.reportDir, "nomatch.txt"))
+         Writer nomatchWriter = UTF8IoUtils.writerFromFile(new File(reportDir, "nomatch.txt"))
     ) {
       idm = writeSession.getMapper(IdMapMapper.class);
       final int batchSize = 10000;
