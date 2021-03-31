@@ -31,6 +31,10 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
   private SectorImportDao sid;
   private Set<SectorAttempt> done = new HashSet<>();
 
+  public UpdReleaseMetricCmd() {
+    super("updReleaseMetrics", "Update all release sector metrics for the given projects dataset key");
+  }
+
   static class SectorAttempt {
     final int id;
     final int attempt;
@@ -52,10 +56,6 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
     public int hashCode() {
       return Objects.hash(id, attempt);
     }
-  }
-
-  public UpdReleaseMetricCmd() {
-    super("update-release-metrics", "Update all release sector metrics for the given projects dataset key");
   }
 
   @Override
