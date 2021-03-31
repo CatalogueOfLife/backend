@@ -7,12 +7,15 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.common.concurrent.ExecutorUtils;
+import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.parser.NameParser;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
@@ -24,6 +27,10 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -194,6 +201,55 @@ public class NameIndexImplTest {
     assertNotEquals(idx, idxTesla);
     assertEquals(cidx, m.getName().getCanonicalId());
     assertEquals(3, ni.size());
+  }
+
+
+  /**
+   * Try to add the same name concurrently, making sure we never get duplicates in the index
+   */
+  @Test
+  public void concurrentMatching() throws Exception {
+    setupMemory(true);
+    assertEquals(0, ni.size());
+
+    Name n = new Name();
+    n.setScientificName("Abies alba");
+    n.setGenus("Abies");
+    n.setSpecificEpithet("alba");
+    n.setAuthorship("Mill.");
+    n.setCombinationAuthorship(Authorship.authors("Mill."));
+    n.setRank(Rank.SPECIES);
+    n.setType(NameType.SCIENTIFIC);
+
+    final AtomicInteger counter = new AtomicInteger(0);
+    ExecutorService exec = Executors.newFixedThreadPool(12, new NamedThreadFactory("test-matcher"));
+
+    final int repeat = 1000;
+    StopWatch watch = StopWatch.createStarted();
+    for (int x=0; x<repeat; x++) {
+      CompletableFuture.supplyAsync(() -> {
+        counter.incrementAndGet();
+        return ni.match(n, true, true);
+      }, exec).exceptionally(ex -> {
+        ex.printStackTrace();
+        return null;
+      }).thenAccept(m -> {
+        if (m == null) {
+          fail("Matching error");
+        }
+        assertEquals(MatchType.EXACT, m.getType());
+        final Integer idx = m.getName().getKey();
+        final Integer cidx = m.getName().getCanonicalId();
+        assertNotEquals(idx, cidx);
+        assertEquals(2, ni.size());
+      });
+    }
+    ExecutorUtils.shutdown(exec);
+    watch.stop();
+    System.out.println(watch);
+
+    assertEquals(repeat, counter.get());
+    assertEquals(2, ni.size());
   }
 
   @Test

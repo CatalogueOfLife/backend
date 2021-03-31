@@ -90,22 +90,20 @@ public class NameIndexImpl implements NameIndex {
       } else {
         m.setAlternatives(null);
       }
-      
+
     } else {
       m = NameMatch.noMatch();
     }
 
-    if ((!m.hasMatch() || m.getType() == MatchType.CANONICAL) && allowInserts) {
-      if (INDEX_NAME_TYPES.contains(name.getType())) {
-        m.setName(add(name));
-        m.setType(MatchType.EXACT);
-        LOG.debug("Inserted: {}", m.getName().getLabel());
-      } else {
-        LOG.debug("Do not insert {} name: {}", name.getType(), name.getLabel());
-      }
+    if (allowInserts && needsInsert(m, name)) {
+      m = tryToAdd(name, m, verbose);
     }
     LOG.debug("Matched {} => {}", name.getLabel(), m);
     return m;
+  }
+
+  private static boolean needsInsert(NameMatch m, Name name){
+    return (!m.hasMatch() || m.getType() == MatchType.CANONICAL) && INDEX_NAME_TYPES.contains(name.getType());
   }
 
   @Override
@@ -144,7 +142,7 @@ public class NameIndexImpl implements NameIndex {
   }
 
   /**
-   * Does comparison by rank, author and nom code to pick real match from candidates
+   * Does comparison by rank, name & author to pick real match from candidates
    */
   private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
     final Rank rank = normRank(query.getRank());
@@ -306,14 +304,29 @@ public class NameIndexImpl implements NameIndex {
     return store.all();
   }
 
-  public IndexName add(Name orig) {
-    IndexName n = new IndexName(orig);
-    add(n);
-    return n;
+  /**
+   * We synchronize this method to only ever allow one write at a time to avoid duplicates.
+   * As we do allow concurrent reads through the main match method
+   * we can get parallel queries for the exact same name not previously existing, especially when rebuilding the index concurrently.
+   * As these concurrent reads would all result in no matches which would subsequently becomes writes,
+   * we need to make sure here again that the name indeed did not yet exist.
+   */
+  public synchronized NameMatch tryToAdd(Name orig, NameMatch match, boolean verbose) {
+    var match2 = match(orig, false, verbose);
+    if (needsInsert(match2, orig)) {
+      // verified we still do not have that name - insert the original match for real!
+      IndexName n = new IndexName(orig);
+      add(n);
+      match.setName(n);
+      match.setType(MatchType.EXACT);
+      LOG.debug("Inserted: {}", match.getName().getLabel());
+      return match;
+    }
+    return match2;
   }
 
   @Override
-  public synchronized void add(IndexName name) {
+  public void add(IndexName name) {
     final String key = key(name);
     name.setRank(normRank(name.getRank()));
 

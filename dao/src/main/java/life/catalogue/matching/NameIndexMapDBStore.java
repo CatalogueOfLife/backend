@@ -42,8 +42,8 @@ public class NameIndexMapDBStore implements NameIndexStore {
    */
   static class NameIndexKryoPool extends Pool<Kryo> {
 
-    public NameIndexKryoPool(int maximumCapacity) {
-      super(true, true, maximumCapacity);
+    public NameIndexKryoPool() {
+      super(true, true, 1024);
     }
 
     @Override
@@ -68,12 +68,12 @@ public class NameIndexMapDBStore implements NameIndexStore {
 
   /**
    * @param dbMaker
-   * @param dbFIle the db file if the maker creates a file based db. Slightly defeats the purpose, but we wanna deal with coruppted db files
+   * @param dbFIle the db file if the maker creates a file based db. Slightly defeats the purpose, but we wanna deal with corrupted db files
    */
   public NameIndexMapDBStore(DBMaker.Maker dbMaker, @Nullable File dbFIle) {
     this.dbFIle = dbFIle;
     this.dbMaker = dbMaker;
-    pool = new NameIndexKryoPool(4);
+    pool = new NameIndexKryoPool();
   }
 
   @Override
