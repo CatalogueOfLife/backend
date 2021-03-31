@@ -16,6 +16,8 @@ public class ReleaseConfig {
   public LocalDateTime since;
   // id start
   public int start = 0;
+  // nidx deduplication workaround - should be fixed by now so not enabled by default
+  public boolean nidxDeduplication = false;
 
   @NotNull
   public File reportDir = new File("/tmp/col/release");

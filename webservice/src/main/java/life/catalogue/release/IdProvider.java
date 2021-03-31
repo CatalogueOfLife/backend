@@ -414,7 +414,11 @@ public class IdProvider {
 
   private void mapCanonicalGroup(List<SimpleNameWithNidx> group, Writer nomatchWriter) throws IOException {
     if (!group.isEmpty()) {
-      removeDuplicateIdxEntries(group);
+      // workaround for names index duplicates bug
+      if (cfg.nidxDeduplication) {
+        removeDuplicateIdxEntries(group);
+      }
+
       // make sure we have the names sorted by their nidx
       group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())));
       // now split the canonical group into subgroups for each nidx to match them individually
