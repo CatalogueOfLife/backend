@@ -57,18 +57,13 @@ public abstract class FileMetricsDao<K> {
    */
   public void updateNames(K dataKey, K storeKey, int attempt) {
     try (SqlSession session = factory.openSession(true);
-         NamesWriter nHandler = new NamesWriter(namesFile(storeKey, attempt));
-         NamesIdWriter idHandler = new NamesIdWriter(namesIdFile(storeKey, attempt))
+         NamesWriter nHandler = new NamesWriter(namesFile(storeKey, attempt))
     ){
       NameMapper nm = session.getMapper(NameMapper.class);
-      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
 
       DSID<Integer> skey = sectorKey(dataKey);
       nm.processNameStrings(skey.getDatasetKey(), skey.getId()).forEach(nHandler);
       LOG.info("Written {} name strings for {} {}-{}", nHandler.counter, type, dataKey, attempt);
-
-      nmm.processIndexIds(skey.getDatasetKey(), skey.getId()).forEach(idHandler);
-      LOG.info("Written {} names index ids for {} {}-{}", idHandler.counter, type, dataKey, attempt);
     }
   }
 
@@ -130,54 +125,10 @@ public abstract class FileMetricsDao<K> {
     }
   }
 
-  static class NamesIdWriter implements Consumer<Integer>, AutoCloseable {
-    public int counter = 0;
-    private final File f;
-    private final BufferedWriter w;
-
-    NamesIdWriter(File f) {
-      this.f=f;
-      try {
-        w = UTF8IoUtils.writerFromGzipFile(f);
-
-      } catch (IOException e) {
-        LOG.error("Failed to write to {}", f.getAbsolutePath());
-        throw new RuntimeException(e);
-      }
-    }
-
-    @Override
-    public void close() {
-      try {
-        w.close();
-      } catch (IOException e) {
-        LOG.error("Failed to close {}", f.getAbsolutePath());
-      }
-    }
-
-    @Override
-    public void accept(Integer id) {
-      try {
-        if (id != null) {
-          counter++;
-          w.append(id.toString());
-          w.append('\n');
-        }
-      } catch (IOException e) {
-        LOG.error("Failed to write to {}", f.getAbsolutePath());
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
   abstract TextTreePrinter ttPrinter(K key, SqlSessionFactory factory, Writer writer);
 
   public Stream<String> getNames(K key, int attempt) {
     return streamFile(namesFile(key, attempt), key, attempt);
-  }
-
-  public Stream<String> getNameIds(K key, int attempt) {
-    return streamFile(namesIdFile(key, attempt), key, attempt);
   }
 
   public Stream<String> getTree(K key, int attempt) {
@@ -216,18 +167,15 @@ public abstract class FileMetricsDao<K> {
   }
 
   public File treeFile(K key, int attempt) {
-    return new File(subdir(key), "tree/"+attempt+".txt.gz");
+    return new File(subdir(key), attempt+"-tree.txt.gz");
   }
 
   public File namesFile(K key, int attempt) {
-    return new File(subdir(key), "names/"+attempt+"-strings.txt.gz");
-  }
-
-  public File namesIdFile(K key, int attempt) {
-    return new File(subdir(key), "names/"+attempt+".txt.gz");
+    return new File(subdir(key), attempt+"-names.txt.gz");
   }
 
   public abstract File subdir(K key);
 
   abstract DSID<Integer> sectorKey(K key);
 }
+

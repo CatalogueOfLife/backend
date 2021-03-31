@@ -66,10 +66,6 @@ public abstract class FileMetricsDaoTestBase<K> extends DaoTestBase {
       "Urocyon littoralis\n" +
       "Urocyon minicephalus\n" +
       "Urocyon webbi").lines(), lines);
-
-    lines = dao.getNameIds(key, 1);
-    // we have only NULL index ids in this test dataset :)
-    assertFalse(lines.findFirst().isPresent());
   }
   
   public static <T> void assertEquals(Stream<T> expected, Stream<T> toTest) {

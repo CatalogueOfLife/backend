@@ -165,15 +165,6 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     return fmsDao.getNames(DSID.of(datasetKey, id), attempt);
   }
 
-  @GET
-  @Path("{id}/sync/{attempt}/ids")
-  @Produces({MediaType.TEXT_PLAIN})
-  public Stream<String> getSyncAttemptNameIds(@PathParam("key") int datasetKey,
-                                              @PathParam("id") int id,
-                                              @PathParam("attempt") int attempt) {
-    return fmsDao.getNameIds(DSID.of(datasetKey, id), attempt);
-  }
-
   @POST
   @Path("/rematch")
   public RematcherBase.MatchCounter rematch(@PathParam("key") int projectKey, SectorRematchRequest req, @Auth User user) {

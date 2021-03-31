@@ -42,11 +42,4 @@ public abstract class AbstractDiffResource<K> {
     return diff.namesDiff(keyFromPath(key), attempts);
   }
 
-  @GET
-  @Path("ids")
-  public NamesDiff diffNameIds(@BeanParam DSIDValue<Integer> key,
-                               @QueryParam("attempts") String attempts) throws IOException {
-    return diff.nameIdsDiff(keyFromPath(key), attempts);
-  }
-
 }

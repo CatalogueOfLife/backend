@@ -69,12 +69,4 @@ public class DatasetImportResource {
     return diDao.getFileMetricsDao().getNames(key, attempt);
   }
 
-  @GET
-  @Path("{attempt}/ids")
-  @Produces({MediaType.TEXT_PLAIN})
-  public Stream<String> getImportAttemptNameIds(@PathParam("key") int key,
-                                                @PathParam("attempt") int attempt) {
-    return diDao.getFileMetricsDao().getNameIds(key, attempt);
-  }
-
 }

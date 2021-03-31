@@ -42,11 +42,6 @@ public abstract class BaseDiffService<K> {
     return udiff(key, atts, a -> dao.namesFile(key, a));
   }
 
-  public NamesDiff nameIdsDiff(K key, String attempts) {
-    int[] atts = parseAttempts(key, attempts);
-    return namesDiff(key, atts, a -> dao.namesIdFile(key, a));
-  }
-
   abstract int[] parseAttempts(K key, String attempts);
 
   private File[] attemptToFiles(K key, int[] attempts, Function<Integer, File> getFile) throws FileMetricsDao.AttemptMissingException{
