@@ -64,7 +64,6 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
     // Adds indexing options
     subparser.addArgument("--"+ ARG_KEY, "-k")
       .dest(ARG_KEY)
-      .nargs("*")
       .type(Integer.class)
       .required(false)
       .help("Dataset key for project to update");
