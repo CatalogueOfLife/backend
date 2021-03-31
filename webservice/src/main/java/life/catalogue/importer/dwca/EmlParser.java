@@ -319,7 +319,7 @@ public class EmlParser {
   }
 
   private static String text(StringBuilder text) {
-    return text == null || text.length() < 1 ? null : text.toString();
+    return text == null || text.length() < 1 ? null : StringUtils.trimToNull(text.toString());
   }
 
   private static Integer integer(StringBuilder text) {
