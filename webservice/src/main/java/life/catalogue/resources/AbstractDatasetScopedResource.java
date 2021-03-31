@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 
 @SuppressWarnings("static-method")
 /**
@@ -87,7 +89,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
   @DELETE
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("key") int datasetKey, @PathParam("id") K id, @Auth User user) {
+  public void delete(@PathParam("key") int datasetKey, @PathParam("id") K id, @Context UriInfo uri, @Auth User user) {
     DSIDValue<K> key = new DSIDValue<>(datasetKey, id);
     int i = dao.delete(key, user.getKey());
     if (i == 0) {

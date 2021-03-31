@@ -49,15 +49,15 @@ public class AssemblyCoordinator implements Managed {
 
   static class SectorFuture {
     public final DSID<Integer> sectorKey;
-    public final Future future;
+    public final Future<?> future;
     public final SectorImport state;
     public final boolean delete;
     
-    private SectorFuture(SectorRunnable job, Future future) {
+    private SectorFuture(SectorRunnable job, Future<?> future) {
       this.sectorKey = DSID.copy(job.sectorKey);
       this.state = job.getState();
       this.future = future;
-      this.delete = job instanceof SectorDeleteFull;
+      this.delete = job instanceof SectorDelete || job instanceof SectorDeleteFull;
     }
   }
   
@@ -192,8 +192,16 @@ public class AssemblyCoordinator implements Managed {
     queueJob(ss);
   }
 
-  public void deleteSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
-    SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, sid, this::successCallBack, this::errorCallBack, user);
+  /**
+   * @param full if true does a full deletion. Otherwise higher rank taxa are kept unlinked from the sector
+   */
+  public void deleteSector(DSID<Integer> sectorKey, boolean full, User user) throws IllegalArgumentException {
+    SectorRunnable sd;
+    if (full) {
+      sd = new SectorDeleteFull(sectorKey, factory, indexService, sid, this::successCallBack, this::errorCallBack, user);
+    } else {
+      sd = new SectorDelete(sectorKey, factory, indexService, sid, this::successCallBack, this::errorCallBack, user);
+    }
     queueJob(sd);
   }
   

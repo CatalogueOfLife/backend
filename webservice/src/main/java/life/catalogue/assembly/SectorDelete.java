@@ -44,12 +44,14 @@ public class SectorDelete extends SectorRunnable {
 
   @Override
   void doMetrics() throws Exception {
-    // remove metric files
-    try {
-      sid.deleteAll(sectorKey);
-    } catch (IOException e) {
-      LOG.error("Failed to delete metrics files for sector {}", sectorKey, e);
-    }
+    // we don't remove any sector metric anymore to avoid previous releases to be broken
+    // see https://github.com/CatalogueOfLife/backend/issues/986
+
+    //try {
+    //  sid.deleteAll(sectorKey);
+    //} catch (IOException e) {
+    //  LOG.error("Failed to delete metrics files for sector {}", sectorKey, e);
+    //}
   }
 
   @Override

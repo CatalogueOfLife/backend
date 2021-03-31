@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 public class SectorDeleteFull extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDeleteFull.class);
-  private Set<Integer> visitedSectors = new HashSet<>();
+  private final Set<Integer> visitedSectors = new HashSet<>();
   
   public SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
                           SectorImportDao sid, Consumer<SectorRunnable> successCallback,
@@ -92,17 +92,20 @@ public class SectorDeleteFull extends SectorRunnable {
 
   @Override
   void doMetrics() throws Exception {
-    final DSIDValue<Integer> key = DSID.copy(sectorKey);
-    for (int sKey : visitedSectors) {
-      // remove metric files
-      try {
-        sid.deleteAll(key.id(sKey));
-      } catch (IOException e) {
-        LOG.error("Failed to delete metrics files for sector {}", key, e);
-      }
-      LOG.info("Removed file metrics for sector {}", key);
-    }
-    LOG.info("Removed file metrics for {} sectors", visitedSectors.size());
+    // we don't remove any sector metric anymore to avoid previous releases to be broken
+    // see https://github.com/CatalogueOfLife/backend/issues/986
+
+    //final DSIDValue<Integer> key = DSID.copy(sectorKey);
+    //for (int sKey : visitedSectors) {
+    //  // remove metric files
+    //  try {
+    //    sid.deleteAll(key.id(sKey));
+    //  } catch (IOException e) {
+    //    LOG.error("Failed to delete metrics files for sector {}", key, e);
+    //  }
+    //  LOG.info("Removed file metrics for sector {}", key);
+    //}
+    //LOG.info("Removed file metrics for {} sectors", visitedSectors.size());
   }
 
   @Override

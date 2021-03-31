@@ -1,7 +1,6 @@
 package life.catalogue.matching.authorship;
 
 import life.catalogue.api.model.ScientificName;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
 import org.apache.commons.lang3.StringUtils;

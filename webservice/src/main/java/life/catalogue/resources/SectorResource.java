@@ -24,6 +24,7 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -62,11 +63,12 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteByDataset(@PathParam("key") int catalogueKey,
                               @QueryParam("datasetKey") int datasetKey,
+                              @QueryParam("full") boolean full,
                               @Context SqlSession session, @Auth User user) {
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
     for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
-      assembly.deleteSector(s, user);
+      assembly.deleteSector(s, full, user);
       counter++;
     }
     LOG.info("Scheduled deletion of all {} sectors for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
@@ -102,9 +104,10 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @Override
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Auth User user) {
+  public void delete(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context UriInfo uri, @Auth User user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
-    assembly.deleteSector(DSID.of(datasetKey, id), user);
+    boolean full = Boolean.parseBoolean(uri.getQueryParameters().getFirst("full"));
+    assembly.deleteSector(DSID.of(datasetKey, id), full, user);
   }
 
   @DELETE

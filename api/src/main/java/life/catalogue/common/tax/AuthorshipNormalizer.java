@@ -192,7 +192,7 @@ public class AuthorshipNormalizer {
         surname = trim(m.group(2));
         suffix = trim(m.group(3));
       } else {
-        LOG.warn("Cannot parse author: {}", a);
+        LOG.info("Cannot parse single author: {}", a);
         initials = "";
         surname = trim(a);
         suffix = "";

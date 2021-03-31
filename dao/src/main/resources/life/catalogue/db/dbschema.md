@@ -10,6 +10,17 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2021-03-31 fix sector metrics
+```
+ALTER TABLE sector_import DROP CONSTRAINT sector_import_dataset_key_sector_key_fkey;
+```
+
+The following will fix the COL prod data - not to be run on other installations
+```
+tbd...
+```
+
+### 2021-03-23 ignore decision
 ```
 ALTER TYPE EDITORIALDECISION_MODE ADD VALUE 'IGNORE' AFTER 'UPDATE_RECURSIVE';
 ```
