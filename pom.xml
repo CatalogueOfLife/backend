@@ -126,6 +126,7 @@
     <gbif.appkey>col.plus</gbif.appkey>
     <gbif.secret>secret</gbif.secret>
     <img.repo>${project.build.directory}/img-repo</img.repo>
+    <metrics.repo>${project.build.directory}/metrics-repo</metrics.repo>
   </properties>
 
   <licenses>

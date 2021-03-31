@@ -50,6 +50,7 @@ public class ImportJobIT {
 
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
+
   private WsServerConfig cfg;
   private ImportJob job;
   private DatasetWithSettings d;
