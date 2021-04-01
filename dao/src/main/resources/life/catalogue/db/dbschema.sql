@@ -935,7 +935,7 @@ CREATE TABLE names_index (
   sanctioning_author TEXT,
   remarks TEXT
 );
-
+CREATE INDEX ON names_index (canonical_id);
 
 
 --

@@ -10,6 +10,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2021-04-01 add missing nidx index
+```
+CREATE INDEX ON names_index (canonical_id);
+```
+
 ### 2021-03-31 fix sector metrics
 ```
 ALTER TABLE sector_import DROP CONSTRAINT sector_import_dataset_key_sector_key_fkey;
