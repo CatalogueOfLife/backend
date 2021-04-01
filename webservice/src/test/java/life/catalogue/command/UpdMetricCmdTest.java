@@ -1,6 +1,5 @@
 package life.catalogue.command;
 
-import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import org.junit.ClassRule;
@@ -12,7 +11,7 @@ import static org.junit.Assert.assertTrue;
 /**
  *
  */
-public class UpdReleaseMetricCmdTest extends CmdTestBase {
+public class UpdMetricCmdTest extends CmdTestBase {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule(true);
@@ -20,13 +19,13 @@ public class UpdReleaseMetricCmdTest extends CmdTestBase {
   @Rule
   public final TestDataRule testDataRule = TestDataRule.apple();
 
-  public UpdReleaseMetricCmdTest() {
-    super(new UpdReleaseMetricCmd());
+  public UpdMetricCmdTest() {
+    super(new UpdMetricCmd());
   }
   
   @Test
   public void testRebuild() throws Exception {
-    assertTrue(run("updReleaseMetrics", "--prompt", "0", "--key", "3").isEmpty());
+    assertTrue(run("updMetrics", "--prompt", "0", "--user", "tester", "--key", "3").isEmpty());
   }
 
 }

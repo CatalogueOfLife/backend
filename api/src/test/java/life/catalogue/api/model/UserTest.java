@@ -25,32 +25,32 @@ public class UserTest {
 
     u.addRole(EDITOR);
 
-    assertTrue(u.hasRole(EDITOR, null));
+    assertTrue(u.hasRole(EDITOR));
     assertTrue(u.hasRole(EDITOR.name(), null));
     assertFalse(u.hasRole(EDITOR, 1));
 
-    assertFalse(u.hasRole(ADMIN, null));
+    assertFalse(u.hasRole(ADMIN));
     assertFalse(u.hasRole(ADMIN.name(), 1));
     assertFalse(u.hasRole(ADMIN, 1));
 
 
     u.addDataset(1);
-    assertTrue(u.hasRole(EDITOR, null));
+    assertTrue(u.hasRole(EDITOR));
     assertTrue(u.hasRole(EDITOR.name(), null));
     assertTrue(u.hasRole(EDITOR, 1));
     assertFalse(u.hasRole(EDITOR, 2));
 
-    assertFalse(u.hasRole(ADMIN, null));
+    assertFalse(u.hasRole(ADMIN));
     assertFalse(u.hasRole(ADMIN, 1));
     assertFalse(u.hasRole(ADMIN, 2));
 
     u.addDataset(2);
-    assertTrue(u.hasRole(EDITOR, null));
+    assertTrue(u.hasRole(EDITOR));
     assertTrue(u.hasRole(EDITOR, 1));
     assertTrue(u.hasRole(EDITOR, 2));
 
     u.addRole(ADMIN);
-    assertTrue(u.hasRole(ADMIN, null));
+    assertTrue(u.hasRole(ADMIN));
     assertTrue(u.hasRole(ADMIN, 1));
     assertTrue(u.hasRole(ADMIN, 2));
   }

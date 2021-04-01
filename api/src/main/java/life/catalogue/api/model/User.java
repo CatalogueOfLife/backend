@@ -93,13 +93,21 @@ public class User implements Entity<Integer>, Principal {
   }
 
   /**
+   * Checks if a user has the given role. Note that the {@link Role#EDITOR} role is dataset specific.
+   * Use hasRole(Role, Integer) to evaluate for a specific datasetKey.
+   */
+  public boolean hasRole(Role role) {
+    return roles.contains(role);
+  }
+
+  /**
    * Checks if a user has the given role and evaluates for the {@link Role#EDITOR} role also the given datasetKey
    */
   public boolean hasRole(Role role, Integer datasetKey) {
     // the editor role is scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
     return roles.contains(role) &&
       (role == Role.ADMIN || datasetKey == null || isEditor(datasetKey)
-    );
+      );
   }
 
   /**

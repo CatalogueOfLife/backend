@@ -116,7 +116,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new InitDbCmd());
     bootstrap.addCommand(new NamesIndexCmd());
     bootstrap.addCommand(new RebuiltSourceCitationCmd());
-    bootstrap.addCommand(new UpdReleaseMetricCmd());
+    bootstrap.addCommand(new UpdMetricCmd());
   }
 
   @Override
