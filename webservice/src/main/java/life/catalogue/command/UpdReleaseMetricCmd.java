@@ -29,33 +29,9 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
   private static final String ARG_KEY = "key";
   private Integer key;
   private SectorImportDao sid;
-  private Set<SectorAttempt> done = new HashSet<>();
 
   public UpdReleaseMetricCmd() {
     super("updReleaseMetrics", "Update all release sector metrics for the given projects dataset key");
-  }
-
-  static class SectorAttempt {
-    final int id;
-    final int attempt;
-
-    SectorAttempt(Sector s) {
-      this.id = s.getId();
-      this.attempt = s.getSyncAttempt();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof SectorAttempt)) return false;
-      SectorAttempt that = (SectorAttempt) o;
-      return id == that.id && attempt == that.attempt;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(id, attempt);
-    }
   }
 
   @Override
@@ -104,8 +80,6 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
     LOG.info("Updating sector metrics for release {}: {}", rel.getKey(), rel.getAliasOrTitle());
     final AtomicInteger counter = new AtomicInteger(0);
     final AtomicInteger created = new AtomicInteger(0);
-    final AtomicInteger updated = new AtomicInteger(0);
-    final AtomicInteger before = new AtomicInteger(0);
     try (SqlSession session = factory.openSession()) {
       final SectorMapper sm = session.getMapper(SectorMapper.class);
       final SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
@@ -115,41 +89,31 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
           LOG.warn("Ignore sector {} without last sync attempt from release {}", s.getId(), rel.getKey());
 
         } else {
-          SectorAttempt sa = new SectorAttempt(s);
-          if (done.contains(sa)) {
-            before.incrementAndGet();
-            LOG.debug("Ignore sector import {}:{} which we updated before already", s.getId(), s.getSyncAttempt());
-
-          } else {
-            done.add(sa);
-            SectorImport si = sim.get(s, s.getSyncAttempt());
-            if (si == null) {
-              si = new SectorImport();
-              si.setSectorKey(s.getId());
-              si.setDatasetKey(key); // datasetKey must be the project, thats where we store all metrics !!!
-              si.setAttempt(s.getSyncAttempt());
-              si.setJob(getClass().getSimpleName());
-              si.setState(ImportState.ANALYZING);
-              si.setCreatedBy(user.getKey());
-              // how can we approximately recreate with those timestamps ?
-              si.setStarted(LocalDateTime.now());
-              sim.create(si);
-              created.incrementAndGet();
-            } else {
-              if (si.getState() != ImportState.FINISHED) {
-                LOG.warn("Sector import {} from release {} has state {}. Update metrics anyways.", si.attempt(), rel.getKey(), si.getState());
-              }
-              updated.incrementAndGet();
-            }
+          SectorImport si = sim.get(s, s.getSyncAttempt());
+          if (si == null) {
+            si = new SectorImport();
+            si.setSectorKey(s.getId());
+            si.setDatasetKey(key); // datasetKey must be the project, thats where we store all metrics !!!
+            si.setAttempt(s.getSyncAttempt());
+            si.setJob(getClass().getSimpleName());
+            si.setState(ImportState.ANALYZING);
+            si.setCreatedBy(user.getKey());
+            // how can we approximately recreate with those timestamps ?
+            si.setStarted(LocalDateTime.now());
+            sim.create(si);
+            created.incrementAndGet();
 
             sid.updateMetrics(si, rel.getKey());
             si.setState(ImportState.FINISHED);
             si.setFinished(LocalDateTime.now());
             sim.update(si);
+
+          } else if (si.getState() != ImportState.FINISHED) {
+            LOG.warn("Sector import {} from release {} has state {}. Update metrics.", si.attempt(), rel.getKey(), si.getState());
           }
         }
       });
     }
-    LOG.info("Created/updated {}/{} metrics from {} sectors in release {}: {}", created, updated, counter, rel.getKey(), rel.getAliasOrTitle());
+    LOG.info("Created {} metrics from {} sectors in release {}: {}", created, counter, rel.getKey(), rel.getAliasOrTitle());
   }
 }
