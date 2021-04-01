@@ -1,9 +1,7 @@
 package life.catalogue.command;
 
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SectorImport;
+import com.google.common.base.Preconditions;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -47,6 +45,8 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
 
   @Override
   public void execute() throws Exception {
+    Preconditions.checkNotNull(userKey, "User argument required to run the updater");
+
     key = ns.getInt(ARG_KEY);
     if (key == null) {
       LOG.info("Single key parameter required to specify a project to update");
@@ -89,8 +89,10 @@ public class UpdReleaseMetricCmd extends AbstractMybatisCmd {
           LOG.warn("Ignore sector {} without last sync attempt from release {}", s.getId(), rel.getKey());
 
         } else {
-          SectorImport si = sim.get(s, s.getSyncAttempt());
+          // get sector import in project for given attempt
+          SectorImport si = sim.get(DSID.of(key, s.getId()), s.getSyncAttempt());
           if (si == null) {
+            // missing, rebuilt it
             si = new SectorImport();
             si.setSectorKey(s.getId());
             si.setDatasetKey(key); // datasetKey must be the project, thats where we store all metrics !!!
