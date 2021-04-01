@@ -1,6 +1,7 @@
 package life.catalogue.command;
 
 import com.google.common.base.Preconditions;
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -11,6 +12,7 @@ import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -20,10 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static life.catalogue.api.vocab.DatasetOrigin.*;
@@ -192,6 +191,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
       req.setReleasedFrom(key);
       releases = dm.search(req, userKey, new Page(0, 1000));
     }
+
     // first update the latest version of the project itself - it might have newer syncs
     updateSectorMetrics(project);
 
@@ -210,6 +210,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     }
 
     final int projectKey = RELEASED == d.getOrigin() ? d.getSourceKey() : d.getKey();
+    final String kind = RELEASED == d.getOrigin() ? "release" : "project";
     if (RELEASED == d.getOrigin()) {
       LOG.info("Updating sector metrics for project {} release {}#{}", projectKey, d.getKey(), d.getImportAttempt());
     } else {
@@ -220,13 +221,15 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     final AtomicInteger created = new AtomicInteger(0);
     final AtomicInteger updated = new AtomicInteger(0);
     final AtomicInteger doneBefore = new AtomicInteger(0);
-    try (SqlSession session = factory.openSession()) {
+    try (SqlSession session = factory.openSession(true)) {
       final SectorMapper sm = session.getMapper(SectorMapper.class);
       final SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+
+      //sm.processDataset(d.getKey()).forEach(s -> {
       sm.processDataset(d.getKey()).forEach(s -> {
         counter.incrementAndGet();
         if (s.getSyncAttempt() == null) {
-          LOG.warn("Ignore sector {} without last sync attempt from release {}", s.getId(), d.getKey());
+          LOG.warn("Ignore sector {} without last sync attempt from {} {}", s.getId(), kind, d.getKey());
 
         } else {
           SectorAttempt sa = new SectorAttempt(projectKey, s.getId(), s.getSyncAttempt());
@@ -243,7 +246,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
               si = new SectorImport();
               si.setSectorKey(s.getId());
               si.setDatasetKey(projectKey); // datasetKey must be the project, that's where we store all metrics !!!
-              si.setAttempt(s.getSyncAttempt());
+              si.setAttempt(sa.attempt);
               si.setJob(getClass().getSimpleName());
               si.setState(ImportState.ANALYZING);
               si.setCreatedBy(user.getKey());
@@ -257,7 +260,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
               updated.incrementAndGet();
               calcMetrics = true;
               if (si.getState() != ImportState.FINISHED) {
-                LOG.warn("Sector import {} from release {} has state {}. {} metrics.", si.attempt(), d.getKey(), si.getState(), update ? "Update":"Keep");
+                LOG.warn("Sector import {} from {} {} has state {}. {} metrics.", si.attempt(), kind, d.getKey(), si.getState(), update ? "Update":"Keep");
               }
             }
 
@@ -275,6 +278,6 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
         }
       });
     }
-    LOG.info("Created/updated {}/{} metrics from {} sectors in release {}#{}. {} sectors done before", created, updated, counter, d.getKey(), d.getImportAttempt(), doneBefore);
+    LOG.info("Created/updated {}/{} metrics from {} sectors in {} {}#{}. {} sectors done before", created, updated, counter, kind, d.getKey(), d.getImportAttempt(), doneBefore);
   }
 }

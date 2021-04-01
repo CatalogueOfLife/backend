@@ -46,7 +46,6 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
   public final void execute(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
     this.cfg = cfg;
     ns = namespace;
-    bootstrap(bootstrap);
 
     try {
       dataSource = cfg.db.pool();
@@ -69,9 +68,6 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
     } finally {
       dataSource.close();
     }
-  }
-
-  void bootstrap(Bootstrap<WsServerConfig> bootstrap) {
   }
 
   abstract void execute() throws Exception;
