@@ -57,17 +57,17 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
       .required(false)
       .setDefault(false)
       .help("Flag forcing an update of all metrics for all datasets");
-    subparser.addArgument("--"+ ARG_KEY, "-k")
-      .dest(ARG_KEY)
-      .type(Integer.class)
-      .required(false)
-      .help("Dataset key for project to update");
     subparser.addArgument("--"+ ARG_UPDATE)
       .dest(ARG_UPDATE)
       .type(Boolean.class)
       .setDefault(false)
       .required(false)
       .help("Flag to update also existing metrics");
+    subparser.addArgument("--"+ ARG_KEY, "-k")
+      .dest(ARG_KEY)
+      .type(Integer.class)
+      .required(false)
+      .help("Dataset key for project to update");
   }
 
   static class SectorAttempt implements DSID<Integer> {
@@ -245,7 +245,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
               si.setDatasetKey(projectKey); // datasetKey must be the project, that's where we store all metrics !!!
               si.setAttempt(s.getSyncAttempt());
               si.setJob(getClass().getSimpleName());
-              si.setState(null);
+              si.setState(ImportState.ANALYZING);
               si.setCreatedBy(user.getKey());
               // how can we approximately recreate with those timestamps ?
               si.setStarted(LocalDateTime.now());
@@ -263,7 +263,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
 
             if (calcMetrics) {
               sid.updateMetrics(si, d.getKey());
-              if (si.getState()==null) {
+              if (si.getState()==ImportState.ANALYZING) {
                 si.setState(ImportState.FINISHED);
               }
               if (si.getFinished()==null) {
