@@ -1,31 +1,23 @@
 package life.catalogue.command;
 
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- *
- */
-public class UpdMetricCmdTest extends CmdTestBase {
+import static life.catalogue.command.UpdMetricCmd.SectorAttempt;
+import static org.junit.Assert.assertEquals;
 
-  @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule(true);
+public class UpdMetricCmdTest {
 
-  @Rule
-  public final TestDataRule testDataRule = TestDataRule.apple();
-
-  public UpdMetricCmdTest() {
-    super(new UpdMetricCmd());
-  }
-  
   @Test
-  public void testRebuild() throws Exception {
-    assertTrue(run("updMetrics", "--prompt", "0", "--user", "tester", "--key", "3").isEmpty());
-  }
+  public void testSectorAttempt() {
+    Set<SectorAttempt> set = new HashSet<>();
+    set.add(new SectorAttempt(1,2,3));
+    set.add(new SectorAttempt(1,2,2));
+    set.add(new SectorAttempt(1,1,1));
+    set.add(new SectorAttempt(1,2,3));
 
+    assertEquals(3, set.size());
+  }
 }

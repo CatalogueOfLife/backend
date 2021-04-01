@@ -192,12 +192,6 @@ public class AdminResource {
   }
 
   @POST
-  @Path("/metrics-update")
-  public BackgroundJob updateMetrics(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
-    return runJob(new MetricsUpdater(factory, cfg, datasetKey, user));
-  }
-
-  @POST
   @Path("/counter-update")
   public BackgroundJob updateCounter(@Auth User user) {
     return runJob(new UsageCountJob(user, JobPriority.HIGH, factory));
