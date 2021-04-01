@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 public class ExecSqlCmdTest extends CmdTestBase {
 
   public ExecSqlCmdTest() {
-    super(new ExecSqlCmd());
+    super(() -> new ExecSqlCmd());
   }
 
   @Test

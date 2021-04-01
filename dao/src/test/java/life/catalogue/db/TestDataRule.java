@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
@@ -205,7 +206,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public void initSession() {
     if (session == null) {
-      session = sqlSessionFactorySupplier.get().openSession(false);
+      var factory = sqlSessionFactorySupplier.get();
+      DatasetInfoCache.CACHE.setFactory(factory);
+      session = factory.openSession(false);
     }
   }
 

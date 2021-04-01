@@ -18,6 +18,7 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,12 +29,12 @@ import static org.mockito.Mockito.when;
 public abstract class CmdTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(CmdTestBase.class);
   protected final File cfg;
-  private final Command cmd;
-  
+  private final Supplier<Command> cmdSupply;
+
   private Cli cli;
   
-  public CmdTestBase(Command cmd) {
-    this.cmd = cmd;
+  public CmdTestBase(Supplier<Command> cmdSupply) {
+    this.cmdSupply = cmdSupply;
     try {
       URL res = Resources.getResource("config-test.yaml");
       cfg = Paths.get(res.toURI()).toFile();
@@ -51,30 +52,12 @@ public abstract class CmdTestBase {
     
     // Add the command we want to test
     final Bootstrap<WsServerConfig> bootstrap = new Bootstrap<>(new WsServer());
-    bootstrap.addCommand(cmd);
+    bootstrap.addCommand(cmdSupply.get());
     
     // Build what'll run the command and interpret arguments
     cli = new Cli(location, bootstrap, System.out, System.err);
   }
-  
-  /**
-   * Only here to avoid meaningful serialization of the logging settings.
-   * Since DW 1.2 the logging factory is created lazily and cannot be set to null.
-   */
-  public static class DevNullLoggingFactory implements LoggingFactory {
-    @Override
-    public void configure(MetricRegistry metricRegistry, String name) {
-    }
-    
-    @Override
-    public void stop() {
-    }
-    
-    @Override
-    public void reset() {
-    }
-  }
-  
+
   /**
    * Executes the cli with the given arguments, adding a final argument to the test config file.
    */

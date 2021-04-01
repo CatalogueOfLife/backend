@@ -14,13 +14,13 @@ import static org.junit.Assert.assertTrue;
 public class UpdMetricCmdIT extends CmdTestBase {
 
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule(true);
+  public static final PgSetupRule pgSetupRule = new PgSetupRule(true);
 
   @Rule
   public final TestDataRule testDataRule = TestDataRule.apple();
 
   public UpdMetricCmdIT() {
-    super(new UpdMetricCmd());
+    super(() -> new UpdMetricCmd());
   }
   
   @Test

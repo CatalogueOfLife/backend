@@ -20,7 +20,7 @@ public class NamesIndexCmdTest extends CmdTestBase {
   public final TestDataRule testDataRule = TestDataRule.apple();
 
   public NamesIndexCmdTest() {
-    super(new NamesIndexCmd());
+    super(() -> new NamesIndexCmd());
   }
   
   @Test
