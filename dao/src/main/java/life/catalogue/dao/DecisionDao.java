@@ -39,6 +39,7 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
 
   @Override
   protected void createAfter(EditorialDecision obj, int user, DecisionMapper mapper, SqlSession session) {
+    session.close(); // close early as indexing can take some time and we might see 100 concurrent requests
     if (obj.getSubject().getId() != null) {
       indexService.update(obj.getSubjectDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
@@ -50,6 +51,7 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
    */
   @Override
   protected void updateAfter(EditorialDecision obj, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
+    session.close(); // close early, indexing can take some time
     final List<String> ids = new ArrayList<>();
     if (old != null && old.getSubject().getId() != null && !old.getSubject().getId().equals(obj.getSubject().getId())) {
       ids.add(old.getSubject().getId());
@@ -62,6 +64,7 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
 
   @Override
   protected void deleteAfter(DSID<Integer> key, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
+    session.close(); // close early, indexing can take some time
     if (old != null && old.getSubject().getId() != null) {
       indexService.update(old.getSubjectDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
     }
