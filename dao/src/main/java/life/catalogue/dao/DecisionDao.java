@@ -38,11 +38,12 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
   }
 
   @Override
-  protected void createAfter(EditorialDecision obj, int user, DecisionMapper mapper, SqlSession session) {
+  protected boolean createAfter(EditorialDecision obj, int user, DecisionMapper mapper, SqlSession session) {
     session.close(); // close early as indexing can take some time and we might see 100 concurrent requests
     if (obj.getSubject().getId() != null) {
       indexService.update(obj.getSubjectDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
+    return false;
   }
 
   /**
@@ -50,7 +51,7 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
    * version referred to a different subject id also update that taxon.
    */
   @Override
-  protected void updateAfter(EditorialDecision obj, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
+  protected boolean updateAfter(EditorialDecision obj, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
     session.close(); // close early, indexing can take some time
     final List<String> ids = new ArrayList<>();
     if (old != null && old.getSubject().getId() != null && !old.getSubject().getId().equals(obj.getSubject().getId())) {
@@ -60,14 +61,16 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
       ids.add(obj.getSubject().getId());
     }
     indexService.update(obj.getSubjectDatasetKey(), ids);
+    return false;
   }
 
   @Override
-  protected void deleteAfter(DSID<Integer> key, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
+  protected boolean deleteAfter(DSID<Integer> key, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
     session.close(); // close early, indexing can take some time
     if (old != null && old.getSubject().getId() != null) {
       indexService.update(old.getSubjectDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
     }
+    return false;
   }
 
 }

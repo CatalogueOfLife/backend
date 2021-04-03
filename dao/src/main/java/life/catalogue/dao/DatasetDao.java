@@ -212,7 +212,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   @Override
-  protected void deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+  protected boolean deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+    session.close();
     // clear search index asynchroneously
     CompletableFuture.supplyAsync(() -> indexService.deleteDataset(key))
       .exceptionally(e -> {
@@ -221,6 +222,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       });
     // notify event bus
     bus.post(DatasetChanged.delete(key));
+    return false;
   }
 
   @Override
@@ -233,14 +235,16 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   @Override
-  protected void createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
+  protected boolean createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj, null, user);
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey(), obj.getOrigin());
       Partitioner.createManagedObjects(factory, obj.getKey());
     }
-    bus.post(DatasetChanged.created(obj));
     session.commit();
+    session.close();
+    bus.post(DatasetChanged.created(obj));
+    return false;
   }
 
   @Override
@@ -253,13 +257,16 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   @Override
-  protected void updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    pullLogo(obj, old, user);
+  protected boolean updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
       // suspicious. Should there ever be a managed dataset without partitions?
       recreatePartition(obj.getKey(), obj.getOrigin());
     }
+    session.commit();
+    session.close();
+    pullLogo(obj, old, user);
     bus.post(DatasetChanged.change(obj));
+    return false;
   }
 
   private void recreatePartition(int datasetKey, DatasetOrigin origin) {

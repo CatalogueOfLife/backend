@@ -30,16 +30,17 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   }
 
   @Override
-  protected void createAfter(Name n, int user, NameMapper mapper, SqlSession session) {
+  protected boolean createAfter(Name n, int user, NameMapper mapper, SqlSession session) {
     // create name match
     NameMatch m = nameIndex.match(n, true, false);
     if (m.hasMatch()) {
       session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNameKey(), m.getType());
     }
+    return true;
   }
 
   @Override
-  protected void updateAfter(Name n, Name old, int user, NameMapper mapper, SqlSession session) {
+  protected boolean updateAfter(Name n, Name old, int user, NameMapper mapper, SqlSession session) {
     // update name match
     NameMatch m = nameIndex.match(n, true, false);
     if (m.hasMatch()) {
@@ -47,6 +48,7 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
     } else {
       session.getMapper(NameMatchMapper.class).delete(n);
     }
+    return true;
   }
 
   public Name getBasionym(DSID<String> key) {

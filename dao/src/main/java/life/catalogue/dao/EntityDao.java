@@ -11,6 +11,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -73,14 +74,19 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
       M mapper = session.getMapper(mapperClass);
       mapper.create(obj);
       session.commit();
-      createAfter(obj, user, mapper, session);
-      session.commit();
+      if (createAfter(obj, user, mapper, session)) {
+        session.commit();
+      }
       return obj.getKey();
     }
   }
-  
-  protected void createAfter(T obj, int user, M mapper, SqlSession session) {
+
+  /**
+   * @return true if the session is not closed and should be committed
+   */
+  protected boolean createAfter(T obj, int user, M mapper, SqlSession session) {
     // override to do sth useful
+    return true;
   }
 
   public int update(T obj, int user) {
@@ -96,20 +102,26 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
    * Useful if the old object exists already and avoids reloading it from the database as update(obj, user) does.
    */
   public int update(T obj, T old, int user, SqlSession session) {
-      M mapper = session.getMapper(mapperClass);
-      updateBefore(obj, old, user, mapper, session);
-      int changed = mapper.update(obj);
+    M mapper = session.getMapper(mapperClass);
+    updateBefore(obj, old, user, mapper, session);
+    int changed = mapper.update(obj);
+    session.commit();
+    if (updateAfter(obj, old, user, mapper, session)) {
       session.commit();
-      updateAfter(obj, old, user, mapper, session);
-      session.commit();
-      return changed;
+    }
+    return changed;
   }
   
   protected void updateBefore(T obj, T old, int user, M mapper, SqlSession session) {
     // override to do sth useful
   }
-  protected void updateAfter(T obj, T old, int user, M mapper, SqlSession session) {
+
+  /**
+   * @return true if the session is not closed and should be committed
+   */
+  protected boolean updateAfter(T obj, T old, int user, M mapper, SqlSession session) {
     // override to do sth useful
+    return true;
   }
 
   public int delete(K key, int user) {
@@ -120,7 +132,9 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
       deleteBefore(key, old, user, mapper, session);
       int changed = mapper.delete(key);
       session.commit();
-      deleteAfter(key, old, user, mapper, session);
+      if (deleteAfter(key, old, user, mapper, session)) {
+        session.commit();
+      }
       return changed;
     }
   }
@@ -128,8 +142,13 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   protected void deleteBefore(K key, T old, int user, M mapper, SqlSession session) {
     // override to do sth useful
   }
-  protected void deleteAfter(K key, T old, int user, M mapper, SqlSession session) {
+
+  /**
+   * @return true if the session is not closed and should be committed
+   */
+  protected boolean deleteAfter(K key, T old, int user, M mapper, SqlSession session) {
     // override to do sth useful
+    return true;
   }
   
 }

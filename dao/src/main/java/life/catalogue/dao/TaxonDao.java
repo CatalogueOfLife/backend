@@ -353,13 +353,16 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   }
 
   @Override
-  protected void updateAfter(Taxon t, Taxon old, int user, TaxonMapper tm, SqlSession session) {
+  protected boolean updateAfter(Taxon t, Taxon old, int user, TaxonMapper tm, SqlSession session) {
     // has parent, i.e. classification been changed ?
     if (!Objects.equals(old.getParentId(), t.getParentId())) {
       updatedParentCacheUpdate(tm, t, t.getParentId(), old.getParentId());
     }
+    session.commit();
+    session.close();
     // update single taxon in ES
     indexService.update(t.getDatasetKey(), List.of(t.getId()));
+    return false;
   }
 
   /**
@@ -438,15 +441,15 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   }
   
   @Override
-  protected void deleteAfter(DSID<String> did, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
+  protected boolean deleteAfter(DSID<String> did, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
+    NameUsageWrapper bare = old == null ? null : session.getMapper(NameUsageWrapperMapper.class).getBareName(did.getDatasetKey(), old.getName().getId());
+    session.close();
     // update ES. there is probably a bare name now to be indexed!
     indexService.delete(did);
-    if (old != null) {
-      NameUsageWrapper bare = session.getMapper(NameUsageWrapperMapper.class).getBareName(did.getDatasetKey(), old.getName().getId());
-      if (bare != null) {
-        indexService.add(List.of(bare));
-      }
+    if (bare != null) {
+      indexService.add(List.of(bare));
     }
+    return false;
   }
   
   /**

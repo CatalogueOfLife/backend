@@ -64,20 +64,22 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   }
 
   @Override
-  protected void createAfter(User obj, int user, UserMapper mapper, SqlSession session) {
-    super.createAfter(obj, user, mapper, session);
+  protected boolean createAfter(User obj, int user, UserMapper mapper, SqlSession session) {
+    session.close();
     bus.post(UserChanged.created(obj));
+    return false;
   }
 
   @Override
-  protected void updateAfter(User obj, User old, int user, UserMapper mapper, SqlSession session) {
-    super.updateAfter(obj, old, user, mapper, session);
+  protected boolean updateAfter(User obj, User old, int user, UserMapper mapper, SqlSession session) {
+    session.close();
     bus.post(UserChanged.change(obj));
+    return false;
   }
 
   @Override
-  protected void deleteAfter(Integer key, User old, int user, UserMapper mapper, SqlSession session) {
-    super.deleteAfter(key, old, user, mapper, session);
+  protected boolean deleteAfter(Integer key, User old, int user, UserMapper mapper, SqlSession session) {
     bus.post(UserChanged.delete(key, User.class));
+    return false;
   }
 }
