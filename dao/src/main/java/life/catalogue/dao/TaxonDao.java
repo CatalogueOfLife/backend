@@ -353,16 +353,18 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   }
 
   @Override
-  protected boolean updateAfter(Taxon t, Taxon old, int user, TaxonMapper tm, SqlSession session) {
+  protected boolean updateAfter(Taxon t, Taxon old, int user, TaxonMapper tm, SqlSession session, boolean keepSessionOpen) {
     // has parent, i.e. classification been changed ?
     if (!Objects.equals(old.getParentId(), t.getParentId())) {
       updatedParentCacheUpdate(tm, t, t.getParentId(), old.getParentId());
     }
     session.commit();
-    session.close();
+    if (!keepSessionOpen) {
+      session.close();
+    }
     // update single taxon in ES
     indexService.update(t.getDatasetKey(), List.of(t.getId()));
-    return false;
+    return keepSessionOpen;
   }
 
   /**

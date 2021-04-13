@@ -2,6 +2,8 @@ package life.catalogue.api.model;
 
 import org.junit.Test;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 
 public class ProjectContributionTest {
@@ -16,9 +18,9 @@ public class ProjectContributionTest {
     assertEquals(1, contrib.getOrganisations().size());
 
     Dataset d = DatasetTest.generateTestDataset();
-    d.getAuthors().add(Person.parse("Mama"));
-    d.getEditors().add(Person.parse("Mama Joe"));
-    d.getOrganisations().add(Organisation.parse("Mama-Joe"));
+    d.setAuthors(List.of(Person.parse("Mama")));
+    d.setEditors(List.of(Person.parse("Mama Joe")));
+    d.setOrganisations(List.of(Organisation.parse("Mama-Joe")));
     contrib.add(d);
 
     assertEquals(2, contrib.getContributor().size());
@@ -26,8 +28,8 @@ public class ProjectContributionTest {
 
     // ignore the empty persons and orgs
     d = DatasetTest.generateTestDataset();
-    d.getAuthors().add(new Person(null, null, "null@null.io", null));
-    d.getEditors().add(new Person(null, null, "null@null.io", null));
+    d.setAuthors(List.of(new Person(null, null, "null@null.io", null)));
+    d.setEditors(List.of(new Person(null, null, "null@null.io", null)));
     d.getOrganisations().add(new Organisation(null, null, null, null, null));
     contrib.add(d);
 

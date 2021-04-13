@@ -93,7 +93,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
       T old = offerChangedHook ? mapper.get(obj.getKey()) : null;
-      return update(obj, old, user, session);
+      return update(obj, old, user, session, false);
     }
   }
 
@@ -102,11 +102,20 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
    * Useful if the old object exists already and avoids reloading it from the database as update(obj, user) does.
    */
   public int update(T obj, T old, int user, SqlSession session) {
+    return update(obj, old, user, session, true);
+  }
+
+  /**
+   * Update method that takes the old version of the object so the before/after hooks can use them.
+   * Useful if the old object exists already and avoids reloading it from the database as update(obj, user) does.
+   * @param keepSessionOpen if true prevents any early closing of the session
+   */
+  private int update(T obj, T old, int user, SqlSession session, boolean keepSessionOpen) {
     M mapper = session.getMapper(mapperClass);
     updateBefore(obj, old, user, mapper, session);
     int changed = mapper.update(obj);
     session.commit();
-    if (updateAfter(obj, old, user, mapper, session)) {
+    if (updateAfter(obj, old, user, mapper, session, keepSessionOpen)) {
       session.commit();
     }
     return changed;
@@ -119,7 +128,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   /**
    * @return true if the session is not closed and should be committed
    */
-  protected boolean updateAfter(T obj, T old, int user, M mapper, SqlSession session) {
+  protected boolean updateAfter(T obj, T old, int user, M mapper, SqlSession session, boolean keepSessionOpen) {
     // override to do sth useful
     return true;
   }

@@ -105,7 +105,9 @@ public abstract class RematcherBase<
       } else {
         LOG.info("Match {}s from project {}", type, projectKey);
         S searchRequest = toSearchRequest(req);
-        mapper.processSearch(searchRequest).forEach(this::match);
+        for (T obj : mapper.processSearch(searchRequest)) {
+          match(obj);
+        }
       }
       LOG.info("Rematched {} {}s from project {}. updated: {}, broken: {}", counter.getTotal(), type, projectKey, counter.updated, counter.broken);
       return counter;

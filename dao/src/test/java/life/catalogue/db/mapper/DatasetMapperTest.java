@@ -45,6 +45,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setTitle(RandomUtils.randomLatinString(80));
     d.setDescription(RandomUtils.randomLatinString(500));
     d.setLicense(License.CC0);
+    d.setAuthors(new ArrayList<>());
+    d.setEditors(new ArrayList<>());
     for (int i = 0; i < 8; i++) {
       d.getAuthors().add(Person.parse(RandomUtils.randomLatinString(100)));
       d.getEditors().add(Person.parse(RandomUtils.randomLatinString(100)));
@@ -54,8 +56,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setVersion("v123");
     d.setWebsite(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
     d.setNotes("my notes");
-    d.getOrganisations().add(new Organisation("my org"));
-    d.getOrganisations().add(new Organisation("your org"));
+    d.setOrganisations(new ArrayList<>(List.of(
+      new Organisation("my org"),
+      new Organisation("your org")
+    )));
   }
 
   @Test
@@ -529,13 +533,15 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     if (author != null) {
       ds.setAuthors(Person.parse(Lists.newArrayList(author.split(";"))));
     }
-    ds.getOrganisations().add(new Organisation(organisation));
+    ds.setOrganisations(List.of(new Organisation(organisation)));
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);
     ds.setContact(new Person("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
-    ds.getEditors().add(new Person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"));
-    ds.getEditors().add(new Person("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666"));
+    ds.setEditors(List.of(
+      new Person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),
+      new Person("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666")
+    ));
     mapper().create(TestEntityGenerator.setUserDate(ds));
 
     mapper(DatasetPartitionMapper.class).createManagedSequences(ds.getKey());

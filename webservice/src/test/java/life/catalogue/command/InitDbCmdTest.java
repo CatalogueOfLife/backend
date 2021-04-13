@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 public class InitDbCmdTest extends CmdTestBase {
   
   public InitDbCmdTest() {
-    super(() -> new InitDbCmd());
+    super(InitDbCmd::new);
   }
   
   @Test

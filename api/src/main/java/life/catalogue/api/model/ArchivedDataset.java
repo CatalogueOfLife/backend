@@ -75,10 +75,10 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   private String title;
   private String alias;
   private String description;
-  private List<Organisation> organisations = Lists.newArrayList();
+  private List<Organisation> organisations;
   private Person contact;
-  private List<Person> authors = Lists.newArrayList();
-  private List<Person> editors = Lists.newArrayList();
+  private List<Person> authors;
+  private List<Person> editors;
   private License license;
   private String version;
   private LocalDate released;

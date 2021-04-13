@@ -20,14 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stores objects as arrays in postgres.
- * An optional nullValue parameter can be given to avoid nulls in the db and e.g. use empty array instead.
+ * Stores object lists as custom type arrays in postgres.
  */
 public abstract class CustomArrayAbstractTypeHandler<T> extends BaseTypeHandler<List<T>> {
   protected final String typeName;
 
   /**
-   * @param typeName type name of the arrays custom name
+   * @param typeName name of the arrays custom postgres base type
    */
   public CustomArrayAbstractTypeHandler(String typeName) {
     this.typeName = typeName;

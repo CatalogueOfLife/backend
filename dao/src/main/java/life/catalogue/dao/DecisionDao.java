@@ -51,8 +51,10 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
    * version referred to a different subject id also update that taxon.
    */
   @Override
-  protected boolean updateAfter(EditorialDecision obj, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
-    session.close(); // close early, indexing can take some time
+  protected boolean updateAfter(EditorialDecision obj, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session, boolean keepSessionOpen) {
+    if (!keepSessionOpen) {
+      session.close(); // close early, indexing can take some time
+    }
     final List<String> ids = new ArrayList<>();
     if (old != null && old.getSubject().getId() != null && !old.getSubject().getId().equals(obj.getSubject().getId())) {
       ids.add(old.getSubject().getId());
@@ -61,7 +63,7 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
       ids.add(obj.getSubject().getId());
     }
     indexService.update(obj.getSubjectDatasetKey(), ids);
-    return false;
+    return keepSessionOpen;
   }
 
   @Override

@@ -58,7 +58,8 @@ public class DecisionRematcherTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
 
-      // we order decisions in reverse order when searching, so last one gets matched not d1
+      // we order decisions in reverse order when searching in pg, so last one gets matched not d1
+      //     ORDER BY ed.id desc
       EditorialDecision d1b = dm.get(d1);
       assertNull(d1b.getSubject().getId());
 

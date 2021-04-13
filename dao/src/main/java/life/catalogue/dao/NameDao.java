@@ -40,7 +40,7 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   }
 
   @Override
-  protected boolean updateAfter(Name n, Name old, int user, NameMapper mapper, SqlSession session) {
+  protected boolean updateAfter(Name n, Name old, int user, NameMapper mapper, SqlSession session, boolean keepSessionOpen) {
     // update name match
     NameMatch m = nameIndex.match(n, true, false);
     if (m.hasMatch()) {

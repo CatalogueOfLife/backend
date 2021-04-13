@@ -20,7 +20,7 @@ public class UpdMetricCmdIT extends CmdTestBase {
   public final TestDataRule testDataRule = TestDataRule.apple();
 
   public UpdMetricCmdIT() {
-    super(() -> new UpdMetricCmd());
+    super(UpdMetricCmd::new);
   }
   
   @Test

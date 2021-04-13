@@ -74,10 +74,12 @@ public class SynonymDao extends DatasetEntityDao<String, Synonym, SynonymMapper>
   }
   
   @Override
-  protected boolean updateAfter(Synonym t, Synonym old, int user, SynonymMapper mapper, SqlSession session) {
+  protected boolean updateAfter(Synonym t, Synonym old, int user, SynonymMapper mapper, SqlSession session, boolean keepSessionOpen) {
     //TODO: update ES
-    session.close();
-    return false;
+    if (!keepSessionOpen) {
+      session.close();
+    }
+    return keepSessionOpen;
   }
  
   @Override

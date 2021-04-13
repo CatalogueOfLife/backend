@@ -17,18 +17,14 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Command to add new partition tables for a given master table.
- * When adding new partitioned tables to the db schema we need to create a partition table
- * for every existing dataset that has data.
- *
- * The command will look at the existing name partition tables to find the datasets with data.
- * The master table must exist already and be defined to be partitioned by column dataset_key !!!
+ * Command to update all source citations in metadata for an existing release based on the current project templates.
+ * You can use the --dry true flag to only show changes without actual updates to the database.
  */
 public class RebuiltSourceCitationCmd extends AbstractPromptCmd {
-  private static final Logger LOG = LoggerFactory.getLogger(RebuiltSourceCitationCmd.class);
   private static final String ARG_KEY = "key";
   private static final String ARG_DRY = "dry";
 
@@ -109,4 +105,18 @@ public class RebuiltSourceCitationCmd extends AbstractPromptCmd {
     }
   }
 
+  public static void main(String[] args) throws Exception {
+    WsServerConfig cfg = new WsServerConfig();
+    cfg.db.host="pg1.catalogueoflife.org";
+    cfg.db.database="col";
+    cfg.db.user="col";
+    cfg.db.password="";
+
+    Namespace ns =  new Namespace(Map.of(
+      ARG_KEY, 2296,
+      ARG_DRY, false
+    ));
+    RebuiltSourceCitationCmd cmd = new RebuiltSourceCitationCmd();
+    cmd.execute(null, ns, cfg);
+  }
 }

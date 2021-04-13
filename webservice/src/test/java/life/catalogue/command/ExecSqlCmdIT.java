@@ -6,10 +6,10 @@ import java.io.File;
 
 import static org.junit.Assert.assertTrue;
 
-public class ExecSqlCmdTest extends CmdTestBase {
+public class ExecSqlCmdIT extends CmdTestBase {
 
-  public ExecSqlCmdTest() {
-    super(() -> new ExecSqlCmd());
+  public ExecSqlCmdIT() {
+    super(ExecSqlCmd::new);
   }
 
   @Test

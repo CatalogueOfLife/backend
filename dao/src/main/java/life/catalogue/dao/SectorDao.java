@@ -144,7 +144,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
    * We already verified the target taxon exists in the before update...
    */
   @Override
-  protected boolean updateAfter(Sector obj, Sector old, int user, SectorMapper mapper, SqlSession session) {
+  protected boolean updateAfter(Sector obj, Sector old, int user, SectorMapper mapper, SqlSession session, boolean keepSessionOpen) {
     if (old.getTarget() == null || obj.getTarget() == null || !Objects.equals(old.getTarget().getId(), obj.getTarget().getId())) {
       incSectorCounts(session, obj, 1);
       incSectorCounts(session, old, -1);

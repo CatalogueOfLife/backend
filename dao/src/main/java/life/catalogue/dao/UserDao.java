@@ -71,10 +71,12 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   }
 
   @Override
-  protected boolean updateAfter(User obj, User old, int user, UserMapper mapper, SqlSession session) {
-    session.close();
+  protected boolean updateAfter(User obj, User old, int user, UserMapper mapper, SqlSession session, boolean keepSessionOpen) {
+    if (!keepSessionOpen) {
+      session.close();
+    }
     bus.post(UserChanged.change(obj));
-    return false;
+    return keepSessionOpen;
   }
 
   @Override

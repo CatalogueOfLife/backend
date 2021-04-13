@@ -8,6 +8,8 @@ import life.catalogue.api.vocab.License;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -34,9 +36,11 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setLicense(License.CC0);
     d.setCitation("cf5twv867cwcgewcwe");
     d.setGeographicScope("North Africa");
-    d.getOrganisations().add(new Organisation("bla"));
-    d.getOrganisations().add(new Organisation("bla"));
-    d.getOrganisations().add(new Organisation("bla"));
+    d.setOrganisations(new ArrayList<>(List.of(
+      new Organisation("bla"),
+      new Organisation("bla"),
+      new Organisation("bla")
+    )));
     d.setContact(Person.parse("foo"));
     d.setNotes("cuzdsghazugbe67wqt6c g cuzdsghazugbe67wqt6c g  nhjs");
     return d;
