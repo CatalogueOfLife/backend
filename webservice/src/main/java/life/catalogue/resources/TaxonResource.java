@@ -1,12 +1,19 @@
 package life.catalogue.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import io.swagger.v3.oas.annotations.Hidden;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
+import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.exporter.FmUtil;
+import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +22,9 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.*;
 import java.net.URI;
 import java.util.List;
 
@@ -59,6 +69,33 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
       }
     }
     return obj;
+  }
+
+  @GET
+  @Hidden
+  @Path("{id}/portalheader")
+  @Produces(MediaType.TEXT_HTML)
+  public Response getHtmlHeader(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    var key = new DSIDValue<>(datasetKey, id);
+    Taxon obj = dao.get(key);
+    if (obj == null) {
+      throw NotFoundException.notFound(Taxon.class, key);
+    }
+
+    StreamingOutput stream = os -> {
+      try {
+        Writer out = UTF8IoUtils.writerFromStream(os);
+        Template temp = FmUtil.FMK.getTemplate("html-head.ftl");
+        temp.process(obj, out);
+        os.flush();
+      } catch (TemplateException e) {
+        throw new IOException(e);
+      }
+    };
+
+    return Response.ok(stream)
+      .type(MediaType.TEXT_HTML)
+      .build();
   }
 
   @GET

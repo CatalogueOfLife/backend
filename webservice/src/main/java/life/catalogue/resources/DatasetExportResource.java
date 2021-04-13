@@ -8,7 +8,6 @@ import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.Resources;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -197,7 +196,7 @@ public class DatasetExportResource {
   @Produces(MoreMediaTypes.TEXT_CSS)
   public Response htmlCss() {
     StreamingOutput stream = os -> {
-      InputStream in = Resources.stream("exporter/html/catalogue.css");
+      InputStream in = Resources.stream("freemarker-templates/html/catalogue.css");
       IOUtils.copy(in, os);
       os.flush();
     };

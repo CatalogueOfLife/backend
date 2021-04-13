@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  */
 public class AcefExporterJob extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(AcefExporterJob.class);
-  private static final String EXPORT_SQL = "/exporter/ac-export.sql";
+  private static final String EXPORT_SQL = "/freemarker-templates/ac-export.sql";
   private static final String COPY_WITH = "CSV HEADER NULL '\\N' DELIMITER E'\\t' QUOTE E'\\f' ENCODING 'UTF8' ";
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");

@@ -112,7 +112,7 @@ public class HtmlWriter implements AutoCloseable {
   void taxon() throws IOException {
     if (hasTaxon()) {
       try {
-        Template temp = FmUtil.FMK.getTemplate(path + "/taxon.ftl");
+        Template temp = FmUtil.FMK.getTemplate(path + "/html-head.ftl");
         temp.process(this, writer);
       } catch (TemplateException e) {
         throw new IOException(e);
