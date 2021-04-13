@@ -38,7 +38,7 @@ public class MetadataParserTest {
         new Person("Sierwald, P."),
         new Person("Spelda, J.")
       ), d.getAuthors());
-    assertEquals(Collections.emptyList(), d.getEditors());
+    assertNull(d.getEditors());
     assertEquals(License.CC_BY_NC, d.getLicense());
     assertEquals("ver. (02/2021)", d.getVersion());
     assertEquals(LocalDate.of(2021, 2, 3), d.getReleased());
@@ -141,13 +141,13 @@ public class MetadataParserTest {
     assertEquals(NomCode.ZOOLOGICAL, d.getCode());
     assertEquals(Gazetteer.ISO, d.getGazetteer());
 
-    assertTrue(d.getOrganisations().isEmpty());
+    assertNull(d.getOrganisations());
 
     List<Person> authors = new ArrayList<>();
     authors.add(donald);
     authors.add(new Person("Cees", "Gielis", null, "0000-0003-0857-1679"));
     assertEquals(authors, d.getAuthors());
-    assertTrue(d.getEditors().isEmpty());
+    assertNull(d.getEditors());
   }
 
   /**

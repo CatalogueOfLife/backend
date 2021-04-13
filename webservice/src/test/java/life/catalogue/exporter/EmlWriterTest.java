@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.junit.Assert.assertFalse;
 
@@ -41,9 +42,11 @@ public class EmlWriterTest {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
 
       Dataset d = dm.get(TestDataRule.APPLE.key);
-      d.getAuthors().add(new Person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"));
-      d.getAuthors().add(new Person("Fax", "Feier", null, null));
-      d.getEditors().add(new Person("Derek & Dan", "Dillinger's"));
+      d.setAuthors(List.of(
+        new Person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"),
+        new Person("Fax", "Feier", null, null)
+      ));
+      d.setEditors(List.of(new Person("Derek & Dan", "Dillinger's")));
       d.setLicense(License.CC0);
       EmlWriter.write(d, f);
 

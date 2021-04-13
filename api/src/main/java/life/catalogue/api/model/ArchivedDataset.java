@@ -221,12 +221,26 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
     this.authors = authors;
   }
 
+  public void addAuthor(Person author) {
+    if (authors == null) {
+      authors = new ArrayList<>();
+    }
+    authors.add(author);
+  }
+
   public List<Person> getEditors() {
     return editors;
   }
 
   public void setEditors(List<Person> editors) {
     this.editors = editors;
+  }
+
+  public void addEditor(Person editor) {
+    if (editors == null) {
+      editors = new ArrayList<>();
+    }
+    editors.add(editor);
   }
 
   @Override
@@ -238,7 +252,14 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   public void setOrganisations(List<Organisation> organisations) {
     this.organisations = organisations;
   }
-  
+
+  public void addOrganisation(Organisation org) {
+    if (organisations == null) {
+      organisations = new ArrayList<>();
+    }
+    organisations.add(org);
+  }
+
   @Override
   public Person getContact() {
     return contact;

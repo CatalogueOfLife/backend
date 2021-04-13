@@ -87,7 +87,7 @@ public class EmlParserTest {
     assertEquals("World Register of Marine Species", d.getTitle());
     assertEquals("An authoritative classification and catalogue of marine names", d.getDescription());
     assertEquals(new Person(null, null, "info@marinespecies.org", null), d.getContact());
-    assertTrue(d.getAuthors().isEmpty());
+    assertNull(d.getAuthors());
     assertEquals(List.of(
       p("Horton", "Tammy", "tammy.horton@noc.ac.uk"),
       p("Kroh", "Andreas", "andreas.kroh@nhm-wien.ac.at"),

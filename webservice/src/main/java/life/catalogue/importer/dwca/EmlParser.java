@@ -267,24 +267,30 @@ public class EmlParser {
   private static void consolidate(DatasetWithSettings ds){
     Dataset d = ds.getDataset();
     // dedupe orgs, authors and editors
-    d.setOrganisations(
-      d.getOrganisations().stream().distinct().collect(Collectors.toList())
-    );
-    d.setAuthors(
-      d.getAuthors().stream().distinct().collect(Collectors.toList())
-    );
-    d.setEditors(
-      d.getEditors().stream().distinct().collect(Collectors.toList())
-    );
-    // parse out organisation departments if seperated by semicolons
-    for (Organisation o : d.getOrganisations()) {
-      if (o.getDepartment() == null && o.getName() != null) {
-        if (o.getName().contains(";")) {
-          String[] parts = o.getName().split(";", 2);
-          o.setName(parts[0].trim());
-          o.setDepartment(parts[1].trim());
+    if (d.getOrganisations() != null) {
+      d.setOrganisations(
+        d.getOrganisations().stream().distinct().collect(Collectors.toList())
+      );
+      // parse out organisation departments if seperated by semicolons
+      for (Organisation o : d.getOrganisations()) {
+        if (o.getDepartment() == null && o.getName() != null) {
+          if (o.getName().contains(";")) {
+            String[] parts = o.getName().split(";", 2);
+            o.setName(parts[0].trim());
+            o.setDepartment(parts[1].trim());
+          }
         }
       }
+    }
+    if (d.getAuthors() != null) {
+      d.setAuthors(
+        d.getAuthors().stream().distinct().collect(Collectors.toList())
+      );
+    }
+    if (d.getEditors() != null) {
+      d.setEditors(
+        d.getEditors().stream().distinct().collect(Collectors.toList())
+      );
     }
   }
 
@@ -295,16 +301,16 @@ public class EmlParser {
       case "CONTACT":
       case "POINTOFCONTACT":
         agent.person().ifPresent(d::setContact);
-        agent.organisation().ifPresent(d.getOrganisations()::add);
+        agent.organisation().ifPresent(d::addOrganisation);
         break;
       case "AUTHOR":
       case "CREATOR":
-        agent.person().map(EmlParser::nullIfNoName).ifPresent(d.getAuthors()::add);
-        agent.organisation().ifPresent(d.getOrganisations()::add);
+        agent.person().map(EmlParser::nullIfNoName).ifPresent(d::addAuthor);
+        agent.organisation().ifPresent(d::addOrganisation);
         break;
       case "EDITOR":
-        agent.person().map(EmlParser::nullIfNoName).ifPresent(d.getEditors()::add);
-        agent.organisation().ifPresent(d.getOrganisations()::add);
+        agent.person().map(EmlParser::nullIfNoName).ifPresent(d::addEditor);
+        agent.organisation().ifPresent(d::addOrganisation);
         break;
       default:
         LOG.debug("Ignore EML agent role {}", agent.role);
