@@ -36,8 +36,7 @@ public class TaxonDaoTest extends DaoTestBase {
 
   @Test
   public void testInfo() {
-    final int datasetKey = DATASET11.getKey();
-    TaxonInfo info = tDao.getTaxonInfo(datasetKey, TAXON1.getId());
+    TaxonInfo info = tDao.getTaxonInfo(TAXON1);
     BeanPrinter.out(info);
 
     // See apple.sql

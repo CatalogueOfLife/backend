@@ -122,7 +122,7 @@ public class PgImportIT extends PgImportITBase {
       Taxon tax = tdao.get(key(dataset.getKey(), "1000"));
       assertEquals("Crepis pulchra", tax.getName().getScientificName());
       
-      TaxonInfo info = tdao.getTaxonInfo(dataset.getKey(), tax.getId());
+      TaxonInfo info = tdao.getTaxonInfo(tax);
       // check vernaculars
       Map<String, String> expV = Maps.newHashMap();
       expV.put("deu", "Schöner Pippau");

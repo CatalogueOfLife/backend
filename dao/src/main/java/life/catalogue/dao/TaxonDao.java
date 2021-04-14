@@ -117,10 +117,10 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     }
   }
   
-  public TaxonInfo getTaxonInfo(int datasetKey, String id) {
+  public TaxonInfo getTaxonInfo(DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      return getTaxonInfo(session, tm.get(new DSIDValue(datasetKey, id)));
+      return getTaxonInfo(session, tm.get(key));
     }
   }
   

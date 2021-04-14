@@ -112,7 +112,12 @@ public class TaxonInfo {
   public Reference getReference(String id) {
     return references.getOrDefault(id, null);
   }
-  
+
+  @JsonIgnore
+  public Reference getPublishedInReference() {
+    return references.getOrDefault(taxon.getName().getPublishedInId(), null);
+  }
+
   public Map<String, Reference> getReferences() {
     return references;
   }
