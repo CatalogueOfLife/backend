@@ -6,6 +6,7 @@
 
 <meta property="og:title" content="${info.taxon.getLabel()}" />
 <meta property="og:url" content="https://www.catalogueoflife.org/data/taxon/${info.taxon.getId()}" />
+<meta property="og:image" content="https://www.catalogueoflife.org/images/col_square_logo.jpg" />
 <meta property="og:description" content="${description}</#if>" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:site" content="@catalogueoflife"/>
