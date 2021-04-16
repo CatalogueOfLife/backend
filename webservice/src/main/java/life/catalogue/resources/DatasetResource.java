@@ -227,8 +227,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("/{key}/source/{id}/seo")
   @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
   public Response getHtmlHeader(@PathParam("key") int datasetKey, @PathParam("id") int id) {
-    //var d = sourceDao.get(datasetKey, id, false);
-    var d = dao.get(datasetKey);
+    var d = sourceDao.get(datasetKey, id, false);
     if (d == null) {
       throw NotFoundException.notFound(Dataset.class, id);
     }
