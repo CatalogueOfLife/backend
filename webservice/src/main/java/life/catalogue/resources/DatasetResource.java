@@ -229,7 +229,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   public Response getHtmlHeader(@PathParam("key") int datasetKey, @PathParam("id") int id) {
     var d = sourceDao.get(datasetKey, id, false);
     if (d == null) {
-      throw NotFoundException.notFound(Dataset.class, id);
+      throw NotFoundException.notFound(Dataset.class, DSID.of(datasetKey, id));
     }
 
     StreamingOutput stream = os -> {
