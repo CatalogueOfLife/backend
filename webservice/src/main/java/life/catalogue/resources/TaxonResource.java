@@ -79,7 +79,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
 
   @GET
   @Hidden
-  @Path("{id}/portalheader")
+  @Path("{id}/seo")
   @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
   public Response getHtmlHeader(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     final var key = new DSIDValue<>(datasetKey, id);
@@ -120,7 +120,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
     StreamingOutput stream = os -> {
       try {
         Writer out = UTF8IoUtils.writerFromStream(os);
-        Template temp = FmUtil.FMK.getTemplate("html-head.ftl");
+        Template temp = FmUtil.FMK.getTemplate("seo/taxon-seo.ftl");
         temp.process(data, out);
         os.flush();
       } catch (TemplateException e) {

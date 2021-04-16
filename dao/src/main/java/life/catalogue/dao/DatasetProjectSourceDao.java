@@ -36,7 +36,7 @@ public class DatasetProjectSourceDao {
       if (MANAGED == info.origin) {
         ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
         ArchivedDataset d = psm.getProjectSource(sourceDatasetKey, projectKey);
-        if (!dontPatch) {
+        if (d != null && !dontPatch) {
           // get latest version with patch applied
           DatasetMapper dm = session.getMapper(DatasetMapper.class);
           final DatasetSettings settings = dm.getSettings(projectKey);

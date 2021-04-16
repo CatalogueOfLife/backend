@@ -1,22 +1,25 @@
 package life.catalogue.resources;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.DatasetProjectSourceDao;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.SectorImportMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 import life.catalogue.dw.jersey.filter.VaryAccept;
+import life.catalogue.exporter.FmUtil;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ImgConfig;
@@ -32,10 +35,14 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -213,6 +220,33 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
                                        @QueryParam("original") boolean original,
                                        @Context SqlSession session) {
     return sourceDao.get(datasetKey, id, original);
+  }
+
+  @GET
+  @Hidden
+  @Path("/{key}/source/{id}/seo")
+  @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
+  public Response getHtmlHeader(@PathParam("key") int datasetKey, @PathParam("id") int id) {
+    //var d = sourceDao.get(datasetKey, id, false);
+    var d = dao.get(datasetKey);
+    if (d == null) {
+      throw NotFoundException.notFound(Dataset.class, id);
+    }
+
+    StreamingOutput stream = os -> {
+      try {
+        Writer out = UTF8IoUtils.writerFromStream(os);
+        Template temp = FmUtil.FMK.getTemplate("seo/dataset-seo.ftl");
+        temp.process(d, out);
+        os.flush();
+      } catch (TemplateException e) {
+        throw new IOException(e);
+      }
+    };
+
+    return Response.ok(stream)
+      .type(MediaType.TEXT_PLAIN)
+      .build();
   }
 
   @GET
