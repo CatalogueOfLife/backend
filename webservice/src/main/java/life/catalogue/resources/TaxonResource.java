@@ -80,7 +80,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @GET
   @Hidden
   @Path("{id}/portalheader")
-  @Produces(MediaType.TEXT_HTML)
+  @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
   public Response getHtmlHeader(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     final var key = new DSIDValue<>(datasetKey, id);
     Taxon t = dao.get(key);
@@ -129,7 +129,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
     };
 
     return Response.ok(stream)
-      .type(MediaType.TEXT_HTML)
+      .type(MediaType.TEXT_PLAIN)
       .build();
   }
 

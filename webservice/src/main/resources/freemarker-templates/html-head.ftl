@@ -1,7 +1,3 @@
-<html>
-<head>
-<meta charset="utf-8">
-
 <#assign description>${info.taxon.label} in the Catalogue of Life<#if source??> based on ${source.citation!source.title!"unknown"}</#if></#assign>
 
 <meta property="og:title" content="${info.taxon.getLabel()}" />
@@ -133,11 +129,3 @@
 
 }
 </script>
-
-</head>
-<body>
-  <h1>${info.taxon.getLabel()}</h1>
-  <p>${description}</p>
-</body>
-
-</html>
