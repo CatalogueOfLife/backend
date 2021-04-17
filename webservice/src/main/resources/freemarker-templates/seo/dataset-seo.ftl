@@ -43,7 +43,9 @@
   "description": "${description!}",
   "temporalCoverage": "${temporalCoverage!}",
   "spatialCoverage": "${spatialCoverage!}",
-  "license": "${license!}",
+  <#if license??>
+  "license": "${license.url!}",
+  </#if>
   "inLanguage": "eng",
   "version": "${version!}",
   "datePublished": "${released!}",
