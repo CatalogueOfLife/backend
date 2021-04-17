@@ -44,7 +44,7 @@
   "temporalCoverage": "${temporalCoverage!}",
   "spatialCoverage": "${spatialCoverage!}",
   <#if license??>
-  "license": "${license.url!}",
+  "license": "${license.url!'unknown'}",
   </#if>
   "inLanguage": "eng",
   "version": "${version!}",
