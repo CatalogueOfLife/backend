@@ -231,21 +231,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     if (d == null) {
       throw NotFoundException.notFound(Dataset.class, DSID.of(datasetKey, id));
     }
-
-    StreamingOutput stream = os -> {
-      try {
-        Writer out = UTF8IoUtils.writerFromStream(os);
-        Template temp = FmUtil.FMK.getTemplate("seo/dataset-seo.ftl");
-        temp.process(d, out);
-        os.flush();
-      } catch (TemplateException e) {
-        throw new IOException(e);
-      }
-    };
-
-    return Response.ok(stream)
-      .type(MediaType.TEXT_PLAIN)
-      .build();
+    return ResourceUtils.streamFreemarker(d, "seo/dataset-seo.ftl", MediaType.TEXT_PLAIN_TYPE);
   }
 
   @GET

@@ -116,21 +116,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
         data.put("parent", parent);
       }
     }
-
-    StreamingOutput stream = os -> {
-      try {
-        Writer out = UTF8IoUtils.writerFromStream(os);
-        Template temp = FmUtil.FMK.getTemplate("seo/taxon-seo.ftl");
-        temp.process(data, out);
-        os.flush();
-      } catch (TemplateException e) {
-        throw new IOException(e);
-      }
-    };
-
-    return Response.ok(stream)
-      .type(MediaType.TEXT_PLAIN)
-      .build();
+    return ResourceUtils.streamFreemarker(data, "seo/taxon-seo.ftl", MediaType.TEXT_PLAIN_TYPE);
   }
 
   @GET
