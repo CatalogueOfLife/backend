@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.concurrent.NamedThreadFactory;
@@ -11,12 +12,15 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -30,19 +34,19 @@ public class ReleaseManager {
   private static final ThreadPoolExecutor RELEASE_EXEC = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
       new ArrayBlockingQueue(1), new NamedThreadFactory("col-release"), new ThreadPoolExecutor.DiscardPolicy());
 
-  private final NameIndex nameIndex;
   private final DatasetImportDao diDao;
   private final DatasetDao dDao;
   private final NameUsageIndexService indexService;
   private final SqlSessionFactory factory;
   private final ImageService imageService;
-  private final ReleaseConfig cfg;
+  private final CloseableHttpClient client;
+  private final WsServerConfig cfg;
   private AbstractProjectCopy job;
 
-  public ReleaseManager(DatasetImportDao diDao, DatasetDao dDao, NameIndex nameIndex, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory, ReleaseConfig cfg) {
+  public ReleaseManager(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory, WsServerConfig cfg) {
+    this.client = client;
     this.diDao = diDao;
     this.dDao = dDao;
-    this.nameIndex = nameIndex;
     this.indexService = indexService;
     this.imageService = imageService;
     this.factory = factory;
@@ -100,7 +104,7 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
-    return new ProjectRelease(factory, nameIndex, indexService, diDao, dDao, imageService, projectKey, userKey, cfg);
+    return new ProjectRelease(factory, indexService, diDao, dDao, imageService, projectKey, userKey, cfg.release, cfg.apiURI, client);
   }
 
   /**

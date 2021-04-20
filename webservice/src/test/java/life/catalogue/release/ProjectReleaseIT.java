@@ -1,6 +1,9 @@
 package life.catalogue.release;
 
 import com.google.common.eventbus.EventBus;
+import io.dropwizard.client.HttpClientBuilder;
+import life.catalogue.HttpClientUtils;
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
@@ -17,12 +20,15 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
 import java.io.File;
+import java.net.URI;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,13 +58,22 @@ public class ProjectReleaseIT {
 
   final int projectKey = IdProviderIT.PROJECT_DATA.key;
   ReleaseManager releaseManager;
+  private CloseableHttpClient client;
 
   @Before
-  public void init()  {
+  public void init() throws Exception {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     EventBus bus = mock(EventBus.class);
     dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, NameUsageIndexService.passThru(), null, bus);
-    releaseManager = new ReleaseManager(diDao, dDao, matchingRule.getIndex(), NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), new ReleaseConfig());
+    client = HttpClientUtils.httpsClient();
+    WsServerConfig cfg = new WsServerConfig();
+    cfg.apiURI = URI.create("https://api.dev.catalogue.life");
+    releaseManager = new ReleaseManager(client, diDao, dDao, NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), cfg);
+  }
+
+  @After
+  public void shutdown() throws Exception {
+    client.close();
   }
 
   @Test

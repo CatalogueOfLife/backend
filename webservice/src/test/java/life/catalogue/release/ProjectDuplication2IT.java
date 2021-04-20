@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import com.google.common.eventbus.EventBus;
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.NameUsageBase;
@@ -60,7 +61,7 @@ public class ProjectDuplication2IT {
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
-    releaseManager = new ReleaseManager(diDao, dDao, NameIndexFactory.passThru(), NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), new ReleaseConfig());
+    releaseManager = new ReleaseManager(null, diDao, dDao, NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), new WsServerConfig());
   }
 
   @Test

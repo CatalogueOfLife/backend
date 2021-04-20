@@ -2,29 +2,28 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetProjectSourceDao;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.util.VarnishUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,14 +33,16 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   private final ImageService imageService;
   private final ReleaseConfig cfg;
-  private final NameIndex nameIndex;
+  private final UriBuilder datasetApiBuilder;
+  private final CloseableHttpClient client;
 
-  ProjectRelease(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
-                 int datasetKey, int userKey, ReleaseConfig cfg) {
+  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
+                 int datasetKey, int userKey, ReleaseConfig cfg, URI api, CloseableHttpClient client) {
     super("releasing", factory, diDao, dDao, indexService, userKey, datasetKey, true);
     this.imageService = imageService;
-    this.nameIndex = nameIndex;
     this.cfg = cfg;
+    this.datasetApiBuilder = api == null ? null : UriBuilder.fromUri(api).path("dataset/{key}LR");
+    this.client = client;
   }
 
   @Override
@@ -102,6 +103,11 @@ public class ProjectRelease extends AbstractProjectCopy {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.updateLastImport(datasetKey, metrics.getAttempt());
       dm.updateLastImport(newDatasetKey, metrics.getAttempt());
+    }
+    // flush varnish cache for dataset/3LR and LRC
+    if (client != null && datasetApiBuilder != null) {
+      URI api = datasetApiBuilder.build(datasetKey);
+      VarnishUtils.ban(client, api);
     }
   }
 

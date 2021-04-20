@@ -253,7 +253,7 @@ public class WsServer extends Application<WsServerConfig> {
     UserDao udao = new UserDao(getSqlSessionFactory(), bus);
 
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(diDao, ddao, ni, indexService, imgService, getSqlSessionFactory(), cfg.release);
+    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, indexService, imgService, getSqlSessionFactory(), cfg);
 
     // importer
     importManager = new ImportManager(cfg,
