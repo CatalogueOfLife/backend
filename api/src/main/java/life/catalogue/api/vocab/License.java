@@ -24,15 +24,23 @@ public enum License {
    *
    * @see <a href="http://creativecommons.org/licenses/by/4.0/legalcode">legal document</a>
    */
-  CC_BY("Creative Commons Attribution (CC-BY) 4.0", "http://creativecommons.org/licenses/by/4.0/legalcode"),
+  CC_BY("Creative Commons Attribution (CC BY) 4.0", "http://creativecommons.org/licenses/by/4.0/legalcode"),
+
+  CC_BY_SA("Creative Commons Attribution Share Alike (CC BY-SA) 4.0", "https://creativecommons.org/licenses/by-sa/4.0/legalcode"),
 
   /**
    * Creative Commons Attribution-NonCommercial version 4.0.
    *
    * @see <a href="http://creativecommons.org/licenses/by-nc/4.0/legalcode">legal document</a>
    */
-  CC_BY_NC("Creative Commons Attribution Non Commercial (CC-BY-NC) 4.0", "http://creativecommons.org/licenses/by-nc/4.0/legalcode"),
-  
+  CC_BY_NC("Creative Commons Attribution Non Commercial (CC BY-NC) 4.0", "http://creativecommons.org/licenses/by-nc/4.0/legalcode"),
+
+  CC_BY_ND("Creative Commons Attribution No Derivatives (CC BY-ND) 4.0", "https://creativecommons.org/licenses/by-nd/4.0/legalcode"),
+
+  CC_BY_NC_SA("Creative Commons Attribution Non Commercial Share Alike (CC BY-NC-SA) 4.0", "https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode"),
+
+  CC_BY_NC_ND("Creative Commons Attribution Non Commercial No Derivatives (CC BY-NC-ND) 4.0", "https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode"),
+
   /**
    * No license has been specified.
    */
@@ -69,19 +77,39 @@ public enum License {
     return url != null;
   }
 
+  public boolean isNoDerivatives() {
+    return name().contains("ND");
+  }
+
+  public boolean isShareAlike() {
+    return name().contains("SA");
+  }
+
+  public boolean isNonCommercial() {
+    return name().contains("NC");
+  }
+
   /**
    * Check if source data under a given license can be used in a target project.
+   * Unspecified or null is taken as being compatible, while OTHERS is never.
    * @param source license of the source
    * @param target license of the project
    * @return true if the source license is compatible with the target license
    */
   public static boolean isCompatible(License source, License target) {
-    if (source == null || target == null || source==UNSPECIFIED || target==UNSPECIFIED || (source==target && source != OTHER)) {
+    if (source != null && source.isNoDerivatives()) {
+      return false;
+    }
+    if (source == null || target == null
+        || source==UNSPECIFIED || target==UNSPECIFIED
+        || source==CC0
+        || (source==target && source != OTHER)) {
       return true;
     }
-    switch (source) {
-      case CC0: return true;
-      case CC_BY: return target==CC_BY_NC;
+    if (source != OTHER && target != OTHER) {
+      // licenses are ordered by "restrictiveness":
+      // https://wiki.creativecommons.org/wiki/Wiki/cc_license_compatibility
+      return source.ordinal() <= target.ordinal();
     }
     return false;
   }

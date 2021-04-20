@@ -1,3 +1,4 @@
+
 ## DB Schema Changes
 are to be applied manually to prod.
 Dev can usually be wiped and started from scratch.
@@ -9,6 +10,14 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+
+### 2021-04-20 All CC licenses
+```
+ALTER TYPE LICENSE ADD VALUE 'CC_BY_SA' AFTER 'CC_BY';
+ALTER TYPE LICENSE ADD VALUE 'CC_BY_ND' AFTER 'CC_BY_NC';
+ALTER TYPE LICENSE ADD VALUE 'CC_BY_NC_SA' AFTER 'CC_BY_ND';
+ALTER TYPE LICENSE ADD VALUE 'CC_BY_NC_ND' AFTER 'CC_BY_NC_SA';
+```
 
 ### 2021-04-01 add missing nidx index
 ```
