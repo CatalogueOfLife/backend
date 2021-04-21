@@ -1,12 +1,12 @@
 <meta property="og:title" content="${title!}" />
-<meta property="og:url" content="https://www.catalogueoflife.org/data/dataset/${key}" />
-<meta property="og:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${key}/logo?size=LARGE" />
+<meta property="og:url" content="https://www.catalogueoflife.org/data/dataset/${key?c}" />
+<meta property="og:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${key?c}/logo?size=LARGE" />
 <meta property="og:description" content="${description!title!}" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:site" content="@catalogueoflife"/>
 <meta name="twitter:title" content="${title!}" />
 <meta name="twitter:description" content="${description!title}" />
-<meta name="twitter:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${key}/logo?size=LARGE" />
+<meta name="twitter:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${key?c}/logo?size=LARGE" />
 
 <#macro person p>
     "familyName": "${p.familyName!}",
@@ -23,8 +23,8 @@
 {
   "@context": "https://schema.org/",
   "@type": "Dataset",
-  "@id": "${key}",
-  "url": "https://www.catalogueoflife.org/data/dataset/${key}",
+  "@id": "${key?c}",
+  "url": "https://www.catalogueoflife.org/data/dataset/${key?c}",
   "name": "${title!alias!}",
   <#if authors??>
   "author": [
