@@ -14,7 +14,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
-import life.catalogue.util.VarnishUtils;
+import life.catalogue.cache.VarnishUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;

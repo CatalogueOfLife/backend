@@ -2,7 +2,6 @@ package life.catalogue.api.event;
 
 import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DataEntity;
-import life.catalogue.api.model.Dataset;
 
 /**
  * A changed entity message for the bus system.
@@ -14,24 +13,26 @@ import life.catalogue.api.model.Dataset;
 public class EntityChanged<K, T> {
   public final K key;
   public final T obj;
+  public final T old;
   public final Class<T> objClass;
   private final boolean created;
 
   public static <K, T extends DataEntity<K>>  EntityChanged<K,T> created(T obj){
-    return new EntityChanged<>(obj.getKey(), obj, true, (Class<T>) obj.getClass());
+    return new EntityChanged<>(obj.getKey(), obj, null, true, (Class<T>) obj.getClass());
   }
 
-  public static <K, T extends DataEntity<K>>  EntityChanged<K,T> change(T obj){
-    return new EntityChanged<>(obj.getKey(), obj, false, (Class<T>) obj.getClass());
+  public static <K, T extends DataEntity<K>>  EntityChanged<K,T> change(T obj, T old){
+    return new EntityChanged<>(obj.getKey(), obj, old, false, (Class<T>) obj.getClass());
   }
 
-  public static <K, T> EntityChanged<K, T> delete(K key, Class<T> objClass){
-    return new EntityChanged<>(key, null, false, objClass);
+  public static <K, T> EntityChanged<K, T> delete(K key, T old, Class<T> objClass){
+    return new EntityChanged<>(key, null, old, false, objClass);
   }
 
-  EntityChanged(K key, T obj, boolean created, Class<T> objClass) {
+  EntityChanged(K key, T obj, T old, boolean created, Class<T> objClass) {
     this.key = Preconditions.checkNotNull(key);
     this.obj = obj; // can be null in case of deletions
+    this.old = old;
     this.objClass = Preconditions.checkNotNull(objClass);
     this.created = created;
   }

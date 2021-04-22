@@ -221,7 +221,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         return 0;
       });
     // notify event bus
-    bus.post(DatasetChanged.delete(key));
+    bus.post(DatasetChanged.delete(old));
     return false;
   }
 
@@ -265,7 +265,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.commit();
     session.close();
     pullLogo(obj, old, user);
-    bus.post(DatasetChanged.change(obj));
+    bus.post(DatasetChanged.change(obj, old));
     return false;
   }
 

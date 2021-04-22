@@ -1,4 +1,4 @@
-package life.catalogue.util;
+package life.catalogue.cache;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;

@@ -17,6 +17,7 @@ import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.assembly.AssemblyCoordinator;
+import life.catalogue.cache.CacheFlush;
 import life.catalogue.command.*;
 import life.catalogue.common.concurrent.JobExecutor;
 import life.catalogue.common.csl.CslUtil;
@@ -329,6 +330,7 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(auth);
     bus.register(coljersey);
     bus.register(DatasetInfoCache.CACHE);
+    bus.register(new CacheFlush(httpClient, cfg.apiURI));
   }
 
   @Override
