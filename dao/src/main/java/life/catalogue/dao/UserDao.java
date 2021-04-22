@@ -23,7 +23,7 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   private final EventBus bus;
 
   public UserDao(SqlSessionFactory factory, EventBus bus) {
-    super(false, factory, UserMapper.class);
+    super(true, factory, UserMapper.class);
     this.bus = bus;
   }
 
@@ -81,7 +81,7 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
 
   @Override
   protected boolean deleteAfter(Integer key, User old, int user, UserMapper mapper, SqlSession session) {
-    bus.post(UserChanged.delete(key, User.class));
+    bus.post(UserChanged.delete(old));
     return false;
   }
 }

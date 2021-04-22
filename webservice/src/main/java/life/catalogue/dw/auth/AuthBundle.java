@@ -13,6 +13,7 @@ import life.catalogue.api.model.User;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+import org.neo4j.cypher.internal.v3_4.functions.Coalesce;
 
 /**
  * Wires up authentication against the GBIF registry and authorization based on CoL user roles.
@@ -81,7 +82,8 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
 
   @Subscribe
   public void userChanged(UserChanged event){
-    idService.invalidate(event.username);
+    String username = event.isDeletion() ? event.old.getUsername() : event.obj.getUsername();
+    idService.invalidate(username);
   }
 
   @Subscribe
