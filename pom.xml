@@ -48,8 +48,7 @@
     <antlr.version>4.7.2</antlr.version>
     <asm.version></asm.version>
     <assertj.version>3.11.1</assertj.version>
-    <!-- 2.0.0j11 is a modified 2.0.0 release using GraalVM 2.3.0 with ASM 7.x hosted at GBIF -->
-    <citeproc.version>2.0.0j11</citeproc.version>
+    <citeproc.version>3.0.0-alpha.1</citeproc.version>
     <citeproc-styles.version>2.0.0</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.19</commons-compress.version>
@@ -70,7 +69,7 @@
     <java-diff-utils.version>4.0</java-diff-utils.version>
     <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
     <javers.version>5.6.3</javers.version>
-    <jbibtex.version>1.0.17</jbibtex.version>
+    <jbibtex.version>1.0.18</jbibtex.version>
     <jjwt.version>0.10.7</jjwt.version>
     <junit.version>4.12</junit.version>
     <kryo-serializers.version>0.45</kryo-serializers.version>

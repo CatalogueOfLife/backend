@@ -1,32 +1,19 @@
 package life.catalogue.common.csl;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import de.undercouch.citeproc.CSL;
 import de.undercouch.citeproc.ItemDataProvider;
 import de.undercouch.citeproc.csl.CSLItemData;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.Reference;
 
 public class CslUtil {
-  private static final String CITATION_STYLE = "apa";
-  private final static ReferenceProvider provider = new ReferenceProvider();
-  private final static CSL csl;
+  private final static CslFormatter apa = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT);
   private static Timer timer;
-  
-  static {
-    try {
-      csl = new CSL(provider, CITATION_STYLE);
-      csl.setOutputFormat("text");
-    } catch (IOException e) {
-      throw new IllegalStateException("APA CSL processor could not be created", e);
-    }
-  }
   
   public static void register(MetricRegistry registry) {
     timer = registry.timer("life.catalogue.csl.citation-builder");
@@ -60,7 +47,7 @@ public class CslUtil {
       return data.keySet().stream().map(String::toString).toArray(String[]::new);
     }
   }
-  
+
   /**
    * WARNING!
    * This is a very slow method that takes a second or more to build the citation string !!!
@@ -72,7 +59,7 @@ public class CslUtil {
   
   /**
    * WARNING!
-   * This is a very slow method that takes a second or more to build the citation string !!!
+   * This is a rather slow method that takes ~20-50ms to build the citation string !!!
    * It uses the JavaScript citeproc library internally.
    */
   public static String buildCitation(CslData data) {
@@ -81,19 +68,14 @@ public class CslUtil {
   
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
-      return buildCitationInternal(data);
+      return apa.cite(data);
     } finally {
       if (ctx != null) {
         ctx.stop();
       }
     }
   }
-  
-  private static synchronized String buildCitationInternal(CslData data) {
-    String key = provider.setData(data);
-    csl.registerCitationItems(key);
-    return csl.makeBibliography().getEntries()[0].trim();
-  }
+
   
   
   

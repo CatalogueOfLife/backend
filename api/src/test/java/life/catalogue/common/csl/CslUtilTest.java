@@ -5,12 +5,15 @@ import java.io.InputStream;
 import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import de.undercouch.citeproc.bibtex.NameParser;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
+import de.undercouch.citeproc.csl.CSLType;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.CslData;
 import life.catalogue.common.io.Resources;
+import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -36,6 +39,7 @@ public class CslUtilTest {
   @Test
   public void cslCitation() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder()
+        .type(CSLType.WEBPAGE)
         .abstrct("bcgenwgz ew hcehnuew")
         .title("my Title")
         .accessed(1999)
@@ -46,11 +50,32 @@ public class CslUtilTest {
         .originalTitle("my orig tittel");
     
     CSLItemData csl = builder.build();
-    assertEquals("Döring, M. (n.d.). my Title. https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(CslDataConverter.toCslData(csl)));
-    
-    for (int x=1; x<10; x++){
-      csl = builder.title("title-"+x).build();
-      assertEquals("Döring, M. (n.d.). title-"+x+". https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(CslDataConverter.toCslData(csl)));
+    assertEquals("Döring, M. my Title. https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(CslDataConverter.toCslData(csl)));
+
+    System.out.println("Start time measuring");
+    StopWatch watch = StopWatch.createStarted();
+    final int times = 1000;
+    for (int x=1; x<=times; x++){
+      csl = builder.accessed(1900+x).build();
+      String cite = CslUtil.buildCitation(CslDataConverter.toCslData(csl));
     }
+    watch.stop();
+    System.out.println(watch);
+    var performance = watch.getTime() / times;
+    System.out.println(performance + "ms/citation");
+  }
+
+  /**
+   * Not a CSL test really, but the BibTeX
+   * @throws IOException
+   */
+  @Test
+  public void nameParser() throws IOException {
+    var names = NameParser.parse("Barnes and Noble, Inc.");
+    System.out.println(names);
+    var names2 = NameParser.parse("{{Barnes and Noble, Inc.}}");
+    System.out.println(names2);
+    var names3 = NameParser.parse("{Catalogue of Life}");
+    System.out.println(names3);
   }
 }
