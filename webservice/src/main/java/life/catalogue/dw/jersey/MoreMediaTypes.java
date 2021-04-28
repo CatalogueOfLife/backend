@@ -24,9 +24,11 @@ public class MoreMediaTypes {
 
   public final static String APP_JSON_COLDP = "application/vnd.coldp+json";
   public final static String APP_JSON_CSL   = "application/vnd.citationstyles.csl+json";
+  public final static String APP_BIBTEX = "application/x-bibtex";
 
   public final static String APP_XLS   = "application/vnd.ms-excel";
   public final static String APP_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
 
   public final static String TEXT_YAML  = "text/yaml";
   public final static MediaType TEXT_YAML_TYPE = new MediaType("text", "yaml");

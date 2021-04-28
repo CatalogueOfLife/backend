@@ -190,8 +190,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
     env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));
 
-    // time CSL Util
-    CslUtil.register(env.metrics());
+    // CSL Util
     env.healthChecks().register("csl-utils", new CslUtilsHealthCheck());
 
     // ES
