@@ -38,6 +38,9 @@ public class ExportManager {
     validate(req);
     BackgroundJob job;
     switch (req.getFormat()) {
+      case COLDP:
+        job = new ColdpExporter(req, factory, cfg.exportDir);
+        break;
       case DWCA:
         job = new DwcaExporter(req, factory, cfg.exportDir);
         break;

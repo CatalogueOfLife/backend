@@ -20,6 +20,7 @@ import java.util.Map;
 public enum ColdpTerm implements Term, AlternativeNames {
   Reference(true),
   ID,
+  sourceID,
   citation,
   author,
   title,
@@ -28,16 +29,11 @@ public enum ColdpTerm implements Term, AlternativeNames {
   details,
   doi,
   link,
-
-  NameReference(true),
-  nameID,
-  referenceID(false, "publishedInID"),
-  page,
-  //link,
   remarks,
 
   Name(true),
   //ID,
+  //sourceID,
   basionymID(false, "originalNameID"),
   scientificName,
   authorship,
@@ -49,23 +45,25 @@ public enum ColdpTerm implements Term, AlternativeNames {
   infraspecificEpithet,
   cultivarEpithet,
   code,
-  //referenceID,
+  referenceID,
   publishedInYear(false, "namePublishedInYear"),
   publishedInPage(false, "namePublishedInPage"),
-  publishedInPageLink,
+  publishedInPageLink(false, "namePublishedInPageLink"),
   status,
   //link,
   //remarks,
 
   NameRelation(true, "NameRel"),
-  //nameID,
+  nameID,
   relatedNameID,
+  //sourceID,
   type,
   //referenceID,
   //remarks,
 
   TypeMaterial(true),
   //nameID,
+  //sourceID,
   //citation,
   //status,
   locality,
@@ -82,6 +80,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
 
   Taxon(true),
   // ID,
+  //sourceID,
   parentID,
   //nameID,
   namePhrase,
@@ -111,11 +110,13 @@ public enum ColdpTerm implements Term, AlternativeNames {
   subphylum,
   phylum,
   kingdom,
+  sequenceIndex,
   //link
   //remarks
 
   Synonym(true),
   //ID
+  //sourceID,
   taxonID,
   //nameID
   //appendedPhrase,
@@ -133,6 +134,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   TaxonConceptRelation(true, "TaxonRelation"),
   //taxonID,
   relatedTaxonID,
+  //sourceID,
   //type,
   //referenceID,
   //remarks,
@@ -140,6 +142,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   SpeciesInteraction(true),
   //taxonID,
   //relatedTaxonID,
+  //sourceID,
   relatedTaxonScientificName,
   //type,
   //referenceID,
@@ -147,11 +150,13 @@ public enum ColdpTerm implements Term, AlternativeNames {
 
   Treatment(true),
   //taxonID,
+  //sourceID,
   document,
   format,
 
   Distribution(true),
   //taxonID,
+  //sourceID,
   areaID,
   area,
   gazetteer,
@@ -160,6 +165,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   
   Media(true),
   //taxonID,
+  //sourceID,
   url,
   //type,
   //format,
@@ -171,6 +177,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   
   VernacularName(true),
   //taxonID,
+  //sourceID,
   name,
   transliteration,
   language,
@@ -180,6 +187,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
 
   SpeciesEstimate(true),
   //taxonID,
+  //sourceID,
   estimate,
   //type,
   //referenceID
@@ -205,6 +213,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   public static Map<ColdpTerm, List<ColdpTerm>> RESOURCES = ImmutableMap.<ColdpTerm, List<ColdpTerm>>builder()
       .put(Reference, ImmutableList.of(
         ID,
+        sourceID,
         citation,
         author,
         title,
@@ -214,14 +223,9 @@ public enum ColdpTerm implements Term, AlternativeNames {
         doi,
         link,
         remarks)
-      ).put(NameReference, ImmutableList.of(
-        nameID,
-        referenceID,
-        page,
-        link,
-        remarks)
       ).put(Name, ImmutableList.of(
         ID,
+        sourceID,
         basionymID,
         scientificName,
         authorship,
@@ -243,11 +247,13 @@ public enum ColdpTerm implements Term, AlternativeNames {
       ).put(NameRelation, ImmutableList.of(
         nameID,
         relatedNameID,
+        sourceID,
         type,
         referenceID,
         remarks)
       ).put(TypeMaterial, ImmutableList.of(
         nameID,
+        sourceID,
         citation,
         status,
         referenceID,
@@ -263,6 +269,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
         remarks)
       ).put(Taxon, ImmutableList.of(
         ID,
+        sourceID,
         parentID,
         nameID,
         namePhrase,
@@ -292,10 +299,12 @@ public enum ColdpTerm implements Term, AlternativeNames {
         subphylum,
         phylum,
         kingdom,
+        sequenceIndex,
         link,
         remarks)
       ).put(Synonym, ImmutableList.of(
         ID,
+        sourceID,
         taxonID,
         nameID,
         namePhrase,
@@ -306,6 +315,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
         remarks)
       ).put(NameUsage, ImmutableList.of(
         ID,
+        sourceID,
         parentID,
         basionymID,
         status,
@@ -350,11 +360,13 @@ public enum ColdpTerm implements Term, AlternativeNames {
         subphylum,
         phylum,
         kingdom,
+        sequenceIndex,
         link,
         remarks)
       ).put(SpeciesInteraction, ImmutableList.of(
         taxonID,
         relatedTaxonID,
+        sourceID,
         relatedTaxonScientificName,
         type,
         referenceID,
@@ -362,15 +374,18 @@ public enum ColdpTerm implements Term, AlternativeNames {
       ).put(TaxonConceptRelation, ImmutableList.of(
         taxonID,
         relatedTaxonID,
+        sourceID,
         type,
         referenceID,
         remarks)
       ).put(Treatment, ImmutableList.of(
         taxonID,
+        sourceID,
         document,
         format)
       ).put(Distribution, ImmutableList.of(
         taxonID,
+        sourceID,
         areaID,
         area,
         gazetteer,
@@ -379,6 +394,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
         remarks)
       ).put(Media, ImmutableList.of(
         taxonID,
+        sourceID,
         url,
         type,
         format,
@@ -389,6 +405,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
         link)
       ).put(VernacularName, ImmutableList.of(
         taxonID,
+        sourceID,
         name,
         transliteration,
         language,
@@ -398,6 +415,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
         referenceID)
       ).put(SpeciesEstimate, ImmutableList.of(
         taxonID,
+        sourceID,
         estimate,
         type,
         referenceID,

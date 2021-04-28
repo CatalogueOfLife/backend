@@ -39,9 +39,7 @@ public class DwcaExporter extends ArchiveExporter {
   private TermWriter writer2;
   private ProjectSourceMapper projectSourceMapper;
   private NameRelationMapper nameRelMapper;
-  private SectorMapper sectorMapper;
   private final Archive arch = new Archive();
-  private final Int2IntMap sector2datasetKeys = new Int2IntOpenHashMap();
 
   public DwcaExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
     super(req, factory, exportDir);
@@ -55,8 +53,8 @@ public class DwcaExporter extends ArchiveExporter {
   }
 
   @Override
-  protected void init(SqlSession session) {
-    sectorMapper = session.getMapper(SectorMapper.class);
+  protected void init(SqlSession session) throws Exception {
+    super.init(session);
     projectSourceMapper = session.getMapper(ProjectSourceMapper.class);
     nameRelMapper = session.getMapper(NameRelationMapper.class);
     additionalWriter(defineSpeciesProfile());
@@ -146,15 +144,7 @@ public class DwcaExporter extends ArchiveExporter {
   void write(NameUsageBase u) {
     Name n = u.getName();
     writer.set(DwcTerm.taxonID, u.getId());
-
-    if (u.getSectorKey() != null) {
-      int sk = u.getSectorKey();
-      if (!sector2datasetKeys.containsKey(sk)) {
-        Sector s = sectorMapper.get(DSID.of(datasetKey, u.getSectorKey()));
-        sector2datasetKeys.put(sk, (int) s.getSubjectDatasetKey());
-      }
-      writer.set(DwcTerm.datasetID, sector2datasetKeys.get(sk));
-    }
+    writer.set(DwcTerm.datasetID, sector2datasetKey(u.getSectorKey()));
 
     if (u.isSynonym()) {
       writer.set(DwcTerm.acceptedNameUsageID, u.getParentId());

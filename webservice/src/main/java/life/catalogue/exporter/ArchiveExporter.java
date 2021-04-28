@@ -3,6 +3,8 @@ package life.catalogue.exporter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.vocab.EntityType;
@@ -35,6 +37,8 @@ abstract class ArchiveExporter extends DatasetExporter {
   protected final Set<String> taxonIDs = new HashSet<>();
   protected final Set<String> refIDs = new HashSet<>();
   protected final LoadingCache<String, String> refCache;
+  protected final Int2IntMap sector2datasetKeys = new Int2IntOpenHashMap();
+  private SectorMapper sectorMapper;
   protected SqlSession session;
   protected TermWriter writer;
   protected final DSID<String> key = DSID.of(datasetKey, "");
@@ -55,6 +59,18 @@ abstract class ArchiveExporter extends DatasetExporter {
       });
   }
 
+  protected Integer sector2datasetKey(Integer sectorKey){
+    if (sectorKey != null) {
+      int sk = sectorKey;
+      if (!sector2datasetKeys.containsKey(sk)) {
+        Sector s = sectorMapper.get(DSID.of(datasetKey, sectorKey));
+        sector2datasetKeys.put(sk, (int) s.getSubjectDatasetKey());
+      }
+      sector2datasetKeys.get(sk);
+    }
+    return null;
+  }
+
   @Override
   public void export() throws Exception {
     // do we have a full dataset export request?
@@ -71,8 +87,8 @@ abstract class ArchiveExporter extends DatasetExporter {
     }
   }
 
-  protected void init(SqlSession session) {
-
+  protected void init(SqlSession session) throws Exception {
+    sectorMapper = session.getMapper(SectorMapper.class);
   }
 
   private void exportCore() throws IOException {
