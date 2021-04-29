@@ -1,13 +1,34 @@
 package life.catalogue.img;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.io.*;
 
 public interface ImageService {
-  
+
+  boolean datasetLogoExists(int datasetKey);
+
   void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException;
 
   void copyDatasetLogo(int datasetKey, int toDatasetKey) throws IOException;
+
+  /**
+   * Copies the original logo to a new file, using the image file format as given by the file suffix.
+   * If no suffix is given PNG will be used
+   */
+  default void copyDatasetLogo(int datasetKey, File out) throws IOException {
+    BufferedImage img = datasetLogo(datasetKey, ImgConfig.Scale.ORIGINAL);
+    if (img != null) {
+      String format = FilenameUtils.getExtension(out.getName());
+      if (StringUtils.isEmpty(format)) format = "png";
+      ImageIO.write(img, format, out);
+    }
+  }
 
   void archiveDatasetLogo(int releaseKey, int datasetKey) throws IOException;
 
@@ -18,6 +39,11 @@ public interface ImageService {
   
   static ImageService passThru() {
     return new ImageService() {
+      @Override
+      public boolean datasetLogoExists(int datasetKey) {
+        return false;
+      }
+
       @Override
       public void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException {
       }

@@ -1,6 +1,7 @@
 package life.catalogue.exporter;
 
 import com.google.common.io.Files;
+import life.catalogue.ApiUtils;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Organisation;
@@ -8,12 +9,14 @@ import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.db.LookupTables;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.img.ImageService;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
@@ -56,7 +59,7 @@ public class AcExporterTest {
   
   @Test
   public void export() throws Exception {
-    AcefExporterJob exp = new AcefExporterJob(new ExportRequest(Datasets.COL, DataFormat.ACEF), cfg, PgSetupRule.getSqlSessionFactory());
+    AcefExporterJob exp = new AcefExporterJob(ExportRequest.dataset(Datasets.COL, Users.TESTER), cfg, PgSetupRule.getSqlSessionFactory(), ApiUtils.API, ImageService.passThru());
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
 
@@ -110,7 +113,7 @@ public class AcExporterTest {
       dm.update(d);
     }
 
-    AcefExporterJob exp = new AcefExporterJob(new ExportRequest(key, DataFormat.ACEF), cfg, PgSetupRule.getSqlSessionFactory());
+    AcefExporterJob exp = new AcefExporterJob(new ExportRequest(key, DataFormat.ACEF), cfg, PgSetupRule.getSqlSessionFactory(), ApiUtils.API, ImageService.passThru());
     exp.run();
     arch = exp.getArchive();
     System.out.println("LOGS:\n");

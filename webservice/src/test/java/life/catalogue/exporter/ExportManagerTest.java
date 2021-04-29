@@ -1,6 +1,7 @@
 package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.img.ImageService;
 import org.junit.Test;
 
 import java.io.File;
@@ -16,7 +17,7 @@ public class ExportManagerTest {
     WsServerConfig cfg = new WsServerConfig();
     cfg.downloadURI = URI.create("http://gbif.org");
     cfg.exportDir = new File("/tmp/col");
-    ExportManager manager = new ExportManager(cfg, null, null);
+    ExportManager manager = new ExportManager(cfg, null, null, ImageService.passThru());
     UUID key = UUID.fromString("7ca06f44-2c0c-4fa9-a410-ac072c378378");
     assertEquals(new File("/tmp/col/7c/7ca06f44-2c0c-4fa9-a410-ac072c378378.zip"), manager.archiveFiLe(key));
     assertEquals(URI.create("http://gbif.org/exports/7c/" + key + ".zip"), manager.archiveURI(key));

@@ -7,8 +7,10 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.img.ImageService;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.postgres.PgCopyUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -44,8 +47,8 @@ public class AcefExporterJob extends DatasetExporter {
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
   private final WsServerConfig cfg;
 
-  public AcefExporterJob(ExportRequest req, WsServerConfig cfg, SqlSessionFactory factory) {
-    super(req, factory, cfg.exportDir);
+  public AcefExporterJob(ExportRequest req, WsServerConfig cfg, SqlSessionFactory factory, URI apiURI, ImageService imageService) {
+    super(req, DataFormat.ACEF, factory, cfg.exportDir, apiURI, imageService);
     if (req.hasFilter()) {
       throw new IllegalArgumentException("ACEF exports cannot have any filters");
     }

@@ -11,6 +11,7 @@ import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.Archive;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -41,15 +43,8 @@ public class DwcaExporter extends ArchiveExporter {
   private NameRelationMapper nameRelMapper;
   private final Archive arch = new Archive();
 
-  public DwcaExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
-    super(req, factory, exportDir);
-  }
-
-  public static DwcaExporter dataset(int datasetKey, int userKey, SqlSessionFactory factory, File exportDir) {
-    ExportRequest req = new ExportRequest();
-    req.setDatasetKey(datasetKey);
-    req.setUserKey(userKey);
-    return new DwcaExporter(req, factory, exportDir);
+  public DwcaExporter(ExportRequest req, SqlSessionFactory factory, File exportDir, URI apiURI, ImageService imageService) {
+    super(DataFormat.DWCA, req, factory, exportDir, apiURI, imageService);
   }
 
   @Override
@@ -73,6 +68,11 @@ public class DwcaExporter extends ArchiveExporter {
 
   @Override
   void exportMetadata(Dataset d) throws IOException {
+    // add CLB logo URL if missing
+    if (d.getLogo() == null && imageService.datasetLogoExists(d.getKey())) {
+      d.setLogo(apiURI.resolve("/dataset/"+d.getKey()+"/logo?size=ORIGINAL"));
+    }
+
     // main dataset metadata
     EmlWriter.write(d, new File(tmpDir, EML_FILENAME));
 

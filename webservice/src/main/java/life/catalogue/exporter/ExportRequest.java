@@ -10,12 +10,19 @@ import java.util.Set;
 public class ExportRequest {
   private int datasetKey;
   @NotNull
-  private DataFormat format = DataFormat.COLDP;
+  private DataFormat format;
   private String taxonID;
   private Set<String> exclusions;
   private boolean synonyms = true;
   private Rank minRank;
   private int userKey;
+
+  public static ExportRequest dataset(int datasetKey, int userKey) {
+    ExportRequest req = new ExportRequest();
+    req.setDatasetKey(datasetKey);
+    req.setUserKey(userKey);
+    return req;
+  }
 
   public ExportRequest() {
   }

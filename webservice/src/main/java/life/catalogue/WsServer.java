@@ -226,7 +226,7 @@ public class WsServer extends Application<WsServerConfig> {
     final FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(getSqlSessionFactory(), cfg.metricsRepo);
 
     // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor);
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService);
 
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);

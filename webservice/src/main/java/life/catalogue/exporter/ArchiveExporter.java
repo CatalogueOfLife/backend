@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.EstimateSearchRequest;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.common.func.ThrowingBiConsumer;
 import life.catalogue.common.func.ThrowingConsumer;
@@ -15,6 +16,7 @@ import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
+import life.catalogue.img.ImageService;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -43,8 +46,8 @@ abstract class ArchiveExporter extends DatasetExporter {
   protected TermWriter writer;
   protected final DSID<String> key = DSID.of(datasetKey, "");
 
-  ArchiveExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
-    super(req, factory, exportDir);
+  ArchiveExporter(DataFormat format, ExportRequest req, SqlSessionFactory factory, File exportDir, URI apiURI, ImageService imageService) {
+    super(req, format, factory, exportDir, apiURI, imageService);
     this.archive = archive(exportDir, getKey());
     this.tmpDir = new File(exportDir, getKey().toString());
     final DSID<String> rKey = DSID.of(datasetKey, null);

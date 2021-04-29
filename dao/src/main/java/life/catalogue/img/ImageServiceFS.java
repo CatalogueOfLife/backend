@@ -1,14 +1,17 @@
 package life.catalogue.img;
 
 import life.catalogue.api.exception.NotFoundException;
+import org.apache.commons.io.IOUtils;
 import org.imgscalr.Scalr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
@@ -33,7 +36,12 @@ public class ImageServiceFS implements ImageService {
     }
     return bi;
   }
-  
+
+  @Override
+  public boolean datasetLogoExists(int datasetKey) {
+    return Files.exists(cfg.datasetLogo(datasetKey, ImgConfig.Scale.ORIGINAL));
+  }
+
   @Override
   public void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException {
     LOG.info("{} logo for dataset {}", img == null ? "Delete" : "Change", datasetKey);

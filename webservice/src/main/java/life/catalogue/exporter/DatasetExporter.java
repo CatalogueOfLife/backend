@@ -1,13 +1,17 @@
 package life.catalogue.exporter;
 
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.concurrent.DatasetBlockingJob;
 import life.catalogue.common.concurrent.JobPriority;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
+import life.catalogue.img.ImageService;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -16,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.UUID;
 
 abstract class DatasetExporter extends DatasetBlockingJob {
@@ -26,9 +31,18 @@ abstract class DatasetExporter extends DatasetBlockingJob {
   protected final Dataset dataset;
   protected File archive;
   protected File tmpDir;
+  protected final URI apiURI;
+  protected final ImageService imageService;
 
-  DatasetExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
+  DatasetExporter(ExportRequest req, DataFormat format, SqlSessionFactory factory, File exportDir, URI apiURI, ImageService imageService) {
     super(req.getDatasetKey(), req.getUserKey(), JobPriority.LOW);
+    if (req.getFormat() == null) {
+      req.setFormat(format);
+    } else if (req.getFormat() != format) {
+      throw new IllegalArgumentException("Format "+req.getFormat()+" cannot be exported with "+getClass().getSimpleName());
+    }
+    this.apiURI = apiURI;
+    this.imageService = imageService;
     this.req = Preconditions.checkNotNull(req);
     this.factory = factory;
     this.archive = archive(exportDir, getKey());

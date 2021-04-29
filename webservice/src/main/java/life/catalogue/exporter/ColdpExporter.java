@@ -4,6 +4,7 @@ import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.NomStatus;
@@ -12,6 +13,7 @@ import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.terms.DcTerm;
@@ -22,29 +24,21 @@ import org.gbif.nameparser.api.NomCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
 public class ColdpExporter extends ArchiveExporter {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpExporter.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
+  private static final String LOGO_FILENAME = "logo.png";
   private ProjectSourceMapper projectSourceMapper;
   private Writer cslWriter;
   private boolean cslFirst = true;
 
-  public ColdpExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
-    super(req, factory, exportDir);
-  }
-
-  public static ColdpExporter dataset(int datasetKey, int userKey, SqlSessionFactory factory, File exportDir) {
-    ExportRequest req = new ExportRequest();
-    req.setDatasetKey(datasetKey);
-    req.setUserKey(userKey);
-    return new ColdpExporter(req, factory, exportDir);
+  public ColdpExporter(ExportRequest req, SqlSessionFactory factory, File exportDir, URI apiURI, ImageService imageService) {
+    super(DataFormat.COLDP, req, factory, exportDir, apiURI, imageService);
   }
 
   @Override
@@ -280,7 +274,8 @@ public class ColdpExporter extends ArchiveExporter {
     // write to YAML
     DatasetYamlWriter.write(dataset, new File(tmpDir, METADATA_FILENAME));
 
-    //TODO: include logo image !!!
+    // add logo image
+    imageService.copyDatasetLogo(datasetKey, new File(tmpDir, LOGO_FILENAME));
   }
 
   @Override

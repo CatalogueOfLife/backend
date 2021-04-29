@@ -8,13 +8,16 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import java.net.URI;
 import java.util.Collection;
 
 import static org.glassfish.jersey.client.authentication.HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_PASSWORD;
 import static org.glassfish.jersey.client.authentication.HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_USERNAME;
 
 public class ApiUtils {
-  
+
+  public static URI API = URI.create("http://api.dev.catalogueoflife.org");
+
   private ApiUtils(){};
   
   public static WebTarget applyPage(WebTarget wt, Page page) {

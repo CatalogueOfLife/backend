@@ -7,6 +7,7 @@ import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.common.concurrent.JobExecutor;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -17,12 +18,14 @@ import java.util.UUID;
 public class ExportManager {
   private final WsServerConfig cfg;
   private final SqlSessionFactory factory;
+  private final ImageService imageService;
   private final JobExecutor executor;
 
-  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor) {
+  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService) {
     this.cfg = cfg;
     this.factory = factory;
     this.executor = executor;
+    this.imageService = imageService;
   }
 
   public File archiveFiLe(UUID key) {
@@ -39,13 +42,13 @@ public class ExportManager {
     BackgroundJob job;
     switch (req.getFormat()) {
       case COLDP:
-        job = new ColdpExporter(req, factory, cfg.exportDir);
+        job = new ColdpExporter(req, factory, cfg.exportDir, cfg.apiURI, imageService);
         break;
       case DWCA:
-        job = new DwcaExporter(req, factory, cfg.exportDir);
+        job = new DwcaExporter(req, factory, cfg.exportDir, cfg.apiURI, imageService);
         break;
       case ACEF:
-        job = new AcefExporterJob(req, cfg, factory);
+        job = new AcefExporterJob(req, cfg, factory, cfg.apiURI, imageService);
         break;
 
       default:
