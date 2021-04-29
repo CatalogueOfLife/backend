@@ -1,6 +1,5 @@
 package life.catalogue.exporter;
 
-import com.google.common.io.Files;
 import life.catalogue.ApiUtils;
 import life.catalogue.WsServerConfig;
 import life.catalogue.db.PgSetupRule;
@@ -11,9 +10,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import java.io.File;
-
-public abstract class ExporterTest {
+public class ExporterTest {
 
   WsServerConfig cfg;
 
@@ -39,7 +36,7 @@ public abstract class ExporterTest {
 
   @After
   public void cleanup()  {
-    FileUtils.deleteQuietly(cfg.exportDir);
+    //FileUtils.deleteQuietly(cfg.exportDir);
   }
 
 }

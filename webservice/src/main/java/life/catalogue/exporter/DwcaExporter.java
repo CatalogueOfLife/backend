@@ -1,17 +1,10 @@
 package life.catalogue.exporter;
 
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.TermWriter;
-import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.db.mapper.NameRelationMapper;
-import life.catalogue.db.mapper.ProjectSourceMapper;
-import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.common.io.TermWriter.CSV;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -30,8 +23,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -60,7 +51,7 @@ public class DwcaExporter extends ArchiveExporter {
       if (writer2 != null) {
         writer2.close();
       }
-      writer2 = new TermWriter(tmpDir, terms[0], terms[1], List.of(Arrays.copyOfRange(terms, 2, terms.length)));
+      writer2 = new TermWriter.CSV(tmpDir, terms[0], terms[1], List.of(Arrays.copyOfRange(terms, 2, terms.length)));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

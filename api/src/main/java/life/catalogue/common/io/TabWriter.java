@@ -9,14 +9,14 @@ import org.apache.commons.lang3.StringUtils;
  * Basic TAB delimited file writer that escapes tab and newline characters.
  * If desired the number of columns can be verified to be the same for every record.
  */
-public class TabWriter implements AutoCloseable {
+public class TabWriter implements AutoCloseable, RowWriter {
   
   private static final Pattern escapeChars = Pattern.compile("[\t\n\r]");
   private boolean verifyColumns = false;
   private int columns = -1;
   private int records = 0;
   private Writer writer;
-  
+
   public static TabWriter fromStream(OutputStream stream) {
     try {
       return new TabWriter(new BufferedWriter(new OutputStreamWriter(stream, "UTF8")));

@@ -11,6 +11,7 @@ public class ExportRequest {
   private int datasetKey;
   @NotNull
   private DataFormat format;
+  private boolean excel;
   private String taxonID;
   private Set<String> exclusions;
   private boolean synonyms = true;
@@ -46,6 +47,14 @@ public class ExportRequest {
 
   public void setFormat(DataFormat format) {
     this.format = format;
+  }
+
+  public boolean isExcel() {
+    return excel;
+  }
+
+  public void setExcel(boolean excel) {
+    this.excel = excel;
   }
 
   public String getTaxonID() {

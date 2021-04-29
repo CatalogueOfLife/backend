@@ -1,7 +1,5 @@
 package life.catalogue.common.io;
 
-import com.google.common.base.Joiner;
-import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.dwc.terms.Term;
@@ -15,14 +13,26 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class TermWriter implements AutoCloseable {
-  private final Term rowType;
-  private final Term idTerm;
-  private final Map<Term, Integer> cols;
-  private final TabWriter writer;
-  private String[] row;
+public abstract class TermWriter implements AutoCloseable {
+  protected final Term rowType;
+  protected final Term idTerm;
+  protected final Map<Term, Integer> cols;
+  protected String[] row;
+  private final RowWriter writer;
 
-  public TermWriter(File dir, Term rowType, Term idTerm, List<Term> cols) throws IOException {
+  public static class CSV extends TermWriter{
+    public CSV(File dir, Term rowType, Term idTerm, List<Term> cols) throws IOException {
+      super(setupWriter(dir, rowType), rowType, idTerm, cols);
+    }
+
+    static RowWriter setupWriter(File dir, Term rowType) {
+      File f = new File(dir, filename(rowType));
+      return TabWriter.fromFile(f);
+    }
+  }
+
+  public TermWriter(RowWriter writer, Term rowType, Term idTerm, List<Term> cols) throws IOException {
+    this.writer = writer;
     this.rowType = rowType;
     this.idTerm = idTerm;
     Map<Term, Integer> map = new HashMap<>();
@@ -32,9 +42,6 @@ public class TermWriter implements AutoCloseable {
       map.put(t, idx++);
     }
     this.cols = Map.copyOf(map);
-
-    File f = new File(dir, filename(rowType));
-    writer = TabWriter.fromFile(f);
 
     // write header row
     row = new String[map.size()];
@@ -54,6 +61,11 @@ public class TermWriter implements AutoCloseable {
     String id = get(idTerm);
     row = new String[cols.size()];
     return id;
+  }
+
+  @Override
+  public void close() throws IOException {
+    writer.close();
   }
 
   public String get(Term term) {
@@ -101,10 +113,5 @@ public class TermWriter implements AutoCloseable {
     if (value != null) {
       set(term, PermissiveEnumSerde.enumValueName(value));
     }
-  }
-
-  @Override
-  public void close() throws IOException {
-    writer.close();
   }
 }

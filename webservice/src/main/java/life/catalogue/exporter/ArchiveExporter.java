@@ -21,13 +21,17 @@ import life.catalogue.img.ImageService;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.poi.ss.formula.functions.T;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +52,7 @@ abstract class ArchiveExporter extends DatasetExporter {
   protected SqlSession session;
   protected TermWriter writer;
   protected final DSID<String> key = DSID.of(datasetKey, "");
+  private final SXSSFWorkbook wb;
 
   ArchiveExporter(DataFormat format, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(req, format, factory, cfg, imageService);
@@ -61,6 +66,13 @@ abstract class ArchiveExporter extends DatasetExporter {
           return r == null ? null : r.getCitation();
         }
       });
+    if (req.isExcel()) {
+      // we use SXSSF (Streaming Usermodel API) for low memory footprint
+      // https://poi.apache.org/components/spreadsheet/how-to.html#sxssf
+      wb = new SXSSFWorkbook(100); // keep 100 rows in memory, exceeding rows will be flushed to disk
+    } else {
+      wb = null;
+    }
   }
 
   protected Integer sector2datasetKey(Integer sectorKey){
@@ -89,6 +101,21 @@ abstract class ArchiveExporter extends DatasetExporter {
       closeWriter();
       exportMetadata(dataset);
     }
+  }
+
+  @Override
+  protected void bundle() throws IOException {
+    // write workbook to single file and cleanup temp POI files
+    if (wb != null) {
+      LOG.info("Writing final Excel file");
+      FileOutputStream out = new FileOutputStream(new File(tmpDir, "dataset.xlsx"));
+      wb.write(out);
+      out.close();
+      // dispose of temporary files backing this workbook on disk
+      LOG.info("Dispose temporary Excel files");
+      wb.dispose();
+    }
+    super.bundle();
   }
 
   protected void init(SqlSession session) throws Exception {
@@ -302,9 +329,16 @@ abstract class ArchiveExporter extends DatasetExporter {
 
   private boolean newDataFile(Term[] terms) throws IOException {
     closeWriter();
-    if (terms != null) {
-      LOG.info("Export {} from dataset {}", terms[0].simpleName(), datasetKey);
-      writer = new TermWriter(tmpDir, terms[0], terms[1], List.of(Arrays.copyOfRange(terms, 2, terms.length)));
+    if (terms != null && terms.length>2) {
+      Term rowType = terms[0];
+      Term idTerm = terms[1];
+      var cols = List.of(Arrays.copyOfRange(terms, 2, terms.length));
+      LOG.info("Export {} from dataset {}", rowType.simpleName(), datasetKey);
+      if (req.isExcel()) {
+        writer = new ExcelTermWriter(wb, rowType, idTerm, cols);
+      } else {
+        writer = new TermWriter.CSV(tmpDir, rowType, idTerm, cols);
+      }
       return true;
     }
     return false;
