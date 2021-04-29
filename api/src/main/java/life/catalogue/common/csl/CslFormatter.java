@@ -62,7 +62,7 @@ public class CslFormatter {
     this.format = format;
     this.style = style;
     try {
-      csl = new CSL(provider, "/csl-styles/" + style + ".csl");
+      csl = new CSL(provider, "/csl-styles/" + style.name().toLowerCase() + ".csl");
       csl.setOutputFormat(format.name().toLowerCase());
     } catch (IOException e) {
       throw new IllegalStateException(style + " CSL processor could not be created", e);

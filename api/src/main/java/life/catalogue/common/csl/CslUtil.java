@@ -1,7 +1,5 @@
 package life.catalogue.common.csl;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import de.undercouch.citeproc.csl.CSLItemData;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.Reference;
