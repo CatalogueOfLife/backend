@@ -179,9 +179,7 @@ public class ColdpExporter extends ArchiveExporter {
     writer.set(ColdpTerm.link, u.getLink());
     writer.set(ColdpTerm.remarks, u.getRemarks());
 
-    if (u.isSynonym()) {
-      Synonym s = (Synonym) u;
-    } else {
+    if (!u.isSynonym()) {
       Taxon t = (Taxon) u;
       writer.set(ColdpTerm.scrutinizer, t.getScrutinizer());
       //writer.set(ColdpTerm.scrutinizerID, null);
@@ -201,9 +199,7 @@ public class ColdpExporter extends ArchiveExporter {
     writer.set(ColdpTerm.name, vn.getName());
     writer.set(ColdpTerm.transliteration, vn.getLatin());
     writer.set(ColdpTerm.language, vn.getLanguage());
-    if (vn.getCountry() != null) {
-      writer.set(ColdpTerm.country, vn.getCountry().getIso2LetterCode());
-    }
+    writer.set(ColdpTerm.country, vn.getCountry(), Country::getIso2LetterCode);
     writer.set(ColdpTerm.area, vn.getArea());
     writer.set(ColdpTerm.sex, vn.getSex());
   }
@@ -238,7 +234,6 @@ public class ColdpExporter extends ArchiveExporter {
     }
   }
 
-
   @Override
   void write(NameRelation rel) {
     writer.set(ColdpTerm.nameID, rel.getNameId());
@@ -251,22 +246,82 @@ public class ColdpExporter extends ArchiveExporter {
 
   @Override
   void write(TypeMaterial tm) {
-    super.write(tm);
+    writer.set(ColdpTerm.ID, tm.getId());
+    writer.set(ColdpTerm.sourceID, sector2datasetKey(tm.getSectorKey()));
+    writer.set(ColdpTerm.nameID, tm.getNameId());
+    writer.set(ColdpTerm.citation, tm.getCitation());
+    writer.set(ColdpTerm.status, tm.getStatus());
+    writer.set(ColdpTerm.referenceID, tm.getReferenceId());
+    writer.set(ColdpTerm.locality, tm.getLocality());
+    writer.set(ColdpTerm.country, tm.getCountry(), Country::getIso2LetterCode);
+    writer.set(ColdpTerm.latitude, tm.getLatitude());
+    writer.set(ColdpTerm.longitude, tm.getLongitude());
+    writer.set(ColdpTerm.altitude, tm.getAltitude());
+    writer.set(ColdpTerm.host, tm.getHost());
+    writer.set(ColdpTerm.altitude, tm.getAltitude());
+    writer.set(ColdpTerm.date, tm.getDate());
+    writer.set(ColdpTerm.collector, tm.getCollector());
+    writer.set(ColdpTerm.link, tm.getLink());
+    writer.set(ColdpTerm.remarks, tm.getRemarks());
   }
 
   @Override
-  void write(SpeciesInteraction rel) {
-    super.write(rel);
+  void write(TaxonConceptRelation rel) {
+    writer.set(ColdpTerm.taxonID, rel.getTaxonId());
+    writer.set(ColdpTerm.relatedTaxonID, rel.getRelatedTaxonId());
+    writer.set(ColdpTerm.sourceID, sector2datasetKey(rel.getSectorKey()));
+    writer.set(ColdpTerm.type, rel.getType());
+    writer.set(ColdpTerm.referenceID, rel.getReferenceId());
+    writer.set(ColdpTerm.remarks, rel.getRemarks());
+  }
+
+  @Override
+  void write(String taxonID, Media m) {
+    writer.set(ColdpTerm.taxonID, taxonID);
+    writer.set(ColdpTerm.sourceID, sector2datasetKey(m.getSectorKey()));
+    writer.set(ColdpTerm.url, m.getUrl());
+    writer.set(ColdpTerm.type, m.getType());
+    writer.set(ColdpTerm.format, m.getFormat());
+    writer.set(ColdpTerm.title, m.getTitle());
+    writer.set(ColdpTerm.created, m.getCaptured());
+    writer.set(ColdpTerm.creator, m.getCapturedBy());
+    writer.set(ColdpTerm.license, m.getLicense());
+    writer.set(ColdpTerm.link, m.getLink());
+  }
+
+  @Override
+  void write(SpeciesInteraction si) {
+    writer.set(ColdpTerm.taxonID, si.getTaxonId());
+    writer.set(ColdpTerm.relatedTaxonID, si.getRelatedTaxonId());
+    writer.set(ColdpTerm.sourceID, sector2datasetKey(si.getSectorKey()));
+    writer.set(ColdpTerm.relatedTaxonScientificName, si.getRelatedTaxonScientificName());
+    writer.set(ColdpTerm.type, si.getType());
+    writer.set(ColdpTerm.referenceID, si.getReferenceId());
+    writer.set(ColdpTerm.remarks, si.getRemarks());
   }
 
   @Override
   void write(String taxonID, Distribution d) {
-    super.write(taxonID, d);
+    writer.set(ColdpTerm.taxonID, taxonID);
+    writer.set(ColdpTerm.sourceID, sector2datasetKey(d.getSectorKey()));
+    writer.set(ColdpTerm.area, d.getArea());
+    //writer.set(ColdpTerm.areaID, d.get());
+    writer.set(ColdpTerm.gazetteer, d.getGazetteer());
+    writer.set(ColdpTerm.status, d.getStatus());
+    writer.set(ColdpTerm.referenceID, d.getReferenceId());
+    //writer.set(ColdpTerm.remarks, d.getRemarks());
   }
 
   @Override
-  void write(SpeciesEstimate e) {
-    super.write(e);
+  void write(SpeciesEstimate est) {
+    if (est.getTarget() != null) {
+      writer.set(ColdpTerm.taxonID, est.getTarget().getId());
+      //TODO: writer.set(ColdpTerm.sourceID, null);
+      writer.set(ColdpTerm.estimate, est.getEstimate());
+      writer.set(ColdpTerm.type, est.getType());
+      writer.set(ColdpTerm.referenceID, est.getReferenceId());
+      writer.set(ColdpTerm.remarks, est.getNote());
+    }
   }
 
   @Override

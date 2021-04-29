@@ -1,6 +1,8 @@
 package life.catalogue.common.io;
 
 import com.google.common.base.Joiner;
+import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.jackson.PermissiveEnumSerde;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.dwc.terms.Term;
 
@@ -97,7 +99,7 @@ public class TermWriter implements AutoCloseable {
 
   public void set(Term term, Enum value) {
     if (value != null) {
-      set(term, value.name());
+      set(term, PermissiveEnumSerde.enumValueName(value));
     }
   }
 

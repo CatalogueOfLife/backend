@@ -321,11 +321,9 @@ abstract class ArchiveExporter extends DatasetExporter {
   abstract Term[] define(EntityType entity);
 
   void write(NameUsageBase u){
-
   }
 
   void write(Reference r){
-
   }
 
   void write(NameRelation rel) {
