@@ -39,8 +39,6 @@ public class DwcaExporter extends ArchiveExporter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaExporter.class);
   private static final String EML_FILENAME = "eml.xml";
   private TermWriter writer2;
-  private ProjectSourceMapper projectSourceMapper;
-  private NameRelationMapper nameRelMapper;
   private final Archive arch = new Archive();
 
   public DwcaExporter(ExportRequest req, SqlSessionFactory factory, File exportDir, URI apiURI, ImageService imageService) {
@@ -50,8 +48,6 @@ public class DwcaExporter extends ArchiveExporter {
   @Override
   protected void init(SqlSession session) throws Exception {
     super.init(session);
-    projectSourceMapper = session.getMapper(ProjectSourceMapper.class);
-    nameRelMapper = session.getMapper(NameRelationMapper.class);
     additionalWriter(defineSpeciesProfile());
   }
 

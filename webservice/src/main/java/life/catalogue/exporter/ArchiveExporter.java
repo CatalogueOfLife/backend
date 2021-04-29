@@ -41,7 +41,9 @@ abstract class ArchiveExporter extends DatasetExporter {
   protected final Set<String> refIDs = new HashSet<>();
   protected final LoadingCache<String, String> refCache;
   protected final Int2IntMap sector2datasetKeys = new Int2IntOpenHashMap();
-  private SectorMapper sectorMapper;
+  protected SectorMapper sectorMapper;
+  protected ProjectSourceMapper projectSourceMapper;
+  protected NameRelationMapper nameRelMapper;
   protected SqlSession session;
   protected TermWriter writer;
   protected final DSID<String> key = DSID.of(datasetKey, "");
@@ -92,6 +94,8 @@ abstract class ArchiveExporter extends DatasetExporter {
 
   protected void init(SqlSession session) throws Exception {
     sectorMapper = session.getMapper(SectorMapper.class);
+    projectSourceMapper = session.getMapper(ProjectSourceMapper.class);
+    nameRelMapper = session.getMapper(NameRelationMapper.class);
   }
 
   private void exportCore() throws IOException {

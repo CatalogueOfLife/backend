@@ -4,10 +4,7 @@ import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.TermWriter;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.text.StringUtils;
@@ -156,28 +153,44 @@ public class ColdpExporter extends ArchiveExporter {
     writer.set(ColdpTerm.ID, u.getId());
     writer.set(ColdpTerm.sourceID, sector2datasetKey(u.getSectorKey()));
     writer.set(ColdpTerm.parentID, u.getParentId());
+    for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
+      writer.set(ColdpTerm.basionymID, rel.getRelatedNameId());
+    }
     writer.set(ColdpTerm.status, u.getStatus());
+    writer.set(ColdpTerm.scientificName, n.getScientificName());
+    writer.set(ColdpTerm.authorship, n.getAuthorship());
     writer.set(ColdpTerm.rank, n.getRank());
-    writer.set(ColdpTerm.scientificName, u.getName().getScientificName());
-    writer.set(ColdpTerm.authorship, u.getName().getAuthorship());
-    writer.set(ColdpTerm.namePhrase, u.getNamePhrase());
+    writer.set(ColdpTerm.uninomial, n.getUninomial());
     writer.set(ColdpTerm.genericName, n.getGenus());
+    writer.set(ColdpTerm.infragenericEpithet, n.getInfragenericEpithet());
     writer.set(ColdpTerm.specificEpithet, n.getSpecificEpithet());
     writer.set(ColdpTerm.infraspecificEpithet, n.getInfraspecificEpithet());
-    writer.set(ColdpTerm.uninomial, n.getUninomial());
-    writer.set(ColdpTerm.remarks, u.getRemarks());
-    writer.set(ColdpTerm.link, u.getLink());
-    if (n.getPublishedInId() != null) {
-      writer.set(ColdpTerm.nameReferenceID, refCache.getUnchecked(n.getPublishedInId()));
-    }
+    writer.set(ColdpTerm.cultivarEpithet, n.getCultivarEpithet());
+    writer.set(ColdpTerm.namePhrase, u.getNamePhrase());
+    writer.set(ColdpTerm.nameReferenceID, n.getPublishedInId());
+    writer.set(ColdpTerm.publishedInYear, n.getPublishedInYear());
+    writer.set(ColdpTerm.publishedInPage, n.getPublishedInPage());
+    //writer.set(ColdpTerm.publishedInPageLink, null);
+    writer.set(ColdpTerm.code, n.getCode());
+    writer.set(ColdpTerm.nameStatus, n.getNomStatus());
     writer.set(ColdpTerm.accordingToID, u.getAccordingToId());
-    writer.set(ColdpTerm.code, n.getCode(), NomCode::getAcronym);
-    writer.set(ColdpTerm.nameStatus, n.getNomStatus(), NomStatus::getBotanicalLabel);
+    writer.set(ColdpTerm.referenceID, u.getReferenceIds());
+    // see taxon specifics below
+    writer.set(ColdpTerm.link, u.getLink());
+    writer.set(ColdpTerm.remarks, u.getRemarks());
 
     if (u.isSynonym()) {
       Synonym s = (Synonym) u;
     } else {
       Taxon t = (Taxon) u;
+      writer.set(ColdpTerm.scrutinizer, t.getScrutinizer());
+      //writer.set(ColdpTerm.scrutinizerID, null);
+      writer.set(ColdpTerm.scrutinizerDate, t.getScrutinizerDate());
+      writer.set(ColdpTerm.extinct, t.isExtinct());
+      writer.set(ColdpTerm.temporalRangeStart, t.getTemporalRangeStart());
+      writer.set(ColdpTerm.temporalRangeEnd, t.getTemporalRangeEnd());
+      writer.set(ColdpTerm.environment, t.getEnvironments());
+      //writer.set(ColdpTerm.sequenceIndex, null);
     }
   }
 
@@ -228,7 +241,12 @@ public class ColdpExporter extends ArchiveExporter {
 
   @Override
   void write(NameRelation rel) {
-    super.write(rel);
+    writer.set(ColdpTerm.nameID, rel.getNameId());
+    writer.set(ColdpTerm.relatedNameID, rel.getRelatedNameId());
+    writer.set(ColdpTerm.sourceID, sector2datasetKey(rel.getSectorKey()));
+    writer.set(ColdpTerm.type, rel.getType());
+    writer.set(ColdpTerm.referenceID, rel.getReferenceId());
+    writer.set(ColdpTerm.remarks, rel.getRemarks());
   }
 
   @Override
