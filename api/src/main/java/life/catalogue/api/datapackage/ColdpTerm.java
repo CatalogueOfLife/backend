@@ -45,7 +45,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   infraspecificEpithet,
   cultivarEpithet,
   code,
-  referenceID,
+  referenceID(false, "publishedInID", "namePublishedInID"),
   publishedInYear(false, "namePublishedInYear"),
   publishedInPage(false, "namePublishedInPage"),
   publishedInPageLink(false, "namePublishedInPageLink"),
