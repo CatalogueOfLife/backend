@@ -1,6 +1,8 @@
 package life.catalogue.exporter;
 
 import com.google.common.io.Files;
+import life.catalogue.ApiUtils;
+import life.catalogue.WsServerConfig;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import org.apache.commons.io.FileUtils;
@@ -11,24 +13,33 @@ import org.junit.Rule;
 
 import java.io.File;
 
-public class ExporterTest {
+public abstract class ExporterTest {
 
-  File dir;
+  WsServerConfig cfg;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
 
   @Rule
-  public TestDataRule testDataRule = TestDataRule.apple();
+  public TestDataRule testDataRule;
+
+  public ExporterTest() {
+    this.testDataRule = TestDataRule.apple();
+  }
+
+  public ExporterTest(TestDataRule.TestData testData) {
+    this.testDataRule = new TestDataRule(testData);
+  }
 
   @Before
   public void initCfg()  {
-    dir = Files.createTempDir();
+    cfg = new WsServerConfig();
+    cfg.apiURI= ApiUtils.API;
   }
 
   @After
   public void cleanup()  {
-    FileUtils.deleteQuietly(dir);
+    FileUtils.deleteQuietly(cfg.exportDir);
   }
 
 }

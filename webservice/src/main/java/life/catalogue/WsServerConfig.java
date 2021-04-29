@@ -108,7 +108,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    * Directory to store export archives
    */
   @NotNull
-  public File exportDir = new File("/tmp");
+  public File exportDir = new File("/tmp/exports");
 
   @NotNull
   public String exportCss = "https://gitcdn.link/repo/CatalogueOfLife/backend/master/webservice/src/main/resources/exporter/html/catalogue.css";

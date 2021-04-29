@@ -12,14 +12,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
 public class DwcaExporterTest extends ExporterTest {
-  WsServerConfig cfg;
-
-  @Before
-  public void initCfg()  {
-    cfg = new WsServerConfig();
-    cfg.apiURI=ApiUtils.API;
-    cfg.exportDir = dir;
-  }
 
   @Test
   public void dataset() {

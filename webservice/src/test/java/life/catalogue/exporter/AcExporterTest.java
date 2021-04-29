@@ -27,7 +27,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class AcExporterTest {
+public class AcExporterTest extends ExporterTest {
   
   WsServerConfig cfg;
   File arch;
