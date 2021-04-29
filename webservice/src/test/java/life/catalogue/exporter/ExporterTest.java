@@ -36,7 +36,7 @@ public class ExporterTest {
 
   @After
   public void cleanup()  {
-    //FileUtils.deleteQuietly(cfg.exportDir);
+    FileUtils.deleteQuietly(cfg.exportDir);
   }
 
 }
