@@ -59,7 +59,7 @@ public class AcExporterTest {
   
   @Test
   public void export() throws Exception {
-    AcefExporterJob exp = new AcefExporterJob(ExportRequest.dataset(Datasets.COL, Users.TESTER), cfg, PgSetupRule.getSqlSessionFactory(), ApiUtils.API, ImageService.passThru());
+    AcefExporterJob exp = new AcefExporterJob(ExportRequest.dataset(Datasets.COL, Users.TESTER), PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
 
@@ -113,7 +113,7 @@ public class AcExporterTest {
       dm.update(d);
     }
 
-    AcefExporterJob exp = new AcefExporterJob(new ExportRequest(key, DataFormat.ACEF), cfg, PgSetupRule.getSqlSessionFactory(), ApiUtils.API, ImageService.passThru());
+    AcefExporterJob exp = new AcefExporterJob(new ExportRequest(key, DataFormat.ACEF), PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
     arch = exp.getArchive();
     System.out.println("LOGS:\n");

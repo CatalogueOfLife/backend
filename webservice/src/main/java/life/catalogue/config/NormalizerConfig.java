@@ -33,7 +33,7 @@ public class NormalizerConfig {
    * Used primarily for neo4j dbs.
    */
   @NotNull
-  public File scratchDir = new File("/tmp/colplus");
+  public File scratchDir = new File("/tmp/col");
   
   /**
    * Batchsize to use when processing all nodes, e.g. for normalising the flat classification

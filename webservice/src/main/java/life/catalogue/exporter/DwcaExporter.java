@@ -4,6 +4,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.TermWriter;
@@ -26,6 +27,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -40,9 +42,11 @@ public class DwcaExporter extends ArchiveExporter {
   private static final String EML_FILENAME = "eml.xml";
   private TermWriter writer2;
   private final Archive arch = new Archive();
+  private final UriBuilder logoUriBuilder;
 
-  public DwcaExporter(ExportRequest req, SqlSessionFactory factory, File exportDir, URI apiURI, ImageService imageService) {
-    super(DataFormat.DWCA, req, factory, exportDir, apiURI, imageService);
+  public DwcaExporter(ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(DataFormat.DWCA, req, factory, cfg, imageService);
+    logoUriBuilder = UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
   }
 
   @Override
@@ -66,7 +70,7 @@ public class DwcaExporter extends ArchiveExporter {
   void exportMetadata(Dataset d) throws IOException {
     // add CLB logo URL if missing
     if (d.getLogo() == null && imageService.datasetLogoExists(d.getKey())) {
-      d.setLogo(apiURI.resolve("/dataset/"+d.getKey()+"/logo?size=ORIGINAL"));
+      d.setLogo(logoUriBuilder.build(d.getKey()));
     }
 
     // main dataset metadata

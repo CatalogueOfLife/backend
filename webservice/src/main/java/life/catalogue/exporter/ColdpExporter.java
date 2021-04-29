@@ -1,5 +1,6 @@
 package life.catalogue.exporter;
 
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
@@ -34,8 +35,8 @@ public class ColdpExporter extends ArchiveExporter {
   private Writer cslWriter;
   private boolean cslFirst = true;
 
-  public ColdpExporter(ExportRequest req, SqlSessionFactory factory, File exportDir, URI apiURI, ImageService imageService) {
-    super(DataFormat.COLDP, req, factory, exportDir, apiURI, imageService);
+  public ColdpExporter(ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(DataFormat.COLDP, req, factory, cfg, imageService);
   }
 
   @Override

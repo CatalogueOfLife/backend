@@ -3,6 +3,7 @@ package life.catalogue.exporter;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DataFormat;
@@ -31,22 +32,22 @@ abstract class DatasetExporter extends DatasetBlockingJob {
   protected final Dataset dataset;
   protected File archive;
   protected File tmpDir;
-  protected final URI apiURI;
+  protected final WsServerConfig cfg;
   protected final ImageService imageService;
 
-  DatasetExporter(ExportRequest req, DataFormat format, SqlSessionFactory factory, File exportDir, URI apiURI, ImageService imageService) {
+  DatasetExporter(ExportRequest req, DataFormat format, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(req.getDatasetKey(), req.getUserKey(), JobPriority.LOW);
     if (req.getFormat() == null) {
       req.setFormat(format);
     } else if (req.getFormat() != format) {
       throw new IllegalArgumentException("Format "+req.getFormat()+" cannot be exported with "+getClass().getSimpleName());
     }
-    this.apiURI = apiURI;
+    this.cfg = cfg;
     this.imageService = imageService;
     this.req = Preconditions.checkNotNull(req);
     this.factory = factory;
-    this.archive = archive(exportDir, getKey());
-    this.tmpDir = new File(exportDir, getKey().toString());
+    this.archive = archive(cfg.exportDir, getKey());
+    this.tmpDir = new File(cfg.normalizer.scratchDir, "export/" + getKey().toString());
     try (SqlSession session = factory.openSession(false)) {
       dataset = session.getMapper(DatasetMapper.class).get(datasetKey);
       if (dataset == null || dataset.getDeleted() != null) {
@@ -83,7 +84,7 @@ abstract class DatasetExporter extends DatasetBlockingJob {
       try {
         FileUtils.deleteDirectory(tmpDir);
       } catch (IOException e) {
-        LOG.info("Failed to delete temporary export directory {}", tmpDir.getAbsolutePath(), e);
+        LOG.warn("Failed to delete temporary export directory {}", tmpDir.getAbsolutePath(), e);
       }
     }
   }

@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
@@ -48,10 +49,8 @@ abstract class ArchiveExporter extends DatasetExporter {
   protected TermWriter writer;
   protected final DSID<String> key = DSID.of(datasetKey, "");
 
-  ArchiveExporter(DataFormat format, ExportRequest req, SqlSessionFactory factory, File exportDir, URI apiURI, ImageService imageService) {
-    super(req, format, factory, exportDir, apiURI, imageService);
-    this.archive = archive(exportDir, getKey());
-    this.tmpDir = new File(exportDir, getKey().toString());
+  ArchiveExporter(DataFormat format, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(req, format, factory, cfg, imageService);
     final DSID<String> rKey = DSID.of(datasetKey, null);
     this.refCache = CacheBuilder.newBuilder()
       .maximumSize(1000)

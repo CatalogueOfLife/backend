@@ -42,13 +42,13 @@ public class ExportManager {
     BackgroundJob job;
     switch (req.getFormat()) {
       case COLDP:
-        job = new ColdpExporter(req, factory, cfg.exportDir, cfg.apiURI, imageService);
+        job = new ColdpExporter(req, factory, cfg, imageService);
         break;
       case DWCA:
-        job = new DwcaExporter(req, factory, cfg.exportDir, cfg.apiURI, imageService);
+        job = new DwcaExporter(req, factory, cfg, imageService);
         break;
       case ACEF:
-        job = new AcefExporterJob(req, cfg, factory, cfg.apiURI, imageService);
+        job = new AcefExporterJob(req, factory, cfg, imageService);
         break;
 
       default:

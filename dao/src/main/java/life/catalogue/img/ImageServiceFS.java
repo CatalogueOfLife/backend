@@ -115,13 +115,13 @@ public class ImageServiceFS implements ImageService {
   
   
   @Override
-  public BufferedImage datasetLogo(int datasetKey, ImgConfig.Scale scale) {
+  public BufferedImage datasetLogo(int datasetKey, ImgConfig.Scale scale) throws NotFoundException {
     Path p = cfg.datasetLogo(datasetKey, scale);
     return readImage(p, "Dataset " + datasetKey + " has no logo");
   }
 
   @Override
-  public BufferedImage archiveDatasetLogo(int datasetKey, int releaseKey, ImgConfig.Scale scale) {
+  public BufferedImage archiveDatasetLogo(int datasetKey, int releaseKey, ImgConfig.Scale scale) throws NotFoundException {
     Path p = cfg.datasetLogoArchived(releaseKey, datasetKey);
     BufferedImage img = readImage(p, "Dataset " + datasetKey + " has no logo in release " + releaseKey);
     // we only archive originals, we need to scale now on the fly

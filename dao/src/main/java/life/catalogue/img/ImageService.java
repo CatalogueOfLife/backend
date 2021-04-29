@@ -1,5 +1,6 @@
 package life.catalogue.img;
 
+import life.catalogue.api.exception.NotFoundException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -22,19 +23,23 @@ public interface ImageService {
    * If no suffix is given PNG will be used
    */
   default void copyDatasetLogo(int datasetKey, File out) throws IOException {
-    BufferedImage img = datasetLogo(datasetKey, ImgConfig.Scale.ORIGINAL);
-    if (img != null) {
-      String format = FilenameUtils.getExtension(out.getName());
-      if (StringUtils.isEmpty(format)) format = "png";
-      ImageIO.write(img, format, out);
+    try {
+      BufferedImage img = datasetLogo(datasetKey, ImgConfig.Scale.ORIGINAL);
+      if (img != null) {
+        String format = FilenameUtils.getExtension(out.getName());
+        if (StringUtils.isEmpty(format)) format = "png";
+        ImageIO.write(img, format, out);
+      }
+    } catch (NotFoundException e) {
+      // nothing to do
     }
   }
 
   void archiveDatasetLogo(int releaseKey, int datasetKey) throws IOException;
 
-  BufferedImage datasetLogo(int datasetKey, ImgConfig.Scale scale);
+  BufferedImage datasetLogo(int datasetKey, ImgConfig.Scale scale) throws NotFoundException;
 
-  BufferedImage archiveDatasetLogo(int datasetKey, int releaseKey, ImgConfig.Scale scale);
+  BufferedImage archiveDatasetLogo(int datasetKey, int releaseKey, ImgConfig.Scale scale) throws NotFoundException;
 
   
   static ImageService passThru() {

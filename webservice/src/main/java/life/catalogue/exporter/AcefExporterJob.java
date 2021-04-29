@@ -45,14 +45,12 @@ public class AcefExporterJob extends DatasetExporter {
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
-  private final WsServerConfig cfg;
 
-  public AcefExporterJob(ExportRequest req, WsServerConfig cfg, SqlSessionFactory factory, URI apiURI, ImageService imageService) {
-    super(req, DataFormat.ACEF, factory, cfg.exportDir, apiURI, imageService);
+  public AcefExporterJob(ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(req, DataFormat.ACEF, factory, cfg, imageService);
     if (req.hasFilter()) {
       throw new IllegalArgumentException("ACEF exports cannot have any filters");
     }
-    this.cfg = cfg;
   }
 
   @Override
