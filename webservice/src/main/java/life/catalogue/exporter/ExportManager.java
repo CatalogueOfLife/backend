@@ -16,15 +16,16 @@ import java.io.File;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class ExportManager {
   private final WsServerConfig cfg;
   private final SqlSessionFactory factory;
   private final ImageService imageService;
   private final JobExecutor executor;
-  private final EmailNotificationHandler emailHandler;
+  private final Consumer<BackgroundJob> emailHandler;
 
-  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, @Nullable EmailNotificationHandler emailHandler) {
+  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, Consumer<BackgroundJob> emailHandler) {
     this.cfg = cfg;
     this.factory = factory;
     this.executor = executor;

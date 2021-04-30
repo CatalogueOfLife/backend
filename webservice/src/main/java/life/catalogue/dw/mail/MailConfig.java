@@ -5,6 +5,8 @@ import org.simplejavamail.api.mailer.config.TransportStrategy;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class MailConfig {
@@ -17,6 +19,9 @@ public class MailConfig {
 
   public String username;
   public String password;
+
+  @NotNull
+  public TransportStrategy transport = TransportStrategy.SMTP;
 
   /**
    * Maximum poolsize for threads to send mails asynchroneously.
@@ -37,19 +42,11 @@ public class MailConfig {
   public String fromName;
 
   @NotNull
-  public TransportStrategy transport = TransportStrategy.SMTP;
-  public boolean debugOnly;
+  public List<String> bcc = new ArrayList<>();
 
   /**
-   * Builds a property map with configs suitable for simplejavamail
+   * Turns on debug logging and blocks async sending of mails, throwing in case mails cannot be sent.
    */
-  public Map<String, String> buildProperties() {
-    return Map.of(
-      "simplejavamail.defaults.from.name", fromName,
-      "simplejavamail.defaults.from.address", from,
-      "simplejavamail.defaults.replyto.name", fromName,
-      "simplejavamail.defaults.replyto.address", from
-    );
-  }
+  public boolean block = false;
 
 }

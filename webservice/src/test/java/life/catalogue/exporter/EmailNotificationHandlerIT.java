@@ -24,9 +24,12 @@ public class EmailNotificationHandlerIT {
   public void accept() throws Exception {
     WsServerConfig cfg = new WsServerConfig();
     cfg.apiURI = URI.create("http://api.dev.catalogueoflife.org");
-    cfg.mail.host = "localhost";
+    cfg.downloadURI = URI.create("http://download.dev.catalogueoflife.org");
+    cfg.mail.host = "smtp.gbif.org";
     cfg.mail.from = "col@mailinator.com";
     cfg.mail.fromName = "Catalogue of Life";
+    cfg.mail.bcc.add("col2@mailinator.com");
+    cfg.mail.block = true;
 
     MailBundle bundle = new MailBundle();
     bundle.run(cfg, null);

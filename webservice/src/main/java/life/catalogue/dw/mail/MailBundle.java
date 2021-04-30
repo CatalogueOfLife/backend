@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Bundle that sets up a SMTP mailer configured to send mails asynchroneously be default.
+ * Bundle that sets up a SMTP mailer.
  * If no host is configured no mailer is created.
  */
 public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
@@ -27,11 +27,8 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
       mailer = MailerBuilder
         .withSMTPServer(cfg.host, cfg.port, cfg.username, cfg.password)
         .withTransportStrategy(cfg.transport)
-        .withProperties(cfg.buildProperties())
-        .withDebugLogging(cfg.debugOnly)
-        .withTransportModeLoggingOnly(cfg.debugOnly)
+        .withDebugLogging(!cfg.block)
         .withThreadPoolSize(cfg.threads)
-        .async()
         .buildMailer();
       // health tests
       if (env != null) {

@@ -1,5 +1,5 @@
 Thanks,
-The Catalogue of Life
+${fromName}
 
 ---
 
