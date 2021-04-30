@@ -108,7 +108,7 @@ abstract class ArchiveExporter extends DatasetExporter {
     // write workbook to single file and cleanup temp POI files
     if (wb != null) {
       LOG.info("Writing final Excel file");
-      FileOutputStream out = new FileOutputStream(new File(tmpDir, "dataset.xlsx"));
+      FileOutputStream out = new FileOutputStream(new File(tmpDir, "data.xlsx"));
       wb.write(out);
       out.close();
       // dispose of temporary files backing this workbook on disk

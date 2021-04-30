@@ -50,6 +50,9 @@ public class ExportManager {
       case ACEF:
         job = new AcefExporterJob(req, factory, cfg, imageService);
         break;
+      case TEXT_TREE:
+        job = new TextTreeExporter(req, factory, cfg, imageService);
+        break;
 
       default:
         throw new IllegalArgumentException("Export format "+req.getFormat() + " is not supported yet");

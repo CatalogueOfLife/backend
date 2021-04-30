@@ -3,6 +3,7 @@ package life.catalogue.db.tree;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.common.tax.RankUtils;
 import life.catalogue.db.mapper.SectorMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -11,7 +12,10 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Print an entire dataset in the indented text format used by TxtPrinter.
@@ -55,6 +59,14 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
   
   public static TextTreePrinter dataset(int datasetKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
     return new TextTreePrinter(datasetKey, null, startID, ranks, factory, writer);
+  }
+
+  public static TextTreePrinter dataset(int datasetKey, String startID, Rank minRank, SqlSessionFactory factory, Writer writer) {
+    Set<Rank> above = null;
+    if (minRank != null) {
+      above = Arrays.stream(Rank.values()).filter(r -> r.ordinal() <= minRank.ordinal() || r==Rank.UNRANKED).collect(Collectors.toSet());
+    }
+    return new TextTreePrinter(datasetKey, null, startID, above, factory, writer);
   }
 
   /**
