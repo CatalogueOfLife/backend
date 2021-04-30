@@ -37,7 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-abstract class ArchiveExporter extends DatasetExporter {
+public abstract class ArchiveExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(ArchiveExporter.class);
 
   protected boolean fullDataset;

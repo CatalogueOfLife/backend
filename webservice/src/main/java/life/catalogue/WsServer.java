@@ -34,6 +34,7 @@ import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.es.ManagedEsClient;
 import life.catalogue.dw.health.*;
 import life.catalogue.dw.jersey.ColJerseyBundle;
+import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.metrics.GangliaBundle;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
@@ -42,6 +43,7 @@ import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.exporter.EmailNotificationHandler;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.gbifsync.GbifSync;
 import life.catalogue.img.ImageService;
@@ -67,6 +69,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.gbif.dwc.terms.TermFactory;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
+import org.simplejavamail.api.mailer.Mailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -80,6 +83,7 @@ public class WsServer extends Application<WsServerConfig> {
 
   private final ColJerseyBundle coljersey = new ColJerseyBundle();
   private final MybatisBundle mybatis = new MybatisBundle();
+  private final MailBundle mail = new MailBundle();
   private final AuthBundle auth = new AuthBundle();
   private final EventBus bus = new EventBus("bus");
   protected CloseableHttpClient httpClient;
@@ -98,9 +102,11 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addBundle(mybatis);
     // various custom jersey providers
     bootstrap.addBundle(coljersey);
+    bootstrap.addBundle(mail);
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new CorsBundle());
     bootstrap.addBundle(new GangliaBundle());
+
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
     bootstrap.addBundle(auth);
     // register CoLTerms
@@ -225,8 +231,11 @@ public class WsServer extends Application<WsServerConfig> {
     final FileMetricsDatasetDao fmdDao = new FileMetricsDatasetDao(getSqlSessionFactory(), cfg.metricsRepo);
     final FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(getSqlSessionFactory(), cfg.metricsRepo);
 
+    // mail
+    EmailNotificationHandler email = new EmailNotificationHandler(mail.getMailer(), getSqlSessionFactory(), cfg);
+
     // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService);
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, email);
 
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);

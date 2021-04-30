@@ -85,6 +85,7 @@
     <poi.version>5.0.0</poi.version>
     <postgresql.version>42.2.16</postgresql.version>
     <pgjdbc-ng.version>0.8.4</pgjdbc-ng.version>
+    <simple-java-.version>6.5.2</simple-java-.version>
     <stax2.version>4.2</stax2.version>
     <text-tree.version>1.0.0</text-tree.version>
     <tika.version>1.22</tika.version>
@@ -180,7 +181,7 @@
 
   <dependencyManagement>
     <dependencies>
-      <!-- Colplus -->
+      <!-- COL -->
       <dependency>
         <groupId>org.catalogueoflife</groupId>
         <artifactId>api</artifactId>
@@ -544,6 +545,11 @@
       </dependency>
 
       <!-- other -->
+      <dependency>
+        <groupId>org.simplejavamail</groupId>
+        <artifactId>simple-java-mail</artifactId>
+        <version>${simple-java-.version}</version>
+      </dependency>
       <dependency>
         <groupId>io.github.java-diff-utils</groupId>
         <artifactId>java-diff-utils</artifactId>

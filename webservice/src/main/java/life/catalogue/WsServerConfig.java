@@ -4,18 +4,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
 import life.catalogue.common.io.Resources;
-import life.catalogue.config.GbifConfig;
-import life.catalogue.config.ImporterConfig;
-import life.catalogue.config.NormalizerConfig;
-import life.catalogue.config.ReleaseConfig;
+import life.catalogue.config.*;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgDbConfig;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
 import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
+import life.catalogue.dw.mail.MailBundleConfig;
+import life.catalogue.dw.mail.MailConfig;
 import life.catalogue.dw.metrics.GangliaBundleConfiguration;
 import life.catalogue.dw.metrics.GangliaConfiguration;
 import life.catalogue.es.EsConfig;
+import life.catalogue.exporter.ArchiveExporter;
 import life.catalogue.img.ImgConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +26,10 @@ import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.net.URI;
 import java.util.Properties;
+import java.util.UUID;
 
 
-public class WsServerConfig extends Configuration implements CorsBundleConfiguration, GangliaBundleConfiguration {
+public class WsServerConfig extends Configuration implements CorsBundleConfiguration, GangliaBundleConfiguration, MailBundleConfig {
   private static final Logger LOG = LoggerFactory.getLogger(WsServerConfig.class);
   
   public Properties version;
@@ -92,6 +93,10 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public ReleaseConfig release = new ReleaseConfig();
 
+  @Valid
+  @NotNull
+  public MailConfig mail = new MailConfig();
+
   /**
    * Names index kvp file to persist map on disk. If empty will use a volatile memory index.
    */
@@ -150,6 +155,10 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
     return ganglia;
   }
 
+  @Override
+  public MailConfig getMailConfig() {
+    return mail;
+  }
 
   public WsServerConfig() {
     try {
@@ -181,4 +190,12 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
     return null;
   }
 
+  public File archiveFiLe(UUID key) {
+    return ArchiveExporter.archive(exportDir, key);
+  }
+
+  public URI archiveURI(UUID key) {
+    String path = archiveFiLe(key).getAbsolutePath().substring(exportDir.getAbsolutePath().length());
+    return downloadURI.resolve("/exports" + path);
+  }
 }

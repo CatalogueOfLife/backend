@@ -39,8 +39,14 @@ public abstract class BackgroundJob implements Runnable {
 
   public abstract void execute() throws Exception;
 
-  public void addHandler(Consumer<BackgroundJob> finishedHandler) {
-    this.finishedHandler.add(finishedHandler);
+  /**
+   * Adds a handler for jobs that have finished either successfully, with an error or got canceled.
+   * Up to the handler to check the job status and do sth meaningful.
+   */
+  public void addHandler(Consumer<BackgroundJob> handler) {
+    if (handler != null) {
+      this.finishedHandler.add(handler);
+    }
   }
 
   /**

@@ -8,32 +8,48 @@ public enum DataFormat {
   /**
    * Darwin Core Archive
    */
-  DWCA,
+  DWCA("DwC-A", "Darwin Core Archive"),
   
   /**
    * CoL Data Submission Format ("Annual Checklist Exchange Format")
    * http://www.catalogueoflife.org/content/contributing-your-data#ACEF
    */
-  ACEF,
+  ACEF("ACEF", "Annual Checklist Exchange Format"),
   
   /**
    * Indented plain text trees for very simple but readable classifications without structured names,
    * but supporting synonyms and basionyms.
    * https://github.com/gbif/text-tree
    */
-  TEXT_TREE,
+  TEXT_TREE("TextTree", "Text Tree"),
   
   /**
    * COL Data Package
    * See https://github.com/CoL-Data/package-specs
    */
-  COLDP,
+  COLDP("ColDP", "Catalogue of Life Data Package"),
   
   /**
    * YAML based distributed archive descriptor that proxies individual remote data files into a single archive
    * and allows to semantically map columns and delimiter formats.
    * See https://github.com/Sp2000/colplus-backend/issues/518
    */
-  PROXY
-  
+  PROXY("proxy", "Proxy");
+
+
+  private final String name;
+  private final String title;
+
+  DataFormat(String name, String title) {
+    this.name = name;
+    this.title = title;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getTitle() {
+    return title;
+  }
 }

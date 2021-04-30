@@ -11,6 +11,7 @@ import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URI;
 import java.util.UUID;
@@ -21,12 +22,14 @@ public class ExportManager {
   private final SqlSessionFactory factory;
   private final ImageService imageService;
   private final JobExecutor executor;
+  private final EmailNotificationHandler emailHandler;
 
-  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService) {
+  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, @Nullable EmailNotificationHandler emailHandler) {
     this.cfg = cfg;
     this.factory = factory;
     this.executor = executor;
     this.imageService = imageService;
+    this.emailHandler = emailHandler;
   }
 
   public File archiveFiLe(UUID key) {
@@ -59,6 +62,7 @@ public class ExportManager {
         throw new IllegalArgumentException("Export format "+req.getFormat() + " is not supported yet");
     }
     job.setBlockedHandler(this::waitAndReschedule);
+    job.addHandler(emailHandler);
     executor.submit(job);
     return job.getKey();
   }

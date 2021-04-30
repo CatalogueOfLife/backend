@@ -3,11 +3,13 @@ package life.catalogue.common.text;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import com.ibm.icu.text.StringCharacterIterator;
 import org.apache.commons.text.WordUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
+import java.text.CharacterIterator;
 import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.Objects;
@@ -509,4 +511,18 @@ public class StringUtils {
     return new String(c);
   }
 
+  public static String humanReadableByteSize(long bytes) {
+    long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
+    if (absB < 1024) {
+      return bytes + " B";
+    }
+    long value = absB;
+    CharacterIterator ci = new StringCharacterIterator("KMGTPE");
+    for (int i = 40; i >= 0 && absB > 0xfffccccccccccccL >> i; i -= 10) {
+      value >>= 10;
+      ci.next();
+    }
+    value *= Long.signum(bytes);
+    return String.format("%.1f %ciB", value / 1024.0, ci.current());
+  }
 }

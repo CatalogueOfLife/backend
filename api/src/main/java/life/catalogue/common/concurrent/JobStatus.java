@@ -26,4 +26,11 @@ public enum JobStatus {
    * Job failed due to unexpected errors.
    */
   FAILED;
+
+  /**
+   * @return true if the job has ended
+   */
+  public boolean isDone() {
+    return this != WAITING && this != RUNNING;
+  }
 }

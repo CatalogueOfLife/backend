@@ -1,8 +1,14 @@
 package life.catalogue.exporter;
 
-import freemarker.template.Configuration;
-import freemarker.template.TemplateExceptionHandler;
-import freemarker.template.Version;
+import freemarker.template.*;
+import life.catalogue.common.io.UTF8IoUtils;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 
 public class FmUtil {
   public static final Version FREEMARKER_VERSION = Configuration.VERSION_2_3_28;
@@ -19,4 +25,10 @@ public class FmUtil {
     FMK.setObjectWrapper(new LocalDateObjectWrapper(FREEMARKER_VERSION));
   }
 
+  public static String render(Object data, String template) throws IOException, TemplateException {
+    Writer out = new StringWriter();
+    Template temp = FmUtil.FMK.getTemplate(template);
+    temp.process(data, out);
+    return out.toString();
+  }
 }

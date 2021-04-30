@@ -1,5 +1,6 @@
 package life.catalogue.exporter;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -40,11 +41,12 @@ abstract class DatasetExporter extends DatasetBlockingJob {
   protected final WsServerConfig cfg;
   protected final ImageService imageService;
 
-  DatasetExporter(ExportRequest req, DataFormat format, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+  @VisibleForTesting
+  DatasetExporter(ExportRequest req, DataFormat requiredFormat, Dataset d, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(req.getDatasetKey(), req.getUserKey(), JobPriority.LOW);
     if (req.getFormat() == null) {
-      req.setFormat(format);
-    } else if (req.getFormat() != format) {
+      req.setFormat(requiredFormat);
+    } else if (req.getFormat() != requiredFormat) {
       throw new IllegalArgumentException("Format "+req.getFormat()+" cannot be exported with "+getClass().getSimpleName());
     }
     this.cfg = cfg;
@@ -53,20 +55,31 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     this.factory = factory;
     this.archive = archive(cfg.exportDir, getKey());
     this.tmpDir = new File(cfg.normalizer.scratchDir, "export/" + getKey().toString());
+    this.dataset = d;
+    if (dataset == null || dataset.getDeleted() != null) {
+      throw new NotFoundException("Dataset "+datasetKey+" does not exist");
+    }
+    LOG.info("Created {} job {} by user {} for dataset {} to {}", getClass().getSimpleName(), getUserKey(), getKey(), datasetKey, archive);
+  }
+
+  DatasetExporter(ExportRequest req, DataFormat requiredFormat, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    this(req, requiredFormat, loadDataset(factory, req.getDatasetKey()), factory, cfg, imageService);
+  }
+
+  private static Dataset loadDataset(SqlSessionFactory factory, int datasetKey){
     try (SqlSession session = factory.openSession(false)) {
-      dataset = session.getMapper(DatasetMapper.class).get(datasetKey);
+      Dataset dataset = session.getMapper(DatasetMapper.class).get(datasetKey);
       if (dataset == null || dataset.getDeleted() != null) {
         throw new NotFoundException("Dataset "+datasetKey+" does not exist");
       }
       if (!session.getMapper(DatasetPartitionMapper.class).exists(datasetKey)) {
         throw new IllegalArgumentException("Dataset "+datasetKey+" does not have any data");
       }
+      return dataset;
     }
-    addHandler(new EmailNotificationHandler());
-    LOG.info("Created {} job {} by user {} for dataset {} to {}", getClass().getSimpleName(), getUserKey(), getKey(), datasetKey, archive);
   }
 
-  static File archive(File exportDir, UUID key) {
+  public static File archive(File exportDir, UUID key) {
     return new File(exportDir, key.toString().substring(0,2) + "/" + key.toString() + ".zip");
   }
 

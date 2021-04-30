@@ -8,7 +8,6 @@ import life.catalogue.common.text.StringUtils;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.Enumeration;
 
 public class LocalDateObjectWrapper extends DefaultObjectWrapper {
 
@@ -16,16 +15,16 @@ public class LocalDateObjectWrapper extends DefaultObjectWrapper {
     super(incompatibleImprovements);
   }
 
-  public class CamelCaseEnum implements TemplateScalarModel {
-    final Enum value;
+  public class CamelCaseEnum extends BeanModel implements TemplateScalarModel {
+    final Enum<?> value;
 
-    public CamelCaseEnum(Enum value) {
+    public CamelCaseEnum(Enum<?> value, BeansWrapper wrapper) {
+      super(value, wrapper);
       this.value = value;
     }
 
     @Override
     public String getAsString() {
-
       return value == null ? null : StringUtils.camelCase(value);
     }
   }
@@ -40,7 +39,7 @@ public class LocalDateObjectWrapper extends DefaultObjectWrapper {
       return new BeanModel(obj, this);
     }
     if (obj.getClass().isEnum()) {
-      return new CamelCaseEnum((Enum) obj);
+      return new CamelCaseEnum((Enum) obj, this);
     }
     return super.wrap(obj);
   }
