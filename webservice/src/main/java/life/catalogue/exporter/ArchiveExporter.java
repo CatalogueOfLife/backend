@@ -159,11 +159,8 @@ abstract class ArchiveExporter extends DatasetExporter {
   }
 
   private void exportNameRels() throws IOException {
-    new NameRelExporter<NameRelation, NameRelationMapper>()
-      .export(EntityType.NAME_RELATION, NameRelationMapper.class, this::write);
-    new NameRelExporter<TypeMaterial, TypeMaterialMapper>()
-      .export(EntityType.TYPE_MATERIAL, TypeMaterialMapper.class, this::write);
-
+    exportNameRelation(EntityType.NAME_RELATION, NameRelationMapper.class, this::write);
+    exportNameRelation(EntityType.TYPE_MATERIAL, TypeMaterialMapper.class, this::write);
   }
 
   private void exportTaxonRels() throws IOException {
@@ -171,11 +168,8 @@ abstract class ArchiveExporter extends DatasetExporter {
     exportTaxonExtension(EntityType.DISTRIBUTION, DistributionMapper.class, this::write);
     exportTaxonExtension(EntityType.MEDIA, MediaMapper.class, this::write);
     exportEstimates();
-    new TaxonRelExporter<SpeciesInteraction, SpeciesInteractionMapper>()
-      .export(EntityType.SPECIES_INTERACTION, SpeciesInteractionMapper.class, this::write);
-    new TaxonRelExporter<TaxonConceptRelation, TaxonConceptRelationMapper>()
-      .export(EntityType.TAXON_CONCEPT_RELATION, TaxonConceptRelationMapper.class, this::write);
-
+    exportTaxonRelation(EntityType.SPECIES_INTERACTION, SpeciesInteractionMapper.class, this::write);
+    exportTaxonRelation(EntityType.TAXON_CONCEPT_RELATION, TaxonConceptRelationMapper.class, this::write);
   }
 
   private void exportReferences() throws IOException {
@@ -229,6 +223,10 @@ abstract class ArchiveExporter extends DatasetExporter {
     }
   }
 
+  private <T extends DatasetScopedEntity & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> void exportNameRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
+    new NameRelExporter<T, M>().export(type, mapperClass, consumer);
+  }
+
   private class NameRelExporter<T extends DatasetScopedEntity & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> {
     void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
       if (newDataFile(define(entity))) {
@@ -256,6 +254,10 @@ abstract class ArchiveExporter extends DatasetExporter {
         }
       }
     }
+  }
+
+  private <T extends DatasetScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> void exportTaxonRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
+    new TaxonRelExporter<T, M>().export(type, mapperClass, consumer);
   }
 
   private class TaxonRelExporter<T extends DatasetScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> {

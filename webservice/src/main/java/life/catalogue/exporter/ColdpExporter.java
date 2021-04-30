@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.URI;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 public class ColdpExporter extends ArchiveExporter {
@@ -43,108 +45,16 @@ public class ColdpExporter extends ArchiveExporter {
   protected void init(SqlSession session) throws Exception {
     super.init(session);
     projectSourceMapper = session.getMapper(ProjectSourceMapper.class);
-    cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.json"));
-    cslWriter.write("[\n");
   }
 
   @Override
   Term[] define(EntityType entity) {
-    switch (entity) {
-      case NAME_USAGE:
-        return new Term[]{ColdpTerm.NameUsage, ColdpTerm.ID, ColdpTerm.sourceID,
-          ColdpTerm.parentID,
-          ColdpTerm.basionymID,
-          ColdpTerm.status,
-          ColdpTerm.scientificName,
-          ColdpTerm.authorship,
-          ColdpTerm.rank,
-          ColdpTerm.uninomial,
-          ColdpTerm.genericName,
-          ColdpTerm.infragenericEpithet,
-          ColdpTerm.specificEpithet,
-          ColdpTerm.infraspecificEpithet,
-          ColdpTerm.cultivarEpithet,
-          ColdpTerm.namePhrase,
-          ColdpTerm.nameReferenceID,
-          ColdpTerm.publishedInYear,
-          ColdpTerm.publishedInPage,
-          ColdpTerm.publishedInPageLink,
-          ColdpTerm.code,
-          ColdpTerm.nameStatus,
-          ColdpTerm.accordingToID,
-          ColdpTerm.referenceID,
-          ColdpTerm.scrutinizer,
-          ColdpTerm.scrutinizerID,
-          ColdpTerm.scrutinizerDate,
-          ColdpTerm.extinct,
-          ColdpTerm.temporalRangeStart,
-          ColdpTerm.temporalRangeEnd,
-          ColdpTerm.environment,
-          ColdpTerm.sequenceIndex,
-          ColdpTerm.link,
-          ColdpTerm.remarks
-        };
-      case VERNACULAR:
-        return new Term[]{ColdpTerm.VernacularName, ColdpTerm.taxonID, ColdpTerm.sourceID,
-          ColdpTerm.name,
-          ColdpTerm.transliteration,
-          ColdpTerm.language,
-          ColdpTerm.country,
-          ColdpTerm.area,
-          ColdpTerm.sex,
-          ColdpTerm.referenceID
-        };
-      case ESTIMATE:
-        return new Term[]{ColdpTerm.SpeciesEstimate, ColdpTerm.taxonID, ColdpTerm.sourceID,
-          ColdpTerm.estimate,
-          ColdpTerm.type,
-          ColdpTerm.referenceID,
-          ColdpTerm.remarks
-        };
-      case DISTRIBUTION:
-        return new Term[]{ColdpTerm.Distribution, ColdpTerm.taxonID, ColdpTerm.sourceID,
-          ColdpTerm.area,
-          ColdpTerm.areaID,
-          ColdpTerm.gazetteer,
-          ColdpTerm.status,
-          ColdpTerm.referenceID,
-          ColdpTerm.remarks
-        };
-      case NAME_RELATION:
-        return new Term[]{ColdpTerm.NameRelation, ColdpTerm.nameID, ColdpTerm.relatedNameID, ColdpTerm.sourceID,
-          ColdpTerm.type,
-          ColdpTerm.referenceID,
-          ColdpTerm.remarks
-        };
-      case TYPE_MATERIAL:
-        return new Term[]{ColdpTerm.TypeMaterial, ColdpTerm.ID, ColdpTerm.nameID, ColdpTerm.sourceID,
-          ColdpTerm.citation,
-          ColdpTerm.status,
-          ColdpTerm.referenceID,
-          ColdpTerm.locality,
-          ColdpTerm.country,
-          ColdpTerm.latitude,
-          ColdpTerm.longitude,
-          ColdpTerm.altitude,
-          ColdpTerm.host,
-          ColdpTerm.date,
-          ColdpTerm.collector,
-          ColdpTerm.link,
-          ColdpTerm.remarks
-        };
-      case REFERENCE:
-        return new Term[]{ColdpTerm.Reference, ColdpTerm.ID, ColdpTerm.sourceID,
-          ColdpTerm.citation,
-          ColdpTerm.author,
-          ColdpTerm.title,
-          ColdpTerm.year,
-          ColdpTerm.source,
-          ColdpTerm.details,
-          ColdpTerm.doi,
-          ColdpTerm.link,
-          ColdpTerm.remarks
-        };
+    if (ColdpTerm.RESOURCES.containsKey(entity.coldp)) {
+      var terms = new LinkedList<>(ColdpTerm.RESOURCES.get(entity.coldp));
+      terms.push(entity.coldp);
+      return terms.toArray(Term[]::new);
     }
+    LOG.warn("{} ENTITY NOT MAPPED", entity);
     return null;
   }
 
@@ -214,6 +124,8 @@ public class ColdpExporter extends ArchiveExporter {
       var csl = r.getCsl();
       try {
         if (cslFirst) {
+          cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.json"));
+          cslWriter.write("[\n");
           cslFirst = false;
         } else {
           cslWriter.write(",\n");
@@ -354,8 +266,10 @@ public class ColdpExporter extends ArchiveExporter {
 
   @Override
   protected void bundle() throws IOException {
-    cslWriter.write("\n]\n");
-    cslWriter.close();
+    if (cslWriter != null) {
+      cslWriter.write("\n]\n");
+      cslWriter.close();
+    }
     super.bundle();
   }
 

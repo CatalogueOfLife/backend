@@ -25,6 +25,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 
+/**
+ * Base class for all dataset exporter that blocks parallel exports for the same dataset
+ * and tracks exports by users in the database.
+ */
 abstract class DatasetExporter extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExporter.class);
 
@@ -58,6 +62,7 @@ abstract class DatasetExporter extends DatasetBlockingJob {
         throw new IllegalArgumentException("Dataset "+datasetKey+" does not have any data");
       }
     }
+    addHandler(new EmailNotificationHandler());
     LOG.info("Created {} job {} by user {} for dataset {} to {}", getClass().getSimpleName(), getUserKey(), getKey(), datasetKey, archive);
   }
 
@@ -79,6 +84,7 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     try {
       export();
       bundle();
+      track();
       LOG.info("Export {} of dataset {} completed", getKey(), datasetKey);
     } finally {
       LOG.info("Remove temporary export directory {}", tmpDir.getAbsolutePath());
@@ -88,6 +94,13 @@ abstract class DatasetExporter extends DatasetBlockingJob {
         LOG.warn("Failed to delete temporary export directory {}", tmpDir.getAbsolutePath(), e);
       }
     }
+  }
+
+  /**
+   * Tracks the successfully executed request in the database.
+   * If the job failed we don't track it.
+   */
+  private void track() {
   }
 
   protected void bundle() throws IOException {

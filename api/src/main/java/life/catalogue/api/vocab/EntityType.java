@@ -1,20 +1,28 @@
 package life.catalogue.api.vocab;
 
+import life.catalogue.api.datapackage.ColdpTerm;
+
 /**
  * Enumeration of major entities in the system.
  */
 public enum EntityType {
-  ANY,
-  NAME,
-  NAME_RELATION,
-  NAME_USAGE,
-  TAXON_CONCEPT_RELATION,
-  TYPE_MATERIAL,
-  TREATMENT,
-  DISTRIBUTION,
-  MEDIA,
-  VERNACULAR,
-  REFERENCE,
-  ESTIMATE,
-  SPECIES_INTERACTION,
+  ANY(null),
+  NAME(ColdpTerm.Name),
+  NAME_RELATION(ColdpTerm.NameRelation),
+  NAME_USAGE(ColdpTerm.NameUsage),
+  TAXON_CONCEPT_RELATION(ColdpTerm.TaxonConceptRelation),
+  TYPE_MATERIAL(ColdpTerm.TypeMaterial),
+  TREATMENT(ColdpTerm.Treatment),
+  DISTRIBUTION(ColdpTerm.Distribution),
+  MEDIA(ColdpTerm.Media),
+  VERNACULAR(ColdpTerm.VernacularName),
+  REFERENCE(ColdpTerm.Reference),
+  ESTIMATE(ColdpTerm.SpeciesEstimate),
+  SPECIES_INTERACTION(ColdpTerm.SpeciesInteraction);
+  
+  public final ColdpTerm coldp;
+
+  EntityType(ColdpTerm coldp) {
+    this.coldp = coldp;
+  }
 }
