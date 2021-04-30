@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -22,7 +24,7 @@ public abstract class BackgroundJob implements Runnable {
   private LocalDateTime started;
   private LocalDateTime finished;
   private Exception error;
-  private Consumer<BackgroundJob> finishedHandler = (j) -> {}; // default is void
+  private final List<Consumer<BackgroundJob>> finishedHandler = new ArrayList<>();
 
   public BackgroundJob(int userKey) {
     this(JobPriority.MEDIUM, userKey);
@@ -37,8 +39,8 @@ public abstract class BackgroundJob implements Runnable {
 
   public abstract void execute() throws Exception;
 
-  public void setHandler(Consumer<BackgroundJob> finishedHandler) {
-    this.finishedHandler = finishedHandler;
+  public void addHandler(Consumer<BackgroundJob> finishedHandler) {
+    this.finishedHandler.add(finishedHandler);
   }
 
   /**
@@ -73,7 +75,9 @@ public abstract class BackgroundJob implements Runnable {
     } finally {
       finished = LocalDateTime.now();
       LoggingUtils.removeJobMDC();
-      finishedHandler.accept(this);
+      for (Consumer<BackgroundJob> h : finishedHandler) {
+        h.accept(this);
+      }
     }
   }
 

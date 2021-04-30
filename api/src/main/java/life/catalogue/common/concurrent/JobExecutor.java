@@ -115,7 +115,7 @@ public class JobExecutor implements AutoCloseable {
         throw new IllegalArgumentException("An identical job is queued already");
       }
     }
-    task.setHandler(this::onFinished);
+    task.addHandler(this::onFinished);
     ComparableFutureTask ftask = new ComparableFutureTask(task);
     exec.execute(ftask);
     futures.put(task.getKey(), ftask);

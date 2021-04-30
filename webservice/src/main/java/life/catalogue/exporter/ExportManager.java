@@ -1,12 +1,12 @@
 package life.catalogue.exporter;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.common.concurrent.BackgroundJob;
+import life.catalogue.common.concurrent.DatasetBlockingJob;
 import life.catalogue.common.concurrent.JobExecutor;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -14,6 +14,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import java.io.File;
 import java.net.URI;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class ExportManager {
   private final WsServerConfig cfg;
@@ -39,7 +40,7 @@ public class ExportManager {
 
   public UUID submit(ExportRequest req) throws IllegalArgumentException {
     validate(req);
-    BackgroundJob job;
+    DatasetBlockingJob job;
     switch (req.getFormat()) {
       case COLDP:
         job = new ColdpExporter(req, factory, cfg, imageService);
@@ -57,8 +58,25 @@ public class ExportManager {
       default:
         throw new IllegalArgumentException("Export format "+req.getFormat() + " is not supported yet");
     }
+    job.setBlockedHandler(this::waitAndReschedule);
     executor.submit(job);
     return job.getKey();
+  }
+
+  void waitAndReschedule(DatasetBlockingJob job){
+    // first try to just reschedule the job, appending to the job queue
+    // If attempted several times before already we will wait a little, blocking the background queue for a minute as this runs in the executor
+    if (job.getAttempt() > 2) {
+      // if we tried many times already fail
+      if (job.getAttempt() > 100) {
+        throw new UnavailableException(String.format("Failed to schedule the job %s for dataset %s", this.getClass().getSimpleName(), job.getDatasetKey()));
+      }
+      try {
+        TimeUnit.MINUTES.sleep(1);
+      } catch (InterruptedException e) {
+      }
+    }
+    executor.submit(job);
   }
 
   /**
