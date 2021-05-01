@@ -24,16 +24,18 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
 
     if (cfg != null && cfg.host != null) {
       LOG.info("Configuring mail server {}:{}", cfg.host, cfg.port);
+      if (cfg.block) {
+        LOG.warn("Mail server configured to block while sending");
+      }
       mailer = MailerBuilder
         .withSMTPServer(cfg.host, cfg.port, cfg.username, cfg.password)
         .withTransportStrategy(cfg.transport)
-        .withDebugLogging(!cfg.block)
+        .withDebugLogging(cfg.block)
         .withThreadPoolSize(cfg.threads)
         .buildMailer();
       // health tests
       if (env != null) {
-        env.healthChecks().register("mail-socket", new SocketHealthCheck(cfg));
-        env.healthChecks().register("mail-connection", new MailServerHealthCheck(mailer));
+        env.healthChecks().register("mail-connection", new MailServerConnectionCheck(mailer));
       }
     } else {
       LOG.warn("No mail server configured");
