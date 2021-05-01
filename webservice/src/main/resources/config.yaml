@@ -15,6 +15,12 @@ logging:
   appenders:
     - type: console
       timeZone: UTC
+mail:
+  host: smtp.gbif.org
+  from: col-test@mailinator.com
+  fromName: Catalogue of Life TEST
+  bcc:
+    - col-test2@mailinator.com
 db:
   # set host to null to use the embedded pg server
   host: ${db.host}

@@ -40,7 +40,5 @@ public class WsServerConfigTest {
     
     String version = cfg.versionString();
     System.out.println(version);
-//    assertNotNull(version);
-//    assertFalse(version.contains("{"));
   }
 }

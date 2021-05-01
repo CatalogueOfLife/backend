@@ -7,14 +7,16 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class MailConfig {
 
   /**
    * The SMTP host. If not given no mail server will be setup.
    */
+  @NotNull
   public String host;
+
+  @Min(1)
   public int port = 25;
 
   public String username;
@@ -38,7 +40,6 @@ public class MailConfig {
   /**
    * Default name to be used for from and reply-to settings.
    */
-  @NotNull
   public String fromName;
 
   @NotNull

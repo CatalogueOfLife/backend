@@ -22,7 +22,7 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
   public void run(MailBundleConfig config, Environment env) throws Exception {
     final MailConfig cfg = config.getMailConfig();
 
-    if (cfg.host != null) {
+    if (cfg != null && cfg.host != null) {
       LOG.info("Configuring mail server {}:{}", cfg.host, cfg.port);
       mailer = MailerBuilder
         .withSMTPServer(cfg.host, cfg.port, cfg.username, cfg.password)
@@ -35,6 +35,8 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
         env.healthChecks().register("mail-socket", new SocketHealthCheck(cfg));
         env.healthChecks().register("mail-connection", new MailServerHealthCheck(mailer));
       }
+    } else {
+      LOG.warn("No mail server configured");
     }
   }
 

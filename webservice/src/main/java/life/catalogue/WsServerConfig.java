@@ -94,8 +94,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public ReleaseConfig release = new ReleaseConfig();
 
   @Valid
-  @NotNull
-  public MailConfig mail = new MailConfig();
+  public MailConfig mail;
 
   /**
    * Names index kvp file to persist map on disk. If empty will use a volatile memory index.
