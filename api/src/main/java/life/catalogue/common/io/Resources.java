@@ -1,14 +1,14 @@
 package life.catalogue.common.io;
 
+import com.google.common.base.Charsets;
+import org.apache.commons.io.IOUtils;
+
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import com.google.common.base.Charsets;
-import org.apache.commons.io.IOUtils;
 
 /**
  * Common routines to access classpath resources via the system class loader.

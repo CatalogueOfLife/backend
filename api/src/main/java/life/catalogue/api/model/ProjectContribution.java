@@ -1,6 +1,5 @@
 package life.catalogue.api.model;
 
-import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

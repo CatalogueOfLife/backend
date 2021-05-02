@@ -1,9 +1,11 @@
 package life.catalogue.es.query;
 
-import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
 import life.catalogue.es.ddl.Analyzer;
+
+import java.util.Map;
+
 import static java.util.Collections.singletonMap;
 
 /**

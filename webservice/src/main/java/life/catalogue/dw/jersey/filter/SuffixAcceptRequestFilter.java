@@ -2,7 +2,6 @@ package life.catalogue.dw.jersey.filter;
 
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

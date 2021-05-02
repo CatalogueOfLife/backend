@@ -4,7 +4,6 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.tree.TextTreePrinter;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;

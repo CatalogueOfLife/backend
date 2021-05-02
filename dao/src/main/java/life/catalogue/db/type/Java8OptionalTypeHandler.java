@@ -4,12 +4,12 @@ package life.catalogue.db.type;
  *
  */
 
-import java.sql.*;
-import java.util.Optional;
-import javax.annotation.Nullable;
-
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
+
+import javax.annotation.Nullable;
+import java.sql.*;
+import java.util.Optional;
 
 /**
  * Maps Java 8 {@link java.util.Optional} types to JDBC.

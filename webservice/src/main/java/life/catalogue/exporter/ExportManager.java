@@ -1,5 +1,6 @@
 package life.catalogue.exporter;
 
+import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
@@ -10,8 +11,9 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URI;
 import java.util.UUID;
@@ -19,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class ExportManager {
+  private static final Logger LOG = LoggerFactory.getLogger(ExportManager.class);
+
   private final WsServerConfig cfg;
   private final SqlSessionFactory factory;
   private final ImageService imageService;
@@ -62,6 +66,11 @@ public class ExportManager {
       default:
         throw new IllegalArgumentException("Export format "+req.getFormat() + " is not supported yet");
     }
+    return submit(job);
+  }
+
+  @VisibleForTesting
+  UUID submit(DatasetBlockingJob job) throws IllegalArgumentException {
     job.setBlockedHandler(this::waitAndReschedule);
     job.addHandler(emailHandler);
     executor.submit(job);
@@ -77,10 +86,15 @@ public class ExportManager {
         throw new UnavailableException(String.format("Failed to schedule the job %s for dataset %s", this.getClass().getSimpleName(), job.getDatasetKey()));
       }
       try {
-        TimeUnit.MINUTES.sleep(1);
+        if (job.getAttempt() < 10) {
+          TimeUnit.SECONDS.sleep(1);
+        } else {
+          TimeUnit.MINUTES.sleep(1);
+        }
       } catch (InterruptedException e) {
       }
     }
+    LOG.info("Reschedule job {}, attempt {}", job.getKey(), job.getAttempt());
     executor.submit(job);
   }
 

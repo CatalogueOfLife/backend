@@ -5,7 +5,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 public class SafeParserTest {
 

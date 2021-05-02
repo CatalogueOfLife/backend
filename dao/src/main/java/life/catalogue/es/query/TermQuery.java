@@ -1,7 +1,9 @@
 package life.catalogue.es.query;
 
-import java.util.Map;
 import life.catalogue.es.ddl.Analyzer;
+
+import java.util.Map;
+
 import static java.util.Collections.singletonMap;
 
 public class TermQuery extends ConstraintQuery<TermConstraint> {

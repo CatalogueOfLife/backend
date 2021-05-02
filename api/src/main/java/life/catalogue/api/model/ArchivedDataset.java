@@ -1,7 +1,6 @@
 package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;

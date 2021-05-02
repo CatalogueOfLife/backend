@@ -1,14 +1,12 @@
 package life.catalogue.es.nu.search;
 
-import java.util.Map;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.nu.NameUsageFieldLookup;
-import life.catalogue.es.query.Aggregation;
-import life.catalogue.es.query.FacetAggregation;
-import life.catalogue.es.query.FilterAggregation;
-import life.catalogue.es.query.GlobalAggregation;
-import life.catalogue.es.query.Query;
+import life.catalogue.es.query.*;
+
+import java.util.Map;
+
 import static java.util.Collections.singletonMap;
 import static life.catalogue.es.nu.search.RequestTranslator.generateQuery;
 

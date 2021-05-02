@@ -1,8 +1,8 @@
 package life.catalogue.importer.neo.model;
 
-import java.util.Map;
-
 import org.neo4j.graphdb.*;
+
+import java.util.Map;
 
 /**
  * A Node implementation that only contains the entity id

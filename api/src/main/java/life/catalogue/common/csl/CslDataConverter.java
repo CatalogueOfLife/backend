@@ -1,7 +1,5 @@
 package life.catalogue.common.csl;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import de.undercouch.citeproc.csl.CSLDate;
@@ -16,6 +14,8 @@ import life.catalogue.api.model.CslName;
 import life.catalogue.api.vocab.CSLRefType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * Converts a CslData instance to a CSLItemData instance.

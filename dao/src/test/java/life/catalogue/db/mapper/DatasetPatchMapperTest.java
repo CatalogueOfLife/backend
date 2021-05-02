@@ -2,7 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.ArchivedDataset;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetMetadata;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.Datasets;

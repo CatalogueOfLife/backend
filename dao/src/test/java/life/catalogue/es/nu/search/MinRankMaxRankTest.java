@@ -1,12 +1,14 @@
 package life.catalogue.es.nu.search;
 
-import java.util.List;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsReadTestBase;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 
 public class MinRankMaxRankTest extends EsReadTestBase {

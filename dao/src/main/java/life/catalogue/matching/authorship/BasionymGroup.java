@@ -1,11 +1,11 @@
 package life.catalogue.matching.authorship;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.gbif.nameparser.api.Authorship;
+
+import java.util.List;
+import java.util.Objects;
 
 
 /**

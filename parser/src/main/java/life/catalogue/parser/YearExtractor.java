@@ -1,9 +1,9 @@
 package life.catalogue.parser;
 
+import life.catalogue.parser.DateParser.DateStringFilter;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import life.catalogue.parser.DateParser.DateStringFilter;
 
 /**
  * A DateStringFilter implementation used as a course, last ditch attempt to at least extract a year

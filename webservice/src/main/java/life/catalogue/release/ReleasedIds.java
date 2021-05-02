@@ -9,10 +9,7 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
 import org.apache.commons.lang3.ArrayUtils;
-import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * Tracks released ids incl historic releases.

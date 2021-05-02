@@ -7,13 +7,11 @@ import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.img.ImageService;
 import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Writer;
 

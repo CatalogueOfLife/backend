@@ -1,9 +1,11 @@
 package life.catalogue.es;
 
-import java.util.Objects;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.es.ddl.Analyzers;
+
+import java.util.Objects;
+
 import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
 import static life.catalogue.es.ddl.Analyzer.SCINAME_IGNORE_CASE;
 import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeStrongly;

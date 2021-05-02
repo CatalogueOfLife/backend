@@ -1,8 +1,8 @@
 package life.catalogue.common.datapackage;
 
-import java.util.Objects;
-
 import life.catalogue.api.datapackage.ColdpTerm;
+
+import java.util.Objects;
 
 /**
  *

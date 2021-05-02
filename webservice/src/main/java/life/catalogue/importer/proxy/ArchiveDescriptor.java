@@ -1,9 +1,9 @@
 package life.catalogue.importer.proxy;
 
-import java.util.List;
-
 import life.catalogue.api.vocab.DataFormat;
 import org.gbif.dwc.terms.Term;
+
+import java.util.List;
 
 public class ArchiveDescriptor {
   

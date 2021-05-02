@@ -1,9 +1,9 @@
 package life.catalogue.dw.jersey.exception;
 
+import life.catalogue.api.exception.NotFoundException;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-
-import life.catalogue.api.exception.NotFoundException;
 
 /**
  * Converts a {@link NotFoundException} into a 404.

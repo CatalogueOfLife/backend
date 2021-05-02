@@ -1,6 +1,5 @@
 package life.catalogue.api.vocab;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;

@@ -1,7 +1,7 @@
 package life.catalogue.importer.neo.traverse;
 
-import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.api.model.Classification;
+import life.catalogue.importer.neo.model.NeoProperties;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;

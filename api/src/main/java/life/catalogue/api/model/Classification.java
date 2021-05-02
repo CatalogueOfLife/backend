@@ -1,13 +1,13 @@
 package life.catalogue.api.model;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import life.catalogue.api.datapackage.ColdpTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  *

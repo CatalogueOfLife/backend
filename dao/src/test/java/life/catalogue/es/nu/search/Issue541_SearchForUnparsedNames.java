@@ -2,10 +2,10 @@ package life.catalogue.es.nu.search;
 
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.search.NameUsageRequest.SearchType;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.search.NameUsageRequest.SearchType;
 import life.catalogue.es.EsReadTestBase;
 import org.junit.Before;
 import org.junit.Test;

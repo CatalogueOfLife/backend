@@ -4,20 +4,9 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import static life.catalogue.es.ddl.ESDataType.BOOLEAN;
-import static life.catalogue.es.ddl.ESDataType.BYTE;
-import static life.catalogue.es.ddl.ESDataType.DATE;
-import static life.catalogue.es.ddl.ESDataType.DOUBLE;
-import static life.catalogue.es.ddl.ESDataType.FLOAT;
-import static life.catalogue.es.ddl.ESDataType.INTEGER;
-import static life.catalogue.es.ddl.ESDataType.KEYWORD;
-import static life.catalogue.es.ddl.ESDataType.LONG;
-import static life.catalogue.es.ddl.ESDataType.SHORT;
+import java.util.*;
+
+import static life.catalogue.es.ddl.ESDataType.*;
 
 /**
  * Maps Java types to Elasticsearch types and vice versa.

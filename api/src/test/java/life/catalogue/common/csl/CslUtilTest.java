@@ -1,11 +1,6 @@
 package life.catalogue.common.csl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 import com.fasterxml.jackson.core.type.TypeReference;
-import de.undercouch.citeproc.bibtex.NameParser;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLType;
@@ -16,6 +11,10 @@ import life.catalogue.common.io.Resources;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 

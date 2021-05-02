@@ -1,12 +1,12 @@
 package life.catalogue.common.text;
 
+import life.catalogue.common.io.UTF8IoUtils;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
-import life.catalogue.common.io.UTF8IoUtils;
 
 public class CSVUtils {
   

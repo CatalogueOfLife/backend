@@ -10,8 +10,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static life.catalogue.api.TestEntityGenerator.setUserDate;
-
 /**
  *
  */

@@ -1,16 +1,16 @@
 package life.catalogue.matching.authorship;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Function;
-
 import com.google.common.base.Functions;
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.Name;
 import org.gbif.nameparser.api.Authorship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * A utility to sort a queue of parsed names into sets sharing the same basionym judging only the authorship not epithets.

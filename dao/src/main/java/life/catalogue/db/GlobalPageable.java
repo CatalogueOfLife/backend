@@ -1,9 +1,9 @@
 package life.catalogue.db;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.Page;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface GlobalPageable<T> {
   

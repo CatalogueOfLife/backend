@@ -1,11 +1,11 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.TaxonomicStatus;
+import org.gbif.nameparser.api.Rank;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-
-import life.catalogue.api.vocab.TaxonomicStatus;
-import org.gbif.nameparser.api.Rank;
 
 public class StatusRankCounts extends HashMap<TaxonomicStatus, Map<Rank, Integer>> {
   

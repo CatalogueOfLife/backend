@@ -7,7 +7,6 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
-import life.catalogue.matching.RematchJob;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,7 +1,5 @@
 package life.catalogue.es.query;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 /**
  * Represents the value you are matching your documents against (using tokenization and scoring as in full-text
  * queries).

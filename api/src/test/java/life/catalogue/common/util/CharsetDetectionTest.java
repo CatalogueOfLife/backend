@@ -1,15 +1,15 @@
 package life.catalogue.common.util;
 
+import life.catalogue.common.io.CharsetDetection;
+import life.catalogue.common.io.PathUtils;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import life.catalogue.common.io.CharsetDetection;
-import life.catalogue.common.io.PathUtils;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

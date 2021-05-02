@@ -1,7 +1,6 @@
 package life.catalogue.release;
 
 import it.unimi.dsi.fastutil.ints.*;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameWithNidx;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;

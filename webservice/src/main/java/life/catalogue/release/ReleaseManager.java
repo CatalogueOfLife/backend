@@ -1,32 +1,23 @@
 package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.User;
 import life.catalogue.common.concurrent.NamedThreadFactory;
-import life.catalogue.config.ReleaseConfig;
-import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.db.PgUtils;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.NameIndex;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.ibatis.exceptions.PersistenceException;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public class ReleaseManager {

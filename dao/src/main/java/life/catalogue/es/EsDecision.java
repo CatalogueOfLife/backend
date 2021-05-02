@@ -1,10 +1,11 @@
 package life.catalogue.es;
 
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.model.EditorialDecision.Mode;
 import life.catalogue.api.search.SimpleDecision;
+
+import java.util.Objects;
 
 public class EsDecision {
 

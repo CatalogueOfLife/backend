@@ -1,9 +1,5 @@
 package life.catalogue.importer.neo.printer;
 
-import java.io.StringWriter;
-import java.io.Writer;
-import javax.annotation.Nullable;
-
 import com.google.common.base.Function;
 import life.catalogue.importer.neo.DotProcessor;
 import life.catalogue.importer.neo.NeoDb;
@@ -14,6 +10,10 @@ import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+
+import javax.annotation.Nullable;
+import java.io.StringWriter;
+import java.io.Writer;
 
 /**
  * Printing utilities for {@link NeoDb}s

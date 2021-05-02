@@ -1,9 +1,9 @@
 package life.catalogue.dw.jersey.exception;
 
+import life.catalogue.img.UnsupportedFormatException;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-
-import life.catalogue.img.UnsupportedFormatException;
 
 /**
  * Converts a UnsupportedFormatException into a http 400 bad request.

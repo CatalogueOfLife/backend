@@ -2,11 +2,7 @@ package life.catalogue.es.nu;
 
 import com.google.common.base.Charsets;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.es.EsException;
-import life.catalogue.es.EsModule;
-import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.EsServerVersion;
-import life.catalogue.es.EsUtil;
+import life.catalogue.es.*;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;

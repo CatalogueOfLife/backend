@@ -1,10 +1,10 @@
 package life.catalogue.postgres;
 
-import java.io.IOException;
-import java.io.Writer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  * A writer implementation that consumes a result stream from postgres

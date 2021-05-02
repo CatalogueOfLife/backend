@@ -4,13 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
-import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import java.util.regex.Matcher;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  *

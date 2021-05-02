@@ -1,6 +1,7 @@
 package life.catalogue.api.datapackage;
 
 import org.junit.Test;
+
 import static life.catalogue.api.datapackage.ColdpTerm.*;
 import static org.junit.Assert.assertTrue;
 

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.importer.coldp.MetadataParser;
 import life.catalogue.jackson.YamlMapper;
 
 import java.io.File;

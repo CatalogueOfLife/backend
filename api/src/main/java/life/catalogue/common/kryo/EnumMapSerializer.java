@@ -1,13 +1,13 @@
 package life.catalogue.common.kryo;
 
-import java.lang.reflect.Field;
-import java.util.EnumMap;
-import java.util.Map;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+
+import java.lang.reflect.Field;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * A serializer for {@link EnumMap}s.

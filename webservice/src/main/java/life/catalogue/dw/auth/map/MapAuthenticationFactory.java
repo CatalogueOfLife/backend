@@ -1,17 +1,17 @@
 package life.catalogue.dw.auth.map;
 
-import java.util.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.http.impl.client.CloseableHttpClient;
 import life.catalogue.api.model.User;
 import life.catalogue.dw.auth.AuthenticationProvider;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.*;
 
 /**
  * Configuration for the GBIF IdentityService.

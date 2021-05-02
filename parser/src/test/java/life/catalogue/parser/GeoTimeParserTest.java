@@ -1,12 +1,10 @@
 package life.catalogue.parser;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.vocab.GeoTime;
-import life.catalogue.parser.GeoTimeParser;
-import life.catalogue.parser.UnparsableException;
 import org.junit.Test;
+
+import java.util.List;
 
 public class GeoTimeParserTest extends ParserTestBase<GeoTime> {
   

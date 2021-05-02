@@ -1,10 +1,11 @@
 package life.catalogue.es.ddl;
 
+import life.catalogue.es.EsException;
+import life.catalogue.es.EsModule;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import life.catalogue.es.EsException;
-import life.catalogue.es.EsModule;
 
 /**
  * The outer-most object for the Create Index API and Get Index API. It consists of an object configuring the index and the document type

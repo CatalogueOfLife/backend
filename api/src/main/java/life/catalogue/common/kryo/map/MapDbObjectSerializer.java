@@ -1,8 +1,5 @@
 package life.catalogue.common.kryo.map;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -12,6 +9,9 @@ import org.mapdb.DataIO;
 import org.mapdb.DataInput2;
 import org.mapdb.DataOutput2;
 import org.mapdb.serializer.GroupSerializerObjectArray;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * A mapDB serializer that uses kryo under the hood to quickly serialize objects into the mapdb data output/input.

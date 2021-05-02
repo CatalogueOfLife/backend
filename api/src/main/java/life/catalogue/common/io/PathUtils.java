@@ -1,5 +1,8 @@
 package life.catalogue.common.io;
 
+import com.google.common.io.Resources;
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -8,9 +11,6 @@ import java.nio.file.*;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
-
-import com.google.common.io.Resources;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  *

@@ -1,9 +1,5 @@
 package life.catalogue.es.nu;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSearchRequest;
@@ -13,6 +9,10 @@ import life.catalogue.es.EsReadTestBase;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,11 +1,11 @@
 package life.catalogue.api.model;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
 /**
  * A generic paging response wrapping a list payload

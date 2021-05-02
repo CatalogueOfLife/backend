@@ -1,7 +1,10 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.SectorScopedEntity;
+import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.TaxonExtension;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.TestDataRule;
 import org.junit.Test;

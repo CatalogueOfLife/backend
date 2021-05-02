@@ -1,14 +1,13 @@
 package life.catalogue.img;
 
 import life.catalogue.api.exception.NotFoundException;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 
 public interface ImageService {
 

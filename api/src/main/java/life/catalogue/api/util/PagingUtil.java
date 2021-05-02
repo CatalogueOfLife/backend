@@ -1,10 +1,10 @@
 package life.catalogue.api.util;
 
-import java.util.Iterator;
-import java.util.function.Function;
-
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
+
+import java.util.Iterator;
+import java.util.function.Function;
 
 public class PagingUtil {
   

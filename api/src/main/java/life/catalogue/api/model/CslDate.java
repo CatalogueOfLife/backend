@@ -1,9 +1,8 @@
 package life.catalogue.api.model;
 
-import java.util.Arrays;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import life.catalogue.common.date.FuzzyDate;
+
+import java.util.Arrays;
 
 public class CslDate {
   

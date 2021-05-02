@@ -1,7 +1,5 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
@@ -9,6 +7,8 @@ import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TaxonSectorCountMap;
 import life.catalogue.db.TestDataRule;
 import org.junit.Test;
+
+import java.util.List;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static life.catalogue.api.TestEntityGenerator.NAME4;

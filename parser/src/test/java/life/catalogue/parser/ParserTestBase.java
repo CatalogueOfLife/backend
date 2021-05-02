@@ -1,13 +1,11 @@
 package life.catalogue.parser;
 
+import com.google.common.collect.Lists;
+import org.junit.Test;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import com.google.common.collect.Lists;
-import life.catalogue.parser.Parser;
-import life.catalogue.parser.UnparsableException;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;

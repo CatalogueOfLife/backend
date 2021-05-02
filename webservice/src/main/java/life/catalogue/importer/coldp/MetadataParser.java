@@ -1,7 +1,7 @@
 package life.catalogue.importer.coldp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.ImmutableList;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Organisation;

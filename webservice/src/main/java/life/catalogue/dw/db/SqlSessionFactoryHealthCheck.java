@@ -2,9 +2,9 @@ package life.catalogue.dw.db;
 
 
 import com.codahale.metrics.health.HealthCheck;
+import life.catalogue.db.mapper.Ping;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.db.mapper.Ping;
 
 /**
  * {@link Ping}s the database to check its health. Any non-exceptional response,

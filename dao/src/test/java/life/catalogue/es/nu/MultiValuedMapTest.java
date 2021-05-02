@@ -1,12 +1,12 @@
 package life.catalogue.es.nu;
 
-import java.util.Arrays;
+import org.junit.Test;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import java.util.Arrays;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 // Make sure MultiValuedMap works as expected (set produced MultiValuedMap.keySet() is backed by the map & vice versa).
 public class MultiValuedMapTest {

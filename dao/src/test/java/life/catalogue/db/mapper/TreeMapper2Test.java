@@ -1,6 +1,9 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.TreeNode;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.tree.TxtTreeDataRule;
 import org.gbif.nameparser.api.Rank;

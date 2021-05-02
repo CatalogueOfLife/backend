@@ -3,6 +3,7 @@ package life.catalogue.es.nu;
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.Query;
+
 import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeStrongly;
 import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
 

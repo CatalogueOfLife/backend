@@ -5,15 +5,11 @@ import info.ganglia.gmetric4j.gmetric.GMetric;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import life.catalogue.dw.cors.CorsFilter;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Bundle that sets up a ganglia reporter for dropwizard metrics.

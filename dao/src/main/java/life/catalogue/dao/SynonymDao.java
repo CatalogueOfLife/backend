@@ -1,8 +1,5 @@
 package life.catalogue.dao;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Reference;
@@ -11,6 +8,9 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SynonymMapper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

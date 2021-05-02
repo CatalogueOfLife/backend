@@ -1,6 +1,5 @@
 package life.catalogue.parser;
 
-import life.catalogue.parser.YearExtractor;
 import org.junit.Assert;
 import org.junit.Test;
 

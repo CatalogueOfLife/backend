@@ -1,7 +1,7 @@
 package life.catalogue.db;
 
-import java.util.Objects;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 public class PgDbConfig {
   

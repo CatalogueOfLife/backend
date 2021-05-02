@@ -1,11 +1,13 @@
 package life.catalogue.es.nu;
 
-import java.util.List;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.response.EsResponse;
 import life.catalogue.es.response.SearchHit;
+
+import java.util.List;
+
 import static java.util.stream.Collectors.toList;
 
 /**

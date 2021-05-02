@@ -1,8 +1,6 @@
 package life.catalogue.command;
 
 import com.google.common.base.Preconditions;
-import com.zaxxer.hikari.HikariDataSource;
-import io.dropwizard.setup.Bootstrap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.concurrent.ExecutorUtils;
@@ -10,7 +8,6 @@ import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.matching.DatasetMatcher;
@@ -27,8 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.sql.Connection;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

@@ -2,6 +2,7 @@ package life.catalogue.es.nu;
 
 import life.catalogue.es.query.Query;
 import life.catalogue.es.query.TermQuery;
+
 import static life.catalogue.es.nu.QMatcher.FLD_GENUS;
 import static life.catalogue.es.nu.QMatcher.FLD_GENUS_LETTER;
 

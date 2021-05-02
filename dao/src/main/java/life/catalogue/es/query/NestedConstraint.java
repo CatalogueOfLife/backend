@@ -1,7 +1,6 @@
 package life.catalogue.es.query;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import life.catalogue.es.query.NestedQuery.ScoreMode;
 
 @SuppressWarnings("unused")

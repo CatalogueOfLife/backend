@@ -1,12 +1,5 @@
 package life.catalogue.db.type2;
 
-import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import org.apache.ibatis.type.BaseTypeHandler;
@@ -16,6 +9,13 @@ import org.gbif.dwc.terms.TermFactory;
 import org.postgresql.util.HStoreConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A mybatis base type handler that translates from the generic java.util.Map<Enum, Integer> to the

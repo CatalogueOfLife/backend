@@ -1,9 +1,7 @@
 package life.catalogue.dw.jersey.writers;
 
-import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.exporter.EmlWriter;
-import org.apache.ibatis.cursor.Cursor;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;

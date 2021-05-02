@@ -1,10 +1,5 @@
 package life.catalogue.parser;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.google.common.collect.Maps;
 import life.catalogue.api.util.JsonLdReader;
 import life.catalogue.api.vocab.GeoTime;
@@ -13,6 +8,11 @@ import org.gbif.utils.file.csv.CSVReader;
 import org.gbif.utils.file.csv.CSVReaderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Parser for geochronological time spans.

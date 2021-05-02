@@ -1,10 +1,7 @@
 package life.catalogue.config;
 
-import org.gbif.utils.file.FileUtils;
-
 import javax.validation.constraints.NotNull;
 import java.io.File;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 /**

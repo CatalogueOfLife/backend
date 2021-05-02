@@ -8,8 +8,6 @@ import life.catalogue.api.vocab.Gazetteer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static life.catalogue.api.TestEntityGenerator.setUserDate;
-
 /**
  *
  */

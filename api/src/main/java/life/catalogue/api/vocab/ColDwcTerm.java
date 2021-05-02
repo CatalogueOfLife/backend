@@ -1,9 +1,9 @@
 package life.catalogue.api.vocab;
 
-import java.net.URI;
-
 import org.gbif.dwc.terms.AlternativeNames;
 import org.gbif.dwc.terms.Term;
+
+import java.net.URI;
 
 /**
  * New CoL terms used for name relations and other CoL+ achievements in the context of Darwin Core archives.

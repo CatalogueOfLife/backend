@@ -1,9 +1,9 @@
 package life.catalogue.common.func;
 
+import life.catalogue.api.util.VocabularyUtils;
+
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
-
-import life.catalogue.api.util.VocabularyUtils;
 
 public class Predicates {
 

@@ -1,12 +1,12 @@
 package life.catalogue.api.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 public class JsonLdReader {
   private static final ObjectMapper MAPPER = new ObjectMapper();

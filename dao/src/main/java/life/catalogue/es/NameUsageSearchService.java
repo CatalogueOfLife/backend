@@ -1,12 +1,12 @@
 package life.catalogue.es;
 
-import java.util.Collections;
-
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
 
 public interface NameUsageSearchService {
 

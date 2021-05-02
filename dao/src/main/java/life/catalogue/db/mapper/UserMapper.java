@@ -1,11 +1,10 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.Page;
-import life.catalogue.api.search.ReferenceSearchRequest;
-import life.catalogue.db.CRUD;
-import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.User;
+import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

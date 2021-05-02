@@ -5,7 +5,6 @@ import com.codahale.metrics.health.HealthCheck;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexImpl;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 

@@ -1,10 +1,10 @@
 package life.catalogue.common.concurrent;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

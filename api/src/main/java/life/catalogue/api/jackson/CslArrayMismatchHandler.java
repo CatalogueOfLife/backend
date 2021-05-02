@@ -1,7 +1,5 @@
 package life.catalogue.api.jackson;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -9,6 +7,8 @@ import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
 import life.catalogue.api.model.CslName;
+
+import java.io.IOException;
 
 /**
  * Lenient handler for deserializing CSL-JSON which contains array of strings for some properties

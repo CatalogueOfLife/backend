@@ -1,9 +1,5 @@
 package life.catalogue.importer.neo.traverse;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.RelType;
 import org.gbif.nameparser.api.Rank;
@@ -16,6 +12,10 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.helpers.collection.Iterators;
 import org.neo4j.kernel.impl.traversal.MonoDirectionalTraversalDescription;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Various reusable traversal descriptions for taxonomic normalizer dbs.

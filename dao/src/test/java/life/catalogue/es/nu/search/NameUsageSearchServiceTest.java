@@ -4,7 +4,10 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.search.NameUsageRequest.SearchType;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.Environment;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
@@ -24,7 +27,8 @@ import java.util.*;
 
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class NameUsageSearchServiceTest extends EsReadTestBase {
 

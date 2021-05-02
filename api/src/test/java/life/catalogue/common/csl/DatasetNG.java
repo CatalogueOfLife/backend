@@ -5,7 +5,6 @@ import de.undercouch.citeproc.bibtex.PageRange;
 import de.undercouch.citeproc.csl.*;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.util.YamlUtils;
-import org.checkerframework.checker.units.qual.C;
 
 import java.io.IOException;
 import java.io.InputStream;

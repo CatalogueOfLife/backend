@@ -2,8 +2,6 @@ package life.catalogue.exporter;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
@@ -21,9 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.util.UUID;
 
 /**

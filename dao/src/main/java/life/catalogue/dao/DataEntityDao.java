@@ -1,17 +1,8 @@
 package life.catalogue.dao;
 
-import java.util.List;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.DataEntity;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
 import life.catalogue.db.CRUD;
-import life.catalogue.db.DatasetPageable;
-import life.catalogue.db.GlobalPageable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * Generic CRUD Data DAO for keyed entities

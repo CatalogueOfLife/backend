@@ -1,13 +1,13 @@
 package life.catalogue.api.jackson;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.vocab.CSLRefType;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

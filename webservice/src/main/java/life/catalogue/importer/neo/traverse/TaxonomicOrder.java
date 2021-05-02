@@ -1,10 +1,10 @@
 package life.catalogue.importer.neo.traverse;
 
 
-import java.util.Comparator;
-
 import life.catalogue.importer.neo.model.NeoProperties;
 import org.neo4j.graphdb.Node;
+
+import java.util.Comparator;
 
 /**
  * Orders usage nodes by their rank first, then canonical name and scientificName ultimately.

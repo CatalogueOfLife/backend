@@ -1,8 +1,10 @@
 package life.catalogue.es.query;
 
-import java.util.Map;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.es.nu.NameUsageFieldLookup;
+
+import java.util.Map;
+
 import static java.util.Collections.singletonMap;
 
 public class RangeQuery<T> extends ConstraintQuery<RangeConstraint<T>> {

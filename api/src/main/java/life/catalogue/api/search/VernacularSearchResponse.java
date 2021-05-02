@@ -3,7 +3,7 @@ package life.catalogue.api.search;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 
-import java.util.*;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class VernacularSearchResponse extends ResultPage<VernacularNameUsage> {

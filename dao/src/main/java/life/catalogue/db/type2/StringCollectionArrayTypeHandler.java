@@ -12,13 +12,12 @@
  */
 package life.catalogue.db.type2;
 
-import java.sql.*;
+import com.google.common.collect.Lists;
+
+import java.sql.Array;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
-
-import com.google.common.collect.Lists;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
 
 /**
  * String array handler that avoids nulls and uses empty arrays instead.

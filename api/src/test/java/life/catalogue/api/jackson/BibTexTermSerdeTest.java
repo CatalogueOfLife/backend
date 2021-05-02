@@ -1,6 +1,5 @@
 package life.catalogue.api.jackson;
 
-import life.catalogue.api.datapackage.ColdpTerm;
 import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.dwc.terms.Term;
 import org.junit.Assert;

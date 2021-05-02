@@ -1,8 +1,8 @@
 package life.catalogue.common.tax;
 
-import java.util.regex.Pattern;
-
 import life.catalogue.api.model.ParsedNameUsage;
+
+import java.util.regex.Pattern;
 
 /**
  * Utility class that detects misapplied names mostly based on their taxonomic remarks.

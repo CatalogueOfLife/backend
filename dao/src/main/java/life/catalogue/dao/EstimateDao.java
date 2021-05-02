@@ -1,7 +1,5 @@
 package life.catalogue.dao;
 
-import java.util.List;
-
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.SpeciesEstimate;
@@ -11,6 +9,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class EstimateDao extends DatasetEntityDao<Integer, SpeciesEstimate, EstimateMapper> {
   

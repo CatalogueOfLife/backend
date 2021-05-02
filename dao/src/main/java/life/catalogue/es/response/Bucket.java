@@ -1,7 +1,6 @@
 package life.catalogue.es.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import life.catalogue.api.search.FacetValue;
 
 /**

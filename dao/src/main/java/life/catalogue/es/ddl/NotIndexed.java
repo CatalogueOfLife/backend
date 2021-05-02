@@ -1,12 +1,12 @@
 package life.catalogue.es.ddl;
 
+import life.catalogue.es.query.PrefixQuery;
+import life.catalogue.es.query.TermQuery;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import life.catalogue.es.query.PrefixQuery;
-import life.catalogue.es.query.TermQuery;
 
 /**
  * Indicates that the getter decorated with this annotation is not indexed (and hence not searchable). By default all

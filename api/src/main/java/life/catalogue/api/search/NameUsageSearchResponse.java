@@ -1,14 +1,10 @@
 package life.catalogue.api.search;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Supplier;
-
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
+
+import java.util.*;
+import java.util.function.Supplier;
 
 public class NameUsageSearchResponse extends ResultPage<NameUsageWrapper> {
 

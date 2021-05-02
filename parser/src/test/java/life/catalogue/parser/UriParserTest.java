@@ -1,12 +1,10 @@
 package life.catalogue.parser;
 
+import com.google.common.collect.Lists;
+import org.junit.Test;
+
 import java.net.URI;
 import java.util.List;
-
-import com.google.common.collect.Lists;
-import life.catalogue.parser.UnparsableException;
-import life.catalogue.parser.UriParser;
-import org.junit.Test;
 
 public class UriParserTest extends ParserTestBase<URI> {
   

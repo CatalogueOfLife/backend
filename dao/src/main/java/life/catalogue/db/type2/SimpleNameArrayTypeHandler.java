@@ -1,16 +1,15 @@
 package life.catalogue.db.type2;
 
-import java.sql.*;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.common.text.CSVUtils;
+import org.apache.ibatis.type.TypeException;
+import org.gbif.nameparser.api.Rank;
+
+import java.sql.Array;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.ibatis.type.JdbcType;
-import org.apache.ibatis.type.TypeException;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.common.text.CSVUtils;
-import org.gbif.nameparser.api.Rank;
 
 /**
  * Complex simple_name PG Array type handler that only supports reads, but not writes.

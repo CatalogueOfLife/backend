@@ -9,7 +9,6 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

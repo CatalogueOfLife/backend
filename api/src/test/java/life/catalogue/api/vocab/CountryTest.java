@@ -12,11 +12,11 @@
  */
 package life.catalogue.api.vocab;
 
-import java.util.Set;
-
 import com.google.common.collect.Sets;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Set;
 
 import static org.junit.Assert.*;
 

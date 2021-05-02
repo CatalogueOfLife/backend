@@ -1,9 +1,9 @@
 package life.catalogue.es;
 
-import java.util.Collections;
-
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
+
+import java.util.Collections;
 
 public interface NameUsageSuggestionService {
 

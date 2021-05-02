@@ -3,9 +3,10 @@ package life.catalogue.parser;
 import com.google.common.collect.Lists;
 import life.catalogue.api.vocab.License;
 import org.junit.Test;
-import static life.catalogue.api.vocab.License.*;
 
 import java.util.List;
+
+import static life.catalogue.api.vocab.License.*;
 
 public class LicenseParserTest extends ParserTestBase<License> {
 

@@ -1,15 +1,15 @@
 package life.catalogue.csv;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.util.List;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.univocity.parsers.csv.CsvParserSettings;
-import org.apache.commons.text.StringEscapeUtils;
 import life.catalogue.common.io.PathUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.gbif.dwc.terms.Term;
+
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.util.List;
 
 /**
  *

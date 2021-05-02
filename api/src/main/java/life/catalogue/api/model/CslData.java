@@ -1,9 +1,9 @@
 package life.catalogue.api.model;
 
-import java.util.Arrays;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.vocab.CSLRefType;
+
+import java.util.Arrays;
 
 /**
  * Official CSL variables as defined in

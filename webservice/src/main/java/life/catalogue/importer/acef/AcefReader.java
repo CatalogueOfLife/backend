@@ -1,8 +1,5 @@
 package life.catalogue.importer.acef;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
 import com.google.common.collect.ImmutableMap;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.importer.NormalizationFailedException;
@@ -11,6 +8,9 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  *

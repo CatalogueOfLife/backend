@@ -1,9 +1,9 @@
 package life.catalogue.postgres;
 
+import life.catalogue.common.io.TabWriter;
+
 import java.io.File;
 import java.io.IOException;
-
-import life.catalogue.common.io.TabWriter;
 
 /**
  * A writer for native postgres copy commands that converts a pg query result into a CSV file efficiently.

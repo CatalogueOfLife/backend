@@ -1,8 +1,11 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.EditorialDecision.Mode;
+import life.catalogue.api.model.SimpleNameLink;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;

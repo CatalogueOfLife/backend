@@ -2,8 +2,10 @@ package life.catalogue.api.model;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static life.catalogue.api.model.User.Role.*;
+import static life.catalogue.api.model.User.Role.ADMIN;
+import static life.catalogue.api.model.User.Role.EDITOR;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class UserTest {
 

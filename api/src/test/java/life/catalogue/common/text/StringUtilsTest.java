@@ -1,7 +1,6 @@
 package life.catalogue.common.text;
 
 import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.common.tax.SciNameNormalizer;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

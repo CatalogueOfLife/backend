@@ -2,7 +2,6 @@ package life.catalogue.jackson;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
@@ -13,22 +12,16 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.jackson.FastutilsSerde;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
-import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.License;
 import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.LicenseParser;
-import org.gbif.nameparser.api.Authorship;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * ColDP metadata parser that falls back to EML if no YAML metadata is found.

@@ -2,7 +2,6 @@ package life.catalogue.importer.neo;
 
 import com.esotericsoftware.kryo.Kryo;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.common.kryo.NullSerializer;
 import life.catalogue.importer.neo.model.NeoName;

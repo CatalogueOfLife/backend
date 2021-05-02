@@ -1,19 +1,19 @@
 package life.catalogue.es.ddl;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toLowerCase;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
 import static life.catalogue.es.ddl.ESDataType.NESTED;
-import static life.catalogue.es.ddl.MappingUtil.createSimpleField;
-import static life.catalogue.es.ddl.MappingUtil.isA;
-import static life.catalogue.es.ddl.MappingUtil.newAncestor;
+import static life.catalogue.es.ddl.MappingUtil.*;
 
 /**
  * Generates an Elasticsearch document type mapping from the getters of a {@link Class}.

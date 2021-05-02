@@ -1,9 +1,10 @@
 package life.catalogue.es.query;
 
-import java.time.LocalDate;
+import life.catalogue.es.EsModule;
 import org.junit.Before;
 import org.junit.Test;
-import life.catalogue.es.EsModule;
+
+import java.time.LocalDate;
 
 /*
  * Not real tests here; just to see whether or not the various types of queries are serialized as expected.

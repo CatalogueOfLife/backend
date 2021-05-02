@@ -1,8 +1,8 @@
 package life.catalogue.db.type;
 
 
-import org.apache.ibatis.type.MappedTypes;
 import life.catalogue.api.vocab.Frequency;
+import org.apache.ibatis.type.MappedTypes;
 
 /**
  * MyBatis type handler for {@link Frequency}.

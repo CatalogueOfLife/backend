@@ -13,7 +13,6 @@ import life.catalogue.api.model.User;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
-import org.neo4j.cypher.internal.v3_4.functions.Coalesce;
 
 /**
  * Wires up authentication against the GBIF registry and authorization based on CoL user roles.

@@ -4,6 +4,7 @@ import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.es.NameStrings;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.Query;
+
 import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
 
 /**

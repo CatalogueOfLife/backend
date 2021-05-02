@@ -1,13 +1,13 @@
 package life.catalogue.parser;
 
-import java.io.IOException;
-import java.util.Map;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import org.gbif.utils.file.csv.CSVReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Parser with resource file based mappings.

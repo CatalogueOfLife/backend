@@ -4,7 +4,6 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.TermWriter;
-import life.catalogue.common.io.TermWriter.CSV;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

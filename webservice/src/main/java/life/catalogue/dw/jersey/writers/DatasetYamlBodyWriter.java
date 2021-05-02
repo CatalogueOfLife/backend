@@ -3,7 +3,6 @@ package life.catalogue.dw.jersey.writers;
 import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.exporter.DatasetYamlWriter;
-import life.catalogue.exporter.EmlWriter;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;

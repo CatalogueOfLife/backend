@@ -12,14 +12,13 @@
  */
 package life.catalogue.db.type2;
 
+import com.google.common.collect.Sets;
+
 import java.sql.Array;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
 
 /**
  * Stores string sets as non null arrays in postgres, avoiding nulls and uses empty sets instead.

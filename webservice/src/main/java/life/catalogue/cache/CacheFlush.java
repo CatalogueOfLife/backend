@@ -2,10 +2,7 @@ package life.catalogue.cache;
 
 import com.google.common.eventbus.Subscribe;
 import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.dao.DatasetInfoCache;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import javax.ws.rs.core.UriBuilder;

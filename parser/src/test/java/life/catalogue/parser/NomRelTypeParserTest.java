@@ -1,11 +1,10 @@
 package life.catalogue.parser;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.parser.NomRelTypeParser;
 import org.junit.Test;
+
+import java.util.List;
 
 public class NomRelTypeParserTest extends ParserTestBase<NomRelType> {
 

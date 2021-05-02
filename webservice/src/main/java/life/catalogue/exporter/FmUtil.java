@@ -1,11 +1,7 @@
 package life.catalogue.exporter;
 
 import freemarker.template.*;
-import life.catalogue.common.io.UTF8IoUtils;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;

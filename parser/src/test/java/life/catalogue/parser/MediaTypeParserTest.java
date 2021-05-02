@@ -1,11 +1,10 @@
 package life.catalogue.parser;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.vocab.MediaType;
-import life.catalogue.parser.MediaTypeParser;
 import org.junit.Test;
+
+import java.util.List;
 
 public class MediaTypeParserTest extends ParserTestBase<MediaType> {
   

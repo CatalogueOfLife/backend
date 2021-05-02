@@ -1,7 +1,8 @@
 package life.catalogue.es.query;
 
-import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Arrays;
 
 public class BoolQuery extends ConstraintQuery<BoolConstraint> {
 

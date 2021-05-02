@@ -1,10 +1,9 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.model.IndexName;
+import life.catalogue.api.model.NameMatch;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
-import life.catalogue.db.mapper.VerbatimRecordMapper;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

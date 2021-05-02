@@ -1,7 +1,9 @@
 package life.catalogue.common.id;
 
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 
 /**
  Convert between proquint, hex, and decimal strings.

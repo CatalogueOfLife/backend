@@ -2,28 +2,15 @@ package life.catalogue.matching;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.concurrent.BackgroundJob;
-import life.catalogue.common.concurrent.ExecutorUtils;
-import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntPredicate;
 
 public class RematchJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(RematchJob.class);

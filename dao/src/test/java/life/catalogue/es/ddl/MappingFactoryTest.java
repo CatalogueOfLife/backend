@@ -1,8 +1,8 @@
 package life.catalogue.es.ddl;
 
-import org.junit.Test;
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsNameUsage;
+import org.junit.Test;
 
 /**
  * Only tests that we don't get exceptions while generating the document type mappings. Plus peek at what's being generated.

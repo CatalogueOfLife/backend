@@ -1,10 +1,11 @@
 package life.catalogue.es;
 
-import java.util.Objects;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 /**
  * Runtime exception specifically indicating an error while executing a client request or handling the response. Although this is a runtime

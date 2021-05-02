@@ -1,9 +1,10 @@
 package life.catalogue.es.response;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.es.EsModule;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class FacetsContainer extends LinkedHashMap<String, Object> {
 

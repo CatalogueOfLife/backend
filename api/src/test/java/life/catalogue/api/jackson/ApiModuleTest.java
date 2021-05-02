@@ -2,7 +2,6 @@ package life.catalogue.api.jackson;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
@@ -16,7 +15,6 @@ import org.gbif.dwc.terms.TermFactory;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;

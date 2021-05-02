@@ -1,10 +1,10 @@
 package life.catalogue.common.io;
 
-import java.io.File;
-import java.io.IOException;
-
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * A temporary file or folder that get removed when it is closed.

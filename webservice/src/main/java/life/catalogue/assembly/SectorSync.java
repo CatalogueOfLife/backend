@@ -1,7 +1,5 @@
 package life.catalogue.assembly;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.EstimateDao;

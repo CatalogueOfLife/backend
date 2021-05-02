@@ -1,8 +1,5 @@
 package life.catalogue.api.jackson;
 
-import java.io.IOException;
-import java.util.Set;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -14,6 +11,9 @@ import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.vocab.CSLRefType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Set;
 
 import static life.catalogue.api.vocab.CSLRefType.*;
 

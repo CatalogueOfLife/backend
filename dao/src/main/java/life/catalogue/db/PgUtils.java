@@ -1,7 +1,6 @@
 package life.catalogue.db;
 
 import org.apache.ibatis.exceptions.PersistenceException;
-import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.postgresql.util.PSQLException;
 
 public class PgUtils {

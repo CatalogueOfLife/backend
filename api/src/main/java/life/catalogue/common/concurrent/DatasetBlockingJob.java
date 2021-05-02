@@ -68,4 +68,13 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
       }
     }
   }
+
+  @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    // rescheduling of blocked jobs will not work if we just test for the same job key
+    if (attempt >= 1) {
+      return false;
+    }
+    return super.isDuplicate(other);
+  }
 }

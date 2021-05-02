@@ -1,7 +1,8 @@
 package life.catalogue.es.response;
 
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
 
 /**
  * An object within the ES search response that contains the facets (if we asked for them).
