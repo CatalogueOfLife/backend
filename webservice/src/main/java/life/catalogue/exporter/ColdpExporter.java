@@ -6,27 +6,21 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.io.TermWriter;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.dwc.terms.DcTerm;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
-import org.gbif.nameparser.api.NomCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.URI;
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 public class ColdpExporter extends ArchiveExporter {
