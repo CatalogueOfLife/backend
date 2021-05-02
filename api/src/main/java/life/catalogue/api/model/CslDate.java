@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import life.catalogue.common.date.FuzzyDate;
 
 public class CslDate {
   
@@ -12,7 +13,32 @@ public class CslDate {
   private Boolean circa;
   private String literal;
   private String raw;
-  
+
+  public CslDate() {
+  }
+
+  public CslDate(String literal) {
+    this.literal = literal;
+  }
+
+  public CslDate(int year, int month, int day) {
+    this.dateParts = new int[1][3];
+    this.dateParts[0][0] = year;
+    this.dateParts[0][1] = month;
+    this.dateParts[0][2] = day;
+  }
+
+  public CslDate(int year, int month) {
+    this.dateParts = new int[1][2];
+    this.dateParts[0][0] = year;
+    this.dateParts[0][1] = month;
+  }
+
+  public CslDate(int year) {
+    this.dateParts = new int[1][1];
+    this.dateParts[0][0] = year;
+  }
+
   public int[][] getDateParts() {
     return dateParts;
   }

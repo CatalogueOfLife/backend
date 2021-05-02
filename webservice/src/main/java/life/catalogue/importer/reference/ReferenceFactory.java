@@ -155,7 +155,7 @@ public class ReferenceFactory {
   public static Reference fromCsl(int datasetKey, CslData csl) {
     Reference ref = newReference(datasetKey, csl.getId());
     ref.setCsl(csl);
-    // generate default APA citation string - THIS IS SLOOOOOWWW
+    // generate default APA citation string
     ref.setCitation(CslUtil.buildCitation(csl));
     updateIntYearFromCsl(ref);
     return ref;

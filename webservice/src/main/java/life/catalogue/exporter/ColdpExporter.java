@@ -116,24 +116,21 @@ public class ColdpExporter extends ArchiveExporter {
   }
 
   @Override
-  void write(Reference r) {
+  public void exportReferences() throws IOException {
+    super.exportReferences();
+    if (cslWriter != null) {
+      cslWriter.write("\n]\n");
+      cslWriter.close();
+    }
+  }
+
+  @Override
+  void write(Reference r) throws IOException {
     writer.set(ColdpTerm.ID, r.getId());
     writer.set(ColdpTerm.sourceID, sector2datasetKey(r.getSectorKey()));
     writer.set(ColdpTerm.citation, r.getCitation());
     if (r.getCsl() != null) {
       var csl = r.getCsl();
-      try {
-        if (cslFirst) {
-          cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.json"));
-          cslWriter.write("[\n");
-          cslFirst = false;
-        } else {
-          cslWriter.write(",\n");
-        }
-        ApiModule.MAPPER.writeValue(cslWriter, csl);
-      } catch (IOException e) {
-        LOG.warn("Failed to write CSL-JSON for reference {}", r.getId(), e);
-      }
       writer.set(ColdpTerm.author, csl.getAuthor());
       writer.set(ColdpTerm.title, csl.getTitle());
       if (csl.getIssued() != null && csl.getIssued().getDateParts() != null) {
@@ -144,6 +141,17 @@ public class ColdpExporter extends ArchiveExporter {
       writer.set(ColdpTerm.doi, csl.getDOI());
       writer.set(ColdpTerm.link, r.getCsl().getURL());
       writer.set(ColdpTerm.remarks, ObjectUtils.coalesce(r.getRemarks(), csl.getNote()));
+      // write also to CSL-JSON file
+      if (cslFirst) {
+        LOG.info("Export references also as CSL-JSON");
+        cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.json"));
+        cslWriter.write("[\n");
+        cslFirst = false;
+      } else {
+        cslWriter.write(",\n");
+      }
+      // serialising to the writer directly will close the stream!
+      cslWriter.write(ApiModule.MAPPER.writeValueAsString(csl));
     }
   }
 
@@ -262,15 +270,6 @@ public class ColdpExporter extends ArchiveExporter {
 
     // add logo image
     imageService.copyDatasetLogo(datasetKey, new File(tmpDir, LOGO_FILENAME));
-  }
-
-  @Override
-  protected void bundle() throws IOException {
-    if (cslWriter != null) {
-      cslWriter.write("\n]\n");
-      cslWriter.close();
-    }
-    super.bundle();
   }
 
 }

@@ -20,7 +20,19 @@ public class CslName {
   private String literal;
   private Boolean parseNames;
   private Boolean isInstitution;
-  
+
+  public CslName() {
+  }
+
+  public CslName(String literal) {
+    this.literal = literal;
+  }
+
+  public CslName(String given, String family) {
+    this.family = family;
+    this.given = given;
+  }
+
   public String getFamily() {
     return family;
   }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.undercouch.citeproc.csl.CSLDate;
 import de.undercouch.citeproc.csl.CSLDateBuilder;
+import life.catalogue.api.model.CslDate;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.*;
@@ -157,6 +158,16 @@ public final class FuzzyDate {
       return new CSLDateBuilder().dateParts(ta.get(YEAR), ta.get(MONTH_OF_YEAR)).build();
     }
     return new CSLDateBuilder().dateParts(ta.get(YEAR)).build();
+  }
+
+  public CslDate toCslDate() {
+    if (ta.isSupported(MONTH_OF_YEAR)) {
+      if (ta.isSupported(DAY_OF_MONTH)) {
+        return new CslDate(ta.get(YEAR), ta.get(MONTH_OF_YEAR), ta.get(DAY_OF_MONTH));
+      }
+      return new CslDate(ta.get(YEAR), ta.get(MONTH_OF_YEAR));
+    }
+    return new CslDate(ta.get(YEAR));
   }
 
   @Override

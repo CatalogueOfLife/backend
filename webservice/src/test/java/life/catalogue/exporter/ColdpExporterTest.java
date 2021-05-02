@@ -1,9 +1,15 @@
 package life.catalogue.exporter;
 
+import de.undercouch.citeproc.csl.CSLDate;
+import life.catalogue.api.model.CslData;
+import life.catalogue.api.model.CslDate;
+import life.catalogue.api.model.CslName;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.img.ImageService;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,6 +21,21 @@ public class ColdpExporterTest extends ExporterTest {
   @Before
   public void initReq()  {
     req = ExportRequest.dataset(TestDataRule.APPLE.key, Users.TESTER);
+    // add CSL data to refs to test CSL export
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+      rm.processDataset(TestDataRule.APPLE.key).forEach(r -> {
+        var csl = r.getCsl();
+        if (csl == null) {
+          csl = new CslData();
+          csl.setTitle("Das Kapital " + r.getId());
+          csl.setAuthor(new CslName[]{new CslName("Karl", "Marx"), new CslName("Friedrich", "Engels")});
+          csl.setIssued(new CslDate(1867));
+          r.setCsl(csl);
+          rm.update(r);
+        }
+      });
+    }
   }
 
   @Test

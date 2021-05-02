@@ -172,7 +172,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
     exportTaxonRelation(EntityType.TAXON_CONCEPT_RELATION, TaxonConceptRelationMapper.class, this::write);
   }
 
-  private void exportReferences() throws IOException {
+  protected void exportReferences() throws IOException {
     if (newDataFile(define(EntityType.REFERENCE))) {
       try (SqlSession session = factory.openSession()) {
         ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
@@ -358,7 +358,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
   void write(NameUsageBase u){
   }
 
-  void write(Reference r){
+  void write(Reference r) throws IOException {
   }
 
   void write(NameRelation rel) {
