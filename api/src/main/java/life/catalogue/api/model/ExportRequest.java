@@ -1,29 +1,20 @@
-package life.catalogue.exporter;
+package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.DataFormat;
 import org.gbif.nameparser.api.Rank;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 
 public class ExportRequest {
-  private int datasetKey;
-  @NotNull
+  private Integer datasetKey;
   private DataFormat format;
   private boolean excel;
   private String taxonID;
-  private Set<String> exclusions;
   private boolean synonyms = true;
   private Rank minRank;
-  private int userKey;
-
-  public static ExportRequest dataset(int datasetKey, int userKey) {
-    ExportRequest req = new ExportRequest();
-    req.setDatasetKey(datasetKey);
-    req.setUserKey(userKey);
-    return req;
-  }
 
   public ExportRequest() {
   }
@@ -33,11 +24,11 @@ public class ExportRequest {
     this.format = format;
   }
 
-  public int getDatasetKey() {
+  public Integer getDatasetKey() {
     return datasetKey;
   }
 
-  public void setDatasetKey(int datasetKey) {
+  public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
   }
 
@@ -65,14 +56,6 @@ public class ExportRequest {
     this.taxonID = taxonID;
   }
 
-  public Set<String> getExclusions() {
-    return exclusions;
-  }
-
-  public void setExclusions(Set<String> exclusions) {
-    this.exclusions = exclusions;
-  }
-
   public boolean isSynonyms() {
     return synonyms;
   }
@@ -89,19 +72,11 @@ public class ExportRequest {
     this.minRank = minRank;
   }
 
-  public int getUserKey() {
-    return userKey;
-  }
-
-  public void setUserKey(int userKey) {
-    this.userKey = userKey;
-  }
-
   /**
    * @return true if any filter has been used apart from the mandatory datasetKey
    */
   public boolean hasFilter() {
-    return !synonyms || (exclusions != null && !exclusions.isEmpty()) || taxonID!=null || minRank!=null;
+    return !synonyms || taxonID!=null || minRank!=null;
   }
 
   @Override
@@ -109,17 +84,11 @@ public class ExportRequest {
     if (this == o) return true;
     if (!(o instanceof ExportRequest)) return false;
     ExportRequest that = (ExportRequest) o;
-    return datasetKey == that.datasetKey &&
-      synonyms == that.synonyms &&
-      userKey == that.userKey &&
-      format == that.format &&
-      Objects.equals(taxonID, that.taxonID) &&
-      Objects.equals(exclusions, that.exclusions) &&
-      minRank == that.minRank;
+    return datasetKey == that.datasetKey && excel == that.excel && synonyms == that.synonyms && format == that.format && Objects.equals(taxonID, that.taxonID) && minRank == that.minRank;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, format, taxonID, exclusions, synonyms, minRank, userKey);
+    return Objects.hash(datasetKey, format, excel, taxonID, synonyms, minRank);
   }
 }

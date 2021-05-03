@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import freemarker.template.TemplateException;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.User;
 import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.common.concurrent.JobStatus;

@@ -5,6 +5,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
@@ -45,8 +46,8 @@ public class AcefExporterJob extends DatasetExporter {
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
 
-  public AcefExporterJob(ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req, DataFormat.ACEF, factory, cfg, imageService);
+  public AcefExporterJob(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(req, userKey, DataFormat.ACEF, factory, cfg, imageService);
     if (req.hasFilter()) {
       throw new IllegalArgumentException("ACEF exports cannot have any filters");
     }

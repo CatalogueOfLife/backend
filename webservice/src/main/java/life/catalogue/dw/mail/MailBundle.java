@@ -2,8 +2,10 @@ package life.catalogue.dw.mail;
 
 
 import io.dropwizard.ConfiguredBundle;
+import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import life.catalogue.dw.ManagedUtils;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.mailer.MailerBuilder;
 import org.slf4j.Logger;
@@ -36,9 +38,27 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
       // health tests
       if (env != null) {
         env.healthChecks().register("mail-connection", new MailServerConnectionCheck(mailer));
+        env.lifecycle().manage(new ManagedMailer(mailer));
       }
     } else {
       LOG.warn("No mail server configured");
+    }
+  }
+
+  static class ManagedMailer implements Managed  {
+    private final Mailer mailer;
+
+    public ManagedMailer(Mailer mailer) {
+      this.mailer = mailer;
+    }
+
+    @Override
+    public void start() throws Exception {
+    }
+
+    @Override
+    public void stop() throws Exception {
+      mailer.shutdownConnectionPool();
     }
   }
 

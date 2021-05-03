@@ -4,6 +4,7 @@ import com.google.common.collect.Streams;
 import io.dropwizard.auth.Auth;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -17,7 +18,6 @@ import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.exporter.ExportManager;
-import life.catalogue.exporter.ExportRequest;
 import life.catalogue.exporter.HtmlExporter;
 import life.catalogue.exporter.HtmlExporterSimple;
 import org.apache.commons.io.IOUtils;
@@ -34,7 +34,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
@@ -88,8 +91,7 @@ public class DatasetExportResource {
   public UUID export(@PathParam("key") int key, @Valid ExportRequest req, @Auth User user) {
     if (req == null) req = new ExportRequest();
     req.setDatasetKey(key);
-    req.setUserKey(user.getKey());
-    return exportManager.submit(req);
+    return exportManager.submit(req, user.getKey());
   }
 
   @GET

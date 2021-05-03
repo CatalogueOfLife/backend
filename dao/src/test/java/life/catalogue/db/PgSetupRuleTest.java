@@ -6,6 +6,7 @@ import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.concurrent.JobStatus;
 import life.catalogue.db.type.BaseEnumSetTypeHandler;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
@@ -68,6 +69,7 @@ public class PgSetupRuleTest {
     enums.add(Sector.Mode.class);
     enums.add(EditorialDecision.Mode.class);
     enums.add(User.Role.class);
+    enums.add(JobStatus.class);
     // not needed for persistency
     enums.remove(Country.class);
     enums.remove(ColDwcTerm.class);

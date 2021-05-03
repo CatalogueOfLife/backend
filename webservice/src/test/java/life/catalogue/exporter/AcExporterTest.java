@@ -1,9 +1,9 @@
 package life.catalogue.exporter;
 
 import com.google.common.io.Files;
-import life.catalogue.ApiUtils;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.DataFormat;
@@ -59,7 +59,7 @@ public class AcExporterTest extends ExporterTest {
   
   @Test
   public void export() throws Exception {
-    AcefExporterJob exp = new AcefExporterJob(ExportRequest.dataset(Datasets.COL, Users.TESTER), PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    AcefExporterJob exp = new AcefExporterJob(new ExportRequest(Datasets.COL, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
 
@@ -113,7 +113,7 @@ public class AcExporterTest extends ExporterTest {
       dm.update(d);
     }
 
-    AcefExporterJob exp = new AcefExporterJob(new ExportRequest(key, DataFormat.ACEF), PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    AcefExporterJob exp = new AcefExporterJob(new ExportRequest(key, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
     arch = exp.getArchive();
     System.out.println("LOGS:\n");

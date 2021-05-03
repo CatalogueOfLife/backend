@@ -2,19 +2,14 @@ package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.concurrent.JobStatus;
-import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.mail.MailConfig;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.net.URI;
-
-import static org.junit.Assert.*;
 
 public class EmailNotificationHandlerTest {
 
@@ -28,13 +23,13 @@ public class EmailNotificationHandlerTest {
     cfg.mail.from = "col@mailinator.com";
     cfg.mail.fromName = "Catalogue of Life";
 
-    ExportRequest req = ExportRequest.dataset(TestDataRule.APPLE.key, 1);
+    ExportRequest req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
 
     Dataset d = new Dataset();
     d.setKey(1000);
     d.setTitle("My Big D");
 
-    DatasetExporter job = new DatasetExporter(req, DataFormat.COLDP, d, null, cfg, null) {
+    DatasetExporter job = new DatasetExporter(req, 1, req.getFormat(), d, null, cfg, null) {
       @Override
       protected void export() throws Exception {
         System.out.println("EXPORT");

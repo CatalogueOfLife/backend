@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.common.concurrent.DatasetBlockingJob;
 import life.catalogue.common.concurrent.JobExecutor;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -46,21 +48,21 @@ public class ExportManager {
     return cfg.downloadURI.resolve("/exports" + path);
   }
 
-  public UUID submit(ExportRequest req) throws IllegalArgumentException {
+  public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
     validate(req);
     DatasetBlockingJob job;
     switch (req.getFormat()) {
       case COLDP:
-        job = new ColdpExporter(req, factory, cfg, imageService);
+        job = new ColdpExporter(req, userKey, factory, cfg, imageService);
         break;
       case DWCA:
-        job = new DwcaExporter(req, factory, cfg, imageService);
+        job = new DwcaExporter(req, userKey, factory, cfg, imageService);
         break;
       case ACEF:
-        job = new AcefExporterJob(req, factory, cfg, imageService);
+        job = new AcefExporterJob(req, userKey, factory, cfg, imageService);
         break;
       case TEXT_TREE:
-        job = new TextTreeExporter(req, factory, cfg, imageService);
+        job = new TextTreeExporter(req, userKey, factory, cfg, imageService);
         break;
 
       default:

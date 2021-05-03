@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.DatasetExportMapper">
+
+  <sql id="SELECT">
+    <include refid="life.catalogue.db.mapper.DatasetExportMapper.COLS"/>, created, modified
+  </sql>
+
+  <sql id="COLS">
+    key,
+    dataset_key,
+    format,
+    excel,
+    taxon_id,
+    synonyms,
+    min_rank,
+    created_by,
+    modified_by,
+    import_attempt,
+    started,
+    finished,
+    deleted,
+    status,
+    error,
+    md5,
+    size,
+    synonym_count,
+    taxon_count,
+    taxa_by_rank_count
+  </sql>
+
+  <sql id="PROPS">
+    #{key},
+    #{request.datasetKey},
+    #{request.format}::DATAFORMAT,
+    #{request.excel},
+    #{request.taxonID},
+    #{request.synonyms},
+    #{request.minRank}::RANK,
+    #{createdBy},
+    #{modifiedBy},
+    #{importAttempt},
+    #{started},
+    #{finished},
+    #{deleted},
+    #{status}::JOBSTATUS,
+    #{error},
+    #{md5},
+    #{size},
+    #{synonymCount},
+    #{taxonCount},
+    #{taxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore
+  </sql>
+
+  <sql id="FROM">
+    dataset_export de
+  </sql>
+
+  <resultMap id="datasetExportResultMap" type="DatasetExport" autoMapping="true">
+    <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
+    <association property="request" javaType="ExportRequest" resultMap="life.catalogue.db.mapper.DatasetExportMapper.exportRequestResultMap"/>
+  </resultMap>
+
+  <resultMap id="exportRequestResultMap" type="ExportRequest" autoMapping="true">
+  </resultMap>
+
+
+  <select id="get" resultMap="datasetExportResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE key=#{key}
+  </select>
+
+  <insert id="create" parameterType="DatasetExport">
+    INSERT INTO dataset_export (<include refid="COLS"/>, created)
+    VALUES (<include refid="PROPS"/>, #{created})
+  </insert>
+
+  <update id="update" parameterType="DatasetExport">
+    UPDATE dataset_export
+    SET (<include refid="COLS"/>, modified) = (<include refid="PROPS"/>, now())
+    WHERE key=#{key}
+  </update>
+
+  <delete id="delete" parameterType="map">
+    UPDATE dataset_export SET deleted = now() WHERE key=#{key}
+  </delete>
+
+
+  <select id="list" resultMap="datasetExportResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    ORDER BY created DESC
+  </select>
+
+  <select id="count" resultType="integer">
+    SELECT count(*)
+    FROM <include refid="FROM"/>
+  </select>
+
+</mapper>

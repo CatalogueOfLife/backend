@@ -34,8 +34,8 @@ public class DwcaExporter extends ArchiveExporter {
   private final Archive arch = new Archive();
   private final UriBuilder logoUriBuilder;
 
-  public DwcaExporter(ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(DataFormat.DWCA, req, factory, cfg, imageService);
+  public DwcaExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(DataFormat.DWCA, userKey, req, factory, cfg, imageService);
     logoUriBuilder = UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
   }
 

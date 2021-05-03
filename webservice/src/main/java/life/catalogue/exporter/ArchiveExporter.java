@@ -51,8 +51,8 @@ public abstract class ArchiveExporter extends DatasetExporter {
   protected final DSID<String> key = DSID.of(datasetKey, "");
   private final SXSSFWorkbook wb;
 
-  ArchiveExporter(DataFormat format, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req, format, factory, cfg, imageService);
+  ArchiveExporter(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(req, userKey, requiredFormat, factory, cfg, imageService);
     final DSID<String> rKey = DSID.of(datasetKey, null);
     this.refCache = CacheBuilder.newBuilder()
       .maximumSize(1000)
@@ -131,7 +131,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
       if (fullDataset) {
         cursor = num.processDataset(datasetKey, null, null);
       } else {
-        cursor = num.processTree(datasetKey, null, req.getTaxonID(), req.getExclusions(), req.getMinRank(), req.isSynonyms(), true);
+        cursor = num.processTree(datasetKey, null, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms(), true);
       }
       cursor.forEach(this::consumeUsage);
       taxonIDs.remove(null); // can happen

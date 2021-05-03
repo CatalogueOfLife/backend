@@ -1,9 +1,10 @@
 package life.catalogue.exporter;
 
-import de.undercouch.citeproc.csl.CSLDate;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
 import life.catalogue.api.model.CslName;
+import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -20,7 +21,7 @@ public class ColdpExporterTest extends ExporterTest {
 
   @Before
   public void initReq()  {
-    req = ExportRequest.dataset(TestDataRule.APPLE.key, Users.TESTER);
+    req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
     // add CSL data to refs to test CSL export
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
@@ -40,7 +41,7 @@ public class ColdpExporterTest extends ExporterTest {
 
   @Test
   public void dataset() {
-    ColdpExporter exp = new ColdpExporter(req, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertTrue(exp.getArchive().exists());
@@ -49,7 +50,7 @@ public class ColdpExporterTest extends ExporterTest {
   @Test
   public void excel() {
     req.setExcel(true);
-    ColdpExporter exp = new ColdpExporter(req, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertTrue(exp.getArchive().exists());

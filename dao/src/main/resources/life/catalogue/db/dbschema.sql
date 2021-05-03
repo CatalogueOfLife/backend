@@ -228,6 +228,14 @@ CREATE TYPE ISSUE AS ENUM (
   'ESTIMATE_TYPE_INVALID'
 );
 
+CREATE TYPE JOBSTATUS AS ENUM (
+  'WAITING',
+  'RUNNING',
+  'FINISHED',
+  'CANCELED',
+  'FAILED'
+);
+
 CREATE TYPE KINGDOM AS ENUM (
   'INCERTAE_SEDIS',
   'ANIMALIA',
@@ -787,6 +795,33 @@ CREATE TABLE dataset_import (
   PRIMARY KEY (dataset_key, attempt)
 );
 
+CREATE TABLE dataset_export (
+  key UUID PRIMARY KEY,
+  -- request
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  format DATAFORMAT NOT NULL,
+  excel BOOLEAN NOT NULL,
+  taxon_id TEXT,
+  synonyms BOOLEAN NOT NULL,
+  min_rank RANK,
+  created_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  modified_by INTEGER,
+  modified TIMESTAMP WITHOUT TIME ZONE,
+  -- results
+  import_attempt INTEGER NOT NULL,
+  started TIMESTAMP WITHOUT TIME ZONE,
+  finished TIMESTAMP WITHOUT TIME ZONE,
+  deleted TIMESTAMP WITHOUT TIME ZONE,
+  status JOBSTATUS NOT NULL,
+  error TEXT,
+  md5 TEXT,
+  size INTEGER,
+  synonym_count INTEGER,
+  taxon_count INTEGER,
+  taxa_by_rank_count HSTORE
+);
+
 CREATE TABLE sector (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
@@ -827,7 +862,7 @@ CREATE TABLE sector_import (
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
   created_by INTEGER NOT NULL,
-  state IMPORTSTATE NOT NULL,
+  state JOBSTATUS NOT NULL,
   -- shared
   applied_decision_count INTEGER,
   bare_name_count INTEGER,

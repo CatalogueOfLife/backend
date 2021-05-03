@@ -9,6 +9,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.concurrent.JobStatus;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.jdk.JdkImmutableListSerializer;
 import life.catalogue.common.kryo.jdk.JdkImmutableMapSerializer;
@@ -135,6 +136,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Gazetteer.class);
     kryo.register(ImportState.class);
     kryo.register(Issue.class);
+    kryo.register(JobStatus.class);
     kryo.register(Kingdom.class);
     kryo.register(License.class);
     kryo.register(Environment.class);

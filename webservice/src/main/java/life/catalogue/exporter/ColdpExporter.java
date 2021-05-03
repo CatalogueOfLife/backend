@@ -31,8 +31,8 @@ public class ColdpExporter extends ArchiveExporter {
   private Writer cslWriter;
   private boolean cslFirst = true;
 
-  public ColdpExporter(ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(DataFormat.COLDP, req, factory, cfg, imageService);
+  public ColdpExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(DataFormat.COLDP, userKey, req, factory, cfg, imageService);
   }
 
   @Override

@@ -1,6 +1,7 @@
 package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -19,13 +20,10 @@ public class TextTreeExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(TextTreeExporter.class);
   private File f;
 
-  public TextTreeExporter(ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req, DataFormat.TEXT_TREE, factory, cfg, imageService);
+  public TextTreeExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(req, userKey, DataFormat.TEXT_TREE, factory, cfg, imageService);
     if (req.isExcel()) {
       throw new IllegalArgumentException("TextTree cannot be exported in Excel");
-    }
-    if (req.getExclusions() != null && !req.getExclusions().isEmpty()) {
-      throw new IllegalArgumentException("TextTree cannot exclude taxa");
     }
   }
 

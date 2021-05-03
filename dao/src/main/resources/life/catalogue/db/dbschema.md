@@ -11,6 +11,17 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2021-05-03 dataset exports
+```
+CREATE TYPE JOBSTATUS AS ENUM (
+  'WAITING',
+  'RUNNING',
+  'FINISHED',
+  'CANCELED',
+  'FAILED'
+);
+```
+
 ### 2021-04-20 All CC licenses
 ```
 ALTER TYPE LICENSE ADD VALUE 'CC_BY_SA' AFTER 'CC_BY';

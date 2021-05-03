@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.concurrent.DatasetBlockingJob;
 import life.catalogue.common.concurrent.JobPriority;
@@ -38,8 +39,8 @@ abstract class DatasetExporter extends DatasetBlockingJob {
   protected final ImageService imageService;
 
   @VisibleForTesting
-  DatasetExporter(ExportRequest req, DataFormat requiredFormat, Dataset d, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req.getDatasetKey(), req.getUserKey(), JobPriority.LOW);
+  DatasetExporter(ExportRequest req, int userKey, DataFormat requiredFormat, Dataset d, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(req.getDatasetKey(), userKey, JobPriority.LOW);
     if (req.getFormat() == null) {
       req.setFormat(requiredFormat);
     } else if (req.getFormat() != requiredFormat) {
@@ -58,8 +59,8 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     LOG.info("Created {} job {} by user {} for dataset {} to {}", getClass().getSimpleName(), getUserKey(), getKey(), datasetKey, archive);
   }
 
-  DatasetExporter(ExportRequest req, DataFormat requiredFormat, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    this(req, requiredFormat, loadDataset(factory, req.getDatasetKey()), factory, cfg, imageService);
+  DatasetExporter(ExportRequest req, int userKey, DataFormat requiredFormat, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    this(req, userKey, requiredFormat, loadDataset(factory, req.getDatasetKey()), factory, cfg, imageService);
   }
 
   private static Dataset loadDataset(SqlSessionFactory factory, int datasetKey){
