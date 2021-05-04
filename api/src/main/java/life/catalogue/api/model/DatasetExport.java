@@ -8,6 +8,7 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.UUID;
 
 public class DatasetExport extends DataEntity<UUID> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExport.class);
-  private static URI DOWNLOAD_BASE_URI = URI.create("https://download.catalogueoflife.org/exports");
+  private static URI DOWNLOAD_BASE_URI = URI.create("https://download.catalogueoflife.org/exports/");
 
   private UUID key;
   private ExportRequest request;
@@ -64,6 +65,9 @@ public class DatasetExport extends DataEntity<UUID> {
    * WARNING: Only set this when you know what you're doing!
    */
   public static void setDownloadBaseURI(URI downloadBaseURI) {
+    if (!downloadBaseURI.getPath().endsWith("/")) {
+      downloadBaseURI = URI.create(downloadBaseURI + "/");
+    }
     LOG.warn("DownloadBaseURI changed from {} to {}", DatasetExport.DOWNLOAD_BASE_URI, downloadBaseURI);
     DatasetExport.DOWNLOAD_BASE_URI = downloadBaseURI;
   }

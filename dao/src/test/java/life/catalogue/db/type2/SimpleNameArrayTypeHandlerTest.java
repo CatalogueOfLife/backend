@@ -23,25 +23,25 @@ public class SimpleNameArrayTypeHandlerTest {
   public void toList() throws SQLException {
     try (PgConnection c = pgSetupRule.connect()) {
       Array array = c.createArrayOf("text", new String[]{
-        "(k6,KINGDOM,Plantae)",
-        "(\"fhsdfgh,; h2\",PHYLUM,\"Tracheophyta, 1677\")",
-        "(\"id\"\"123\"\"\",GENUS,\"Bern'd, (1973)\")",
-        "(,,Bernd)"
+        "(k6,KINGDOM,Plantae,)",
+        "(\"fhsdfgh,; h2\",PHYLUM,\"Tracheophyta, 1677\",)",
+        "(\"id\"\"123\"\"\",GENUS,\"Bern'd, (1973)\",)",
+        "(,,Bernd,Hans)"
       });
       SimpleNameArrayTypeHandler snh = new SimpleNameArrayTypeHandler();
       List<SimpleName> names = snh.toObj(array);
-      assertSN(names.get(0), "k6", Rank.KINGDOM, "Plantae");
-      assertSN(names.get(1), "fhsdfgh,; h2", Rank.PHYLUM, "Tracheophyta, 1677");
-      assertSN(names.get(2), "id\"123\"", Rank.GENUS, "Bern'd, (1973)");
-      assertSN(names.get(3), null, null, "Bernd");
+      assertSN(names.get(0), "k6", Rank.KINGDOM, "Plantae", null);
+      assertSN(names.get(1), "fhsdfgh,; h2", Rank.PHYLUM, "Tracheophyta, 1677", null);
+      assertSN(names.get(2), "id\"123\"", Rank.GENUS, "Bern'd, (1973)", null);
+      assertSN(names.get(3), null, null, "Bernd", "Hans");
     }
   }
   
-  private static void assertSN(SimpleName sn, String id, Rank rank, String name){
+  private static void assertSN(SimpleName sn, String id, Rank rank, String name, String author){
     assertEquals(id, sn.getId());
     assertEquals(rank, sn.getRank());
     assertEquals(name, sn.getName());
-    assertNull(sn.getAuthorship());
+    assertEquals(author, sn.getAuthorship());
     assertNull(sn.getStatus());
     assertNull(sn.getParent());
   }
