@@ -95,7 +95,7 @@
     WITH RECURSIVE tree AS (
       SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
     UNION ALL
-      SELECT u.id, array_append(tree.classification, (u.id,n.rank,n.scientific_name)::simple_name)
+      SELECT u.id, array_append(tree.classification, (u.id,n.rank,n.scientific_name,n.authorship)::simple_name)
       FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON u.name_id=n.id JOIN tree ON (tree.uid = u.parent_id)
     <if test="sectorKey != null">
       WHERE u.sector_key = #{sectorKey}

@@ -863,7 +863,7 @@ CREATE TABLE sector_import (
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
   created_by INTEGER NOT NULL,
-  state JOBSTATUS NOT NULL,
+  state IMPORTSTATE NOT NULL,
   -- shared
   applied_decision_count INTEGER,
   bare_name_count INTEGER,

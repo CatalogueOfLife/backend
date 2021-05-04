@@ -1,10 +1,6 @@
-package life.catalogue.db.type;
+package life.catalogue.db.type2;
 
-import life.catalogue.api.model.Person;
 import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.common.text.CSVUtils;
-import life.catalogue.db.type2.AbstractArrayTypeHandler;
 import life.catalogue.db.type2.CustomAbstractTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
@@ -12,17 +8,12 @@ import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeException;
 import org.gbif.nameparser.api.Rank;
 
-import java.sql.Array;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Complex simple_name type handler that supports reads & writes.
  */
-@MappedTypes(SimpleName.class)
-@MappedJdbcTypes(JdbcType.OTHER)
 public class SimpleNameTypeHandler extends CustomAbstractTypeHandler<SimpleName> {
 
   public SimpleNameTypeHandler() {

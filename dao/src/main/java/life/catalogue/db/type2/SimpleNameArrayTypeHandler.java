@@ -2,9 +2,6 @@ package life.catalogue.db.type2;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.text.CSVUtils;
-import life.catalogue.db.type.SimpleNameTypeHandler;
-import org.apache.ibatis.type.TypeException;
-import org.gbif.nameparser.api.Rank;
 import org.postgresql.util.PGobject;
 
 import java.sql.Array;

@@ -24,14 +24,6 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   SectorImport get(@Param("key") DSID<Integer> sectorKey, @Param("attempt") int attempt);
 
   /**
-   * Get aggregated metrics for all sectors that share the same subjectDatasetKey within a given project
-   * @param datasetKey the project key
-   * @param subjectDatasetKey
-   * @return aggregated sector metrics
-   */
-  ImportMetrics getBySourceDataset(@Param("datasetKey") int datasetKey, @Param("subjectDatasetKey") int subjectDatasetKey);
-
-  /**
    * Count all imports by their state
    */
   int count(@Param("sectorKey") @Nullable Integer sectorKey,

@@ -37,7 +37,7 @@
     #{request.datasetKey},
     #{request.format}::DATAFORMAT,
     #{request.excel},
-    #{request.root}::SIMPLE_NAME,
+    #{request.root, typeHandler=life.catalogue.db.type2.SimpleNameTypeHandler}::SIMPLE_NAME,
     #{request.synonyms},
     #{request.minRank}::RANK,
     #{createdBy},
@@ -67,6 +67,7 @@
   </resultMap>
 
   <resultMap id="exportRequestResultMap" type="ExportRequest" autoMapping="true">
+    <result property="root" column="root" typeHandler="life.catalogue.db.type2.SimpleNameTypeHandler"/>
   </resultMap>
 
 
