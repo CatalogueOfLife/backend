@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.EstimateSearchRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.common.func.ThrowingBiConsumer;
@@ -33,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class ArchiveExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(ArchiveExporter.class);
@@ -147,6 +149,9 @@ public abstract class ArchiveExporter extends DatasetExporter {
       refIDs.add(u.getAccordingToId());
       refIDs.addAll(u.getReferenceIds());
     }
+    // metrics
+    counter.inc(u);
+
     try {
       write(u);
       writer.next();

@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.DataFormat;
 import org.gbif.nameparser.api.Rank;
 
@@ -12,7 +13,7 @@ public class ExportRequest {
   private Integer datasetKey;
   private DataFormat format;
   private boolean excel;
-  private String taxonID;
+  private SimpleName root;
   private boolean synonyms = true;
   private Rank minRank;
 
@@ -48,12 +49,17 @@ public class ExportRequest {
     this.excel = excel;
   }
 
-  public String getTaxonID() {
-    return taxonID;
+  public SimpleName getRoot() {
+    return root;
   }
 
-  public void setTaxonID(String taxonID) {
-    this.taxonID = taxonID;
+  public void setRoot(SimpleName root) {
+    this.root = root;
+  }
+
+  @JsonIgnore
+  public String getTaxonID() {
+    return root == null ? null : root.getId();
   }
 
   public boolean isSynonyms() {
@@ -76,7 +82,7 @@ public class ExportRequest {
    * @return true if any filter has been used apart from the mandatory datasetKey
    */
   public boolean hasFilter() {
-    return !synonyms || taxonID!=null || minRank!=null;
+    return !synonyms || root!=null || minRank!=null;
   }
 
   @Override
@@ -84,11 +90,11 @@ public class ExportRequest {
     if (this == o) return true;
     if (!(o instanceof ExportRequest)) return false;
     ExportRequest that = (ExportRequest) o;
-    return datasetKey == that.datasetKey && excel == that.excel && synonyms == that.synonyms && format == that.format && Objects.equals(taxonID, that.taxonID) && minRank == that.minRank;
+    return datasetKey == that.datasetKey && excel == that.excel && synonyms == that.synonyms && format == that.format && Objects.equals(root, that.root) && minRank == that.minRank;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, format, excel, taxonID, synonyms, minRank);
+    return Objects.hash(datasetKey, format, excel, root, synonyms, minRank);
   }
 }

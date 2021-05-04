@@ -2,6 +2,7 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.model.RankedID;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.common.concurrent.UsageCounter;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -17,7 +18,7 @@ import java.util.function.Consumer;
  * Print an entire dataset in a nested way using start/end calls similar to SAX
  */
 public abstract class AbstractTreePrinter<T extends RankedID> implements Consumer<T> {
-  private int counter = 0;
+  private final UsageCounter counter = new UsageCounter();
   protected final int datasetKey;
   protected final Integer sectorKey;
   protected final String startID;
@@ -57,7 +58,7 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
    * @throws IOException
    */
   public int print() throws IOException {
-    counter = 0;
+    counter.clear();
     try {
       session = factory.openSession(true);
       iterate().forEach(this);
@@ -75,10 +76,10 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
       flush();
       session.close();
     }
-    return counter;
+    return counter.size();
   }
 
-  public int getCounter() {
+  public UsageCounter getCounter() {
     return counter;
   }
 
@@ -94,7 +95,7 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
         }
       }
       if (ranks.isEmpty() || ranks.contains(u.getRank())) {
-        counter++;
+        counter.inc(u);
         start(u);
         level++;
       }

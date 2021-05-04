@@ -2,8 +2,10 @@ package life.catalogue.db.type2;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.text.CSVUtils;
+import life.catalogue.db.type.SimpleNameTypeHandler;
 import org.apache.ibatis.type.TypeException;
 import org.gbif.nameparser.api.Rank;
+import org.postgresql.util.PGobject;
 
 import java.sql.Array;
 import java.sql.SQLException;
@@ -22,7 +24,12 @@ public class SimpleNameArrayTypeHandler extends AbstractArrayTypeHandler<List<Si
 
   @Override
   public Object[] toArray(List<SimpleName> obj) throws SQLException {
-    throw new RuntimeException("writes not supported");
+    List<PGobject> result = new ArrayList<>();
+    for (SimpleName sn : obj) {
+      var cols = SimpleNameTypeHandler.cols(sn);
+      result.add(CustomAbstractTypeHandler.buildPgObject(arrayType, cols));
+    }
+    return result.toArray(Object[]::new);
   }
 
   @Override
@@ -31,16 +38,9 @@ public class SimpleNameArrayTypeHandler extends AbstractArrayTypeHandler<List<Si
     if (pgArray != null) {
       Object[] obj = (Object[]) pgArray.getArray();
       for (Object o : obj) {
-        // (k6,KINGDOM,Plantae)
         String row = o.toString();
         List<String> cols = CSVUtils.parseLine(row.substring(1, row.length()-1));
-        if (cols.size() == 3) {
-          Rank rank = cols.get(1) == null ? null : Rank.valueOf(cols.get(1));
-          cl.add(new SimpleName(cols.get(0), cols.get(2), rank));
-        } else {
-          // how can that be ?
-          throw new TypeException("Failed to parse "+o+" to SimpleName");
-        }
+        cl.add(SimpleNameTypeHandler.from(cols));
       }
     }
     return cl;

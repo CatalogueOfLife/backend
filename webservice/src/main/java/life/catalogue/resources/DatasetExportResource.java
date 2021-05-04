@@ -161,7 +161,7 @@ public class DatasetExportResource {
         Writer writer = new BufferedWriter(new OutputStreamWriter(os));
         TextTreePrinter printer = TextTreePrinter.dataset(key, taxonID, ranks, factory, writer);
         printer.print();
-        if (printer.getCounter() == 0) {
+        if (printer.getCounter().isEmpty()) {
           writer.write("--NONE--");
         }
         writer.flush();

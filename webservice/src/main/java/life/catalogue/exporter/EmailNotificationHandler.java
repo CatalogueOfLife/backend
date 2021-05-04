@@ -5,11 +5,9 @@ import com.google.common.base.Preconditions;
 import freemarker.template.TemplateException;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.User;
 import life.catalogue.common.concurrent.BackgroundJob;
-import life.catalogue.common.concurrent.JobStatus;
-import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.UserMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -20,10 +18,7 @@ import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -100,33 +95,19 @@ public class EmailNotificationHandler implements Consumer<BackgroundJob> {
 
   public static class DownloadModel {
     private final UUID key;
-    private final ExportRequest req;
+    private final DatasetExport export;
     private final User user;
     private final Dataset dataset;
-    private final URI download;
-    private final JobStatus status;
-    private final String size;
     private final String from;
     private final String fromName;
 
     public DownloadModel(DatasetExporter job, User user, WsServerConfig cfg) {
       this.key = job.getKey();
-      this.req = job.req;
+      this.export = job.getExport();
       this.user = user;
       this.dataset = job.dataset;
       this.from = cfg.mail.from;
       this.fromName = cfg.mail.fromName;
-      this.download = cfg.archiveURI(job.getKey());;
-      this.status = job.getStatus();
-      File f = job.archive;
-      String humanSize;
-      try {
-        humanSize = StringUtils.humanReadableByteSize(Files.size(f.toPath()));
-      } catch (IOException e) {
-        LOG.error("Failed to read filesize of download at {}", f, e);
-        humanSize = "unknown";
-      }
-      this.size = humanSize;
     }
 
     public UUID getKey() {
@@ -141,12 +122,8 @@ public class EmailNotificationHandler implements Consumer<BackgroundJob> {
       return fromName;
     }
 
-    public String getSize() {
-      return size;
-    }
-
-    public ExportRequest getReq() {
-      return req;
+    public DatasetExport getExport() {
+      return export;
     }
 
     public User getUser() {
@@ -157,12 +134,5 @@ public class EmailNotificationHandler implements Consumer<BackgroundJob> {
       return dataset;
     }
 
-    public URI getDownload() {
-      return download;
-    }
-
-    public JobStatus getStatus() {
-      return status;
-    }
   }
 }

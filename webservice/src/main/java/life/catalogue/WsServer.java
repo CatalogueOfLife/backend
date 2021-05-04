@@ -15,6 +15,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.cache.CacheFlush;
@@ -166,7 +167,10 @@ public class WsServer extends Application<WsServerConfig> {
       LOG.info("Created config repository directories");
     }
     clearTmp(cfg);
-    
+
+    // configure static download base URI
+    DatasetExport.setDownloadBaseURI(cfg.downloadURI);
+
     // http client pool is managed via DW lifecycle already
     httpClient = new HttpClientBuilder(env).using(cfg.client).build(getName());
 
@@ -257,6 +261,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // daos
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile, bus);
+    DatasetExportDao exdao = new DatasetExportDao(getSqlSessionFactory());
     DatasetProjectSourceDao dsdao = new DatasetProjectSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
@@ -316,7 +321,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));
     j.register(new DuplicateResource());
     j.register(new EstimateResource(edao));
-    j.register(new ExportResource(exportManager));
+    j.register(new ExportResource(exdao, cfg));
     j.register(new ImporterResource(importManager, diDao));
     j.register(new LegacyWebserviceResource(cfg, idMap));
     j.register(new MatchingResource(ni));

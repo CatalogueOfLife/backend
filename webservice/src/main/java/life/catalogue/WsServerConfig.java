@@ -3,6 +3,7 @@ package life.catalogue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
+import life.catalogue.api.model.DatasetExport;
 import life.catalogue.common.io.Resources;
 import life.catalogue.config.*;
 import life.catalogue.db.PgConfig;
@@ -15,7 +16,6 @@ import life.catalogue.dw.mail.MailConfig;
 import life.catalogue.dw.metrics.GangliaBundleConfiguration;
 import life.catalogue.dw.metrics.GangliaConfiguration;
 import life.catalogue.es.EsConfig;
-import life.catalogue.exporter.ArchiveExporter;
 import life.catalogue.img.ImgConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +63,10 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @Valid
   @NotNull
   public GbifConfig gbif = new GbifConfig();
-  
+
+  @Valid
+  public DoiConfig doi;
+
   @Valid
   @NotNull
   public NormalizerConfig normalizer = new NormalizerConfig();
@@ -189,12 +192,9 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
     return null;
   }
 
-  public File archiveFiLe(UUID key) {
-    return ArchiveExporter.archive(exportDir, key);
+  public File downloadFile(UUID key) {
+    return new File(exportDir, DatasetExport.downloadFilePath(key));
   }
 
-  public URI archiveURI(UUID key) {
-    String path = archiveFiLe(key).getAbsolutePath().substring(exportDir.getAbsolutePath().length());
-    return downloadURI.resolve("/exports" + path);
-  }
+
 }

@@ -5,11 +5,14 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImgConfig;
@@ -17,6 +20,7 @@ import life.catalogue.postgres.PgCopyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.Rank;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +35,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,6 +81,20 @@ public class AcefExporterJob extends DatasetExporter {
 
     // export citation.ini
     exportCitations();
+
+    // get metrics
+    updateMetrics();
+  }
+
+  private void updateMetrics() {
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetImport di = session.getMapper(DatasetImportMapper.class).last(datasetKey);
+      if (di != null) {
+        counter.getSynCounter().set(ObjectUtils.coalesce(di.getSynonymCount(), 0));
+        counter.getTaxCounter().set(ObjectUtils.coalesce(di.getTaxonCount(), 0));
+        counter.putRankCounter(di.getTaxaByRankCount());
+      }
+    }
   }
 
   private static String exportSchema(int datasetKey){

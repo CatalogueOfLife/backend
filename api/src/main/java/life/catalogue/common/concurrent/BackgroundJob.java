@@ -39,6 +39,10 @@ public abstract class BackgroundJob implements Runnable {
 
   public abstract void execute() throws Exception;
 
+  protected void persist() throws Exception {
+    // dont persist by default
+  }
+
   /**
    * Adds a handler for jobs that have finished either successfully, with an error or got canceled.
    * Up to the handler to check the job status and do sth meaningful.
@@ -80,6 +84,11 @@ public abstract class BackgroundJob implements Runnable {
 
     } finally {
       finished = LocalDateTime.now();
+      try {
+        persist();
+      } catch (Exception e) {
+        LOG.error("Failed to persist {} job {}", getClass().getSimpleName(), key, e);
+      }
       LoggingUtils.removeJobMDC();
       for (Consumer<BackgroundJob> h : finishedHandler) {
         h.accept(this);

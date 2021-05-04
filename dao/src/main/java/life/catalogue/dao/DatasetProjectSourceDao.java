@@ -20,7 +20,7 @@ import static life.catalogue.api.vocab.DatasetOrigin.MANAGED;
 import static life.catalogue.api.vocab.DatasetOrigin.RELEASED;
 
 public class DatasetProjectSourceDao {
-  private final Logger LOG = LoggerFactory.getLogger(DatasetProjectSourceDao.class);
+  private final static Logger LOG = LoggerFactory.getLogger(DatasetProjectSourceDao.class);
   private final SqlSessionFactory factory;
 
   public DatasetProjectSourceDao(SqlSessionFactory factory) {

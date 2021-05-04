@@ -11,9 +11,13 @@ import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import javax.validation.Validator;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class WsServerConfigTest {
@@ -41,4 +45,13 @@ public class WsServerConfigTest {
     String version = cfg.versionString();
     System.out.println(version);
   }
+
+  @Test
+  public void downloadFile() {
+    WsServerConfig cfg = new WsServerConfig();
+    cfg.exportDir = new File("/tmp/col");
+    UUID key = UUID.fromString("7ca06f44-2c0c-4fa9-a410-ac072c378378");
+    assertEquals(new File("/tmp/col/7c/7ca06f44-2c0c-4fa9-a410-ac072c378378.zip"), cfg.downloadFile(key));
+  }
+
 }

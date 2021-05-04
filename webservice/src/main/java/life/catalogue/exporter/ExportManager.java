@@ -39,15 +39,6 @@ public class ExportManager {
     this.emailHandler = emailHandler;
   }
 
-  public File archiveFiLe(UUID key) {
-    return ArchiveExporter.archive(cfg.exportDir, key);
-  }
-
-  public URI archiveURI(UUID key) {
-    String path = archiveFiLe(key).getAbsolutePath().substring(cfg.exportDir.getAbsolutePath().length());
-    return cfg.downloadURI.resolve("/exports" + path);
-  }
-
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
     validate(req);
     DatasetBlockingJob job;

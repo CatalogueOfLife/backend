@@ -48,6 +48,10 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
     this.parent = other.parent;
   }
 
+  public SimpleName(String id) {
+    this.id = id;
+  }
+
   public SimpleName(String id, String name, Rank rank) {
     this.id = id;
     this.name = name;

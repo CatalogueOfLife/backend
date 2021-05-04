@@ -600,7 +600,7 @@ CREATE TYPE USER_ROLE AS ENUM (
 
 
 -- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
-CREATE TYPE simple_name AS (id text, rank rank, name text);
+CREATE TYPE simple_name AS (id text, rank rank, name text, authorship text);
 
 -- Person type for dataset to avoid extra tables
 CREATE TYPE person AS (given text, family text, email text, orcid text);
@@ -801,18 +801,19 @@ CREATE TABLE dataset_export (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   format DATAFORMAT NOT NULL,
   excel BOOLEAN NOT NULL,
-  taxon_id TEXT,
+  root SIMPLE_NAME,
   synonyms BOOLEAN NOT NULL,
   min_rank RANK,
-  created_by INTEGER NOT NULL,
+  created_by INTEGER NOT NULL REFERENCES "user",
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
   modified_by INTEGER,
   modified TIMESTAMP WITHOUT TIME ZONE,
   -- results
-  import_attempt INTEGER NOT NULL,
+  import_attempt INTEGER,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
   deleted TIMESTAMP WITHOUT TIME ZONE,
+  classification SIMPLE_NAME[],
   status JOBSTATUS NOT NULL,
   error TEXT,
   md5 TEXT,
@@ -1488,10 +1489,10 @@ CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v
 	declare parents simple_name[];
 BEGIN
     seql := 'WITH RECURSIVE x AS ('
-        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name)::simple_name AS sn FROM name_usage_' || v_dataset_key || ' t '
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,null)::simple_name AS sn FROM name_usage_' || v_dataset_key || ' t '
         || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = $1'
         || ' UNION ALL '
-        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name)::simple_name FROM x, name_usage_' || v_dataset_key || ' t '
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,null)::simple_name FROM x, name_usage_' || v_dataset_key || ' t '
         || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = x.parent_id'
         || ') SELECT array_agg(sn) FROM x';
 

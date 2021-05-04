@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.concurrent.JobStatus;
@@ -10,6 +11,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.assertNotNull;
@@ -25,7 +27,11 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
     ExportRequest req = new ExportRequest();
     req.setDatasetKey(datasetKey);
     req.setFormat(DataFormat.COLDP);
-    req.setTaxonID("root");
+    req.setRoot(new SimpleName("root", "Abies alba", Rank.SPECIES));
+    req.setExcel(true);
+    req.setSynonyms(true);
+    req.setMinRank(Rank.SPECIES);
+
     DatasetExport d = new DatasetExport();
     d.setKey(UUID.randomUUID());
     d.setImportAttempt(1);
@@ -35,7 +41,12 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
     d.getTaxaByRankCount().put(Rank.SPECIES, 100);
     d.getTaxaByRankCount().put(Rank.GENUS, 11);
     d.getTaxaByRankCount().put(Rank.FAMILY, 2);
-
+    d.setClassification(List.of(
+      new SimpleName("ABIES", "Abies", Rank.GENUS),
+      new SimpleName("PINACEAE", "Pinaceae", Rank.FAMILY),
+      new SimpleName("PINALES", "Pinales", Rank.ORDER),
+      new SimpleName("PLANTAE", "Plantae", Rank.KINGDOM)
+    ));
     d.setCreated(LocalDateTime.now());
     d.setCreatedBy(Users.DB_INIT);
     return d;
@@ -62,6 +73,6 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
   @Override
   void updateTestObj(DatasetExport obj) {
     obj.setTaxonCount(999912);
-    obj.getRequest().setTaxonID("9ewufczbz");
+    obj.getRequest().getRoot().setId("9ewufczbz");
   }
 }
