@@ -5,7 +5,29 @@
 <mapper namespace="life.catalogue.db.mapper.DatasetExportMapper">
 
   <sql id="SELECT">
-    <include refid="life.catalogue.db.mapper.DatasetExportMapper.COLS"/>, created, modified
+    de.key,
+    de.dataset_key,
+    de.format,
+    de.excel,
+    de.root,
+    de.synonyms,
+    de.min_rank,
+    de.created_by,
+    de.modified_by,
+    de.import_attempt,
+    de.started,
+    de.finished,
+    de.deleted,
+    de.classification,
+    de.status,
+    de.error,
+    de.md5,
+    de.size,
+    de.synonym_count,
+    de.taxon_count,
+    de.taxa_by_rank_count,
+    de.created,
+    de.modified
   </sql>
 
   <sql id="COLS">
@@ -92,7 +114,6 @@
     UPDATE dataset_export SET deleted = now() WHERE key=#{key}
   </delete>
 
-
   <select id="list" resultMap="datasetExportResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
@@ -102,6 +123,24 @@
   <select id="count" resultType="integer">
     SELECT count(*)
     FROM <include refid="FROM"/>
+  </select>
+
+  <select id="search" resultMap="datasetExportResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN dataset d ON d.key=de.dataset_key
+    WHERE de.dataset_key = #{datasetKey}
+      AND COALESCE(de.import_attempt,-1) = COALESCE(d.import_attempt,-1)
+      AND de.format = #{format}::DATAFORMAT
+      AND de.excel = #{excel}
+      AND de.synonyms = #{synonyms}
+      -- nullable
+      AND de.min_rank <if test="minRank == null">IS NULL</if><if test="minRank != null">= #{minRank}::RANK</if>
+      AND <if test="root == null">de.root IS NULL</if><if test="root != null">(de.root).id = #{root.id}</if>
+      -- exclude failed exports
+      AND de.status NOT IN ('CANCELED', 'FAILED')
+    ORDER BY de.created DESC
+    LIMIT 1
   </select>
 
 </mapper>

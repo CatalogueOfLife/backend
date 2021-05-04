@@ -823,6 +823,10 @@ CREATE TABLE dataset_export (
   taxa_by_rank_count HSTORE
 );
 
+CREATE INDEX ON dataset_export (created);
+CREATE INDEX ON dataset_export (created_by, created);
+CREATE INDEX ON dataset_export (dataset_key, import_attempt, format, excel, synonyms, min_rank, status);
+
 CREATE TABLE sector (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL REFERENCES dataset,

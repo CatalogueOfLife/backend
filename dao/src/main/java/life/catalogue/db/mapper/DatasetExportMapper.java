@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.Page;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
@@ -16,4 +17,5 @@ public interface DatasetExportMapper extends CRUD<UUID, DatasetExport>, DatasetP
 
   int countByUser(@Param("userKey") int userKey);
 
+  DatasetExport search(ExportRequest req);
 }

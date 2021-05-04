@@ -53,6 +53,21 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
   }
 
   @Test
+  public void search() throws Exception {
+    DatasetExport e = createTestEntity(datasetKey);
+    e.setImportAttempt(null);
+    mapper().create(e);
+    commit();
+
+    ExportRequest req = new ExportRequest(datasetKey, DataFormat.COLDP);
+    var prev = mapper().search(req);
+    assertNull(prev);
+
+    prev = mapper().search(e.getRequest());
+    assertNotNull(prev);
+  }
+
+  @Test
   public void deleted() throws Exception {
     DatasetExport e = createTestEntity(datasetKey);
     mapper().create(e);

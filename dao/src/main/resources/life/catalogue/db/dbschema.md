@@ -11,8 +11,36 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2021-05-03 dataset exports
+### 2021-05-05 dataset exports
 ```
+DROP FUNCTION classification_sn;
+DROP TYPE simple_name;
+
+CREATE TYPE simple_name AS (id text, rank rank, name text, authorship text);
+
+CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS simple_name[] AS $$
+	declare seql TEXT;
+	declare parents simple_name[];
+BEGIN
+    seql := 'WITH RECURSIVE x AS ('
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name)::simple_name AS sn FROM name_usage_' || v_dataset_key || ' t '
+        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = $1'
+        || ' UNION ALL '
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name)::simple_name FROM x, name_usage_' || v_dataset_key || ' t '
+        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = x.parent_id'
+        || ') SELECT array_agg(sn) FROM x';
+
+    IF NOT v_inc_self THEN
+        seql := seql || ' WHERE id != $1';
+    END IF;
+
+    EXECUTE seql
+    INTO parents
+    USING v_id;
+    RETURN (array_reverse(parents));
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TYPE JOBSTATUS AS ENUM (
   'WAITING',
   'RUNNING',
@@ -20,6 +48,38 @@ CREATE TYPE JOBSTATUS AS ENUM (
   'CANCELED',
   'FAILED'
 );
+
+CREATE TABLE dataset_export (
+  key UUID PRIMARY KEY,
+  -- request
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  format DATAFORMAT NOT NULL,
+  excel BOOLEAN NOT NULL,
+  root SIMPLE_NAME,
+  synonyms BOOLEAN NOT NULL,
+  min_rank RANK,
+  created_by INTEGER NOT NULL REFERENCES "user",
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  modified_by INTEGER,
+  modified TIMESTAMP WITHOUT TIME ZONE,
+  -- results
+  import_attempt INTEGER,
+  started TIMESTAMP WITHOUT TIME ZONE,
+  finished TIMESTAMP WITHOUT TIME ZONE,
+  deleted TIMESTAMP WITHOUT TIME ZONE,
+  classification SIMPLE_NAME[],
+  status JOBSTATUS NOT NULL,
+  error TEXT,
+  md5 TEXT,
+  size INTEGER,
+  synonym_count INTEGER,
+  taxon_count INTEGER,
+  taxa_by_rank_count HSTORE
+);
+
+CREATE INDEX ON dataset_export (created);
+CREATE INDEX ON dataset_export (created_by, created);
+CREATE INDEX ON dataset_export (dataset_key, import_attempt, format, excel, synonyms, min_rank, status);
 ```
 
 ### 2021-04-20 All CC licenses

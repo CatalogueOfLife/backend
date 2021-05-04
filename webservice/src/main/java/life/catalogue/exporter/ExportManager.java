@@ -4,10 +4,12 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.common.concurrent.DatasetBlockingJob;
 import life.catalogue.common.concurrent.JobExecutor;
+import life.catalogue.db.mapper.DatasetExportMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
@@ -15,9 +17,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -40,6 +39,11 @@ public class ExportManager {
   }
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
+    DatasetExport prev = findPreviousExport(req);
+    if (prev != null) {
+      LOG.info("Existing export {} found for request {}", prev.getKey(), req);
+      return prev.getKey();
+    }
     validate(req);
     DatasetBlockingJob job;
     switch (req.getFormat()) {
@@ -91,14 +95,23 @@ public class ExportManager {
     executor.submit(job);
   }
 
+  private DatasetExport findPreviousExport(ExportRequest req) {
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(DatasetExportMapper.class).search(req);
+    }
+  }
+
   /**
    * Makes sure taxonID exists if given
    */
-  void validate(ExportRequest req) throws IllegalArgumentException {
+  private void validate(ExportRequest req) throws IllegalArgumentException {
     if (req.getTaxonID() != null) {
       try (SqlSession session = factory.openSession()) {
-        if (session.getMapper(NameUsageMapper.class).getSimple(DSID.of(req.getDatasetKey(), req.getTaxonID())) == null) {
-          throw new IllegalArgumentException("Root taxonID " + req.getTaxonID() + " does not exist in dataset " + req.getDatasetKey());
+        var root = session.getMapper(NameUsageMapper.class).getSimple(DSID.of(req.getDatasetKey(), req.getTaxonID()));
+        if (root == null) {
+          throw new IllegalArgumentException("Root taxon " + req.getTaxonID() + " does not exist in dataset " + req.getDatasetKey());
+        } else if (!root.getStatus().isTaxon()) {
+          throw new IllegalArgumentException("Root usage " + req.getTaxonID() + " is not an accepted taxon but " + root.getStatus());
         }
       }
     }
