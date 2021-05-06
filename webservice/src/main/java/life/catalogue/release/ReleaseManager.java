@@ -3,7 +3,7 @@ package life.catalogue.release;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.User;
-import life.catalogue.common.concurrent.NamedThreadFactory;
+import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.es.NameUsageIndexService;

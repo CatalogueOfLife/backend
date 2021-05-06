@@ -1,4 +1,4 @@
-package life.catalogue.common.concurrent;
+package life.catalogue.concurrent;
 
 public enum JobPriority {
   HIGH,

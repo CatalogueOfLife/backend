@@ -1,9 +1,9 @@
 package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.common.concurrent.DatasetBlockingJob;
-import life.catalogue.common.concurrent.JobExecutor;
-import life.catalogue.common.concurrent.JobPriority;
+import life.catalogue.concurrent.DatasetBlockingJob;
+import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.concurrent.JobPriority;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.img.ImageService;
@@ -31,8 +31,8 @@ public class ExportManagerIT {
     WsServerConfig cfg = new WsServerConfig();
     cfg.downloadURI = URI.create("http://gbif.org");
     cfg.exportDir = new File("/tmp/col");
-    cfg.backgroundJobs = 3;
-    JobExecutor executor = new JobExecutor(cfg.backgroundJobs);
+    cfg.job.threads = 3;
+    JobExecutor executor = new JobExecutor(cfg.job);
     ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), null);
 
     PrintBlockJob job = new PrintBlockJob(TestDataRule.APPLE.key);

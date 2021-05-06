@@ -1,12 +1,11 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.concurrent.JobStatus;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 

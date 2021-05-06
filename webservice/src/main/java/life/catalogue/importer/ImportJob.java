@@ -5,7 +5,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.concurrent.StartNotifier;
+import life.catalogue.concurrent.StartNotifier;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;

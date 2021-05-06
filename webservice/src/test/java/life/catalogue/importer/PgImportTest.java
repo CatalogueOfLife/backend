@@ -6,7 +6,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.common.concurrent.ExecutorUtils;
+import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;

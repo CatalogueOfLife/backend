@@ -1,4 +1,4 @@
-package life.catalogue.common.concurrent;
+package life.catalogue.concurrent;
 
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;

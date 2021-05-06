@@ -7,7 +7,6 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.User;
-import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.db.mapper.UserMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -22,64 +21,61 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.Consumer;
 
-public class EmailNotificationHandler implements Consumer<BackgroundJob> {
-  private static final Logger LOG = LoggerFactory.getLogger(EmailNotificationHandler.class);
+public class EmailNotification {
+  private static final Logger LOG = LoggerFactory.getLogger(EmailNotification.class);
 
   private final Mailer mailer;
   private final SqlSessionFactory factory;
   private final WsServerConfig cfg;
 
-  public EmailNotificationHandler(Mailer mailer, SqlSessionFactory factory, WsServerConfig cfg) {
+  public EmailNotification(Mailer mailer, SqlSessionFactory factory, WsServerConfig cfg) {
     this.mailer = Preconditions.checkNotNull(mailer);
     this.factory = factory;
     this.cfg = cfg;
   }
-
-  @Override
-  public void accept(BackgroundJob job) {
-    // make sure we only listen to DatasetExporter jobs!!!
-    DatasetExporter exp = (DatasetExporter)job;
-
-    final var status = job.getStatus();
-    if (!status.isDone()) {
-      throw new IllegalStateException("Email handler should not see " + job.getStatus() + " job.");
-    }
-
+  public void email(DatasetExporter job) {
     User user;
     try (SqlSession session = factory.openSession()) {
-      user = session.getMapper(UserMapper.class).get(exp.getUserKey());
+      user = session.getMapper(UserMapper.class).get(job.getUserKey());
       if (user == null) {
-        LOG.info("No user {} existing", exp.getUserKey());
+        LOG.info("No user {} existing", job.getUserKey());
         return;
       }
+    }
+    email(job.getExport(), job.dataset, user);
+  }
+
+  public void email(final DatasetExport export, Dataset dataset, User user) {
+    final var status = export.getStatus();
+    if (!status.isDone()) {
+      LOG.debug("Do not notify users about {} export {}", export.getStatus(), export.getKey());
+      return;
     }
 
     try {
       Email mail = EmailBuilder.startingBlank()
         .to(user.getName(), user.getEmail())
-        .to("Batman", "Batman1973@mailinator.com")
         .from(cfg.mail.fromName, cfg.mail.from)
         .bccAddresses(cfg.mail.bcc)
-        .withSubject(String.format("COL download %s %s", job.getKey(), job.getStatus().name().toLowerCase()))
-        .withPlainText(downloadMail(exp, user, cfg))
+        .withSubject(String.format("COL download %s %s", export.getKey(), export.getStatus().name().toLowerCase()))
+        .withPlainText(downloadMail(export, dataset, user, cfg))
         .buildEmail();
       AsyncResponse asyncResp = mailer.sendMail(mail, true);
       asyncResp.onSuccess(() -> {
-        LOG.info("Successfully sent mail for download {}", job.getKey());
+        LOG.info("Successfully sent mail for download {}", export.getKey());
       });
       asyncResp.onException((e) -> {
-        LOG.error("Error sending mail for download {}", job.getKey(), e);
+        LOG.error("Error sending mail for download {}", export.getKey(), e);
       });
       if (cfg.mail.block) {
         Future<?> f = asyncResp.getFuture();
         f.get(); // blocks
       }
-      LOG.info("Sent email notification for download {} to user {} {}<{}>", job.getKey(), user.getKey(), user.getName(), user.getEmail());
+      LOG.info("Sent email notification for download {} to user {} {}<{}>", export.getKey(), user.getKey(), user.getName(), user.getEmail());
 
     } catch (IOException | TemplateException | ExecutionException | InterruptedException e) {
-      LOG.error("Error sending mail for download {}", job.getKey(), e);
+      LOG.error("Error sending mail for download {}", export.getKey(), e);
       if (cfg.mail.block) {
         throw new RuntimeException(e);
       }
@@ -87,9 +83,9 @@ public class EmailNotificationHandler implements Consumer<BackgroundJob> {
   }
 
   @VisibleForTesting
-  static String downloadMail(DatasetExporter job, User user, WsServerConfig cfg) throws IOException, TemplateException{
-    final DownloadModel data = new DownloadModel(job, user, cfg);
-    final String template = "email/download-" + job.getStatus().name().toLowerCase() + ".ftl";
+  static String downloadMail(DatasetExport export, Dataset dataset, User user, WsServerConfig cfg) throws IOException, TemplateException{
+    final DownloadModel data = new DownloadModel(export, dataset, user, cfg);
+    final String template = "email/download-" + export.getStatus().name().toLowerCase() + ".ftl";
     return FmUtil.render(data, template);
   }
 
@@ -101,11 +97,11 @@ public class EmailNotificationHandler implements Consumer<BackgroundJob> {
     private final String from;
     private final String fromName;
 
-    public DownloadModel(DatasetExporter job, User user, WsServerConfig cfg) {
-      this.key = job.getKey();
-      this.export = job.getExport();
+    public DownloadModel(DatasetExport export, Dataset dataset, User user, WsServerConfig cfg) {
+      this.key = export.getKey();
+      this.export = export;
       this.user = user;
-      this.dataset = job.dataset;
+      this.dataset = dataset;
       this.from = cfg.mail.from;
       this.fromName = cfg.mail.fromName;
     }

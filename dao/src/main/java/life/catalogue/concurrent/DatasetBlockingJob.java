@@ -1,6 +1,7 @@
-package life.catalogue.common.concurrent;
+package life.catalogue.concurrent;
 
 import life.catalogue.api.exception.UnavailableException;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -8,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Marks a Runnable that required a dataset lock to run.
@@ -17,20 +18,11 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetBlockingJob.class);
 
   protected final int datasetKey;
-  private Consumer<DatasetBlockingJob> blockedHandler;
   private int attempt = 0;
 
   public DatasetBlockingJob(int datasetKey, int userKey, @Nullable JobPriority priority) {
     super(priority, userKey);
     this.datasetKey = datasetKey;
-  }
-
-  /**
-   * Sets a consumer to handle a job that is blocked by another DatasetBlockingJob.
-   * By default an UnavailableException is thrown.
-   */
-  public void setBlockedHandler(Consumer<DatasetBlockingJob> blockedHandler) {
-    this.blockedHandler = blockedHandler;
   }
 
   public int getDatasetKey() {
@@ -46,9 +38,20 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   @Override
   public final void execute() throws Exception {
     // we track attempts to run this job - it can be blocked
-    attempt++;
+    if (attempt++ > 0) {
+      LOG.info("Try to run blocked {} job {} #{}", getClass().getSimpleName(), getKey(), attempt);
+    }
+    // did we try several times already so it seems there is a longer running job blocking and the executor is rather idle
+    if (attempt>100) {
+      TimeUnit.SECONDS.sleep(10);
+    } else if (attempt>20) {
+      TimeUnit.SECONDS.sleep(1);
+    } else if (attempt>3) {
+      TimeUnit.MILLISECONDS.sleep(100);
+    }
     // try to acquire a lock, otherwise fail
-    if (DatasetLock.lock(datasetKey, getKey())) {
+    UUID proc = DatasetLock.lock(datasetKey, getKey());
+    if (getKey().equals(proc)) {
       try {
         LoggingUtils.setDatasetMDC(datasetKey, getClass());
         runWithLock();
@@ -57,24 +60,9 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
         LoggingUtils.removeDatasetMDC();
       }
     } else {
-      Optional<UUID> process = DatasetLock.isLocked(datasetKey);
-      process.ifPresent(proc -> {
-        LOG.warn("Failed to acquire lock for dataset {} from {} job {}. Job {} currently running", datasetKey, this.getClass().getSimpleName(), getKey(), process);
-      });
-      if (blockedHandler != null) {
-        blockedHandler.accept(this);
-      } else {
-        throw new UnavailableException(String.format("Failed to acquire lock for dataset %s from %s: %s", datasetKey, this.getClass().getSimpleName(), getKey()));
-      }
+      LOG.info("Failed to acquire lock for dataset {} from {} job {} #{}. Blocked by currently running job {}", datasetKey, this.getClass().getSimpleName(), getKey(), attempt, proc);
+      throw new DatasetBlockedException(proc, datasetKey);
     }
   }
 
-  @Override
-  public boolean isDuplicate(BackgroundJob other) {
-    // rescheduling of blocked jobs will not work if we just test for the same job key
-    if (attempt >= 1) {
-      return false;
-    }
-    return super.isDuplicate(other);
-  }
 }

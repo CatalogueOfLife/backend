@@ -5,7 +5,7 @@ import com.codahale.metrics.Timer;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.common.concurrent.ExecutorUtils;
+import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorImportMapper;

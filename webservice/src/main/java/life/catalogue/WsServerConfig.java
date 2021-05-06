@@ -5,6 +5,7 @@ import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.common.io.Resources;
+import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.*;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgDbConfig;
@@ -99,6 +100,9 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @Valid
   public MailConfig mail;
 
+  @Valid
+  public JobConfig job = new JobConfig();
+
   /**
    * Names index kvp file to persist map on disk. If empty will use a volatile memory index.
    */
@@ -139,11 +143,6 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    */
   public File legacyIdMapFile;
 
-  /**
-   * Maximum number of background job to run simultaneously
-   */
-  @Min(1)
-  public int backgroundJobs = 1;
 
   @Override
   @JsonIgnore

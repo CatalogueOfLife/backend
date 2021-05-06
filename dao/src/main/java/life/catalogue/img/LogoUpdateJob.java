@@ -2,9 +2,9 @@ package life.catalogue.img;
 
 import com.google.common.base.Strings;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.common.io.DownloadException;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;

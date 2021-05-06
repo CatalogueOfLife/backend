@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.common.concurrent.ExecutorUtils;
+import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Users;

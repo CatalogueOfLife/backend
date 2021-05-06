@@ -3,7 +3,6 @@ package life.catalogue.exporter;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.common.concurrent.UsageCounter;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.tree.TextTreePrinter;

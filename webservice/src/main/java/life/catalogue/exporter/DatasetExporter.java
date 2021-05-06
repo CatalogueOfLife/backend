@@ -6,10 +6,10 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.common.concurrent.DatasetBlockingJob;
-import life.catalogue.common.concurrent.JobPriority;
-import life.catalogue.common.concurrent.JobStatus;
-import life.catalogue.common.concurrent.UsageCounter;
+import life.catalogue.concurrent.DatasetBlockingJob;
+import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.lang.Exceptions;
@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -143,23 +142,19 @@ abstract class DatasetExporter extends DatasetBlockingJob {
    * Tracks the successfully executed request in the database.
    */
   @Override
-  protected void persist() {
-    try {
-      // first update the export instance
-      if (getError() != null) {
-        String msg = Exceptions.getFirstMessage(getError());
-        export.setError(msg);
-      }
-      export.setFinished(getFinished());
-      export.setSynonymCount(counter.getSynCounter().get());
-      export.setTaxonCount(counter.getTaxCounter().get());
-      export.setTaxaByRankCount(counter.getRankCounterMap());
-      export.setSize(Files.size(archive.toPath()));
-      export.setMd5(ChecksumUtils.getMD5Checksum(archive));
-      updateExport(getStatus());
-    } catch (IOException | RuntimeException e) {
-      LOG.error("Failed to analyze and persist download file {}", archive, e);
+  protected void onFinish() throws Exception {
+    // first update the export instance
+    if (getError() != null) {
+      String msg = Exceptions.getFirstMessage(getError());
+      export.setError(msg);
     }
+    export.setFinished(getFinished());
+    export.setSynonymCount(counter.getSynCounter().get());
+    export.setTaxonCount(counter.getTaxCounter().get());
+    export.setTaxaByRankCount(counter.getRankCounterMap());
+    export.setSize(Files.size(archive.toPath()));
+    export.setMd5(ChecksumUtils.getMD5Checksum(archive));
+    updateExport(getStatus());
   }
 
   protected void bundle() throws IOException {

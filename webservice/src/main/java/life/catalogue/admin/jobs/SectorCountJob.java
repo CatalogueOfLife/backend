@@ -1,7 +1,7 @@
 package life.catalogue.admin.jobs;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import life.catalogue.common.concurrent.BackgroundJob;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;

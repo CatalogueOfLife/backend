@@ -1,4 +1,4 @@
-package life.catalogue.common.concurrent;
+package life.catalogue.api.vocab;
 
 public enum JobStatus {
 
@@ -6,6 +6,11 @@ public enum JobStatus {
    * Job is queued.
    */
   WAITING,
+
+  /**
+   * Job is blocked by another job.
+   */
+  BLOCKED,
 
   /**
    * Job is currently being executed.
@@ -31,6 +36,6 @@ public enum JobStatus {
    * @return true if the job has ended
    */
   public boolean isDone() {
-    return this != WAITING && this != RUNNING;
+    return this != WAITING && this != BLOCKED && this != RUNNING;
   }
 }

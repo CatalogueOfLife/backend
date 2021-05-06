@@ -20,9 +20,7 @@ import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.cache.CacheFlush;
 import life.catalogue.command.*;
-import life.catalogue.common.concurrent.BackgroundJob;
-import life.catalogue.common.concurrent.JobExecutor;
-import life.catalogue.common.csl.CslUtil;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.*;
@@ -45,7 +43,6 @@ import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
-import life.catalogue.exporter.EmailNotificationHandler;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.gbifsync.GbifSync;
 import life.catalogue.img.ImageService;
@@ -71,7 +68,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.gbif.dwc.terms.TermFactory;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
-import org.simplejavamail.api.mailer.Mailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -79,7 +75,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import javax.ws.rs.client.Client;
 import java.io.IOException;
 import java.sql.Connection;
-import java.util.function.Consumer;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
@@ -192,7 +187,7 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
     // job executor
-    JobExecutor executor = new JobExecutor(cfg.backgroundJobs);
+    JobExecutor executor = new JobExecutor(cfg.job, mail.getMailer());
     env.lifecycle().manage(ManagedUtils.from(executor));
 
     // name parser
@@ -237,16 +232,8 @@ public class WsServer extends Application<WsServerConfig> {
     final FileMetricsDatasetDao fmdDao = new FileMetricsDatasetDao(getSqlSessionFactory(), cfg.metricsRepo);
     final FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(getSqlSessionFactory(), cfg.metricsRepo);
 
-    // download mailer
-    Consumer<BackgroundJob> emailer;
-    if (mail.getMailer() == null) {
-      emailer = (job) -> {};
-    } else {
-      emailer = new EmailNotificationHandler(mail.getMailer(), getSqlSessionFactory(), cfg);
-    }
-
     // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, emailer);
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer());
 
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);

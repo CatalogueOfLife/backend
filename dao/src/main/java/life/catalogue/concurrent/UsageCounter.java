@@ -1,4 +1,4 @@
-package life.catalogue.common.concurrent;
+package life.catalogue.concurrent;
 
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.RankedID;

@@ -2,13 +2,12 @@ package life.catalogue.api.model;
 
 import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.common.concurrent.JobStatus;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.text.StringUtils;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;

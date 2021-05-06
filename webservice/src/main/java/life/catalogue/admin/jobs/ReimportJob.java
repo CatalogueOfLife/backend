@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.User;
-import life.catalogue.common.concurrent.BackgroundJob;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;

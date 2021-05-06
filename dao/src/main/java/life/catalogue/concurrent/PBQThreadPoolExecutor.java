@@ -1,4 +1,4 @@
-package life.catalogue.common.concurrent;
+package life.catalogue.concurrent;
 
 import java.util.List;
 import java.util.concurrent.*;

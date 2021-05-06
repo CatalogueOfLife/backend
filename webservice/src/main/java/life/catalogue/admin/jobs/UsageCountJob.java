@@ -2,8 +2,8 @@ package life.catalogue.admin.jobs;
 
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.common.concurrent.BackgroundJob;
-import life.catalogue.common.concurrent.JobPriority;
+import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.concurrent.JobPriority;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.apache.ibatis.session.SqlSession;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Person;
 import life.catalogue.api.model.User;
-import life.catalogue.common.concurrent.BackgroundJob;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

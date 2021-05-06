@@ -1,4 +1,4 @@
-package life.catalogue.common.concurrent;
+package life.catalogue.concurrent;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -12,12 +12,16 @@ import java.util.concurrent.ConcurrentMap;
 public class DatasetLock {
   private static final ConcurrentMap<Integer, UUID> LOCKS = new ConcurrentHashMap<>();
 
-  public static synchronized boolean lock(int datasetKey, UUID process) {
+  /**
+   * Tries to acquire a lock for the requested dataset and returns the process key that currently has the lock.
+   * If the a new lock could be acquired the process will the requested key.
+   */
+  public static synchronized UUID lock(int datasetKey, UUID process) {
     if (LOCKS.containsKey(datasetKey)) {
-      return false;
+      return LOCKS.get(datasetKey);
     }
     LOCKS.put(datasetKey, process);
-    return true;
+    return process;
   }
 
   public static UUID unlock(int datasetKey) {

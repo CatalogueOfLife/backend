@@ -42,6 +42,11 @@ public class MailConfig {
    */
   public String fromName;
 
+  /**
+   * Optional address to sent mails to when background jobs throw an error
+   */
+  public String onErrorTo;
+
   @NotNull
   public List<String> bcc = new ArrayList<>();
 

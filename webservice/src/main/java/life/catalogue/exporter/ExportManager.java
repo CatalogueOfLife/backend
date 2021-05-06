@@ -6,20 +6,20 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
-import life.catalogue.common.concurrent.BackgroundJob;
-import life.catalogue.common.concurrent.DatasetBlockingJob;
-import life.catalogue.common.concurrent.JobExecutor;
+import life.catalogue.concurrent.DatasetBlockingJob;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.db.mapper.DatasetExportMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.simplejavamail.api.mailer.Mailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 public class ExportManager {
   private static final Logger LOG = LoggerFactory.getLogger(ExportManager.class);
@@ -28,14 +28,15 @@ public class ExportManager {
   private final SqlSessionFactory factory;
   private final ImageService imageService;
   private final JobExecutor executor;
-  private final Consumer<BackgroundJob> emailHandler;
+  private final Optional<EmailNotification> emailer;
 
-  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, Consumer<BackgroundJob> emailHandler) {
+  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, Mailer mailer) {
     this.cfg = cfg;
     this.factory = factory;
     this.executor = executor;
     this.imageService = imageService;
-    this.emailHandler = emailHandler;
+    // mailer
+    this.emailer = mailer == null ? Optional.empty() : Optional.of(new EmailNotification(mailer, factory, cfg));
   }
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
@@ -68,8 +69,6 @@ public class ExportManager {
 
   @VisibleForTesting
   UUID submit(DatasetBlockingJob job) throws IllegalArgumentException {
-    job.setBlockedHandler(this::waitAndReschedule);
-    job.addHandler(emailHandler);
     executor.submit(job);
     return job.getKey();
   }

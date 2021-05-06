@@ -1,14 +1,13 @@
-package life.catalogue.common.concurrent;
+package life.catalogue.concurrent;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -24,7 +23,6 @@ public abstract class BackgroundJob implements Runnable {
   private LocalDateTime started;
   private LocalDateTime finished;
   private Exception error;
-  private final List<Consumer<BackgroundJob>> finishedHandler = new ArrayList<>();
 
   public BackgroundJob(int userKey) {
     this(JobPriority.MEDIUM, userKey);
@@ -39,18 +37,15 @@ public abstract class BackgroundJob implements Runnable {
 
   public abstract void execute() throws Exception;
 
-  protected void persist() throws Exception {
-    // dont persist by default
-  }
-
   /**
-   * Adds a handler for jobs that have finished either successfully, with an error or got canceled.
-   * Up to the handler to check the job status and do sth meaningful.
+   * Final handler that can be implemented to e.g. persist jobs, or run notifications.
+   * The final job status is set along with potential exceptions and timestamps.
+   * The method should only be fired when the job is truely done, i.e. status.isDone().
+   *
+   * Blocked jobs will be resubmitted and only trigger the onFinish once when they finally run.
    */
-  public void addHandler(Consumer<BackgroundJob> handler) {
-    if (handler != null) {
-      this.finishedHandler.add(handler);
-    }
+  protected void onFinish() throws Exception {
+    // dont persist by default
   }
 
   /**
@@ -73,6 +68,12 @@ public abstract class BackgroundJob implements Runnable {
       status = JobStatus.FINISHED;
       LOG.info("Finished {} job {}", getClass().getSimpleName(), key);
 
+    } catch (DatasetBlockedException e) {
+      status = JobStatus.BLOCKED;
+      LOG.info("Blocked {} job {}", getClass().getSimpleName(), key);
+      // rethrow - we want this to surface to the JobExecutor which handles rescheduling
+      throw e;
+
     } catch (InterruptedException e) {
       status = JobStatus.CANCELED;
       LOG.warn("Interrupted {} job {}", getClass().getSimpleName(), key);
@@ -84,15 +85,14 @@ public abstract class BackgroundJob implements Runnable {
 
     } finally {
       finished = LocalDateTime.now();
-      try {
-        persist();
-      } catch (Exception e) {
-        LOG.error("Failed to persist {} job {}", getClass().getSimpleName(), key, e);
+      if (status != JobStatus.BLOCKED) {
+        try {
+          onFinish();
+        } catch (Exception e) {
+          LOG.error("Failed to finish {} job {}", getClass().getSimpleName(), key, e);
+        }
       }
       LoggingUtils.removeJobMDC();
-      for (Consumer<BackgroundJob> h : finishedHandler) {
-        h.accept(this);
-      }
     }
   }
 
@@ -170,5 +170,10 @@ public abstract class BackgroundJob implements Runnable {
   @Override
   public int hashCode() {
     return Objects.hash(key, priority, userKey, created, status, started, finished, error);
+  }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + " " + key + ": " + status;
   }
 }

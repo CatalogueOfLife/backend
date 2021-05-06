@@ -2,7 +2,7 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.model.RankedID;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.common.concurrent.UsageCounter;
+import life.catalogue.concurrent.UsageCounter;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
