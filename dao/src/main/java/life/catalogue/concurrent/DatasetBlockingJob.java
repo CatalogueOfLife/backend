@@ -38,15 +38,13 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   @Override
   public final void execute() throws Exception {
     // we track attempts to run this job - it can be blocked
-    if (attempt++ > 0) {
-      LOG.info("Try to run blocked {} job {} #{}", getClass().getSimpleName(), getKey(), attempt);
-    }
+    attempt++;
     // did we try several times already so it seems there is a longer running job blocking and the executor is rather idle
     if (attempt>100) {
-      TimeUnit.SECONDS.sleep(10);
-    } else if (attempt>20) {
+      TimeUnit.SECONDS.sleep(30);
+    } else if (attempt>10) {
       TimeUnit.SECONDS.sleep(1);
-    } else if (attempt>3) {
+    } else {
       TimeUnit.MILLISECONDS.sleep(100);
     }
     // try to acquire a lock, otherwise fail

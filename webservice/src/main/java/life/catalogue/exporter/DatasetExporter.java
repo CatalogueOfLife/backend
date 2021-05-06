@@ -6,13 +6,13 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.concurrent.DatasetBlockingJob;
-import life.catalogue.concurrent.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
-import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.concurrent.DatasetBlockingJob;
+import life.catalogue.concurrent.JobPriority;
+import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
 import org.apache.commons.io.FileUtils;
@@ -43,6 +43,7 @@ abstract class DatasetExporter extends DatasetBlockingJob {
   protected final ImageService imageService;
   protected final UsageCounter counter = new UsageCounter();
   private final DatasetExport export;
+  private EmailNotification emailer;
 
   @VisibleForTesting
   DatasetExporter(ExportRequest req, int userKey, DataFormat requiredFormat, Dataset d, List<SimpleName> classification, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
@@ -110,6 +111,10 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     }
   }
 
+  void setEmailer(EmailNotification emailer) {
+    this.emailer = emailer;
+  }
+
   public DatasetExport getExport() {
     return export;
   }
@@ -130,6 +135,9 @@ abstract class DatasetExporter extends DatasetBlockingJob {
       LOG.info("Export {} of dataset {} completed", getKey(), datasetKey);
     } finally {
       LOG.info("Remove temporary export directory {}", tmpDir.getAbsolutePath());
+      if (emailer != null) {
+        emailer.email(this);
+      }
       try {
         FileUtils.deleteDirectory(tmpDir);
       } catch (IOException e) {

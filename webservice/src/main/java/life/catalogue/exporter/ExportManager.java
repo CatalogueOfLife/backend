@@ -28,7 +28,7 @@ public class ExportManager {
   private final SqlSessionFactory factory;
   private final ImageService imageService;
   private final JobExecutor executor;
-  private final Optional<EmailNotification> emailer;
+  private final EmailNotification emailer;
 
   public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, Mailer mailer) {
     this.cfg = cfg;
@@ -36,7 +36,7 @@ public class ExportManager {
     this.executor = executor;
     this.imageService = imageService;
     // mailer
-    this.emailer = mailer == null ? Optional.empty() : Optional.of(new EmailNotification(mailer, factory, cfg));
+    this.emailer = mailer == null ? null : new EmailNotification(mailer, factory, cfg);
   }
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
@@ -46,7 +46,7 @@ public class ExportManager {
       return prev.getKey();
     }
     validate(req);
-    DatasetBlockingJob job;
+    DatasetExporter job;
     switch (req.getFormat()) {
       case COLDP:
         job = new ColdpExporter(req, userKey, factory, cfg, imageService);
@@ -64,6 +64,7 @@ public class ExportManager {
       default:
         throw new IllegalArgumentException("Export format "+req.getFormat() + " is not supported yet");
     }
+    job.setEmailer(emailer);
     return submit(job);
   }
 
@@ -71,27 +72,6 @@ public class ExportManager {
   UUID submit(DatasetBlockingJob job) throws IllegalArgumentException {
     executor.submit(job);
     return job.getKey();
-  }
-
-  void waitAndReschedule(DatasetBlockingJob job){
-    // first try to just reschedule the job, appending to the job queue
-    // If attempted several times before already we will wait a little, blocking the background queue for a minute as this runs in the executor
-    if (job.getAttempt() > 2) {
-      // if we tried many times already fail
-      if (job.getAttempt() > 100) {
-        throw new UnavailableException(String.format("Failed to schedule the job %s for dataset %s", this.getClass().getSimpleName(), job.getDatasetKey()));
-      }
-      try {
-        if (job.getAttempt() < 10) {
-          TimeUnit.SECONDS.sleep(1);
-        } else {
-          TimeUnit.MINUTES.sleep(1);
-        }
-      } catch (InterruptedException e) {
-      }
-    }
-    LOG.info("Reschedule job {}, attempt {}", job.getKey(), job.getAttempt());
-    executor.submit(job);
   }
 
   private DatasetExport findPreviousExport(ExportRequest req) {

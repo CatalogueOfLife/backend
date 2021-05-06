@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";
-  private static final String BUILD_SCHEMA = "build";
+  private static final String BUILD_SCHEMA = "nidx";
   private static final String SCHEMA_SETUP = "nidx/rebuild-schema.sql";
   private static final String SCHEMA_POST = "nidx/rebuild-post.sql";
 
