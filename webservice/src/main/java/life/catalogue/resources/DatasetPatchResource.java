@@ -1,23 +1,26 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.ArchivedDataset;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DSIDValue;
+import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetPatchMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.provider.DatasetPatch;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.List;
+
+import org.apache.ibatis.session.SqlSession;
+
+import io.dropwizard.auth.Auth;
 
 /**
  * Editorial decision patching the metadata of a source dataset.

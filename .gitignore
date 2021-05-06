@@ -1,6 +1,7 @@
 **/*.iml
 **/target
 **/.idea
+**/java-xjc/
 
 dao/127.0.0.1/
 dao/dataset/

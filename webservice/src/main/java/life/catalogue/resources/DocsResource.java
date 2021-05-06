@@ -1,9 +1,11 @@
 package life.catalogue.resources;
 
-import io.swagger.v3.oas.models.OpenAPI;
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dw.jersey.MoreMediaTypes;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -12,8 +14,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.io.InputStream;
+
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  *

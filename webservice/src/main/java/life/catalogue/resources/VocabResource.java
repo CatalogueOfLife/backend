@@ -1,10 +1,5 @@
 package life.catalogue.resources;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.reflect.ClassPath;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
@@ -14,22 +9,31 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.img.ImgConfig;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
+
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.reflect.ClassPath;
 
 @Path("/vocab")
 @Produces(MediaType.APPLICATION_JSON)

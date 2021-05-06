@@ -1,8 +1,9 @@
 package life.catalogue.resources;
 
-import com.google.common.base.Preconditions;
-import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.User;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.db.mapper.DecisionMapper;
@@ -10,14 +11,19 @@ import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.RematcherBase;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+
+import io.dropwizard.auth.Auth;
 
 @Path("/dataset/{key}/decision")
 @Produces(MediaType.APPLICATION_JSON)

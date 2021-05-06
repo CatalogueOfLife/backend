@@ -1,42 +1,25 @@
 package life.catalogue.resources.parser;
 
-import com.google.common.collect.Lists;
-import io.dropwizard.auth.Auth;
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.*;
-import life.catalogue.api.search.QuerySearchRequest;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.MetadataFormat;
-import life.catalogue.dao.ParserConfigDao;
-import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.provider.DatasetMessageBodyReader;
 import life.catalogue.importer.coldp.MetadataParser;
 import life.catalogue.importer.dwca.EmlParser;
-import life.catalogue.parser.NameParser;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Optional;
+
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.UriInfo;
-import java.io.*;
-import java.net.URI;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path("/parser/metadata")
 @Produces(MediaType.APPLICATION_JSON)

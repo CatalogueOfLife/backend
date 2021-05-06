@@ -1,19 +1,22 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeDao;
 import life.catalogue.dw.auth.Roles;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
 
 @Path("/dataset/{key}/tree")
 @Produces(MediaType.APPLICATION_JSON)

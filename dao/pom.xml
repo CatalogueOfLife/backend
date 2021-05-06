@@ -10,7 +10,7 @@
 
 	<artifactId>dao</artifactId>
 
-	<name>CoL backend services (DAO)</name>
+	<name>COL DAO</name>
 
 	<build>
 		<resources>

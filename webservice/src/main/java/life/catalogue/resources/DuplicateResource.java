@@ -7,17 +7,20 @@ import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.DuplicateDao;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
-import java.util.Set;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/dataset/{key}/duplicate")
 @Produces(MediaType.APPLICATION_JSON)

@@ -1,18 +1,15 @@
 package life.catalogue.resources;
 
-import com.google.common.base.Preconditions;
-import io.dropwizard.auth.Auth;
-import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
+import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
-import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.gbifsync.GbifSync;
@@ -23,9 +20,10 @@ import life.catalogue.importer.ImportManager;
 import life.catalogue.legacy.IdMap;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.RematchJob;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 import javax.annotation.security.PermitAll;
@@ -33,9 +31,15 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
+
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+
+import io.dropwizard.auth.Auth;
+import io.dropwizard.lifecycle.Managed;
 
 @Path("/admin")
 @Produces(MediaType.APPLICATION_JSON)

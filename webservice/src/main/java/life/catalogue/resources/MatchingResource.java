@@ -6,17 +6,20 @@ import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.parser.NameParser;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/name/matching")
 @Produces(MediaType.APPLICATION_JSON)

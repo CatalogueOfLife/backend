@@ -1,22 +1,12 @@
 package life.catalogue.resources.parser;
 
-import com.google.common.collect.Lists;
 import life.catalogue.common.id.IdConverter;
-import life.catalogue.parser.*;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Path("/parser/idconverter")
 @Produces(MediaType.APPLICATION_JSON)

@@ -6,9 +6,6 @@ import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.dao.SynonymDao;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -16,6 +13,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/dataset/{key}/synonym")
 @Produces(MediaType.APPLICATION_JSON)

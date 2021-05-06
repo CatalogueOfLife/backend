@@ -1,21 +1,19 @@
 package life.catalogue.resources;
 
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.exporter.FmUtil;
 
-import javax.ws.rs.PathParam;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URI;
+
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.IOException;
-import java.io.Writer;
-import java.net.URI;
+
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 public class ResourceUtils {
 

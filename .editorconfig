@@ -8,6 +8,7 @@ indent_style = space
 insert_final_newline = false
 max_line_length = 160
 tab_width = 2
+ij_java_imports_layout = life.catalogue.**,|,org.gbif.**,|,java.**,|,javax.**,|,org.**,|,com.**,|,*,|,$*
 
 # text tree files
 [*.tree]

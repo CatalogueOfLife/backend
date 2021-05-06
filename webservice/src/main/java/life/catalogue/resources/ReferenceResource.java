@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
-import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
 import life.catalogue.api.model.*;
 import life.catalogue.api.model.coldp.ColdpReference;
 import life.catalogue.api.search.ReferenceSearchRequest;
@@ -9,16 +7,21 @@ import life.catalogue.dao.ReferenceDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.importer.reference.ReferenceFactory;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.UUID;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.UUID;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
+import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
 
 @Path("/dataset/{key}/reference")
 @Produces(MediaType.APPLICATION_JSON)

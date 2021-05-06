@@ -1,6 +1,5 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
@@ -10,9 +9,10 @@ import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.JwtCodec;
 import life.catalogue.dw.auth.Roles;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -21,9 +21,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
 
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)

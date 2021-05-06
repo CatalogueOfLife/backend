@@ -1,36 +1,31 @@
 package life.catalogue.resources;
 
-import com.codahale.metrics.annotation.Timed;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import io.swagger.v3.oas.annotations.Hidden;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetProjectSourceDao;
 import life.catalogue.dao.TaxonDao;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.exporter.FmUtil;
-import org.apache.commons.io.IOUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.*;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.annotation.Timed;
+
+import io.swagger.v3.oas.annotations.Hidden;
 
 @Path("/dataset/{key}/taxon")
 @Produces(MediaType.APPLICATION_JSON)

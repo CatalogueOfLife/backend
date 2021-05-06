@@ -1,21 +1,21 @@
 package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
 import life.catalogue.dao.DatasetExportDao;
-import life.catalogue.db.mapper.DatasetExportMapper;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.exporter.ExportManager;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/export")
 @Produces(MediaType.APPLICATION_JSON)

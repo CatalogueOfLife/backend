@@ -1,20 +1,21 @@
 package life.catalogue.resources;
 
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.DataEntity;
+import life.catalogue.api.model.User;
+import life.catalogue.dao.DataEntityDao;
+import life.catalogue.dw.auth.Roles;
+
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-import com.google.common.base.Preconditions;
-import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.User;
-import life.catalogue.api.model.DataEntity;
-import life.catalogue.dao.DataEntityDao;
-import life.catalogue.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)

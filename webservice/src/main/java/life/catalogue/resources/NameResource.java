@@ -1,22 +1,25 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
-import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.dw.auth.Roles;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
+import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
 
 @Path("/dataset/{key}/name")
 @Produces(MediaType.APPLICATION_JSON)

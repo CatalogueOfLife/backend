@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import com.google.common.collect.ImmutableList;
-import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
@@ -15,9 +13,9 @@ import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.decision.RematcherBase;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -25,8 +23,14 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
-import java.util.stream.Stream;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
+
+import io.dropwizard.auth.Auth;
 
 @Path("/dataset/{key}/sector")
 @Produces(MediaType.APPLICATION_JSON)

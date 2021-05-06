@@ -1,6 +1,5 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.SpeciesEstimate;
@@ -10,14 +9,17 @@ import life.catalogue.dao.EstimateDao;
 import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.RematchRequest;
 import life.catalogue.matching.decision.RematcherBase;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
 
 @Path("/dataset/{key}/estimate")
 @Produces(MediaType.APPLICATION_JSON)

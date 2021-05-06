@@ -9,7 +9,7 @@
 
   <artifactId>parser</artifactId>
 
-  <name>CoL backend services (Parser)</name>
+  <name>COL parser module</name>
 
     <dependencies>
         <!-- col -->

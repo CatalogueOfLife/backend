@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import com.codahale.metrics.annotation.Timed;
-import com.google.common.base.Preconditions;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.db.mapper.NameMatchMapper;
@@ -10,23 +8,28 @@ import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.annotation.Timed;
+import com.google.common.base.Preconditions;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")

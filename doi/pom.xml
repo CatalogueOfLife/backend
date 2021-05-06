@@ -1,0 +1,154 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.catalogueoflife</groupId>
+    <artifactId>motherpom</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>doi</artifactId>
+
+  <name>COL DOI</name>
+  <description>This module provides DOI services for COL wrapping DataCite</description>
+
+  <dependencies>
+    <!-- col -->
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
+      <artifactId>api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+
+    <!-- JAXB for java 11 -->
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <!-- TEST SCOPE -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+    </testResources>
+    <plugins>
+      <!--
+     Generates source from the DataCite XSD using plugins to provide
+     classes, fluent builders, annotations for selected @XmlRootElement and guava
+     based equals, toString and hashcode.
+     See also:
+     - https://github.com/mklemm/jaxb2-rich-contract-plugin (immutable and builders)
+     - https://github.com/danielwegener/xjc-guava-plugin (guava helpers)
+
+     The plugin is not bound to any default lifecycle and needs to be executed manually to generate the status:
+     $mvn clean jaxb2:generate
+      -->
+      <plugin>
+        <groupId>org.jvnet.jaxb2.maven2</groupId>
+        <artifactId>maven-jaxb2-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>xsd-generate-2.1</id>
+            <phase>none</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <!--
+          <verbose>true</verbose>
+          -->
+          <removeOldOutput>true</removeOldOutput>
+          <generatePackage>life.catalogue.doi.datacite.model</generatePackage>
+          <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+          <bindingDirectory>src/main/resources</bindingDirectory>
+          <schemas>
+            <schema>
+              <fileset>
+                <directory>${project.basedir}/src/main/resources/schema</directory>
+                <includes>
+                  <include>*.xsd</include>
+                </includes>
+              </fileset>
+            </schema>
+          </schemas>
+          <args>
+            <!--
+            <arg>-Ximmutable</arg>
+            -->
+            <arg>-Xannotate</arg>
+            <arg>-Xfluent-builder</arg>
+          </args>
+          <plugins>
+            <!-- Required for immutable and builder pattern -->
+            <plugin>
+              <groupId>net.codesup.util</groupId>
+              <artifactId>jaxb2-rich-contract-plugin</artifactId>
+              <version>${jaxb2-rich-contract-plugin.version}</version>
+            </plugin>
+            <!-- Required for @XmlRootElement -->
+            <plugin>
+              <groupId>org.jvnet.jaxb2_commons</groupId>
+              <artifactId>jaxb2-basics-annotate</artifactId>
+              <version>${jaxb2_commons.version}</version>
+            </plugin>
+            <!-- Required for @XmlRootElement -->
+            <plugin>
+              <groupId>org.jvnet.jaxb2_commons</groupId>
+              <artifactId>jaxb2-basics</artifactId>
+              <version>${jaxb2_commons.version}</version>
+            </plugin>
+          </plugins>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${project.basedir}/src/main/java-xjc</directory>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

@@ -3,14 +3,15 @@ package life.catalogue.resources;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.db.tree.BaseDiffService;
-import life.catalogue.db.tree.NamesDiff;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.Reader;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.io.Reader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("static-method")
 @Produces(MediaType.APPLICATION_JSON)

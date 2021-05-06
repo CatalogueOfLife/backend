@@ -1,8 +1,5 @@
 package life.catalogue.resources;
 
-import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -14,10 +11,12 @@ import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
@@ -25,9 +24,14 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/nameusage")

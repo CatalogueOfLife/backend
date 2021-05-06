@@ -1,6 +1,5 @@
 package life.catalogue.resources;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.vocab.Datasets;
@@ -14,9 +13,9 @@ import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.mapper.legacy.model.LResponse;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.legacy.IdMap;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.List;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -24,8 +23,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.util.List;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.swagger.v3.oas.annotations.Hidden;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 

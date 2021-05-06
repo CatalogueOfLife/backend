@@ -1,12 +1,9 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dw.auth.Roles;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -14,6 +11,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
 
 @SuppressWarnings("static-method")
 /**

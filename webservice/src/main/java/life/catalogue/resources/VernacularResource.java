@@ -5,16 +5,18 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.VernacularNameUsage;
 import life.catalogue.api.search.VernacularSearchRequest;
 import life.catalogue.db.mapper.VernacularNameMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.function.Supplier;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
-import java.util.function.Supplier;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/vernacular")

@@ -66,6 +66,7 @@
     <!-- even though managed in DW BOM, it conflicts with ES BOM and we gotta manage this manually -->
     <httpcore.version>4.4.12</httpcore.version>
     <icu4j.version>64.2</icu4j.version>
+    <jakarta.xml.version>2.3.3</jakarta.xml.version>
     <java-diff-utils.version>4.0</java-diff-utils.version>
     <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
     <javers.version>5.6.3</javers.version>
@@ -94,21 +95,26 @@
     <woodstox.version>4.4.1</woodstox.version>
     <imgscalr.version>4.2</imgscalr.version>
     <univocity-parsers.version>2.8.3</univocity-parsers.version>
+
     <!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
     <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
+    <jaxb2-rich-contract-plugin.version>2.0.1</jaxb2-rich-contract-plugin.version>
+    <jaxb2_commons.version>0.6.3</jaxb2_commons.version>
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
+    <maven-git-commit-id-plugin.version>4.0.4</maven-git-commit-id-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
     <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+    <maven-jaxb2-plugin.version>0.14.0</maven-jaxb2-plugin.version>
     <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
     <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
     <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
     <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
     <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-    <maven-git-commit-id-plugin.version>4.0.4</maven-git-commit-id-plugin.version>
     <versions-maven-plugin.version>2.8.1</versions-maven-plugin.version>
+    <xjc-guava-plugin.version>0.3</xjc-guava-plugin.version>
 
     <!-- default maven properties to define the postgres server for running tests.
     To use a different server please activate a personal profile -->
@@ -159,11 +165,25 @@
       <id>gbif-thirdparty</id>
       <url>http://repository.gbif.org/repository/thirdparty</url>
     </repository>
+    <repository>
+      <id>jaxb2-plugins</id>
+      <name>JAXB2 XJC Plugin Repository</name>
+      <url>http://maven.klemm-scs.com/release</url>
+    </repository>
   </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>jaxb2-plugins</id>
+      <name>JAXB2 XJC Plugin Repository</name>
+      <url>http://maven.klemm-scs.com/release</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <modules>
     <module>api</module>
     <module>dao</module>
+    <module>doi</module>
     <module>parser</module>
     <module>webservice</module>
   </modules>
@@ -325,6 +345,19 @@
         <groupId>javax.validation</groupId>
         <artifactId>validation-api</artifactId>
         <version>${validation-api.version}</version>
+      </dependency>
+
+      <!-- JAXB for java 11 -->
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>${jakarta.xml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>${jakarta.xml.version}</version>
+        <scope>runtime</scope>
       </dependency>
 
       <!-- Tvelve Monkeys image format extensions -->

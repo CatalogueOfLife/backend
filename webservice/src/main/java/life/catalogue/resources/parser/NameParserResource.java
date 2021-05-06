@@ -1,24 +1,15 @@
 package life.catalogue.resources.parser;
 
-import com.google.common.collect.Lists;
-import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.parser.NameParser;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,6 +18,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
 
 @Path("/parser/name")
 @Produces(MediaType.APPLICATION_JSON)

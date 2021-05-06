@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import com.google.common.collect.Streams;
-import io.dropwizard.auth.Auth;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ExportRequest;
@@ -20,19 +18,9 @@ import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.exporter.HtmlExporter;
 import life.catalogue.exporter.HtmlExporterSimple;
-import org.apache.commons.io.IOUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import org.gbif.nameparser.api.Rank;
+
 import java.io.*;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -40,6 +28,23 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
+
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Streams;
+
+import io.dropwizard.auth.Auth;
 
 /**
  * Stream dataset exports to the user.

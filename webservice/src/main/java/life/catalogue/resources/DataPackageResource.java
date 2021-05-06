@@ -1,17 +1,19 @@
 package life.catalogue.resources;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import life.catalogue.api.datapackage.PackageDescriptor;
 import life.catalogue.common.datapackage.DataPackage;
 import life.catalogue.common.datapackage.DataPackageBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.swagger.v3.oas.annotations.Hidden;
 
 @Hidden
 @Path("/datapackage")

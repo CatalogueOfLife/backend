@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import com.google.common.base.Strings;
-import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -12,8 +10,10 @@ import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -21,9 +21,13 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
+
+import io.dropwizard.auth.Auth;
 
 @Path("/importer")
 @Produces(MediaType.APPLICATION_JSON)

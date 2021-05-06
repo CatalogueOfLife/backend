@@ -14,7 +14,7 @@
     <artifactId>api</artifactId>
     <packaging>jar</packaging>
 
-    <name>CoL backend services (API)</name>
+    <name>COL API</name>
 
     <build>
         <testResources>

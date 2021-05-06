@@ -6,15 +6,16 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Stream;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/dataset/{key}/import")
 @SuppressWarnings("static-method")

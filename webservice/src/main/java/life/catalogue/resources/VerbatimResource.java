@@ -7,12 +7,12 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.mapper.LogicalOperator;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -20,7 +20,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import java.util.*;
+
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/dataset/{key}/verbatim")
 @Produces(MediaType.APPLICATION_JSON)
