@@ -77,9 +77,11 @@ public abstract class ArchiveExporter extends DatasetExporter {
       int sk = sectorKey;
       if (!sector2datasetKeys.containsKey(sk)) {
         Sector s = sectorMapper.get(DSID.of(datasetKey, sectorKey));
-        sector2datasetKeys.put(sk, (int) s.getSubjectDatasetKey());
+        // we apparently have references that still link to removed sectors - don't fail
+        sector2datasetKeys.put(sk, s==null ? -1 : s.getSubjectDatasetKey());
       }
-      sector2datasetKeys.get(sk);
+      int dkey = sector2datasetKeys.get(sk);
+      return dkey<0 ? null : dkey;
     }
     return null;
   }
