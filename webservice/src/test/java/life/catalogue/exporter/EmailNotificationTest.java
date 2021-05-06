@@ -48,8 +48,9 @@ public class EmailNotificationTest {
 
     for (JobStatus status : JobStatus.values()) {
       if (status.isDone()) {
-        job.setStatus(status);
-        final String mail = EmailNotification.downloadMail(job.getExport(), d, TestDataRule.TEST_USER, cfg);
+        var exp = job.getExport();
+        exp.setStatus(status);
+        final String mail = EmailNotification.downloadMail(exp, d, TestDataRule.TEST_USER, cfg);
         System.out.println(mail);
       }
     }
