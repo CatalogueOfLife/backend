@@ -63,16 +63,16 @@ public class EmailNotification {
         .buildEmail();
       AsyncResponse asyncResp = mailer.sendMail(mail, true);
       asyncResp.onSuccess(() -> {
-        LOG.info("Successfully sent mail for download {}", export.getKey());
+        LOG.info("Successfully sent mail for download {} to {}", export.getKey(), user.getEmail());
       });
       asyncResp.onException((e) -> {
-        LOG.error("Error sending mail for download {}", export.getKey(), e);
+        LOG.error("Error sending mail for download {} to {}", export.getKey(), user.getEmail(), e);
       });
       if (cfg.mail.block) {
         Future<?> f = asyncResp.getFuture();
         f.get(); // blocks
       }
-      LOG.info("Sent email notification for download {} to user {} {}<{}>", export.getKey(), user.getKey(), user.getName(), user.getEmail());
+      LOG.info("Sent email notification for download {} to user [{}] {} <{}>", export.getKey(), user.getKey(), user.getName(), user.getEmail());
 
     } catch (IOException | TemplateException | ExecutionException | InterruptedException e) {
       LOG.error("Error sending mail for download {}", export.getKey(), e);

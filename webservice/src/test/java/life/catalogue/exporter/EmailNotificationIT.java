@@ -32,22 +32,22 @@ public class EmailNotificationIT {
     cfg.downloadURI = URI.create("http://download.dev.catalogueoflife.org");
     cfg.mail = new MailConfig();
     cfg.mail.host = "smtp.gbif.org";
-    cfg.mail.from = "col@mailinator.com";
-    cfg.mail.fromName = "Catalogue of Life";
-    cfg.mail.bcc.add("col2@mailinator.com");
+    cfg.mail.from = "download@catalogueoflife.org";
+    cfg.mail.fromName = "COL Downloads";
+    cfg.mail.bcc.add("col@mailinator.com");
     cfg.mail.block = true;
 
     MailBundle bundle = new MailBundle();
     bundle.run(cfg, null);
-    EmailNotification handler = new EmailNotification(bundle.getMailer(), PgSetupRule.getSqlSessionFactory(), cfg);
+    EmailNotification emailer = new EmailNotification(bundle.getMailer(), PgSetupRule.getSqlSessionFactory(), cfg);
 
     ExportRequest req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
     ColdpExporter job = new ColdpExporter(req, TestDataRule.TEST_USER.getKey(), PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
 
     for (JobStatus status : JobStatus.values()) {
       if (status.isDone()) {
-        job.setStatus(status);
-        handler.email(job);
+        job.getExport().setStatus(status);
+        emailer.email(job);
       }
     }
   }
