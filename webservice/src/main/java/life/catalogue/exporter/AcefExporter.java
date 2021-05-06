@@ -20,7 +20,6 @@ import life.catalogue.postgres.PgCopyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.Rank;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,15 +41,16 @@ import java.util.regex.Pattern;
  * Exporter for the old AC schema.
  * Blocks parallel exports of the same dataset.
  */
-public class AcefExporterJob extends DatasetExporter {
-  private static final Logger LOG = LoggerFactory.getLogger(AcefExporterJob.class);
-  private static final String EXPORT_SQL = "/freemarker-templates/ac-export.sql";
+public class AcefExporter extends DatasetExporter {
+  private static final Logger LOG = LoggerFactory.getLogger(AcefExporter.class);
+  private static final String EXPORT_SQL = "/export/acef/ac-export.sql";
+  private static final String CREDITS_FTL = "/acef/credits.ftl";
   private static final String COPY_WITH = "CSV HEADER NULL '\\N' DELIMITER E'\\t' QUOTE E'\\f' ENCODING 'UTF8' ";
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
 
-  public AcefExporterJob(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+  public AcefExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(req, userKey, DataFormat.ACEF, factory, cfg, imageService);
     if (req.hasFilter()) {
       throw new IllegalArgumentException("ACEF exports cannot have any filters");
@@ -65,7 +64,7 @@ public class AcefExporterJob extends DatasetExporter {
     PgConnection c = cfg.db.connect();
     c.setAutoCommit(false);
     try {
-      InputStream sql = AcefExporterJob.class.getResourceAsStream(EXPORT_SQL);
+      InputStream sql = AcefExporter.class.getResourceAsStream(EXPORT_SQL);
       executeAcExportSql(datasetKey, c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)));
 
     } catch (UnsupportedEncodingException e) {
@@ -125,7 +124,7 @@ public class AcefExporterJob extends DatasetExporter {
       }
       data.put("d", d);
       
-      Template temp = FmUtil.FMK.getTemplate("credits.ftl");
+      Template temp = FmUtil.FMK.getTemplate(CREDITS_FTL);
       Writer out = UTF8IoUtils.writerFromFile(cf);
       temp.process(data, out);
     } catch (TemplateException e) {

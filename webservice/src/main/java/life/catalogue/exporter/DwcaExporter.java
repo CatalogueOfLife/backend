@@ -50,7 +50,7 @@ public class DwcaExporter extends ArchiveExporter {
       if (writer2 != null) {
         writer2.close();
       }
-      writer2 = new TermWriter.CSV(tmpDir, terms[0], terms[1], List.of(Arrays.copyOfRange(terms, 2, terms.length)));
+      writer2 = new TermWriter.TSV(tmpDir, terms[0], terms[1], List.of(Arrays.copyOfRange(terms, 2, terms.length)));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

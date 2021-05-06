@@ -55,7 +55,7 @@ public class ExportManager {
         job = new DwcaExporter(req, userKey, factory, cfg, imageService);
         break;
       case ACEF:
-        job = new AcefExporterJob(req, userKey, factory, cfg, imageService);
+        job = new AcefExporter(req, userKey, factory, cfg, imageService);
         break;
       case TEXT_TREE:
         job = new TextTreeExporter(req, userKey, factory, cfg, imageService);

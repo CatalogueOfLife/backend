@@ -20,8 +20,8 @@ public abstract class TermWriter implements AutoCloseable {
   protected String[] row;
   private final RowWriter writer;
 
-  public static class CSV extends TermWriter{
-    public CSV(File dir, Term rowType, Term idTerm, List<Term> cols) throws IOException {
+  public static class TSV extends TermWriter{
+    public TSV(File dir, Term rowType, Term idTerm, List<Term> cols) throws IOException {
       super(setupWriter(dir, rowType), rowType, idTerm, cols);
     }
 
