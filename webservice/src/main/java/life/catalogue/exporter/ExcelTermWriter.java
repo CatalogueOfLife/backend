@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class ExcelTermWriter extends TermWriter {
-  private static final int MAX_ROWS = 1048575; // IAE: Invalid row number (1048576) outside allowable range (0..1048575)
+  public static final int MAX_ROWS = 1048574; // IAE: Invalid row number (1048576) outside allowable range (0..1048575)
 
   public ExcelTermWriter(Workbook wb, Term rowType, Term idTerm, List<Term> cols) throws IOException {
     super(new ExcelRowWriter(wb, rowType), rowType, idTerm, cols);

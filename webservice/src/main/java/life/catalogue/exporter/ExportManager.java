@@ -2,13 +2,14 @@ package life.catalogue.exporter;
 
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.exception.UnavailableException;
+import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.db.mapper.DatasetExportMapper;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
@@ -17,9 +18,7 @@ import org.simplejavamail.api.mailer.Mailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class ExportManager {
   private static final Logger LOG = LoggerFactory.getLogger(ExportManager.class);
@@ -84,8 +83,9 @@ public class ExportManager {
    * Makes sure taxonID exists if given
    */
   private void validate(ExportRequest req) throws IllegalArgumentException {
-    if (req.getTaxonID() != null) {
-      try (SqlSession session = factory.openSession()) {
+    try (SqlSession session = factory.openSession()) {
+
+      if (req.getTaxonID() != null) {
         var root = session.getMapper(NameUsageMapper.class).getSimple(DSID.of(req.getDatasetKey(), req.getTaxonID()));
         if (root == null) {
           throw new IllegalArgumentException("Root taxon " + req.getTaxonID() + " does not exist in dataset " + req.getDatasetKey());
@@ -93,6 +93,36 @@ public class ExportManager {
           throw new IllegalArgumentException("Root usage " + req.getTaxonID() + " is not an accepted taxon but " + root.getStatus());
         }
       }
+
+      if (req.isExcel() && req.getRoot() == null && req.getMinRank() == null) {
+        // check metrics avoiding truncation early
+        var imp = session.getMapper(DatasetImportMapper.class).last(req.getDatasetKey());
+        if (imp != null) {
+          if (req.isSynonyms()) {
+            // all usages
+            throwIfTooLarge(ColdpTerm.NameUsage, imp.getUsagesCount());
+            throwIfTooLarge(ColdpTerm.Reference, imp.getReferenceCount());
+            throwIfTooLarge(ColdpTerm.Name, imp.getNameCount());
+            throwIfTooLarge(ColdpTerm.TypeMaterial, imp.getTypeMaterialCount());
+            throwIfTooLarge(ColdpTerm.NameRelation, imp.getNameRelationsCount());
+          } else {
+            // only accepted taxa
+            throwIfTooLarge(ColdpTerm.NameUsage, imp.getTaxonCount());
+          }
+          // these are all attached to taxa so it doesnt matter
+          throwIfTooLarge(ColdpTerm.VernacularName, imp.getVernacularCount());
+          throwIfTooLarge(ColdpTerm.Distribution, imp.getDistributionCount());
+          throwIfTooLarge(ColdpTerm.TaxonConceptRelation, imp.getTaxonConceptRelationsCount());
+          throwIfTooLarge(ColdpTerm.SpeciesInteraction, imp.getSpeciesInteractionsCount());
+          throwIfTooLarge(ColdpTerm.Media, imp.getMediaCount());
+        }
+      }
+    }
+  }
+
+  private static void throwIfTooLarge(ColdpTerm type, Integer count){
+    if (count > ExcelTermWriter.MAX_ROWS) {
+      throw new IllegalArgumentException("Excel format can not be used for datasets that have more than "+ExcelTermWriter.MAX_ROWS + " " +type.simpleName() + " records");
     }
   }
 }
