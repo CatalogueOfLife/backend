@@ -511,7 +511,10 @@ public class StringUtils {
     return new String(c);
   }
 
-  public static String humanReadableByteSize(long bytes) {
+  /**
+   * Human readable size using binary units based on 1024
+   */
+  public static String byteWithUnitBinary(long bytes) {
     long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
     if (absB < 1024) {
       return bytes + " B";
@@ -524,5 +527,20 @@ public class StringUtils {
     }
     value *= Long.signum(bytes);
     return String.format("%.1f %ciB", value / 1024.0, ci.current());
+  }
+
+  /**
+   * Human readable size using SI units based on 1000
+   */
+  public static String byteWithUnitSI(long bytes) {
+    if (-1000 < bytes && bytes < 1000) {
+      return bytes + " B";
+    }
+    CharacterIterator ci = new StringCharacterIterator("kMGTPE");
+    while (bytes <= -999_950 || bytes >= 999_950) {
+      bytes /= 1000;
+      ci.next();
+    }
+    return String.format("%.1f %cB", bytes / 1000.0, ci.current());
   }
 }

@@ -68,6 +68,10 @@ public abstract class TermWriter implements AutoCloseable {
     writer.close();
   }
 
+  public Term getRowType() {
+    return rowType;
+  }
+
   public String get(Term term) {
     int idx = cols.getOrDefault(term, -1);
     if (idx < 0) return null;

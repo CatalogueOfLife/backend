@@ -1,16 +1,20 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
+
+import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.assertNotNull;
@@ -37,6 +41,7 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
     d.setStatus(status);
     d.setRequest(req);
     d.setTaxonCount(1324);
+    d.setTruncated(Set.of(ColdpTerm.VernacularName, DwcTerm.Taxon));
     d.getTaxaByRankCount().put(Rank.SPECIES, 100);
     d.getTaxaByRankCount().put(Rank.GENUS, 11);
     d.getTaxaByRankCount().put(Rank.FAMILY, 2);

@@ -136,8 +136,22 @@ public abstract class ArchiveExporter extends DatasetExporter {
         cursor = num.processTree(datasetKey, null, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms(), true);
       }
       cursor.forEach(this::consumeUsage);
+    } catch (RuntimeException e) {
+      catchTruncation(e);
+    } finally {
       taxonIDs.remove(null); // can happen
       nameIDs.remove(null); // can happen
+    }
+  }
+
+  private void catchTruncation(RuntimeException e){
+    if (e.getCause() != null && e.getCause() instanceof ExcelTermWriter.MaxRowsException) {
+      // we truncate the output and keep a warning, but allow to proceed
+      LOG.warn(e.getCause().getMessage());
+      getExport().addTruncated(writer.getRowType());
+    } else {
+      // anything else is unexpected
+      throw e;
     }
   }
 
@@ -221,6 +235,8 @@ public abstract class ArchiveExporter extends DatasetExporter {
             }
           }
         }
+      } catch (RuntimeException e) {
+        catchTruncation(e);
       }
     }
   }
@@ -253,6 +269,8 @@ public abstract class ArchiveExporter extends DatasetExporter {
               }
             }
           }
+        } catch (RuntimeException e) {
+          catchTruncation(e);
         }
       }
     }
@@ -286,6 +304,8 @@ public abstract class ArchiveExporter extends DatasetExporter {
               }
             }
           }
+        } catch (RuntimeException e) {
+          catchTruncation(e);
         }
       }
     }
@@ -318,6 +338,8 @@ public abstract class ArchiveExporter extends DatasetExporter {
             }
           }
         }
+      } catch (RuntimeException e) {
+        catchTruncation(e);
       }
     }
   }

@@ -21,6 +21,7 @@
     de.classification,
     de.status,
     de.error,
+    de.truncated,
     de.md5,
     de.size,
     de.synonym_count,
@@ -47,6 +48,7 @@
     classification,
     status,
     error,
+    truncated,
     md5,
     size,
     synonym_count,
@@ -71,6 +73,7 @@
     #{classification, typeHandler=life.catalogue.db.type2.SimpleNameArrayTypeHandler}::SIMPLE_NAME[],
     #{status}::JOBSTATUS,
     #{error},
+    #{truncated, typeHandler=life.catalogue.db.type2.TermSetTypeHandler}::TEXT[],
     #{md5},
     #{size},
     #{synonymCount},
@@ -85,6 +88,7 @@
   <resultMap id="datasetExportResultMap" type="DatasetExport" autoMapping="true">
     <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+    <result property="truncated" column="truncated" typeHandler="life.catalogue.db.type2.TermSetTypeHandler"/>
     <association property="request" javaType="ExportRequest" resultMap="life.catalogue.db.mapper.DatasetExportMapper.exportRequestResultMap"/>
   </resultMap>
 

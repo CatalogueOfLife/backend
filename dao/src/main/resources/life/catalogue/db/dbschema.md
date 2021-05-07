@@ -10,6 +10,10 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+### 2021-05-07 truncated exports
+```
+ALTER TABLE dataset_export ADD COLUMN truncated TEXT[];
+```
 
 ### 2021-05-05 dataset exports
 ```

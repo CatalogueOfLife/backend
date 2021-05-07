@@ -817,6 +817,7 @@ CREATE TABLE dataset_export (
   classification SIMPLE_NAME[],
   status JOBSTATUS NOT NULL,
   error TEXT,
+  truncated TEXT[],
   md5 TEXT,
   size INTEGER,
   synonym_count INTEGER,

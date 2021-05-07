@@ -1,19 +1,19 @@
 package life.catalogue.api.model;
 
 import com.google.common.collect.Maps;
+
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.text.StringUtils;
+
+import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class DatasetExport extends DataEntity<UUID> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExport.class);
@@ -28,6 +28,7 @@ public class DatasetExport extends DataEntity<UUID> {
   private LocalDateTime deleted;  // export file was deleted
   private JobStatus status;
   private String error;
+  private Set<Term> truncated;
   // result metrics
   private String md5; // md5 for file
   private long size; // filesize in bytes
@@ -226,6 +227,21 @@ public class DatasetExport extends DataEntity<UUID> {
     this.status = status;
   }
 
+  public Set<Term> getTruncated() {
+    return truncated;
+  }
+
+  public void setTruncated(Set<Term> truncated) {
+    this.truncated = truncated;
+  }
+
+  public void addTruncated(Term rowType) {
+    if (truncated == null) {
+      truncated = new HashSet<>();
+    }
+    truncated.add(rowType);
+  }
+
   public URI getDownload() {
     return downloadURI(key);
   }
@@ -243,7 +259,7 @@ public class DatasetExport extends DataEntity<UUID> {
   }
 
   public String getSizeWithUnit() {
-    return StringUtils.humanReadableByteSize(size);
+    return StringUtils.byteWithUnitSI(size);
   }
 
   public void setSize(long size) {
@@ -296,11 +312,11 @@ public class DatasetExport extends DataEntity<UUID> {
     if (!(o instanceof DatasetExport)) return false;
     if (!super.equals(o)) return false;
     DatasetExport that = (DatasetExport) o;
-    return size == that.size && Objects.equals(key, that.key) && Objects.equals(request, that.request) && Objects.equals(classification, that.classification) && Objects.equals(importAttempt, that.importAttempt) && Objects.equals(started, that.started) && Objects.equals(finished, that.finished) && Objects.equals(deleted, that.deleted) && status == that.status && Objects.equals(error, that.error) && Objects.equals(md5, that.md5) && Objects.equals(synonymCount, that.synonymCount) && Objects.equals(taxonCount, that.taxonCount) && Objects.equals(taxaByRankCount, that.taxaByRankCount);
+    return size == that.size && Objects.equals(key, that.key) && Objects.equals(request, that.request) && Objects.equals(classification, that.classification) && Objects.equals(importAttempt, that.importAttempt) && Objects.equals(started, that.started) && Objects.equals(finished, that.finished) && Objects.equals(deleted, that.deleted) && status == that.status && Objects.equals(error, that.error) && Objects.equals(truncated, that.truncated) && Objects.equals(md5, that.md5) && Objects.equals(synonymCount, that.synonymCount) && Objects.equals(taxonCount, that.taxonCount) && Objects.equals(taxaByRankCount, that.taxaByRankCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, request, classification, importAttempt, started, finished, deleted, status, error, md5, size, synonymCount, taxonCount, taxaByRankCount);
+    return Objects.hash(super.hashCode(), key, request, classification, importAttempt, started, finished, deleted, status, error, truncated, md5, size, synonymCount, taxonCount, taxaByRankCount);
   }
 }

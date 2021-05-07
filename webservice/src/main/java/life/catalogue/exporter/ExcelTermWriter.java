@@ -18,6 +18,15 @@ public class ExcelTermWriter extends TermWriter {
     super(new ExcelRowWriter(wb, rowType), rowType, idTerm, cols);
   }
 
+  public static class MaxRowsException extends IOException {
+    private final Term rowType;
+
+    public MaxRowsException(Term rowType) {
+      super("Export exceeds maximum amount of " + MAX_ROWS + " rows for " + rowType.prefixedName() + " in Excel");
+      this.rowType = rowType;
+    }
+  }
+
   static class ExcelRowWriter implements RowWriter {
     private final Workbook wb;
     private final Sheet sh;
@@ -33,7 +42,7 @@ public class ExcelTermWriter extends TermWriter {
     @Override
     public void write(String[] row) throws IOException {
       if (rownum >= MAX_ROWS) {
-        throw new IllegalArgumentException("Export exceeds maximum amount of " + MAX_ROWS + " rows for " + rowType.prefixedName() + " in Excel.");
+        throw new MaxRowsException(rowType);
       }
       Row r = sh.createRow(rownum++);
       int col = 0;
