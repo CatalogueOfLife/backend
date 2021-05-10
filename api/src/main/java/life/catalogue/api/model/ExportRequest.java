@@ -109,6 +109,7 @@ public class ExportRequest {
     if (root != null) {
       sb.append(", root=").append(root.getId());
     }
+    sb.append("]");
     return sb.toString();
   }
 }

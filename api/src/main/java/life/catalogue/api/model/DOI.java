@@ -76,7 +76,7 @@ public class DOI implements Serializable {
   public DOI(String prefix, String suffix) {
     this.prefix = Objects.requireNonNull(prefix, "DOI prefix required").toLowerCase();
     Preconditions.checkArgument(prefix.startsWith("10."));
-    this.suffix = Objects.requireNonNull(suffix, "DOI suffix required").toLowerCase();
+    this.suffix = suffix == null ? null : suffix.toLowerCase();
   }
 
   private static String decodeUrl(@NotNull String doi) {

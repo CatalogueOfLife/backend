@@ -1,0 +1,50 @@
+package life.catalogue.doi.datacite.model;
+
+import life.catalogue.api.model.DOI;
+
+import java.util.Objects;
+
+public class Identifier {
+
+  private String identifier;
+  private Type identifierType;
+
+  public enum Type {DOI, URL}
+
+  public Identifier() {
+  }
+
+  public Identifier(DOI doi) {
+    this.identifier = doi.getDoiName();
+    this.identifierType = Type.DOI;
+  }
+
+  public String getIdentifier() {
+    return identifier;
+  }
+
+  public void setIdentifier(String identifier) {
+    this.identifier = identifier;
+  }
+
+  public Type getIdentifierType() {
+    return identifierType;
+  }
+
+  public void setIdentifierType(Type identifierType) {
+    this.identifierType = identifierType;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Identifier)) return false;
+    Identifier that = (Identifier) o;
+    return Objects.equals(identifier, that.identifier) && identifierType == that.identifierType;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(identifier, identifierType);
+  }
+}

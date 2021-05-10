@@ -94,7 +94,7 @@ public class ExportManager {
         }
       }
 
-      if (req.isExcel() && req.getRoot() == null && req.getMinRank() == null) {
+      if (req.isExcel() && req.getTaxonID() == null && req.getMinRank() == null) {
         // check metrics avoiding truncation early
         var imp = session.getMapper(DatasetImportMapper.class).last(req.getDatasetKey());
         if (imp != null) {
@@ -109,7 +109,7 @@ public class ExportManager {
             // only accepted taxa
             throwIfTooLarge(ColdpTerm.NameUsage, imp.getTaxonCount());
           }
-          // these are all attached to taxa so it doesnt matter
+          // these are all attached to taxa so it doesn't matter
           throwIfTooLarge(ColdpTerm.VernacularName, imp.getVernacularCount());
           throwIfTooLarge(ColdpTerm.Distribution, imp.getDistributionCount());
           throwIfTooLarge(ColdpTerm.TaxonConceptRelation, imp.getTaxonConceptRelationsCount());

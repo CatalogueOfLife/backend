@@ -21,6 +21,7 @@ import life.catalogue.img.ImageService;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
@@ -204,8 +205,13 @@ public abstract class ArchiveExporter extends DatasetExporter {
         } else {
           refIDs.remove(null); // can happen
           for (String id : refIDs) {
-            write(rm.get(key.id(id)));
-            writer.next();
+            var ref = rm.get(key.id(id));
+            if (ref != null) {
+              write(ref);
+              writer.next();
+            } else {
+              LOG.warn("Reference ID {} used but does not exist in dataset {}", id, datasetKey);
+            }
           }
         }
       }

@@ -99,7 +99,7 @@
     <!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
     <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
     <jaxb2-rich-contract-plugin.version>2.0.1</jaxb2-rich-contract-plugin.version>
-    <jaxb2_commons.version>0.6.3</jaxb2_commons.version>
+    <jaxb2_commons.version>0.12.0</jaxb2_commons.version>
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
