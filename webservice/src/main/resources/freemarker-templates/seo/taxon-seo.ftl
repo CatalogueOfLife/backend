@@ -72,7 +72,7 @@
     {
       "@type": "TaxonName",
       "name": "${s.name.scientificName}",
-      "author": "${s.name.authorship}",
+      "author": "${s.name.authorship!}",
       "taxonRank": "${s.name.rank}"
       <#if s.name.publishedInId??>
        ,"isBasedOn": {
