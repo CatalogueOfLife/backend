@@ -9,6 +9,7 @@ import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.*;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgDbConfig;
+import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
 import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;

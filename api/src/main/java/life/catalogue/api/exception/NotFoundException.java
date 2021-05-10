@@ -1,5 +1,6 @@
 package life.catalogue.api.exception;
 
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.DSID;
 
 public class NotFoundException extends RuntimeException {
@@ -38,6 +39,10 @@ public class NotFoundException extends RuntimeException {
 
   public static NotFoundException notFound(Class<?> entity, int datasetKey, String id) {
     return notFound(entity, DSID.of(datasetKey, id));
+  }
+
+  public static NotFoundException notFound(DOI doi) {
+    return notFound("DOI", doi.getDoiName());
   }
 
   private static String createMessage(Class<?> entity, String key) {

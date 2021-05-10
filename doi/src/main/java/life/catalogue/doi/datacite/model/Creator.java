@@ -13,7 +13,7 @@ public class Creator {
   protected String givenName;
   protected String familyName;
   protected List<NameIdentifier> nameIdentifier;
-  protected List<Affiliation> affiliation;
+  protected List<String> affiliation;
 
   public String getName() {
     return name;
@@ -55,11 +55,11 @@ public class Creator {
     this.nameIdentifier = nameIdentifier;
   }
 
-  public List<Affiliation> getAffiliation() {
+  public List<String> getAffiliation() {
     return affiliation;
   }
 
-  public void setAffiliation(List<Affiliation> affiliation) {
+  public void setAffiliation(List<String> affiliation) {
     this.affiliation = affiliation;
   }
 

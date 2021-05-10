@@ -228,6 +228,11 @@
       </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>
+        <artifactId>doi</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
         <artifactId>parser</artifactId>
         <version>${project.version}</version>
       </dependency>

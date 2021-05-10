@@ -16,6 +16,7 @@
 package life.catalogue.doi.service;
 
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.doi.datacite.model.DoiAttributes;
 
@@ -29,10 +30,9 @@ public interface DoiService {
    * Resolves the registered identifier.
    *
    * @param doi the identifier to resolve
-   * @throws DoiException if the operation failed for any reason
    */
   @NotNull
-  DoiAttributes resolve(DOI doi) throws DoiException;
+  DoiAttributes resolve(DOI doi) throws NotFoundException, DoiException;
 
   /**
    * Creates a new draft DOI without any metadata.

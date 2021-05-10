@@ -1,4 +1,4 @@
-package life.catalogue.config;
+package life.catalogue.doi.service;
 
 /**
  * DataCite DOI configuration.

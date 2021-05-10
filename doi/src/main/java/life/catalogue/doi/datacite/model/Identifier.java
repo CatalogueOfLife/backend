@@ -5,18 +5,16 @@ import life.catalogue.api.model.DOI;
 import java.util.Objects;
 
 public class Identifier {
-
+  public static final String DOI_TYPE = "DOI";
   private String identifier;
-  private Type identifierType;
-
-  public enum Type {DOI, URL}
+  private String identifierType;
 
   public Identifier() {
   }
 
   public Identifier(DOI doi) {
     this.identifier = doi.getDoiName();
-    this.identifierType = Type.DOI;
+    this.identifierType = DOI_TYPE;
   }
 
   public String getIdentifier() {
@@ -27,11 +25,11 @@ public class Identifier {
     this.identifier = identifier;
   }
 
-  public Type getIdentifierType() {
+  public String getIdentifierType() {
     return identifierType;
   }
 
-  public void setIdentifierType(Type identifierType) {
+  public void setIdentifierType(String identifierType) {
     this.identifierType = identifierType;
   }
 
