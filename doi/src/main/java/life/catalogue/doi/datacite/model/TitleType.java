@@ -1,6 +1,6 @@
 package life.catalogue.doi.datacite.model;
 
-public enum TitleType {
+public enum TitleType implements EnumValue {
 
   ALTERNATIVE_TITLE("AlternativeTitle"),
   SUBTITLE("Subtitle"),

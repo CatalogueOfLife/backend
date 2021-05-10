@@ -1,6 +1,6 @@
 package life.catalogue.doi.datacite.model;
 
-public enum DateType {
+public enum DateType implements EnumValue {
 
   ACCEPTED("Accepted"),
   AVAILABLE("Available"),

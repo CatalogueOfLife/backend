@@ -1,20 +1,21 @@
-package life.catalogue.doi.datacite.model;
+package life.catalogue.doi.service;
 
 import life.catalogue.api.model.DOI;
+import life.catalogue.doi.datacite.model.DoiAttributes;
 
 public class DoiData {
   private static final String type = "dois";
-  private Attributes attributes;
+  private DoiAttributes attributes;
 
   public DoiData() {
-    attributes = new Attributes();
+    attributes = new DoiAttributes();
   }
 
   public DoiData(DOI doi) {
-    this.attributes = new Attributes(doi);
+    this.attributes = new DoiAttributes(doi);
   }
 
-  public DoiData(Attributes attributes) {
+  public DoiData(DoiAttributes attributes) {
     this.attributes = attributes;
   }
 

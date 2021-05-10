@@ -1,6 +1,6 @@
 package life.catalogue.doi.datacite.model;
 
-public enum RelationType {
+public enum RelationType implements EnumValue {
 
   IS_CITED_BY("IsCitedBy"),
   CITES("Cites"),

@@ -2,6 +2,7 @@ package life.catalogue.doi.datacite.model;
 
 import life.catalogue.api.model.DOI;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,14 +13,14 @@ import javax.validation.constraints.NotNull;
 /**
  * All metadata attributes available in a DataCite Rest DOI.
  */
-public class Attributes {
+public class DoiAttributes {
 
   public static String VERSION = "http://datacite.org/schema/kernel-4";
 
   @NotNull
   private DOI doi;
 
-  // event - read only
+  private EventType event;
   /**
    * The identifiers array is a combination of identifier and alternate_identifier and there is always one of type DOI.
    * We include the doi above in this list.
@@ -52,21 +53,21 @@ public class Attributes {
   private List<Description> descriptions;
   private List<GeoLocation> geoLocations;
   // fundingReferences
-  private String url;
+  private String url; // the target URL
   private List<String> contentUrl;
   private Float metadataVersion;
   private String source;
   private boolean active;
-  private String state;
+  private DoiState state;
   private String reason;
   private String created;
   private String registered;
   private String updated;
 
-  public Attributes() {
+  public DoiAttributes() {
   }
 
-  public Attributes(@NotNull DOI doi) {
+  public DoiAttributes(@NotNull DOI doi) {
     this.doi = doi;
   }
 
@@ -84,6 +85,14 @@ public class Attributes {
 
   public String getSuffix() {
     return doi.getSuffix();
+  }
+
+  public EventType getEvent() {
+    return event;
+  }
+
+  public void setEvent(EventType event) {
+    this.event = event;
   }
 
   public List<Identifier> getIdentifiers() {
@@ -164,6 +173,17 @@ public class Attributes {
 
   public void setTypes(Map<String, String> types) {
     this.types = types;
+  }
+
+  public void setType(ResourceType type) {
+    if (types == null) {
+      types = new HashMap<>();
+    }
+    if (type == null) {
+      types.remove("resourceType");
+    } else {
+      types.put("resourceType", type.value());
+    }
   }
 
   public List<RelatedIdentifier> getRelatedIdentifiers() {
@@ -270,11 +290,11 @@ public class Attributes {
     this.active = active;
   }
 
-  public String getState() {
+  public DoiState getState() {
     return state;
   }
 
-  public void setState(String state) {
+  public void setState(DoiState state) {
     this.state = state;
   }
 
@@ -313,13 +333,13 @@ public class Attributes {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof Attributes)) return false;
-    Attributes that = (Attributes) o;
-    return publicationYear == that.publicationYear && active == that.active && Objects.equals(doi, that.doi) && Objects.equals(identifiers, that.identifiers) && Objects.equals(creators, that.creators) && Objects.equals(titles, that.titles) && Objects.equals(publisher, that.publisher) && Objects.equals(subjects, that.subjects) && Objects.equals(contributors, that.contributors) && Objects.equals(dates, that.dates) && Objects.equals(language, that.language) && Objects.equals(types, that.types) && Objects.equals(relatedIdentifiers, that.relatedIdentifiers) && Objects.equals(sizes, that.sizes) && Objects.equals(formats, that.formats) && Objects.equals(version, that.version) && Objects.equals(schemaVersion, that.schemaVersion) && Objects.equals(rightsList, that.rightsList) && Objects.equals(descriptions, that.descriptions) && Objects.equals(geoLocations, that.geoLocations) && Objects.equals(url, that.url) && Objects.equals(contentUrl, that.contentUrl) && Objects.equals(metadataVersion, that.metadataVersion) && Objects.equals(source, that.source) && Objects.equals(state, that.state) && Objects.equals(reason, that.reason) && Objects.equals(created, that.created) && Objects.equals(registered, that.registered) && Objects.equals(updated, that.updated);
+    if (!(o instanceof DoiAttributes)) return false;
+    DoiAttributes that = (DoiAttributes) o;
+    return publicationYear == that.publicationYear && active == that.active && Objects.equals(doi, that.doi) && event == that.event && Objects.equals(identifiers, that.identifiers) && Objects.equals(creators, that.creators) && Objects.equals(titles, that.titles) && Objects.equals(publisher, that.publisher) && Objects.equals(subjects, that.subjects) && Objects.equals(contributors, that.contributors) && Objects.equals(dates, that.dates) && Objects.equals(language, that.language) && Objects.equals(types, that.types) && Objects.equals(relatedIdentifiers, that.relatedIdentifiers) && Objects.equals(sizes, that.sizes) && Objects.equals(formats, that.formats) && Objects.equals(version, that.version) && Objects.equals(schemaVersion, that.schemaVersion) && Objects.equals(rightsList, that.rightsList) && Objects.equals(descriptions, that.descriptions) && Objects.equals(geoLocations, that.geoLocations) && Objects.equals(url, that.url) && Objects.equals(contentUrl, that.contentUrl) && Objects.equals(metadataVersion, that.metadataVersion) && Objects.equals(source, that.source) && state == that.state && Objects.equals(reason, that.reason) && Objects.equals(created, that.created) && Objects.equals(registered, that.registered) && Objects.equals(updated, that.updated);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(doi, identifiers, creators, titles, publisher, publicationYear, subjects, contributors, dates, language, types, relatedIdentifiers, sizes, formats, version, schemaVersion, rightsList, descriptions, geoLocations, url, contentUrl, metadataVersion, source, active, state, reason, created, registered, updated);
+    return Objects.hash(doi, event, identifiers, creators, titles, publisher, publicationYear, subjects, contributors, dates, language, types, relatedIdentifiers, sizes, formats, version, schemaVersion, rightsList, descriptions, geoLocations, url, contentUrl, metadataVersion, source, active, state, reason, created, registered, updated);
   }
 }

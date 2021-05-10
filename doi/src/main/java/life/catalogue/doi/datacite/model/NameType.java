@@ -1,6 +1,6 @@
 package life.catalogue.doi.datacite.model;
 
-public enum NameType {
+public enum NameType implements EnumValue {
 
   ORGANIZATIONAL("Organizational"),
   PERSONAL("Personal");

@@ -1,6 +1,6 @@
 package life.catalogue.doi.datacite.model;
 
-public enum ResourceType {
+public enum ResourceType implements EnumValue {
 
   AUDIOVISUAL("Audiovisual"),
   BOOK("Book"),

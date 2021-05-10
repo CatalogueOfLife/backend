@@ -1,6 +1,6 @@
 package life.catalogue.doi.datacite.model;
 
-public enum DescriptionType {
+public enum DescriptionType implements EnumValue {
 
   ABSTRACT("Abstract"),
   METHODS("Methods"),

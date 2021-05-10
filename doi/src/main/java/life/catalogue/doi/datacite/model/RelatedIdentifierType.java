@@ -1,6 +1,6 @@
 package life.catalogue.doi.datacite.model;
 
-public enum RelatedIdentifierType {
+public enum RelatedIdentifierType implements EnumValue {
 
   ARK("ARK"),
   AR_XIV("arXiv"),

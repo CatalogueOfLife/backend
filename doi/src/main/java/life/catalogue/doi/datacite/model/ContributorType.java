@@ -3,7 +3,7 @@ package life.catalogue.doi.datacite.model;
 /**
  *
  */
-public enum ContributorType {
+public enum ContributorType implements EnumValue {
 
   CONTACT_PERSON("ContactPerson"),
   DATA_COLLECTOR("DataCollector"),
