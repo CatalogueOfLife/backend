@@ -19,7 +19,7 @@ public enum TitleType implements EnumValue {
 
   public static TitleType fromValue(String v) {
     for (TitleType c : TitleType.values()) {
-      if (c.value.equals(v)) {
+      if (c.value.equalsIgnoreCase(v)) {
         return c;
       }
     }

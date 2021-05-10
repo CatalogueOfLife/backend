@@ -43,7 +43,7 @@ public enum ResourceType implements EnumValue {
 
   public static ResourceType fromValue(String v) {
     for (ResourceType c : ResourceType.values()) {
-      if (c.value.equals(v)) {
+      if (c.value.equalsIgnoreCase(v)) {
         return c;
       }
     }

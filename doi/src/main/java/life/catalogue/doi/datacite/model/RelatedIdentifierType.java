@@ -34,7 +34,7 @@ public enum RelatedIdentifierType implements EnumValue {
 
   public static RelatedIdentifierType fromValue(String v) {
     for (RelatedIdentifierType c : RelatedIdentifierType.values()) {
-      if (c.value.equals(v)) {
+      if (c.value.equalsIgnoreCase(v)) {
         return c;
       }
     }

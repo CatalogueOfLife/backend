@@ -29,7 +29,7 @@ public enum EventType implements EnumValue {
 
   public static EventType fromValue(String v) {
     for (EventType c : EventType.values()) {
-      if (c.value.equals(v)) {
+      if (c.value.equalsIgnoreCase(v)) {
         return c;
       }
     }

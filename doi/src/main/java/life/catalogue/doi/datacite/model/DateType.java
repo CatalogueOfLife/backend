@@ -26,7 +26,7 @@ public enum DateType implements EnumValue {
 
   public static DateType fromValue(String v) {
     for (DateType c : DateType.values()) {
-      if (c.value.equals(v)) {
+      if (c.value.equalsIgnoreCase(v)) {
         return c;
       }
     }

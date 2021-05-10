@@ -39,7 +39,7 @@ public enum ContributorType implements EnumValue {
 
   public static ContributorType fromValue(String v) {
     for (ContributorType c : ContributorType.values()) {
-      if (c.value.equals(v)) {
+      if (c.value.equalsIgnoreCase(v)) {
         return c;
       }
     }

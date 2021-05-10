@@ -21,7 +21,7 @@ public enum DescriptionType implements EnumValue {
 
   public static DescriptionType fromValue(String v) {
     for (DescriptionType c : DescriptionType.values()) {
-      if (c.value.equals(v)) {
+      if (c.value.equalsIgnoreCase(v)) {
         return c;
       }
     }
