@@ -8,7 +8,7 @@ import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.db.mapper.DatasetExportMapper;
+import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
@@ -18,6 +18,7 @@ import org.simplejavamail.api.mailer.Mailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class ExportManager {
@@ -28,6 +29,7 @@ public class ExportManager {
   private final ImageService imageService;
   private final JobExecutor executor;
   private final EmailNotification emailer;
+  private final DatasetExportDao dao;
 
   public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, Mailer mailer) {
     this.cfg = cfg;
@@ -36,10 +38,11 @@ public class ExportManager {
     this.imageService = imageService;
     // mailer
     this.emailer = mailer == null ? null : new EmailNotification(mailer, factory, cfg);
+    dao = new DatasetExportDao(factory);
   }
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
-    DatasetExport prev = findPreviousExport(req);
+    DatasetExport prev = dao.current(req);
     if (prev != null) {
       LOG.info("Existing export {} found for request {}", prev.getKey(), req);
       return prev.getKey();
@@ -71,12 +74,6 @@ public class ExportManager {
   UUID submit(DatasetBlockingJob job) throws IllegalArgumentException {
     executor.submit(job);
     return job.getKey();
-  }
-
-  private DatasetExport findPreviousExport(ExportRequest req) {
-    try (SqlSession session = factory.openSession()) {
-      return session.getMapper(DatasetExportMapper.class).search(req);
-    }
   }
 
   /**

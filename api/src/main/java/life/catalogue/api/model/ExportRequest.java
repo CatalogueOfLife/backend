@@ -2,6 +2,8 @@ package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.JobStatus;
+
 import org.gbif.nameparser.api.Rank;
 
 import javax.validation.constraints.NotNull;
@@ -79,7 +81,7 @@ public class ExportRequest {
   }
 
   /**
-   * @return true if any filter has been used apart from the mandatory datasetKey
+   * @return true if any filter has been used apart from the mandatory datasetKey & format
    */
   public boolean hasFilter() {
     return !synonyms || root!=null || minRank!=null;
@@ -90,7 +92,7 @@ public class ExportRequest {
     if (this == o) return true;
     if (!(o instanceof ExportRequest)) return false;
     ExportRequest that = (ExportRequest) o;
-    return datasetKey == that.datasetKey && excel == that.excel && synonyms == that.synonyms && format == that.format && Objects.equals(root, that.root) && minRank == that.minRank;
+    return excel == that.excel && synonyms == that.synonyms && Objects.equals(datasetKey, that.datasetKey) && format == that.format && Objects.equals(root, that.root) && minRank == that.minRank;
   }
 
   @Override

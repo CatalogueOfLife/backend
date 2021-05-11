@@ -75,13 +75,27 @@ public class DatasetExport extends DataEntity<UUID> {
   public static class Search {
     private Integer datasetKey;
     private Integer createdBy;
-    private JobStatus status;
+    private Set<JobStatus> status;
     private DataFormat format;
-    private Integer importAttempt;
     private String taxonID;
     private Rank minRank;
     private Boolean excel;
     private Boolean synonyms;
+
+    public Search() {
+
+    }
+
+    public Search(ExportRequest req) {
+      datasetKey = req.getDatasetKey();
+      format = req.getFormat();
+      if (req.getRoot() != null) {
+        taxonID = req.getRoot().getId();
+      }
+      minRank = req.getMinRank();
+      excel = req.isExcel();
+      synonyms = req.isSynonyms();
+    }
 
     public Integer getDatasetKey() {
       return datasetKey;
@@ -99,11 +113,11 @@ public class DatasetExport extends DataEntity<UUID> {
       this.createdBy = createdBy;
     }
 
-    public JobStatus getStatus() {
+    public Set<JobStatus> getStatus() {
       return status;
     }
 
-    public void setStatus(JobStatus status) {
+    public void setStatus(Set<JobStatus> status) {
       this.status = status;
     }
 
@@ -113,14 +127,6 @@ public class DatasetExport extends DataEntity<UUID> {
 
     public void setFormat(DataFormat format) {
       this.format = format;
-    }
-
-    public Integer getImportAttempt() {
-      return importAttempt;
-    }
-
-    public void setImportAttempt(Integer importAttempt) {
-      this.importAttempt = importAttempt;
     }
 
     public String getTaxonID() {
@@ -160,12 +166,12 @@ public class DatasetExport extends DataEntity<UUID> {
       if (this == o) return true;
       if (!(o instanceof Search)) return false;
       Search search = (Search) o;
-      return Objects.equals(datasetKey, search.datasetKey) && Objects.equals(createdBy, search.createdBy) && status == search.status && format == search.format && Objects.equals(importAttempt, search.importAttempt) && Objects.equals(taxonID, search.taxonID) && minRank == search.minRank && Objects.equals(excel, search.excel) && Objects.equals(synonyms, search.synonyms);
+      return Objects.equals(datasetKey, search.datasetKey) && Objects.equals(createdBy, search.createdBy) && Objects.equals(status, search.status) && format == search.format && Objects.equals(taxonID, search.taxonID) && minRank == search.minRank && Objects.equals(excel, search.excel) && Objects.equals(synonyms, search.synonyms);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(datasetKey, createdBy, status, format, importAttempt, taxonID, minRank, excel, synonyms);
+      return Objects.hash(datasetKey, createdBy, status, format, taxonID, minRank, excel, synonyms);
     }
   }
 

@@ -118,33 +118,45 @@
     UPDATE dataset_export SET deleted = now() WHERE key=#{key}
   </delete>
 
-  <select id="list" resultMap="datasetExportResultMap">
+  <select id="processDataset" parameterType="map" resultMap="datasetExportResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    ORDER BY created DESC
+    WHERE de.dataset_key = #{datasetKey}
   </select>
+
+  <delete id="deleteByDataset" parameterType="map">
+    UPDATE dataset_export SET deleted = now()
+    WHERE de.dataset_key = #{datasetKey}
+  </delete>
+
+
+  <sql id="WHERE">
+    <where>
+      <if test="req.datasetKey != null">de.dataset_key = #{req.datasetKey}</if>
+      <if test="req.createdBy != null">AND de.createdBy = #{req.createdBy}</if>
+      <if test="req.status != null and !req.status.isEmpty()">
+        AND de.status IN <foreach item="st" collection="req.status" open="(" separator="," close=")">#{st}::JOBSTATUS</foreach>
+      </if>
+      <if test="req.format != null">AND de.format = #{req.format}::DATAFORMAT</if>
+      AND <if test="req.taxonID == null">de.root IS NULL</if><if test="req.taxonID != null">(de.root).id = #{req.taxonID}</if>
+      AND de.min_rank <if test="req.minRank == null">IS NULL</if><if test="req.minRank != null">= #{req.minRank}::RANK</if>
+      <if test="req.excel != null">AND de.excel = #{req.excel}</if>
+      <if test="req.synonyms != null">AND de.synonyms = #{req.synonyms}</if>
+    </where>
+  </sql>
 
   <select id="count" resultType="integer">
     SELECT count(*)
     FROM <include refid="FROM"/>
+    <include refid="WHERE"/>
   </select>
 
   <select id="search" resultMap="datasetExportResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-      JOIN dataset d ON d.key=de.dataset_key
-    WHERE de.dataset_key = #{datasetKey}
-      AND COALESCE(de.import_attempt,-1) = COALESCE(d.import_attempt,-1)
-      AND de.format = #{format}::DATAFORMAT
-      AND de.excel = #{excel}
-      AND de.synonyms = #{synonyms}
-      -- nullable
-      AND de.min_rank <if test="minRank == null">IS NULL</if><if test="minRank != null">= #{minRank}::RANK</if>
-      AND <if test="root == null">de.root IS NULL</if><if test="root != null">(de.root).id = #{root.id}</if>
-      -- exclude failed exports
-      AND de.status NOT IN ('CANCELED', 'FAILED')
+    <include refid="WHERE"/>
     ORDER BY de.created DESC
-    LIMIT 1
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
 </mapper>

@@ -11,11 +11,10 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 import java.util.UUID;
 
-public interface DatasetExportMapper extends CRUD<UUID, DatasetExport>, DatasetProcessable<DatasetExport>, DatasetPageable<DatasetExport> {
+public interface DatasetExportMapper extends CRUD<UUID, DatasetExport>, DatasetProcessable<DatasetExport> {
 
-  List<DatasetExport> listByUser(@Param("userKey") int userKey, @Param("page") Page page);
+  List<DatasetExport> search(@Param("req") DatasetExport.Search req, @Param("page") Page page);
 
-  int countByUser(@Param("userKey") int userKey);
+  int count(@Param("req") DatasetExport.Search req);
 
-  DatasetExport search(ExportRequest req);
 }

@@ -3,10 +3,13 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
+
+import life.catalogue.db.TestDataRule;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
@@ -17,8 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, DatasetExportMapper> {
 
@@ -26,7 +28,7 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
     super(DatasetExportMapper.class);
   }
 
-  private static DatasetExport create(JobStatus status) {
+  public static DatasetExport create(JobStatus status) {
     ExportRequest req = new ExportRequest();
     req.setDatasetKey(datasetKey);
     req.setFormat(DataFormat.COLDP);
@@ -58,17 +60,16 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
 
   @Test
   public void search() throws Exception {
-    DatasetExport e = createTestEntity(datasetKey);
-    e.setImportAttempt(null);
-    mapper().create(e);
-    commit();
-
-    ExportRequest req = new ExportRequest(datasetKey, DataFormat.COLDP);
-    var prev = mapper().search(req);
-    assertNull(prev);
-
-    prev = mapper().search(e.getRequest());
-    assertNotNull(prev);
+    var f = new DatasetExport.Search();
+    f.setStatus(Set.of(JobStatus.FAILED, JobStatus.CANCELED));
+    f.setDatasetKey(TestDataRule.APPLE.key);
+    f.setExcel(true);
+    f.setSynonyms(false);
+    f.setTaxonID("abcde");
+    f.setMinRank(Rank.BIOVAR);
+    var res = mapper().search(f, new Page());
+    assertNotNull(res);
+    assertTrue(res.isEmpty());
   }
 
   @Test
