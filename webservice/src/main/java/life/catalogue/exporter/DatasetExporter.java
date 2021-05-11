@@ -135,9 +135,6 @@ abstract class DatasetExporter extends DatasetBlockingJob {
       LOG.info("Export {} of dataset {} completed", getKey(), datasetKey);
     } finally {
       LOG.info("Remove temporary export directory {}", tmpDir.getAbsolutePath());
-      if (emailer != null) {
-        emailer.email(this);
-      }
       try {
         FileUtils.deleteDirectory(tmpDir);
       } catch (IOException e) {
@@ -163,6 +160,11 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     export.setSize(Files.size(archive.toPath()));
     export.setMd5(ChecksumUtils.getMD5Checksum(archive));
     updateExport(getStatus());
+
+    // email notification
+    if (emailer != null) {
+      emailer.email(this);
+    }
   }
 
   protected void bundle() throws IOException {

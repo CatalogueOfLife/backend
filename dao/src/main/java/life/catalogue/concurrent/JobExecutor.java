@@ -80,6 +80,7 @@ public class JobExecutor implements AutoCloseable {
       } catch (InterruptedException e) {
         // ignore
       } catch (ExecutionException e) {
+        // resubmit blocked jobs. DatasetBlockingJob implements some waiting rules based on number of attempts
         if (e.getCause() instanceof DatasetBlockedException && job instanceof DatasetBlockingJob) {
           DatasetBlockedException be = (DatasetBlockedException) e.getCause();
           DatasetBlockingJob bj = (DatasetBlockingJob) job;

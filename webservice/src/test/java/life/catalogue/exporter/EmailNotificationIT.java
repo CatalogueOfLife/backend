@@ -15,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 @Ignore("This actually sends mails. Requires GBIF server")
 public class EmailNotificationIT {
@@ -35,7 +36,7 @@ public class EmailNotificationIT {
     cfg.mail.from = "download@catalogueoflife.org";
     cfg.mail.fromName = "COL Downloads";
     cfg.mail.bcc.add("col@mailinator.com");
-    cfg.mail.block = true;
+    cfg.mail.block = false;
 
     MailBundle bundle = new MailBundle();
     bundle.run(cfg, null);
@@ -45,10 +46,10 @@ public class EmailNotificationIT {
     ColdpExporter job = new ColdpExporter(req, TestDataRule.TEST_USER.getKey(), PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
 
     for (JobStatus status : JobStatus.values()) {
-      if (status.isDone()) {
-        job.getExport().setStatus(status);
-        emailer.email(job);
-      }
+      job.getExport().setStatus(status);
+      emailer.email(job);
     }
+
+    TimeUnit.MINUTES.sleep(1);
   }
 }

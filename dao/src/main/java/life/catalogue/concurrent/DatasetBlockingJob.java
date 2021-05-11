@@ -47,6 +47,7 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
     } else {
       TimeUnit.MILLISECONDS.sleep(100);
     }
+
     // try to acquire a lock, otherwise fail
     UUID proc = DatasetLock.lock(datasetKey, getKey());
     if (getKey().equals(proc)) {

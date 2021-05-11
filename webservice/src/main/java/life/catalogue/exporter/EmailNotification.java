@@ -35,21 +35,20 @@ public class EmailNotification {
     this.cfg = cfg;
   }
   public void email(DatasetExporter job) {
-    User user;
     try (SqlSession session = factory.openSession()) {
-      user = session.getMapper(UserMapper.class).get(job.getUserKey());
+      User user = session.getMapper(UserMapper.class).get(job.getUserKey());
       if (user == null) {
         LOG.info("No user {} existing", job.getUserKey());
         return;
       }
+      email(job.getExport(), job.dataset, user);
     }
-    email(job.getExport(), job.dataset, user);
   }
 
   public void email(final DatasetExport export, Dataset dataset, User user) {
     final var status = export.getStatus();
     if (!status.isDone()) {
-      LOG.debug("Do not notify users about {} export {}", export.getStatus(), export.getKey());
+      LOG.info("Do not notify users about {} export {}", export.getStatus(), export.getKey());
       return;
     }
 
