@@ -1,9 +1,7 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.DatasetExport;
-import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.db.mapper.DatasetExportMapper;
 
@@ -24,7 +22,7 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
     super(false, factory, DatasetExportMapper.class);
   }
 
-  public ResultPage<DatasetExport> list(DatasetExport.Search filter, Page page) {
+  public ResultPage<DatasetExport> list(ExportSearchRequest filter, Page page) {
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()) {
       DatasetExportMapper mapper = session.getMapper(mapperClass);
@@ -37,7 +35,7 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
    * Returns the latest export which matches the request and has not failed or was canceled.
    */
   public DatasetExport current(ExportRequest req) {
-    var filter = new DatasetExport.Search(req);
+    var filter = new ExportSearchRequest(req);
     filter.setStatus(GOOD);
 
     try (SqlSession session = factory.openSession()) {

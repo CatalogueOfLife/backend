@@ -2,6 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.dao.DatasetExportDao;
@@ -32,7 +33,7 @@ public class ExportResource {
   }
 
   @GET
-  public ResultPage<DatasetExport> list(@BeanParam DatasetExport.Search filter, @Valid @BeanParam Page page) {
+  public ResultPage<DatasetExport> list(@BeanParam ExportSearchRequest filter, @Valid @BeanParam Page page) {
     return dao.list(filter, page);
   }
 

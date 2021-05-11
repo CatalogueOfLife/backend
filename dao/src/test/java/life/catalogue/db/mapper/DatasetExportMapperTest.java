@@ -1,10 +1,8 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.datapackage.ColdpTerm;
-import life.catalogue.api.model.DatasetExport;
-import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
@@ -60,7 +58,7 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
 
   @Test
   public void search() throws Exception {
-    var f = new DatasetExport.Search();
+    var f = new ExportSearchRequest();
     f.setStatus(Set.of(JobStatus.FAILED, JobStatus.CANCELED));
     f.setDatasetKey(TestDataRule.APPLE.key);
     f.setExcel(true);
