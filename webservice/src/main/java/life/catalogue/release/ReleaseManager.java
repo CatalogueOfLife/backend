@@ -5,8 +5,10 @@ import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.User;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -25,6 +27,7 @@ public class ReleaseManager {
   private static final ThreadPoolExecutor RELEASE_EXEC = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
       new ArrayBlockingQueue(1), new NamedThreadFactory("col-release"), new ThreadPoolExecutor.DiscardPolicy());
 
+  private final ExportManager exportManager;
   private final DatasetImportDao diDao;
   private final DatasetDao dDao;
   private final NameUsageIndexService indexService;
@@ -34,8 +37,9 @@ public class ReleaseManager {
   private final WsServerConfig cfg;
   private AbstractProjectCopy job;
 
-  public ReleaseManager(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory, WsServerConfig cfg) {
+  public ReleaseManager(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, ExportManager exportManager, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory, WsServerConfig cfg) {
     this.client = client;
+    this.exportManager = exportManager;
     this.diDao = diDao;
     this.dDao = dDao;
     this.indexService = indexService;
@@ -95,7 +99,7 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
-    return new ProjectRelease(factory, indexService, diDao, dDao, imageService, projectKey, userKey, cfg.release, cfg.apiURI, client);
+    return new ProjectRelease(factory, indexService, diDao, dDao, imageService, projectKey, userKey, cfg.release, cfg.apiURI, client, exportManager);
   }
 
   /**

@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
@@ -19,7 +21,7 @@ public class DatasetExportDaoIT extends DaoTestBase {
 
   @Test
   public void current() {
-    DatasetExportDao dao = new DatasetExportDao(PgSetupRule.getSqlSessionFactory());
+    DatasetExportDao dao = new DatasetExportDao(PgSetupRule.getSqlSessionFactory(), new EventBus());
     ExportRequest req = new ExportRequest();
     req.setDatasetKey(TestDataRule.APPLE.key);
     var c = dao.current(req);

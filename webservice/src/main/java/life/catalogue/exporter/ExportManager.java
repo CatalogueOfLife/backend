@@ -31,14 +31,14 @@ public class ExportManager {
   private final EmailNotification emailer;
   private final DatasetExportDao dao;
 
-  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, Mailer mailer) {
+  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, Mailer mailer, DatasetExportDao exportDao) {
     this.cfg = cfg;
     this.factory = factory;
     this.executor = executor;
     this.imageService = imageService;
     // mailer
     this.emailer = mailer == null ? null : new EmailNotification(mailer, factory, cfg);
-    dao = new DatasetExportDao(factory);
+    dao = exportDao;
   }
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {

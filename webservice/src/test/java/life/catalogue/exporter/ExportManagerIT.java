@@ -4,6 +4,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
+import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.img.ImageService;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class ExportManagerIT {
 
@@ -33,7 +35,8 @@ public class ExportManagerIT {
     cfg.exportDir = new File("/tmp/col");
     cfg.job.threads = 3;
     JobExecutor executor = new JobExecutor(cfg.job);
-    ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), null);
+    DatasetExportDao exDao = mock(DatasetExportDao.class);
+    ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), null, exDao);
 
     PrintBlockJob job = new PrintBlockJob(TestDataRule.APPLE.key);
     PrintBlockJob job2 = new PrintBlockJob(TestDataRule.APPLE.key);

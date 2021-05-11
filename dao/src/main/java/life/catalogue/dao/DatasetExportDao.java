@@ -1,5 +1,9 @@
 package life.catalogue.dao;
 
+import com.google.common.eventbus.EventBus;
+
+import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.ExportChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.JobStatus;
@@ -17,9 +21,11 @@ import java.util.UUID;
 
 public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExportMapper> {
   Set<JobStatus> GOOD = Set.of(JobStatus.FINISHED, JobStatus.WAITING, JobStatus.BLOCKED, JobStatus.RUNNING);
+  private final EventBus bus;
 
-  public DatasetExportDao(SqlSessionFactory factory) {
-    super(false, factory, DatasetExportMapper.class);
+  public DatasetExportDao(SqlSessionFactory factory, EventBus bus) {
+    super(false, true, factory, DatasetExportMapper.class);
+    this.bus = bus;
   }
 
   public ResultPage<DatasetExport> list(ExportSearchRequest filter, Page page) {
@@ -50,6 +56,22 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
         }
       }
       return null;
+    }
+  }
+
+  @Override
+  protected boolean deleteAfter(UUID key, DatasetExport old, int user, DatasetExportMapper mapper, SqlSession session) {
+    // notify event bus
+    bus.post(ExportChanged.delete(old));
+    return true;
+  }
+
+  public void deleteByDataset(int datasetKey, int userKey){
+    try (SqlSession session = factory.openSession()) {
+      DatasetExportMapper mapper = session.getMapper(mapperClass);
+      mapper.processDataset(datasetKey).forEach(exp -> {
+        deleteWithSession(exp.getKey(), userKey, session);
+      });
     }
   }
 }

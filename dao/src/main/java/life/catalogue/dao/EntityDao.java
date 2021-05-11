@@ -28,14 +28,29 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   private static final Logger LOG = LoggerFactory.getLogger(EntityDao.class);
   protected final SqlSessionFactory factory;
   protected final Class<M> mapperClass;
-  private final boolean offerChangedHook;
+  private final boolean updateHook;
+  private final boolean deleteHook;
 
   /**
    * @param offerChangedHook if true loads the old version of the updated or deleted object and offers it to the before and after methods.
    *                         If false the old value will always be null but performance will be better
    */
   public EntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<M> mapperClass) {
-    this.offerChangedHook = offerChangedHook;
+    this.updateHook = offerChangedHook;
+    this.deleteHook = offerChangedHook;
+    this.factory = factory;
+    this.mapperClass = mapperClass;
+  }
+
+  /**
+   * @param updateHook if true loads the old version of the updated object and offers it to the before and after methods.
+   *                         If false the old value will always be null but performance will be better
+   * @param deleteHook if true loads the old version of the deleted object and offers it to the before and after methods.
+   *                         If false the old value will always be null but performance will be better
+   */
+  public EntityDao(boolean updateHook, boolean deleteHook, SqlSessionFactory factory, Class<M> mapperClass) {
+    this.updateHook = updateHook;
+    this.deleteHook = deleteHook;
     this.factory = factory;
     this.mapperClass = mapperClass;
   }
@@ -91,7 +106,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   public int update(T obj, int user) {
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
-      T old = offerChangedHook ? mapper.get(obj.getKey()) : null;
+      T old = updateHook ? mapper.get(obj.getKey()) : null;
       return update(obj, old, user, session, false);
     }
   }
@@ -134,19 +149,23 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
 
   public int delete(K key, int user) {
     try (SqlSession session = factory.openSession(false)) {
-      M mapper = session.getMapper(mapperClass);
-  
-      T old = offerChangedHook ? mapper.get(key) : null;
-      deleteBefore(key, old, user, mapper, session);
-      int changed = mapper.delete(key);
-      session.commit();
-      if (deleteAfter(key, old, user, mapper, session)) {
-        session.commit();
-      }
-      return changed;
+      return deleteWithSession(key, user, session);
     }
   }
-  
+
+  protected int deleteWithSession(K key, int user, SqlSession session) {
+    M mapper = session.getMapper(mapperClass);
+
+    T old = deleteHook ? mapper.get(key) : null;
+    deleteBefore(key, old, user, mapper, session);
+    int changed = mapper.delete(key);
+    session.commit();
+    if (deleteAfter(key, old, user, mapper, session)) {
+      session.commit();
+    }
+    return changed;
+  }
+
   protected void deleteBefore(K key, T old, int user, M mapper, SqlSession session) {
     // override to do sth useful
   }

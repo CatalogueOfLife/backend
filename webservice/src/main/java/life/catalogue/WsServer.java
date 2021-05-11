@@ -232,9 +232,6 @@ public class WsServer extends Application<WsServerConfig> {
     final FileMetricsDatasetDao fmdDao = new FileMetricsDatasetDao(getSqlSessionFactory(), cfg.metricsRepo);
     final FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(getSqlSessionFactory(), cfg.metricsRepo);
 
-    // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer());
-
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);
     SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao);
@@ -247,8 +244,8 @@ public class WsServer extends Application<WsServerConfig> {
     }
 
     // daos
-    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile, bus);
-    DatasetExportDao exdao = new DatasetExportDao(getSqlSessionFactory());
+    DatasetExportDao exdao = new DatasetExportDao(getSqlSessionFactory(), bus);
+    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus);
     DatasetProjectSourceDao dsdao = new DatasetProjectSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
@@ -260,8 +257,11 @@ public class WsServer extends Application<WsServerConfig> {
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     UserDao udao = new UserDao(getSqlSessionFactory(), bus);
 
+    // exporter
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao);
+
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, indexService, imgService, getSqlSessionFactory(), cfg);
+    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, getSqlSessionFactory(), cfg);
 
     // importer
     importManager = new ImportManager(cfg,

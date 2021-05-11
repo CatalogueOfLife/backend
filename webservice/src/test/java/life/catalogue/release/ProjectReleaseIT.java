@@ -11,6 +11,7 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.NameMatchingRule;
@@ -19,6 +20,7 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -64,11 +66,13 @@ public class ProjectReleaseIT {
   public void init() throws Exception {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     EventBus bus = mock(EventBus.class);
-    dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, NameUsageIndexService.passThru(), null, bus);
+    ExportManager exm = mock(ExportManager.class);
+    DatasetExportDao exDao = mock(DatasetExportDao.class);
+    dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus);
     client = HttpClientUtils.httpsClient();
     WsServerConfig cfg = new WsServerConfig();
     cfg.apiURI = URI.create("https://api.dev.catalogue.life");
-    releaseManager = new ReleaseManager(client, diDao, dDao, NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), cfg);
+    releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), cfg);
   }
 
   @After

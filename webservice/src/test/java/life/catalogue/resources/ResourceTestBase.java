@@ -6,6 +6,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -20,6 +21,8 @@ import org.junit.ClassRule;
 
 import javax.ws.rs.client.WebTarget;
 
+import static org.mockito.Mockito.mock;
+
 public class ResourceTestBase {
   
   protected String baseURL;
@@ -31,7 +34,8 @@ public class ResourceTestBase {
     this.path = path;
     baseURL = String.format("http://localhost:%d"+path, RULE.getLocalPort());
     base = RULE.client().target(baseURL);
-    ddao = new DatasetDao(factory(), null, ImageService.passThru(), null, NameUsageIndexService.passThru(), null, RULE.getServer().getBus());
+    DatasetExportDao exDao = mock(DatasetExportDao.class);
+    ddao = new DatasetDao(factory(), null, ImageService.passThru(), null, exDao, NameUsageIndexService.passThru(), null, RULE.getServer().getBus());
   }
   
   @ClassRule

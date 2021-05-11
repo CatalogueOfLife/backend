@@ -24,10 +24,11 @@ public class DatasetDaoTest extends DaoTestBase {
   @Before
   public void init() {
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    DatasetExportDao exDao = new DatasetExportDao(PgSetupRule.getSqlSessionFactory(), new EventBus());
     dao = new DatasetDao(factory(),
       null,
       ImageService.passThru(),
-      diDao,
+      diDao, exDao,
       NameUsageIndexService.passThru(),
       null,
       new EventBus()

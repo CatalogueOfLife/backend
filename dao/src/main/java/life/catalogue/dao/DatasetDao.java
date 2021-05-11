@@ -6,10 +6,7 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.DatasetProcessable;
@@ -51,6 +48,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final ImageService imgService;
   private final BiFunction<Integer, String, File> scratchFileFunc;
   private final DatasetImportDao diDao;
+  private final DatasetExportDao exportDao;
   private final NameUsageIndexService indexService;
   private final EventBus bus;
 
@@ -61,6 +59,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
+                    DatasetExportDao exportDao,
                     NameUsageIndexService indexService,
                     BiFunction<Integer, String, File> scratchFileFunc,
                     EventBus bus) {
@@ -69,6 +68,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
     this.diDao = diDao;
+    this.exportDao = exportDao;
     this.indexService = indexService;
     this.bus = bus;
   }
@@ -195,6 +195,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
     // now also clear filesystem
     diDao.removeMetrics(key);
+    // remove exports if dataset was private
+    if (old != null && old.isPrivat()) {
+      LOG.info("Delete exports for private dataset {}", key);
+      exportDao.deleteByDataset(key, user);
+    }
   }
 
   private Set<Integer> listReleaseKeys(int projectKey, int user, DatasetMapper mapper) {
