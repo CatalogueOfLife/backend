@@ -48,7 +48,7 @@ public class DoiAttributes {
   private List<String> sizes;
   private List<String> formats;
   private String version;
-  private String schemaVersion = VERSION;
+  private String schemaVersion;
   private List<Rights> rightsList;
   private List<Description> descriptions;
   private List<GeoLocation> geoLocations;

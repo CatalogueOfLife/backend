@@ -2,9 +2,8 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.vocab.*;
 import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.config.ReleaseConfig;
@@ -14,6 +13,7 @@ import life.catalogue.dao.DatasetProjectSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -35,14 +35,16 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ReleaseConfig cfg;
   private final UriBuilder datasetApiBuilder;
   private final CloseableHttpClient client;
+  private final ExportManager exportManager;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
-                 int datasetKey, int userKey, ReleaseConfig cfg, URI api, CloseableHttpClient client) {
+                 int datasetKey, int userKey, ReleaseConfig cfg, URI api, CloseableHttpClient client, ExportManager exportManager) {
     super("releasing", factory, diDao, dDao, indexService, userKey, datasetKey, true);
     this.imageService = imageService;
     this.cfg = cfg;
     this.datasetApiBuilder = api == null ? null : UriBuilder.fromUri(api).path("dataset/{key}LR");
     this.client = client;
+    this.exportManager = exportManager;
   }
 
   @Override
@@ -108,6 +110,15 @@ public class ProjectRelease extends AbstractProjectCopy {
     if (client != null && datasetApiBuilder != null) {
       URI api = datasetApiBuilder.build(datasetKey);
       VarnishUtils.ban(client, api);
+    }
+    // kick off exports
+    ExportRequest req = new ExportRequest();
+    req.setDatasetKey(newDatasetKey);
+    for (DataFormat df : DataFormat.values()) {
+      if (df.isExportable()) {
+        req.setFormat(df);
+        exportManager.submit(req, user);
+      }
     }
   }
 

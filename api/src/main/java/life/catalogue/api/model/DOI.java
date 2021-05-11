@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.Serializable;
@@ -73,7 +75,7 @@ public class DOI implements Serializable {
     }
   }
 
-  public DOI(String prefix, String suffix) {
+  public DOI(@NotNull String prefix, @Nullable String suffix) {
     this.prefix = Objects.requireNonNull(prefix, "DOI prefix required").toLowerCase();
     Preconditions.checkArgument(prefix.startsWith("10."));
     this.suffix = suffix == null ? null : suffix.toLowerCase();
@@ -128,6 +130,11 @@ public class DOI implements Serializable {
 
   public String toString() {
     return this.getDoiName();
+  }
+
+  @JsonIgnore
+  public boolean isComplete() {
+    return prefix != null && suffix != null;
   }
 
   public int hashCode() {

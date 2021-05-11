@@ -1,5 +1,7 @@
 package life.catalogue.doi.service;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.doi.datacite.model.DoiAttributes;
@@ -9,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -49,7 +52,20 @@ public class DataCiteService implements DoiService {
 
   @Override
   public void create(DOI doi) throws DoiException {
+    LOG.debug("create new draft DOI {}", doi);
+    DoiAttributes attr = new DoiAttributes(doi);
+    try {
+      var resp = dois.path(doi.getDoiName())
+        .request(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(attr));
+      System.out.println(resp.getStatusInfo());
+      if (resp.getStatus() != 200) {
+        throw new DoiException(doi);
+      }
 
+    } catch (RuntimeException e) {
+      throw new DoiException(doi, e);
+    }
   }
 
   @Override
@@ -58,12 +74,29 @@ public class DataCiteService implements DoiService {
   }
 
   @Override
-  public void update(DoiAttributes doi) throws DoiException {
+  public void update(DoiAttributes attr) throws DoiException {
+    Preconditions.checkNotNull(attr.getDoi());
+    Preconditions.checkArgument(attr.getDoi().isComplete(), "DOI suffix required");
 
+    LOG.debug("update metadata for DOI {}", attr);
+    try {
+      var resp = dois.path(attr.getDoi().getDoiName())
+        .request(MediaType.APPLICATION_JSON_TYPE)
+        .put(Entity.json(attr));
+      System.out.println(resp.getStatusInfo());
+      if (resp.getStatus() != 200) {
+        throw new DoiException(attr.getDoi());
+      }
+
+    } catch (RuntimeException e) {
+      throw new DoiException(attr.getDoi(), e);
+    }
   }
 
   @Override
   public void update(DOI doi, URI target) throws DoiException {
-
+    DoiAttributes attr = new DoiAttributes(doi);
+    attr.setUrl(target.toString());
+    update(attr);
   }
 }
