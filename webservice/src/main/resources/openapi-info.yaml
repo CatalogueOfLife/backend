@@ -1,4 +1,3 @@
-version: '1.0 beta'
 title: COL ChecklistBank API
 description: 'This is the Catalogue of Life ChecklistBank API that drives all of [CoL ChecklistBank](http://data.catalogue.life).
 The API is still in active development and not finalized, small changes are still expected to take place before the release of version 1.0.

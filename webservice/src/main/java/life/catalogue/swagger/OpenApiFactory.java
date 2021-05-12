@@ -8,12 +8,15 @@ import io.swagger.v3.oas.integration.OpenApiConfigurationException;
 import io.swagger.v3.oas.integration.api.OpenApiContext;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.resources.DocsResource;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 public class OpenApiFactory {
@@ -44,11 +47,23 @@ public class OpenApiFactory {
         info.setVersion(v);
       }
       oas.setInfo(info);
+      // add fixed prod & dev servers
+      oas.setServers(List.of(
+        server("production", "https://api.catalogueoflife.org"),
+        server("test", "https://api.dev.catalogueoflife.org")
+      ));
       return oas;
 
     } catch (OpenApiConfigurationException | IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  static Server server(String name, String url){
+    var server = new Server();
+    server.url(url);
+    server.description("COL " + name + " server");
+    return server;
   }
 
 }
