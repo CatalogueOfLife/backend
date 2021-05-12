@@ -46,13 +46,13 @@
     "@type": "TaxonName",
     "name": "${info.taxon.name.scientificName!}",
     "author": "${info.taxon.name.authorship!}",
-    "taxonRank": "${info.taxon.name.rank!}",
-  <#if info.getPublishedInReference()??>
-    "isBasedOn": {
+    "taxonRank": "${info.taxon.name.rank!}"
+   <#if info.getPublishedInReference()??>
+    ,"isBasedOn": {
       "@type": "ScholarlyArticle",
       "name": "${info.getPublishedInReference().citation!}"
     }
-  </#if>
+   </#if>
   },
   <#if info.taxon.name.rank??>
   "taxonRank": [
@@ -64,7 +64,7 @@
 <#if info.synonyms??>
   "alternateName": [
      <#list info.synonyms as s>
-      "${s.label}",
+      "${s.label}"<#sep>,</#sep>
      </#list>
   ],
   "alternateScientificName": [
@@ -80,7 +80,7 @@
           "name": "${info.getReference(s.name.publishedInId).citation!}"
         }
       </#if>
-    },
+    }<#sep>,</#sep>
     </#list>
   ],
 </#if>
@@ -91,7 +91,7 @@
     {
       "@language": "${v.language!}",
       "@value": "${v.name!}"
-    },
+    }<#sep>,</#sep>
   </#list>
   ],
 </#if>

@@ -9,6 +9,7 @@
 <meta name="twitter:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${key?c}/logo?size=LARGE" />
 
 <#macro person p>
+   {
     "familyName": "${p.familyName!}",
     "givenName": "${p.givenName!}",
     <#if p.email??>
@@ -17,6 +18,7 @@
     <#if p.orcid??>
     "identifier": "https://orcid.org/${p.orcid}"
     </#if>
+   }
 </#macro>
 
 <script type="application/ld+json">
@@ -29,14 +31,14 @@
   <#if authors??>
   "author": [
    <#list authors as p>
-    <@person p=p />
+    <@person p=p /><#sep>,</#sep>
    </#list>
   ],
   </#if>
   <#if editors??>
   "editor": [
    <#list editors as p>
-    <@person p=p />
+    <@person p=p /><#sep>,</#sep>
    </#list>
   ],
   </#if>

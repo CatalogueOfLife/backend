@@ -64,4 +64,27 @@ public class DataCiteServiceIT {
     assertEquals(6, data.getCreators().size());
   }
 
+  @Test
+  public void createDraft() {
+    // GBIF download
+    DOI doi = new DOI("10.15468/dl.f14yjv");
+    var data = service.resolve(doi);
+    assertEquals("Occurrence Download", data.getTitles().get(0).getTitle());
+    assertEquals(doi.getPrefix(), data.getPrefix());
+    assertEquals(doi.getSuffix(), data.getSuffix());
+    assertEquals(doi, data.getDoi());
+    assertEquals("The Global Biodiversity Information Facility", data.getPublisher());
+    assertEquals("https://www.gbif.org/occurrence/download/0006447-200221144449610", data.getUrl());
+    assertEquals(1, data.getCreators().size());
+    assertEquals("Occdownload Gbif.Org", data.getCreators().get(0).getName());
+    // IPT dataset
+    doi = new DOI("10.15472/ciasei");
+    data = service.resolve(doi);
+    assertEquals("Colección Mastozoológica del Museo de Historia Natural de la Universidad del Cauca", data.getTitles().get(0).getTitle());
+    assertEquals(doi.getPrefix(), data.getPrefix());
+    assertEquals(doi.getSuffix(), data.getSuffix());
+    assertEquals(doi, data.getDoi());
+    assertEquals("http://ipt.biodiversidad.co/sib/resource?r=251-mhnuc-m", data.getUrl());
+    assertEquals(6, data.getCreators().size());
+  }
 }
