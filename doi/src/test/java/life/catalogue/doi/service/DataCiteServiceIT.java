@@ -2,6 +2,8 @@ package life.catalogue.doi.service;
 
 import life.catalogue.api.jackson.ApiModule;
 
+import java.io.IOException;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -9,6 +11,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 import life.catalogue.api.model.DOI;
+
+import life.catalogue.common.util.YamlUtils;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
@@ -28,15 +32,14 @@ public class DataCiteServiceIT {
   DataCiteService service;
 
   @Before
-  public void setup(){
+  public void setup() throws IOException {
     final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider(ApiModule.MAPPER, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
     ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
     cfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
 
     final Client client = ClientBuilder.newClient(cfg);
 
-    DoiConfig doiCfg = new DoiConfig();
-    doiCfg.api = "https://api.datacite.org";
+    DoiConfig doiCfg = YamlUtils.read(DoiConfig.class, "/datacite.yaml");
     service = new DataCiteService(doiCfg, client);
   }
 
@@ -65,26 +68,9 @@ public class DataCiteServiceIT {
   }
 
   @Test
-  public void createDraft() {
+  public void createDraft() throws Exception {
     // GBIF download
-    DOI doi = new DOI("10.15468/dl.f14yjv");
-    var data = service.resolve(doi);
-    assertEquals("Occurrence Download", data.getTitles().get(0).getTitle());
-    assertEquals(doi.getPrefix(), data.getPrefix());
-    assertEquals(doi.getSuffix(), data.getSuffix());
-    assertEquals(doi, data.getDoi());
-    assertEquals("The Global Biodiversity Information Facility", data.getPublisher());
-    assertEquals("https://www.gbif.org/occurrence/download/0006447-200221144449610", data.getUrl());
-    assertEquals(1, data.getCreators().size());
-    assertEquals("Occdownload Gbif.Org", data.getCreators().get(0).getName());
-    // IPT dataset
-    doi = new DOI("10.15472/ciasei");
-    data = service.resolve(doi);
-    assertEquals("Colección Mastozoológica del Museo de Historia Natural de la Universidad del Cauca", data.getTitles().get(0).getTitle());
-    assertEquals(doi.getPrefix(), data.getPrefix());
-    assertEquals(doi.getSuffix(), data.getSuffix());
-    assertEquals(doi, data.getDoi());
-    assertEquals("http://ipt.biodiversidad.co/sib/resource?r=251-mhnuc-m", data.getUrl());
-    assertEquals(6, data.getCreators().size());
+    DOI doi = DOI.test("DataCiteServiceIT-"+ UUID.randomUUID());
+    service.create(doi);
   }
 }

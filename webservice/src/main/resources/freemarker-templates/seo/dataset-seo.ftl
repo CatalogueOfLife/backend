@@ -9,16 +9,16 @@
 <meta name="twitter:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${key?c}/logo?size=LARGE" />
 
 <#macro person p>
-   {
+  {
     "familyName": "${p.familyName!}",
-    "givenName": "${p.givenName!}",
-    <#if p.email??>
-    "email": "${p.email}",
+    "givenName": "${p.givenName!}"
+    <#if p.email??>,
+    "email": "${p.email}"
     </#if>
-    <#if p.orcid??>
+    <#if p.orcid??>,
     "identifier": "https://orcid.org/${p.orcid}"
     </#if>
-   }
+  }
 </#macro>
 
 <script type="application/ld+json">

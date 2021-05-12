@@ -1,22 +1,23 @@
 package life.catalogue.doi.service;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.doi.datacite.model.DoiAttributes;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.net.URI;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import java.net.URI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 public class DataCiteService implements DoiService {
   private static final Logger LOG = LoggerFactory.getLogger(DataCiteService.class);
@@ -24,12 +25,15 @@ public class DataCiteService implements DoiService {
   private final DoiConfig cfg;
   private final Client client;
   private final WebTarget dois;
+  private final MediaType MEDIA_TYPE = new MediaType("application", "vnd.api+json");
+  private final String auth;
 
 
   public DataCiteService(DoiConfig cfg, Client client) {
     this.cfg = cfg;
-    dois = client.target(UriBuilder.fromUri(cfg.api).path("dois").build());
     this.client = client;
+    dois = client.target(UriBuilder.fromUri(cfg.api).path("dois").build());
+    auth = BasicAuthenticator.basicAuthentication(cfg.username, cfg.password);
   }
 
   @Override
@@ -38,7 +42,7 @@ public class DataCiteService implements DoiService {
     try {
       DataCiteWrapper data = dois.path(doi.getDoiName())
         .request()
-        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .accept(MEDIA_TYPE)
         .get(DataCiteWrapper.class);
       if (data == null) {
         throw NotFoundException.notFound(doi);
@@ -55,12 +59,12 @@ public class DataCiteService implements DoiService {
     LOG.debug("create new draft DOI {}", doi);
     DoiAttributes attr = new DoiAttributes(doi);
     try {
-      var resp = dois.path(doi.getDoiName())
-        .request(MediaType.APPLICATION_JSON_TYPE)
+      var resp = dois.request(MEDIA_TYPE)
+        .header(HttpHeaders.AUTHORIZATION, auth)
         .post(Entity.json(attr));
       System.out.println(resp.getStatusInfo());
       if (resp.getStatus() != 200) {
-        throw new DoiException(doi);
+        throw new DoiHttpException(resp.getStatus(), doi);
       }
 
     } catch (RuntimeException e) {
@@ -80,8 +84,10 @@ public class DataCiteService implements DoiService {
 
     LOG.debug("update metadata for DOI {}", attr);
     try {
-      var resp = dois.path(attr.getDoi().getDoiName())
+      var resp = dois
+        .path(attr.getDoi().getDoiName())
         .request(MediaType.APPLICATION_JSON_TYPE)
+        .header(HttpHeaders.AUTHORIZATION, auth)
         .put(Entity.json(attr));
       System.out.println(resp.getStatusInfo());
       if (resp.getStatus() != 200) {

@@ -8,6 +8,8 @@ import io.swagger.v3.oas.integration.OpenApiConfigurationException;
 import io.swagger.v3.oas.integration.api.OpenApiContext;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 
 import life.catalogue.WsServerConfig;
@@ -40,18 +42,28 @@ public class OpenApiFactory {
 
       OpenAPI oas = ctxt.read();
 
-      Info info  = YamlUtils.read(Info.class, Resources.stream("openapi-info.yaml"));
       // we set the version programmatically from our git properties if they exist
+      Info info  = YamlUtils.read(Info.class, Resources.stream("openapi-info.yaml"));
       String v = cfg.versionString();
       if (v != null) {
         info.setVersion(v);
       }
       oas.setInfo(info);
+
       // add fixed prod & dev servers
       oas.setServers(List.of(
         server("production", "https://api.catalogueoflife.org"),
         server("test", "https://api.dev.catalogueoflife.org")
       ));
+
+      // security
+      oas.getComponents()
+        .addSecuritySchemes("basicAuth",
+          new SecurityScheme().scheme("basic").type(SecurityScheme.Type.HTTP)
+        );
+      oas.addSecurityItem(
+        new SecurityRequirement().addList("basicAuth")
+      );
       return oas;
 
     } catch (OpenApiConfigurationException | IOException e) {

@@ -133,6 +133,10 @@
     <gbif.secret>secret</gbif.secret>
     <img.repo>${project.build.directory}/img-repo</img.repo>
     <metrics.repo>${project.build.directory}/metrics-repo</metrics.repo>
+    <!-- datacite settings for integration tests -->
+    <datacite.username>col</datacite.username>
+    <datacite.password>xyz</datacite.password>
+    <datacite.prefix>10.80631</datacite.prefix>
   </properties>
 
   <licenses>

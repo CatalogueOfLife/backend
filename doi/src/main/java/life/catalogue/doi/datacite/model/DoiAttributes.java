@@ -35,9 +35,8 @@ public class DoiAttributes {
   private String publisher;
 
   // container - read only
-
   @NotNull
-  private int publicationYear;
+  private Integer publicationYear;
 
   private List<Subject> subjects;
   private List<Contributor> contributors;

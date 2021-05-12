@@ -74,10 +74,21 @@
         <filtering>false</filtering>
       </resource>
     </resources>
+
     <testResources>
       <testResource>
         <directory>src/test/resources</directory>
         <filtering>false</filtering>
+        <excludes>
+          <exclude>datacite.yaml</exclude>
+        </excludes>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>datacite.yaml</include>
+        </includes>
       </testResource>
     </testResources>
   </build>

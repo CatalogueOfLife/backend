@@ -61,6 +61,10 @@ public class DOI implements Serializable {
     return new DOI(COL_PREFIX, suffix);
   }
 
+  public static DOI test(String suffix) {
+    return new DOI(TEST_PREFIX, suffix);
+  }
+
   public DOI() {
   }
 
