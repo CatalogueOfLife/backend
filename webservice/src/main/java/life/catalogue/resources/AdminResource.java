@@ -91,6 +91,7 @@ public class AdminResource {
     @Nullable
     @Min(1)
     public Integer importerThreads;
+    public boolean idle; // readonly summary of all background processes
   }
 
   @GET
@@ -125,6 +126,9 @@ public class AdminResource {
     settings.scheduler = continuousImporter.hasStarted();
     settings.importer = importManager.hasStarted();
     settings.gbifSync = gbifSync.hasStarted();
+    settings.idle = !importManager.hasRunning() // imports
+      && exec.isIdle() // background jobs
+      && assembly.getState().isIdle(); // syncs
     return settings;
   }
   

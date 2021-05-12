@@ -140,7 +140,7 @@ public class JobExecutorTest {
     exec.submit(new BlockJob());
 
     // we need to wait before we can shutdown the executor - otherwise job resubmissions will not work
-    while (exec.isActive()) {
+    while (!exec.isIdle()) {
       TimeUnit.MILLISECONDS.sleep(5);
     }
     exec.close();

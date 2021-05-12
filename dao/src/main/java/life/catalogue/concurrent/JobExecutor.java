@@ -130,10 +130,10 @@ public class JobExecutor implements AutoCloseable {
   }
 
   /**
-   * @return true if the executor has actively running threads or the queue is not empty
+   * @return true if the executor has no actively running threads and the queue is empty
    */
-  public boolean isActive() {
-    return !hasEmptyQueue() && exec.getActiveCount() > 0;
+  public boolean isIdle() {
+    return hasEmptyQueue() && exec.getActiveCount() == 0;
   }
 
   public BackgroundJob cancel (UUID key, int user) {
