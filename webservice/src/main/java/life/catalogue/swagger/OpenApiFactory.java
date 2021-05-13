@@ -59,10 +59,15 @@ public class OpenApiFactory {
       // security
       oas.getComponents()
         .addSecuritySchemes("basicAuth",
-          new SecurityScheme().scheme("basic").type(SecurityScheme.Type.HTTP)
-        );
+          new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic")
+        )
+        .addSecuritySchemes("jwt",
+        new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")
+      );
       oas.addSecurityItem(
-        new SecurityRequirement().addList("basicAuth")
+        new SecurityRequirement()
+          .addList("basicAuth")
+          .addList("jwt")
       );
       return oas;
 
