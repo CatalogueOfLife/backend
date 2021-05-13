@@ -1,3 +1,6 @@
+<#--
+  try out with GOOGLE TEST TOOL https://search.google.com/test/rich-results?utm_campaign=sdtt&utm_medium=url&url=https://www.catalogueoflife.org/data/dataset/1010
+-->
 <meta property="og:title" content="${title!}" />
 <meta property="og:url" content="https://www.catalogueoflife.org/data/dataset/${key?c}" />
 <meta property="og:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${key?c}/logo?size=LARGE" />
