@@ -28,14 +28,14 @@
   "@id": "${key?c}",
   "url": "https://www.catalogueoflife.org/data/dataset/${key?c}",
   "name": "${title!alias!}",
-  <#if authors??>
+  <#if authors?has_content>
   "author": [
    <#list authors as p>
     <@person p=p /><#sep>,</#sep>
    </#list>
   ],
   </#if>
-  <#if editors??>
+  <#if editors?has_content>
   "editor": [
    <#list editors as p>
     <@person p=p /><#sep>,</#sep>

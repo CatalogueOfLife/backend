@@ -61,7 +61,7 @@
   ],
   </#if>
 
-<#if info.synonyms??>
+<#if info.synonyms?has_content>
   "alternateName": [
      <#list info.synonyms as s>
       "${s.label}"<#sep>,</#sep>
@@ -85,9 +85,9 @@
   ],
 </#if>
 
-<#if info.vernacularNames??>
-  <#list info.vernacularNames as v>
+<#if info.vernacularNames?has_content>
   "dwc:vernacularName": [
+  <#list info.vernacularNames as v>
     {
       "@language": "${v.language!}",
       "@value": "${v.name!}"
