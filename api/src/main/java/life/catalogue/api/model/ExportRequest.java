@@ -18,6 +18,7 @@ public class ExportRequest {
   private SimpleName root;
   private boolean synonyms = true;
   private Rank minRank;
+  private boolean force; // this makes sure we run a new export
 
   public ExportRequest() {
   }
@@ -80,6 +81,14 @@ public class ExportRequest {
     this.minRank = minRank;
   }
 
+  public boolean isForce() {
+    return force;
+  }
+
+  public void setForce(boolean force) {
+    this.force = force;
+  }
+
   /**
    * @return true if any filter has been used apart from the mandatory datasetKey & format
    */
@@ -92,12 +101,12 @@ public class ExportRequest {
     if (this == o) return true;
     if (!(o instanceof ExportRequest)) return false;
     ExportRequest that = (ExportRequest) o;
-    return excel == that.excel && synonyms == that.synonyms && Objects.equals(datasetKey, that.datasetKey) && format == that.format && Objects.equals(root, that.root) && minRank == that.minRank;
+    return excel == that.excel && synonyms == that.synonyms && force == that.force && Objects.equals(datasetKey, that.datasetKey) && format == that.format && Objects.equals(root, that.root) && minRank == that.minRank;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, format, excel, root, synonyms, minRank);
+    return Objects.hash(datasetKey, format, excel, root, synonyms, minRank, force);
   }
 
   @Override

@@ -43,7 +43,7 @@ public class ExportManager {
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
     DatasetExport prev = dao.current(req);
-    if (prev != null) {
+    if (prev != null && !req.isForce()) {
       LOG.info("Existing export {} found for request {}", prev.getKey(), req);
       return prev.getKey();
     }

@@ -96,6 +96,7 @@ public class DatasetExportResource {
   public UUID export(@PathParam("key") int key, @Valid ExportRequest req, @Auth User user) {
     if (req == null) req = new ExportRequest();
     req.setDatasetKey(key);
+    req.setForce(false); // we don't allow to force exports from the public API
     return exportManager.submit(req, user.getKey());
   }
 

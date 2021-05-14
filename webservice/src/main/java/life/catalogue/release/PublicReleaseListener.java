@@ -11,28 +11,19 @@ import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.cache.VarnishUtils;
 
 import life.catalogue.dao.DatasetExportDao;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.neo4j.cypher.internal.v3_4.functions.E;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.UriBuilder;
-
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 
@@ -61,11 +52,11 @@ public class PublicReleaseListener {
       && event.old.isPrivat() // that was private before
       && !event.obj.isPrivat() // but now is public
     ) {
-      onColReleasePublic(event.obj);
+      copyExportsToColDownload(event.obj);
     }
   }
 
-  void onColReleasePublic(Dataset dataset) {
+  public void copyExportsToColDownload(Dataset dataset) {
     if (cfg.release.colDownloadDir != null) {
       final int datasetKey = dataset.getKey();
       final LocalDate released = dataset.getReleased();
