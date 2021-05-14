@@ -55,4 +55,9 @@ public class DataCiteWrapper {
   public int hashCode() {
     return Objects.hash(attributes);
   }
+
+  @Override
+  public String toString() {
+    return "DataCiteWrapper{" + attributes.toString() +'}';
+  }
 }

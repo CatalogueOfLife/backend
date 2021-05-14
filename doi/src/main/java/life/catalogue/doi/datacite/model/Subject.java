@@ -10,6 +10,13 @@ public class Subject {
   private String valueURI;
   private String lang;
 
+  public Subject() {
+  }
+
+  public Subject(String subject) {
+    this.subject = subject;
+  }
+
   public String getSubject() {
     return subject;
   }

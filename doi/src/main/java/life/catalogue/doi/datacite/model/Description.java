@@ -8,6 +8,20 @@ public class Description {
   private DescriptionType descriptionType;
   private String lang;
 
+  public Description() {
+  }
+
+  public Description(String description) {
+    this.description = description;
+    descriptionType = DescriptionType.ABSTRACT;
+  }
+
+  public Description(String description, DescriptionType descriptionType, String lang) {
+    this.description = description;
+    this.descriptionType = descriptionType;
+    this.lang = lang;
+  }
+
   public String getDescription() {
     return description;
   }

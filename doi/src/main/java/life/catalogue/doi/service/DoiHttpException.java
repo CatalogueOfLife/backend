@@ -18,6 +18,11 @@ public class DoiHttpException extends DoiException {
     this.status = status;
   }
 
+  public DoiHttpException(int status, DOI doi, String message) {
+    super(doi, "HTTP " + status + ": " + message);
+    this.status = status;
+  }
+
   public DoiHttpException(int status, String message) {
     super("HTTP " + status + ": " + message);
     this.status = status;

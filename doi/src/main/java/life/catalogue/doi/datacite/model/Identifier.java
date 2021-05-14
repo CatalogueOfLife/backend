@@ -6,6 +6,7 @@ import java.util.Objects;
 
 public class Identifier {
   public static final String DOI_TYPE = "DOI";
+
   private String identifier;
   private String identifierType;
 
@@ -15,6 +16,11 @@ public class Identifier {
   public Identifier(DOI doi) {
     this.identifier = doi.getDoiName();
     this.identifierType = DOI_TYPE;
+  }
+
+  public Identifier(String identifier, String identifierType) {
+    this.identifier = identifier;
+    this.identifierType = identifierType;
   }
 
   public String getIdentifier() {

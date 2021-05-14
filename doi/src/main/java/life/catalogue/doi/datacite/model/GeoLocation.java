@@ -5,6 +5,13 @@ import java.util.Objects;
 public class GeoLocation {
   private String geoLocationPlace;
 
+  public GeoLocation() {
+  }
+
+  public GeoLocation(String geoLocationPlace) {
+    this.geoLocationPlace = geoLocationPlace;
+  }
+
   public String getGeoLocationPlace() {
     return geoLocationPlace;
   }

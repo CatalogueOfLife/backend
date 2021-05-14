@@ -10,6 +10,13 @@ public class NameIdentifier {
   private String nameIdentifier;
   private String nameIdentifierScheme;
 
+  public static NameIdentifier orcid(String orcid) {
+    NameIdentifier id = new NameIdentifier();
+    id.nameIdentifier = orcid;
+    id.nameIdentifierScheme = "ORCID";
+    return id;
+  }
+
   public String getNameIdentifier() {
     return nameIdentifier;
   }

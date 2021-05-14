@@ -8,6 +8,13 @@ public class Title {
   private TitleType titleType;
   private String lang;
 
+  public Title() {
+  }
+
+  public Title(String title) {
+    this.title = title;
+  }
+
   public String getTitle() {
     return title;
   }

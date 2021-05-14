@@ -15,6 +15,25 @@ public class Creator {
   protected List<NameIdentifier> nameIdentifier;
   protected List<String> affiliation;
 
+  public Creator() {
+  }
+
+  public Creator(@NotNull String name, NameType nameType) {
+    this.name = name;
+    this.nameType = nameType;
+  }
+
+  public Creator(String givenName, String familyName) {
+    this.givenName = givenName;
+    this.familyName = familyName;
+    this.nameType = NameType.PERSONAL;
+  }
+
+  public Creator(String givenName, String familyName, String orcid) {
+    this(givenName, familyName);
+    this.nameIdentifier = List.of(NameIdentifier.orcid(orcid));
+  }
+
   public String getName() {
     return name;
   }

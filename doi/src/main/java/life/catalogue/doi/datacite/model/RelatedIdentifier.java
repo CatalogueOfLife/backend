@@ -1,5 +1,7 @@
 package life.catalogue.doi.datacite.model;
 
+import life.catalogue.api.model.DOI;
+
 import javax.validation.constraints.NotNull;
 
 import java.util.Objects;
@@ -13,6 +15,23 @@ public class RelatedIdentifier {
   @NotNull
   private RelationType relationType;
   private ResourceType resourceTypeGeneral;
+
+  public RelatedIdentifier() {
+  }
+
+  public RelatedIdentifier(@NotNull DOI relatedIdentifier, @NotNull RelationType relationType, ResourceType resourceTypeGeneral) {
+    this.relatedIdentifier = relatedIdentifier.toString();
+    this.relatedIdentifierType = RelatedIdentifierType.DOI;
+    this.relationType = relationType;
+    this.resourceTypeGeneral = resourceTypeGeneral;
+  }
+
+  public RelatedIdentifier(@NotNull String relatedIdentifier, @NotNull RelatedIdentifierType relatedIdentifierType, @NotNull RelationType relationType, ResourceType resourceTypeGeneral) {
+    this.relatedIdentifier = relatedIdentifier;
+    this.relatedIdentifierType = relatedIdentifierType;
+    this.relationType = relationType;
+    this.resourceTypeGeneral = resourceTypeGeneral;
+  }
 
   public String getRelatedIdentifier() {
     return relatedIdentifier;

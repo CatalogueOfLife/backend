@@ -7,6 +7,14 @@ public class Date {
   private String date;
   private DateType dateType;
 
+  public Date() {
+  }
+
+  public Date(String date, DateType dateType) {
+    this.date = date;
+    this.dateType = dateType;
+  }
+
   public String getDate() {
     return date;
   }

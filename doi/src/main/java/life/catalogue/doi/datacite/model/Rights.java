@@ -8,6 +8,13 @@ public class Rights {
   private String rightsURI;
   private String lang;
 
+  public Rights() {
+  }
+
+  public Rights(String rights) {
+    this.rights = rights;
+  }
+
   public String getRights() {
     return rights;
   }

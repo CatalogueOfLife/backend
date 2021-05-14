@@ -1,14 +1,15 @@
 package life.catalogue.doi.service;
 
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.doi.datacite.model.DoiAttributes;
 
 import java.net.URI;
 
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -37,18 +38,25 @@ public class DataCiteService implements DoiService {
     auth = BasicAuthenticator.basicAuthentication(cfg.username, cfg.password);
   }
 
+  Invocation.Builder request(){
+    return request(dois);
+  }
+
+  Invocation.Builder request(DOI doi){
+    return request(dois.path(doi.getDoiName()));
+  }
+
+  Invocation.Builder request(WebTarget uri){
+    return uri
+      .request(MediaType.APPLICATION_JSON_TYPE)
+      .header(HttpHeaders.AUTHORIZATION, auth);
+  }
+
   @Override
   public @NotNull DoiAttributes resolve(DOI doi) throws NotFoundException {
     LOG.debug("retrieve {}", doi);
     try {
-      DataCiteWrapper data = dois.path(doi.getDoiName())
-        .request()
-        .accept(MEDIA_TYPE)
-        .get(DataCiteWrapper.class);
-      if (data == null) {
-        throw NotFoundException.notFound(doi);
-      }
-      return data.getAttributes();
+      return request(doi).get(DataCiteWrapper.class).getAttributes();
 
     } catch (RuntimeException e) {
       throw e;
@@ -57,14 +65,15 @@ public class DataCiteService implements DoiService {
 
   @Override
   public void create(DOI doi) throws DoiException {
-    LOG.debug("create new draft DOI {}", doi);
+    LOG.info("create new draft DOI {}", doi);
     DoiAttributes attr = new DoiAttributes(doi);
     try {
-      var resp = dois.request(MEDIA_TYPE)
-        .header(HttpHeaders.AUTHORIZATION, auth)
-        .post(Entity.json(attr));
-      System.out.println(resp.getStatusInfo());
-      if (resp.getStatus() != 200) {
+      var resp = request().post(Entity.json(new DataCiteWrapper(attr)));
+      if (resp.getStatus() != 201) {
+        if (resp.getEntity() != null) {
+          String message = resp.readEntity(String.class);
+          throw new DoiHttpException(resp.getStatus(), doi, message);
+        }
         throw new DoiHttpException(resp.getStatus(), doi);
       }
 
@@ -75,6 +84,27 @@ public class DataCiteService implements DoiService {
 
   @Override
   public boolean delete(DOI doi) throws DoiException {
+    Preconditions.checkNotNull(doi);
+    Preconditions.checkArgument(doi.isComplete(), "DOI suffix required");
+    LOG.debug("delete DOI {}", doi);
+    try {
+      var resp = request(doi).delete();
+
+      if (resp.getStatus() != 200 && resp.getStatus() != 204) {
+        if (resp.getEntity() != null) {
+          String message = resp.readEntity(String.class);
+          throw new DoiHttpException(resp.getStatus(), doi, message);
+        }
+        throw new DoiHttpException(resp.getStatus(), doi);
+      } else {
+        String message = resp.readEntity(String.class);
+        System.out.println(message);
+      }
+
+    } catch (RuntimeException e) {
+      throw new DoiException(doi, e);
+    }
+
     return false;
   }
 
@@ -85,14 +115,14 @@ public class DataCiteService implements DoiService {
 
     LOG.debug("update metadata for DOI {}", attr);
     try {
-      var resp = dois
-        .path(attr.getDoi().getDoiName())
-        .request(MediaType.APPLICATION_JSON_TYPE)
-        .header(HttpHeaders.AUTHORIZATION, auth)
-        .put(Entity.json(attr));
-      System.out.println(resp.getStatusInfo());
-      if (resp.getStatus() != 200) {
-        throw new DoiException(attr.getDoi());
+      var resp = request(attr.getDoi()).put(Entity.json(new DataCiteWrapper(attr)));
+
+      if (resp.getStatus() != 200 && resp.getStatus() != 204) {
+        if (resp.getEntity() != null) {
+          String message = resp.readEntity(String.class);
+          throw new DoiHttpException(resp.getStatus(), attr.getDoi(), message);
+        }
+        throw new DoiHttpException(resp.getStatus(), attr.getDoi());
       }
 
     } catch (RuntimeException e) {
