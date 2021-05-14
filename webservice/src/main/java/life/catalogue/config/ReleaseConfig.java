@@ -1,7 +1,10 @@
 package life.catalogue.config;
 
+import life.catalogue.api.vocab.DataFormat;
+
 import javax.validation.constraints.NotNull;
 import java.io.File;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -18,6 +21,9 @@ public class ReleaseConfig {
 
   @NotNull
   public File reportDir = new File("/tmp/col/release");
+
+  // the monthly COL download directory
+  public File colDownloadDir = new File("/tmp/col/monthly");
 
   public File reportDir(int datasetKey, int attempt) {
     return new File(reportDir, String.valueOf(datasetKey) + "/" + String.valueOf(attempt));

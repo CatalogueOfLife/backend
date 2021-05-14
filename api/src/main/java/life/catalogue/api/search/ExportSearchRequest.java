@@ -36,6 +36,22 @@ public class ExportSearchRequest {
   @QueryParam("synonyms")
   private Boolean synonyms;
 
+  /**
+   * Matches complete exports of a dataset not in Excel which have finished successfully and regardless of their format
+   * @param datasetKey
+   */
+  public static ExportSearchRequest fullDataset(int datasetKey){
+    ExportSearchRequest req = new ExportSearchRequest();
+    req.setDatasetKey(datasetKey);
+    req.setSynonyms(true);
+    req.setExcel(false);
+    req.setMinRank(null);
+    req.setTaxonID(null);
+    req.setCreatedBy(null);
+    req.setSingleStatus(JobStatus.FINISHED);
+    return req;
+  }
+
   public ExportSearchRequest() {
 
   }
@@ -73,6 +89,10 @@ public class ExportSearchRequest {
 
   public void setStatus(Set<JobStatus> status) {
     this.status = status;
+  }
+
+  public void setSingleStatus(JobStatus status) {
+    this.status = Set.of(status);
   }
 
   public DataFormat getFormat() {

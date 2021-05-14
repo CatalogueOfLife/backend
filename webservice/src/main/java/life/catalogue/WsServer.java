@@ -53,6 +53,7 @@ import life.catalogue.legacy.IdMap;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
+import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
 import life.catalogue.resources.parser.IdEncoderResource;
@@ -338,6 +339,7 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(coljersey);
     bus.register(DatasetInfoCache.CACHE);
     bus.register(new CacheFlush(httpClient, cfg.apiURI));
+    bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao));
   }
 
   @Override

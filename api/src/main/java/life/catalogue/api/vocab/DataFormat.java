@@ -58,4 +58,8 @@ public enum DataFormat {
   public String getTitle() {
     return title;
   }
+
+  public String getSuffix() {
+    return name().toLowerCase().replaceAll("_", "");
+  }
 }
