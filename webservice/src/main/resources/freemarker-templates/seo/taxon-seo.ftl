@@ -10,16 +10,18 @@
 <meta name="twitter:description" content="${description}" />
 <meta name="twitter:image" content="https://www.catalogueoflife.org/images/col_square_logo.jpg" />
 
+<!--
+TaxonName DRAFT Profile:
+https://bioschemas.org/profiles/TaxonName/0.1-DRAFT/
+https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
+-->
 <script type="application/ld+json">
 {
   "@context": [
     "https://schema.org/",
     {
       "dwc": "http://rs.tdwg.org/dwc/terms/",
-      "col": "http://catalogueoflife.org/terms/",
-      "dwc:vernacularName": {
-        "@container": "@language"
-      }
+      "col": "http://catalogueoflife.org/terms/"
     }
   ],
   "@type": "Taxon",
