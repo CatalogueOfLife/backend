@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.google.common.collect.ImmutableSet;
+
+import life.catalogue.api.model.EnumValue;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.CSLRefType;
 import life.catalogue.api.vocab.Country;
@@ -18,6 +20,7 @@ import org.gbif.dwc.terms.Term;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -39,6 +42,9 @@ public class PermissiveEnumSerde {
     .add(CSLRefType.class)
     .add(Term.class)
     .build();
+
+  static final Predicate<Class> PREDICATE = Predicates.<Class>not(ENUM_CLASSES_SPECIAL::contains)
+    .and(Predicates.not(cl -> cl.isAssignableFrom(EnumValue.class)));
 
   public static String enumValueName(Enum<?> val) {
     return val.name().toLowerCase().replaceAll("_+", " ");
@@ -71,7 +77,7 @@ public class PermissiveEnumSerde {
     private final Predicate<Class> predicate;
 
     public PermissiveEnumKeySerializers() {
-      this(PermissiveEnumSerde::enumValueName, Predicates.not(ENUM_CLASSES_SPECIAL::contains));
+      this(PermissiveEnumSerde::enumValueName, PREDICATE);
     }
 
     public PermissiveEnumKeySerializers(Function<Enum<?>, String> mapper, Predicate<Class> predicate) {
@@ -93,7 +99,7 @@ public class PermissiveEnumSerde {
     private final Predicate<Class> predicate;
 
     public PermissiveEnumDeserializers() {
-      this(PermissiveEnumSerde::enumValueName, Predicates.not(ENUM_CLASSES_SPECIAL::contains));
+      this(PermissiveEnumSerde::enumValueName, PREDICATE);
     }
 
     public PermissiveEnumDeserializers(Function<Enum<?>, String> mapper, Predicate<Class> predicate) {
@@ -119,7 +125,7 @@ public class PermissiveEnumSerde {
     private final Predicate<Class> predicate;
 
     public PermissiveEnumKeyDeserializers() {
-      this(PermissiveEnumSerde::enumValueName, Predicates.not(ENUM_CLASSES_SPECIAL::contains));
+      this(PermissiveEnumSerde::enumValueName, PREDICATE);
     }
 
     public PermissiveEnumKeyDeserializers(Function<Enum<?>, String> mapper, Predicate<Class> predicate) {

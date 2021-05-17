@@ -1,6 +1,7 @@
-package life.catalogue.doi.datacite.model;
+package life.catalogue.api.model;
 
 public interface EnumValue {
 
   String value();
+
 }

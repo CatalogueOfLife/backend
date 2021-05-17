@@ -107,6 +107,11 @@ public class ApiModule extends SimpleModule {
     ctxt.addKeyDeserializers(new LowerCamelCaseEnumSerde.LowerCamelCaseEnumKeyDeserializers());
     ctxt.addSerializers(new LowerCamelCaseEnumSerde.LowerCamelCaseEnumSerializers());
     ctxt.addKeySerializers(new LowerCamelCaseEnumSerde.LowerCamelCaseEnumKeySerializers());
+    // enum implementing EnumValue, e.g. DataCite models
+    ctxt.addDeserializers(new EnumValueSerde.EnumValueDeserializers());
+    ctxt.addKeyDeserializers(new EnumValueSerde.EnumValueKeyDeserializers());
+    ctxt.addSerializers(new EnumValueSerde.EnumValueSerializers());
+    ctxt.addKeySerializers(new EnumValueSerde.EnumValueKeySerializers());
     // required to properly register serdes
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);

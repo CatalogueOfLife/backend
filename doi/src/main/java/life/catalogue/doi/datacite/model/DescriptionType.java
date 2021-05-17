@@ -1,5 +1,7 @@
 package life.catalogue.doi.datacite.model;
 
+import life.catalogue.api.model.EnumValue;
+
 public enum DescriptionType implements EnumValue {
 
   ABSTRACT("Abstract"),

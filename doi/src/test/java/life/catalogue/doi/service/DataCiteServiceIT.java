@@ -4,7 +4,9 @@ import life.catalogue.api.jackson.ApiModule;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -25,6 +27,7 @@ import life.catalogue.doi.datacite.model.*;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -32,8 +35,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 @Ignore("Using real DataCite API - manual test only")
 public class DataCiteServiceIT {
@@ -41,6 +43,8 @@ public class DataCiteServiceIT {
 
   DataCiteService service;
   DataCiteService prodReadService;
+
+  Set<DOI> dois = new HashSet<>();
 
   @Before
   public void setup() throws IOException {
@@ -69,6 +73,17 @@ public class DataCiteServiceIT {
     prodReadService = new DataCiteService(prodCfg, client);
   }
 
+  @After
+  public void clear() throws Exception {
+    for (DOI doi : dois) {
+      try {
+        service.delete(doi);
+      } catch (DoiException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   @Test
   public void testGet() {
     // GBIF download
@@ -93,16 +108,17 @@ public class DataCiteServiceIT {
     assertEquals(6, data.getCreators().size());
   }
 
-  @Test(expected = NotFoundException.class)
+  @Test
   public void get404() {
-    // GBIF download
     DOI doi = DOI.col("2w34edrftg7bznd3");
     var data = prodReadService.resolve(doi);
+    assertNull(data);
   }
 
   @Test
   public void createAndUpdate() throws Exception {
     DOI doi = DOI.test("DataCiteServiceIT-"+ UUID.randomUUID());
+    dois.add(doi);
     service.create(doi);
 
     DoiAttributes attr = new DoiAttributes(doi);
@@ -139,7 +155,6 @@ public class DataCiteServiceIT {
     attr.setSource("source");
     attr.setSchemaVersion("schema version");
     attr.setSubjects(List.of(new Subject("gbif"), new Subject("col"), new Subject("biodiversity")));
-    attr.setType(ResourceType.DATASET);
     //attr.setTypes();
     attr.setUpdated("now");
     attr.setVersion("v1.3");
@@ -148,8 +163,36 @@ public class DataCiteServiceIT {
   }
 
   @Test
+  public void publish() throws Exception {
+    publishDOI();
+  }
+
+  public DOI publishDOI() throws Exception {
+    DOI doi = DOI.test("DataCiteServiceIT-"+ UUID.randomUUID());
+    dois.add(doi);
+    service.create(doi);
+
+    DoiAttributes attr = new DoiAttributes(doi);
+    attr.setTitles(List.of(new Title("Also sprach Zarathustra")));
+    attr.setCreators(List.of(
+      new Creator("Bang Boom Bang", NameType.ORGANIZATIONAL),
+      new Creator("Stefan", "Zweig")
+    ));
+    attr.setUrl("https://www.catalogueoflife.org/"+doi.getSuffix());
+    attr.setPublisher("GBIF");
+    attr.setPublicationYear(1988);
+    attr.setDescriptions(List.of(new Description("bla bla bla bla bla bla bla")));
+    LOGGER.info("Update " + doi);
+    service.update(attr);
+
+    service.publish(doi);
+    return doi;
+  }
+
+  @Test
   public void updateUrl() throws Exception {
     DOI doi = DOI.test("DataCiteServiceIT-"+ UUID.randomUUID());
+    dois.add(doi);
     service.create(doi);
 
     LOGGER.info("Update " + doi);
@@ -157,14 +200,31 @@ public class DataCiteServiceIT {
   }
 
   @Test
-  public void delete() throws Exception {
+  public void deleteDraft() throws Exception {
     DOI doi = DOI.test("DataCiteServiceIT-"+ UUID.randomUUID());
+    dois.add(doi);
     service.create(doi);
 
     LOGGER.info("Delete " + doi);
-    service.delete(doi);
+    assertTrue(service.delete(doi));
 
     var resp = service.resolve(doi);
     assertNull(resp);
+  }
+
+  @Test
+  public void deletePublished() throws Exception {
+    DOI doi = publishDOI();
+
+    var x = service.resolve(doi);
+    assertEquals(DoiState.FINDABLE, x.getState());
+    assertEquals(doi, x.getDoi());
+
+    assertFalse(service.delete(doi));
+
+    var resp = service.resolve(doi);
+    assertNotNull(resp);
+
+    assertEquals(DoiState.REGISTERED, resp.getState());
   }
 }

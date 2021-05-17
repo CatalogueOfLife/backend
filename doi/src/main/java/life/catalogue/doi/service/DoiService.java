@@ -16,13 +16,10 @@
 package life.catalogue.doi.service;
 
 
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.doi.datacite.model.DoiAttributes;
 
 import java.net.URI;
-
-import javax.validation.constraints.NotNull;
 
 public interface DoiService {
 
@@ -30,9 +27,9 @@ public interface DoiService {
    * Resolves the registered identifier.
    *
    * @param doi the identifier to resolve
+   * @return the DOI metadata or NULL if the DOI is not found
    */
-  @NotNull
-  DoiAttributes resolve(DOI doi) throws NotFoundException, DoiException;
+  DoiAttributes resolve(DOI doi) throws DoiException;
 
   /**
    * Creates a new draft DOI without any metadata.
@@ -46,7 +43,7 @@ public interface DoiService {
 
   /**
    * Tries to delete an identifier. If it is still a draft DOI it will be fully deleted.
-   * If it was published already it will be hidden instead.
+   * If it was published already, i.e. state=finadable, it will be hidden instead and enter state=registered.
    * Make sure to also update the DOIs url location to an appropriate tombstone page in that case.
    *
    * @param doi the identifier to delete
@@ -54,6 +51,12 @@ public interface DoiService {
    * @throws DoiException if the operation failed for any reason
    */
   boolean delete(DOI doi) throws DoiException;
+
+  /**
+   * Updates a draft or registered DOI to a findable state.
+   * @param doi
+   */
+  void publish(DOI doi) throws DoiException;
 
   /**
    * Updates the identifier metadata attributes. This method must be called every time the object or metadata

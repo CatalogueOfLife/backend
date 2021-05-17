@@ -52,6 +52,7 @@ public class DoiAttributes {
   private List<Description> descriptions;
   private List<GeoLocation> geoLocations;
   // fundingReferences
+  @NotNull
   private String url; // the target URL
   private List<String> contentUrl;
   private Float metadataVersion;
@@ -171,17 +172,6 @@ public class DoiAttributes {
 
   public void setTypes(Map<String, String> types) {
     this.types = types;
-  }
-
-  public void setType(ResourceType type) {
-    if (types == null) {
-      types = new HashMap<>();
-    }
-    if (type == null) {
-      types.remove("resourceType");
-    } else {
-      types.put("resourceType", type.value());
-    }
   }
 
   public List<RelatedIdentifier> getRelatedIdentifiers() {

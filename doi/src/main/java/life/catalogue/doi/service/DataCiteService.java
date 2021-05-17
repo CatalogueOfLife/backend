@@ -2,8 +2,13 @@ package life.catalogue.doi.service;
 
 import life.catalogue.api.model.DOI;
 import life.catalogue.doi.datacite.model.DoiAttributes;
+import life.catalogue.doi.datacite.model.DoiState;
+import life.catalogue.doi.datacite.model.EventType;
 
 import java.net.URI;
+import java.time.Year;
+import java.time.temporal.ChronoField;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotFoundException;
@@ -53,20 +58,31 @@ public class DataCiteService implements DoiService {
   }
 
   @Override
-  public @NotNull DoiAttributes resolve(DOI doi) throws NotFoundException {
+  public DoiAttributes resolve(DOI doi) {
     LOG.debug("retrieve {}", doi);
     try {
       return request(doi).get(DataCiteWrapper.class).getAttributes();
 
-    } catch (RuntimeException e) {
-      throw e;
+    } catch (NotFoundException e) {
+      return null;
     }
+  }
+
+  private static DoiAttributes addRequired(DoiAttributes attr) {
+    attr.setTypes(Map.of("resourceTypeGeneral", "Dataset",  "resourceType", "Dataset"));
+    if (attr.getPublisher() == null) {
+      attr.setPublisher("GBIF");
+    }
+    if (attr.getPublicationYear() == null) {
+      attr.setPublicationYear(Year.now().get(ChronoField.YEAR));
+    }
+    return attr;
   }
 
   @Override
   public void create(DOI doi) throws DoiException {
     LOG.info("create new draft DOI {}", doi);
-    DoiAttributes attr = new DoiAttributes(doi);
+    DoiAttributes attr = addRequired(new DoiAttributes(doi));
     try {
       var resp = request().post(Entity.json(new DataCiteWrapper(attr)));
       if (resp.getStatus() != 201) {
@@ -88,24 +104,38 @@ public class DataCiteService implements DoiService {
     Preconditions.checkArgument(doi.isComplete(), "DOI suffix required");
     LOG.debug("delete DOI {}", doi);
     try {
-      var resp = request(doi).delete();
-
-      if (resp.getStatus() != 200 && resp.getStatus() != 204) {
-        if (resp.getEntity() != null) {
-          String message = resp.readEntity(String.class);
-          throw new DoiHttpException(resp.getStatus(), doi, message);
+      var attr = resolve(doi);
+      if (attr != null) {
+        if (DoiState.DRAFT == attr.getState()) {
+          var resp = request(doi).delete();
+          if (resp.getStatus() != 200 && resp.getStatus() != 204) {
+            if (resp.getEntity() != null) {
+              String message = resp.readEntity(String.class);
+              throw new DoiHttpException(resp.getStatus(), doi, message);
+            }
+            throw new DoiHttpException(resp.getStatus(), doi);
+          }
+        } else {
+          // hide
+          DoiAttributes attr2 = new DoiAttributes(doi);
+          attr2.setEvent(EventType.HIDE);
+          update(attr2);
+          return false;
         }
-        throw new DoiHttpException(resp.getStatus(), doi);
-      } else {
-        String message = resp.readEntity(String.class);
-        System.out.println(message);
       }
 
     } catch (RuntimeException e) {
       throw new DoiException(doi, e);
     }
+    return true;
+  }
 
-    return false;
+  @Override
+  public void publish(DOI doi) throws DoiException {
+    LOG.debug("publish DOI {}", doi);
+    DoiAttributes attr = new DoiAttributes(doi);
+    attr.setEvent(EventType.PUBLISH);
+    update(attr);
   }
 
   @Override
@@ -115,7 +145,7 @@ public class DataCiteService implements DoiService {
 
     LOG.debug("update metadata for DOI {}", attr);
     try {
-      var resp = request(attr.getDoi()).put(Entity.json(new DataCiteWrapper(attr)));
+      var resp = request(attr.getDoi()).put(Entity.json(new DataCiteWrapper(addRequired(attr))));
 
       if (resp.getStatus() != 200 && resp.getStatus() != 204) {
         if (resp.getEntity() != null) {
@@ -136,4 +166,5 @@ public class DataCiteService implements DoiService {
     attr.setUrl(target.toString());
     update(attr);
   }
+
 }
