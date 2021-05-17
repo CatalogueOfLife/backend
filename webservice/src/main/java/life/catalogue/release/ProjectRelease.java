@@ -93,7 +93,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
     try (SqlSession session = factory.openSession(true)) {
       // find previous public release needed for DOI management
-      final Integer prevReleaseKey = findPreviousRelease(session);
+      final Integer prevReleaseKey = findPreviousRelease(datasetKey, session);
       LOG.info("Last public release was {}", prevReleaseKey);
 
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
@@ -128,13 +128,13 @@ public class ProjectRelease extends AbstractProjectCopy {
     idProvider.run();
   }
 
-  private Integer findPreviousRelease(SqlSession session){
+  static Integer findPreviousRelease(int datasetKey, SqlSession session){
     DatasetMapper dm = session.getMapper(DatasetMapper.class);
     DatasetSearchRequest req = new DatasetSearchRequest();
     req.setPrivat(false);
     req.setReleasedFrom(datasetKey);
     req.setSortBy(DatasetSearchRequest.SortBy.CREATED);
-    var releases = dm.search(req, user, new Page(0, 1));
+    var releases = dm.search(req, null, new Page(0, 1));
     return releases.isEmpty() ? null : releases.get(0).getKey();
   }
 

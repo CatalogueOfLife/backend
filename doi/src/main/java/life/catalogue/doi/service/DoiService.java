@@ -81,6 +81,14 @@ public interface DoiService {
    */
   void publish(DOI doi) throws DoiException;
 
+  default void publishSilently(DOI doi) {
+    try {
+      publish(doi);
+    } catch (DoiException e) {
+      LOG.error("Failed to silently publish DOI {}", doi);
+    }
+  }
+
   /**
    * Updates the identifier metadata attributes. This method must be called every time the object or metadata
    * referenced by the identifier changes (e.g. a dataset gets republished, a dataset is replaced by
@@ -98,4 +106,12 @@ public interface DoiService {
    * @throws DoiException if the operation failed for any reason
    */
   void update(DOI doi, URI target) throws DoiException;
+
+  default void updateSilently(DOI doi, URI target) {
+    try {
+      update(doi, target);
+    } catch (DoiException e) {
+      LOG.error("Failed to silently update target URL {} for DOI {}", target, doi);
+    }
+  }
 }

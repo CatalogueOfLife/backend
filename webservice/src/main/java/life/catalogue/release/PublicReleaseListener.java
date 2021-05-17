@@ -4,9 +4,7 @@ import com.google.common.eventbus.Subscribe;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetExport;
-import life.catalogue.api.model.Page;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -14,17 +12,25 @@ import life.catalogue.api.vocab.Datasets;
 
 import life.catalogue.dao.DatasetExportDao;
 
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.doi.service.DoiException;
+import life.catalogue.doi.service.DoiService;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -37,11 +43,13 @@ public class PublicReleaseListener {
   private final WsServerConfig cfg;
   private final SqlSessionFactory factory;
   private final DatasetExportDao dao;
+  private final DoiService doiService;
 
-  public PublicReleaseListener(WsServerConfig cfg, SqlSessionFactory factory, DatasetExportDao dao) {
+  public PublicReleaseListener(WsServerConfig cfg, SqlSessionFactory factory, DatasetExportDao dao, DoiService doiService) {
     this.cfg = cfg;
     this.factory = factory;
     this.dao = dao;
+    this.doiService = doiService;
   }
 
   @Subscribe
@@ -52,7 +60,37 @@ public class PublicReleaseListener {
       && event.old.isPrivat() // that was private before
       && !event.obj.isPrivat() // but now is public
     ) {
+      updateDOIs(event.obj);
       copyExportsToColDownload(event.obj);
+    }
+  }
+
+  void updateDOIs(Dataset dataset) {
+    LOG.info("Publish DOI {}", dataset.getDoi());
+    doiService.publishSilently(dataset.getDoi());
+
+    // change last release to point to CLB
+    try (SqlSession session = factory.openSession()) {
+      Integer lastReleaseKey = ProjectRelease.findPreviousRelease(dataset.getSourceKey(), session);
+      if (lastReleaseKey != null) {
+        LOG.info("Change target URLs of DOIs from previous release {} to point to ChecklistBank", lastReleaseKey);
+        DatasetMapper dm = session.getMapper(DatasetMapper.class);
+        Dataset prev = dm.get(lastReleaseKey);
+        DataCiteConverter converter = new DataCiteConverter(cfg);
+        doiService.updateSilently(prev.getDoi(), converter.releaseURI(lastReleaseKey, false));
+
+        // sources
+        ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+        // track DOIs of current release - these should stay as they are!
+        Set<DOI> currentDOIs = psm.listReleaseSources(dataset.getKey()).stream()
+          .map(ArchivedDataset::getDoi)
+          .collect(Collectors.toSet());
+        for (var src : psm.listReleaseSources(lastReleaseKey)) {
+          if (src.getDoi() != null && !currentDOIs.contains(src.getDoi())) {
+            doiService.updateSilently(src.getDoi(), converter.sourceURI(lastReleaseKey, src.getKey(), false));
+          }
+        }
+      }
     }
   }
 

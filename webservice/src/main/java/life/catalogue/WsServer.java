@@ -343,7 +343,7 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(coljersey);
     bus.register(DatasetInfoCache.CACHE);
     bus.register(new CacheFlush(httpClient, cfg.apiURI));
-    bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao));
+    bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService));
   }
 
   @Override

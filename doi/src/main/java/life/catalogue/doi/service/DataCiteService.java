@@ -113,7 +113,7 @@ public class DataCiteService implements DoiService {
   public boolean delete(DOI doi) throws DoiException {
     Preconditions.checkNotNull(doi);
     Preconditions.checkArgument(doi.isComplete(), "DOI suffix required");
-    LOG.debug("delete DOI {}", doi);
+    LOG.info("delete DOI {}", doi);
     try {
       var attr = resolve(doi);
       if (attr != null) {
@@ -143,7 +143,7 @@ public class DataCiteService implements DoiService {
 
   @Override
   public void publish(DOI doi) throws DoiException {
-    LOG.debug("publish DOI {}", doi);
+    LOG.info("publish DOI {}", doi);
     DoiAttributes attr = new DoiAttributes(doi);
     attr.setEvent(EventType.PUBLISH);
     update(attr);
@@ -154,7 +154,7 @@ public class DataCiteService implements DoiService {
     Preconditions.checkNotNull(attr.getDoi());
     Preconditions.checkArgument(attr.getDoi().isComplete(), "DOI suffix required");
 
-    LOG.debug("update metadata for DOI {}", attr);
+    LOG.info("update metadata for DOI {}", attr);
     try {
       var resp = request(attr.getDoi()).put(Entity.json(new DataCiteWrapper(addRequired(attr))));
 

@@ -39,21 +39,21 @@ public class DataCiteConverter {
       .map(a -> new Creator(a.getGivenName(), a.getFamilyName()))
       .collect(Collectors.toList())
     );
-    if (latest) {
-      attr.setUrl(portal.toString());
-    } else {
-      attr.setUrl(clbBuilder.build(release.getKey()).toString());
-    }
+    attr.setUrl(releaseURI(release.getKey(), latest).toString());
     return attr;
   }
 
   public DoiAttributes source(ArchivedDataset source, Dataset project, boolean latest) {
     DoiAttributes attr = release(source, latest);
-    if (latest) {
-      attr.setUrl(portalSourceBuilder.build(source.getKey()).toString());
-    } else {
-      attr.setUrl(clbSourceBuilder.build(project.getKey(), source.getKey()).toString());
-    }
+    attr.setUrl(sourceURI(project.getKey(), source.getKey(), latest).toString());
     return attr;
+  }
+
+  public URI releaseURI(int datasetKey, boolean latest) {
+    return latest ? portal : clbBuilder.build(datasetKey);
+  }
+
+  public URI sourceURI(int projectKey, int sourceKey, boolean latest) {
+    return latest ? portalSourceBuilder.build(sourceKey) : clbSourceBuilder.build(projectKey, sourceKey);
   }
 }

@@ -1,8 +1,12 @@
 package life.catalogue.command;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.eventbus.EventBus;
 
 import io.dropwizard.ConfiguredBundle;
+
+import io.dropwizard.client.DropwizardApacheConnector;
+import io.dropwizard.client.JerseyClientBuilder;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
@@ -27,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import life.catalogue.doi.service.DataCiteService;
+import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.mail.MailBundle;
 
 import life.catalogue.exporter.ExportManager;
@@ -43,6 +49,7 @@ import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
+import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +125,9 @@ public class ExportCmd extends AbstractMybatisCmd {
       final ImageService imageService = new ImageServiceFS(cfg.img);
       final DatasetExportDao exportDao = new DatasetExportDao(factory, new EventBus());
       manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao);
-      copy = new PublicReleaseListener(cfg, factory, exportDao);
+      JerseyClientBuilder builder = new JerseyClientBuilder(new MetricRegistry()).using(cfg.client);
+      DoiService doiService = new DataCiteService(cfg.doi, builder.build("datacite-client"));
+      copy = new PublicReleaseListener(cfg, factory, exportDao, doiService);
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       d = dm.get(ns.getInt(ARG_KEY));
       if (d == null) {
@@ -147,6 +156,8 @@ public class ExportCmd extends AbstractMybatisCmd {
       while (!exec.isIdle()) {
         TimeUnit.SECONDS.sleep(10);
       }
+      // give datacite API some time
+      TimeUnit.SECONDS.sleep(30);
       System.out.println("Shutting down executor");
       exec.close();
     }
