@@ -1,14 +1,18 @@
+<#assign _title>${title!} | COL</#assign>
+<#assign _description>${description!title!}</#assign>
 <#--
   try out with GOOGLE TEST TOOL https://search.google.com/test/rich-results?utm_campaign=sdtt&utm_medium=url&url=https://www.catalogueoflife.org/data/dataset/1010
 -->
-<meta property="og:title" content="${title!}" />
+<meta name="title" content="${_title}" />
+<meta name="description" content="${_description}" />
+<meta property="og:title" content="${_title}" />
 <meta property="og:url" content="https://www.catalogueoflife.org/data/dataset/${key?c}" />
 <meta property="og:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${key?c}/logo?size=LARGE" />
-<meta property="og:description" content="${description!title!}" />
+<meta property="og:description" content="${_description}" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:site" content="@catalogueoflife"/>
-<meta name="twitter:title" content="${title!}" />
-<meta name="twitter:description" content="${description!title}" />
+<meta name="twitter:title" content="${_title}" />
+<meta name="twitter:description" content="${_description}" />
 <meta name="twitter:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${key?c}/logo?size=LARGE" />
 
 <#macro person p>

@@ -1,13 +1,16 @@
-<#assign description>${info.taxon.label} in the Catalogue of Life<#if source??> based on ${source.citation!source.title!"unknown"}</#if></#assign>
+<#assign _title>${info.taxon.getLabel()} | COL</#assign>
+<#assign _description>${info.taxon.label} in the Catalogue of Life<#if source??> based on ${source.citation!source.title!"unknown"}</#if></#assign>
 
-<meta property="og:title" content="${info.taxon.getLabel()}" />
+<meta name="title" content="${_title}" />
+<meta name="description" content="${_description}" />
+<meta property="og:title" content="${_title}" />
 <meta property="og:url" content="https://www.catalogueoflife.org/data/taxon/${info.taxon.getId()}" />
 <meta property="og:image" content="https://www.catalogueoflife.org/images/col_square_logo.jpg" />
-<meta property="og:description" content="${description}" />
+<meta property="og:description" content="${_description}" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:site" content="@catalogueoflife"/>
-<meta name="twitter:title" content="${info.taxon.label}" />
-<meta name="twitter:description" content="${description}" />
+<meta name="twitter:title" content="${_title}" />
+<meta name="twitter:description" content="${_description}" />
 <meta name="twitter:image" content="https://www.catalogueoflife.org/images/col_square_logo.jpg" />
 
 <!--
