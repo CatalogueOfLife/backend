@@ -1,6 +1,7 @@
 package life.catalogue.doi.service;
 
 import life.catalogue.api.model.DOI;
+import life.catalogue.common.id.IdConverter;
 import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.datacite.model.DoiState;
 import life.catalogue.doi.datacite.model.EventType;
@@ -10,7 +11,6 @@ import java.time.Year;
 import java.time.temporal.ChronoField;
 import java.util.Map;
 
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -27,18 +27,17 @@ import com.google.common.base.Preconditions;
 
 public class DataCiteService implements DoiService {
   private static final Logger LOG = LoggerFactory.getLogger(DataCiteService.class);
+  private static final String DATASET_PATH = "ds";
+  private static final String DOWNLOAD_PATH = "dl";
 
   private final DoiConfig cfg;
-  private final Client client;
   private final WebTarget dois;
-  private final MediaType MEDIA_TYPE = new MediaType("application", "vnd.api+json");
   private final String auth;
 
 
   public DataCiteService(DoiConfig cfg, Client client) {
     Preconditions.checkArgument(cfg.api.startsWith("https"), "SSL required to use the DataCite API");
     this.cfg = cfg;
-    this.client = client;
     dois = client.target(UriBuilder.fromUri(cfg.api).path("dois").build());
     auth = BasicAuthenticator.basicAuthentication(cfg.username, cfg.password);
   }
@@ -55,6 +54,18 @@ public class DataCiteService implements DoiService {
     return uri
       .request(MediaType.APPLICATION_JSON_TYPE)
       .header(HttpHeaders.AUTHORIZATION, auth);
+  }
+
+  @Override
+  public DOI fromDataset(int datasetKey) {
+    String suffix = DATASET_PATH + IdConverter.LATIN29.encode(datasetKey);
+    return new DOI(cfg.prefix, suffix);
+  }
+
+  @Override
+  public DOI fromDatasetSource(int datasetKey, int sourceKey) {
+    String suffix = DATASET_PATH + IdConverter.LATIN29.encode(datasetKey) + "-" + IdConverter.LATIN29.encode(sourceKey);
+    return new DOI(cfg.prefix, suffix);
   }
 
   @Override

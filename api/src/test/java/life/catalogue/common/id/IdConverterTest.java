@@ -16,6 +16,10 @@ public class IdConverterTest {
     for (int x : new int[]{18, 1089, 1781089, 4781089, 12781089, 2147483647}) {
       System.out.println(IdConverter.LATIN29.encode(x));
     }
+
+    for (int x : new int[]{3, 1010, 2298, 3450, 25000}) {
+      System.out.println(IdConverter.LATIN29.encode(x));
+    }
   }
 
   @Test

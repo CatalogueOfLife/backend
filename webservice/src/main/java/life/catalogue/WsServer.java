@@ -27,6 +27,8 @@ import life.catalogue.dao.*;
 import life.catalogue.db.LookupTables;
 import life.catalogue.db.tree.DatasetDiffService;
 import life.catalogue.db.tree.SectorDiffService;
+import life.catalogue.doi.service.DataCiteService;
+import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.ManagedUtils;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
@@ -261,9 +263,10 @@ public class WsServer extends Application<WsServerConfig> {
 
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao);
+    DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
 
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, getSqlSessionFactory(), cfg);
+    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, doiService, getSqlSessionFactory(), cfg);
 
     // importer
     importManager = new ImportManager(cfg,

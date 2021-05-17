@@ -18,10 +18,19 @@ package life.catalogue.doi.service;
 
 import life.catalogue.api.model.DOI;
 import life.catalogue.doi.datacite.model.DoiAttributes;
+import life.catalogue.doi.datacite.model.EventType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 
 public interface DoiService {
+  Logger LOG = LoggerFactory.getLogger(DoiService.class);
+
+  DOI fromDataset(int datasetKey);
+
+  DOI fromDatasetSource(int datasetKey, int sourceKey);
 
   /**
    * Resolves the registered identifier.
@@ -40,6 +49,20 @@ public interface DoiService {
    * @throws DoiException if the operation failed for any other reason
    */
   void create(DOI doi) throws DoiException;
+
+  /**
+   * Creates a new draft DOI and updates it already with given metadata
+   * @param attributes
+   */
+  default void createSilently(DOI doi, DoiAttributes attributes) {
+    try {
+      create(doi);
+      attributes.setDoi(doi);
+      update(attributes);
+    } catch (DoiException e) {
+      LOG.error("Failed to silently create a new DOI {}", attributes.getDoi(), e);
+    }
+  }
 
   /**
    * Tries to delete an identifier. If it is still a draft DOI it will be fully deleted.

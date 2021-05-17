@@ -247,30 +247,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("/{key}/source/{id}/metrics")
-  public ImportMetrics projectSourceMetrics(@PathParam("key") int datasetKey, @PathParam("id") int id, @Context SqlSession session) {
-    ImportMetrics metrics = new ImportMetrics();
-    metrics.setAttempt(-1);
-    metrics.setDatasetKey(datasetKey);
-
-    SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-    AtomicInteger sectorCounter = new AtomicInteger(0);
-    // a release? use mother project in that case
-    if (DatasetInfoCache.CACHE.origin(datasetKey) == DatasetOrigin.RELEASED) {
-      Integer projectKey = DatasetInfoCache.CACHE.sourceProject(datasetKey);
-      for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, id)){
-        if (s.getSyncAttempt() != null) {
-          SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
-          metrics.add(m);
-          sectorCounter.incrementAndGet();
-        }
-      }
-    } else {
-      for (SectorImport m : sim.list(null, datasetKey, id, null, true, null)) {
-        metrics.add(m);
-        sectorCounter.incrementAndGet();
-      }
-    }
-    metrics.setSectorCount(sectorCounter.get());
-    return metrics;
+  public ImportMetrics projectSourceMetrics(@PathParam("key") int datasetKey, @PathParam("id") int id) {
+    return sourceDao.projectSourceMetrics(datasetKey, id);
   }
 }

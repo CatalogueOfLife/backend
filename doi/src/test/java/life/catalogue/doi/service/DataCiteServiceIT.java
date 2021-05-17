@@ -116,6 +116,15 @@ public class DataCiteServiceIT {
   }
 
   @Test
+  public void buildDOI() {
+    System.out.println( service.fromDataset(1010) );
+    System.out.println( service.fromDataset(2298) );
+    System.out.println( service.fromDataset(25298) );
+    System.out.println( service.fromDatasetSource(2298, 1010) );
+    System.out.println( service.fromDatasetSource(25298, 41010) );
+  }
+
+  @Test
   public void createAndUpdate() throws Exception {
     DOI doi = DOI.test("DataCiteServiceIT-"+ UUID.randomUUID());
     dois.add(doi);

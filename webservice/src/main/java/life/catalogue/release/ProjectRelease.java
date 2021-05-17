@@ -1,8 +1,8 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.ExportRequest;
+import life.catalogue.WsServerConfig;
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.text.CitationUtils;
@@ -12,6 +12,8 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetProjectSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.doi.service.DoiConfig;
+import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -25,26 +27,33 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
 
   private final ImageService imageService;
-  private final ReleaseConfig cfg;
+  private final WsServerConfig cfg;
   private final UriBuilder datasetApiBuilder;
   private final CloseableHttpClient client;
   private final ExportManager exportManager;
+  private final DoiService doiService;
+  private final DatasetProjectSourceDao sourceDao;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
-                 int datasetKey, int userKey, ReleaseConfig cfg, URI api, CloseableHttpClient client, ExportManager exportManager) {
+                 int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
+                 DoiService doiService) {
     super("releasing", factory, diDao, dDao, indexService, userKey, datasetKey, true);
     this.imageService = imageService;
+    this.doiService = doiService;
     this.cfg = cfg;
-    this.datasetApiBuilder = api == null ? null : UriBuilder.fromUri(api).path("dataset/{key}LR");
+    this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
     this.client = client;
     this.exportManager = exportManager;
+    this.sourceDao = new DatasetProjectSourceDao(factory);
   }
 
   @Override
@@ -72,13 +81,34 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   void prepWork() throws Exception {
+    DataCiteConverter converter = new DataCiteConverter(cfg);
+    // assign draft DOI
+    newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
+    var attr = converter.release(newDataset, false);
+    LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
+    doiService.createSilently(newDataset.getDoi(), attr);
+
     // archive dataset metadata & logos
     updateState(ImportState.ARCHIVING);
     DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
     try (SqlSession session = factory.openSession(true)) {
+      // find previous public release needed for DOI management
+      final Integer prevReleaseKey = findPreviousRelease(session);
+      LOG.info("Last public release was {}", prevReleaseKey);
+
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
-      dao.list(datasetKey, newDataset, false).forEach(d -> {
+      dao.list(datasetKey, newDataset, true).forEach(d -> {
+        // can we reuse a previous DOI for the source
+        DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
+        if (srcDOI == null) {
+          srcDOI = cfg.doi.datasetSourceDOI(newDatasetKey, d.getKey());
+          LOG.info("Creating new DOI {} for modified source {} of release {}", srcDOI, d.getKey(), newDatasetKey);
+          var srcAttr = converter.source(d, newDataset, true);
+          doiService.createSilently(srcDOI, srcAttr);
+        }
+        d.setDoi(srcDOI);
+
         LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getImportAttempt(), newDatasetKey);
         psm.create(newDatasetKey, d);
         // archive logos
@@ -94,8 +124,44 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     // map ids
     updateState(ImportState.MATCHING);
-    IdProvider idProvider = new IdProvider(datasetKey, metrics.getAttempt(), newDatasetKey, cfg, factory);
+    IdProvider idProvider = new IdProvider(datasetKey, metrics.getAttempt(), newDatasetKey, cfg.release, factory);
     idProvider.run();
+  }
+
+  private Integer findPreviousRelease(SqlSession session){
+    DatasetMapper dm = session.getMapper(DatasetMapper.class);
+    DatasetSearchRequest req = new DatasetSearchRequest();
+    req.setPrivat(false);
+    req.setReleasedFrom(datasetKey);
+    req.setSortBy(DatasetSearchRequest.SortBy.CREATED);
+    var releases = dm.search(req, user, new Page(0, 1));
+    return releases.isEmpty() ? null : releases.get(0).getKey();
+  }
+
+  /**
+   * Looks up a previous DOI and verifies the core metrics have not changed since.
+   * Otherwise NULL is returned and a new DOI should be issued.
+   * @param prevReleaseKey the datasetKey of the previous release or NULL if never released before
+   * @param sourceKey
+   */
+  private DOI findSourceDOI(Integer prevReleaseKey, int sourceKey, SqlSession session) {
+    if (prevReleaseKey != null) {
+      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      var prevSrc = psm.getProjectSource(sourceKey, prevReleaseKey);
+      if (prevSrc != null && prevSrc.getDoi() != null) {
+        // compare basic metrics
+        var metrics = sourceDao.projectSourceMetrics(datasetKey, sourceKey);
+        var prevMetrics = sourceDao.projectSourceMetrics(prevReleaseKey, sourceKey);
+        if (Objects.equals(metrics.getTaxaByRankCount(), prevMetrics.getTaxaByRankCount())
+            && Objects.equals(metrics.getSynonymsByRankCount(), prevMetrics.getSynonymsByRankCount())
+            && Objects.equals(metrics.getVernacularsByLanguageCount(), prevMetrics.getVernacularsByLanguageCount())
+            && Objects.equals(metrics.getUsagesByStatusCount(), prevMetrics.getUsagesByStatusCount())
+        ) {
+          return prevSrc.getDoi();
+        }
+      }
+    }
+    return null;
   }
 
   @Override
@@ -125,7 +191,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   void onError() {
     // remove reports
-    File dir = cfg.reportDir(datasetKey, metrics.getAttempt());
+    File dir = cfg.release.reportDir(datasetKey, metrics.getAttempt());
     if (dir.exists()) {
       LOG.debug("Remove release report {}-{} for failed dataset {}", datasetKey, metrics.attempt(), newDatasetKey);
       FileUtils.deleteQuietly(dir);

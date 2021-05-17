@@ -131,6 +131,9 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public URI portalURI = URI.create("https://www.catalogueoflife.org");
 
+  @NotNull
+  public URI clbURI = URI.create("https://data.catalogueoflife.org");
+
   public URI apiURI = URI.create("https://api.catalogueoflife.org");
 
   /**

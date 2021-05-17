@@ -19,6 +19,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -68,11 +69,12 @@ public class ProjectReleaseIT {
     EventBus bus = mock(EventBus.class);
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
+    DoiService doiService = mock(DoiService.class);
     dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus);
     client = HttpClientUtils.httpsClient();
     WsServerConfig cfg = new WsServerConfig();
     cfg.apiURI = URI.create("https://api.dev.catalogue.life");
-    releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), cfg);
+    releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, PgSetupRule.getSqlSessionFactory(), cfg);
   }
 
   @After

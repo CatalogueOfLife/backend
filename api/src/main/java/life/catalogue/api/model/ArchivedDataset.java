@@ -69,6 +69,9 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   @NotNull
   private DatasetOrigin origin;
 
+  // not store yet
+  private DOI doi;
+
   // human metadata
   @NotNull @NotBlank
   private String title;
@@ -190,6 +193,14 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
 
   public void setImportAttempt(Integer importAttempt) {
     this.importAttempt = importAttempt;
+  }
+
+  public DOI getDoi() {
+    return doi;
+  }
+
+  public void setDoi(DOI doi) {
+    this.doi = doi;
   }
 
   @Override

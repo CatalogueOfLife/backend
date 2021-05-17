@@ -16,6 +16,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -68,11 +69,12 @@ public class ProjectDuplicationIT {
     EventBus bus = mock(EventBus.class);
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
+    DoiService doiService = mock(DoiService.class);
     dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus);
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
-    releaseManager = new ReleaseManager(null, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), new WsServerConfig());
+    releaseManager = new ReleaseManager(null, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, PgSetupRule.getSqlSessionFactory(), new WsServerConfig());
   }
 
   int datasetKey(int key, DataFormat format) {

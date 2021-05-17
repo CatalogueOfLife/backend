@@ -1,20 +1,22 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.ArchivedDataset;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.CitationUtils;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPatchMapper;
-import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.db.mapper.*;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static life.catalogue.api.vocab.DatasetOrigin.MANAGED;
 import static life.catalogue.api.vocab.DatasetOrigin.RELEASED;
@@ -113,5 +115,34 @@ public class DatasetProjectSourceDao {
       }
     }
     return d;
+  }
+
+  public ImportMetrics projectSourceMetrics(int datasetKey, int sourceKey) {
+    ImportMetrics metrics = new ImportMetrics();
+    metrics.setAttempt(-1);
+    metrics.setDatasetKey(datasetKey);
+
+    try (SqlSession session = factory.openSession()) {
+      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+      AtomicInteger sectorCounter = new AtomicInteger(0);
+      // a release? use mother project in that case
+      if (DatasetInfoCache.CACHE.origin(datasetKey) == DatasetOrigin.RELEASED) {
+        Integer projectKey = DatasetInfoCache.CACHE.sourceProject(datasetKey);
+        for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, sourceKey)){
+          if (s.getSyncAttempt() != null) {
+            SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
+            metrics.add(m);
+            sectorCounter.incrementAndGet();
+          }
+        }
+      } else {
+        for (SectorImport m : sim.list(null, datasetKey, sourceKey, null, true, null)) {
+          metrics.add(m);
+          sectorCounter.incrementAndGet();
+        }
+      }
+      metrics.setSectorCount(sectorCounter.get());
+      return metrics;
+    }
   }
 }
