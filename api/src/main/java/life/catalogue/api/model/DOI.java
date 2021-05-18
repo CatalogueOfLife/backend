@@ -143,6 +143,15 @@ public class DOI implements Serializable {
     return prefix != null && suffix != null;
   }
 
+  @JsonIgnore
+  public boolean isCOL() {
+    return COL_PREFIX.equalsIgnoreCase(prefix) || TEST_PREFIX.equalsIgnoreCase(prefix);
+  }
+
+  public boolean isGBIF() {
+    return GBIF_PREFIX.equalsIgnoreCase(prefix);
+  }
+
   public int hashCode() {
     return Objects.hash(new Object[]{this.prefix, this.suffix});
   }

@@ -76,8 +76,7 @@
     #{obj.modifiedBy}
   </sql>
 
-  <select id="processDataset" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap" resultOrdered="true" fetchSize="100"
-          resultSetType="FORWARD_ONLY">
+  <select id="processDataset" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM dataset_patch d
     WHERE dataset_key = #{datasetKey}

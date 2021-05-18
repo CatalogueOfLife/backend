@@ -1,12 +1,13 @@
 package life.catalogue.dao;
 
-import com.google.common.base.Objects;
-import com.google.common.eventbus.EventBus;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.DatasetProcessable;
@@ -15,17 +16,7 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.exceptions.PersistenceException;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -38,6 +29,21 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Objects;
+import com.google.common.eventbus.EventBus;
 
 public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   
@@ -172,16 +178,21 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       LOG.warn("Deleting project {} with all its {} releases", key, releases.size());
       for (int rk : releases) {
         LOG.info("Deleting release {} of project {}", rk, key);
+        // cascade to release
         delete(rk, user);
       }
     }
+
     // remove decisions, sectors, estimates, dataset patches
     for (Class<DatasetProcessable<?>> mClass : new Class[]{SectorMapper.class, DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class}) {
       LOG.info("Delete {}s for dataset {}", mClass.getSimpleName().substring(0, mClass.getSimpleName().length() - 6), key);
       session.getMapper(mClass).deleteByDataset(key);
     }
     // remove project source dataset archives
-    LOG.info("Delete project source dataset archives for dataset {}", key);
+    LOG.info("Delete archived release sources for dataset {}", key);
+    session.getMapper(ProjectSourceMapper.class).deleteByRelease(key);
+    // remove dataset archive
+    LOG.info("Delete dataset archive for dataset {}", key);
     session.getMapper(DatasetArchiveMapper.class).deleteByDataset(key);
     // remove import & sync history
     LOG.info("Delete sector sync history for dataset {}", key);

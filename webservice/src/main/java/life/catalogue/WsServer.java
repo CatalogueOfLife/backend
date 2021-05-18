@@ -27,6 +27,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.LookupTables;
 import life.catalogue.db.tree.DatasetDiffService;
 import life.catalogue.db.tree.SectorDiffService;
+import life.catalogue.doi.DatasetDeletionListener;
 import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.ManagedUtils;
@@ -248,7 +249,7 @@ public class WsServer extends Application<WsServerConfig> {
     }
 
     // daos
-    DatasetExportDao exdao = new DatasetExportDao(getSqlSessionFactory(), bus);
+    DatasetExportDao exdao = new DatasetExportDao(cfg.exportDir, getSqlSessionFactory(), bus);
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus);
     DatasetProjectSourceDao dsdao = new DatasetProjectSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
@@ -350,6 +351,8 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(DatasetInfoCache.CACHE);
     bus.register(new CacheFlush(httpClient, cfg.apiURI));
     bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService));
+    bus.register(new DatasetDeletionListener(cfg, getSqlSessionFactory(), doiService));
+
   }
 
   @Override

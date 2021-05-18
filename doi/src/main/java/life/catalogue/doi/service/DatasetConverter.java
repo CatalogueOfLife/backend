@@ -1,33 +1,32 @@
-package life.catalogue.release;
+package life.catalogue.doi.service;
 
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.doi.datacite.model.Creator;
 import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.datacite.model.Title;
 
-import javax.ws.rs.core.UriBuilder;
-
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * Converts COL metadata into DataCite metadata.
  * This currently only implements the core basics and waits for the new metadata model to be implemented.
  */
-public class DataCiteConverter {
+public class DatasetConverter {
   private final URI portal;
   private final UriBuilder clbBuilder;
   private final UriBuilder clbSourceBuilder;
   private final UriBuilder portalSourceBuilder;
 
-  public DataCiteConverter(WsServerConfig cfg) {
-    portal = UriBuilder.fromUri(cfg.portalURI).path("data/metadata").build();
-    portalSourceBuilder = UriBuilder.fromUri(cfg.portalURI).path("data/dataset/{key}");
-    clbBuilder = UriBuilder.fromUri(cfg.clbURI).path("dataset/{key}/overview");
-    clbSourceBuilder = UriBuilder.fromUri(cfg.clbURI).path("dataset/{projectKey}/source/{key}");
+  public DatasetConverter(URI portalURI, URI clbURI) {
+    portal = UriBuilder.fromUri(portalURI).path("data/metadata").build();
+    portalSourceBuilder = UriBuilder.fromUri(portalURI).path("data/dataset/{key}");
+    clbBuilder = UriBuilder.fromUri(clbURI).path("dataset/{key}/overview");
+    clbSourceBuilder = UriBuilder.fromUri(clbURI).path("dataset/{projectKey}/source/{key}");
   }
 
   public DoiAttributes release(ArchivedDataset release, boolean latest) {
@@ -39,7 +38,7 @@ public class DataCiteConverter {
       .map(a -> new Creator(a.getGivenName(), a.getFamilyName()))
       .collect(Collectors.toList())
     );
-    attr.setUrl(releaseURI(release.getKey(), latest).toString());
+    attr.setUrl(datasetURI(release.getKey(), latest).toString());
     return attr;
   }
 
@@ -49,11 +48,11 @@ public class DataCiteConverter {
     return attr;
   }
 
-  public URI releaseURI(int datasetKey, boolean latest) {
-    return latest ? portal : clbBuilder.build(datasetKey);
+  public URI datasetURI(int datasetKey, boolean portal) {
+    return portal ? this.portal : clbBuilder.build(datasetKey);
   }
 
-  public URI sourceURI(int projectKey, int sourceKey, boolean latest) {
-    return latest ? portalSourceBuilder.build(sourceKey) : clbSourceBuilder.build(projectKey, sourceKey);
+  public URI sourceURI(int projectKey, int sourceKey, boolean portal) {
+    return portal ? portalSourceBuilder.build(sourceKey) : clbSourceBuilder.build(projectKey, sourceKey);
   }
 }

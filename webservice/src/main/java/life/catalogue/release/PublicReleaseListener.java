@@ -14,7 +14,7 @@ import life.catalogue.dao.DatasetExportDao;
 
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
-import life.catalogue.doi.service.DoiException;
+import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 
 import org.apache.commons.io.FileUtils;
@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
@@ -44,45 +43,54 @@ public class PublicReleaseListener {
   private final SqlSessionFactory factory;
   private final DatasetExportDao dao;
   private final DoiService doiService;
+  private final DatasetConverter converter;
 
   public PublicReleaseListener(WsServerConfig cfg, SqlSessionFactory factory, DatasetExportDao dao, DoiService doiService) {
     this.cfg = cfg;
     this.factory = factory;
     this.dao = dao;
     this.doiService = doiService;
+    this.converter = new DatasetConverter(cfg.portalURI, cfg.clbURI);
   }
 
   @Subscribe
   public void datasetChanged(DatasetChanged event){
     if (event.isUpdated() // assures we got both obj and old
       && event.obj.getOrigin() == DatasetOrigin.RELEASED
-      && Datasets.COL == event.obj.getSourceKey() // a col release
       && event.old.isPrivat() // that was private before
       && !event.obj.isPrivat() // but now is public
     ) {
-      updateDOIs(event.obj);
-      copyExportsToColDownload(event.obj);
+
+      // publish DOI if exists
+      if (event.obj.getDoi() != null) {
+        LOG.info("Publish DOI {}", event.obj.getDoi());
+        doiService.publishSilently(event.obj.getDoi());
+      }
+
+      // COL specifics
+      if (Datasets.COL == event.obj.getSourceKey()) {
+        updateColDoiUrls(event.obj);
+        copyExportsToColDownload(event.obj);
+      }
     }
   }
 
-  void updateDOIs(Dataset dataset) {
-    LOG.info("Publish DOI {}", dataset.getDoi());
-    doiService.publishSilently(dataset.getDoi());
-
-    // change last release to point to CLB
+  /**
+   * Change DOI metadata for last release to point to CLB, not portal
+   */
+  void updateColDoiUrls(Dataset release) {
     try (SqlSession session = factory.openSession()) {
-      Integer lastReleaseKey = ProjectRelease.findPreviousRelease(dataset.getSourceKey(), session);
+      Integer lastReleaseKey = ProjectRelease.findPreviousRelease(release.getSourceKey(), session);
       if (lastReleaseKey != null) {
         LOG.info("Change target URLs of DOIs from previous release {} to point to ChecklistBank", lastReleaseKey);
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         Dataset prev = dm.get(lastReleaseKey);
-        DataCiteConverter converter = new DataCiteConverter(cfg);
-        doiService.updateSilently(prev.getDoi(), converter.releaseURI(lastReleaseKey, false));
+        doiService.updateSilently(prev.getDoi(), converter.datasetURI(lastReleaseKey, false));
 
         // sources
         ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
         // track DOIs of current release - these should stay as they are!
-        Set<DOI> currentDOIs = psm.listReleaseSources(dataset.getKey()).stream()
+        Set<DOI> currentDOIs = psm.listReleaseSources(release.getKey()).stream()
           .map(ArchivedDataset::getDoi)
           .collect(Collectors.toSet());
         for (var src : psm.listReleaseSources(lastReleaseKey)) {

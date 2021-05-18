@@ -123,7 +123,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       mail.run(cfg, null);
       exec = new JobExecutor(cfg.job, mail.getMailer());
       final ImageService imageService = new ImageServiceFS(cfg.img);
-      final DatasetExportDao exportDao = new DatasetExportDao(factory, new EventBus());
+      final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, new EventBus());
       manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao);
       JerseyClientBuilder builder = new JerseyClientBuilder(new MetricRegistry()).using(cfg.client);
       DoiService doiService = new DataCiteService(cfg.doi, builder.build("datacite-client"));

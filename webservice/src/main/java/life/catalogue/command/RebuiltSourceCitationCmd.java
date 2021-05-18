@@ -88,7 +88,7 @@ public class RebuiltSourceCitationCmd extends AbstractPromptCmd {
   void update(DatasetProjectSourceDao dao) {
     try (SqlSession session = factory.openSession(false)) {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
-      int cnt = psm.deleteByProject(release.getKey());
+      int cnt = psm.deleteByRelease(release.getKey());
       session.commit();
       System.out.printf("Deleted %s old source metadata records\n", cnt);
 

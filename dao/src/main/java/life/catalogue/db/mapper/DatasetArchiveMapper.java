@@ -4,9 +4,6 @@ import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.annotations.Param;
 
-/**
- * DatasetProcessable refers to archived dataset metadata for projects only!
- */
 public interface DatasetArchiveMapper extends DatasetProcessable<ArchivedDataset> {
 
   /**

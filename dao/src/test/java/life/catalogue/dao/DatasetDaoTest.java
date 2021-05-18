@@ -12,6 +12,7 @@ import life.catalogue.img.ImageService;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,7 +25,7 @@ public class DatasetDaoTest extends DaoTestBase {
   @Before
   public void init() {
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    DatasetExportDao exDao = new DatasetExportDao(PgSetupRule.getSqlSessionFactory(), new EventBus());
+    DatasetExportDao exDao = new DatasetExportDao(new File("/tmp/exports"), PgSetupRule.getSqlSessionFactory(), new EventBus());
     dao = new DatasetDao(factory(),
       null,
       ImageService.passThru(),

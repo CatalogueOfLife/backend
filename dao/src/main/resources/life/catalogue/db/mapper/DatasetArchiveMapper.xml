@@ -71,6 +71,12 @@
     WHERE d.key = #{key}
   </insert>
 
+  <select id="processDataset" parameterType="map" resultMap="archiveResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE d.key = #{datasetKey}
+  </select>
+
   <delete id="deleteByDataset" parameterType="map">
     DELETE FROM dataset_archive WHERE key = #{datasetKey};
   </delete>

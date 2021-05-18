@@ -15,13 +15,15 @@ import life.catalogue.db.mapper.DatasetExportMapperTest;
 
 import org.junit.Test;
 
+import java.io.File;
+
 import static org.junit.Assert.*;
 
 public class DatasetExportDaoIT extends DaoTestBase {
 
   @Test
   public void current() {
-    DatasetExportDao dao = new DatasetExportDao(PgSetupRule.getSqlSessionFactory(), new EventBus());
+    DatasetExportDao dao = new DatasetExportDao(new File("/tmp/exports"), PgSetupRule.getSqlSessionFactory(), new EventBus());
     ExportRequest req = new ExportRequest();
     req.setDatasetKey(TestDataRule.APPLE.key);
     var c = dao.current(req);

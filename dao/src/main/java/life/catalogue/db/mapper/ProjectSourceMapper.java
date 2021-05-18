@@ -16,6 +16,8 @@ import java.util.List;
 
 /**
  * DatasetProcessable refers to archived dataset metadata for projects only!
+ * Contrary to its name the table project_source only stores sources for releases.
+ * The live project sources are determined based on the sector mappings alone and are the reason for the name of the mapper.
  */
 public interface ProjectSourceMapper {
 
@@ -58,7 +60,11 @@ public interface ProjectSourceMapper {
    */
   List<ArchivedDataset> listProjectSources(@Param("datasetKey") int datasetKey);
 
-  int deleteByProject(@Param("datasetKey") int datasetKey);
+  /**
+   * Deletes all source datasets for the given release
+   * @param datasetKey the release dataset key. No project keys allowed!
+   */
+  int deleteByRelease(@Param("datasetKey") int datasetKey);
 
 
   class DatasetWithProjectKey {

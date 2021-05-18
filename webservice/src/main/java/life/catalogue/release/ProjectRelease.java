@@ -12,6 +12,7 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetProjectSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -81,14 +82,14 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   void prepWork() throws Exception {
-    DataCiteConverter converter = new DataCiteConverter(cfg);
+    DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI);
     // assign draft DOI
     newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
     var attr = converter.release(newDataset, false);
     LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
     doiService.createSilently(newDataset.getDoi(), attr);
 
-    // archive dataset metadata & logos
+    // treat source. Archive dataset metadata & logos & assign a potentially new DOI
     updateState(ImportState.ARCHIVING);
     DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
     try (SqlSession session = factory.openSession(true)) {
@@ -99,7 +100,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       dao.list(datasetKey, newDataset, true).forEach(d -> {
-        // can we reuse a previous DOI for the source
+        // can we reuse a previous DOI for the source?
         DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
         if (srcDOI == null) {
           srcDOI = cfg.doi.datasetSourceDOI(newDatasetKey, d.getKey());

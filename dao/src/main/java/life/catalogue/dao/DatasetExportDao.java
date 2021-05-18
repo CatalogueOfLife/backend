@@ -11,9 +11,11 @@ import life.catalogue.db.mapper.DatasetExportMapper;
 
 import life.catalogue.db.mapper.DatasetMapper;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import java.io.File;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -22,10 +24,16 @@ import java.util.UUID;
 public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExportMapper> {
   Set<JobStatus> GOOD = Set.of(JobStatus.FINISHED, JobStatus.WAITING, JobStatus.BLOCKED, JobStatus.RUNNING);
   private final EventBus bus;
+  private final File exportDir;
 
-  public DatasetExportDao(SqlSessionFactory factory, EventBus bus) {
+  public DatasetExportDao(File exportDir, SqlSessionFactory factory, EventBus bus) {
     super(false, true, factory, DatasetExportMapper.class);
     this.bus = bus;
+    this.exportDir = exportDir;
+  }
+
+  public File downloadFile(UUID key) {
+    return new File(exportDir, DatasetExport.downloadFilePath(key));
   }
 
   public ResultPage<DatasetExport> list(ExportSearchRequest filter, Page page) {
@@ -61,6 +69,11 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
 
   @Override
   protected boolean deleteAfter(UUID key, DatasetExport old, int user, DatasetExportMapper mapper, SqlSession session) {
+    // remove exported file
+    File zip = downloadFile(key);
+    if (zip.exists()) {
+      FileUtils.deleteQuietly(zip);
+    }
     // notify event bus
     bus.post(ExportChanged.delete(old));
     return true;

@@ -92,7 +92,7 @@
     VALUES (#{key}, #{datasetKey}, #{importAttempt}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now())
   </insert>
 
-  <delete id="deleteByProject" parameterType="map">
+  <delete id="deleteByRelease" parameterType="map">
     DELETE FROM project_source WHERE dataset_key = #{datasetKey};
   </delete>
 

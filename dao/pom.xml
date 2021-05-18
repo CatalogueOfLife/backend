@@ -47,6 +47,10 @@
 			<groupId>org.catalogueoflife</groupId>
 			<artifactId>parser</artifactId>
 		</dependency>
+        <dependency>
+          <groupId>org.catalogueoflife</groupId>
+          <artifactId>doi</artifactId>
+        </dependency>
 
 		<!-- mybatis / DB -->
 		<dependency>

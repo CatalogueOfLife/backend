@@ -27,7 +27,7 @@ public class ProjectSourceMapperTest extends MapperTestBase<ProjectSourceMapper>
 
   @Test
   public void deleteByProject() throws Exception {
-    mapper().deleteByProject(Datasets.COL);
+    mapper().deleteByRelease(Datasets.COL);
   }
 
   @Test
