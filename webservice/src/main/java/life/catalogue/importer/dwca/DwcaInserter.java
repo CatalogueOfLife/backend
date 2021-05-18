@@ -10,6 +10,9 @@ import life.catalogue.importer.coldp.MetadataParser;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.reference.ReferenceFactory;
+
+import org.apache.commons.io.FilenameUtils;
+
 import org.gbif.dwc.terms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,6 +112,11 @@ public class DwcaInserter extends NeoCsvInserter {
       Path metadataPath = mf.get();
       if (Files.exists(metadataPath)) {
         try {
+          String ext = FilenameUtils.getExtension(metadataPath.getFileName().toString());
+          if (ext.equalsIgnoreCase("yaml") || ext.equalsIgnoreCase("yml")) {
+            LOG.info("Read dataset metadata from YAML file {}", metadataPath);
+            return MetadataParser.readMetadata(Files.newInputStream(metadataPath));
+          }
           return EmlParser.parse(metadataPath);
           
         } catch (IOException | RuntimeException e) {
