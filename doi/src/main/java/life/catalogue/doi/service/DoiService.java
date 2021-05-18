@@ -23,6 +23,8 @@ import life.catalogue.doi.datacite.model.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URI;
 
 public interface DoiService {
@@ -114,4 +116,46 @@ public interface DoiService {
       LOG.error("Failed to silently update target URL {} for DOI {}", target, doi);
     }
   }
+
+  static DoiService passThru() {
+    return new DoiService() {
+
+      @Override
+      public DOI fromDataset(int datasetKey) {
+        return DOI.test(String.valueOf(datasetKey));
+      }
+
+      @Override
+      public DOI fromDatasetSource(int datasetKey, int sourceKey) {
+        return DOI.test(String.valueOf(datasetKey) + "-" + String.valueOf(sourceKey));
+      }
+
+      @Override
+      public DoiAttributes resolve(DOI doi) throws DoiException {
+        return null;
+      }
+
+      @Override
+      public void create(DOI doi) throws DoiException {
+      }
+
+      @Override
+      public boolean delete(DOI doi) throws DoiException {
+        return false;
+      }
+
+      @Override
+      public void publish(DOI doi) throws DoiException {
+      }
+
+      @Override
+      public void update(DoiAttributes doi) throws DoiException {
+      }
+
+      @Override
+      public void update(DOI doi, URI target) throws DoiException {
+      }
+    };
+  }
+
 }

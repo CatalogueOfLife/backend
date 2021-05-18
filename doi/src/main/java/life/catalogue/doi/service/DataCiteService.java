@@ -36,6 +36,7 @@ public class DataCiteService implements DoiService {
 
 
   public DataCiteService(DoiConfig cfg, Client client) {
+    LOG.info("Setting up DataCite DOI service with user {} and API {}", cfg.username, cfg.api);
     Preconditions.checkArgument(cfg.api.startsWith("https"), "SSL required to use the DataCite API");
     this.cfg = cfg;
     dois = client.target(UriBuilder.fromUri(cfg.api).path("dois").build());
