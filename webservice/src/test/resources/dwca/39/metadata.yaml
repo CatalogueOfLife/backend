@@ -1,0 +1,53 @@
+title: Catalogue of the Alucitoidea of the World
+# a short, hopefully unique name for the dataset
+alias: Alucitoidea
+description: |
+  This GSD is derived from C. Gielis (2003) Pterophoroidea & Alucitoidea (Lepidoptera) (World Catalogue of Insects, volume 4), as subsequently maintained and updated by Cees Gielis. The database has been edited for inclusion in the Catalogue of Life and updated by Donald Hobern. A current version of the dataset is presented as a web document at https://hobern.net.Alucitoidea.html. Version 1.0 includes updates to reflect recent changes in taxonomy and new species.
+
+# single point of contact for questions
+contact:
+  givenName: Donald
+  familyName: Hobern
+  email: dhobern@gmail.com
+  orcid: 0000-0001-6492-4016
+
+# list of authors and editors.
+# Please provide an ORCID if you can so it can be included in DOI metadata
+authorsAndEditors:
+  - givenName: Donald
+    familyName: Hobern
+    email: dhobern@gmail.com
+    orcid: 0000-0001-6492-4016
+  - givenName: Cees
+    familyName: Gielis
+    orcid: 0000-0003-0857-1679
+
+# description of the geographical scope of the dataset
+geographicScope: global
+
+# taxonomic scope of the dataset
+taxonomicScope: Alucitoidea
+
+# nomeclatural code covered. Keep empty if its across codes
+# botanical, zoological, bacterial, virus
+code: zoological
+
+# gazateer to base distribution codes on.
+# See http://api.catalogue.life/vocab/gazetteer
+# tdwg, iso, fao, longhurst, teow, iho, text
+gazetteer: iso
+
+# Any commons license, but preferrably CC0, CC-BY or CC-BY-NC
+license: CC-BY
+
+# version name of this copy
+version: ver. 1.0 (09/2020)
+
+# release date of this version in ISO YYYY-MM-DD
+released: 2020-09-18
+
+# URL to large logo image
+logo: https://hobern.net/img/Alucita_hexadactyla.png
+
+# how to cite the dataset
+citation: Gielis C. & Hobern D. (eds) (2020). Catalogue of the Alucitoidea of the World (version 1.0, 09/2020).

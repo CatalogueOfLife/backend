@@ -1,0 +1,1 @@
+Testing EML metadata linked with different name from meta.xml

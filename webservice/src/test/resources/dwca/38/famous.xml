@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml.xsd" packageId="" system="http://gbif.org" scope="system" xml:lang="en">
+    <dataset>
+        <title>Species named after famous people</title>
+        <shortName>Famous People</shortName>
+        <creator>
+            <individualName>
+                <givenName>Markus</givenName>
+                <surName>D&#xF6;ring</surName>
+            </individualName>
+            <organizationName>GBIF</organizationName>
+            <electronicMailAddress>mdoering@gbif.org</electronicMailAddress>
+            <userId directory="http://orcid.org/">0000-0001-7757-1889</userId>
+        </creator>
+        <metadataProvider>
+            <individualName>
+                <givenName>Markus</givenName>
+                <surName>D&#xF6;ring</surName>
+            </individualName>
+            <organizationName>GBIF</organizationName>
+            <electronicMailAddress>mdoering@gbif.org</electronicMailAddress>
+            <userId directory="http://orcid.org/">0000-0001-7757-1889</userId>
+        </metadataProvider> 
+        <pubDate>2017-01-19</pubDate>
+        <language>en</language>
+        <abstract>
+            <para>A list of species named after famous people including musicians and politicians.</para>
+        </abstract>
+        <keywordSet>
+          <keyword>species</keyword>
+          <keyword>famous</keyword>
+          <keyword>entertaining</keyword>
+          <keywordThesaurus>Google</keywordThesaurus>
+        </keywordSet>        
+        <distribution scope="document">
+            <online>
+                <url function="information">https://github.com/mdoering/famous-organism</url>
+            </online>
+        </distribution>
+        <contact> 
+            <individualName>
+                <givenName>Markus</givenName>
+                <surName>D&#xF6;ring</surName>
+            </individualName>
+            <organizationName>GBIF</organizationName>
+            <electronicMailAddress>mdoering@gbif.org</electronicMailAddress>
+            <userId directory="http://orcid.org/">0000-0001-7757-1889</userId>
+        </contact>
+        <project>
+            <title>Dr.</title>
+            <personnel>
+                <individualName>
+                    <givenName>Patrice</givenName>
+                    <surName>Bouchard</surName>
+                </individualName>
+                <role>author</role>
+            </personnel>
+            <funding>
+                <para>A-base funding (Agriculture and Agri-Food Canada)</para>
+            </funding>
+        </project>
+    </dataset>
+    <additionalMetadata>
+        <metadata>
+            <gbif>
+                <resourceLogoUrl>http://www.marinespecies.org/aphia.php?p=taxdetails&amp;id=146230</resourceLogoUrl>
+                <citation>cite my famous dataset</citation>
+            </gbif>
+        </metadata>
+    </additionalMetadata>
+</eml:eml>

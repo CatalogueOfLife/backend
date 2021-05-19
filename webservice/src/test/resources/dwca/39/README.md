@@ -1,0 +1,1 @@
+Testing COLDP YAML metadata linked from meta.xml
