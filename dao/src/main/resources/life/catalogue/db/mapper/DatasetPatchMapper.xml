@@ -56,7 +56,7 @@
   </sql>
 
   <sql id="PROPS">
-    #{obj.doi},
+    #{obj.doi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
     #{obj.type}::datasettype,
     #{obj.title},
     #{obj.description},
