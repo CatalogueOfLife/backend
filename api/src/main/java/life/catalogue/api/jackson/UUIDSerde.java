@@ -43,7 +43,7 @@ public class UUIDSerde {
 
   public static String to(UUID x) {
     if (x == null) return null;
-    return x.toString().replaceAll("-", "");
+    return x.toString();
   }
 
   /**

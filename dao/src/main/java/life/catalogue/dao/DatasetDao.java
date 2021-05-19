@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -22,13 +23,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.NotFoundException;
@@ -165,20 +165,34 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       return new ResultPage<>(page, result, () -> dm.count(req, userKey));
     }
   }
-  
+
+  private void postDoiDeletionForSources(ProjectSourceMapper psm, int datasetKey){
+    psm.listReleaseSources(datasetKey).stream()
+      .filter(d -> d.getDoi() != null && d.getDoi().isCOL())
+      .forEach(d -> bus.post(DoiChange.delete(d.getDoi())));
+  }
+
   @Override
   protected void deleteBefore(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     if (Datasets.COL == key) {
       throw new IllegalArgumentException("You cannot delete the COL project");
     }
+
     // old is null as we have set offerChangeHook to false - we only need it here so lets call it manually
     old = mapper.get(key);
+    ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
     if (old != null && old.getOrigin() == DatasetOrigin.MANAGED) {
+      // This is a recursive project delete.
       Set<Integer> releases = listReleaseKeys(key, user, mapper);
       LOG.warn("Deleting project {} with all its {} releases", key, releases.size());
+
+      // Simplify the DOI updates by deleting ALL DOIs for ALL releases and ALL sources at the beginning
+      LOG.warn("Request deletion of all DOIs from project {}", key);
+      postDoiDeletionForSources(psm, key);
+      // cascade to releases first before we remove the mother project dataset
       for (int rk : releases) {
         LOG.info("Deleting release {} of project {}", rk, key);
-        // cascade to release
+        postDoiDeletionForSources(psm, rk);
         delete(rk, user);
       }
     }
@@ -188,9 +202,14 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       LOG.info("Delete {}s for dataset {}", mClass.getSimpleName().substring(0, mClass.getSimpleName().length() - 6), key);
       session.getMapper(mClass).deleteByDataset(key);
     }
-    // remove project source dataset archives
+    // request DOI update/deletion for all source DOIs - they might be shared across releases so we cannot just delete them
+    Set<DOI> dois = psm.listReleaseSources(key).stream()
+        .map(ArchivedDataset::getDoi)
+        .filter(java.util.Objects::nonNull)
+        .collect(Collectors.toSet());
+    // now remove project source dataset archives
     LOG.info("Delete archived release sources for dataset {}", key);
-    session.getMapper(ProjectSourceMapper.class).deleteByRelease(key);
+    psm.deleteByRelease(key);
     // remove dataset archive
     LOG.info("Delete dataset archive for dataset {}", key);
     session.getMapper(DatasetArchiveMapper.class).deleteByDataset(key);
@@ -211,6 +230,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       LOG.info("Delete exports for private dataset {}", key);
       exportDao.deleteByDataset(key, user);
     }
+    // trigger DOI update at the very end for the now removed sources!
+    dois.forEach(doi -> bus.post(DoiChange.change(doi)));
   }
 
   private Set<Integer> listReleaseKeys(int projectKey, int user, DatasetMapper mapper) {
@@ -240,6 +261,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       });
     // notify event bus
     bus.post(DatasetChanged.delete(old));
+    if (old.getDoi() != null && old.getDoi().isCOL()) {
+      bus.post(DoiChange.delete(old.getDoi()));
+    }
     return false;
   }
 
@@ -284,6 +308,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.close();
     pullLogo(obj, old, user);
     bus.post(DatasetChanged.change(obj, old));
+    if (obj.getDoi() != null && obj.getDoi().isCOL()) {
+      bus.post(DoiChange.change(old.getDoi()));
+    }
     return false;
   }
 

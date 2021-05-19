@@ -148,6 +148,7 @@ public class DOI implements Serializable {
     return COL_PREFIX.equalsIgnoreCase(prefix) || TEST_PREFIX.equalsIgnoreCase(prefix);
   }
 
+  @JsonIgnore
   public boolean isGBIF() {
     return GBIF_PREFIX.equalsIgnoreCase(prefix);
   }

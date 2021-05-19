@@ -92,6 +92,7 @@ public class PublicReleaseListener {
         // track DOIs of current release - these should stay as they are!
         Set<DOI> currentDOIs = psm.listReleaseSources(release.getKey()).stream()
           .map(ArchivedDataset::getDoi)
+          .filter(java.util.Objects::nonNull)
           .collect(Collectors.toSet());
         for (var src : psm.listReleaseSources(lastReleaseKey)) {
           if (src.getDoi() != null && !currentDOIs.contains(src.getDoi())) {

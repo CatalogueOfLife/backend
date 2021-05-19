@@ -28,6 +28,7 @@ import life.catalogue.db.LookupTables;
 import life.catalogue.db.tree.DatasetDiffService;
 import life.catalogue.db.tree.SectorDiffService;
 import life.catalogue.doi.DatasetDeletionListener;
+import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.ManagedUtils;
@@ -352,6 +353,8 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(new CacheFlush(httpClient, cfg.apiURI));
     bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService));
     bus.register(new DatasetDeletionListener(cfg, getSqlSessionFactory(), doiService));
+    bus.register(new DoiUpdater(cfg, getSqlSessionFactory(), doiService));
+
 
   }
 
