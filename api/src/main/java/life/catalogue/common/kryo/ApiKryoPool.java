@@ -49,6 +49,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Classification.class);
     kryo.register(Dataset.class);
     kryo.register(DatasetImport.class);
+    kryo.register(DOI.class);
     kryo.register(Distribution.class);
     kryo.register(EditorialDecision.class);
     kryo.register(EditorialDecision.Mode.class);

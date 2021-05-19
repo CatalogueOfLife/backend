@@ -1,7 +1,6 @@
 package life.catalogue.api.model;
 
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -18,22 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 
-@JsonSerialize(
-  using = DOI.DoiSerializer.class
-)
-@JsonDeserialize(
-  using = DOI.DoiDeserializer.class
-)
 public class DOI implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(DOI.class);
   private static final String CHAR_ENCODING = "UTF-8";
@@ -168,21 +153,4 @@ public class DOI implements Serializable {
     }
   }
 
-  public static class DoiDeserializer extends JsonDeserializer<DOI> {
-    public DoiDeserializer() {
-    }
-
-    public DOI deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-      return p != null && p.getTextLength() > 0 ? new DOI(p.getText()) : null;
-    }
-  }
-
-  public static class DoiSerializer extends JsonSerializer<DOI> {
-    public DoiSerializer() {
-    }
-
-    public void serialize(DOI value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-      gen.writeString(value.toString());
-    }
-  }
 }

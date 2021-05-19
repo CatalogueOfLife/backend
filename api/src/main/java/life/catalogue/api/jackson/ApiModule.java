@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import life.catalogue.api.datapackage.ColdpTerm;
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.vocab.CSLRefType;
 import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.api.vocab.Country;
@@ -72,6 +73,7 @@ public class ApiModule extends SimpleModule {
     addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
     addDeserializer(URI.class, new URIDeserializer());
     addDeserializer(UUID.class, new UUIDSerde.Deserializer());
+    addDeserializer(DOI.class, new DOISerde.Deserializer());
     // override the JavaTimeModule to use a permissive localdate deserializer catching parsing exceptions
     addDeserializer(LocalDateTime.class, new PermissiveJavaDateSerde.LocalDateTimeDeserializer());
     addDeserializer(LocalDate.class, new PermissiveJavaDateSerde.LocalDateDeserializer());
@@ -81,6 +83,7 @@ public class ApiModule extends SimpleModule {
     addSerializer(Term.class, new TermSerde.Serializer());
     addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
     addSerializer(UUID.class, new UUIDSerde.Serializer());
+    addSerializer(DOI.class, new DOISerde.Serializer());
 
     // then key deserializers
     addKeyDeserializer(Term.class, new TermSerde.KeyDeserializer());

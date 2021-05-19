@@ -663,6 +663,7 @@ CREATE TABLE "user" (
 
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
+  doi text UNIQUE,
   source_key INTEGER REFERENCES dataset,
   import_attempt INTEGER,
   type DATASETTYPE NOT NULL DEFAULT 'OTHER',

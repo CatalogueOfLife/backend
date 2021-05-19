@@ -10,6 +10,19 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+
+### 2021-05-19 dataset dois
+```
+ALTER TABLE dataset ADD COLUMN doi TEXT;
+ALTER TABLE dataset ADD UNIQUE (doi);
+
+ALTER TABLE dataset_archive ADD COLUMN doi TEXT;
+
+ALTER TABLE project_source ADD COLUMN doi TEXT;
+
+ALTER TABLE dataset_patch ADD COLUMN doi TEXT;
+```
+
 ### 2021-05-07 truncated exports
 ```
 ALTER TABLE dataset_export ADD COLUMN truncated TEXT[];
