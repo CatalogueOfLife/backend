@@ -1,19 +1,19 @@
 package life.catalogue.dw.jersey.filter;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
-import it.unimi.dsi.fastutil.ints.Int2BooleanMaps;
-import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.db.mapper.DatasetMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import life.catalogue.dao.DatasetInfoCache;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.NotFoundException;
@@ -22,12 +22,11 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
-import java.io.IOException;
-import java.net.URI;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static life.catalogue.cache.LatestDatasetKeyCache.ReleaseAttempt;
 
 /**
  * Filter that parses dataset keys given as path or query parameters
@@ -49,47 +48,11 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   public static final String ORIGINAL_URI_PROPERTY = "originalRequestURI";
   public static final String ORIGINAL_DATASET_KEY_PROPERTY = "originalDatasetKey";
 
-  private SqlSessionFactory factory;
-  private final LoadingCache<Integer, Integer> latestRelease = Caffeine.newBuilder()
-    .maximumSize(1000)
-    .expireAfterWrite(60, TimeUnit.MINUTES)
-    .build(k -> lookupLatest(k, false));
-  private final LoadingCache<Integer, Integer> latestCandidate = Caffeine.newBuilder()
-    .maximumSize(1000)
-    .expireAfterWrite(60, TimeUnit.MINUTES)
-    .build(k -> lookupLatest(k, true));
-  private final LoadingCache<ReleaseAttempt, Integer> releaseAttempt = Caffeine.newBuilder()
-    .maximumSize(1000)
-    .expireAfterWrite(7, TimeUnit.DAYS)
-    .build(this::lookupAttempt);
+  private final LatestDatasetKeyCache cache;
 
-  static class ReleaseAttempt{
-    final int projectKey;
-    final int attempt;
-
-    ReleaseAttempt(int projectKey, int attempt) {
-      this.projectKey = projectKey;
-      this.attempt = attempt;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      ReleaseAttempt that = (ReleaseAttempt) o;
-      return projectKey == that.projectKey && attempt == that.attempt;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(projectKey, attempt);
-    }
+  public DatasetKeyRewriteFilter(LatestDatasetKeyCache cache) {
+    this.cache = cache;
   }
-
-  // we dont use a limited loading cache here as
-  //  - the primitive map saves a lot of memory and we dont really have many datasets so we can keep them all in memory
-  //  - a dataset origin is immutable so we dont need to expire
-  private final Int2BooleanMap managed = Int2BooleanMaps.synchronize(new Int2BooleanOpenHashMap());
 
   static String normParam(String param) {
     return param.toLowerCase().replaceAll("_", "").trim();
@@ -159,7 +122,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     // parsing cannot fail, we have a pattern
     int projectKey = Integer.parseInt(m.group(1));
 
-    if (!isManaged(projectKey)) {
+    if (DatasetInfoCache.CACHE.origin(projectKey) != DatasetOrigin.MANAGED) {
       // abort request! bad argument
       throw new IllegalArgumentException("Dataset " + projectKey + " is not a project");
     }
@@ -167,13 +130,13 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     Integer releaseKey;
     // candidate requested? (\\d+)(?:LRC?|R(\\d+))$
     if (m.group().endsWith("C")) {
-      releaseKey = latestCandidate.get(projectKey);
+      releaseKey = cache.getLatestReleaseCandidate(projectKey);
     } else if (m.group().endsWith("R")) {
-      releaseKey = latestRelease.get(projectKey);
+      releaseKey = cache.getLatestRelease(projectKey);
     } else {
       // parsing cannot fail, we have a pattern
       int attempt = Integer.parseInt(m.group(2));
-      releaseKey = releaseAttempt.get(new ReleaseAttempt(projectKey, attempt));
+      releaseKey = cache.getReleaseAttempt(new ReleaseAttempt(projectKey, attempt));
     }
 
     if (releaseKey == null) {
@@ -182,43 +145,4 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     return releaseKey;
   }
 
-  /**
-   * @param projectKey a dataset key that is known to exist and point to a managed dataset
-   * @return dataset key for the latest release of a project or null in case no release exists
-   */
-  private Integer lookupLatest(int projectKey, boolean candidate) throws NotFoundException {
-    try (SqlSession session = factory.openSession()) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      return dm.latestRelease(projectKey, !candidate);
-    }
-  }
-
-  private Integer lookupAttempt(ReleaseAttempt release) throws NotFoundException {
-    try (SqlSession session = factory.openSession()) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      return dm.releaseAttempt(release.projectKey, release.attempt);
-    }
-  }
-
-  private boolean isManaged(int projectKey) throws IllegalArgumentException, NotFoundException {
-    return managed.computeIfAbsent(projectKey, key -> {
-      try (SqlSession session = factory.openSession()) {
-        DatasetMapper dm = session.getMapper(DatasetMapper.class);
-        Dataset d = dm.get(projectKey);
-        if (d == null) {
-          throw new NotFoundException("Dataset " + projectKey + " does not exist");
-        }
-        return d.getOrigin() == DatasetOrigin.MANAGED;
-      }
-    });
-  }
-
-  public void refresh(int projectKey) {
-    latestRelease.refresh(projectKey);
-    latestCandidate.refresh(projectKey);
-  }
-
-  public void setSqlSessionFactory(SqlSessionFactory factory) {
-    this.factory = factory;
-  }
 }

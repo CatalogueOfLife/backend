@@ -7,17 +7,23 @@ import com.google.common.eventbus.Subscribe;
 
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.service.DatasetConverter;
-import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiException;
 import life.catalogue.doi.service.DoiService;
 
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,12 +44,14 @@ public class DoiUpdater {
   private final DoiService doiService;
   private final DatasetConverter converter;
   private final Set<DOI> deleted = ConcurrentHashMap.newKeySet();
+  private final LatestDatasetKeyCache datasetKeyCache;
 
-  public DoiUpdater(WsServerConfig cfg, SqlSessionFactory factory, DoiService doiService) {
+  public DoiUpdater(WsServerConfig cfg, SqlSessionFactory factory, DoiService doiService, LatestDatasetKeyCache datasetKeyCache) {
     this.cfg = cfg;
     this.factory = factory;
     this.doiService = doiService;
     this.converter = new DatasetConverter(cfg.portalURI, cfg.clbURI);
+    this.datasetKeyCache = datasetKeyCache;
   }
 
   /**
@@ -54,35 +62,75 @@ public class DoiUpdater {
   @Subscribe
   public void update(DoiChange event){
     if (event.getDoi().isCOL()) {
+      int datasetKey;
+      Integer sourceKey = null;
       try {
         // a dataset/release DOI
-        int key = event.getDoi().datasetKey();
-        if (event.isDelete()) {
-          delete(event.getDoi(), key);
-        } else if (!deleted.contains(event.getDoi())){
-          update(event.getDoi(), key);
+        datasetKey = event.getDoi().datasetKey();
+        // make sure we have a project release
+        var info = DatasetInfoCache.CACHE.info(datasetKey);
+        if (info.origin != DatasetOrigin.RELEASED || info.sourceKey == null) {
+          LOG.warn("COL dataset DOI {} that is not a release: {}", event.getDoi(), datasetKey);
+          return;
         }
-
       } catch (IllegalArgumentException e) {
         // a source dataset DOI
-        DSID<Integer> key = event.getDoi().sourceDatasetKey();
-        if (event.isDelete()) {
-          delete(event.getDoi(), key.getDatasetKey(), key.getId());
-        } else if (!deleted.contains(event.getDoi())){
-          update(event.getDoi(), key.getDatasetKey(), key.getId());
+        var key = event.getDoi().sourceDatasetKey();
+        datasetKey = key.getDatasetKey();
+        sourceKey = key.getId();
+        var project = DatasetInfoCache.CACHE.info(sourceKey);
+        var source = DatasetInfoCache.CACHE.info(sourceKey);
+        if (project.origin != DatasetOrigin.MANAGED || project.key != source.sourceKey) {
+          LOG.warn("COL source dataset DOI {} that is not a source dataset key {}", event.getDoi(), sourceKey);
+          return;
+        }
+      }
+
+      if (event.isDelete()) {
+        if (sourceKey == null) {
+          delete(event.getDoi(), datasetKey);
+        } else {
+          delete(event.getDoi(), datasetKey, sourceKey);
+        }
+
+      } else if (!deleted.contains(event.getDoi())){
+        if (sourceKey == null) {
+          update(event.getDoi(), datasetKey);
+        } else {
+          update(event.getDoi(), datasetKey, sourceKey);
         }
       }
     }
   }
 
   private void update(DOI doi, int datasetKey) {
-    LOG.warn("DOI update not implemented yet: {} for dataset {}", doi, datasetKey);
+    try (SqlSession session = factory.openSession()) {
+      Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
+      d.setDoi(doi); // make sure we dont accidently update some other DOI
+      boolean latest = datasetKeyCache.isLatestRelease(datasetKey);
+      var attr = converter.release(d, latest);
+      update(attr);
+    }
   }
 
   private void update(DOI doi, int datasetKey, int sourceDatasetKey) {
-    LOG.warn("DOI update not implemented yet: {} for source dataset {}-{}", doi, datasetKey, sourceDatasetKey);
+    try (SqlSession session = factory.openSession()) {
+      Dataset project = session.getMapper(DatasetMapper.class).get(datasetKey);
+      var source = session.getMapper(ProjectSourceMapper.class).getProjectSource(sourceDatasetKey, datasetKey);
+      source.setDoi(doi); // make sure we dont accidently update some other DOI
+      boolean latest = datasetKeyCache.isLatestRelease(datasetKey);
+      var attr = converter.source(source, project, latest);
+      update(attr);
+    }
   }
 
+  private void update(DoiAttributes attr) {
+    try {
+      doiService.update(attr);
+    } catch (DoiException e) {
+      LOG.error("Error updating COL DOI {}", attr.getDoi(), e);
+    }
+  }
 
   private void delete(DOI doi, int datasetKey){
     delete(doi, converter.datasetURI(datasetKey, false));

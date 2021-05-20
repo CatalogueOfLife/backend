@@ -356,9 +356,7 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(DatasetInfoCache.CACHE);
     bus.register(new CacheFlush(httpClient, cfg.apiURI));
     bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService));
-    bus.register(new DoiUpdater(cfg, getSqlSessionFactory(), doiService));
-
-
+    bus.register(new DoiUpdater(cfg, getSqlSessionFactory(), doiService, coljersey.getCache()));
   }
 
   @Override

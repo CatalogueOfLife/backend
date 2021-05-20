@@ -1,12 +1,9 @@
 package life.catalogue.dw.jersey;
 
-import com.google.common.eventbus.Subscribe;
-import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
 import life.catalogue.dw.jersey.filter.CacheControlResponseFilter;
@@ -14,8 +11,15 @@ import life.catalogue.dw.jersey.filter.CreatedResponseFilter;
 import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 import life.catalogue.dw.jersey.provider.EnumParamConverterProvider;
 import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import com.google.common.eventbus.Subscribe;
+
+import io.dropwizard.ConfiguredBundle;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 
 /**
  * Various custom jersey providers bundled together for CoL.
@@ -24,6 +28,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
   DatasetKeyRewriteFilter lrFilter;
   CacheControlResponseFilter ccFilter;
+  LatestDatasetKeyCache cache = new LatestDatasetKeyCache(null); // we add the factory later - it is not available when we run the bundle!
 
   @Override
   public void initialize(Bootstrap<?> bootstrap) {
@@ -37,7 +42,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
     
     // response and request filters
     env.jersey().packages(CreatedResponseFilter.class.getPackage().getName());
-    lrFilter = new DatasetKeyRewriteFilter();
+    lrFilter = new DatasetKeyRewriteFilter(cache);
     env.jersey().register(lrFilter);
     ccFilter = new CacheControlResponseFilter();
     env.jersey().register(ccFilter);
@@ -51,10 +56,14 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
   // needed to populate the session factory in some filters
   public void setSqlSessionFactory(SqlSessionFactory factory) {
-    lrFilter.setSqlSessionFactory(factory);
+    cache.setSqlSessionFactory(factory);
     try (SqlSession session = factory.openSession()){
       ccFilter.addAll(session.getMapper(DatasetMapper.class).keys(DatasetOrigin.RELEASED));
     }
+  }
+
+  public LatestDatasetKeyCache getCache() {
+    return cache;
   }
 
   @Subscribe
@@ -63,7 +72,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
       ccFilter.addRelease(d.key);
       if (d.obj.getSourceKey() != null) {
         // refresh the latest release (candidate) of the source project
-        lrFilter.refresh(d.obj.getSourceKey());
+        cache.refresh(d.obj.getSourceKey());
       }
     }
   }
