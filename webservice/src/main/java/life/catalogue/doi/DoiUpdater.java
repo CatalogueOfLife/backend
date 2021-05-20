@@ -47,7 +47,7 @@ public class DoiUpdater {
   }
 
   /**
-   * Update the DOI metadata in DataCite. This can happen if dataset metadata has changed but also if a release was added or removed.
+   * Updates or deletes the DOI metadata in DataCite. This can happen if dataset metadata has changed but also if a release was added or removed.
    * In case an entire project gets deleted
    * which removed the sources already from the DB and cascades a project deletion to all its releases!!!
    */
@@ -56,7 +56,7 @@ public class DoiUpdater {
     if (event.getDoi().isCOL()) {
       try {
         // a dataset/release DOI
-        int key = DoiConfig.datasetKey(event.getDoi());
+        int key = event.getDoi().datasetKey();
         if (event.isDelete()) {
           delete(event.getDoi(), key);
         } else if (!deleted.contains(event.getDoi())){
@@ -65,7 +65,7 @@ public class DoiUpdater {
 
       } catch (IllegalArgumentException e) {
         // a source dataset DOI
-        DSID<Integer> key = DoiConfig.sourceDatasetKey(event.getDoi());
+        DSID<Integer> key = event.getDoi().sourceDatasetKey();
         if (event.isDelete()) {
           delete(event.getDoi(), key.getDatasetKey(), key.getId());
         } else if (!deleted.contains(event.getDoi())){
@@ -76,9 +76,11 @@ public class DoiUpdater {
   }
 
   private void update(DOI doi, int datasetKey) {
+    LOG.warn("DOI update not implemented yet: {} for dataset {}", doi, datasetKey);
   }
 
   private void update(DOI doi, int datasetKey, int sourceDatasetKey) {
+    LOG.warn("DOI update not implemented yet: {} for source dataset {}-{}", doi, datasetKey, sourceDatasetKey);
   }
 
 

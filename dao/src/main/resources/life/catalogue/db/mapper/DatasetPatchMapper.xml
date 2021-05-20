@@ -55,6 +55,9 @@
     modified_by
   </sql>
 
+  <!--
+  WARNING! Any changes in the PROPS list below must also be applied in DatasetArchiveMapper.xml PROPS sql fragment!
+  -->
   <sql id="PROPS">
     #{obj.doi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
     #{obj.type}::datasettype,

@@ -24,6 +24,7 @@
     PROPS_PATCH uses obj. prefix so we cannot share the list
     But we need to make sure we have the same order so the COLS match up!
     -->
+    #{doi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
     #{type}::datasettype,
     #{title},
     #{description},

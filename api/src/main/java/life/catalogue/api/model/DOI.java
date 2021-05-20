@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import life.catalogue.common.id.IdConverter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,13 @@ public class DOI implements Serializable {
   private static final Pattern PARSER = Pattern.compile("^(?:urn:)?(?:doi:)?(10(?:\\.[0-9]+)+)/(.+)$", 2);
   private static final String RESOLVER = "https://doi.org/";
   private static final String SCHEME = "doi:";
+
+  private static final String DATASET_PATH = "d";
+  private static final String EXPORT_PATH = "e";
+  private static final String OTHER_PATH = "x";
+  private static final Pattern DATASET_PATTERN = Pattern.compile("^"+DATASET_PATH+"([^-]+)$");
+  private static final Pattern SOURCE_DATASET_PATTERN = Pattern.compile("^"+DATASET_PATH+"(.+)-(.+)$");
+
   private String prefix;
   private String suffix;
 
@@ -50,6 +59,16 @@ public class DOI implements Serializable {
 
   public static DOI test(String suffix) {
     return new DOI(TEST_PREFIX, suffix);
+  }
+
+  public static DOI dataset(String prefix, int datasetKey) {
+    String suffix = DATASET_PATH + IdConverter.LATIN29.encode(datasetKey);
+    return new DOI(prefix, suffix);
+  }
+
+  public static DOI datasetSource(String prefix, int datasetKey, int sourceKey) {
+    String suffix = DATASET_PATH + IdConverter.LATIN29.encode(datasetKey) + "-" + IdConverter.LATIN29.encode(sourceKey);
+    return new DOI(prefix, suffix);
   }
 
   public DOI() {
@@ -136,6 +155,26 @@ public class DOI implements Serializable {
   @JsonIgnore
   public boolean isGBIF() {
     return GBIF_PREFIX.equalsIgnoreCase(prefix);
+  }
+
+  @JsonIgnore
+  public int datasetKey() throws IllegalArgumentException {
+    Preconditions.checkArgument(isCOL(), "COL DOI required");
+    Matcher m = DATASET_PATTERN.matcher(suffix);
+    if (m.find()) {
+      return IdConverter.LATIN29.decode(m.group(1));
+    }
+    throw new IllegalArgumentException("Not a valid COL dataset DOI: " + getDoiName());
+  }
+
+  @JsonIgnore
+  public DSID<Integer> sourceDatasetKey() throws IllegalArgumentException {
+    Preconditions.checkArgument(isCOL(), "COL DOI required");
+    Matcher m = SOURCE_DATASET_PATTERN.matcher(suffix);
+    if (m.find()) {
+      return DSID.of(IdConverter.LATIN29.decode(m.group(1)), IdConverter.LATIN29.decode(m.group(2)));
+    }
+    throw new IllegalArgumentException("Not a valid COL source dataset DOI: " + getDoiName());
   }
 
   public int hashCode() {

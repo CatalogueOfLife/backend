@@ -112,7 +112,6 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       session.commit();
       return s.getKey();
     }
-    
   }
 
   @Override

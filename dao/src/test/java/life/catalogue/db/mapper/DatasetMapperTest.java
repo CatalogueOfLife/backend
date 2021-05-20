@@ -63,6 +63,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
       new Organisation("my org"),
       new Organisation("your org")
     )));
+    d.setDoi(DOI.test(UUID.randomUUID().toString()));
   }
 
   @Test

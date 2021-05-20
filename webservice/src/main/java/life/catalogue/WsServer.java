@@ -1,18 +1,5 @@
 package life.catalogue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.eventbus.EventBus;
-import io.dropwizard.Application;
-import io.dropwizard.client.DropwizardApacheConnector;
-import io.dropwizard.client.HttpClientBuilder;
-import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.client.JerseyClientConfiguration;
-import io.dropwizard.forms.MultiPartBundle;
-import io.dropwizard.jackson.Jackson;
-import io.dropwizard.jersey.setup.JerseyEnvironment;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DatasetExport;
@@ -20,14 +7,13 @@ import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.cache.CacheFlush;
 import life.catalogue.command.*;
-import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.LookupTables;
 import life.catalogue.db.tree.DatasetDiffService;
 import life.catalogue.db.tree.SectorDiffService;
-import life.catalogue.doi.DatasetDeletionListener;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DoiService;
@@ -65,21 +51,39 @@ import life.catalogue.resources.parser.MetadataParserResource;
 import life.catalogue.resources.parser.NameParserResource;
 import life.catalogue.resources.parser.ParserResource;
 import life.catalogue.swagger.OpenApiFactory;
+
+import org.gbif.dwc.terms.TermFactory;
+
+import java.io.IOException;
+import java.sql.Connection;
+
+import javax.ws.rs.client.Client;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
-import org.gbif.dwc.terms.TermFactory;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import javax.ws.rs.client.Client;
-import java.io.IOException;
-import java.sql.Connection;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.eventbus.EventBus;
+
+import io.dropwizard.Application;
+import io.dropwizard.client.DropwizardApacheConnector;
+import io.dropwizard.client.HttpClientBuilder;
+import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.forms.MultiPartBundle;
+import io.dropwizard.jackson.Jackson;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
@@ -352,7 +356,6 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(DatasetInfoCache.CACHE);
     bus.register(new CacheFlush(httpClient, cfg.apiURI));
     bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService));
-    bus.register(new DatasetDeletionListener(cfg, getSqlSessionFactory(), doiService));
     bus.register(new DoiUpdater(cfg, getSqlSessionFactory(), doiService));
 
 
