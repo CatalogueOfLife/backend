@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
@@ -120,6 +121,43 @@ public class DatasetWithSettings {
 
   public void setKey(Integer key) {
     dataset.setKey(key);
+  }
+
+  public Integer getSourceKey() {
+    return dataset.getSourceKey();
+  }
+
+  public void setSourceKey(Integer sourceKey) {
+    dataset.setSourceKey(sourceKey);
+  }
+
+  public Integer getImportAttempt() {
+    return dataset.getImportAttempt();
+  }
+
+  public void setImportAttempt(Integer importAttempt) {
+    dataset.setImportAttempt(importAttempt);
+  }
+
+  public DOI getDoi() {
+    return dataset.getDoi();
+  }
+
+  public void setDoi(DOI doi) {
+    dataset.setDoi(doi);
+  }
+
+  public LocalDateTime getDeleted() {
+    return dataset.getDeleted();
+  }
+
+  @JsonIgnore
+  public boolean hasDeletedDate() {
+    return dataset.hasDeletedDate();
+  }
+
+  public void setDeleted(LocalDateTime deleted) {
+    dataset.setDeleted(deleted);
   }
 
   public String getTitle() {

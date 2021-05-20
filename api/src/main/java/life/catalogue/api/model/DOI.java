@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +41,17 @@ public class DOI implements Serializable {
 
   private String prefix;
   private String suffix;
+
+  public static Optional<DOI> parse(String source) {
+    if (StringUtils.isNotEmpty(source)) {
+      try {
+        return Optional.of(new DOI(source));
+      } catch (IllegalArgumentException e) {
+        return Optional.empty();
+      }
+    }
+    return Optional.empty();
+  }
 
   public static boolean isParsable(String source) {
     if (StringUtils.isNotEmpty(source)) {
@@ -162,7 +174,7 @@ public class DOI implements Serializable {
     Preconditions.checkArgument(isCOL(), "COL DOI required");
     Matcher m = DATASET_PATTERN.matcher(suffix);
     if (m.find()) {
-      return IdConverter.LATIN29.decode(m.group(1));
+      return IdConverter.LATIN29.decode(m.group(1).toUpperCase());
     }
     throw new IllegalArgumentException("Not a valid COL dataset DOI: " + getDoiName());
   }
@@ -172,7 +184,7 @@ public class DOI implements Serializable {
     Preconditions.checkArgument(isCOL(), "COL DOI required");
     Matcher m = SOURCE_DATASET_PATTERN.matcher(suffix);
     if (m.find()) {
-      return DSID.of(IdConverter.LATIN29.decode(m.group(1)), IdConverter.LATIN29.decode(m.group(2)));
+      return DSID.of(IdConverter.LATIN29.decode(m.group(1).toUpperCase()), IdConverter.LATIN29.decode(m.group(2).toUpperCase()));
     }
     throw new IllegalArgumentException("Not a valid COL source dataset DOI: " + getDoiName());
   }

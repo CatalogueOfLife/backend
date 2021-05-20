@@ -3,10 +3,8 @@ package life.catalogue.gbifsync;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.Organisation;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Person;
+
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -151,6 +149,7 @@ public class DatasetPager {
     d.getOrganisations().add(publisher(g.publishingOrganizationKey));
     d.setTitle(g.title);
     d.setDescription(g.description);
+    DOI.parse(g.doi).ifPresent(d::setDoi);
     Optional<GEndpoint> dwca = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("DWC_ARCHIVE")).findFirst();
     if (dwca.isPresent()) {
       d.setOrigin(DatasetOrigin.EXTERNAL);

@@ -133,7 +133,8 @@ public class GbifSync implements Managed {
       } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
           !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
           !Objects.equals(gbif.getOrganisations(), curr.getOrganisations()) ||
-          !Objects.equals(gbif.getWebsite(), curr.getWebsite())
+          !Objects.equals(gbif.getWebsite(), curr.getWebsite()) ||
+          !Objects.equals(gbif.getDoi(), curr.getDoi())
           ) {
         //we modify core metadata (title, description, contacts, version) via the dwc archive metadata
         //gbif syncs only change one of the following
@@ -141,10 +142,12 @@ public class GbifSync implements Managed {
         // - license
         // - organization (publisher)
         // - homepage
+        // - doi
         curr.setDataAccess(gbif.getDataAccess());
         curr.setLicense(gbif.getLicense());
         curr.setOrganisations(gbif.getOrganisations());
         curr.setWebsite(gbif.getWebsite());
+        curr.setDoi(gbif.getDoi());
         mapper.updateAll(curr);
         updated++;
       }

@@ -1,10 +1,8 @@
 package life.catalogue.dw.jersey.exception;
 
 import io.dropwizard.jersey.errors.ErrorMessage;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.TreeNode;
+
+import life.catalogue.api.model.*;
 import life.catalogue.db.mapper.*;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.junit.Test;
@@ -78,10 +76,11 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
   }
 
   @Test
-  public void uniqueAlias() throws Exception {
+  public void uniqueConstraints() throws Exception {
     Dataset d = DatasetMapperTest.create();
     d.setGbifKey(null);
     d.setAlias(null);
+    d.setDoi(null);
     testUnique(d, null);
 
     d.setAlias("uniqAli");
@@ -91,6 +90,10 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
     UUID gbif = UUID.randomUUID();
     d.setGbifKey(gbif);
     testUnique(d, "Dataset with gbif_key='"+gbif+"' already exists");
+
+    d.setGbifKey(null);
+    d.setDoi(DOI.test("12345"));
+    testUnique(d, "Dataset with doi='"+d.getDoi().getDoiName()+"' already exists");
   }
 
   void testUnique(Dataset d, String expected) throws Exception {
