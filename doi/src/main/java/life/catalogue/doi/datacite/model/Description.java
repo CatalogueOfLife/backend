@@ -58,4 +58,13 @@ public class Description {
   public int hashCode() {
     return Objects.hash(description, descriptionType, lang);
   }
+
+  @Override
+  public String toString() {
+    return "Description{" +
+      "description='" + description + '\'' +
+      ", descriptionType=" + descriptionType +
+      ", lang='" + lang + '\'' +
+      '}';
+  }
 }

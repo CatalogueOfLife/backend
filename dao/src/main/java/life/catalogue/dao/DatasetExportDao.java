@@ -2,7 +2,6 @@ package life.catalogue.dao;
 
 import com.google.common.eventbus.EventBus;
 
-import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.ExportChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ExportSearchRequest;
@@ -75,7 +74,7 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
       FileUtils.deleteQuietly(zip);
     }
     // notify event bus
-    bus.post(ExportChanged.delete(old));
+    bus.post(ExportChanged.deleted(old));
     return true;
   }
 

@@ -2,14 +2,13 @@ package life.catalogue.doi.service;
 
 import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.doi.datacite.model.Creator;
-import life.catalogue.doi.datacite.model.DoiAttributes;
-import life.catalogue.doi.datacite.model.Title;
+import life.catalogue.doi.datacite.model.*;
 
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.validation.ValidationException;
 import javax.ws.rs.core.UriBuilder;
 
 /**
@@ -32,12 +31,22 @@ public class DatasetConverter {
   public DoiAttributes release(ArchivedDataset release, boolean latest) {
     DoiAttributes attr = new DoiAttributes(release.getDoi());
     attr.setPublisher("Catalogue of Life");
-    attr.setPublicationYear(release.getReleased().getYear());
+    if (release.getReleased() != null) {
+      attr.setPublicationYear(release.getReleased().getYear());
+    }
     attr.setTitles(List.of(new Title(release.getTitle())));
-    attr.setCreators(release.getAuthors().stream()
-      .map(a -> new Creator(a.getGivenName(), a.getFamilyName()))
-      .collect(Collectors.toList())
-    );
+    if (release.getAuthors() != null) {
+      attr.setCreators(release.getAuthors().stream()
+        .map(a -> new Creator(a.getGivenName(), a.getFamilyName()))
+        .collect(Collectors.toList())
+      );
+    }
+    if (release.getEditors() != null) {
+      attr.setContributors(release.getEditors().stream()
+        .map(a -> new Contributor(a.getGivenName(), a.getFamilyName(), ContributorType.EDITOR))
+        .collect(Collectors.toList())
+      );
+    }
     attr.setUrl(datasetURI(release.getKey(), latest).toString());
     return attr;
   }

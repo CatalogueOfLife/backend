@@ -84,8 +84,18 @@ public class InitDbCmd extends AbstractPromptCmd {
       exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       // add common data
       exec(PgConfig.DATA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATA_FILE));
+
       LOG.info("Insert known datasets");
-      exec(PgConfig.DATASETS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
+      PgConnection pgc = (PgConnection) con;
+      PgCopyUtils.copy(pgc, "dataset", "/life/catalogue/db/dataset.csv", ImmutableMap.<String, Object>builder()
+        .put("created_by", Users.DB_INIT)
+        .put("modified_by", Users.DB_INIT)
+        .build());
+      // the dataset.csv file was generated as a dump from production with psql:
+      // \copy (select key, type, gbif_key, gbif_publisher_key, license, released, confidence, completeness, origin, title, alias, description, organisations, version, citation, geographic_scope, website, logo, "group", notes, settings, source_key, contact, authors, editors from dataset where not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
+      try (Statement st = con.createStatement()) {
+        st.execute("SELECT setval('dataset_key_seq', (SELECT max(key) FROM dataset))");
+      }
     }
     
     // cleanup names index
@@ -116,7 +126,7 @@ public class InitDbCmd extends AbstractPromptCmd {
       FileUtils.cleanDirectory(cfg.metricsRepo);
     }
 
-    // load draft catalogue data
+    // create managed partitions
     HikariConfig hikari = cfg.db.hikariConfig();
     try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
       // configure single mybatis session factory
@@ -127,98 +137,6 @@ public class InitDbCmd extends AbstractPromptCmd {
         setupColPartition(session);
         session.getMapper(DatasetPartitionMapper.class).createManagedSequences(Datasets.COL);
         session.commit();
-      }
-    
-      try (Connection con = cfg.db.connect()) {
-        loadDraftHierarchy(con, factory, cfg);
-      } catch (Exception e) {
-        LOG.error("Failed to insert initdb data", e);
-        throw e;
-      }
-  
-      LOG.info("Update dataset sector counts");
-      NameDao nd = new NameDao(factory, NameUsageIndexService.passThru(), NameIndexFactory.passThru());
-      new TaxonDao(factory, nd, NameUsageIndexService.passThru()).updateAllSectorCounts(Datasets.COL);
-      
-      updateSearchIndex(cfg, factory);
-    }
-  }
-  
-  private static void loadDraftHierarchy(Connection con, SqlSessionFactory factory, WsServerConfig cfg) throws Exception {
-    LOG.info("Insert CoL draft data linked to sectors");
-    PgConnection pgc = (PgConnection) con;
-    // Use sector exports from Global Assembly:
-    // https://github.com/Sp2000/colplus-repo#sector-exports
-    PgCopyUtils.copy(pgc, "sector", "/life/catalogue/db/draft/sector.csv", ImmutableMap.<String, Object>builder()
-        .put("mode", Sector.Mode.ATTACH)
-        .put("dataset_key", Datasets.COL)
-        .put("created_by", Users.DB_INIT)
-        .put("modified_by", Users.DB_INIT)
-        .build());
-    PgCopyUtils.copy(pgc, "reference_"+Datasets.COL, "/life/catalogue/db/draft/reference.csv", ImmutableMap.<String, Object>builder()
-        .put("dataset_key", Datasets.COL)
-        .put("created_by", Users.DB_INIT)
-        .put("modified_by", Users.DB_INIT)
-        .build());
-    PgCopyUtils.copy(pgc, "estimate", "/life/catalogue/db/draft/estimate.csv", ImmutableMap.<String, Object>builder()
-        .put("type", EstimateType.SPECIES_LIVING)
-        .put("dataset_key", Datasets.COL)
-        .put("created_by", Users.DB_INIT)
-        .put("modified_by", Users.DB_INIT)
-        .build(),
-      ImmutableMap.<String, Function<String[], String>>of(
-        "id", new IntSerial()
-      )
-    );
-    // id,homotypic_name_id,rank,scientific_name,uninomial
-    PgCopyUtils.copy(pgc, "name_"+Datasets.COL, "/life/catalogue/db/draft/name.csv", ImmutableMap.<String, Object>builder()
-          .put("dataset_key", Datasets.COL)
-          .put("origin", Origin.SOURCE)
-          .put("type", NameType.SCIENTIFIC)
-          .put("nom_status", NomStatus.ACCEPTABLE)
-          .put("created_by", Users.DB_INIT)
-          .put("modified_by", Users.DB_INIT)
-        .build(),
-        ImmutableMap.<String, Function<String[], String>>of(
-            "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[3]),
-            "authorship_normalized", x -> null
-        )
-    );
-    PgCopyUtils.copy(pgc, "name_usage_"+Datasets.COL, "/life/catalogue/db/draft/taxon.csv", ImmutableMap.<String, Object>builder()
-        .put("dataset_key", Datasets.COL)
-        .put("origin", Origin.SOURCE)
-        .put("status", TaxonomicStatus.ACCEPTED)
-        .put("is_synonym", false)
-        .put("created_by", Users.DB_INIT)
-        .put("modified_by", Users.DB_INIT)
-        .build());
-
-    LOG.info("Update managed sequence values");
-    try (SqlSession session = factory.openSession(true)) {
-      DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-      dpm.updateManagedSequences(Datasets.COL);
-    }
-
-    LOG.info("Match draft CoL to names index");
-    // we create a new names index de novo to write new hierarchy names into the names index dataset
-    try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, AuthorshipNormalizer.INSTANCE).started()) {
-      DatasetMatcher matcher = new DatasetMatcher(factory, ni);
-      matcher.match(Datasets.COL, true);
-    }
-  }
-  
-  private static void updateSearchIndex(WsServerConfig cfg, SqlSessionFactory factory) throws Exception {
-    if (cfg.es == null || cfg.es.isEmpty()) {
-      LOG.warn("No ES configured, elastic search index not updated");
-    
-    } else {
-      try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
-        LOG.info("Delete elastic search index {} on {}", cfg.es.nameUsage.name, cfg.es.hosts);
-        EsUtil.deleteIndex(esClient, cfg.es.nameUsage);
-
-        LOG.info("Build search index for draft catalogue");
-        NameUsageIndexService indexService = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
-        indexService.indexDataset(Datasets.COL);
       }
     }
   }

@@ -21,7 +21,7 @@ import java.util.Objects;
 public class PgConfig extends PgDbConfig {
   public static final String SCHEMA_FILE = "life/catalogue/db/dbschema.sql";
   public static final String DATA_FILE = "life/catalogue/db/data.sql";
-  public static final String DATASETS_FILE = "life/catalogue/db/datasets.sql";
+  public static final String DATASETS_FILE = "life/catalogue/db/dataset.tsv";
 
   /**
    * Postgres server host. Defaults to localhost

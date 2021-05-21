@@ -75,13 +75,13 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
     if (!keepSessionOpen) {
       session.close();
     }
-    bus.post(UserChanged.change(obj));
+    bus.post(UserChanged.changed(obj));
     return keepSessionOpen;
   }
 
   @Override
   protected boolean deleteAfter(Integer key, User old, int user, UserMapper mapper, SqlSession session) {
-    bus.post(UserChanged.delete(old));
+    bus.post(UserChanged.deleted(old));
     return false;
   }
 }

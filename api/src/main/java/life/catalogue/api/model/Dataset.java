@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Metadata about a dataset or a subset of it if parentKey is given.
+ * Metadata about a dataset
  */
 public class Dataset extends ArchivedDataset {
 
@@ -16,7 +16,6 @@ public class Dataset extends ArchivedDataset {
   private UUID gbifKey;
   private UUID gbifPublisherKey;
   private LocalDateTime imported; // from import table
-  private LocalDateTime deleted;
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Integer size;
@@ -34,7 +33,6 @@ public class Dataset extends ArchivedDataset {
     this.gbifKey = other.gbifKey;
     this.gbifPublisherKey = other.gbifPublisherKey;
     this.imported = other.imported;
-    this.deleted = other.deleted;
     this.size = other.size;
   }
 
@@ -80,19 +78,6 @@ public class Dataset extends ArchivedDataset {
   }
 
 
-  public LocalDateTime getDeleted() {
-    return deleted;
-  }
-
-  @JsonIgnore
-  public boolean hasDeletedDate() {
-    return deleted != null;
-  }
-  
-  public void setDeleted(LocalDateTime deleted) {
-    this.deleted = deleted;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -102,13 +87,12 @@ public class Dataset extends ArchivedDataset {
     return privat == dataset.privat &&
       Objects.equals(gbifKey, dataset.gbifKey) &&
       Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
-      Objects.equals(imported, dataset.imported) &&
-      Objects.equals(deleted, dataset.deleted);
+      Objects.equals(imported, dataset.imported);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), privat, gbifKey, gbifPublisherKey, imported, deleted);
+    return Objects.hash(super.hashCode(), privat, gbifKey, gbifPublisherKey, imported);
   }
 
   @Override

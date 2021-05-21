@@ -17,11 +17,12 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Metadata about a dataset or a subset of it if parentKey is given.
+ * Metadata about a dataset which can be archived
  */
 public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetadata {
   public static final Map<String, Object> NULL_TYPES;
@@ -60,6 +61,7 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
       throw new RuntimeException(e);
     }
   }
+
   // internal keys & flags
   private Integer key;
   private Integer sourceKey;
@@ -96,6 +98,7 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   @Min(0) @Max(100)
   private Integer completeness;
   private String notes;
+  private LocalDateTime deleted;
 
   public ArchivedDataset() {
   }
@@ -125,6 +128,7 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
     this.confidence = other.confidence;
     this.completeness = other.completeness;
     this.notes = other.notes;
+    this.deleted = other.deleted;
   }
 
   /**
@@ -413,41 +417,31 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
     this.completeness = completeness;
   }
 
+  public LocalDateTime getDeleted() {
+    return deleted;
+  }
+
+  @JsonIgnore
+  public boolean hasDeletedDate() {
+    return deleted != null;
+  }
+
+  public void setDeleted(LocalDateTime deleted) {
+    this.deleted = deleted;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof ArchivedDataset)) return false;
     if (!super.equals(o)) return false;
     ArchivedDataset that = (ArchivedDataset) o;
-    return Objects.equals(key, that.key) &&
-      Objects.equals(sourceKey, that.sourceKey) &&
-      Objects.equals(importAttempt, that.importAttempt) &&
-      type == that.type &&
-      origin == that.origin &&
-      Objects.equals(title, that.title) &&
-      Objects.equals(alias, that.alias) &&
-      Objects.equals(description, that.description) &&
-      Objects.equals(organisations, that.organisations) &&
-      Objects.equals(contact, that.contact) &&
-      Objects.equals(authors, that.authors) &&
-      Objects.equals(editors, that.editors) &&
-      license == that.license &&
-      Objects.equals(version, that.version) &&
-      Objects.equals(released, that.released) &&
-      Objects.equals(citation, that.citation) &&
-      Objects.equals(geographicScope, that.geographicScope) &&
-      Objects.equals(website, that.website) &&
-      Objects.equals(logo, that.logo) &&
-      Objects.equals(group, that.group) &&
-      Objects.equals(confidence, that.confidence) &&
-      Objects.equals(completeness, that.completeness) &&
-      Objects.equals(notes, that.notes);
+    return Objects.equals(deleted, that.deleted) && Objects.equals(key, that.key) && Objects.equals(sourceKey, that.sourceKey) && Objects.equals(importAttempt, that.importAttempt) && type == that.type && origin == that.origin && Objects.equals(doi, that.doi) && Objects.equals(title, that.title) && Objects.equals(alias, that.alias) && Objects.equals(description, that.description) && Objects.equals(organisations, that.organisations) && Objects.equals(contact, that.contact) && Objects.equals(authors, that.authors) && Objects.equals(editors, that.editors) && license == that.license && Objects.equals(version, that.version) && Objects.equals(released, that.released) && Objects.equals(citation, that.citation) && Objects.equals(geographicScope, that.geographicScope) && Objects.equals(website, that.website) && Objects.equals(logo, that.logo) && Objects.equals(group, that.group) && Objects.equals(confidence, that.confidence) && Objects.equals(completeness, that.completeness) && Objects.equals(notes, that.notes);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, importAttempt, type, origin, title, alias, description, organisations, contact, authors, editors,
-      license, version, released, citation, geographicScope, website, logo, group, confidence, completeness, notes);
+    return Objects.hash(super.hashCode(), deleted, key, sourceKey, importAttempt, type, origin, doi, title, alias, description, organisations, contact, authors, editors, license, version, released, citation, geographicScope, website, logo, group, confidence, completeness, notes);
   }
 
   @Override

@@ -51,4 +51,12 @@ public class Identifier {
   public int hashCode() {
     return Objects.hash(identifier, identifierType);
   }
+
+  @Override
+  public String toString() {
+    return "Identifier{" +
+      "identifier='" + identifier + '\'' +
+      ", identifierType='" + identifierType + '\'' +
+      '}';
+  }
 }

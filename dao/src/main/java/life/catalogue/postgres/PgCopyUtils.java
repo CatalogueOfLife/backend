@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PgCopyUtils {
   private static final Logger LOG = LoggerFactory.getLogger(PgCopyUtils.class);
@@ -55,7 +56,8 @@ public class PgCopyUtils {
   
     LOG.info("Copy {} to table {}", resourceName, table);
     HeadlessStream in = new HeadlessStream(PgCopyUtils.class.getResourceAsStream(resourceName), defaults, funcs);
-    String header = HEADER_JOINER.join(in.header);
+    // use quotes to avoid problems with reserved words, e.g. group
+    String header = HEADER_JOINER.join(in.header.stream().map(h -> "\"" + h + "\"").collect(Collectors.toList()));
     long cnt = copy.copyIn("COPY " + table + "(" + header + ") FROM STDOUT WITH CSV NULL '"+nullValue+"'", in);
 
     con.commit();

@@ -83,11 +83,15 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   void prepWork() throws Exception {
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI);
-    // assign draft DOI
-    newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
-    var attr = converter.release(newDataset, false);
-    LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
-    doiService.createSilently(newDataset.getDoi(), attr);
+
+    // assign DOIs?
+    if (cfg.doi != null) {
+      newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
+      updateDataset(newDataset);
+      var attr = converter.release(newDataset, false);
+      LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
+      doiService.createSilently(newDataset.getDoi(), attr);
+    }
 
     // treat source. Archive dataset metadata & logos & assign a potentially new DOI
     updateState(ImportState.ARCHIVING);
@@ -100,15 +104,17 @@ public class ProjectRelease extends AbstractProjectCopy {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       dao.list(datasetKey, newDataset, true).forEach(d -> {
-        // can we reuse a previous DOI for the source?
-        DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
-        if (srcDOI == null) {
-          srcDOI = cfg.doi.datasetSourceDOI(newDatasetKey, d.getKey());
-          LOG.info("Creating new DOI {} for modified source {} of release {}", srcDOI, d.getKey(), newDatasetKey);
-          var srcAttr = converter.source(d, newDataset, true);
-          doiService.createSilently(srcDOI, srcAttr);
+        if (cfg.doi != null) {
+          // can we reuse a previous DOI for the source?
+          DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
+          if (srcDOI == null) {
+            srcDOI = cfg.doi.datasetSourceDOI(newDatasetKey, d.getKey());
+            LOG.info("Creating new DOI {} for modified source {} of release {}", srcDOI, d.getKey(), newDatasetKey);
+            var srcAttr = converter.source(d, newDataset, true);
+            doiService.createSilently(srcDOI, srcAttr);
+          }
+          d.setDoi(srcDOI);
         }
-        d.setDoi(srcDOI);
 
         LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getImportAttempt(), newDatasetKey);
         psm.create(newDatasetKey, d);

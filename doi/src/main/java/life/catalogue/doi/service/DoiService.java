@@ -63,6 +63,7 @@ public interface DoiService {
       update(attributes);
     } catch (DoiException e) {
       LOG.error("Failed to silently create a new DOI {}", attributes.getDoi(), e);
+      notifyException(doi, "create", e);
     }
   }
 
@@ -88,6 +89,7 @@ public interface DoiService {
       publish(doi);
     } catch (DoiException e) {
       LOG.error("Failed to silently publish DOI {}", doi);
+      notifyException(doi, "publish", e);
     }
   }
 
@@ -114,7 +116,12 @@ public interface DoiService {
       update(doi, target);
     } catch (DoiException e) {
       LOG.error("Failed to silently update target URL {} for DOI {}", target, doi);
+      notifyException(doi, "update target URL "+target, e);
     }
+  }
+
+  default void notifyException(DOI doi, String action, Exception e) {
+    // nothing by default
   }
 
   static DoiService passThru() {

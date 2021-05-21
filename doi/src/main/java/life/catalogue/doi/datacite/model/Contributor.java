@@ -49,4 +49,17 @@ public class Contributor extends Creator {
   public int hashCode() {
     return Objects.hash(contributorType);
   }
+
+  @Override
+  public String toString() {
+    return "Contributor{" +
+      "type=" + contributorType +
+      ", name='" + name + '\'' +
+      ", nameType=" + nameType +
+      ", givenName='" + givenName + '\'' +
+      ", familyName='" + familyName + '\'' +
+      ", nameIdentifier=" + nameIdentifier +
+      ", affiliation=" + affiliation +
+      '}';
+  }
 }

@@ -65,15 +65,16 @@ public class DuplicateDao {
                                Boolean rankDifferent, Boolean codeDifferent, Boolean withDecision, Integer projectKey, Page page) {
     mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
     minSize = ObjectUtils.defaultIfNull(minSize, 2);
+    var info = DatasetInfoCache.CACHE.info(datasetKey);
     Preconditions.checkArgument(minSize > 1, "minimum group size must at least be 2");
     if (withDecision != null) {
       Preconditions.checkArgument(projectKey != null, "projectKey is required if parameter withDecision is used");
     }
     if (sourceDatasetKey != null){
-      Preconditions.checkArgument(DatasetInfoCache.CACHE.origin(datasetKey).isManagedOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
+      Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
     }
     if (sectorKey != null){
-      Preconditions.checkArgument(DatasetInfoCache.CACHE.origin(datasetKey).isManagedOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
+      Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
     }
     page = ObjectUtils.defaultIfNull(page, new Page());
     // load all duplicate usages or names

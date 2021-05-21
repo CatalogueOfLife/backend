@@ -77,4 +77,14 @@ public class RelatedIdentifier {
   public int hashCode() {
     return Objects.hash(relatedIdentifier, relatedIdentifierType, relationType, resourceTypeGeneral);
   }
+
+  @Override
+  public String toString() {
+    return "RelatedIdentifier{" +
+      "relatedIdentifier='" + relatedIdentifier + '\'' +
+      ", relatedIdentifierType=" + relatedIdentifierType +
+      ", relationType=" + relationType +
+      ", resourceTypeGeneral=" + resourceTypeGeneral +
+      '}';
+  }
 }

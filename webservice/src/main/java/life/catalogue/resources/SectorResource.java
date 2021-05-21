@@ -128,14 +128,14 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
                                      @Context SqlSession session) {
     // a release? use mother project in that case
     // this also checks for presence & deletion of the dataset key
-    DatasetOrigin origin = DatasetInfoCache.CACHE.origin(datasetKey);
+    var info = DatasetInfoCache.CACHE.info(datasetKey);
     DSID<Integer> skey = DSID.of(datasetKey, id);
     Sector s = session.getMapper(SectorMapper.class).get(skey);
     if (s == null) {
       throw NotFoundException.notFound(Sector.class, skey);
     }
-    if (origin == DatasetOrigin.RELEASED) {
-      Integer projectKey = DatasetInfoCache.CACHE.sourceProject(datasetKey);
+    if (info.origin == DatasetOrigin.RELEASED) {
+      Integer projectKey = info.sourceKey;
       skey = DSID.of(projectKey, id);
     }
 

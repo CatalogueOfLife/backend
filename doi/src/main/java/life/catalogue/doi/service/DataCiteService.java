@@ -6,11 +6,14 @@ import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.datacite.model.DoiState;
 import life.catalogue.doi.datacite.model.EventType;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 import java.time.Year;
 import java.time.temporal.ChronoField;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -20,6 +23,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.simplejavamail.api.email.Email;
+import org.simplejavamail.api.mailer.Mailer;
+import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,14 +39,24 @@ public class DataCiteService implements DoiService {
   private final DoiConfig cfg;
   private final WebTarget dois;
   private final String auth;
+  private final Mailer mailer;
+  private final String onErrorTo;
+  private final String onErrorFrom;
 
 
   public DataCiteService(DoiConfig cfg, Client client) {
+    this(cfg, client, null, null, null);
+  }
+
+  public DataCiteService(DoiConfig cfg, Client client, @Nullable Mailer mailer, @Nullable String onErrorTo, @Nullable String onErrorFrom) {
     LOG.info("Setting up DataCite DOI service with user {} and API {}", cfg.username, cfg.api);
     Preconditions.checkArgument(cfg.api.startsWith("https"), "SSL required to use the DataCite API");
     this.cfg = cfg;
     dois = client.target(UriBuilder.fromUri(cfg.api).path("dois").build());
     auth = BasicAuthenticator.basicAuthentication(cfg.username, cfg.password);
+    this.mailer = mailer;
+    this.onErrorTo = onErrorTo;
+    this.onErrorFrom = onErrorFrom;
   }
 
   Invocation.Builder request(){
@@ -179,4 +195,27 @@ public class DataCiteService implements DoiService {
     update(attr);
   }
 
+  @Override
+  public void notifyException(DOI doi, String action, Exception e) {
+    if (mailer != null) {
+      StringWriter sw = new StringWriter();
+      sw.write(action);
+      sw.write(" for DOI " + doi + " has failed.");
+      if (e != null) {
+        sw.write(" " + e.getClass().getSimpleName()+":\n\n");
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+      } else {
+        sw.write(".\n");
+      }
+
+      Email mail = EmailBuilder.startingBlank()
+        .to(onErrorTo)
+        .from(onErrorFrom)
+        .withSubject(String.format("DOI error %s", doi))
+        .withPlainText(sw.toString())
+        .buildEmail();
+      mailer.sendMail(mail, true);
+    }
+  }
 }

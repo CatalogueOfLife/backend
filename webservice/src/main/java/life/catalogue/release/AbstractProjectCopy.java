@@ -226,6 +226,12 @@ public abstract class AbstractProjectCopy implements Runnable {
     interruptIfCancelled();
   }
 
+  void updateDataset(Dataset d) {
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetMapper.class).update(d);
+    }
+  }
+
   private void index() {
     LOG.info("Build search index for dataset " + newDatasetKey);
     indexService.indexDataset(newDatasetKey);

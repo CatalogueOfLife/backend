@@ -54,7 +54,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
 
       // make sure we have a managed dataset - otherwise sectors cannot be created and we lack a id sequence to generate a key!
-      DatasetOrigin origin = DatasetInfoCache.CACHE.origin(s.getDatasetKey());
+      DatasetOrigin origin = DatasetInfoCache.CACHE.info(s.getDatasetKey()).origin;
       if (origin == null) {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " does not exist");
       } else if (origin != DatasetOrigin.MANAGED) {

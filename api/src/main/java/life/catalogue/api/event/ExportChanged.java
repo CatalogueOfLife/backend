@@ -6,11 +6,11 @@ import java.util.UUID;
 
 public class ExportChanged extends EntityChanged<UUID, DatasetExport> {
 
-  private ExportChanged(UUID key, boolean created, DatasetExport obj, DatasetExport old) {
-    super(key, obj, old, created, DatasetExport.class);
+  private ExportChanged(EventType type, UUID key, DatasetExport obj, DatasetExport old) {
+    super(type, key, obj, old, DatasetExport.class);
   }
 
-  public static ExportChanged delete(DatasetExport export){
-    return new ExportChanged(export.getKey(), false, null, export);
+  public static ExportChanged deleted(DatasetExport export){
+    return new ExportChanged(EventType.DELETE, export.getKey(), null, export);
   }
 }

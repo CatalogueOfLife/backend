@@ -4,19 +4,19 @@ import life.catalogue.api.model.User;
 
 public class UserChanged extends EntityChanged<Integer, User> {
 
-  private UserChanged(Integer key, boolean created, User obj, User old) {
-    super(key, obj, old, created, User.class);
+  private UserChanged(EventType type, Integer key, User obj, User old) {
+    super(type, key, obj, old, User.class);
   }
 
-  public static UserChanged delete(User u){
-    return new UserChanged(u.getKey(), false, null, u);
+  public static UserChanged deleted(User u){
+    return new UserChanged(EventType.DELETE, u.getKey(), null, u);
   }
 
-  public static UserChanged change(User u){
-    return new UserChanged(u.getKey(), false, u, null);
+  public static UserChanged changed(User u){
+    return new UserChanged(EventType.UPDATE, u.getKey(), u, null);
   }
 
   public static UserChanged created(User u){
-    return new UserChanged(u.getKey(), true, u, null);
+    return new UserChanged(EventType.CREATE, u.getKey(), u, null);
   }
 }

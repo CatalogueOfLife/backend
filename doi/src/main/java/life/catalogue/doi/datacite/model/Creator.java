@@ -94,4 +94,16 @@ public class Creator {
   public int hashCode() {
     return Objects.hash(name, nameType, givenName, familyName, nameIdentifier, affiliation);
   }
+
+  @Override
+  public String toString() {
+    return "Creator{" +
+      "name='" + name + '\'' +
+      ", nameType=" + nameType +
+      ", givenName='" + givenName + '\'' +
+      ", familyName='" + familyName + '\'' +
+      ", nameIdentifier=" + nameIdentifier +
+      ", affiliation=" + affiliation +
+      '}';
+  }
 }

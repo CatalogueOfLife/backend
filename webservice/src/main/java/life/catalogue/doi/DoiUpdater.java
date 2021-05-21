@@ -106,7 +106,7 @@ public class DoiUpdater {
   private void update(DOI doi, int datasetKey) {
     try (SqlSession session = factory.openSession()) {
       Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
-      d.setDoi(doi); // make sure we dont accidently update some other DOI
+      d.setDoi(doi); // make sure we don't accidently update some other DOI
       boolean latest = datasetKeyCache.isLatestRelease(datasetKey);
       var attr = converter.release(d, latest);
       update(attr);

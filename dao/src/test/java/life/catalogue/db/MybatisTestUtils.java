@@ -32,7 +32,7 @@ public class MybatisTestUtils {
   public static void partition(SqlSession session, int datasetKey) {
     DatasetOrigin origin;
     try {
-      origin = DatasetInfoCache.CACHE.origin(datasetKey);
+      origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
     } catch (NotFoundException e) {
       // happens in tests, just treat them as a managed one that needs a counter
       origin = DatasetOrigin.MANAGED;

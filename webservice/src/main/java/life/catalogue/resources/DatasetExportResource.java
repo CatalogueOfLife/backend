@@ -144,9 +144,10 @@ public class DatasetExportResource {
     final Integer projectKey;
     Integer attempt;
     // a release?
-    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.RELEASED) {
-      attempt = DatasetInfoCache.CACHE.importAttempt(key);
-      projectKey = DatasetInfoCache.CACHE.sourceProject(key);
+    var info = DatasetInfoCache.CACHE.info(key);
+    if (info.origin == DatasetOrigin.RELEASED) {
+      attempt = info.importAttempt;
+      projectKey = info.sourceKey;
     } else {
       attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
       projectKey = key;

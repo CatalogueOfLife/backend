@@ -30,28 +30,30 @@ public class DatasetProjectSourceDao {
   }
 
   /**
+   * @param datasetKey the dataset key of the release or managed project
+   * @param sourceDatasetKey the dataset key of the source within the release or project
    * @param dontPatch if true return the original project source metadata without the patch. This works only for managed datasets, not releases
    */
-  public ArchivedDataset get(int projectKey, int sourceDatasetKey, boolean dontPatch){
-    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(projectKey);
+  public ArchivedDataset get(int datasetKey, int sourceDatasetKey, boolean dontPatch){
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
     try (SqlSession session = factory.openSession()) {
       if (MANAGED == info.origin) {
         ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
-        ArchivedDataset d = psm.getProjectSource(sourceDatasetKey, projectKey);
+        ArchivedDataset d = psm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
           // get latest version with patch applied
           DatasetMapper dm = session.getMapper(DatasetMapper.class);
-          final DatasetSettings settings = dm.getSettings(projectKey);
-          final Dataset project = dm.get(projectKey);
-          patch(d, projectKey, project, session.getMapper(DatasetPatchMapper.class), settings);
+          final DatasetSettings settings = dm.getSettings(datasetKey);
+          final Dataset project = dm.get(datasetKey);
+          patch(d, datasetKey, project, session.getMapper(DatasetPatchMapper.class), settings);
         }
         return d;
 
       } else if (RELEASED == info.origin) {
-        return session.getMapper(ProjectSourceMapper.class).getReleaseSource(sourceDatasetKey, projectKey);
+        return session.getMapper(ProjectSourceMapper.class).getReleaseSource(sourceDatasetKey, datasetKey);
 
       } else {
-        throw new IllegalArgumentException("Dataset "+projectKey+" is not a project");
+        throw new IllegalArgumentException("Dataset "+datasetKey+" is not a project");
       }
     }
   }
@@ -126,8 +128,9 @@ public class DatasetProjectSourceDao {
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       AtomicInteger sectorCounter = new AtomicInteger(0);
       // a release? use mother project in that case
-      if (DatasetInfoCache.CACHE.origin(datasetKey) == DatasetOrigin.RELEASED) {
-        Integer projectKey = DatasetInfoCache.CACHE.sourceProject(datasetKey);
+      var info = DatasetInfoCache.CACHE.info(datasetKey);
+      if (info.origin == DatasetOrigin.RELEASED) {
+        Integer projectKey = info.sourceKey;
         for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, sourceKey)){
           if (s.getSyncAttempt() != null) {
             SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());

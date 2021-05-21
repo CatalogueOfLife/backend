@@ -45,7 +45,7 @@ public class NotFoundException extends RuntimeException {
     return notFound("DOI", doi.getDoiName());
   }
 
-  private static String createMessage(Class<?> entity, String key) {
+  public static String createMessage(Class<?> entity, String key) {
     return createMessage(entity.getSimpleName(), key);
   }
 

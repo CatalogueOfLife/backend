@@ -274,7 +274,7 @@ public class WsServer extends Application<WsServerConfig> {
       doiService = DoiService.passThru();
       LOG.warn("DataCite DOI service not configured!");
     } else {
-      doiService = new DataCiteService(cfg.doi, jerseyClient);
+      doiService = new DataCiteService(cfg.doi, jerseyClient, mail.getMailer(), cfg.job.onErrorTo, cfg.job.onErrorFrom);
     }
 
     // release

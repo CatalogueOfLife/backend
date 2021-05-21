@@ -207,13 +207,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         .map(ArchivedDataset::getDoi)
         .filter(java.util.Objects::nonNull)
         .collect(Collectors.toSet());
-    // now remove project source dataset archives
-    LOG.info("Delete archived release sources for dataset {}", key);
-    psm.deleteByRelease(key);
     // remove dataset archive
     LOG.info("Delete dataset archive for dataset {}", key);
     session.getMapper(DatasetArchiveMapper.class).deleteByDataset(key);
-    // remove import & sync history
+    // remove import & sync history - we keep them with projects, so deleteing a single release will not have any impact on them
     LOG.info("Delete sector sync history for dataset {}", key);
     session.getMapper(SectorImportMapper.class).deleteByDataset(key);
     LOG.info("Delete dataset import history for dataset {}", key);
@@ -225,8 +222,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
     // now also clear filesystem
     diDao.removeMetrics(key);
-    // remove exports if dataset was private
+    // remove exports & project sources if dataset was private
     if (old != null && old.isPrivat()) {
+      // project source dataset archives
+      LOG.info("Delete archived sources for private dataset {}", key);
+      psm.deleteByRelease(key);
+      // exports
       LOG.info("Delete exports for private dataset {}", key);
       exportDao.deleteByDataset(key, user);
     }
@@ -260,7 +261,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         return 0;
       });
     // notify event bus
-    bus.post(DatasetChanged.delete(old));
+    bus.post(DatasetChanged.deleted(old));
     if (old.getDoi() != null && old.getDoi().isCOL()) {
       bus.post(DoiChange.delete(old.getDoi()));
     }
@@ -307,7 +308,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.commit();
     session.close();
     pullLogo(obj, old, user);
-    bus.post(DatasetChanged.change(obj, old));
+    bus.post(DatasetChanged.changed(obj, old));
     if (obj.getDoi() != null && obj.getDoi().isCOL()) {
       bus.post(DoiChange.change(old.getDoi()));
     }

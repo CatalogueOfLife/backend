@@ -2,7 +2,7 @@ package life.catalogue.api.event;
 
 import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DataEntity;
-
+import static life.catalogue.api.event.EventType.*;
 /**
  * A changed entity message for the bus system.
  * Creation or updates result in a changed message with an existing key and obj,
@@ -11,41 +11,41 @@ import life.catalogue.api.model.DataEntity;
  * @param <T> entity type
  */
 public class EntityChanged<K, T> {
+  public final EventType type;
   public final K key;
   public final T obj;
   public final T old;
   public final Class<T> objClass;
-  private final boolean created;
 
   public static <K, T extends DataEntity<K>>  EntityChanged<K,T> created(T obj){
-    return new EntityChanged<>(obj.getKey(), obj, null, true, (Class<T>) obj.getClass());
+    return new EntityChanged<>(CREATE, obj.getKey(), obj, null, (Class<T>) obj.getClass());
   }
 
   public static <K, T extends DataEntity<K>>  EntityChanged<K,T> change(T obj, T old){
-    return new EntityChanged<>(obj.getKey(), obj, old, false, (Class<T>) obj.getClass());
+    return new EntityChanged<>(UPDATE, obj.getKey(), obj, old, (Class<T>) obj.getClass());
   }
 
   public static <K, T> EntityChanged<K, T> delete(K key, T old, Class<T> objClass){
-    return new EntityChanged<>(key, null, old, false, objClass);
+    return new EntityChanged<>(DELETE, key, null, old, objClass);
   }
 
-  EntityChanged(K key, T obj, T old, boolean created, Class<T> objClass) {
+  EntityChanged(EventType type, K key, T obj, T old, Class<T> objClass) {
+    this.type = type;
     this.key = Preconditions.checkNotNull(key);
     this.obj = obj; // can be null in case of deletions
     this.old = old;
     this.objClass = Preconditions.checkNotNull(objClass);
-    this.created = created;
   }
 
   public boolean isDeletion(){
-    return obj == null;
+    return type ==  DELETE;
   }
 
   public boolean isCreated(){
-    return obj != null && created;
+    return type ==  CREATE;
   }
 
   public boolean isUpdated(){
-    return obj != null && !created;
+    return type ==  UPDATE;
   }
 }

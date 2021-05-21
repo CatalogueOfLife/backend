@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DatasetInfoCache {
   private SqlSessionFactory factory;
   private final Map<Integer, DatasetInfo> infos = new ConcurrentHashMap<>();
-  private final Set<Integer> deleted = ConcurrentHashMap.newKeySet();
 
   public final static DatasetInfoCache CACHE = new DatasetInfoCache();
 
@@ -40,11 +39,13 @@ public class DatasetInfoCache {
     public final DatasetOrigin origin;
     public final Integer sourceKey;
     public final Integer importAttempt; // only immutable for releases !!!
+    public final boolean deleted; // this can change, so we listen to deletion events. But once deleted it can never be reverted.
 
-    DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, Integer importAttempt) {
+    DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, Integer importAttempt, boolean deleted) {
       this.key = key;
       this.origin = Preconditions.checkNotNull(origin, "origin is required");
       this.sourceKey = sourceKey;
+      this.deleted = deleted;
       if (origin == DatasetOrigin.RELEASED) {
         Preconditions.checkNotNull(sourceKey, "sourceKey is required for release " + key);
         this.importAttempt = Preconditions.checkNotNull(importAttempt, "importAttempt is required for release " + key);
@@ -69,41 +70,31 @@ public class DatasetInfoCache {
     }
   }
 
-  private DatasetInfo get(int datasetKey) throws NotFoundException {
-    if (deleted.contains(datasetKey)) {
-      throw NotFoundException.notFound(Dataset.class, datasetKey);
-    }
-    return infos.computeIfAbsent(datasetKey, key -> {
+  private DatasetInfo get(int datasetKey, boolean allowDeleted) throws NotFoundException {
+    DatasetInfo info = infos.computeIfAbsent(datasetKey, key -> {
       try (SqlSession session = factory.openSession()) {
         return convert(datasetKey, session.getMapper(DatasetMapper.class).get(key));
       }
     });
+    if (info.deleted && !allowDeleted) {
+      throw NotFoundException.notFound(Dataset.class, datasetKey);
+    }
+    return info;
   }
 
   private DatasetInfo convert(int key, Dataset d) {
-    if (d != null) {
-      if (!d.hasDeletedDate()) {
-        return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getImportAttempt());
-      }
-      deleted.add(key);
+    if (d == null) {
+      throw NotFoundException.notFound(Dataset.class, key);
     }
-    throw NotFoundException.notFound(Dataset.class, key);
+    return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getImportAttempt(), d.hasDeletedDate());
   }
 
   public DatasetInfo info(int datasetKey) throws NotFoundException {
-    return get(datasetKey);
+    return info(datasetKey, false);
   }
 
-  public DatasetOrigin origin(int datasetKey) throws NotFoundException {
-    return get(datasetKey).origin;
-  }
-
-  public Integer sourceProject(int datasetKey) throws NotFoundException {
-    return get(datasetKey).sourceKey;
-  }
-
-  public Integer importAttempt(int datasetKey) throws NotFoundException {
-    return get(datasetKey).importAttempt;
+  public DatasetInfo info(int datasetKey, boolean allowDeleted) throws NotFoundException {
+    return get(datasetKey, allowDeleted);
   }
 
   /**
@@ -112,14 +103,14 @@ public class DatasetInfoCache {
    * @throws NotFoundException
    */
   public void exists(int datasetKey) throws NotFoundException {
-    get(datasetKey);
+    get(datasetKey, false);
   }
 
   @Subscribe
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
-      deleted.add(event.key);
-      infos.remove(event.key);
+      var info = get(event.key, true);
+      infos.put(event.key, new DatasetInfo(info.key, info.origin, info.sourceKey, info.importAttempt, true));
     }
   }
 
