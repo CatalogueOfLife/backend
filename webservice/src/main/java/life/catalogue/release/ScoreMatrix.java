@@ -103,9 +103,6 @@ public class ScoreMatrix {
     }
     // natural sort order defines the relevance
     Collections.sort(next);
-    if (!next.isEmpty()) {
-      System.out.println("found "+next.size()+" matches with score " + next.get(0).score);
-    }
     return next;
   }
 

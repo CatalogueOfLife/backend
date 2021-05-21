@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
+  int MAGIC_ADMIN_USER_KEY = -42;
 
   void deletePhysically(@Param("key") int key);
 

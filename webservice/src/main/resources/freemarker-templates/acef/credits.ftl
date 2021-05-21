@@ -5,7 +5,7 @@ edition = "${d.released}"
 <#if d.citation??>
 citation = "${d.citation}"
 <#else>
-citation = "<#list d.editors as author>${author}<#sep>, </#list> (${d.released?string['yyyy']}). ${d.title}, ${d.released}. Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858."
+citation = "<#list d.editors![] as author>${author}<#sep>, </#list> (${d.released?string['yyyy']}). ${d.title!}, ${d.released}. Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858."
 </#if>
 
 [annual]

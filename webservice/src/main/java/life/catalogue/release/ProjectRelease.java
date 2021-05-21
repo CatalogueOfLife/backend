@@ -135,14 +135,21 @@ public class ProjectRelease extends AbstractProjectCopy {
     idProvider.run();
   }
 
+  /**
+   * This looks up the previous release by ignoring the latest releases and ignoring the very latest one.
+   * Private flags do not matter.
+   * @param datasetKey
+   * @param session
+   */
   static Integer findPreviousRelease(int datasetKey, SqlSession session){
     DatasetMapper dm = session.getMapper(DatasetMapper.class);
     DatasetSearchRequest req = new DatasetSearchRequest();
-    req.setPrivat(false);
+    req.setPrivat(true);
     req.setReleasedFrom(datasetKey);
     req.setSortBy(DatasetSearchRequest.SortBy.CREATED);
-    var releases = dm.search(req, null, new Page(0, 1));
-    return releases.isEmpty() ? null : releases.get(0).getKey();
+
+    var releases = dm.search(req, DatasetMapper.MAGIC_ADMIN_USER_KEY, new Page(0, 2));
+    return releases.size() < 2 ? null : releases.get(1).getKey();
   }
 
   /**
@@ -154,7 +161,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   private DOI findSourceDOI(Integer prevReleaseKey, int sourceKey, SqlSession session) {
     if (prevReleaseKey != null) {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
-      var prevSrc = psm.getProjectSource(sourceKey, prevReleaseKey);
+      var prevSrc = psm.getReleaseSource(sourceKey, prevReleaseKey);
       if (prevSrc != null && prevSrc.getDoi() != null) {
         // compare basic metrics
         var metrics = sourceDao.projectSourceMetrics(datasetKey, sourceKey);

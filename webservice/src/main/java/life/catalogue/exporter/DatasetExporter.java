@@ -157,8 +157,12 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     export.setSynonymCount(counter.getSynCounter().get());
     export.setTaxonCount(counter.getTaxCounter().get());
     export.setTaxaByRankCount(counter.getRankCounterMap());
-    export.setSize(Files.size(archive.toPath()));
-    export.setMd5(ChecksumUtils.getMD5Checksum(archive));
+    try {
+      export.setSize(Files.size(archive.toPath()));
+      export.setMd5(ChecksumUtils.getMD5Checksum(archive));
+    } catch (IOException e) {
+      LOG.error("Failed to read generated archive file stats for {}", archive, e);
+    }
     updateExport(getStatus());
 
     // email notification
