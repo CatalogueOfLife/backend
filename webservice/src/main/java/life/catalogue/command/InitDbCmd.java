@@ -13,6 +13,7 @@ import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.dao.TaxonDao;
+import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -37,8 +38,10 @@ import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.function.Function;
 
@@ -81,21 +84,11 @@ public class InitDbCmd extends AbstractPromptCmd {
     try (Connection con = cfg.db.connect()) {
       ScriptRunner runner = PgConfig.scriptRunner(con);
       // run sql schema
-      exec(PgConfig.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
+      exec(InitDbUtils.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(InitDbUtils.SCHEMA_FILE));
       // add common data
-      exec(PgConfig.DATA_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DATA_FILE));
-
-      LOG.info("Insert known datasets");
-      PgConnection pgc = (PgConnection) con;
-      PgCopyUtils.copy(pgc, "dataset", "/life/catalogue/db/dataset.csv", ImmutableMap.<String, Object>builder()
-        .put("created_by", Users.DB_INIT)
-        .put("modified_by", Users.DB_INIT)
-        .build());
-      // the dataset.csv file was generated as a dump from production with psql:
-      // \copy (select key, type, gbif_key, gbif_publisher_key, license, released, confidence, completeness, origin, title, alias, description, organisations, version, citation, geographic_scope, website, logo, "group", notes, settings, source_key, contact, authors, editors from dataset where not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
-      try (Statement st = con.createStatement()) {
-        st.execute("SELECT setval('dataset_key_seq', (SELECT max(key) FROM dataset))");
-      }
+      exec(InitDbUtils.DATA_FILE, runner, con, Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
+      // register known datasets
+      InitDbUtils.insertDatasets(InitDbUtils.toPgConnection(con));
     }
     
     // cleanup names index

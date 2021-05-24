@@ -267,48 +267,39 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
     if (!skipGlobalTable) {
       // common data for all tests and even the empty one
-      runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
+      runner.runScript(Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
     }
 
     if (!testData.none) {
       System.out.format("Load %s test data\n\n", testData);
 
+      try (Connection c = sqlSessionFactorySupplier.get().openSession(false).getConnection()) {
+        PgConnection pgc = InitDbUtils.toPgConnection(c);
+        if (testData.datasets) {
+          // register known datasets
+          InitDbUtils.insertDatasets(pgc);
 
-      if (testData.datasets) {
-        // known datasets
-        runner.runScript(Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
+        } else {
 
-      } else {
-        try (Connection c = sqlSessionFactorySupplier.get().openSession(false).getConnection()) {
-          PgConnection pgc;
-          if (c instanceof HikariProxyConnection) {
-            HikariProxyConnection hpc = (HikariProxyConnection) c;
-            pgc = hpc.unwrap(PgConnection.class);
-          } else {
-            pgc = (PgConnection) c;
-          }
-
-          if (!skipGlobalTable) {
-            copyGlobalTable(pgc, "dataset");
-            copyGlobalTable(pgc, "dataset_import");
-            copyGlobalTable(pgc, "dataset_patch");
-            copyGlobalTable(pgc, "dataset_archive");
-            copyGlobalTable(pgc, "sector");
-            if (copyGlobalTable(pgc, "names_index")) {
-              // update names index keys if we added data
-              session.getMapper(NamesIndexMapper.class).updateSequence();
+            if (!skipGlobalTable) {
+              copyGlobalTable(pgc, "dataset");
+              copyGlobalTable(pgc, "dataset_import");
+              copyGlobalTable(pgc, "dataset_patch");
+              copyGlobalTable(pgc, "dataset_archive");
+              copyGlobalTable(pgc, "sector");
+              if (copyGlobalTable(pgc, "names_index")) {
+                // update names index keys if we added data
+                session.getMapper(NamesIndexMapper.class).updateSequence();
+              }
+              copyGlobalTable(pgc, "name_match");
             }
-            copyGlobalTable(pgc, "name_match");
+
+            for (int key : testData.datasetKeys) {
+              copyDataset(pgc, key);
+              c.commit();
+            }
+            runner.runScript(Resources.getResourceAsReader("test-data/sequences.sql"));
           }
-
-          for (int key : testData.datasetKeys) {
-            copyDataset(pgc, key);
-            c.commit();
-          }
-
-          runner.runScript(Resources.getResourceAsReader("test-data/sequences.sql"));
-        }
-
       }
     }
     session.commit();

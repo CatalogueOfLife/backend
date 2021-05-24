@@ -99,7 +99,7 @@ public class PgSetupRule extends ExternalResource {
       LOG.info("Init empty database schema");
       wipeDB(con);
       ScriptRunner runner = PgConfig.scriptRunner(con);
-      runner.runScript(Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
+      runner.runScript(Resources.getResourceAsReader(InitDbUtils.SCHEMA_FILE));
       con.commit();
     }
     setupMybatis(cfg);
