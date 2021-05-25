@@ -8,6 +8,7 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.License;
 import life.catalogue.db.TestDataRule;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -17,6 +18,7 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.time.LocalDate;
+import java.util.List;
 
 import static life.catalogue.ApiUtils.*;
 import static life.catalogue.api.TestEntityGenerator.nullifyUserDate;
@@ -58,11 +60,14 @@ public class DatasetResourceTest extends ResourceTestBase {
     assertEquals(10, resp.size());
     assertEquals("A World Catalogue of Centipedes (Chilopoda) for the Web", resp.getResult().get(0).getTitle());
   
-    req.setFormat(DataFormat.DWCA);
+    req.setLicense(List.of(License.CC0));
     resp = userCreds(applySearch(base, req, page)).get(RESULT_PAGE);
   
+    for (Dataset d : resp.getResult()) {
+      assertEquals(License.CC0, d.getLicense());
+    }
     assertEquals(5, resp.size());
-    assertEquals("Catalogue of Afrotropical Bees", resp.getResult().get(0).getTitle());
+    assertEquals("Catalogue of Craneflies of the World", resp.getResult().get(0).getTitle());
   }
   
   @Test

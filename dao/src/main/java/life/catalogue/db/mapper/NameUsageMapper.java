@@ -154,6 +154,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param sectorKey optional sector key to limit the traversal to
    * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa
    * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
+   * @param lowestRank optional rank cutoff filter to only include children with a rank above or equal to the one given
    * @param includeSynonyms if true includes synonyms, otherwise only taxa
    * @param depthFirst if true uses a depth first traversal which is more expensive then breadth first!
    */
@@ -195,6 +196,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param sectorKey optional sector key to limit the traversal to
    * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa
    * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
+   * @param lowestRank optional rank cutoff filter to only include children with a rank above or equal to the one given
    * @param includeSynonyms if true includes synonyms, otherwise only taxa
    */
   Cursor<SimpleName> processTreeSimple(@Param("datasetKey") int datasetKey,

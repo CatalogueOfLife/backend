@@ -3,6 +3,7 @@ package life.catalogue;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.vocab.DatasetOrigin;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -10,6 +11,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 
 import static org.glassfish.jersey.client.authentication.HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_PASSWORD;
 import static org.glassfish.jersey.client.authentication.HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_USERNAME;
@@ -59,8 +61,9 @@ public class ApiUtils {
         .queryParam("q", search.getQ())
         .queryParam("code", search.getCode())
         .queryParam("contributesTo", search.getContributesTo())
-        .queryParam("format", search.getFormat())
         .queryParam("type", search.getType())
+        .queryParam("license", array(search.getLicense()))
+        .queryParam("origin", array(search.getOrigin()))
         .queryParam("modified", search.getModified())
         .queryParam("created", search.getCreated())
         .queryParam("released", search.getReleased())

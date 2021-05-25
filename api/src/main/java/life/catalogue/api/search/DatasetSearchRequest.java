@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.License;
+
 import org.gbif.nameparser.api.NomCode;
 
 import javax.validation.constraints.Min;
@@ -14,7 +16,7 @@ import java.util.Objects;
 
 public class DatasetSearchRequest {
   
-  public static enum SortBy {
+  public enum SortBy {
     KEY,
     ALIAS,
     TITLE,
@@ -69,15 +71,15 @@ public class DatasetSearchRequest {
   @QueryParam("modifiedBy")
   private Integer modifiedBy;
 
-  @QueryParam("format")
-  private DataFormat format;
-  
   @QueryParam("origin")
   private List<DatasetOrigin> origin;
 
   @QueryParam("type")
   private List<DatasetType> type;
-  
+
+  @QueryParam("license")
+  private List<License> license;
+
   @QueryParam("modified")
   private LocalDate modified;
   
@@ -175,20 +177,20 @@ public class DatasetSearchRequest {
     this.hasSourceDataset = hasSourceDataset;
   }
 
-  public DataFormat getFormat() {
-    return format;
-  }
-  
-  public void setFormat(DataFormat format) {
-    this.format = format;
-  }
-  
   public List<DatasetType> getType() {
     return type;
   }
 
   public void setType(List<DatasetType> type) {
     this.type = type;
+  }
+
+  public List<License> getLicense() {
+    return license;
+  }
+
+  public void setLicense(List<License> license) {
+    this.license = license;
   }
 
   public List<DatasetOrigin> getOrigin() {
@@ -243,29 +245,13 @@ public class DatasetSearchRequest {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof DatasetSearchRequest)) return false;
     DatasetSearchRequest that = (DatasetSearchRequest) o;
-    return reverse == that.reverse &&
-      Objects.equals(q, that.q) &&
-      code == that.code &&
-      Objects.equals(privat, that.privat) &&
-      Objects.equals(releasedFrom, that.releasedFrom) &&
-      Objects.equals(contributesTo, that.contributesTo) &&
-      Objects.equals(hasSourceDataset, that.hasSourceDataset) &&
-      Objects.equals(editor, that.editor) &&
-      Objects.equals(modifiedBy, that.modifiedBy) &&
-      format == that.format &&
-      origin == that.origin &&
-      type == that.type &&
-      Objects.equals(modified, that.modified) &&
-      Objects.equals(created, that.created) &&
-      Objects.equals(released, that.released) &&
-      Objects.equals(minSize, that.minSize) &&
-      sortBy == that.sortBy;
+    return reverse == that.reverse && Objects.equals(q, that.q) && code == that.code && Objects.equals(privat, that.privat) && Objects.equals(releasedFrom, that.releasedFrom) && Objects.equals(contributesTo, that.contributesTo) && Objects.equals(hasSourceDataset, that.hasSourceDataset) && Objects.equals(editor, that.editor) && Objects.equals(modifiedBy, that.modifiedBy) && Objects.equals(origin, that.origin) && Objects.equals(type, that.type) && Objects.equals(license, that.license) && Objects.equals(modified, that.modified) && Objects.equals(created, that.created) && Objects.equals(released, that.released) && Objects.equals(minSize, that.minSize) && sortBy == that.sortBy;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, editor, modifiedBy, format, origin, type, modified, created, released, minSize, sortBy, reverse);
+    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, editor, modifiedBy, origin, type, license, modified, created, released, minSize, sortBy, reverse);
   }
 }

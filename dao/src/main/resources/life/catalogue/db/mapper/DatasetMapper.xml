@@ -87,8 +87,8 @@
         AND d.source_key=#{req.releasedFrom}
         AND d.origin = 'RELEASED'::DATASETORIGIN
       </if>
-      <if test="req.format != null">
-        AND d.settings @> jsonb_build_object('DATA_FORMAT', #{req.format})
+      <if test="req.license != null and !req.license.isEmpty()">
+        AND d.license IN <foreach item="o" collection="req.license" open="(" separator="," close=")">#{o}::LICENSE</foreach>
       </if>
       <if test="req.editor != null">
         AND d.access_control @> ARRAY[#{req.editor}::int]
