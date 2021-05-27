@@ -52,10 +52,11 @@
     </include>
     <if test="req != null">
       <if test="req.q != null">
+        <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
         AND (
-        f_unaccent(title) ILIKE f_unaccent('%${req.q}%')
-        OR f_unaccent(alias) ILIKE f_unaccent('%${req.q}%')
-        OR doc @@ plainto_tsquery('simple2', #{req.q})
+          f_unaccent(title) ILIKE f_unaccent($Grtz5$%${req.q}%$Grtz5$)
+          OR f_unaccent(alias) ILIKE f_unaccent($Grtz5$%${req.q}%$Grtz5$)
+          OR doc @@ plainto_tsquery('simple2', $Grtz5$%${req.q}%$Grtz5$)
         )
       </if>
       <if test="req.privat != null">
