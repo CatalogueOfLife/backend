@@ -99,6 +99,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public ReleaseConfig release = new ReleaseConfig();
 
   @Valid
+  @NotNull
   public MailConfig mail;
 
   @Valid

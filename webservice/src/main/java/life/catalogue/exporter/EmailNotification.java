@@ -7,6 +7,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.User;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.db.mapper.UserMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -16,6 +17,8 @@ import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -29,8 +32,11 @@ public class EmailNotification {
   private final SqlSessionFactory factory;
   private final WsServerConfig cfg;
 
-  public EmailNotification(Mailer mailer, SqlSessionFactory factory, WsServerConfig cfg) {
-    this.mailer = Preconditions.checkNotNull(mailer);
+  /**
+   * @param mailer if null no mails will be sent
+   */
+  public EmailNotification(@Nullable Mailer mailer, SqlSessionFactory factory, WsServerConfig cfg) {
+    this.mailer = mailer;
     this.factory = factory;
     this.cfg = cfg;
   }
@@ -52,31 +58,43 @@ public class EmailNotification {
       return;
     }
 
+    String text = null;
     try {
-      Email mail = EmailBuilder.startingBlank()
-        .to(user.getName(), user.getEmail())
-        .from(cfg.mail.fromName, cfg.mail.from)
-        .bccAddresses(cfg.mail.bcc)
-        .withSubject(String.format("COL download %s %s", export.getKey(), export.getStatus().name().toLowerCase()))
-        .withPlainText(downloadMail(export, dataset, user, cfg))
-        .buildEmail();
-      AsyncResponse asyncResp = mailer.sendMail(mail, true);
-      asyncResp.onSuccess(() -> {
-        LOG.info("Successfully sent mail for download {} to {}", export.getKey(), user.getEmail());
-      });
-      asyncResp.onException((e) -> {
-        LOG.error("Error sending mail for download {} to {}", export.getKey(), user.getEmail(), e);
-      });
-      if (cfg.mail.block) {
-        Future<?> f = asyncResp.getFuture();
-        f.get(); // blocks
-      }
-      LOG.info("Sent email notification for download {} to user [{}] {} <{}>", export.getKey(), user.getKey(), user.getName(), user.getEmail());
+      text = downloadMail(export, dataset, user, cfg);
+      if (mailer != null) {
+        Email mail = EmailBuilder.startingBlank()
+          .to(user.getName(), user.getEmail())
+          .from(cfg.mail.fromName, cfg.mail.from)
+          .bccAddresses(cfg.mail.bcc)
+          .withSubject(String.format("COL download %s %s", export.getKey(), export.getStatus().name().toLowerCase()))
+          .withPlainText(text)
+          .buildEmail();
 
-    } catch (IOException | TemplateException | ExecutionException | InterruptedException e) {
+        AsyncResponse asyncResp = mailer.sendMail(mail, true);
+        asyncResp.onSuccess(() -> {
+          LOG.info("Successfully sent mail for download {} to {}", export.getKey(), user.getEmail());
+        });
+        asyncResp.onException((e) -> {
+          LOG.error("Error sending mail for download {} to {}", export.getKey(), user.getEmail(), e);
+        });
+        if (cfg.mail.block) {
+          Future<?> f = asyncResp.getFuture();
+          f.get(); // blocks
+        }
+        LOG.info("Sent email notification for download {} to user [{}] {} <{}>", export.getKey(), user.getKey(), user.getName(), user.getEmail());
+
+      } else {
+        LOG.warn("No mailer configured to sent email notification for download {} to user [{}] {} <{}>", export.getKey(), user.getKey(), user.getName(), user.getEmail());
+        LOG.debug(text);
+      }
+
+    } catch (IOException | TemplateException | ExecutionException | InterruptedException | RuntimeException e) {
       LOG.error("Error sending mail for download {}", export.getKey(), e);
+      if (text != null) {
+        LOG.info(text);
+      }
       if (cfg.mail.block) {
-        throw new RuntimeException(e);
+        throw Exceptions.asRuntimeException(e);
       }
     }
   }

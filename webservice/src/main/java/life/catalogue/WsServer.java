@@ -3,6 +3,7 @@ package life.catalogue;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.cache.CacheFlush;
@@ -16,6 +17,7 @@ import life.catalogue.db.tree.DatasetDiffService;
 import life.catalogue.db.tree.SectorDiffService;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DataCiteService;
+import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.ManagedUtils;
 import life.catalogue.dw.auth.AuthBundle;
@@ -65,6 +67,9 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
+import org.glassfish.jersey.CommonProperties;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.RequestEntityProcessing;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,7 +141,11 @@ public class WsServer extends Application<WsServerConfig> {
 
   @Override
   public String getName() {
-    return "ws-server";
+    return "COLServer";
+  }
+
+  public String getUserAgent(WsServerConfig cfg) {
+    return getName() + "/" + ObjectUtils.coalesce(cfg.versionString(), "1.0");
   }
 
   /**
@@ -177,17 +186,18 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetExport.setDownloadBaseURI(cfg.downloadURI);
 
     // http client pool is managed via DW lifecycle already
-    httpClient = new HttpClientBuilder(env).using(cfg.client).build(getName());
+    httpClient = new HttpClientBuilder(env).using(cfg.client).build(getUserAgent(cfg));
 
     // reuse the same http client pool also for jersey clients!
     JerseyClientBuilder builder = new JerseyClientBuilder(env)
-        // .withProperty(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE, Boolean.TRUE)
+        .withProperty(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE, Boolean.TRUE)
+        .withProperty(ClientProperties.REQUEST_ENTITY_PROCESSING, RequestEntityProcessing.BUFFERED)
         .using(cfg.client)
         .using((ConnectorProvider) (cl,
             runtimeConfig) -> new DropwizardApacheConnector(httpClient, requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()));
     // build both syncroneous and reactive clients sharing the same thread pool
   
-    jerseyClient = builder.build(getName());
+    jerseyClient = builder.build(getUserAgent(cfg));
 
     // finally provide the SqlSessionFactory & http client to the auth and jersey bundle
     coljersey.setSqlSessionFactory(mybatis.getSqlSessionFactory());
@@ -276,9 +286,10 @@ public class WsServer extends Application<WsServerConfig> {
     } else {
       doiService = new DataCiteService(cfg.doi, jerseyClient, mail.getMailer(), cfg.job.onErrorTo, cfg.job.onErrorFrom);
     }
+    DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
 
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, doiService, getSqlSessionFactory(), cfg);
+    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, doiService, converter, getSqlSessionFactory(), cfg);
 
     // importer
     importManager = new ImportManager(cfg,
@@ -355,8 +366,8 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(coljersey);
     bus.register(DatasetInfoCache.CACHE);
     bus.register(new CacheFlush(httpClient, cfg.apiURI));
-    bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService));
-    bus.register(new DoiUpdater(cfg, getSqlSessionFactory(), doiService, coljersey.getCache()));
+    bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService, converter));
+    bus.register(new DoiUpdater(cfg, getSqlSessionFactory(), doiService, coljersey.getCache(), converter));
   }
 
   @Override
@@ -388,7 +399,7 @@ public class WsServer extends Application<WsServerConfig> {
   /**
    * Mostly copied from HttpClientBuilder
    */
-  private static RequestConfig requestConfig(JerseyClientConfiguration cfg) {
+  public static RequestConfig requestConfig(JerseyClientConfiguration cfg) {
     final String cookiePolicy =
         cfg.isCookiesEnabled() ? CookieSpecs.DEFAULT : CookieSpecs.IGNORE_COOKIES;
     return RequestConfig.custom()

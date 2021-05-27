@@ -45,12 +45,12 @@ public class PublicReleaseListener {
   private final DoiService doiService;
   private final DatasetConverter converter;
 
-  public PublicReleaseListener(WsServerConfig cfg, SqlSessionFactory factory, DatasetExportDao dao, DoiService doiService) {
+  public PublicReleaseListener(WsServerConfig cfg, SqlSessionFactory factory, DatasetExportDao dao, DoiService doiService, DatasetConverter converter) {
     this.cfg = cfg;
     this.factory = factory;
     this.dao = dao;
     this.doiService = doiService;
-    this.converter = new DatasetConverter(cfg.portalURI, cfg.clbURI);
+    this.converter = converter;
   }
 
   @Subscribe

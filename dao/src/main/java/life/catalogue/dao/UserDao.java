@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Function;
 
 public class UserDao extends EntityDao<Integer, User, UserMapper> {
 

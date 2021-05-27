@@ -1,6 +1,13 @@
-package life.catalogue.doi.service;
+package life.catalogue.doi;
 
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.DOI;
+import life.catalogue.common.util.YamlUtils;
+import life.catalogue.doi.datacite.model.*;
+import life.catalogue.doi.service.DataCiteService;
+import life.catalogue.doi.service.DataCiteWrapper;
+import life.catalogue.doi.service.DoiConfig;
+import life.catalogue.doi.service.DoiException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -8,59 +15,35 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Feature;
 
-import life.catalogue.api.model.DOI;
+import life.catalogue.dw.jersey.JerseyClientRule;
 
-import life.catalogue.common.util.YamlUtils;
-
-import life.catalogue.doi.datacite.model.*;
-
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.logging.LoggingFeature;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import org.junit.*;
 
 import static org.junit.Assert.*;
 
+/**
+ * Same test again as in doi package, but using the Dropwizard jersey client
+ * which apparently behaves differently and uses http client under the hood.
+ */
 @Ignore("Using real DataCite API - manual test only")
-public class DataCiteServiceIT {
-  static final Logger LOG = Logger.getLogger(DataCiteServiceIT.class.getName());
+public class DataCiteServiceIT2 {
+  static final Logger LOG = Logger.getLogger(DataCiteServiceIT2.class.getName());
 
   DataCiteService service;
   DataCiteService prodReadService;
+
+  @Rule
+  public JerseyClientRule jerseyClientRule = new JerseyClientRule();
 
   Set<DOI> dois = new HashSet<>();
 
   @Before
   public void setup() throws IOException {
-    final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider(ApiModule.MAPPER, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
-    ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
-    cfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
-    cfg.register(new UserAgentFilter());
-
-    // debug logging of requests
-    //Handler handlerObj = new ConsoleHandler();
-    //handlerObj.setLevel(Level.ALL);
-    //LOG.addHandler(handlerObj);
-    //LOG.setLevel(Level.ALL);
-    //LOG.setUseParentHandlers(false);
-    //Feature logFeature = new LoggingFeature(LOG, Level.INFO, null, null);
-    //cfg.register(logFeature);
-
-    final Client client = ClientBuilder.newClient(cfg);
+    final Client client = jerseyClientRule.getClient();
 
     DoiConfig doiCfg = YamlUtils.read(DoiConfig.class, "/datacite.yaml");
     service = new DataCiteService(doiCfg, client);
@@ -134,6 +117,13 @@ public class DataCiteServiceIT {
     System.out.println( service.fromDataset(25298) );
     System.out.println( service.fromDatasetSource(2298, 1010) );
     System.out.println( service.fromDatasetSource(25298, 41010) );
+  }
+
+  @Test
+  public void jsonDoiSerde() throws Exception {
+    DoiAttributes attr = generate(DOI.test("1234567890"));
+    DataCiteWrapper data = new DataCiteWrapper(attr);
+    System.out.println(ApiModule.MAPPER.writeValueAsString(data));
   }
 
   @Test

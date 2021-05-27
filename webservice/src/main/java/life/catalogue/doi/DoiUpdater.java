@@ -46,11 +46,11 @@ public class DoiUpdater {
   private final Set<DOI> deleted = ConcurrentHashMap.newKeySet();
   private final LatestDatasetKeyCache datasetKeyCache;
 
-  public DoiUpdater(WsServerConfig cfg, SqlSessionFactory factory, DoiService doiService, LatestDatasetKeyCache datasetKeyCache) {
+  public DoiUpdater(WsServerConfig cfg, SqlSessionFactory factory, DoiService doiService, LatestDatasetKeyCache datasetKeyCache, DatasetConverter converter) {
     this.cfg = cfg;
     this.factory = factory;
     this.doiService = doiService;
-    this.converter = new DatasetConverter(cfg.portalURI, cfg.clbURI);
+    this.converter = converter;
     this.datasetKeyCache = datasetKeyCache;
   }
 

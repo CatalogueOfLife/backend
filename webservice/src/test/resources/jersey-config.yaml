@@ -1,0 +1,15 @@
+timeout: 10000ms
+connectionTimeout: 10000ms
+connectionRequestTimeout: 10000ms
+timeToLive: 1h
+cookiesEnabled: false
+maxConnections: 64
+maxConnectionsPerRoute: 16
+keepAlive: 0ms
+retries: 1
+tls:
+  verifyHostname: false
+  trustSelfSignedCertificates: true
+gzipEnabled: true
+gzipEnabledForRequests: false
+chunkedEncodingEnabled: false

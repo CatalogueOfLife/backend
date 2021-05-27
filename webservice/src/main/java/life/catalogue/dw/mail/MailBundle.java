@@ -24,7 +24,7 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
   public void run(MailBundleConfig config, Environment env) throws Exception {
     final MailConfig cfg = config.getMailConfig();
 
-    if (cfg != null && cfg.host != null) {
+    if (cfg.host != null) {
       LOG.info("Configuring mail server {}:{}", cfg.host, cfg.port);
       if (cfg.block) {
         LOG.warn("Mail server configured to block while sending");

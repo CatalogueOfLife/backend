@@ -43,10 +43,11 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ExportManager exportManager;
   private final DoiService doiService;
   private final DatasetProjectSourceDao sourceDao;
+  private final DatasetConverter converter;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
-                 DoiService doiService) {
+                 DoiService doiService, DatasetConverter converter) {
     super("releasing", factory, diDao, dDao, indexService, userKey, datasetKey, true);
     this.imageService = imageService;
     this.doiService = doiService;
@@ -55,6 +56,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.client = client;
     this.exportManager = exportManager;
     this.sourceDao = new DatasetProjectSourceDao(factory);
+    this.converter = converter;
   }
 
   @Override
@@ -82,15 +84,13 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   void prepWork() throws Exception {
-    DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI);
-
     // assign DOIs?
     if (cfg.doi != null) {
       newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
       updateDataset(newDataset);
       var attr = converter.release(newDataset, false);
       LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
-      doiService.createSilently(newDataset.getDoi(), attr);
+      doiService.createSilently(attr);
     }
 
     // treat source. Archive dataset metadata & logos & assign a potentially new DOI
@@ -109,9 +109,10 @@ public class ProjectRelease extends AbstractProjectCopy {
           DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
           if (srcDOI == null) {
             srcDOI = cfg.doi.datasetSourceDOI(newDatasetKey, d.getKey());
+            d.setDoi(srcDOI);
             LOG.info("Creating new DOI {} for modified source {} of release {}", srcDOI, d.getKey(), newDatasetKey);
             var srcAttr = converter.source(d, newDataset, true);
-            doiService.createSilently(srcDOI, srcAttr);
+            doiService.createSilently(srcAttr);
           }
           d.setDoi(srcDOI);
         }
@@ -192,10 +193,10 @@ public class ProjectRelease extends AbstractProjectCopy {
       VarnishUtils.ban(client, api);
     }
     // kick off exports
-    ExportRequest req = new ExportRequest();
-    req.setDatasetKey(newDatasetKey);
     for (DataFormat df : DataFormat.values()) {
       if (df.isExportable()) {
+        ExportRequest req = new ExportRequest();
+        req.setDatasetKey(newDatasetKey);
         req.setFormat(df);
         exportManager.submit(req, user);
       }

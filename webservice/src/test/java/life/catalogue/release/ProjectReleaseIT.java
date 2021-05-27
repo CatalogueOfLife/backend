@@ -1,53 +1,33 @@
 package life.catalogue.release;
 
-import com.google.common.eventbus.EventBus;
-import io.dropwizard.client.HttpClientBuilder;
-import life.catalogue.HttpClientUtils;
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.doi.service.DoiService;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.exporter.ExportManager;
-import life.catalogue.img.ImageService;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.ibatis.session.SqlSession;
-import org.junit.*;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
 
 import java.io.File;
-import java.net.URI;
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.session.SqlSession;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 
-public class ProjectReleaseIT {
-  
-  @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
-  @Rule
-  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
+public class ProjectReleaseIT extends ProjectBaseIT {
 
   NameMatchingRule matchingRule = new NameMatchingRule();
 
@@ -56,31 +36,7 @@ public class ProjectReleaseIT {
     .outerRule(new TestDataRule(IdProviderIT.PROJECT_DATA))
     .around(matchingRule);
 
-  DatasetImportDao diDao;
-  DatasetDao dDao;
-
   final int projectKey = IdProviderIT.PROJECT_DATA.key;
-  ReleaseManager releaseManager;
-  private CloseableHttpClient client;
-
-  @Before
-  public void init() throws Exception {
-    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    EventBus bus = mock(EventBus.class);
-    ExportManager exm = mock(ExportManager.class);
-    DatasetExportDao exDao = mock(DatasetExportDao.class);
-    DoiService doiService = mock(DoiService.class);
-    dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus);
-    client = HttpClientUtils.httpsClient();
-    WsServerConfig cfg = new WsServerConfig();
-    cfg.apiURI = URI.create("https://api.dev.catalogue.life");
-    releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, PgSetupRule.getSqlSessionFactory(), cfg);
-  }
-
-  @After
-  public void shutdown() throws Exception {
-    client.close();
-  }
 
   @Test
   public void releaseMetadata() throws Exception {

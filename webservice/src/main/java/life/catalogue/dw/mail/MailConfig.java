@@ -13,7 +13,6 @@ public class MailConfig {
   /**
    * The SMTP host. If not given no mail server will be setup.
    */
-  @NotNull
   public String host;
 
   @Min(1)
@@ -40,6 +39,7 @@ public class MailConfig {
   /**
    * Default name to be used for from and reply-to settings.
    */
+  @NotNull
   public String fromName;
 
   /**

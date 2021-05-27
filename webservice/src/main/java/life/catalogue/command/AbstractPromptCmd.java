@@ -1,8 +1,13 @@
 package life.catalogue.command;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.dropwizard.cli.ConfiguredCommand;
+import io.dropwizard.jackson.Jackson;
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.jackson.ApiModule;
+
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.slf4j.Logger;
@@ -58,6 +63,9 @@ public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig
       TimeUnit.SECONDS.sleep(prompt);
     }
     this.cfg = cfg;
+    // use a custom jackson mapper
+    ObjectMapper om = ApiModule.configureMapper(Jackson.newMinimalObjectMapper());
+    bootstrap.setObjectMapper(om);
     // we dont deal with shortlived requests in commands and rather want to minimize connection usage
     // if we reuse the ws configs we will use too many idle connections doe to the high mimimum setting
     cfg.db.minimumIdle = 0;

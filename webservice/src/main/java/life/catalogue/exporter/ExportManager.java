@@ -37,14 +37,14 @@ public class ExportManager {
     this.executor = executor;
     this.imageService = imageService;
     // mailer
-    this.emailer = mailer == null ? null : new EmailNotification(mailer, factory, cfg);
+    this.emailer = new EmailNotification(mailer, factory, cfg);
     dao = exportDao;
   }
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
     DatasetExport prev = dao.current(req);
     if (prev != null && !req.isForce()) {
-      LOG.info("Existing export {} found for request {}", prev.getKey(), req);
+      LOG.info("Existing {} export {} found for request {}", prev.getRequest().getFormat(), prev.getKey(), req);
       return prev.getKey();
     }
     validate(req);

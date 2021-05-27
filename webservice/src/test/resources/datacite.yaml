@@ -1,0 +1,5 @@
+
+api: "https://api.test.datacite.org"
+username: ${datacite.username}
+password: ${datacite.password}
+prefix: ${datacite.prefix}

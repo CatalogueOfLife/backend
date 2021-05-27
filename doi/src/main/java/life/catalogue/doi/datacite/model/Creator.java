@@ -31,7 +31,9 @@ public class Creator {
 
   public Creator(String givenName, String familyName, String orcid) {
     this(givenName, familyName);
-    this.nameIdentifier = List.of(NameIdentifier.orcid(orcid));
+    if (orcid != null) {
+      this.nameIdentifier = List.of(NameIdentifier.orcid(orcid));
+    }
   }
 
   public String getName() {

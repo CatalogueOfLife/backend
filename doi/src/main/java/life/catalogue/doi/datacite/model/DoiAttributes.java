@@ -1,12 +1,19 @@
 package life.catalogue.doi.datacite.model;
 
-import life.catalogue.api.model.DOI;
+import com.google.common.base.Preconditions;
 
+import life.catalogue.api.model.DOI;
+import life.catalogue.api.util.ObjectUtils;
+
+import java.net.URI;
+import java.time.Year;
+import java.time.temporal.ChronoField;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 
@@ -16,6 +23,7 @@ import javax.validation.constraints.NotNull;
 public class DoiAttributes {
 
   public static String VERSION = "http://datacite.org/schema/kernel-4";
+  public static final Map<String, String> DATASET_RESOURCE = Map.of("resourceTypeGeneral", "Dataset",  "resourceType", "Dataset");
 
   @NotNull
   private DOI doi;
@@ -63,11 +71,23 @@ public class DoiAttributes {
   private String registered;
   private String updated;
 
+  public static DoiAttributes required(DOI doi, String title, List<Creator> creator, String url, @Nullable String publisher, @Nullable Integer publicationYear) {
+    DoiAttributes attr = new DoiAttributes(doi);
+    attr.setTypes(DATASET_RESOURCE);
+    attr.setTitles(List.of(new Title(title)));
+    attr.setCreators(creator);
+    attr.setUrl(url);
+    attr.setPublisher(ObjectUtils.coalesce(publisher, "GBIF"));
+    attr.setPublicationYear(ObjectUtils.coalesce(publicationYear, Year.now().get(ChronoField.YEAR)));
+    return attr;
+  }
+
   public DoiAttributes() {
   }
 
   public DoiAttributes(@NotNull DOI doi) {
     this.doi = doi;
+    setTypes(DATASET_RESOURCE);
   }
 
   public DOI getDoi() {

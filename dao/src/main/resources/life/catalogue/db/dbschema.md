@@ -15,11 +15,8 @@ and done it manually. So we can as well log changes here.
 ```
 ALTER TABLE dataset ADD COLUMN doi TEXT;
 ALTER TABLE dataset ADD UNIQUE (doi);
-
 ALTER TABLE dataset_archive ADD COLUMN doi TEXT;
-
 ALTER TABLE project_source ADD COLUMN doi TEXT;
-
 ALTER TABLE dataset_patch ADD COLUMN doi TEXT;
 ```
 

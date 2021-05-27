@@ -19,10 +19,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetExportDao;
-import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 
@@ -32,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import life.catalogue.doi.service.DataCiteService;
+import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.mail.MailBundle;
 
@@ -120,14 +118,17 @@ public class ExportCmd extends AbstractMybatisCmd {
     Dataset d;
     List<Dataset> datasets;
     try (SqlSession session = factory.openSession()){
+      EventBus bus = new EventBus();
       mail.run(cfg, null);
       exec = new JobExecutor(cfg.job, mail.getMailer());
       final ImageService imageService = new ImageServiceFS(cfg.img);
-      final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, new EventBus());
+      final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, bus);
       manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao);
       JerseyClientBuilder builder = new JerseyClientBuilder(new MetricRegistry()).using(cfg.client);
+      UserDao udao = new UserDao(factory, bus);
       DoiService doiService = new DataCiteService(cfg.doi, builder.build("datacite-client"));
-      copy = new PublicReleaseListener(cfg, factory, exportDao, doiService);
+      DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
+      copy = new PublicReleaseListener(cfg, factory, exportDao, doiService, converter);
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       d = dm.get(ns.getInt(ARG_KEY));
       if (d == null) {

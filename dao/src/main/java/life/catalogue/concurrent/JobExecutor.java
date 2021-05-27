@@ -187,6 +187,7 @@ public class JobExecutor implements AutoCloseable {
         throw new IllegalArgumentException("An identical job is queued already");
       }
     }
+    LOG.info("Scheduling new {} job {} by user {}", job.getJobName(), job.getKey(), job.getUserKey());
     var ftask = new ComparableFutureTask(job);
     futures.put(job.getKey(), ftask);
     exec.execute(ftask);

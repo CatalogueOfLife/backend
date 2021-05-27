@@ -17,6 +17,13 @@ public class NameIdentifier {
     return id;
   }
 
+  public static NameIdentifier gbif(String useraccount) {
+    NameIdentifier id = new NameIdentifier();
+    id.nameIdentifier = useraccount;
+    id.nameIdentifierScheme = "GBIF";
+    return id;
+  }
+
   public String getNameIdentifier() {
     return nameIdentifier;
   }

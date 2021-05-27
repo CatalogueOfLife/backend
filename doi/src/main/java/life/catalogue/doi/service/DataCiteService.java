@@ -1,5 +1,8 @@
 package life.catalogue.doi.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DOI;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.doi.datacite.model.DoiAttributes;
@@ -96,33 +99,23 @@ public class DataCiteService implements DoiService {
     }
   }
 
-  private static DoiAttributes addRequired(DoiAttributes attr) {
-    attr.setTypes(Map.of("resourceTypeGeneral", "Dataset",  "resourceType", "Dataset"));
-    if (attr.getPublisher() == null) {
-      attr.setPublisher("GBIF");
-    }
-    if (attr.getPublicationYear() == null) {
-      attr.setPublicationYear(Year.now().get(ChronoField.YEAR));
-    }
-    return attr;
-  }
-
   @Override
-  public void create(DOI doi) throws DoiException {
-    LOG.info("create new draft DOI {}", doi);
-    DoiAttributes attr = addRequired(new DoiAttributes(doi));
+  public void create(DoiAttributes attr) throws DoiException {
+    LOG.info("create new draft DOI {}", attr.getDoi());
     try {
-      var resp = request().post(Entity.json(new DataCiteWrapper(attr)));
+      DataCiteWrapper data = new DataCiteWrapper(attr);
+      LOG.debug("DOI {} JSON: {}", attr.getDoi(), ApiModule.MAPPER.writeValueAsString(data));
+      var resp = request().post(Entity.json(data));
       if (resp.getStatus() != 201) {
         if (resp.getEntity() != null) {
           String message = resp.readEntity(String.class);
-          throw new DoiHttpException(resp.getStatus(), doi, message);
+          throw new DoiHttpException(resp.getStatus(), attr.getDoi(), message);
         }
-        throw new DoiHttpException(resp.getStatus(), doi);
+        throw new DoiHttpException(resp.getStatus(), attr.getDoi());
       }
 
-    } catch (RuntimeException e) {
-      throw new DoiException(doi, e);
+    } catch (RuntimeException | JsonProcessingException e) {
+      throw new DoiException(attr.getDoi(), e);
     }
   }
 
@@ -173,7 +166,9 @@ public class DataCiteService implements DoiService {
 
     LOG.info("update metadata for DOI {}", attr);
     try {
-      var resp = request(attr.getDoi()).put(Entity.json(new DataCiteWrapper(addRequired(attr))));
+      DataCiteWrapper data = new DataCiteWrapper(attr);
+      LOG.debug("DOI {} JSON: {}", attr.getDoi(), ApiModule.MAPPER.writeValueAsString(data));
+      var resp = request(attr.getDoi()).put(Entity.json(data));
 
       if (resp.getStatus() != 200 && resp.getStatus() != 204) {
         if (resp.getEntity() != null) {
@@ -183,7 +178,7 @@ public class DataCiteService implements DoiService {
         throw new DoiHttpException(resp.getStatus(), attr.getDoi());
       }
 
-    } catch (RuntimeException e) {
+    } catch (RuntimeException | JsonProcessingException e) {
       throw new DoiException(attr.getDoi(), e);
     }
   }
