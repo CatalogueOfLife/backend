@@ -343,11 +343,13 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     if (decision != null && decision.getMode() == EditorialDecision.Mode.IGNORE) {
       return true;
     }
-
     Name n = u.getName();
-    if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
-      incIgnored(IgnoreReason.RANK);
-      return true;
+    if (u.isTaxon()) {
+      // apply rank filter only for accepted names, always allow any synonyms
+      if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
+        incIgnored(IgnoreReason.RANK);
+        return true;
+      }
     }
     switch (n.getType()) {
       case PLACEHOLDER:
