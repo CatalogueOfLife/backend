@@ -40,6 +40,9 @@ client:
   tls:
     verifyHostname: false
     trustSelfSignedCertificates: true
+  gzipEnabled: false
+  gzipEnabledForRequests: false
+  chunkedEncodingEnabled: false
 es:
 auth:
   type: map
@@ -60,3 +63,6 @@ img:
 release:
   since: 2020-12-01T01:01:01
 metricsRepo: ${metrics.repo}
+mail:
+  from: download@catalogueoflife.org
+  fromName: COL Downloads
