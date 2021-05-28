@@ -31,7 +31,6 @@ public class DOI implements Serializable {
   private static final Pattern HTTP = Pattern.compile("^https?://(dx\\.)?doi\\.org/(urn:)?(doi:)?", 2);
   private static final Pattern PARSER = Pattern.compile("^(?:urn:)?(?:doi:)?(10(?:\\.[0-9]+)+)/(.+)$", 2);
   private static final String RESOLVER = "https://doi.org/";
-  private static final String SCHEME = "doi:";
 
   private static final String DATASET_PATH = "d";
   private static final String EXPORT_PATH = "e";

@@ -36,26 +36,32 @@ public class DatasetProjectSourceDao {
    */
   public ArchivedDataset get(int datasetKey, int sourceDatasetKey, boolean dontPatch){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
+    ArchivedDataset d;
     try (SqlSession session = factory.openSession()) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       if (MANAGED == info.origin) {
-        ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
-        ArchivedDataset d = psm.getProjectSource(sourceDatasetKey, datasetKey);
+        d = psm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
           // get latest version with patch applied
-          DatasetMapper dm = session.getMapper(DatasetMapper.class);
           final DatasetSettings settings = dm.getSettings(datasetKey);
           final Dataset project = dm.get(datasetKey);
           patch(d, datasetKey, project, session.getMapper(DatasetPatchMapper.class), settings);
         }
-        return d;
 
       } else if (RELEASED == info.origin) {
-        return session.getMapper(ProjectSourceMapper.class).getReleaseSource(sourceDatasetKey, datasetKey);
+        d = psm.getReleaseSource(sourceDatasetKey, datasetKey);
+        // if the release was deleted, the source should also be marked as deleted
+        if (info.deleted) {
+          final Dataset release = dm.get(datasetKey);
+          d.setDeleted(release.getDeleted());
+        }
 
       } else {
         throw new IllegalArgumentException("Dataset "+datasetKey+" is not a project");
       }
     }
+    return d;
   }
 
   /**

@@ -19,7 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Cache for Immutable dataset infos that is loaded on demand and never release as the data is immutable
  * and we do not have large amounts of datasets that do not fit into memory.
  *
- * All methods throw a NotFoundException in case the datasetKey does not exist or refers to a deleted dataset.
+ * All methods throw a NotFoundException in case the datasetKey does not exist or refers to a deleted dataset,
+ * unless an optional allowDeleted parameter is given as true.
  * We use the GuavaBus to listen to newly deleted datasets.
  */
 public class DatasetInfoCache {
@@ -46,11 +47,12 @@ public class DatasetInfoCache {
       this.origin = Preconditions.checkNotNull(origin, "origin is required");
       this.sourceKey = sourceKey;
       this.deleted = deleted;
+      this.importAttempt = importAttempt;
       if (origin == DatasetOrigin.RELEASED) {
         Preconditions.checkNotNull(sourceKey, "sourceKey is required for release " + key);
-        this.importAttempt = Preconditions.checkNotNull(importAttempt, "importAttempt is required for release " + key);
-      } else {
-        this.importAttempt = null;
+        if (!deleted) {
+          Preconditions.checkNotNull(importAttempt, "importAttempt is required for release " + key);
+        }
       }
     }
 
