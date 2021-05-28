@@ -204,12 +204,22 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     return new Usage(u.getId(), u.getName().getRank(), u.getStatus());
   }
 
+  /**
+   * If needed creates missing implicit taxa for species or genera.
+   * Implicit names are not created for:
+   *  - unparsed names
+   *  - provisional names
+   *  - indetermined names, i.e. a species with no specific epithet given
+   *
+   * @return the parent, either as supplied or the new one if imlicit taxa were created
+   */
   private Usage createImplicit(Usage parent, Taxon taxon) {
     List<Rank> neededRanks = new ArrayList<>();
     
     // figure out if we need to create any implicit taxon
     Name origName = taxon.getName();
-    if (origName.isParsed() && !origName.isIndetermined()) {
+    // do not create implicit names
+    if (origName.isParsed() && !origName.isIndetermined() && !taxon.isProvisional()) {
       for (Rank r : implicitRanks) {
         if (parent.rank.higherThan(r) && r.higherThan(origName.getRank())) {
           neededRanks.add(r);
