@@ -497,7 +497,8 @@ public class SectorSyncIT {
     assertNull(plant.getSectorKey());
     
     syncAll();
-    
+    // Paulownia × tomentosa f. pasta is a provisional name and should not create implicit taxa!
+    // https://github.com/CatalogueOfLife/backend/issues/1003
     assertTree("cat0.txt");
     plant = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
     // make sure the kingdom is not part of the sector, we merged!
