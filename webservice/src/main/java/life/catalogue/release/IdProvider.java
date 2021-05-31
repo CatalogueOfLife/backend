@@ -244,10 +244,10 @@ public class IdProvider {
    */
   private void reportId(int id, boolean isOld, TabWriter tsv, boolean deletion){
     String ID = IdConverter.LATIN29.encode(id);
+    SimpleName sn = null;
+    DSID<String> key = null;
     try {
       int datasetKey = -1;
-      SimpleName sn;
-      DSID<String> key = null;
       if (isOld) {
         ReleasedId rid = this.ids.byId(id);
         datasetKey = attempt2dataset.get(rid.attempt);
@@ -296,7 +296,7 @@ public class IdProvider {
       }
 
     } catch (IOException | RuntimeException e) {
-      LOG.error("Failed to report {}ID {}: {}", isOld ? "old ":"", id, ID, e);
+      LOG.error("Failed to report {}ID {}: {} [key={}, sn={}]", isOld ? "old ":"", id, ID, key, sn, e);
     }
   }
 

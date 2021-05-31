@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
@@ -73,7 +74,7 @@ public interface NameIndex extends Managed, AutoCloseable {
    */
   default NameIndex assertOnline() {
     if (!hasStarted()) {
-      throw new NamesIndexOfflineException();
+      throw UnavailableException.unavailable("Names Index");
     }
     return this;
   }
@@ -83,10 +84,4 @@ public interface NameIndex extends Managed, AutoCloseable {
     stop();
   }
 
-  class NamesIndexOfflineException extends IllegalStateException {
-
-    public NamesIndexOfflineException() {
-      super("Names Index is offline");
-    }
-  }
 }

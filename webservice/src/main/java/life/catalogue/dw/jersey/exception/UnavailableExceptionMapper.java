@@ -6,7 +6,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Converts a BadRequestException into a http 400 bad request.
+ * Converts a UnavailableException into a http 503 response.
+ * IllegalStateExceptionMapper
  */
 @Provider
 public class UnavailableExceptionMapper extends JsonExceptionMapperBase<UnavailableException> {

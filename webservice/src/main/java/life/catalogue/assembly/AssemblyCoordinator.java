@@ -196,6 +196,7 @@ public class AssemblyCoordinator implements Managed {
    * @param full if true does a full deletion. Otherwise higher rank taxa are kept unlinked from the sector
    */
   public void deleteSector(DSID<Integer> sectorKey, boolean full, User user) throws IllegalArgumentException {
+    nameIndex.assertOnline();
     SectorRunnable sd;
     if (full) {
       sd = new SectorDeleteFull(sectorKey, factory, indexService, sid, this::successCallBack, this::errorCallBack, user);
