@@ -1,34 +1,36 @@
 package life.catalogue.common.text;
 
-import com.google.common.collect.Lists;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.Datasets;
-import org.junit.Test;
 
 import java.time.LocalDate;
 import java.util.*;
+
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertEquals;
 
 public class CitationUtilsTest {
 
-  List<Person> people(int size){
-    List<Person> people = new ArrayList<>();
+  List<Agent> people(int size){
+    List<Agent> people = new ArrayList<>();
     while (size>0) {
-      people.add(new Person("Frank", "Miller"));
+      people.add(new Agent("Frank", "Miller"));
       size--;
     }
     return people;
   }
 
-  List<Person> people(String... names){
-    List<Person> people = new ArrayList<>();
+  List<Agent> people(String... names){
+    List<Agent> people = new ArrayList<>();
     Iterator<String> iter = Arrays.stream(names).iterator();
     while (iter.hasNext()) {
       String first = iter.next();
       String last = iter.hasNext() ? iter.next() : null;
-      people.add(new Person(first, last));
+      people.add(new Agent(first, last));
     }
     return people;
   }
@@ -48,7 +50,7 @@ public class CitationUtilsTest {
     Dataset d = new Dataset();
     d.setKey(Datasets.COL);
     d.setTitle("Species 2000 & ITIS Catalogue of Life");
-    d.setEditor(Person.parse(Lists.newArrayList("Roskov Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
+    d.setEditor(Agent.parse(Lists.newArrayList("Roskov Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
     d.setIssued(LocalDate.parse("2019-04-21"));
     assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D. (eds.) (2019). Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
       CitationUtils.buildCitation(d)
@@ -74,7 +76,6 @@ public class CitationUtilsTest {
     proj.setTitle("Species 2000 & ITIS Catalogue of Life");
     proj.setEditor(people("Yuri", "Roskov", "Geoff", "Ower", "Thomas", "Orrell", "David", "Nicolson"));
     proj.setIssued(LocalDate.parse("2019-04-21"));
-    proj.setCitation(CitationUtils.buildCitation(proj));
 
     Dataset d = new Dataset();
     d.setKey(1010);
@@ -92,8 +93,8 @@ public class CitationUtilsTest {
       CitationUtils.fromTemplate(d,proj, "Mama {title}")
     );
 
-    assertEquals("Froese R., Pauly D. (eds.) (2019-04-21). fish: FishBase (version v2.0). In: Roskov Y., Ower G., Orrell T., Nicolson D. (eds.) (2019). Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
-      CitationUtils.fromTemplate(d,proj, "{editorsOrAuthors} ({project.released}). {alias}: {title} (version {version}). In: {project.citation}")
+    assertEquals("Froese R., Pauly D. (eds.) (2019-04-21). fish: FishBase (version v2.0). In: Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
+      CitationUtils.fromTemplate(d,proj, "{editorsOrAuthors} ({project.issued}). {alias}: {title} (version {version}). In: {project.title}, {project.issued}.")
     );
   }
 }

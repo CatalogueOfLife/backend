@@ -43,10 +43,11 @@ public class Dataset extends DataEntity<Integer> {
         "gbifKey",
         "gbifPublisherKey",
         "size",
-        "notes"
+        "notes",
+        "aliasOrTitle"
       );
       METADATA_PROPS = Arrays.stream(Introspector.getBeanInfo(Dataset.class).getPropertyDescriptors())
-        .filter(p -> exclude.contains(p.getName()))
+        .filter(p -> !exclude.contains(p.getName()) && p.getWriteMethod() != null)
         .collect(Collectors.toUnmodifiableList());
 
       Map<String, Object> nullTypes = new HashMap<>();
@@ -98,6 +99,9 @@ public class Dataset extends DataEntity<Integer> {
   private String title;
   private String alias;
   private String description;
+  private LocalDate issued;
+  private String version;
+  private String issn;
   private Agent contact;
   private List<Agent> creator;
   private List<Agent> editor;
@@ -112,8 +116,6 @@ public class Dataset extends DataEntity<Integer> {
   @Min(0) @Max(100)
   private Integer completeness;
   private License license;
-  private String version;
-  private LocalDate issued;
   @AbsoluteURI
   private URI url;
   @AbsoluteURI
@@ -142,6 +144,9 @@ public class Dataset extends DataEntity<Integer> {
     this.title = other.title;
     this.alias = other.alias;
     this.description = other.description;
+    this.issued = other.issued;
+    this.version = other.version;
+    this.issn = other.issn;
     this.contact = other.contact;
     this.creator = other.creator;
     this.editor = other.editor;
@@ -154,8 +159,6 @@ public class Dataset extends DataEntity<Integer> {
     this.confidence = other.confidence;
     this.completeness = other.completeness;
     this.license = other.license;
-    this.version = other.version;
-    this.issued = other.issued;
     this.url = other.url;
     this.logo = other.logo;
     this.source = other.source;
@@ -176,9 +179,13 @@ public class Dataset extends DataEntity<Integer> {
    */
   public void applyPatch(Dataset patch) {
     // copy all properties that are not null
+    Object p2 = null;
+    Object val2 = null;
     try {
       for (PropertyDescriptor prop : METADATA_PROPS){
+        p2 = prop;
         Object val = prop.getReadMethod().invoke(patch);
+        val2 = val;
         if (val != null) {
           if (NULL_TYPES.containsKey(prop.getName())) {
             Object nullType = NULL_TYPES.get(prop.getName());
@@ -187,6 +194,11 @@ public class Dataset extends DataEntity<Integer> {
           prop.getWriteMethod().invoke(this, val);
         }
       }
+    } catch (NullPointerException e) {
+      System.out.println(p2);
+      System.out.println(val2);
+      throw new RuntimeException(e);
+
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
@@ -499,18 +511,26 @@ public class Dataset extends DataEntity<Integer> {
     this.source = source;
   }
 
+  public String getIssn() {
+    return issn;
+  }
+
+  public void setIssn(String issn) {
+    this.issn = issn;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof Dataset)) return false;
     if (!super.equals(o)) return false;
     Dataset dataset = (Dataset) o;
-    return privat == dataset.privat && Objects.equals(key, dataset.key) && Objects.equals(sourceKey, dataset.sourceKey) && type == dataset.type && origin == dataset.origin && Objects.equals(importAttempt, dataset.importAttempt) && Objects.equals(imported, dataset.imported) && Objects.equals(deleted, dataset.deleted) && Objects.equals(gbifKey, dataset.gbifKey) && Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) && Objects.equals(size, dataset.size) && Objects.equals(notes, dataset.notes) && Objects.equals(doi, dataset.doi) && Objects.equals(identifier, dataset.identifier) && Objects.equals(title, dataset.title) && Objects.equals(alias, dataset.alias) && Objects.equals(description, dataset.description) && Objects.equals(contact, dataset.contact) && Objects.equals(creator, dataset.creator) && Objects.equals(editor, dataset.editor) && Objects.equals(publisher, dataset.publisher) && Objects.equals(contributor, dataset.contributor) && Objects.equals(distributor, dataset.distributor) && Objects.equals(geographicScope, dataset.geographicScope) && Objects.equals(taxonomicScope, dataset.taxonomicScope) && Objects.equals(temporalScope, dataset.temporalScope) && Objects.equals(confidence, dataset.confidence) && Objects.equals(completeness, dataset.completeness) && license == dataset.license && Objects.equals(version, dataset.version) && Objects.equals(issued, dataset.issued) && Objects.equals(url, dataset.url) && Objects.equals(logo, dataset.logo) && Objects.equals(source, dataset.source);
+    return privat == dataset.privat && Objects.equals(key, dataset.key) && Objects.equals(sourceKey, dataset.sourceKey) && type == dataset.type && origin == dataset.origin && Objects.equals(importAttempt, dataset.importAttempt) && Objects.equals(imported, dataset.imported) && Objects.equals(deleted, dataset.deleted) && Objects.equals(gbifKey, dataset.gbifKey) && Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) && Objects.equals(size, dataset.size) && Objects.equals(notes, dataset.notes) && Objects.equals(doi, dataset.doi) && Objects.equals(identifier, dataset.identifier) && Objects.equals(title, dataset.title) && Objects.equals(alias, dataset.alias) && Objects.equals(description, dataset.description) && Objects.equals(issued, dataset.issued) && Objects.equals(version, dataset.version) && Objects.equals(issn, dataset.issn) && Objects.equals(contact, dataset.contact) && Objects.equals(creator, dataset.creator) && Objects.equals(editor, dataset.editor) && Objects.equals(publisher, dataset.publisher) && Objects.equals(contributor, dataset.contributor) && Objects.equals(distributor, dataset.distributor) && Objects.equals(geographicScope, dataset.geographicScope) && Objects.equals(taxonomicScope, dataset.taxonomicScope) && Objects.equals(temporalScope, dataset.temporalScope) && Objects.equals(confidence, dataset.confidence) && Objects.equals(completeness, dataset.completeness) && license == dataset.license && Objects.equals(url, dataset.url) && Objects.equals(logo, dataset.logo) && Objects.equals(source, dataset.source);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, importAttempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes, doi, identifier, title, alias, description, contact, creator, editor, publisher, contributor, distributor, geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, version, issued, url, logo, source);
+    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, importAttempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes, doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, distributor, geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, source);
   }
 
   @Override

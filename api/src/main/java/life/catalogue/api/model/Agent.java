@@ -148,6 +148,18 @@ public class Agent {
     this.orcid = orcid;
   }
 
+  public Agent(String rorid, String gridid, String organisation, String department, String city, String state, Country country, String email, String url) {
+    this.rorid = rorid;
+    this.gridid = gridid;
+    this.organisation = organisation;
+    this.department = department;
+    this.city = city;
+    this.state = state;
+    this.country = country;
+    this.email = email;
+    this.url = url;
+  }
+
   public String getGivenName() {
     return givenName;
   }
@@ -183,7 +195,7 @@ public class Agent {
     return sb.toString();
   }
 
-  private static String abbreviate(String givenName) {
+  static String abbreviate(String givenName) {
     if (givenName != null) {
       Matcher m = BRACKET_SUFFIX.matcher(givenName);
       if (m.find()) {
