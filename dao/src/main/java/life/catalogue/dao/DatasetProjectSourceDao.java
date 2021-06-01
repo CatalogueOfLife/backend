@@ -125,12 +125,38 @@ public class DatasetProjectSourceDao {
     return d;
   }
 
+  static class SourceMetrics extends ImportMetrics {
+    // current attempt of the imported dataset
+    private int latestAttempt;
+    private Integer latestUsageCount;
+
+    public int getLatestAttempt() {
+      return latestAttempt;
+    }
+
+    public void setLatestAttempt(int latestAttempt) {
+      this.latestAttempt = latestAttempt;
+    }
+
+    public Integer getLatestUsageCount() {
+      return latestUsageCount;
+    }
+
+    public void setLatestUsageCount(Integer latestUsageCount) {
+      this.latestUsageCount = latestUsageCount;
+    }
+  }
+
   public ImportMetrics projectSourceMetrics(int datasetKey, int sourceKey) {
-    ImportMetrics metrics = new ImportMetrics();
+    SourceMetrics metrics = new SourceMetrics();
     metrics.setAttempt(-1);
     metrics.setDatasetKey(datasetKey);
 
     try (SqlSession session = factory.openSession()) {
+      var source = session.getMapper(DatasetMapper.class).get(sourceKey);
+      metrics.setLatestAttempt(source.getImportAttempt());
+      metrics.setLatestUsageCount(source.getSize());
+
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       AtomicInteger sectorCounter = new AtomicInteger(0);
       // a release? use mother project in that case

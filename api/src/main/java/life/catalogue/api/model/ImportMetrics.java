@@ -432,6 +432,11 @@ public class ImportMetrics implements ImportAttempt {
 
   public void add(ImportMetrics m) {
     if (m != null) {
+      // keep highest, ie latest attempt
+      if (m.getAttempt() > attempt) {
+        attempt = m.getAttempt();
+      }
+      // aggregate metrics
       appliedDecisionCount = sum(appliedDecisionCount, m.appliedDecisionCount);
       bareNameCount = sum(bareNameCount, m.bareNameCount);
       distributionCount = sum(distributionCount, m.distributionCount);
