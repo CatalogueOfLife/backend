@@ -65,8 +65,8 @@ public class DatasetPersonParserJob extends BackgroundJob {
         d.setContact(contacts.get(0));
       }
     }
-    d.setAuthors(parse(d.getAuthors()));
-    d.setEditors(parse(d.getEditors()));
+    d.setCreator(parse(d.getCreator()));
+    d.setEditor(parse(d.getEditor()));
     dm.update(d);
   }
 

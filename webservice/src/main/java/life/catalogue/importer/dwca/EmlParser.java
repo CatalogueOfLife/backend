@@ -280,14 +280,14 @@ public class EmlParser {
         }
       }
     }
-    if (d.getAuthors() != null) {
-      d.setAuthors(
-        d.getAuthors().stream().distinct().collect(Collectors.toList())
+    if (d.getCreator() != null) {
+      d.setCreator(
+        d.getCreator().stream().distinct().collect(Collectors.toList())
       );
     }
-    if (d.getEditors() != null) {
-      d.setEditors(
-        d.getEditors().stream().distinct().collect(Collectors.toList())
+    if (d.getEditor() != null) {
+      d.setEditor(
+        d.getEditor().stream().distinct().collect(Collectors.toList())
       );
     }
   }
@@ -303,7 +303,7 @@ public class EmlParser {
         break;
       case "AUTHOR":
       case "CREATOR":
-        agent.person().map(EmlParser::nullIfNoName).ifPresent(d::addAuthor);
+        agent.person().map(EmlParser::nullIfNoName).ifPresent(d::addCreator);
         agent.organisation().ifPresent(d::addOrganisation);
         break;
       case "EDITOR":

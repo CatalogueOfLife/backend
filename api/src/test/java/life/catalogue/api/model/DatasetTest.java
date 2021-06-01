@@ -31,7 +31,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setDescription("gefzw fuewh gczew fw hfueh j ijdfeiw jfie eö.. few . few .");
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setType(DatasetType.TAXONOMIC);
-    d.setWebsite(URI.create("www.gbif.org"));
+    d.setUrl(URI.create("www.gbif.org"));
     d.setLogo(URI.create("www.gbif.org"));
     d.setLicense(License.CC0);
     d.setCitation("cf5twv867cwcgewcwe");
@@ -55,7 +55,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
   public void patch() throws Exception {
     Dataset d = genTestValue();
 
-    DatasetMetadata patch = new Dataset();
+    Dataset patch = new Dataset();
     patch.setTitle("Grundig");
     patch.setAlias("grr");
     d.applyPatch(patch);
@@ -71,7 +71,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     json = json.replaceAll("cc0", "");
     
     Dataset d = ApiModule.MAPPER.readValue(json, Dataset.class);
-    assertNull(d.getWebsite());
+    assertNull(d.getUrl());
     assertNull(d.getLogo());
     assertNull(d.getLicense());
   }

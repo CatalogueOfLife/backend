@@ -244,7 +244,7 @@ public class ColdpExporter extends ArchiveExporter {
     Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
     // for releases and projects also include a source entry
     for (Integer key : sourceKeys) {
-      ArchivedDataset src = null;
+      Dataset src = null;
       if (DatasetOrigin.MANAGED == d.getOrigin()) {
         src = projectSourceMapper.getProjectSource(key, datasetKey);
       } else if (DatasetOrigin.RELEASED == d.getOrigin()) {

@@ -51,7 +51,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
       Dataset d = dm.get(projectKey);
       d.setTitle("Catalogue of Life");
       d.setOrganisations(Organisation.parse("Species 2000", "ITIS"));
-      d.setEditors(List.of(
+      d.setEditor(List.of(
         new Person("Yuri","Roskov"),
         new Person("Geoff", "Ower"),
         new Person("Thomas", "Orrell"),

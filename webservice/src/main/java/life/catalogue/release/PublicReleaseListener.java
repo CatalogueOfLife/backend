@@ -91,7 +91,7 @@ public class PublicReleaseListener {
         ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
         // track DOIs of current release - these should stay as they are!
         Set<DOI> currentDOIs = psm.listReleaseSources(release.getKey()).stream()
-          .map(ArchivedDataset::getDoi)
+          .map(Dataset::getDoi)
           .filter(java.util.Objects::nonNull)
           .collect(Collectors.toSet());
         for (var src : psm.listReleaseSources(lastReleaseKey)) {
@@ -106,7 +106,7 @@ public class PublicReleaseListener {
   public void copyExportsToColDownload(Dataset dataset) {
     if (cfg.release.colDownloadDir != null) {
       final int datasetKey = dataset.getKey();
-      final LocalDate released = dataset.getReleased();
+      final LocalDate released = dataset.getIssued();
       if (released == null) {
         LOG.error("Updated COL release {} is missing a release date", datasetKey);
         return;

@@ -1,22 +1,24 @@
 package life.catalogue.importer.coldp;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.collect.ImmutableList;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.Organisation;
-import life.catalogue.api.model.Person;
 import life.catalogue.importer.dwca.EmlParser;
 import life.catalogue.jackson.YamlMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.collect.ImmutableList;
 
 /**
  * ColDP metadata parser that falls back to EML if no YAML metadata is found.
@@ -37,68 +39,49 @@ public class MetadataParser {
       if (contact instanceof List) {
         List<?> contacts = (List)contact;
         if (!contacts.isEmpty()) {
-          setContact(parsePerson(contacts.get(0)));
+          setContact(parseAgent(contacts.get(0)));
         }
       } else {
-        setContact(parsePerson(contact));
+        setContact(parseAgent(contact));
       }
+    }
+
+    @JsonProperty("creator")
+    public void setCreatorAlt(Object creators) {
+      super.setCreator(parseAgents(creators));
+    }
+
+    @JsonProperty("creators")
+    public void setCreators(Object creators) {
+      super.setCreator(parseAgents(creators));
     }
 
     @JsonProperty("authors")
     public void setAuthorsAlt(Object authors) {
-      super.setAuthors(parsePersons(authors));
+      super.setCreator(parseAgents(authors));
+    }
+
+    @JsonProperty("editor")
+    public void setEditorAlt(Object editors) {
+      super.setEditor(parseAgents(editors));
     }
 
     @JsonProperty("editors")
-    public void setEditorsAlt(Object editors) {
-      super.setEditors(parsePersons(editors));
-    }
-
-    @JsonProperty("authorsAndEditors")
-    public void setAuthorsAndEditors(Object authorsAndEditors) {
-      setAuthorsAlt(authorsAndEditors);
-    }
-
-    @JsonProperty("authorsUnparsed")
-    public void setAuthorsUnparsed(Object authors) {
-      setAuthorsAlt(authors);
+    public void setEditors(Object editors) {
+      super.setEditor(parseAgents(editors));
     }
 
     @JsonProperty("organisations")
-    public void setOrgsAlt(Object obj) {
-      super.setOrganisations((parseOrganisations(obj)));
+    public void setOrganisations(Object orgs) {
+      super.setDistributor(parseAgents(orgs));
     }
 
-    List<Organisation> parseOrganisations(Object obj) {
+    List<Agent> parseAgents(Object obj) {
       if (obj != null) {
         if (obj instanceof List) {
-          List<Organisation> orgs = new ArrayList<>();
-          for (Object ob : (List) obj) {
-            Organisation o = parseOrg(ob);
-            if (o != null) {
-              orgs.add(o);
-            }
-          }
-          return orgs;
-
-        } else if (obj instanceof String){
-          return split((String)obj).stream()
-            .map(this::parseOrg)
-            .collect(Collectors.toList());
-        } else {
-          Organisation o = parseOrg(obj);
-          if (o != null) return List.of(o);
-        }
-      }
-      return null;
-    }
-
-    List<Person> parsePersons(Object obj) {
-      if (obj != null) {
-        if (obj instanceof List) {
-          List<Person> persons = new ArrayList<>();
+          List<Agent> persons = new ArrayList<>();
           for (Object o : (List) obj) {
-            Person p = parsePerson(o);
+            Agent p = parseAgent(o);
             if (p != null) {
               persons.add(p);
             }
@@ -107,10 +90,10 @@ public class MetadataParser {
 
         } else if (obj instanceof String){
           return split((String)obj).stream()
-            .map(this::parsePerson)
+            .map(this::parseAgent)
             .collect(Collectors.toList());
         } else {
-          Person p = parsePerson(obj);
+          Agent p = parseAgent(obj);
           if (p != null) return List.of(p);
         }
       }
@@ -125,41 +108,35 @@ public class MetadataParser {
       return List.of(x.trim());
     }
 
-    Person parsePerson(Object obj) {
+    Agent parseAgent(Object obj) {
       if (obj != null) {
-        if (obj instanceof Person) {
-          return (Person)obj;
+        if (obj instanceof Agent) {
+          return (Agent)obj;
 
         } else if (obj instanceof String) {
-          return new Person((String)obj);
+          return new Agent((String)obj);
 
         } else if (obj instanceof Map) {
-          return YamlMapper.MAPPER.convertValue(obj, Person.class);
+          return YamlMapper.MAPPER.convertValue(obj, Agent.class);
 
         }
       }
       return null;
     }
 
-    Organisation parseOrg(Object org) {
-      if (org != null) {
-        if (org instanceof Organisation) {
-          return (Organisation)org;
-        } else if (org instanceof String) {
-          return new Organisation((String)org);
-        } else if (org instanceof Map) {
-          return YamlMapper.MAPPER.convertValue(org, Organisation.class);
-        }
+    @JsonProperty("group")
+    public void setGroup(String group) {
+      setTaxonomicScope(group);
+    }
+
+    @JsonProperty("website")
+    public void setWebsite(String website) {
+      try {
+        setUrl(URI.create(website));
+      } catch (IllegalArgumentException e) {
+        LOG.warn("Ignore bad url {}", website);
       }
-      return null;
     }
-
-
-    @JsonProperty("taxonomicScope")
-    public void setTaxonomicScope(String scope) {
-      setGroup(scope);
-    }
-
   }
 
   /**

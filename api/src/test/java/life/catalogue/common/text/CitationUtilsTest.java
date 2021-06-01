@@ -48,19 +48,19 @@ public class CitationUtilsTest {
     Dataset d = new Dataset();
     d.setKey(Datasets.COL);
     d.setTitle("Species 2000 & ITIS Catalogue of Life");
-    d.setEditors(Person.parse(Lists.newArrayList("Roskov Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
-    d.setReleased(LocalDate.parse("2019-04-21"));
+    d.setEditor(Person.parse(Lists.newArrayList("Roskov Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
+    d.setIssued(LocalDate.parse("2019-04-21"));
     assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D. (eds.) (2019). Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
       CitationUtils.buildCitation(d)
     );
 
-    d.setAuthors(d.getEditors());
-    d.setEditors(Collections.emptyList());
+    d.setCreator(d.getEditor());
+    d.setEditor(Collections.emptyList());
     assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D. (2019). Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
       CitationUtils.buildCitation(d)
     );
 
-    d.setEditors(null);
+    d.setEditor(null);
     assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D. (2019). Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
       CitationUtils.buildCitation(d)
     );
@@ -72,8 +72,8 @@ public class CitationUtilsTest {
     proj.setKey(Datasets.COL);
     proj.setAlias("COL");
     proj.setTitle("Species 2000 & ITIS Catalogue of Life");
-    proj.setEditors(people("Yuri", "Roskov", "Geoff", "Ower", "Thomas", "Orrell", "David", "Nicolson"));
-    proj.setReleased(LocalDate.parse("2019-04-21"));
+    proj.setEditor(people("Yuri", "Roskov", "Geoff", "Ower", "Thomas", "Orrell", "David", "Nicolson"));
+    proj.setIssued(LocalDate.parse("2019-04-21"));
     proj.setCitation(CitationUtils.buildCitation(proj));
 
     Dataset d = new Dataset();
@@ -81,8 +81,8 @@ public class CitationUtilsTest {
     d.setAlias("fish");
     d.setTitle("FishBase");
     d.setVersion("v2.0");
-    d.setEditors(people("Rainer", "Froese", "David", "Pauly"));
-    d.setReleased(LocalDate.parse("2019-07-13"));
+    d.setEditor(people("Rainer", "Froese", "David", "Pauly"));
+    d.setIssued(LocalDate.parse("2019-07-13"));
 
     assertEquals("Mama",
       CitationUtils.fromTemplate(d,proj, "Mama")

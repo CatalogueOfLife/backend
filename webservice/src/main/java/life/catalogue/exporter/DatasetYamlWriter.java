@@ -3,7 +3,7 @@ package life.catalogue.exporter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import life.catalogue.api.model.ArchivedDataset;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.jackson.YamlMapper;
@@ -21,24 +21,24 @@ public class DatasetYamlWriter {
   private DatasetYamlWriter() {
   }
 
-  public static void write(ArchivedDataset d, File f) throws IOException {
+  public static void write(Dataset d, File f) throws IOException {
     try (Writer w = UTF8IoUtils.writerFromFile(f)) {
       write(d,w);
     }
   }
 
-  public static void write(ArchivedDataset d, OutputStream out) throws IOException {
+  public static void write(Dataset d, OutputStream out) throws IOException {
     try (Writer w = UTF8IoUtils.writerFromStream(out)) {
       write(d,w);
     }
   }
 
-  public static void write(ArchivedDataset d, Writer w) throws IOException {
+  public static void write(Dataset d, Writer w) throws IOException {
     WRITER.writeValue(w, new YamlDataset(d));
   }
 
-  static class YamlDataset extends ArchivedDataset {
-    public YamlDataset(ArchivedDataset d) {
+  static class YamlDataset extends Dataset {
+    public YamlDataset(Dataset d) {
       super(d);
     }
 
@@ -103,8 +103,8 @@ public class DatasetYamlWriter {
     }
 
     @Override
-    public LocalDate getReleased() {
-      return super.getReleased();
+    public LocalDate getIssued() {
+      return super.getIssued();
     }
   }
 }

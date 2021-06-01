@@ -144,7 +144,7 @@ public class PgImport implements Callable<Boolean> {
         int attempt = old.getDataset().getImportAttempt();
         DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
         LOG.info("Archive previous dataset metadata with import attempt {} for {}: {}", attempt, dataset.getKey(), dataset.getTitle());
-        ArchivedDataset archived = dam.get(dataset.getKey(), attempt);
+        Dataset archived = dam.get(dataset.getKey(), attempt);
         if (archived == null) {
           // we do not yet have an archived version for given attempt
           dam.create(dataset.getKey());

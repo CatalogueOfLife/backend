@@ -1,7 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.ArchivedDataset;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetMetadata;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.Datasets;
@@ -27,12 +27,12 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
 
   @Test
   public void roundtripCrud() throws Exception {
-    ArchivedDataset u1 = readFirst();
+    Dataset u1 = readFirst();
     mapper().create(Datasets.COL, u1);
     commit();
 
     removeDbCreatedProps(u1);
-    ArchivedDataset u2 = removeDbCreatedProps(mapper().get(Datasets.COL, u1.getKey()));
+    Dataset u2 = removeDbCreatedProps(mapper().get(Datasets.COL, u1.getKey()));
     printDiff(u1, u2);
     assertEquals(u1, u2);
 
@@ -58,13 +58,13 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
   }
 
 
-  ArchivedDataset readFirst() throws Exception {
+  Dataset readFirst() throws Exception {
     DatasetMapper dm = mapper(DatasetMapper.class);
-    ArchivedDataset d = new ArchivedDataset(dm.list(new Page(0,1)).get(0));
+    Dataset d = new Dataset(dm.list(new Page(0,1)).get(0));
 
     // clear all properties that do NOT exist in the DatasetMetadata interface
     BeanInfo metaInfo = Introspector.getBeanInfo(DatasetMetadata.class);
-    for(PropertyDescriptor prop : Introspector.getBeanInfo(ArchivedDataset.class, Object.class).getPropertyDescriptors()){
+    for(PropertyDescriptor prop : Introspector.getBeanInfo(Dataset.class, Object.class).getPropertyDescriptors()){
       if (prop.getWriteMethod() == null) continue;
 
       boolean exists = false;
@@ -90,7 +90,7 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
     return d;
   }
 
-  ArchivedDataset removeDbCreatedProps(ArchivedDataset obj) {
+  Dataset removeDbCreatedProps(Dataset obj) {
     TestEntityGenerator.nullifyUserDate(obj);
     return obj;
   }

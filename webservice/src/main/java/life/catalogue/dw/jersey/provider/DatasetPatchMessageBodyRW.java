@@ -2,7 +2,7 @@ package life.catalogue.dw.jersey.provider;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.ArchivedDataset;
+import life.catalogue.api.model.Dataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,24 +29,24 @@ import java.util.Map;
  */
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
-public class DatasetPatchMessageBodyRW implements MessageBodyReader<ArchivedDataset>, MessageBodyWriter<ArchivedDataset> {
+public class DatasetPatchMessageBodyRW implements MessageBodyReader<Dataset>, MessageBodyWriter<Dataset> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetPatchMessageBodyRW.class);
   private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<Map<String, Object>>() {};
 
   @Override
   public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return type == ArchivedDataset.class && Arrays.stream(annotations).anyMatch(a -> a.annotationType().equals(DatasetPatch.class));
+    return type == Dataset.class && Arrays.stream(annotations).anyMatch(a -> a.annotationType().equals(DatasetPatch.class));
   }
 
   @Override
-  public ArchivedDataset readFrom(Class<ArchivedDataset> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
+  public Dataset readFrom(Class<Dataset> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
     Map<String, Object> map = ApiModule.MAPPER.readValue(entityStream, MAP_TYPE);
     for (Map.Entry<String, Object> field : map.entrySet()) {
-      if (field.getValue() == null && ArchivedDataset.NULL_TYPES.containsKey(field.getKey())) {
-        field.setValue(ArchivedDataset.NULL_TYPES.get(field.getKey()));
+      if (field.getValue() == null && Dataset.NULL_TYPES.containsKey(field.getKey())) {
+        field.setValue(Dataset.NULL_TYPES.get(field.getKey()));
       }
     }
-    ArchivedDataset ad = ApiModule.MAPPER.convertValue(map, ArchivedDataset.class);
+    Dataset ad = ApiModule.MAPPER.convertValue(map, Dataset.class);
     return ad;
   }
 
@@ -56,11 +56,11 @@ public class DatasetPatchMessageBodyRW implements MessageBodyReader<ArchivedData
   }
 
   @Override
-  public void writeTo(ArchivedDataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap, OutputStream outputStream) throws IOException, WebApplicationException {
-    for (PropertyDescriptor p : ArchivedDataset.METADATA_PROPS) {
+  public void writeTo(Dataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap, OutputStream outputStream) throws IOException, WebApplicationException {
+    for (PropertyDescriptor p : Dataset.METADATA_PROPS) {
       try {
-        if (ArchivedDataset.NULL_TYPES.containsKey(p.getName())) {
-          Object nullType = ArchivedDataset.NULL_TYPES.get(p.getName());
+        if (Dataset.NULL_TYPES.containsKey(p.getName())) {
+          Object nullType = Dataset.NULL_TYPES.get(p.getName());
           if (nullType.equals(p.getReadMethod().invoke(dataset))) {
               p.getWriteMethod().invoke(dataset, (Object) null);
           }

@@ -118,9 +118,9 @@ public class AcefExporter extends DatasetExporter {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(datasetKey);
-      if (d.getReleased()==null) {
+      if (d.getIssued()==null) {
         // use today as default release date if missing
-        d.setReleased(LocalDate.now());
+        d.setIssued(LocalDate.now());
       }
       data.put("d", d);
       

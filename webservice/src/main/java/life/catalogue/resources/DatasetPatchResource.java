@@ -1,7 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.ArchivedDataset;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.User;
@@ -35,8 +35,8 @@ public class DatasetPatchResource {
   @GET
   @DatasetPatch
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public List<ArchivedDataset> list(@PathParam("key") int datasetKey, @Context SqlSession session) {
-    List<ArchivedDataset> patches = new ArrayList<>();
+  public List<Dataset> list(@PathParam("key") int datasetKey, @Context SqlSession session) {
+    List<Dataset> patches = new ArrayList<>();
     session.getMapper(DatasetPatchMapper.class).processDataset(datasetKey).forEach(patches::add);
     return patches;
   }
@@ -47,7 +47,7 @@ public class DatasetPatchResource {
   @POST
   @DatasetPatch
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public DSID<Integer> create(@PathParam("key") int datasetKey, ArchivedDataset obj, @Auth User user, @Context SqlSession session) {
+  public DSID<Integer> create(@PathParam("key") int datasetKey, Dataset obj, @Auth User user, @Context SqlSession session) {
     obj.applyUser(user);
     session.getMapper(DatasetPatchMapper.class).create(datasetKey, obj);
     session.commit();
@@ -60,7 +60,7 @@ public class DatasetPatchResource {
   @GET
   @Path("{id}")
   @DatasetPatch
-  public ArchivedDataset get(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context SqlSession session) {
+  public Dataset get(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context SqlSession session) {
     return session.getMapper(DatasetPatchMapper.class).get(datasetKey, id);
   }
 
@@ -68,7 +68,7 @@ public class DatasetPatchResource {
   @Path("{id}")
   @DatasetPatch
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("key") int datasetKey, @PathParam("id") Integer id, ArchivedDataset obj, @Auth User user, @Context SqlSession session) {
+  public void update(@PathParam("key") int datasetKey, @PathParam("id") Integer id, Dataset obj, @Auth User user, @Context SqlSession session) {
     if (obj.getKey() != null && !obj.getKey().equals(id)) {
       throw new IllegalArgumentException("Dataset patch does contain different key " + obj.getKey());
     }

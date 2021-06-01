@@ -9,6 +9,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class DatasetWithSettings {
@@ -107,6 +108,52 @@ public class DatasetWithSettings {
 
   // *** DATASET ***
 
+  @JsonIgnore
+  public boolean hasDeletedDate() {
+    return dataset.hasDeletedDate();
+  }
+
+  @JsonProperty("private")
+  public boolean isPrivat() {
+    return dataset.isPrivat();
+  }
+
+  public LocalDateTime getCreated() {
+    return dataset.getCreated();
+  }
+
+  public void setCreated(LocalDateTime created) {
+    dataset.setCreated(created);
+  }
+
+  public Integer getCreatedBy() {
+    return dataset.getCreatedBy();
+  }
+
+  public void setCreatedBy(Integer createdBy) {
+    dataset.setCreatedBy(createdBy);
+  }
+
+  public LocalDateTime getModified() {
+    return dataset.getModified();
+  }
+
+  public void setModified(LocalDateTime modified) {
+    dataset.setModified(modified);
+  }
+
+  public Integer getModifiedBy() {
+    return dataset.getModifiedBy();
+  }
+
+  public void setModifiedBy(Integer modifiedBy) {
+    dataset.setModifiedBy(modifiedBy);
+  }
+
+  public void applyPatch(Dataset patch) {
+    dataset.applyPatch(patch);
+  }
+
   public Integer getKey() {
     return dataset.getKey();
   }
@@ -147,25 +194,77 @@ public class DatasetWithSettings {
     dataset.setDoi(doi);
   }
 
-  public LocalDateTime getDeleted() {
-    return dataset.getDeleted();
-  }
-
-  @JsonIgnore
-  public boolean hasDeletedDate() {
-    return dataset.hasDeletedDate();
-  }
-
-  public void setDeleted(LocalDateTime deleted) {
-    dataset.setDeleted(deleted);
-  }
-
   public String getTitle() {
     return dataset.getTitle();
   }
 
   public void setTitle(String title) {
     dataset.setTitle(title);
+  }
+
+  public String getDescription() {
+    return dataset.getDescription();
+  }
+
+  public void setDescription(String description) {
+    dataset.setDescription(description);
+  }
+
+  public List<Agent> getCreator() {
+    return dataset.getCreator();
+  }
+
+  public void setCreator(List<Agent> creator) {
+    dataset.setCreator(creator);
+  }
+
+  public void addCreator(Agent author) {
+    dataset.addCreator(author);
+  }
+
+  public List<Agent> getEditor() {
+    return dataset.getEditor();
+  }
+
+  public void setEditor(List<Agent> editor) {
+    dataset.setEditor(editor);
+  }
+
+  public void addEditor(Agent editor) {
+    dataset.addEditor(editor);
+  }
+
+  @JsonIgnore
+  public String getAliasOrTitle() {
+    return dataset.getAliasOrTitle();
+  }
+
+  public void setPrivat(boolean privat) {
+    dataset.setPrivat(privat);
+  }
+
+  public LocalDateTime getImported() {
+    return dataset.getImported();
+  }
+
+  public void setImported(LocalDateTime imported) {
+    dataset.setImported(imported);
+  }
+
+  public DatasetOrigin getOrigin() {
+    return dataset.getOrigin();
+  }
+
+  public void setOrigin(DatasetOrigin origin) {
+    dataset.setOrigin(origin);
+  }
+
+  public LocalDateTime getDeleted() {
+    return dataset.getDeleted();
+  }
+
+  public void setDeleted(LocalDateTime deleted) {
+    dataset.setDeleted(deleted);
   }
 
   public UUID getGbifKey() {
@@ -184,100 +283,12 @@ public class DatasetWithSettings {
     dataset.setGbifPublisherKey(gbifPublisherKey);
   }
 
-  public String getDescription() {
-    return dataset.getDescription();
+  public Integer getSize() {
+    return dataset.getSize();
   }
 
-  public void setDescription(String description) {
-    dataset.setDescription(description);
-  }
-
-  public List<Person> getAuthors() {
-    return dataset.getAuthors();
-  }
-
-  public void setAuthors(List<Person> authors) {
-    dataset.setAuthors(authors);
-  }
-
-  public List<Person> getEditors() {
-    return dataset.getEditors();
-  }
-
-  public void setEditors(List<Person> editors) {
-    dataset.setEditors(editors);
-  }
-
-  public List<Organisation> getOrganisations() {
-    return dataset.getOrganisations();
-  }
-
-  public void setOrganisations(List<Organisation> organisations) {
-    dataset.setOrganisations(organisations);
-  }
-
-  public Person getContact() {
-    return dataset.getContact();
-  }
-
-  public void setContact(Person contact) {
-    dataset.setContact(contact);
-  }
-
-  public License getLicense() {
-    return dataset.getLicense();
-  }
-
-  public void setLicense(License license) {
-    dataset.setLicense(license);
-  }
-
-  public String getVersion() {
-    return dataset.getVersion();
-  }
-
-  public void setVersion(String version) {
-    dataset.setVersion(version);
-  }
-
-  public String getGeographicScope() {
-    return dataset.getGeographicScope();
-  }
-
-  public void setGeographicScope(String geographicScope) {
-    dataset.setGeographicScope(geographicScope);
-  }
-
-  public LocalDate getReleased() {
-    return dataset.getReleased();
-  }
-
-  public void setReleased(LocalDate released) {
-    dataset.setReleased(released);
-  }
-
-  public String getCitation() {
-    return dataset.getCitation();
-  }
-
-  public void setCitation(String citation) {
-    dataset.setCitation(citation);
-  }
-
-  public URI getWebsite() {
-    return dataset.getWebsite();
-  }
-
-  public void setWebsite(URI website) {
-    dataset.setWebsite(website);
-  }
-
-  public URI getLogo() {
-    return dataset.getLogo();
-  }
-
-  public void setLogo(URI logo) {
-    dataset.setLogo(logo);
+  public void setSize(Integer size) {
+    dataset.setSize(size);
   }
 
   public String getNotes() {
@@ -288,6 +299,14 @@ public class DatasetWithSettings {
     dataset.setNotes(notes);
   }
 
+  public Map<String, String> getIdentifier() {
+    return dataset.getIdentifier();
+  }
+
+  public void setIdentifier(Map<String, String> identifier) {
+    dataset.setIdentifier(identifier);
+  }
+
   public String getAlias() {
     return dataset.getAlias();
   }
@@ -296,12 +315,60 @@ public class DatasetWithSettings {
     dataset.setAlias(alias);
   }
 
-  public String getGroup() {
-    return dataset.getGroup();
+  public Agent getContact() {
+    return dataset.getContact();
   }
 
-  public void setGroup(String group) {
-    dataset.setGroup(group);
+  public void setContact(Agent contact) {
+    dataset.setContact(contact);
+  }
+
+  public Agent getPublisher() {
+    return dataset.getPublisher();
+  }
+
+  public void setPublisher(Agent publisher) {
+    dataset.setPublisher(publisher);
+  }
+
+  public List<Agent> getContributor() {
+    return dataset.getContributor();
+  }
+
+  public void setContributor(List<Agent> contributor) {
+    dataset.setContributor(contributor);
+  }
+
+  public List<Agent> getDistributor() {
+    return dataset.getDistributor();
+  }
+
+  public void setDistributor(List<Agent> distributor) {
+    dataset.setDistributor(distributor);
+  }
+
+  public String getGeographicScope() {
+    return dataset.getGeographicScope();
+  }
+
+  public void setGeographicScope(String geographicScope) {
+    dataset.setGeographicScope(geographicScope);
+  }
+
+  public String getTaxonomicScope() {
+    return dataset.getTaxonomicScope();
+  }
+
+  public void setTaxonomicScope(String taxonomicScope) {
+    dataset.setTaxonomicScope(taxonomicScope);
+  }
+
+  public String getTemporalScope() {
+    return dataset.getTemporalScope();
+  }
+
+  public void setTemporalScope(String temporalScope) {
+    dataset.setTemporalScope(temporalScope);
   }
 
   public Integer getConfidence() {
@@ -320,53 +387,64 @@ public class DatasetWithSettings {
     dataset.setCompleteness(completeness);
   }
 
-  public LocalDateTime getCreated() {
-    return dataset.getCreated();
+  public License getLicense() {
+    return dataset.getLicense();
   }
 
-  public void setCreated(LocalDateTime created) {
-    dataset.setCreated(created);
+  public void setLicense(License license) {
+    dataset.setLicense(license);
   }
 
-  public Integer getCreatedBy() {
-    return dataset.getCreatedBy();
+  public String getVersion() {
+    return dataset.getVersion();
   }
 
-  public void setCreatedBy(Integer createdBy) {
-    dataset.setCreatedBy(createdBy);
+  public void setVersion(String version) {
+    dataset.setVersion(version);
   }
 
-  public LocalDateTime getModified() {
-    return dataset.getModified();
+  public LocalDate getIssued() {
+    return dataset.getIssued();
   }
 
-  public void setModified(LocalDateTime modified) {
-    dataset.setModified(modified);
+  public void setIssued(LocalDate issued) {
+    dataset.setIssued(issued);
   }
 
-  public Integer getModifiedBy() {
-    return dataset.getModifiedBy();
+  public URI getUrl() {
+    return dataset.getUrl();
   }
 
-  public void setModifiedBy(Integer modifiedBy) {
-    dataset.setModifiedBy(modifiedBy);
+  public void setUrl(URI url) {
+    dataset.setUrl(url);
   }
 
-  public DatasetOrigin getOrigin() {
-    return dataset.getOrigin();
+  public URI getLogo() {
+    return dataset.getLogo();
   }
 
-  public void setOrigin(DatasetOrigin origin) {
-    dataset.setOrigin(origin);
+  public void setLogo(URI logo) {
+    dataset.setLogo(logo);
   }
 
-  @JsonProperty("private")
-  public boolean isPrivat() {
-    return dataset.isPrivat();
+  public List<Citation> getSource() {
+    return dataset.getSource();
   }
 
-  public void setPrivat(boolean privat) {
-    dataset.setPrivat(privat);
+  public void setSource(List<Citation> source) {
+    dataset.setSource(source);
+  }
+
+  public void applyUser(User user) {
+    dataset.applyUser(user);
+  }
+
+  public void applyUser(Integer userKey) {
+    dataset.applyUser(userKey);
+  }
+
+  public void applyUser(Integer userKey, boolean updateCreator) {
+    dataset.applyUser(userKey, updateCreator);
   }
 
   @Override

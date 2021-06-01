@@ -1,24 +1,18 @@
 package life.catalogue.doi.service;
 
-import com.esotericsoftware.minlog.Log;
-
-import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.doi.datacite.model.*;
 
-import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.Year;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.validation.ValidationException;
 import javax.ws.rs.core.UriBuilder;
 
 /**
@@ -53,22 +47,22 @@ public class DatasetConverter {
    * @param latest
    * @return
    */
-  public DoiAttributes release(ArchivedDataset release, boolean latest) {
+  public DoiAttributes release(Dataset release, boolean latest) {
     DoiAttributes attr = new DoiAttributes(release.getDoi());
     // title
     attr.setTitles(List.of(new Title(release.getTitle())));
     // publisher
     attr.setPublisher("Catalogue of Life");
     // PublicationYear
-    if (release.getReleased() != null) {
-      attr.setPublicationYear(release.getReleased().getYear());
+    if (release.getIssued() != null) {
+      attr.setPublicationYear(release.getIssued().getYear());
     } else {
       LOG.warn("No release date given. Use today instead");
       attr.setPublicationYear(LocalDate.now().getYear());
     }
     // creator
-    if (release.getAuthors() != null) {
-      attr.setCreators(release.getAuthors().stream()
+    if (release.getCreator() != null) {
+      attr.setCreators(release.getCreator().stream()
         .map(a -> new Creator(a.getGivenName(), a.getFamilyName(), a.getOrcid()))
         .collect(Collectors.toList())
       );
@@ -85,8 +79,8 @@ public class DatasetConverter {
       attr.setCreators(List.of(creator));
     }
     // contributors
-    if (release.getEditors() != null) {
-      attr.setContributors(release.getEditors().stream()
+    if (release.getEditor() != null) {
+      attr.setContributors(release.getEditor().stream()
         .map(a -> new Contributor(a.getGivenName(), a.getFamilyName(), a.getOrcid(), ContributorType.EDITOR))
         .collect(Collectors.toList())
       );
@@ -96,7 +90,7 @@ public class DatasetConverter {
     return attr;
   }
 
-  public DoiAttributes source(ArchivedDataset source, Dataset project, boolean latest) {
+  public DoiAttributes source(Dataset source, Dataset project, boolean latest) {
     DoiAttributes attr = release(source, latest);
     attr.setUrl(sourceURI(project.getKey(), source.getKey(), latest).toString());
     return attr;

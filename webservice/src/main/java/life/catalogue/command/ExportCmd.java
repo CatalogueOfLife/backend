@@ -3,17 +3,12 @@ package life.catalogue.command;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.eventbus.EventBus;
 
-import io.dropwizard.ConfiguredBundle;
-
-import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.JerseyClientBuilder;
 
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -21,11 +16,9 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.ProjectSourceMapper;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import life.catalogue.doi.service.DataCiteService;
@@ -43,13 +36,7 @@ import life.catalogue.release.PublicReleaseListener;
 
 import org.apache.ibatis.session.SqlSession;
 
-import io.dropwizard.setup.Bootstrap;
-import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
-
-import org.glassfish.jersey.client.spi.ConnectorProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Command that exports a single dataset or all its releases if it is a project.
@@ -172,7 +159,7 @@ public class ExportCmd extends AbstractMybatisCmd {
   }
 
   void export(Dataset d) {
-    System.out.printf("Export %s %s from %s\n", d.getOrigin(), d.getKey(), d.getReleased());
+    System.out.printf("Export %s %s from %s\n", d.getOrigin(), d.getKey(), d.getIssued());
 
     ExportRequest req = new ExportRequest();
     req.setForce(force);

@@ -44,10 +44,10 @@ public class ApiKryoPoolTest {
   public void testDataset() throws Exception {
     Dataset d = TestEntityGenerator.newDataset("Unmut");
     d.setKey(1234);
-    d.setReleased(LocalDate.now());
+    d.setIssued(LocalDate.now());
     d.setGbifKey(UUID.randomUUID());
-    d.setAuthors(Person.parse(List.of("Karl", "Frank")));
-    d.setEditors(Person.parse(List.of("Karlo", "Franko")));
+    d.setCreator(Person.parse(List.of("Karl", "Frank")));
+    d.setEditor(Person.parse(List.of("Karlo", "Franko")));
     assertSerde(d);
   }
 

@@ -1,7 +1,6 @@
 package life.catalogue.common.text;
 
 import com.google.common.annotations.VisibleForTesting;
-import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.Person;
@@ -18,9 +17,9 @@ import java.util.stream.Collectors;
 public class CitationUtils {
 
   static class DatasetWrapper {
-    final ArchivedDataset d;
+    final Dataset d;
 
-    public DatasetWrapper(ArchivedDataset dataset) {
+    public DatasetWrapper(Dataset dataset) {
       d = dataset;
     }
 
@@ -37,7 +36,7 @@ public class CitationUtils {
     }
 
     public String getEditorsOrAuthors() {
-      if (d.getEditors() != null && !d.getEditors().isEmpty()) {
+      if (d.getEditor() != null && !d.getEditor().isEmpty()) {
         return getEditors();
       } else {
         return getAuthors();
@@ -45,13 +44,13 @@ public class CitationUtils {
     }
 
     public String getAuthors() {
-      return concat(d.getAuthors());
+      return concat(d.getCreator());
     }
 
     public String getEditors() {
-      if (!d.getEditors().isEmpty()) {
-        String eds = concat(d.getEditors());
-        if (d.getEditors().size() > 1) {
+      if (!d.getEditor().isEmpty()) {
+        String eds = concat(d.getEditor());
+        if (d.getEditor().size() > 1) {
           return eds + " (eds.)";
         } else {
           return eds + " (ed.)";
@@ -81,7 +80,7 @@ public class CitationUtils {
     }
 
     public LocalDate getReleased() {
-      return d.getReleased();
+      return d.getIssued();
     }
 
     public String getCitation() {
@@ -89,7 +88,7 @@ public class CitationUtils {
     }
 
     public URI getWebsite() {
-      return d.getWebsite();
+      return d.getUrl();
     }
 
     public String getAlias() {
@@ -136,7 +135,7 @@ public class CitationUtils {
   static class ProjectWrapper extends DatasetWrapper {
     final DatasetWrapper project;
 
-    public ProjectWrapper(ArchivedDataset dataset, ArchivedDataset project) {
+    public ProjectWrapper(Dataset dataset, Dataset project) {
       super(dataset);
       this.project = new DatasetWrapper(project);
     }
@@ -161,7 +160,7 @@ public class CitationUtils {
     return null;
   }
 
-  public static String fromTemplate(ArchivedDataset d, ArchivedDataset project, String template){
+  public static String fromTemplate(Dataset d, Dataset project, String template){
     if (template != null) {
       return SimpleTemplate.render(template, new ProjectWrapper(d, project));
     }
@@ -190,11 +189,11 @@ public class CitationUtils {
     StringBuilder sb = new StringBuilder();
     boolean isEditors = false;
     List<Person> people = Collections.emptyList();
-    if (d.getEditors() != null && !d.getEditors().isEmpty()) {
-      people = d.getEditors();
+    if (d.getEditor() != null && !d.getEditor().isEmpty()) {
+      people = d.getEditor();
       isEditors = true;
-    } else if (d.getAuthors() != null && !d.getAuthors().isEmpty()) {
-      people = d.getAuthors();
+    } else if (d.getCreator() != null && !d.getCreator().isEmpty()) {
+      people = d.getCreator();
     }
     for (Person au : people) {
       if (sb.length() > 1) {
@@ -210,11 +209,11 @@ public class CitationUtils {
       sb.append(".)");
     }
     sb.append(" (")
-      .append(d.getReleased().getYear())
+      .append(d.getIssued().getYear())
       .append("). ")
       .append(d.getTitle())
       .append(", ")
-      .append(d.getReleased().toString())
+      .append(d.getIssued().toString())
       .append(".");
     return sb.toString();
   }

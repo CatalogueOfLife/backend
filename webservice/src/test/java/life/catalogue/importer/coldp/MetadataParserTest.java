@@ -14,7 +14,6 @@ import org.junit.Test;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -162,7 +161,7 @@ public class MetadataParserTest {
     Person daniel = new Person("Daniel","Pauly");
 
     assertEquals(rainer, d.getContact());
-    assertEquals(List.of(rainer, daniel), d.getAuthors());
+    assertEquals(List.of(rainer, daniel), d.getCreator());
 
     Organisation o1 = new Organisation("The WorldFish Center");
     Organisation o2 = new Organisation("University of British Columbia, Canada");

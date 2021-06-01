@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,9 +32,9 @@ public class DatasetProjectSourceDao {
    * @param sourceDatasetKey the dataset key of the source within the release or project
    * @param dontPatch if true return the original project source metadata without the patch. This works only for managed datasets, not releases
    */
-  public ArchivedDataset get(int datasetKey, int sourceDatasetKey, boolean dontPatch){
+  public Dataset get(int datasetKey, int sourceDatasetKey, boolean dontPatch){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
-    ArchivedDataset d;
+    Dataset d;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
@@ -73,9 +71,9 @@ public class DatasetProjectSourceDao {
    * @param projectForPatching optional dataset used for building the source citations, if null master project is used
    * @param rebuild if true force to rebuild source metadata and not take it from the source archive
    */
-  public List<ArchivedDataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild){
+  public List<Dataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASED, MANAGED);
-    List<ArchivedDataset> sources;
+    List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       if (RELEASED == info.origin && !rebuild) {
@@ -107,8 +105,8 @@ public class DatasetProjectSourceDao {
    * @param settings project settings
    * @return the same dataset instance d as given
    */
-  private ArchivedDataset patch(ArchivedDataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm, DatasetSettings settings){
-    ArchivedDataset patch = pm.get(projectKey, d.getKey());
+  private Dataset patch(Dataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm, DatasetSettings settings){
+    Dataset patch = pm.get(projectKey, d.getKey());
     if (patch != null) {
       LOG.info("Apply dataset patch from project {} to {}: {}", patchProject.getKey(), d.getKey(), d.getTitle());
       d.applyPatch(patch);

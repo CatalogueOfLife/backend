@@ -109,9 +109,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     d.setAlias("alias");
     d.setTitle("title");
     d.setOrigin(DatasetOrigin.MANAGED);
-    d.setReleased(LocalDate.now());
+    d.setIssued(LocalDate.now());
     d.setLogo(URI.create("https://gbif.org"));
-    d.setWebsite(d.getLogo());
+    d.setUrl(d.getLogo());
     d.setCreated(LocalDateTime.now());
     d.setModified(LocalDateTime.now());
     d.setImported(LocalDateTime.now());
@@ -204,7 +204,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     // request DOI update/deletion for all source DOIs - they might be shared across releases so we cannot just delete them
     Set<DOI> dois = psm.listReleaseSources(key).stream()
-        .map(ArchivedDataset::getDoi)
+        .map(Dataset::getDoi)
         .filter(java.util.Objects::nonNull)
         .collect(Collectors.toSet());
     // remove dataset archive

@@ -42,11 +42,11 @@ public class EmlWriterTest {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
 
       Dataset d = dm.get(TestDataRule.APPLE.key);
-      d.setAuthors(List.of(
+      d.setCreator(List.of(
         new Person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"),
         new Person("Fax", "Feier", null, null)
       ));
-      d.setEditors(List.of(new Person("Derek & Dan", "Dillinger's")));
+      d.setEditor(List.of(new Person("Derek & Dan", "Dillinger's")));
       d.setLicense(License.CC0);
       EmlWriter.write(d, f);
 

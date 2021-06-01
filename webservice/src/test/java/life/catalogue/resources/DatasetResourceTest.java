@@ -5,7 +5,6 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Person;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
@@ -77,7 +76,7 @@ public class DatasetResourceTest extends ResourceTestBase {
     d.setType(DatasetType.OTHER);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setContact(Person.parse("me"));
-    d.setReleased(LocalDate.now());
+    d.setIssued(LocalDate.now());
     Integer key = editorCreds(base).post(json(d), Integer.class);
     d.setKey(key);
     

@@ -1,6 +1,5 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Datasets;
 import org.junit.Test;
@@ -31,7 +30,7 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
     // reload to also get the creation/modified dates,
     d1 = dmapper().get(d1.getKey());
 
-    ArchivedDataset d2 = mapper().get(d1.getKey(), d1.getImportAttempt());
+    Dataset d2 = mapper().get(d1.getKey(), d1.getImportAttempt());
     
     assertTrue(d2.equals(d1));
   }

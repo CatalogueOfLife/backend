@@ -1,7 +1,7 @@
 package life.catalogue.db.mapper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import life.catalogue.api.model.ArchivedDataset;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
@@ -29,7 +29,7 @@ public interface ProjectSourceMapper {
    * @param datasetKey the project the source dataset belongs to
    * @param d dataset to store as the projects source
    */
-  default void create(int datasetKey, ArchivedDataset d){
+  default void create(int datasetKey, Dataset d){
     createInternal(new DatasetWithProjectKey(datasetKey, d));
   }
 
@@ -40,7 +40,7 @@ public interface ProjectSourceMapper {
    * @param key the source dataset key
    * @param datasetKey the release dataset key. No project keys allowed!
    */
-  ArchivedDataset getReleaseSource(@Param("key") int key, @Param("datasetKey") int datasetKey);
+  Dataset getReleaseSource(@Param("key") int key, @Param("datasetKey") int datasetKey);
 
   /**
    * Retrieves a single source dataset for a project, reading either from the latest version
@@ -48,18 +48,18 @@ public interface ProjectSourceMapper {
    * @param key the source dataset key
    * @param datasetKey the project dataset key. No release keys allowed!
    */
-  ArchivedDataset getProjectSource(@Param("key") int key, @Param("datasetKey") int datasetKey);
+  Dataset getProjectSource(@Param("key") int key, @Param("datasetKey") int datasetKey);
 
   /**
    * @param datasetKey the release dataset key
    */
-  List<ArchivedDataset> listReleaseSources(@Param("datasetKey") int datasetKey);
+  List<Dataset> listReleaseSources(@Param("datasetKey") int datasetKey);
 
   /**
    * Lists all project or release sources retrieving metadata either from the latest version
    * or an archived copy depending on the import attempt of the last sync stored in the sectors.
    */
-  List<ArchivedDataset> listProjectSources(@Param("datasetKey") int datasetKey);
+  List<Dataset> listProjectSources(@Param("datasetKey") int datasetKey);
 
   /**
    * Deletes all source datasets for the given release
@@ -70,9 +70,9 @@ public interface ProjectSourceMapper {
 
   class DatasetWithProjectKey {
     public final int datasetKey;
-    public final ArchivedDataset dataset;
+    public final Dataset dataset;
 
-    public DatasetWithProjectKey(int projectKey, ArchivedDataset dataset) {
+    public DatasetWithProjectKey(int projectKey, Dataset dataset) {
       this.datasetKey = projectKey;
       this.dataset = dataset;
     }
@@ -110,11 +110,11 @@ public interface ProjectSourceMapper {
     }
 
     public List<Person> getAuthors() {
-      return dataset.getAuthors();
+      return dataset.getCreator();
     }
 
     public List<Person> getEditors() {
-      return dataset.getEditors();
+      return dataset.getEditor();
     }
 
     public List<Organisation> getOrganisations() {
@@ -138,7 +138,7 @@ public interface ProjectSourceMapper {
     }
 
     public LocalDate getReleased() {
-      return dataset.getReleased();
+      return dataset.getIssued();
     }
 
     public String getCitation() {
@@ -146,7 +146,7 @@ public interface ProjectSourceMapper {
     }
 
     public URI getWebsite() {
-      return dataset.getWebsite();
+      return dataset.getUrl();
     }
 
     public URI getLogo() {

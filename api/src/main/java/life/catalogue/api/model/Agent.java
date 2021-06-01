@@ -1,8 +1,7 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import life.catalogue.api.vocab.Country;
 import life.catalogue.common.util.RegexUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -10,7 +9,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class Person {
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class Agent {
   private static final Pattern CAMELCASE = Pattern.compile("\\b(\\p{Lu})(\\p{Ll}+)\\b");
 
   private static final String GIVEN_NAME = "((?:\\p{Lu}\\p{Ll}+){1,3})";
@@ -23,19 +26,31 @@ public class Person {
   private static final Pattern SHORTNAME_REVERSE = Pattern.compile("^\\s*" + FAMILY_NAME+"(?:\\s+|\\s*,\\s*)" + INITIALS +"\\s*$");
   private static final Pattern BRACKET_SUFFIX = Pattern.compile("^(.+)(\\(.+\\)\\.?)\\s*$");
   private static final Pattern EMAIL = Pattern.compile("<?\\s*\\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,})\\s*>?", Pattern.CASE_INSENSITIVE);
+  // person properties
+  private String orcid;
   private String givenName;
   private String familyName;
+  // organisation properties
+  private String rorid;
+  private String gridid;
+  private String organisation;
+  private String department;
+  private String city;
+  private String state;
+  private Country country;
+  // shared properties
   private String email;
-  private String orcid;
+  private String url;
+  private String note;
 
-  public static Person parse(final String originalName) {
+  public static Agent parse(final String originalName) {
     if (originalName == null) return null;
-    Person p = new Person();
+    Agent p = new Agent();
     parse(p, originalName);
     return p;
   }
 
-  static void parse(Person p, final String originalName) {
+  static void parse(Agent p, final String originalName) {
     if (originalName != null && p != null) {
       // see if we have brackets at the end, often for roles
       String brackets = null;
@@ -94,30 +109,39 @@ public class Person {
     }
   }
 
-  public static List<Person> parse(List<String> names) {
-    return names == null ? null : names.stream().map(Person::parse).collect(Collectors.toList());
+  public static List<Agent> parse(List<String> names) {
+    return names == null ? null : names.stream().map(Agent::parse).collect(Collectors.toList());
   }
 
-  public Person() {
+  public Agent() {
   }
 
-  public Person(Person other) {
+  public Agent(Agent other) {
+    this.orcid = other.orcid;
     this.givenName = other.givenName;
     this.familyName = other.familyName;
+    this.rorid = other.rorid;
+    this.gridid = other.gridid;
+    this.organisation = other.organisation;
+    this.department = other.department;
+    this.city = other.city;
+    this.state = other.state;
+    this.country = other.country;
     this.email = other.email;
-    this.orcid = other.orcid;
+    this.url = other.url;
+    this.note = other.note;
   }
 
-  public Person(String unparsedName) {
+  public Agent(String unparsedName) {
     parse(this, unparsedName);
   }
 
-  public Person(String givenName, String familyName) {
+  public Agent(String givenName, String familyName) {
     this.givenName = givenName;
     this.familyName = familyName;
   }
 
-  public Person(String givenName, String familyName, String email, String orcid) {
+  public Agent(String givenName, String familyName, String email, String orcid) {
     this.givenName = givenName;
     this.familyName = familyName;
     this.email = email;
@@ -142,7 +166,7 @@ public class Person {
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getName(){
-    if (givenName == null && familyName == null) return null;
+    if (givenName == null && familyName == null) return organisation;
 
     StringBuilder sb = new StringBuilder();
     if (familyName != null) {
@@ -159,7 +183,7 @@ public class Person {
     return sb.toString();
   }
 
-  static String abbreviate(String givenName) {
+  private static String abbreviate(String givenName) {
     if (givenName != null) {
       Matcher m = BRACKET_SUFFIX.matcher(givenName);
       if (m.find()) {
@@ -173,6 +197,66 @@ public class Person {
     return givenName;
   }
 
+  public String getOrcid() {
+    return orcid;
+  }
+
+  public String getRorid() {
+    return rorid;
+  }
+
+  public void setRorid(String rorid) {
+    this.rorid = rorid;
+  }
+
+  public String getGridid() {
+    return gridid;
+  }
+
+  public void setGridid(String gridid) {
+    this.gridid = gridid;
+  }
+
+  public String getOrganisation() {
+    return organisation;
+  }
+
+  public void setOrganisation(String organisation) {
+    this.organisation = organisation;
+  }
+
+  public String getDepartment() {
+    return department;
+  }
+
+  public void setDepartment(String department) {
+    this.department = department;
+  }
+
+  public String getCity() {
+    return city;
+  }
+
+  public void setCity(String city) {
+    this.city = city;
+  }
+
+  public String getState() {
+    return state;
+  }
+
+  public void setState(String state) {
+    this.state = state;
+  }
+
+  public Country getCountry() {
+    return country;
+  }
+
+  public void setCountry(Country country) {
+    this.country = country;
+  }
+
   public String getEmail() {
     return email;
   }
@@ -181,8 +265,20 @@ public class Person {
     this.email = email;
   }
 
-  public String getOrcid() {
-    return orcid;
+  public String getUrl() {
+    return url;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
+  }
+
+  public String getNote() {
+    return note;
+  }
+
+  public void setNote(String note) {
+    this.note = note;
   }
 
   public void setOrcid(String orcid) {
@@ -192,17 +288,14 @@ public class Person {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof Person)) return false;
-    Person person = (Person) o;
-    return Objects.equals(givenName, person.givenName) &&
-      Objects.equals(familyName, person.familyName) &&
-      Objects.equals(email, person.email) &&
-      Objects.equals(orcid, person.orcid);
+    if (!(o instanceof Agent)) return false;
+    Agent agent = (Agent) o;
+    return Objects.equals(orcid, agent.orcid) && Objects.equals(givenName, agent.givenName) && Objects.equals(familyName, agent.familyName) && Objects.equals(rorid, agent.rorid) && Objects.equals(gridid, agent.gridid) && Objects.equals(organisation, agent.organisation) && Objects.equals(department, agent.department) && Objects.equals(city, agent.city) && Objects.equals(state, agent.state) && country == agent.country && Objects.equals(email, agent.email) && Objects.equals(url, agent.url) && Objects.equals(note, agent.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(givenName, familyName, email, orcid);
+    return Objects.hash(orcid, givenName, familyName, rorid, gridid, organisation, department, city, state, country, email, url, note);
   }
 
   @Override

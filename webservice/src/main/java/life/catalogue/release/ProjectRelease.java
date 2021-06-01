@@ -6,14 +6,12 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.text.CitationUtils;
-import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetProjectSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.doi.service.DatasetConverter;
-import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
@@ -30,7 +28,6 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
@@ -65,7 +62,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setOrigin(DatasetOrigin.RELEASED);
 
     final LocalDate today = LocalDate.now();
-    d.setReleased(today);
+    d.setIssued(today);
     d.setVersion(today.toString());
 
     String alias = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);

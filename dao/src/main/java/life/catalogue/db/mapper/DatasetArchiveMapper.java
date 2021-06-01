@@ -1,10 +1,10 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.ArchivedDataset;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.annotations.Param;
 
-public interface DatasetArchiveMapper extends DatasetProcessable<ArchivedDataset> {
+public interface DatasetArchiveMapper extends DatasetProcessable<Dataset> {
 
   /**
    * Copies a given dataset key into the archive.
@@ -17,6 +17,6 @@ public interface DatasetArchiveMapper extends DatasetProcessable<ArchivedDataset
    * @param key
    * @param attempt
    */
-  ArchivedDataset get(@Param("key") int key, @Param("attempt") int attempt);
+  Dataset get(@Param("key") int key, @Param("attempt") int attempt);
 
 }

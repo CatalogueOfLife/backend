@@ -70,7 +70,7 @@ public class DwcaExporter extends ArchiveExporter {
     Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
     // for releases and projects also include an EML for each source dataset as defined by all sectors
     for (Integer key : sourceKeys) {
-      ArchivedDataset src = null;
+      Dataset src = null;
       if (DatasetOrigin.MANAGED == d.getOrigin()) {
         src = projectSourceMapper.getProjectSource(key, datasetKey);
       } else if (DatasetOrigin.RELEASED == d.getOrigin()) {
