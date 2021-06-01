@@ -36,12 +36,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   public static void populate(Dataset d) {
-    populate((Dataset)d);
     d.setGbifKey(UUID.randomUUID());
     d.setGbifPublisherKey(UUID.randomUUID());
-  }
-
-  static void populate(Dataset d) {
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.TAXONOMIC);
     d.setOrigin(DatasetOrigin.EXTERNAL);
@@ -51,17 +47,17 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setCreator(new ArrayList<>());
     d.setEditor(new ArrayList<>());
     for (int i = 0; i < 8; i++) {
-      d.getCreator().add(Person.parse(RandomUtils.randomLatinString(100)));
-      d.getEditor().add(Person.parse(RandomUtils.randomLatinString(100)));
+      d.getCreator().add(Agent.parse(RandomUtils.randomLatinString(100)));
+      d.getEditor().add(Agent.parse(RandomUtils.randomLatinString(100)));
     }
-    d.setContact(Person.parse("Hans Peter"));
+    d.setContact(Agent.parse("Hans Peter"));
     d.setIssued(LocalDate.now());
     d.setVersion("v123");
     d.setUrl(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
     d.setNotes("my notes");
-    d.setOrganisations(new ArrayList<>(List.of(
-      new Organisation("my org"),
-      new Organisation("your org")
+    d.setDistributor(new ArrayList<>(List.of(
+      new Agent("my org"),
+      new Agent("your org")
     )));
     d.setDoi(DOI.test(UUID.randomUUID().toString()));
   }
@@ -535,16 +531,16 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset ds = new Dataset();
     ds.setTitle(title);
     if (author != null) {
-      ds.setCreator(Person.parse(Lists.newArrayList(author.split(";"))));
+      ds.setCreator(Agent.parse(Lists.newArrayList(author.split(";"))));
     }
-    ds.setOrganisations(List.of(new Organisation(organisation)));
+    ds.setDistributor(List.of(new Agent(organisation)));
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);
-    ds.setContact(new Person("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
+    ds.setContact(new Agent("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
     ds.setEditor(List.of(
-      new Person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),
-      new Person("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666")
+      new Agent("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),
+      new Agent("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666")
     ));
     mapper().create(TestEntityGenerator.setUserDate(ds));
 

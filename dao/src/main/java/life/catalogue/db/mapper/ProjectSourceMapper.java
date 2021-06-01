@@ -1,19 +1,10 @@
 package life.catalogue.db.mapper;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DOI;
-import life.catalogue.api.model.Organisation;
-import life.catalogue.api.model.Person;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.License;
-import org.apache.ibatis.annotations.Param;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 
 /**
  * DatasetProcessable refers to archived dataset metadata for projects only!
@@ -75,127 +66,6 @@ public interface ProjectSourceMapper {
     public DatasetWithProjectKey(int projectKey, Dataset dataset) {
       this.datasetKey = projectKey;
       this.dataset = dataset;
-    }
-
-    public int getDatasetKey() {
-      return datasetKey;
-    }
-
-    public Integer getKey() {
-      return dataset.getKey();
-    }
-
-    public DOI getDoi() {
-      return dataset.getDoi();
-    }
-
-    public DatasetType getType() {
-      return dataset.getType();
-    }
-
-    public Integer getSourceKey() {
-      return dataset.getSourceKey();
-    }
-
-    public Integer getImportAttempt() {
-      return dataset.getImportAttempt();
-    }
-
-    public String getTitle() {
-      return dataset.getTitle();
-    }
-
-    public String getDescription() {
-      return dataset.getDescription();
-    }
-
-    public List<Person> getAuthors() {
-      return dataset.getCreator();
-    }
-
-    public List<Person> getEditors() {
-      return dataset.getEditor();
-    }
-
-    public List<Organisation> getOrganisations() {
-      return dataset.getOrganisations();
-    }
-
-    public Person getContact() {
-      return dataset.getContact();
-    }
-
-    public License getLicense() {
-      return dataset.getLicense();
-    }
-
-    public String getVersion() {
-      return dataset.getVersion();
-    }
-
-    public String getGeographicScope() {
-      return dataset.getGeographicScope();
-    }
-
-    public LocalDate getReleased() {
-      return dataset.getIssued();
-    }
-
-    public String getCitation() {
-      return dataset.getCitation();
-    }
-
-    public URI getWebsite() {
-      return dataset.getUrl();
-    }
-
-    public URI getLogo() {
-      return dataset.getLogo();
-    }
-
-    public DatasetOrigin getOrigin() {
-      return dataset.getOrigin();
-    }
-
-    public String getNotes() {
-      return dataset.getNotes();
-    }
-
-    @JsonIgnore
-    public String getAliasOrTitle() {
-      return dataset.getAliasOrTitle();
-    }
-
-    public String getAlias() {
-      return dataset.getAlias();
-    }
-
-    public String getGroup() {
-      return dataset.getGroup();
-    }
-
-    public Integer getConfidence() {
-      return dataset.getConfidence();
-    }
-
-    public Integer getCompleteness() {
-      return dataset.getCompleteness();
-    }
-
-    public LocalDateTime getCreated() {
-      return dataset.getCreated();
-    }
-
-    public Integer getCreatedBy() {
-      return dataset.getCreatedBy();
-    }
-
-    public LocalDateTime getModified() {
-      return dataset.getModified();
-    }
-
-    public Integer getModifiedBy() {
-      return dataset.getModifiedBy();
     }
   }
 

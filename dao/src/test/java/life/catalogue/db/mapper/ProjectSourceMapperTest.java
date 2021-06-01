@@ -1,8 +1,8 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetMetadata;
 import life.catalogue.api.vocab.Datasets;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -47,8 +47,8 @@ public class ProjectSourceMapperTest extends MapperTestBase<ProjectSourceMapper>
     d1.setKey(d.getKey());
 
     Dataset d2 = mapper().getProjectSource(d1.getKey(), Datasets.COL);
-    DatasetMetadata m1 = DatasetMetadata.copy(d1);
-    DatasetMetadata m2 = DatasetMetadata.copy(d2);
+    Dataset m1 = new Dataset(d1);
+    Dataset m2 = new Dataset(d2);
     assertEquals(m2, m1);
     commit();
   }
