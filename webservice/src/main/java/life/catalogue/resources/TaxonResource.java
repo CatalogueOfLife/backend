@@ -2,7 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
-import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
@@ -34,9 +34,9 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
   private final TaxonDao dao;
-  private final DatasetProjectSourceDao sourceDao;
+  private final DatasetSourceDao sourceDao;
 
-  public TaxonResource(TaxonDao dao, DatasetProjectSourceDao sourceDao) {
+  public TaxonResource(TaxonDao dao, DatasetSourceDao sourceDao) {
     super(Taxon.class, dao);
     this.dao = dao;
     this.sourceDao = sourceDao;

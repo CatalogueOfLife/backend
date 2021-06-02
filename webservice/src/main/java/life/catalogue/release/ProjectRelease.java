@@ -8,9 +8,9 @@ import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -39,7 +39,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final CloseableHttpClient client;
   private final ExportManager exportManager;
   private final DoiService doiService;
-  private final DatasetProjectSourceDao sourceDao;
+  private final DatasetSourceDao sourceDao;
   private final DatasetConverter converter;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
@@ -52,7 +52,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
     this.client = client;
     this.exportManager = exportManager;
-    this.sourceDao = new DatasetProjectSourceDao(factory);
+    this.sourceDao = new DatasetSourceDao(factory);
     this.converter = converter;
   }
 
@@ -92,13 +92,13 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     // treat source. Archive dataset metadata & logos & assign a potentially new DOI
     updateState(ImportState.ARCHIVING);
-    DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
+    DatasetSourceDao dao = new DatasetSourceDao(factory);
     try (SqlSession session = factory.openSession(true)) {
       // find previous public release needed for DOI management
       final Integer prevReleaseKey = findPreviousRelease(datasetKey, session);
       LOG.info("Last public release was {}", prevReleaseKey);
 
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       dao.list(datasetKey, newDataset, true).forEach(d -> {
         if (cfg.doi != null) {
@@ -158,7 +158,7 @@ public class ProjectRelease extends AbstractProjectCopy {
    */
   private DOI findSourceDOI(Integer prevReleaseKey, int sourceKey, SqlSession session) {
     if (prevReleaseKey != null) {
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var prevSrc = psm.getReleaseSource(sourceKey, prevReleaseKey);
       if (prevSrc != null && prevSrc.getDoi() != null) {
         // compare basic metrics

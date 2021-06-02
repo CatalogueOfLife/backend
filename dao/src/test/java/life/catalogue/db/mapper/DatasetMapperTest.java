@@ -35,7 +35,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     return d;
   }
 
-  public static void populate(Dataset d) {
+  public static Dataset populate(Dataset d) {
     d.setGbifKey(UUID.randomUUID());
     d.setGbifPublisherKey(UUID.randomUUID());
     d.applyUser(Users.DB_INIT);
@@ -46,11 +46,16 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setLicense(License.CC0);
     d.setCreator(new ArrayList<>());
     d.setEditor(new ArrayList<>());
+    d.setDistributor(new ArrayList<>());
+    d.setContributor(new ArrayList<>());
     for (int i = 0; i < 8; i++) {
       d.getCreator().add(Agent.parse(RandomUtils.randomLatinString(100)));
       d.getEditor().add(Agent.parse(RandomUtils.randomLatinString(100)));
+      d.getDistributor().add(Agent.parse(RandomUtils.randomLatinString(100)));
+      d.getContributor().add(Agent.parse(RandomUtils.randomLatinString(100)));
     }
     d.setContact(Agent.parse("Hans Peter"));
+    d.setPublisher(Agent.parse("Peter Publish"));
     d.setIssued(LocalDate.now());
     d.setVersion("v123");
     d.setUrl(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
@@ -60,6 +65,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
       new Agent("your org")
     )));
     d.setDoi(DOI.test(UUID.randomUUID().toString()));
+    return d;
   }
 
   @Test

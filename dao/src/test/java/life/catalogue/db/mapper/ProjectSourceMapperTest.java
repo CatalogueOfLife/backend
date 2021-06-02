@@ -10,10 +10,10 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class ProjectSourceMapperTest extends MapperTestBase<ProjectSourceMapper> {
+public class ProjectSourceMapperTest extends MapperTestBase<DatasetSourceMapper> {
 
   public ProjectSourceMapperTest() {
-    super(ProjectSourceMapper.class);
+    super(DatasetSourceMapper.class);
   }
 
   public static Dataset createProjectSource() {

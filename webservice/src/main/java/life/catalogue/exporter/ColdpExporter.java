@@ -8,7 +8,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -27,7 +27,7 @@ public class ColdpExporter extends ArchiveExporter {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpExporter.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
   private static final String LOGO_FILENAME = "logo.png";
-  private ProjectSourceMapper projectSourceMapper;
+  private DatasetSourceMapper projectSourceMapper;
   private Writer cslWriter;
   private boolean cslFirst = true;
 
@@ -38,7 +38,7 @@ public class ColdpExporter extends ArchiveExporter {
   @Override
   protected void init(SqlSession session) throws Exception {
     super.init(session);
-    projectSourceMapper = session.getMapper(ProjectSourceMapper.class);
+    projectSourceMapper = session.getMapper(DatasetSourceMapper.class);
   }
 
   @Override

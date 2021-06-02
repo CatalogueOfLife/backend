@@ -29,7 +29,7 @@ public class ProjectContributionTest {
     d = DatasetTest.generateTestDataset();
     d.setCreator(List.of(new Agent(null, null, "null@null.io", null)));
     d.setEditor(List.of(new Agent(null, null, "null@null.io", null)));
-    d.getDistributor().add(new Agent(null, null, null, null, null, null, null, null, null));
+    d.getDistributor().add(new Agent(null, null, null, null, null, null, null, null));
     contrib.add(d);
 
     assertEquals(11, contrib.size());

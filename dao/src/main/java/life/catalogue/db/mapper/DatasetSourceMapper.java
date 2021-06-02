@@ -8,10 +8,10 @@ import org.apache.ibatis.annotations.Param;
 
 /**
  * DatasetProcessable refers to archived dataset metadata for projects only!
- * Contrary to its name the table project_source only stores sources for releases.
+ * The table dataset_source only stores sources for releases, not the project itself.
  * The live project sources are determined based on the sector mappings alone and are the reason for the name of the mapper.
  */
-public interface ProjectSourceMapper {
+public interface DatasetSourceMapper {
 
   /**
    * Copies a given dataset into the project archive.

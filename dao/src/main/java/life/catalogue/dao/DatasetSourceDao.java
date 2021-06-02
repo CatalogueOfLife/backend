@@ -19,11 +19,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static life.catalogue.api.vocab.DatasetOrigin.MANAGED;
 import static life.catalogue.api.vocab.DatasetOrigin.RELEASED;
 
-public class DatasetProjectSourceDao {
-  private final static Logger LOG = LoggerFactory.getLogger(DatasetProjectSourceDao.class);
+public class DatasetSourceDao {
+  private final static Logger LOG = LoggerFactory.getLogger(DatasetSourceDao.class);
   private final SqlSessionFactory factory;
 
-  public DatasetProjectSourceDao(SqlSessionFactory factory) {
+  public DatasetSourceDao(SqlSessionFactory factory) {
     this.factory = factory;
   }
 
@@ -37,7 +37,7 @@ public class DatasetProjectSourceDao {
     Dataset d;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (MANAGED == info.origin) {
         d = psm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
@@ -75,7 +75,7 @@ public class DatasetProjectSourceDao {
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASED, MANAGED);
     List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (RELEASED == info.origin && !rebuild) {
         sources = psm.listReleaseSources(datasetKey);
 

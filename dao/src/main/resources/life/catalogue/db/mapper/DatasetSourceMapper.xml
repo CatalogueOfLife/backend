@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="life.catalogue.db.mapper.ProjectSourceMapper">
+<mapper namespace="life.catalogue.db.mapper.DatasetSourceMapper">
 
   <sql id="SELECT">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>
@@ -20,7 +20,7 @@
     project_source d LEFT JOIN dataset_import di ON d.import_attempt=di.attempt AND d.key=di.dataset_key
   </sql>
 
-  <select id="listProjectSources" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="listProjectSources" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     WITH src AS (
       SELECT s.subject_dataset_key AS key, max(s.dataset_import_attempt) AS attempt
       FROM sector s
@@ -47,13 +47,13 @@
     ORDER BY 1
   </select>
 
-  <select id="listReleaseSources" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="listReleaseSources" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.dataset_key = #{datasetKey}
   </select>
 
-  <select id="getProjectSource" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
+  <select id="getProjectSource" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     WITH src AS (
       SELECT max(s.dataset_import_attempt) AS attempt
       FROM sector s
@@ -77,13 +77,13 @@
     WHERE src.attempt = d.import_attempt OR src.attempt IS NULL
   </select>
 
-  <select id="getReleaseSource" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
+  <select id="getReleaseSource" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
   </select>
 
-  <insert id="createInternal" parameterType="life.catalogue.db.mapper.ProjectSourceMapper$DatasetWithProjectKey">
+  <insert id="createInternal" parameterType="life.catalogue.db.mapper.DatasetSourceMapper$DatasetWithProjectKey">
     INSERT INTO project_source (key, dataset_key, import_attempt, <include refid="COLS"/>, source_key, origin,  created, modified)
     VALUES (#{key}, #{datasetKey}, #{importAttempt}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now())
   </insert>

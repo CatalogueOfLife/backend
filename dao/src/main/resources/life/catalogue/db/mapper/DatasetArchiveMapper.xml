@@ -9,23 +9,25 @@
     d.import_attempt,
     d.notes,
     d.origin,
+    d.type,
     d.source_key,
     di.finished AS imported
   </sql>
 
   <sql id="COLS">
     notes,
+    type,
     <include refid="life.catalogue.db.mapper.DatasetPatchMapper.COLS"/>
   </sql>
 
   <sql id="PROPS">
     #{notes},
+    #{type}::datasettype,
     <!--
     PROPS_PATCH uses obj. prefix so we cannot share the list
     But we need to make sure we have the same order so the COLS match up!
     -->
     #{doi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
-    #{type}::datasettype,
     #{title},
     #{description},
     #{organisations, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
@@ -51,15 +53,7 @@
     dataset_archive d LEFT JOIN dataset_import di ON d.import_attempt=di.attempt AND d.key=di.dataset_key
   </sql>
 
-  <resultMap id="archiveResultMap" type="Dataset" autoMapping="true">
-    <id property="key" column="key"/>
-    <result property="distributor" column="organisations" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
-    <result property="contact" column="contact" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
-    <result property="creator" column="authors" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
-    <result property="editor" column="editors" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
-  </resultMap>
-
-  <select id="get" resultMap="archiveResultMap">
+  <select id="get" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.key = #{key} AND d.import_attempt = #{attempt}
@@ -72,7 +66,7 @@
     WHERE d.key = #{key}
   </insert>
 
-  <select id="processDataset" parameterType="map" resultMap="archiveResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="processDataset" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.key = #{datasetKey}

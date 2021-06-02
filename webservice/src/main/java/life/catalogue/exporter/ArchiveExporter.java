@@ -21,7 +21,6 @@ import life.catalogue.img.ImageService;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
@@ -45,7 +44,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
   protected final LoadingCache<String, String> refCache;
   protected final Int2IntMap sector2datasetKeys = new Int2IntOpenHashMap();
   protected SectorMapper sectorMapper;
-  protected ProjectSourceMapper projectSourceMapper;
+  protected DatasetSourceMapper projectSourceMapper;
   protected NameRelationMapper nameRelMapper;
   protected SqlSession session;
   protected TermWriter writer;
@@ -120,7 +119,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
 
   protected void init(SqlSession session) throws Exception {
     sectorMapper = session.getMapper(SectorMapper.class);
-    projectSourceMapper = session.getMapper(ProjectSourceMapper.class);
+    projectSourceMapper = session.getMapper(DatasetSourceMapper.class);
     nameRelMapper = session.getMapper(NameRelationMapper.class);
   }
 

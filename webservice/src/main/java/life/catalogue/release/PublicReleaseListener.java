@@ -13,7 +13,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.dao.DatasetExportDao;
 
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 
@@ -88,7 +88,7 @@ public class PublicReleaseListener {
         doiService.updateSilently(prev.getDoi(), converter.datasetURI(lastReleaseKey, false));
 
         // sources
-        ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+        DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
         // track DOIs of current release - these should stay as they are!
         Set<DOI> currentDOIs = psm.listReleaseSources(release.getKey()).stream()
           .map(Dataset::getDoi)

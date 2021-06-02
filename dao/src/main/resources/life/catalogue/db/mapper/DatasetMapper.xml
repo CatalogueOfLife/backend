@@ -113,9 +113,16 @@
   </sql>
 
   <!--  A mapping to Name, mostly auto mapped -->
-  <resultMap id="datasetResultMap" type="Dataset" autoMapping="true" extends="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
+  <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
     <id property="key" column="key"/>
     <result property="privat" column="private"/>
+    <result property="contact" column="contact" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
+    <result property="creator" column="creator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
+    <result property="editor" column="editor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
+    <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
+    <result property="contributor" column="contributor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
+    <result property="distributor" column="distributor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
+
   </resultMap>
 
   <resultMap id="settingsResultMap" type="DatasetSettings" autoMapping="false">

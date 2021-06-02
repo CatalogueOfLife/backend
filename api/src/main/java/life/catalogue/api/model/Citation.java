@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Citation {
@@ -10,9 +11,9 @@ public class Citation {
   // DOI for the reference. Can be in addition to another identifier used as the ID above
   private String doi;
   // The name(s) of the author(s) as Person objects with familyName & givenName (see above)
-  private String author;
+  private List<Agent> author;
   // The name(s) of the editor(s) as Person objects
-  private String editor;
+  private List<Agent> editor;
   // The title of the work
   private String title;
   // The title of the book, if only part of it is being cited
@@ -36,11 +37,7 @@ public class Citation {
   // Page numbers, separated either by commas or double-hyphens.
   private String pages;
   // The publisher's name
-  private String publisher;
-  // The institution that was involved in the publishing, but not necessarily the publisher
-  private String institution;
-  // Publisher's address (usually just the city, but can be the full address for lesser-known publishers)
-  private String address;
+  private Agent publisher;
 
   // dataset version
   private String version;
@@ -74,20 +71,24 @@ public class Citation {
     this.doi = doi;
   }
 
-  public String getAuthor() {
+  public List<Agent> getAuthor() {
     return author;
   }
 
-  public void setAuthor(String author) {
+  public void setAuthor(List<Agent> author) {
     this.author = author;
   }
 
-  public String getEditor() {
+  public List<Agent> getEditor() {
     return editor;
   }
 
-  public void setEditor(String editor) {
+  public void setEditor(List<Agent> editor) {
     this.editor = editor;
+  }
+
+  public void setPublisher(Agent publisher) {
+    this.publisher = publisher;
   }
 
   public String getTitle() {
@@ -178,30 +179,6 @@ public class Citation {
     this.pages = pages;
   }
 
-  public String getPublisher() {
-    return publisher;
-  }
-
-  public void setPublisher(String publisher) {
-    this.publisher = publisher;
-  }
-
-  public String getInstitution() {
-    return institution;
-  }
-
-  public void setInstitution(String institution) {
-    this.institution = institution;
-  }
-
-  public String getAddress() {
-    return address;
-  }
-
-  public void setAddress(String address) {
-    this.address = address;
-  }
-
   public String getVersion() {
     return version;
   }
@@ -232,11 +209,11 @@ public class Citation {
     if (this == o) return true;
     if (!(o instanceof Citation)) return false;
     Citation citation = (Citation) o;
-    return Objects.equals(id, citation.id) && Objects.equals(type, citation.type) && Objects.equals(doi, citation.doi) && Objects.equals(author, citation.author) && Objects.equals(editor, citation.editor) && Objects.equals(title, citation.title) && Objects.equals(booktitle, citation.booktitle) && Objects.equals(journal, citation.journal) && Objects.equals(year, citation.year) && Objects.equals(month, citation.month) && Objects.equals(series, citation.series) && Objects.equals(volume, citation.volume) && Objects.equals(number, citation.number) && Objects.equals(edition, citation.edition) && Objects.equals(chapter, citation.chapter) && Objects.equals(pages, citation.pages) && Objects.equals(publisher, citation.publisher) && Objects.equals(institution, citation.institution) && Objects.equals(address, citation.address) && Objects.equals(version, citation.version) && Objects.equals(ISBN, citation.ISBN) && Objects.equals(ISSN, citation.ISSN);
+    return Objects.equals(id, citation.id) && Objects.equals(type, citation.type) && Objects.equals(doi, citation.doi) && Objects.equals(author, citation.author) && Objects.equals(editor, citation.editor) && Objects.equals(title, citation.title) && Objects.equals(booktitle, citation.booktitle) && Objects.equals(journal, citation.journal) && Objects.equals(year, citation.year) && Objects.equals(month, citation.month) && Objects.equals(series, citation.series) && Objects.equals(volume, citation.volume) && Objects.equals(number, citation.number) && Objects.equals(edition, citation.edition) && Objects.equals(chapter, citation.chapter) && Objects.equals(pages, citation.pages) && Objects.equals(publisher, citation.publisher) && Objects.equals(version, citation.version) && Objects.equals(ISBN, citation.ISBN) && Objects.equals(ISSN, citation.ISSN);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, type, doi, author, editor, title, booktitle, journal, year, month, series, volume, number, edition, chapter, pages, publisher, institution, address, version, ISBN, ISSN);
+    return Objects.hash(id, type, doi, author, editor, title, booktitle, journal, year, month, series, volume, number, edition, chapter, pages, publisher, version, ISBN, ISSN);
   }
 }

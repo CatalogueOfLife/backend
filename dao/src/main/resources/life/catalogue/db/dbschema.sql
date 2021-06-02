@@ -603,24 +603,19 @@ CREATE TYPE USER_ROLE AS ENUM (
 -- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
 CREATE TYPE simple_name AS (id text, rank rank, name text, authorship text);
 
--- Person type for dataset to avoid extra tables
-CREATE TYPE person AS (given text, family text, email text, orcid text);
+-- Agent type for dataset to avoid extra tables
+CREATE TYPE agent AS (orcid text, given text, family text,
+  rorid text, organisation text, department text, city text, state text, country CHAR(2),
+  email text, url text, note text
+);
 
--- Organisation type for dataset to avoid extra tables
-CREATE TYPE organisation AS (name text, department text, city text, state text, country CHAR(2));
-
--- immutable person casts to text function to be used in indexes
-CREATE OR REPLACE FUNCTION person_str(person) RETURNS text AS
+-- immutable agent casts to text function to be used in indexes
+CREATE OR REPLACE FUNCTION agent_str(agent) RETURNS text AS
 $$
 SELECT $1::text
 $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION person_str(person[]) RETURNS text AS
-$$
-SELECT array_to_string($1, ' ')
-$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
-
-CREATE OR REPLACE FUNCTION organisation_str(organisation[]) RETURNS text AS
+CREATE OR REPLACE FUNCTION agent_str(agent[]) RETURNS text AS
 $$
 SELECT array_to_string($1, ' ')
 $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
@@ -631,18 +626,12 @@ SELECT array_to_string($1, ' ')
 $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 -- CUSTOM CASTS
-CREATE OR REPLACE FUNCTION text2person(text) RETURNS person AS
+CREATE OR REPLACE FUNCTION text2agent(text) RETURNS agent AS
 $$
-SELECT ROW(null, $1, null, null)::person
+SELECT ROW(null, null, $1, null, null, null, null, null, null, null, null, null)::agent
 $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION text2organisation(text) RETURNS organisation AS
-$$
-SELECT ROW($1, null, null, null, null)::organisation
-$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
-
-CREATE CAST (text AS person) WITH FUNCTION text2person;
-CREATE CAST (text AS organisation) WITH FUNCTION text2organisation;
+CREATE CAST (text AS agent) WITH FUNCTION text2agent;
 
 
 CREATE TABLE "user" (
@@ -666,30 +655,34 @@ CREATE TABLE dataset (
   doi text UNIQUE,
   source_key INTEGER REFERENCES dataset,
   import_attempt INTEGER,
+  private BOOLEAN DEFAULT FALSE,
   type DATASETTYPE NOT NULL DEFAULT 'OTHER',
   origin DATASETORIGIN NOT NULL,
-  private BOOLEAN DEFAULT FALSE,
   gbif_key UUID UNIQUE,
   gbif_publisher_key UUID,
 
+  identifier HSTORE,
   title TEXT NOT NULL,
-  alias TEXT UNIQUE,
+  alias TEXT,
   description TEXT,
-  organisations organisation[] DEFAULT '{}',
-  contact person,
-  authors person[],
-  editors person[],
-  license LICENSE,
+  issued DATE,
   version TEXT,
-  released DATE,
-  citation TEXT,
+  issn TEXT,
+  contact agent,
+  creator agent[],
+  editor agent[],
+  publisher agent,
+  contributor agent[],
+  distributor agent[],
   geographic_scope TEXT,
-  website TEXT,
-  logo TEXT,
-  "group" TEXT,
+  taxonomic_scope TEXT,
+  temporal_scope TEXT,
   confidence INTEGER CHECK (confidence > 0 AND confidence <= 5),
   completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
-  notes text,
+  license LICENSE,
+  url TEXT,
+  logo TEXT,
+  notes TEXT,
 
   settings JSONB,
   access_control INT[],
@@ -699,14 +692,23 @@ CREATE TABLE dataset (
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   deleted TIMESTAMP WITHOUT TIME ZONE,
+
   doc tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
       setweight(to_tsvector('simple2', coalesce(title,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(organisation_str(organisations), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(issn, '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(identifier::text, '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(creator), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(version, '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(description,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(person_str(contact), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(person_str(authors), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(person_str(editors), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(geographic_scope,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(taxonomic_scope,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(temporal_scope,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(contact), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(editor), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(publisher), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(contributor), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(distributor), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
   ) STORED
 );
@@ -715,6 +717,30 @@ CREATE INDEX ON dataset USING GIN (f_unaccent(title) gin_trgm_ops);
 CREATE INDEX ON dataset USING GIN (f_unaccent(alias) gin_trgm_ops);
 CREATE INDEX ON dataset USING GIN (doc);
 
+CREATE TABLE dataset_citation (
+  dataset_key INTEGER REFERENCES dataset,
+  id TEXT,
+  type TEXT,
+  doi TEXT,
+  author agent[],
+  editor agent[],
+  title TEXT,
+  booktitle TEXT,
+  journal TEXT,
+  year TEXT,
+  month TEXT,
+  series TEXT,
+  volume TEXT,
+  number TEXT,
+  edition TEXT,
+  chapter TEXT,
+  pages TEXT,
+  publisher agent,
+  version TEXT,
+  isbn TEXT,
+  issn TEXT
+);
+CREATE INDEX ON dataset_citation (dataset_key);
 
 CREATE TABLE dataset_archive (LIKE dataset);
 ALTER TABLE dataset_archive
@@ -725,24 +751,30 @@ ALTER TABLE dataset_archive
   DROP COLUMN gbif_publisher_key,
   DROP COLUMN private,
   DROP COLUMN settings;
+ALTER TABLE dataset_archive ADD FOREIGN KEY (key) REFERENCES dataset;
 
-
-CREATE TABLE project_source (LIKE dataset_archive);
-ALTER TABLE project_source
+CREATE TABLE dataset_source (LIKE dataset_archive INCLUDING INDEXES);
+ALTER TABLE dataset_source
   ADD COLUMN dataset_key INTEGER REFERENCES dataset;
-ALTER TABLE project_source ADD UNIQUE (key, dataset_key);
+ALTER TABLE dataset_source ADD PRIMARY KEY (key, dataset_key);
+ALTER TABLE dataset_source ADD FOREIGN KEY (key) REFERENCES dataset;
 
+-- finally we also assign the primary key of the archive which is different from dataset_source - hence only here
 ALTER TABLE dataset_archive ALTER COLUMN import_attempt set not null;
-ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt);
+ALTER TABLE dataset_archive ADD PRIMARY KEY (key, import_attempt);
 
-CREATE TABLE dataset_patch AS SELECT * FROM dataset_archive LIMIT 0;
+-- patches must allow nulls everywhere!
+CREATE TABLE dataset_patch (LIKE dataset_source INCLUDING INDEXES);
 ALTER TABLE dataset_patch
   DROP COLUMN source_key,
   DROP COLUMN import_attempt,
   DROP COLUMN notes,
-  DROP COLUMN origin,
-  ADD COLUMN dataset_key INTEGER NOT NULL REFERENCES dataset;
-ALTER TABLE dataset_patch ADD PRIMARY KEY (key, dataset_key);
+  DROP COLUMN type,
+  DROP COLUMN origin;
+ALTER TABLE dataset_patch
+  ALTER COLUMN title DROP NOT NULL;
+ALTER TABLE dataset_patch ADD FOREIGN KEY (key) REFERENCES dataset;
+ALTER TABLE dataset_patch ADD FOREIGN KEY (dataset_key) REFERENCES dataset;
 
 
 CREATE TABLE dataset_import (

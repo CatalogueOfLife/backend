@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.util.RegexUtils;
 
@@ -32,7 +34,6 @@ public class Agent {
   private String familyName;
   // organisation properties
   private String rorid;
-  private String gridid;
   private String organisation;
   private String department;
   private String city;
@@ -121,7 +122,6 @@ public class Agent {
     this.givenName = other.givenName;
     this.familyName = other.familyName;
     this.rorid = other.rorid;
-    this.gridid = other.gridid;
     this.organisation = other.organisation;
     this.department = other.department;
     this.city = other.city;
@@ -148,9 +148,8 @@ public class Agent {
     this.orcid = orcid;
   }
 
-  public Agent(String rorid, String gridid, String organisation, String department, String city, String state, Country country, String email, String url) {
+  public Agent(String rorid, String organisation, String department, String city, String state, Country country, String email, String url) {
     this.rorid = rorid;
-    this.gridid = gridid;
     this.organisation = organisation;
     this.department = department;
     this.city = city;
@@ -158,6 +157,24 @@ public class Agent {
     this.country = country;
     this.email = email;
     this.url = url;
+  }
+
+  public Agent(String orcid, String givenName, String familyName,
+               String rorid, String organisation, String department, String city, String state, Country country,
+               String email, String url, String note
+  ) {
+    this.orcid = orcid;
+    this.givenName = givenName;
+    this.familyName = familyName;
+    this.rorid = rorid;
+    this.organisation = organisation;
+    this.department = department;
+    this.city = city;
+    this.state = state;
+    this.country = country;
+    this.email = email;
+    this.url = url;
+    this.note = note;
   }
 
   public String getGivenName() {
@@ -221,14 +238,6 @@ public class Agent {
     this.rorid = rorid;
   }
 
-  public String getGridid() {
-    return gridid;
-  }
-
-  public void setGridid(String gridid) {
-    this.gridid = gridid;
-  }
-
   public String getOrganisation() {
     return organisation;
   }
@@ -263,6 +272,11 @@ public class Agent {
 
   public Country getCountry() {
     return country;
+  }
+
+  @JsonIgnore
+  public String getCountryCode() {
+    return country == null ? null : country.getIso2LetterCode();
   }
 
   public void setCountry(Country country) {
@@ -302,12 +316,14 @@ public class Agent {
     if (this == o) return true;
     if (!(o instanceof Agent)) return false;
     Agent agent = (Agent) o;
-    return Objects.equals(orcid, agent.orcid) && Objects.equals(givenName, agent.givenName) && Objects.equals(familyName, agent.familyName) && Objects.equals(rorid, agent.rorid) && Objects.equals(gridid, agent.gridid) && Objects.equals(organisation, agent.organisation) && Objects.equals(department, agent.department) && Objects.equals(city, agent.city) && Objects.equals(state, agent.state) && country == agent.country && Objects.equals(email, agent.email) && Objects.equals(url, agent.url) && Objects.equals(note, agent.note);
+    return Objects.equals(orcid, agent.orcid) && Objects.equals(givenName, agent.givenName) && Objects.equals(familyName, agent.familyName) &&
+      Objects.equals(rorid, agent.rorid) &&
+      Objects.equals(organisation, agent.organisation) && Objects.equals(department, agent.department) && Objects.equals(city, agent.city) && Objects.equals(state, agent.state) && country == agent.country && Objects.equals(email, agent.email) && Objects.equals(url, agent.url) && Objects.equals(note, agent.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(orcid, givenName, familyName, rorid, gridid, organisation, department, city, state, country, email, url, note);
+    return Objects.hash(orcid, givenName, familyName, rorid, organisation, department, city, state, country, email, url, note);
   }
 
   @Override

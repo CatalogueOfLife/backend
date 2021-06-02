@@ -26,7 +26,10 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
 
   @Test
   public void roundtripCrud() throws Exception {
-    Dataset u1 = readFirst();
+    Dataset u1 = removeNonPatchProps(DatasetMapperTest.populate(new Dataset()));
+    // source key must be an existing dataset
+    u1.setKey(TestEntityGenerator.DATASET11.getKey());
+    TestEntityGenerator.setUserDate(u1);
     mapper().create(Datasets.COL, u1);
     commit();
 
@@ -57,10 +60,7 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
   }
 
 
-  Dataset readFirst() throws Exception {
-    DatasetMapper dm = mapper(DatasetMapper.class);
-    Dataset d = new Dataset(dm.list(new Page(0,1)).get(0));
-
+  Dataset removeNonPatchProps(Dataset d) throws Exception {
     // clear all properties that can NOT be patched
     for(PropertyDescriptor prop : Introspector.getBeanInfo(Dataset.class, Object.class).getPropertyDescriptors()){
       if (prop.getWriteMethod() == null) continue;
@@ -82,7 +82,8 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
   }
 
   Dataset removeDbCreatedProps(Dataset obj) {
-    TestEntityGenerator.nullifyUserDate(obj);
+    obj.setCreated(null);
+    obj.setModified(null);
     return obj;
   }
 

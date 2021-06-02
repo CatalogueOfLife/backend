@@ -16,21 +16,16 @@ import org.apache.ibatis.type.TypeException;
 public class AgentArrayTypeHandler extends CustomArrayAbstractTypeHandler<Agent> {
 
   public AgentArrayTypeHandler() {
-    super("person");
+    super(AgentTypeHandler.PGTYPE);
   }
 
   @Override
   public String[] toAttributes(Agent obj) throws SQLException {
-    return new String[]{obj.getGivenName(), obj.getFamilyName(), obj.getEmail(), obj.getOrcid()};
+    return AgentTypeHandler.to(obj);
   }
 
   @Override
   public Agent fromAttributes(List<String> cols) throws SQLException {
-    if (cols.size() == 4) {
-      return new Agent(cols.get(0), cols.get(1), cols.get(2), cols.get(3));
-    } else {
-      // how can that be ?
-      throw new TypeException("Failed to parse "+String.join(",", cols)+" to Agent");
-    }
+    return AgentTypeHandler.from(cols);
   }
 }

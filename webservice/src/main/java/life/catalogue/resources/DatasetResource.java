@@ -8,7 +8,7 @@ import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.Roles;
@@ -50,12 +50,12 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
   private final DatasetDao dao;
-  private final DatasetProjectSourceDao sourceDao;
+  private final DatasetSourceDao sourceDao;
   private final ImageService imgService;
   private final AssemblyCoordinator assembly;
   private final ReleaseManager releaseManager;
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetProjectSourceDao sourceDao, ImageService imgService, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, ImageService imgService, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.sourceDao = sourceDao;

@@ -10,7 +10,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.decision.EstimateRematcher;
@@ -56,7 +56,7 @@ public class UpdateReleaseTool implements AutoCloseable {
    */
   public void rebuildSourceMetadata(){
     System.out.printf("%s: %s\n\n", release.getKey(), release.getTitle());
-    DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
+    DatasetSourceDao dao = new DatasetSourceDao(factory);
     show(dao);
     //update(dao);
   }
@@ -87,7 +87,7 @@ public class UpdateReleaseTool implements AutoCloseable {
     System.out.println("Estimates: " + mc2);
   }
 
-  void show(DatasetProjectSourceDao dao){
+  void show(DatasetSourceDao dao){
     System.out.printf("%s\n", release.getTitle());
     if (settings.has(Setting.RELEASE_CITATION_TEMPLATE)) {
       String citation = CitationUtils.fromTemplate(release, settings.getString(Setting.RELEASE_CITATION_TEMPLATE));
@@ -99,9 +99,9 @@ public class UpdateReleaseTool implements AutoCloseable {
     });
   }
 
-  void update(DatasetProjectSourceDao dao) {
+  void update(DatasetSourceDao dao) {
     try (SqlSession session = factory.openSession(false)) {
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       int cnt = psm.deleteByRelease(release.getKey());
       session.commit();
       System.out.printf("Deleted %s old source metadata records\n", cnt);

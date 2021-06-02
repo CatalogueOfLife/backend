@@ -166,7 +166,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
-  private void postDoiDeletionForSources(ProjectSourceMapper psm, int datasetKey){
+  private void postDoiDeletionForSources(DatasetSourceMapper psm, int datasetKey){
     psm.listReleaseSources(datasetKey).stream()
       .filter(d -> d.getDoi() != null && d.getDoi().isCOL())
       .forEach(d -> bus.post(DoiChange.delete(d.getDoi())));
@@ -180,7 +180,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     // old is null as we have set offerChangeHook to false - we only need it here so lets call it manually
     old = mapper.get(key);
-    ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+    DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
     if (old != null && old.getOrigin() == DatasetOrigin.MANAGED) {
       // This is a recursive project delete.
       Set<Integer> releases = listReleaseKeys(key, user, mapper);
