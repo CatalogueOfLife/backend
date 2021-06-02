@@ -127,14 +127,14 @@ public class DatasetProjectSourceDao {
 
   static class SourceMetrics extends ImportMetrics {
     // current attempt of the imported dataset
-    private int latestAttempt;
+    private Integer latestAttempt;
     private Integer latestUsageCount;
 
-    public int getLatestAttempt() {
+    public Integer getLatestAttempt() {
       return latestAttempt;
     }
 
-    public void setLatestAttempt(int latestAttempt) {
+    public void setLatestAttempt(Integer latestAttempt) {
       this.latestAttempt = latestAttempt;
     }
 
@@ -153,14 +153,17 @@ public class DatasetProjectSourceDao {
     metrics.setDatasetKey(datasetKey);
 
     try (SqlSession session = factory.openSession()) {
-      var source = session.getMapper(DatasetMapper.class).get(sourceKey);
+      // could throw not found
+      var info = DatasetInfoCache.CACHE.info(datasetKey);
+
+      // get current source in CLB
+      var source = session.getMapper(DatasetMapper.class).getOrThrow(sourceKey, Dataset.class);
       metrics.setLatestAttempt(source.getImportAttempt());
       metrics.setLatestUsageCount(source.getSize());
 
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       AtomicInteger sectorCounter = new AtomicInteger(0);
       // a release? use mother project in that case
-      var info = DatasetInfoCache.CACHE.info(datasetKey);
       if (info.origin == DatasetOrigin.RELEASED) {
         Integer projectKey = info.sourceKey;
         for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, sourceKey)){
