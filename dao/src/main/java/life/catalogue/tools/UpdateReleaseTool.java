@@ -55,7 +55,7 @@ public class UpdateReleaseTool implements AutoCloseable {
    * Rebuilds the source metadata from latest patches and templates
    */
   public void rebuildSourceMetadata(){
-    System.out.printf("%s: %s\n\n", release.getKey(), release.getCitation());
+    System.out.printf("%s: %s\n\n", release.getKey(), release.getTitle());
     DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
     show(dao);
     //update(dao);
@@ -88,14 +88,14 @@ public class UpdateReleaseTool implements AutoCloseable {
   }
 
   void show(DatasetProjectSourceDao dao){
-    System.out.printf("%s\n", release.getCitation());
+    System.out.printf("%s\n", release.getTitle());
     if (settings.has(Setting.RELEASE_CITATION_TEMPLATE)) {
       String citation = CitationUtils.fromTemplate(release, settings.getString(Setting.RELEASE_CITATION_TEMPLATE));
-      release.setCitation(citation);
+      release.setTitle(citation);
     }
-    System.out.printf("%s\n", release.getCitation());
+    System.out.printf("%s\n", release.getTitle());
     dao.list(release.getKey(), release, true).forEach(d -> {
-      System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
+      System.out.printf("%s: %s\n", d.getKey(), d.getTitle());
     });
   }
 
@@ -109,7 +109,7 @@ public class UpdateReleaseTool implements AutoCloseable {
       AtomicInteger counter = new AtomicInteger(0);
       dao.list(release.getKey(), release, true).forEach(d -> {
         counter.incrementAndGet();
-        System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
+        System.out.printf("%s: %s\n", d.getKey(), d.getTitle());
         psm.create(release.getKey(), d);
       });
       session.commit();

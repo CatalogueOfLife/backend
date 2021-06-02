@@ -63,10 +63,10 @@
     #{obj.type}::datasettype,
     #{obj.title},
     #{obj.description},
-    #{obj.organisations, typeHandler=life.catalogue.db.type.OrganisationArrayTypeHandler},
-    #{obj.contact, typeHandler=life.catalogue.db.type.PersonTypeHandler},
-    #{obj.authors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
-    #{obj.editors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
+    #{obj.organisations, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{obj.contact, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{obj.authors, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{obj.editors, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
     #{obj.license}::LICENSE,
     #{obj.version},
     #{obj.released},
@@ -94,12 +94,12 @@
     WHERE key = #{key} and dataset_key = #{datasetKey}
   </select>
 
-  <insert id="create" parameterType="ArchivedDataset" useGeneratedKeys="false">
+  <insert id="create" parameterType="Dataset" useGeneratedKeys="false">
     INSERT INTO dataset_patch ( key, dataset_key,<include refid="COLS"/>, created, modified)
     VALUES ( #{obj.key}, #{datasetKey},<include refid="PROPS"/>, now(), now())
   </insert>
 
-  <update id="update" parameterType="ArchivedDataset">
+  <update id="update" parameterType="Dataset">
     UPDATE dataset_patch
     SET (<include refid="COLS"/>, modified)
     = (<include refid="PROPS"/>, now())

@@ -23,9 +23,9 @@ import java.util.Arrays;
 import java.util.Map;
 
 /**
- * ArchivedDataset JSON body reader that understands the difference between an explicit property given with a nil value and a missing property.
+ * Dataset JSON body reader that understands the difference between an explicit property given with a nil value and a missing property.
  * Missing properties will be read as true java NULL values, while the explicit JS nil will be converted into the type specific patch null value.
- * See ArchivedDataset#applyPatch method.
+ * See Dataset#applyPatch method.
  */
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
@@ -57,7 +57,7 @@ public class DatasetPatchMessageBodyRW implements MessageBodyReader<Dataset>, Me
 
   @Override
   public void writeTo(Dataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap, OutputStream outputStream) throws IOException, WebApplicationException {
-    for (PropertyDescriptor p : Dataset.METADATA_PROPS) {
+    for (PropertyDescriptor p : Dataset.PATCH_PROPS) {
       try {
         if (Dataset.NULL_TYPES.containsKey(p.getName())) {
           Object nullType = Dataset.NULL_TYPES.get(p.getName());

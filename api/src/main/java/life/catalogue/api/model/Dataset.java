@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
  */
 public class Dataset extends DataEntity<Integer> {
   public static final Map<String, Object> NULL_TYPES;
-  public static final List<PropertyDescriptor> METADATA_PROPS;
+  // properties which are human mediated and can be patched
+  public static final List<PropertyDescriptor> PATCH_PROPS;
   static {
     try {
       Set<String> exclude = Set.of(
@@ -46,12 +47,12 @@ public class Dataset extends DataEntity<Integer> {
         "notes",
         "aliasOrTitle"
       );
-      METADATA_PROPS = Arrays.stream(Introspector.getBeanInfo(Dataset.class).getPropertyDescriptors())
+      PATCH_PROPS = Arrays.stream(Introspector.getBeanInfo(Dataset.class).getPropertyDescriptors())
         .filter(p -> !exclude.contains(p.getName()) && p.getWriteMethod() != null)
         .collect(Collectors.toUnmodifiableList());
 
       Map<String, Object> nullTypes = new HashMap<>();
-      for (PropertyDescriptor p : METADATA_PROPS) {
+      for (PropertyDescriptor p : PATCH_PROPS) {
         Object nullType = null;
         if (p.getPropertyType().equals(URI.class)) {
           nullType = URI.create("null:null");
@@ -179,13 +180,9 @@ public class Dataset extends DataEntity<Integer> {
    */
   public void applyPatch(Dataset patch) {
     // copy all properties that are not null
-    Object p2 = null;
-    Object val2 = null;
     try {
-      for (PropertyDescriptor prop : METADATA_PROPS){
-        p2 = prop;
+      for (PropertyDescriptor prop : PATCH_PROPS){
         Object val = prop.getReadMethod().invoke(patch);
-        val2 = val;
         if (val != null) {
           if (NULL_TYPES.containsKey(prop.getName())) {
             Object nullType = NULL_TYPES.get(prop.getName());
@@ -194,11 +191,6 @@ public class Dataset extends DataEntity<Integer> {
           prop.getWriteMethod().invoke(this, val);
         }
       }
-    } catch (NullPointerException e) {
-      System.out.println(p2);
-      System.out.println(val2);
-      throw new RuntimeException(e);
-
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }

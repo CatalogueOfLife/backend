@@ -115,7 +115,7 @@ public class DatasetProjectSourceDao {
     if (settings != null && settings.has(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)) {
       try {
         String citation = CitationUtils.fromTemplate(d, patchProject, settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)).trim();
-        d.setCitation(citation);
+        //TODO: d.setCitation(citation);
       } catch (IllegalArgumentException e) {
         LOG.warn("Failed to create citation for source dataset {}", d.getKey(), e);
       }

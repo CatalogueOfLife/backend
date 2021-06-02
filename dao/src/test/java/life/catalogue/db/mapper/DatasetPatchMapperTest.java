@@ -2,14 +2,13 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetMetadata;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.Datasets;
-import org.junit.Test;
 
-import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -62,19 +61,11 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
     DatasetMapper dm = mapper(DatasetMapper.class);
     Dataset d = new Dataset(dm.list(new Page(0,1)).get(0));
 
-    // clear all properties that do NOT exist in the DatasetMetadata interface
-    BeanInfo metaInfo = Introspector.getBeanInfo(DatasetMetadata.class);
+    // clear all properties that can NOT be patched
     for(PropertyDescriptor prop : Introspector.getBeanInfo(Dataset.class, Object.class).getPropertyDescriptors()){
       if (prop.getWriteMethod() == null) continue;
 
-      boolean exists = false;
-      for(PropertyDescriptor iProp : metaInfo.getPropertyDescriptors()){
-        if (prop.getReadMethod() != null && iProp.getReadMethod().getName().equalsIgnoreCase(prop.getReadMethod().getName())) {
-          exists = true;
-          break;
-        }
-      }
-      if (!exists) {
+      if (!Dataset.PATCH_PROPS.contains(prop)) {
         if (prop.getWriteMethod().getParameterTypes().length > 1) continue;
 
         // we only have boolean as primitive types on dataset
