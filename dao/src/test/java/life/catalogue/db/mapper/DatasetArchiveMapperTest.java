@@ -22,6 +22,7 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
   @Test
   public void archive() throws Exception {
     Dataset d1 = create();
+
     dmapper().create(d1);
     dmapper().updateLastImport(d1.getKey(), 3);
 
@@ -29,9 +30,13 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
     commit();
     // reload to also get the creation/modified dates,
     d1 = dmapper().get(d1.getKey());
+    d1.setGbifKey(null);
+    d1.setGbifPublisherKey(null);
+    d1.setSize(null); // we populate size by counting usages - ignore it in comparison
 
     Dataset d2 = mapper().get(d1.getKey(), d1.getImportAttempt());
-    
+
+    printDiff(d1, d2);
     assertTrue(d2.equals(d1));
   }
 
