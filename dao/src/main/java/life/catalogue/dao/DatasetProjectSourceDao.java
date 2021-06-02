@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -128,7 +126,7 @@ public class DatasetProjectSourceDao {
   static class SourceMetrics extends ImportMetrics {
     // current attempt of the imported dataset
     private Integer latestAttempt;
-    private Integer latestUsageCount;
+    private Integer latestUsagesCount;
 
     public Integer getLatestAttempt() {
       return latestAttempt;
@@ -138,12 +136,12 @@ public class DatasetProjectSourceDao {
       this.latestAttempt = latestAttempt;
     }
 
-    public Integer getLatestUsageCount() {
-      return latestUsageCount;
+    public Integer getLatestUsagesCount() {
+      return latestUsagesCount;
     }
 
-    public void setLatestUsageCount(Integer latestUsageCount) {
-      this.latestUsageCount = latestUsageCount;
+    public void setLatestUsagesCount(Integer latestUsagesCount) {
+      this.latestUsagesCount = latestUsagesCount;
     }
   }
 
@@ -159,7 +157,7 @@ public class DatasetProjectSourceDao {
       // get current source in CLB
       var source = session.getMapper(DatasetMapper.class).getOrThrow(sourceKey, Dataset.class);
       metrics.setLatestAttempt(source.getImportAttempt());
-      metrics.setLatestUsageCount(source.getSize());
+      metrics.setLatestUsagesCount(source.getSize());
 
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       AtomicInteger sectorCounter = new AtomicInteger(0);
