@@ -4,7 +4,6 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.legacy.LNameMapper">
 
-
   <resultMap id="usageResultMap" type="life.catalogue.db.mapper.legacy.model.LName" autoMapping="true">
     <id column="id"/>
     <discriminator column="java_class" javaType="integer">
@@ -95,7 +94,7 @@
     u.scrutinizer_date AS ${prefix}scrutinizer_date,
     u.link AS ${prefix}link,
     coalesce(d.alias,d.title) AS ${prefix}sourceDatabase,
-    d.website AS ${prefix}sourceDatabaseUrl,
+    d.url AS ${prefix}sourceDatabaseUrl,
     NULL AS ${prefix}bibliographicCitation
   </sql>
 
