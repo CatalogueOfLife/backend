@@ -1,13 +1,13 @@
 package life.catalogue.db.type;
 
-import org.postgresql.jdbc.PgConnection;
-import org.postgresql.util.PGobject;
-
 import java.sql.*;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.postgresql.jdbc.PgConnection;
+import org.postgresql.util.PGobject;
 
 /**
  * DDL SQL:

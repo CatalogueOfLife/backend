@@ -4,10 +4,12 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsModule;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.util.EnumSet;
+
+import org.junit.Test;
 
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
 

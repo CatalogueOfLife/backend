@@ -1,7 +1,5 @@
 package life.catalogue.db;
 
-import com.zaxxer.hikari.pool.HikariProxyConnection;
-
 import life.catalogue.api.vocab.Users;
 import life.catalogue.postgres.PgCopyUtils;
 
@@ -15,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
+import com.zaxxer.hikari.pool.HikariProxyConnection;
 
 public class InitDbUtils {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbUtils.class);

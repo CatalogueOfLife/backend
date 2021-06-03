@@ -34,7 +34,7 @@
 
   <sql id="FROM">
     dataset d
-      LEFT JOIN dataset_import di ON di.attempt=d.import_attempt AND di.dataset_key=coalesce(d.source_key,d.key)
+      LEFT JOIN dataset_import di ON di.attempt=d.attempt AND di.dataset_key=coalesce(d.source_key,d.key)
       LEFT JOIN usage_count uc ON uc.dataset_key=d.key
   </sql>
 
@@ -103,8 +103,8 @@
       <if test="req.created != null">
         AND created > #{req.created}
       </if>
-      <if test="req.released != null">
-        AND released > #{req.released}
+      <if test="req.issued != null">
+        AND issued > #{req.issued}
       </if>
       <if test="req.minSize != null">
         AND <include refid="size"/> >= #{req.minSize}
@@ -177,8 +177,8 @@
             <bind name="rev" value="!req.reverse"/>
           </when>
           <when test="sortBy == 'AUTHORS'">
-            lower((editors[1]).family),
-            lower((authors[1]).family)
+            lower((editor[1]).family),
+            lower((creator[1]).family)
           </when>
           <when test="sortBy == 'ALIAS'">
             lower(alias)
@@ -262,7 +262,7 @@
 
   <select id="releaseAttempt" resultType="integer">
     SELECT key FROM dataset
-    WHERE source_key = #{key} AND deleted IS NULL AND import_attempt = #{attempt}
+    WHERE source_key = #{key} AND deleted IS NULL AND attempt = #{attempt}
     LIMIT 1
   </select>
 
@@ -332,19 +332,19 @@
   </update>
 
   <select id="lastImportAttempt" resultType="Integer">
-    SELECT import_attempt
+    SELECT attempt
     FROM dataset
     WHERE key=#{key}
   </select>
 
   <update id="updateLastImport" parameterType="integer">
     UPDATE dataset
-    SET import_attempt = #{attempt}
+    SET attempt = #{attempt}
     WHERE key = #{key}
   </update>
 
   <update id="delete" parameterType="map">
-    UPDATE dataset SET deleted = now(), import_attempt=null, alias=null, gbif_key=null
+    UPDATE dataset SET deleted = now(), attempt=null, alias=null, gbif_key=null
     WHERE key = #{key}
   </update>
 

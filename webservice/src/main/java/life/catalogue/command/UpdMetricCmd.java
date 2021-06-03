@@ -152,11 +152,11 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
       final boolean isRelease = DatasetOrigin.RELEASED == d.getOrigin();
       // the datasetKey to store metrics under - the project in case of a release
       int datasetKey = isRelease ? d.getSourceKey() : d.getKey();
-      if (d.getOrigin() == DatasetOrigin.MANAGED || d.getImportAttempt() == null) {
+      if (d.getOrigin() == DatasetOrigin.MANAGED || d.getAttempt() == null) {
         LOG.info("No import existing for dataset {}", d.getKey());
 
       } else {
-        int attempt = d.getImportAttempt();
+        int attempt = d.getAttempt();
         DatasetImport di = did.getAttempt(datasetKey, attempt);
         if (di == null) {
           LOG.warn("No import metrics exist for dataset {} attempt {}, but which was given in dataset {}", datasetKey, attempt, d.getKey());
@@ -210,7 +210,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     final int projectKey = RELEASED == d.getOrigin() ? d.getSourceKey() : d.getKey();
     final String kind = RELEASED == d.getOrigin() ? "release" : "project";
     if (RELEASED == d.getOrigin()) {
-      LOG.info("Updating sector metrics for project {} release {}#{}", projectKey, d.getKey(), d.getImportAttempt());
+      LOG.info("Updating sector metrics for project {} release {}#{}", projectKey, d.getKey(), d.getAttempt());
     } else {
       LOG.info("Updating sector metrics for project {}: {}", d.getKey(), d.getAliasOrTitle());
     }
@@ -276,6 +276,6 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
         }
       });
     }
-    LOG.info("Created/updated {}/{} metrics from {} sectors in {} {}#{}. {} sectors done before", created, updated, counter, kind, d.getKey(), d.getImportAttempt(), doneBefore);
+    LOG.info("Created/updated {}/{} metrics from {} sectors in {} {}#{}. {} sectors done before", created, updated, counter, kind, d.getKey(), d.getAttempt(), doneBefore);
   }
 }

@@ -6,15 +6,15 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.mapper.*;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static life.catalogue.api.vocab.DatasetOrigin.MANAGED;
 import static life.catalogue.api.vocab.DatasetOrigin.RELEASED;

@@ -1,16 +1,17 @@
 package life.catalogue.concurrent;
 
 import life.catalogue.api.vocab.JobStatus;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class JobExecutorTest {
   JobExecutor exec;

@@ -1,12 +1,12 @@
 package life.catalogue.db.mapper.legacy.model;
 
+import java.util.List;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-
-import java.util.List;
-import java.util.Objects;
 
 @JacksonXmlRootElement(localName="results")
 public class LResponse {

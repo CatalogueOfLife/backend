@@ -140,8 +140,8 @@ public class PgImport implements Callable<Boolean> {
       );
       final String aliasOLD = old.getAlias();
       // archive the previous attempt if existing before we update the current metadata and tie it to a new attempt
-      if (old.getDataset().getImportAttempt() != null) {
-        int attempt = old.getDataset().getImportAttempt();
+      if (old.getDataset().getAttempt() != null) {
+        int attempt = old.getDataset().getAttempt();
         DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
         LOG.info("Archive previous dataset metadata with import attempt {} for {}: {}", attempt, dataset.getKey(), dataset.getTitle());
         Dataset archived = dam.get(dataset.getKey(), attempt);

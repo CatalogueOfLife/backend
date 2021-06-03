@@ -3,11 +3,13 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.search.SectorSearchRequest;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.cursor.Cursor;
+
+import java.util.List;
 
 import javax.annotation.Nullable;
-import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
 
 public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchRequest> {
 

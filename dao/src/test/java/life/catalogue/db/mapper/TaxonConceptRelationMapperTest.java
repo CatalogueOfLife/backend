@@ -5,10 +5,11 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TaxonConceptRelation;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.TaxonConceptRelType;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.assertEquals;

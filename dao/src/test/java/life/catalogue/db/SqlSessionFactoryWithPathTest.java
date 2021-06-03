@@ -1,13 +1,13 @@
 package life.catalogue.db;
 
+import java.sql.Connection;
+import java.sql.Statement;
+
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import java.sql.Connection;
-import java.sql.Statement;
 
 import static org.junit.Assert.assertEquals;
 

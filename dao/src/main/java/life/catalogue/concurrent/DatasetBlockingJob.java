@@ -1,15 +1,13 @@
 package life.catalogue.concurrent;
 
-import life.catalogue.api.exception.UnavailableException;
-import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Marks a Runnable that required a dataset lock to run.

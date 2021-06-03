@@ -1,16 +1,18 @@
 package life.catalogue.db.type2;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import life.catalogue.api.jackson.SettingsDeserializer;
 import life.catalogue.api.vocab.Frequency;
 import life.catalogue.api.vocab.Setting;
-import org.apache.ibatis.type.JdbcType;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.ibatis.type.JdbcType;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * Postgres type handler converting an map of object values into a postgres JSONB data type.

@@ -1,16 +1,18 @@
 package life.catalogue.es;
 
-import com.google.common.base.Joiner;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.common.util.YamlUtils;
+
+import java.io.IOException;
+import java.util.Arrays;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.elasticsearch.client.RestClient;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Arrays;
+import com.google.common.base.Joiner;
 
 /**
  * To be used as a ClassRule. Mainly installs/configures an external Elasticsearch instance.

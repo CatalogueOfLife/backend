@@ -6,12 +6,14 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.tree.TxtTreeDataRule;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.ClassRule;
-import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

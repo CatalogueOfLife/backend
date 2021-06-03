@@ -1,12 +1,14 @@
 package life.catalogue.dao;
 
-import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.DSID;
 import life.catalogue.db.tree.TextTreePrinter;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.io.File;
 import java.io.Writer;
+
+import org.apache.ibatis.session.SqlSessionFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * DAO giving read and write access to potentially large text trees and name lists

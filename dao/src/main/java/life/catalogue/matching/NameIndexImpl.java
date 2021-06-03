@@ -1,10 +1,5 @@
 package life.catalogue.matching;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
@@ -19,16 +14,24 @@ import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * NameMatching implementation that is backed by a generic store with a list of names keyed to their normalised
@@ -154,7 +157,7 @@ public class NameIndexImpl implements NameIndex {
     // calculate score by rank, nomCode & authorship
     // immediately filtering no matches with a negative score
     int bestScore = 0;
-    final List<IndexName> matches = Lists.newArrayList();
+    final List<IndexName> matches = new ArrayList<>();
     for (IndexName n : candidates) {
       // 0 to 5
       int score = 0;

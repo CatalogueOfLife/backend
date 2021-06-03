@@ -1,6 +1,7 @@
 package life.catalogue.db;
 
 import life.catalogue.api.model.Entity;
+
 import org.apache.ibatis.annotations.Param;
 
 public interface CRUD<K, V extends Entity<K>> extends Create<V> {

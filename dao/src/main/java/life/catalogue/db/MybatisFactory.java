@@ -1,6 +1,5 @@
 package life.catalogue.db;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Name;
@@ -11,6 +10,16 @@ import life.catalogue.db.mapper.UsageNameID;
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.type.UuidTypeHandler;
 import life.catalogue.db.type2.StringCount;
+
+import org.gbif.nameparser.api.ParsedName;
+import org.gbif.nameparser.utils.Closer;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.sql.DataSource;
+
 import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.wrapper.BeanWrapper;
@@ -22,15 +31,10 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.apache.ibatis.type.EnumTypeHandler;
 import org.apache.ibatis.type.TypeAliasRegistry;
 import org.apache.ibatis.type.TypeHandlerRegistry;
-import org.gbif.nameparser.api.ParsedName;
-import org.gbif.nameparser.utils.Closer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.google.common.base.Preconditions;
 
 /**
  * Configures mybatis and provides a SqlSessionFactory for a given datasource.

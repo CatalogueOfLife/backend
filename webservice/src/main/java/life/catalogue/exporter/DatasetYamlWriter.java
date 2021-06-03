@@ -56,8 +56,8 @@ public class DatasetYamlWriter {
 
     @Override
     @JsonIgnore
-    public Integer getImportAttempt() {
-      return super.getImportAttempt();
+    public Integer getAttempt() {
+      return super.getAttempt();
     }
 
     @Override

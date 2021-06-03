@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;

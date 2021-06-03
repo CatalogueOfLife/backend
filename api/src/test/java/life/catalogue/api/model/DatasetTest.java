@@ -97,7 +97,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     patch.setOrigin(DatasetOrigin.RELEASED);
     patch.setType(DatasetType.ARTICLE);
     patch.setSourceKey(1234);
-    patch.setImportAttempt(13);
+    patch.setAttempt(13);
     d.applyPatch(patch);
     assertEquals(copy, d);
   }

@@ -1,8 +1,5 @@
 package life.catalogue.db.mapper;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.ImportMetrics;
@@ -10,17 +7,22 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.type2.StringCount;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
@@ -184,12 +186,12 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     mapper().create(create(ImportState.FINISHED));
     
     assertEquals(7, mapper().count(null, null));
-    assertEquals(7, mapper().count(null, Lists.newArrayList()));
-    assertEquals(1, mapper().count(null, Lists.newArrayList(ImportState.FAILED)));
-    assertEquals(3, mapper().count(null, Lists.newArrayList(ImportState.FINISHED)));
-    assertEquals(2, mapper().count(null, Lists.newArrayList(ImportState.PROCESSING, ImportState.INSERTING)));
+    assertEquals(7, mapper().count(null, new ArrayList<>()));
+    assertEquals(1, mapper().count(null, List.of(ImportState.FAILED)));
+    assertEquals(3, mapper().count(null, List.of(ImportState.FINISHED)));
+    assertEquals(2, mapper().count(null, List.of(ImportState.PROCESSING, ImportState.INSERTING)));
     
-    assertEquals(2, mapper().list(null, Lists.newArrayList(ImportState.PROCESSING, ImportState.INSERTING), new Page()).size());
+    assertEquals(2, mapper().list(null, List.of(ImportState.PROCESSING, ImportState.INSERTING), new Page()).size());
   }
   
   @Test

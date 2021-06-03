@@ -2,11 +2,13 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.cursor.Cursor;
+
+import java.util.List;
 
 import javax.annotation.Nullable;
-import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
 
 /**
  * Mapper dealing with methods returning the NameUsage interface, i.e. a name in the context of either a Taxon, TaxonVernacularUsage,

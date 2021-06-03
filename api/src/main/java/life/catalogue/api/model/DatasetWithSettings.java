@@ -179,11 +179,11 @@ public class DatasetWithSettings {
   }
 
   public Integer getImportAttempt() {
-    return dataset.getImportAttempt();
+    return dataset.getAttempt();
   }
 
   public void setImportAttempt(Integer importAttempt) {
-    dataset.setImportAttempt(importAttempt);
+    dataset.setAttempt(importAttempt);
   }
 
   public DOI getDoi() {

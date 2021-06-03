@@ -2,10 +2,11 @@ package life.catalogue.es.query;
 
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

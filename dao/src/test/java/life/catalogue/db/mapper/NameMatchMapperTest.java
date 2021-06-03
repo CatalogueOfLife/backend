@@ -5,6 +5,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.MatchType;
+
 import org.junit.Before;
 import org.junit.Test;
 

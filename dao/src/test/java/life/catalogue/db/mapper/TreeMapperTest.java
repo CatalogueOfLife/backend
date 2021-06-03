@@ -8,12 +8,14 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.db.MybatisTestUtils;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.util.List;
 import java.util.UUID;
+
+import org.junit.Test;
 
 import static life.catalogue.api.vocab.Datasets.COL;
 import static org.junit.Assert.*;

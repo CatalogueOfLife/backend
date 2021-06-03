@@ -6,12 +6,14 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;

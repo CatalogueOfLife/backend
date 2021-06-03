@@ -5,12 +5,15 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
-import org.apache.ibatis.annotations.Param;
+
 import org.gbif.dwc.terms.Term;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.apache.ibatis.annotations.Param;
 
 /**
  * The MyBatis mapper interface for DatasetImport.

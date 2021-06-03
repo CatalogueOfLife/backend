@@ -12,8 +12,6 @@
  */
 package life.catalogue.db.type2;
 
-import com.google.common.collect.Sets;
-
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -38,7 +36,7 @@ public class IntegerSetTypeHandler extends AbstractArrayTypeHandler<Set<Integer>
   public Set<Integer> toObj(Array pgArray) throws SQLException {
     if (pgArray == null) return new HashSet<>();
 
-    Integer[] strings = (Integer[]) pgArray.getArray();
-    return Sets.newHashSet(strings);
+    Integer[] values = (Integer[]) pgArray.getArray();
+    return Set.of(values);
   }
 }

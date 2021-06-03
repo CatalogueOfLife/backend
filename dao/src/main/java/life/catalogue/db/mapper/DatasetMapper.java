@@ -1,6 +1,5 @@
 package life.catalogue.db.mapper;
 
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
@@ -9,12 +8,16 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
+
+import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.UUID;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
   int MAGIC_ADMIN_USER_KEY = -42;

@@ -1,8 +1,9 @@
 package life.catalogue.dao;
 
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.Page;
 import life.catalogue.db.PgSetupRule;
+
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 
 public class ReferenceDaoTest extends DaoTestBase {

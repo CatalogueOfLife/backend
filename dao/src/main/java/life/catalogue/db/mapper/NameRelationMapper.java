@@ -4,9 +4,10 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.*;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 
 public interface NameRelationMapper extends Create<NameRelation>,
   DatasetProcessable<NameRelation>, SectorProcessable<NameRelation>, NameProcessable<NameRelation>, CopyDataset {

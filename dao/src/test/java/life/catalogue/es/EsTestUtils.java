@@ -1,8 +1,9 @@
 package life.catalogue.es;
 
+import life.catalogue.api.search.NameUsageSearchResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
-import life.catalogue.api.search.NameUsageSearchResponse;
 
 public class EsTestUtils {
 

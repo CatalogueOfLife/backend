@@ -1,14 +1,12 @@
 package life.catalogue.db.mapper;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
+
 import org.gbif.nameparser.api.NomCode;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -17,6 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -65,6 +66,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
       new Agent("your org")
     )));
     d.setDoi(DOI.test(UUID.randomUUID().toString()));
+    d.setSize(0);
     return d;
   }
 
@@ -113,8 +115,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     Dataset d2 = TestEntityGenerator.nullifyDate(mapper().get(d1.getKey()));
 
-    printDiff(d1.getContact(), d2.getContact());
     assertEquals(d1.getContact(), d2.getContact());
+    printDiff(d1, d2);
     assertEquals(d1, d2);
   }
 
@@ -259,7 +261,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   private List<Dataset> createExpected() throws Exception {
-    List<Dataset> ds = Lists.newArrayList();
+    List<Dataset> ds = new ArrayList<>();
     ds.add(mapper().get(Datasets.COL));
     ds.add(mapper().get(TestEntityGenerator.DATASET11.getKey()));
     ds.add(mapper().get(TestEntityGenerator.DATASET12.getKey()));
@@ -374,7 +376,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     query.setCreated(LocalDate.parse("2016-02-01"));
     assertEquals(7, mapper().search(query, null, new Page()).size());
 
-    query.setReleased(LocalDate.parse("2007-11-21"));
+    query.setIssued(LocalDate.parse("2007-11-21"));
     query.setModified(LocalDate.parse("2031-12-31"));
     assertEquals(0, mapper().search(query, null, new Page()).size());
 
@@ -537,7 +539,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset ds = new Dataset();
     ds.setTitle(title);
     if (author != null) {
-      ds.setCreator(Agent.parse(Lists.newArrayList(author.split(";"))));
+      ds.setCreator(Agent.parse(List.of(author.split(";"))));
     }
     ds.setDistributor(List.of(new Agent(organisation)));
     ds.setDescription(description);

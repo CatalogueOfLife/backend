@@ -5,12 +5,13 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
+
+import java.io.IOException;
+
 import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
 
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;

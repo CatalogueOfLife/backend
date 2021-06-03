@@ -1,8 +1,8 @@
 package life.catalogue.db.type;
 
-import java.sql.*;
-
 import life.catalogue.api.model.DOI;
+
+import java.sql.*;
 
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;

@@ -12,12 +12,12 @@
  */
 package life.catalogue.db.type2;
 
-import com.google.common.collect.Lists;
-
 import java.sql.Array;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * String array handler that avoids nulls and uses empty arrays instead.
@@ -36,9 +36,9 @@ public class StringCollectionArrayTypeHandler extends AbstractArrayTypeHandler<C
 
   @Override
   public Collection<String> toObj(Array pgArray) throws SQLException {
-    if (pgArray == null) return Lists.newArrayList();
+    if (pgArray == null) return new ArrayList<>();
 
     String[] strings = (String[]) pgArray.getArray();
-    return Lists.newArrayList(strings);
+    return List.of(strings);
   }
 }

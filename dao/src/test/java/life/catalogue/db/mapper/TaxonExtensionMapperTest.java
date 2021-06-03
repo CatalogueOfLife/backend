@@ -7,13 +7,14 @@ import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TaxonExtension;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.TestDataRule;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

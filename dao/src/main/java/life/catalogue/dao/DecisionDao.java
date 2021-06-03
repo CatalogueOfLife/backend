@@ -1,6 +1,5 @@
 package life.catalogue.dao;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
@@ -8,13 +7,16 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.es.NameUsageIndexService;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.collect.Lists;
 
 public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, DecisionMapper> {
 

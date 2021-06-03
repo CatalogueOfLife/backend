@@ -1,8 +1,8 @@
 package life.catalogue.es.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Represents a single search hit.

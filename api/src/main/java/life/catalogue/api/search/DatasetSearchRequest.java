@@ -1,7 +1,7 @@
 package life.catalogue.api.search;
 
 import com.google.common.base.Preconditions;
-import life.catalogue.api.vocab.DataFormat;
+
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
@@ -86,8 +86,8 @@ public class DatasetSearchRequest {
   @QueryParam("created")
   private LocalDate created;
   
-  @QueryParam("released")
-  private LocalDate released;
+  @QueryParam("issued")
+  private LocalDate issued;
 
   @Min(0)
   @QueryParam("minSize")
@@ -209,12 +209,12 @@ public class DatasetSearchRequest {
     this.modified = modified;
   }
   
-  public LocalDate getReleased() {
-    return released;
+  public LocalDate getIssued() {
+    return issued;
   }
   
-  public void setReleased(LocalDate released) {
-    this.released = released;
+  public void setIssued(LocalDate issued) {
+    this.issued = issued;
   }
   
   public LocalDate getCreated() {
@@ -247,11 +247,11 @@ public class DatasetSearchRequest {
     if (this == o) return true;
     if (!(o instanceof DatasetSearchRequest)) return false;
     DatasetSearchRequest that = (DatasetSearchRequest) o;
-    return reverse == that.reverse && Objects.equals(q, that.q) && code == that.code && Objects.equals(privat, that.privat) && Objects.equals(releasedFrom, that.releasedFrom) && Objects.equals(contributesTo, that.contributesTo) && Objects.equals(hasSourceDataset, that.hasSourceDataset) && Objects.equals(editor, that.editor) && Objects.equals(modifiedBy, that.modifiedBy) && Objects.equals(origin, that.origin) && Objects.equals(type, that.type) && Objects.equals(license, that.license) && Objects.equals(modified, that.modified) && Objects.equals(created, that.created) && Objects.equals(released, that.released) && Objects.equals(minSize, that.minSize) && sortBy == that.sortBy;
+    return reverse == that.reverse && Objects.equals(q, that.q) && code == that.code && Objects.equals(privat, that.privat) && Objects.equals(releasedFrom, that.releasedFrom) && Objects.equals(contributesTo, that.contributesTo) && Objects.equals(hasSourceDataset, that.hasSourceDataset) && Objects.equals(editor, that.editor) && Objects.equals(modifiedBy, that.modifiedBy) && Objects.equals(origin, that.origin) && Objects.equals(type, that.type) && Objects.equals(license, that.license) && Objects.equals(modified, that.modified) && Objects.equals(created, that.created) && Objects.equals(issued, that.issued) && Objects.equals(minSize, that.minSize) && sortBy == that.sortBy;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, editor, modifiedBy, origin, type, license, modified, created, released, minSize, sortBy, reverse);
+    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, editor, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
   }
 }

@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.db.DatasetProcessable;
+
 import org.apache.ibatis.annotations.Param;
 
 public interface DatasetPatchMapper extends DatasetProcessable<Dataset> {

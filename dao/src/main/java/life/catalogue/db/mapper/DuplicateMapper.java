@@ -5,12 +5,14 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.apache.ibatis.annotations.Param;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
 
 public interface DuplicateMapper {
 

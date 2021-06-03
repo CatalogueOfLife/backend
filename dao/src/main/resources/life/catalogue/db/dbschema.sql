@@ -654,7 +654,7 @@ CREATE TABLE dataset (
   key serial PRIMARY KEY,
   doi text UNIQUE,
   source_key INTEGER REFERENCES dataset,
-  import_attempt INTEGER,
+  attempt INTEGER,
   private BOOLEAN DEFAULT FALSE,
   type DATASETTYPE NOT NULL DEFAULT 'OTHER',
   origin DATASETORIGIN NOT NULL,
@@ -760,15 +760,14 @@ ALTER TABLE dataset_source ADD PRIMARY KEY (key, dataset_key);
 ALTER TABLE dataset_source ADD FOREIGN KEY (key) REFERENCES dataset;
 
 -- finally we also assign the primary key of the archive which is different from dataset_source - hence only here
-ALTER TABLE dataset_archive ALTER COLUMN import_attempt set not null;
-ALTER TABLE dataset_archive ADD PRIMARY KEY (key, import_attempt);
+ALTER TABLE dataset_archive ALTER COLUMN attempt set not null;
+ALTER TABLE dataset_archive ADD PRIMARY KEY (key, attempt);
 
 -- patches must allow nulls everywhere!
 CREATE TABLE dataset_patch (LIKE dataset_source INCLUDING INDEXES);
 ALTER TABLE dataset_patch
   DROP COLUMN source_key,
-  DROP COLUMN import_attempt,
-  DROP COLUMN notes,
+  DROP COLUMN attempt,
   DROP COLUMN type,
   DROP COLUMN origin;
 ALTER TABLE dataset_patch
@@ -843,7 +842,7 @@ CREATE TABLE dataset_export (
   modified_by INTEGER,
   modified TIMESTAMP WITHOUT TIME ZONE,
   -- results
-  import_attempt INTEGER,
+  attempt INTEGER,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
   deleted TIMESTAMP WITHOUT TIME ZONE,
@@ -860,7 +859,7 @@ CREATE TABLE dataset_export (
 
 CREATE INDEX ON dataset_export (created);
 CREATE INDEX ON dataset_export (created_by, created);
-CREATE INDEX ON dataset_export (dataset_key, import_attempt, format, excel, synonyms, min_rank, status);
+CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank, status);
 
 CREATE TABLE sector (
   id INTEGER NOT NULL,
@@ -874,7 +873,7 @@ CREATE TABLE sector (
   mode SECTOR_MODE NOT NULL,
   code NOMCODE,
   sync_attempt INTEGER,
-  dataset_import_attempt INTEGER,
+  dataset_attempt INTEGER,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),

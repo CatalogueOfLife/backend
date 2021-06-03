@@ -1,8 +1,8 @@
 package life.catalogue.db.mapper.legacy.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class LSynonym extends LSpeciesName {
   private LSpeciesName acceptedName;

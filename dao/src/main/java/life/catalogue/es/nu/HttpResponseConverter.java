@@ -5,12 +5,13 @@ import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.response.EsMultiResponse;
 import life.catalogue.es.response.EsResponse;
-import org.elasticsearch.client.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.elasticsearch.client.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Extracts an {@link EsResponse} or an {@link EsMultiResponse} from the raw HTTP response. The

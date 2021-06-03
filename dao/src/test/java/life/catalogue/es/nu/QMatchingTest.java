@@ -5,11 +5,12 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsTestUtils;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

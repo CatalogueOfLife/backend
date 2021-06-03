@@ -13,16 +13,17 @@
   </sql>
 
   <sql id="PROPS">
-    <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.PROPS"/>
+    #{obj.type}::datasettype,
+    <include refid="life.catalogue.db.mapper.DatasetPatchMapper.PROPS"/>
   </sql>
 
   <sql id="FROM">
-    project_source d LEFT JOIN dataset_import di ON d.import_attempt=di.attempt AND d.key=di.dataset_key
+    dataset_source d LEFT JOIN dataset_import di ON d.attempt=di.attempt AND d.key=di.dataset_key
   </sql>
 
   <select id="listProjectSources" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     WITH src AS (
-      SELECT s.subject_dataset_key AS key, max(s.dataset_import_attempt) AS attempt
+      SELECT s.subject_dataset_key AS key, max(s.dataset_attempt) AS attempt
       FROM sector s
       WHERE s.dataset_key=#{datasetKey}
       GROUP BY s.subject_dataset_key
@@ -31,9 +32,9 @@
     SELECT <include refid="SELECT"/>
     FROM src
       JOIN dataset d2 ON d2.key = src.key
-      LEFT JOIN dataset_archive d ON d.key = src.key AND d.import_attempt = src.attempt
-      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.import_attempt
-    WHERE src.attempt != d2.import_attempt
+      LEFT JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
+      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
+    WHERE src.attempt != d2.attempt
 
     UNION
 
@@ -41,8 +42,8 @@
     SELECT <include refid="SELECT"/>
     FROM src
       JOIN dataset d ON d.key = src.key
-      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.import_attempt
-    WHERE src.attempt = d.import_attempt OR src.attempt IS NULL
+      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
+    WHERE src.attempt = d.attempt OR src.attempt IS NULL
 
     ORDER BY 1
   </select>
@@ -55,7 +56,7 @@
 
   <select id="getProjectSource" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     WITH src AS (
-      SELECT max(s.dataset_import_attempt) AS attempt
+      SELECT max(s.dataset_attempt) AS attempt
       FROM sector s
       WHERE s.dataset_key=#{datasetKey} AND s.subject_dataset_key=#{key}
     )
@@ -63,9 +64,9 @@
     SELECT <include refid="SELECT"/>
     FROM src
       JOIN dataset d2 ON d2.key = #{key}
-      LEFT JOIN dataset_archive d ON d.key = #{key} AND d.import_attempt = src.attempt
-      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.import_attempt
-    WHERE src.attempt != d2.import_attempt
+      LEFT JOIN dataset_archive d ON d.key = #{key} AND d.attempt = src.attempt
+      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
+    WHERE src.attempt != d2.attempt
 
     UNION
 
@@ -73,8 +74,8 @@
     SELECT <include refid="SELECT"/>
     FROM src
       JOIN dataset d ON d.key = #{key}
-      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.import_attempt
-    WHERE src.attempt = d.import_attempt OR src.attempt IS NULL
+      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
+    WHERE src.attempt = d.attempt OR src.attempt IS NULL
   </select>
 
   <select id="getReleaseSource" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
@@ -83,13 +84,13 @@
     WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
   </select>
 
-  <insert id="createInternal" parameterType="life.catalogue.db.mapper.DatasetSourceMapper$DatasetWithProjectKey">
-    INSERT INTO project_source (key, dataset_key, import_attempt, <include refid="COLS"/>, source_key, origin,  created, modified)
-    VALUES (#{key}, #{datasetKey}, #{importAttempt}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now())
+  <insert id="create" parameterType="map">
+    INSERT INTO dataset_source (key, dataset_key, attempt, <include refid="COLS"/>, source_key, origin,  created, modified)
+    VALUES (#{obj.key}, #{datasetKey}, #{obj.attempt}, <include refid="PROPS"/>, #{obj.sourceKey}, #{obj.origin}::DATASETORIGIN, now(), now())
   </insert>
 
   <delete id="deleteByRelease" parameterType="map">
-    DELETE FROM project_source WHERE dataset_key = #{datasetKey};
+    DELETE FROM dataset_source WHERE dataset_key = #{datasetKey};
   </delete>
 
 </mapper>

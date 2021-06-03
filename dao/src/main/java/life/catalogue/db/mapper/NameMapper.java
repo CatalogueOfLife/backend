@@ -5,15 +5,18 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.*;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.cursor.Cursor;
+
 import org.gbif.nameparser.api.Rank;
 
-import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
 
 /**
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be

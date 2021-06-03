@@ -5,14 +5,15 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
+
+import java.util.List;
+import java.util.function.Supplier;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * A junit test rule that creates sectors and fakes a sector sync

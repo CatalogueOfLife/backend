@@ -1,6 +1,5 @@
 package life.catalogue.es;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.es.ddl.Analyzer;
@@ -9,11 +8,6 @@ import life.catalogue.es.ddl.MappingsFactory;
 import life.catalogue.es.ddl.MultiField;
 import life.catalogue.es.nu.NameUsageFieldLookup;
 import life.catalogue.es.query.*;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.StatusLine;
-import org.elasticsearch.client.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -22,6 +16,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.StatusLine;
+import org.elasticsearch.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 import static life.catalogue.common.text.StringUtils.EMPTY_STRING_ARRAY;
 

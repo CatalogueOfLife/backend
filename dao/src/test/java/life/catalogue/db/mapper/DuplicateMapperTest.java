@@ -1,7 +1,5 @@
 package life.catalogue.db.mapper;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.EditorialDecision;
@@ -11,8 +9,16 @@ import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.postgres.AuthorshipNormFunc;
 import life.catalogue.postgres.PgCopyUtils;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.nameparser.api.Rank;
+
+import java.sql.Connection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+import org.apache.ibatis.session.SqlSession;
 import org.javers.common.collections.Lists;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
@@ -20,11 +26,8 @@ import org.javers.core.diff.Diff;
 import org.junit.*;
 import org.postgresql.jdbc.PgConnection;
 
-import java.sql.Connection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 import static org.junit.Assert.*;
 

@@ -2,7 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.Datasets;
 
 import java.beans.Introspector;
@@ -49,9 +48,7 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
     removeDbCreatedProps(u1);
     u2 = removeDbCreatedProps(mapper().get(Datasets.COL, u1.getKey()));
 
-    printDiff(u1, u2);
     assertEquals(removeDbCreatedProps(u1), u2);
-
 
     mapper().delete(Datasets.COL, u1.getKey());
     commit();

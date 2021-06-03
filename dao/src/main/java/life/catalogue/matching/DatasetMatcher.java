@@ -4,15 +4,16 @@ import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
+
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Rematches an entire dataset, using 2 separate db connections for read & write

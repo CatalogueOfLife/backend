@@ -28,6 +28,7 @@
     d.license,
     d.url,
     d.logo,
+    d.notes,
     d.created,
     d.created_by,
     d.modified,
@@ -57,6 +58,7 @@
     license,
     url,
     logo,
+    notes,
     created_by,
     modified_by
   </sql>
@@ -66,7 +68,7 @@
   -->
   <sql id="PROPS">
     #{obj.doi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
-    #{obj.identifier, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler},
+    #{obj.identifier, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
     #{obj.title},
     #{obj.alias},
     #{obj.description},
@@ -87,6 +89,7 @@
     #{obj.license}::LICENSE,
     #{obj.url},
     #{obj.logo},
+    #{obj.notes},
     #{obj.createdBy},
     #{obj.modifiedBy}
   </sql>

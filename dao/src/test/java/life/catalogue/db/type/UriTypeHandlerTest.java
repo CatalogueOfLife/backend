@@ -1,8 +1,8 @@
 package life.catalogue.db.type;
 
-import junit.framework.TestCase;
-
 import java.net.URI;
+
+import junit.framework.TestCase;
 
 public class UriTypeHandlerTest extends TestCase {
 

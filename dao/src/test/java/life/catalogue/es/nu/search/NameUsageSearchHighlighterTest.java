@@ -5,12 +5,14 @@ import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.search.NameUsageWrapper;
+
 import org.gbif.nameparser.api.Authorship;
-import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

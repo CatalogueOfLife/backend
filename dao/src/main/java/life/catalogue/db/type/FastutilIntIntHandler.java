@@ -1,11 +1,14 @@
 package life.catalogue.db.type;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.db.type2.JsonAbstractHandler;
+
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
 import org.apache.ibatis.type.MappedTypes;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 @MappedTypes(Int2IntOpenHashMap.class)
 @MappedJdbcTypes(JdbcType.OTHER)

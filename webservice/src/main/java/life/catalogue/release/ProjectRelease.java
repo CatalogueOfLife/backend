@@ -114,7 +114,7 @@ public class ProjectRelease extends AbstractProjectCopy {
           d.setDoi(srcDOI);
         }
 
-        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getImportAttempt(), newDatasetKey);
+        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getAttempt(), newDatasetKey);
         psm.create(newDatasetKey, d);
         // archive logos
         try {

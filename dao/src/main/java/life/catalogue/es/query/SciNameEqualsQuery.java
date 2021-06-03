@@ -1,7 +1,8 @@
 package life.catalogue.es.query;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.es.ddl.Analyzer;
+
+import com.google.common.base.Preconditions;
 
 public class SciNameEqualsQuery extends AbstractMatchQuery {
 

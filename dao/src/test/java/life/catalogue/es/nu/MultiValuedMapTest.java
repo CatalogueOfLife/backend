@@ -1,10 +1,11 @@
 package life.catalogue.es.nu;
 
-import org.junit.Test;
+import java.util.Arrays;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
-import java.util.Arrays;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

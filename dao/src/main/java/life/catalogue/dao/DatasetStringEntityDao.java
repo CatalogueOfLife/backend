@@ -4,11 +4,12 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
+
+import java.util.UUID;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.UUID;
 
 public class DatasetStringEntityDao<T extends DatasetScopedEntity<String>, M extends CRUD<DSID<String>, T> & DatasetPageable<T>>
   extends DatasetEntityDao<String, T, M> {

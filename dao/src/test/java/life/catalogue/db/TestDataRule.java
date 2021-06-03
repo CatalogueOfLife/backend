@@ -1,8 +1,5 @@
 package life.catalogue.db;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.zaxxer.hikari.pool.HikariProxyConnection;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Datasets;
@@ -15,15 +12,8 @@ import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.postgres.PgCopyUtils;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.NameType;
-import org.junit.rules.ExternalResource;
-import org.postgresql.jdbc.PgConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -35,6 +25,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.rules.ExternalResource;
+import org.postgresql.jdbc.PgConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A junit test rule that truncates all CoL tables, potentially loads some test

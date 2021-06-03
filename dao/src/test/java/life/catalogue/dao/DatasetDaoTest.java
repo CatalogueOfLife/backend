@@ -1,6 +1,5 @@
 package life.catalogue.dao;
 
-import com.google.common.eventbus.EventBus;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
@@ -9,12 +8,15 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.google.common.eventbus.EventBus;
 
 import static org.junit.Assert.assertNotNull;
 

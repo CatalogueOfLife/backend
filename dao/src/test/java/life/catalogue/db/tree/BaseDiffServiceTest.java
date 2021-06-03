@@ -5,14 +5,15 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.dao.DaoTestBase;
 import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.db.TestDataRule;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

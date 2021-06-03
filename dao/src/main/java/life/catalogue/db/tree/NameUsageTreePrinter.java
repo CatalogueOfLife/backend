@@ -2,11 +2,13 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.db.mapper.NameUsageMapper;
-import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Set;
+
+import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 public abstract class NameUsageTreePrinter extends AbstractTreePrinter<NameUsageBase> {
 

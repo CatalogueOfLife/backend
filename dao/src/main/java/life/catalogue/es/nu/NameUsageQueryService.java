@@ -1,6 +1,5 @@
 package life.catalogue.es.nu;
 
-import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsNameUsage;
@@ -10,14 +9,17 @@ import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.response.EsMultiResponse;
 import life.catalogue.es.response.EsResponse;
+
+import java.io.IOException;
+import java.util.List;
+
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.List;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Base class of {@link NameUsageSearchServiceEs} and {@link NameUsageSuggestionServiceEs}.

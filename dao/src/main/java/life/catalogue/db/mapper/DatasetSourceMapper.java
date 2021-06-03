@@ -20,11 +20,8 @@ public interface DatasetSourceMapper {
    * @param datasetKey the project the source dataset belongs to
    * @param d dataset to store as the projects source
    */
-  default void create(int datasetKey, Dataset d){
-    createInternal(new DatasetWithProjectKey(datasetKey, d));
-  }
+  void create(@Param("datasetKey") int datasetKey, @Param("obj") Dataset d);
 
-  void createInternal(DatasetWithProjectKey d);
 
   /**
    * Retrieves a single released source dataset from the archive
@@ -57,16 +54,5 @@ public interface DatasetSourceMapper {
    * @param datasetKey the release dataset key. No project keys allowed!
    */
   int deleteByRelease(@Param("datasetKey") int datasetKey);
-
-
-  class DatasetWithProjectKey {
-    public final int datasetKey;
-    public final Dataset dataset;
-
-    public DatasetWithProjectKey(int projectKey, Dataset dataset) {
-      this.datasetKey = projectKey;
-      this.dataset = dataset;
-    }
-  }
 
 }

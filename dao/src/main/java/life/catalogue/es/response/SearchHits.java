@@ -1,9 +1,9 @@
 package life.catalogue.es.response;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-
-import java.util.List;
 
 /**
  * The "hits" object within the ES search response object

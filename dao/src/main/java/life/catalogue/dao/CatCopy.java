@@ -1,13 +1,10 @@
 package life.catalogue.dao;
 
-import com.ibm.icu.text.Transliterator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.mapper.*;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +12,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+
+import com.ibm.icu.text.Transliterator;
 
 public class CatCopy {
   

@@ -1,7 +1,8 @@
 package life.catalogue.es.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.search.FacetValue;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The Elasticsearch response object corresponding to the {@link FacetValue} class.

@@ -67,7 +67,7 @@ public abstract class AbstractProjectCopy implements Runnable {
     d.setGbifPublisherKey(null);
     d.setDoi(null);
     // use the current attempt which gets written into the dataset table only at the end of the (successful) job
-    d.setImportAttempt(metrics.getAttempt());
+    d.setAttempt(metrics.getAttempt());
   }
 
   public int getDatasetKey() {

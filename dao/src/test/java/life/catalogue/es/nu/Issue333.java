@@ -6,13 +6,14 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsReadTestBase;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

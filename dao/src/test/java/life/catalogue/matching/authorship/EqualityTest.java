@@ -1,6 +1,7 @@
 package life.catalogue.matching.authorship;
 
 import life.catalogue.matching.Equality;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

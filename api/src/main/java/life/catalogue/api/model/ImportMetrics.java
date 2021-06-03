@@ -1,8 +1,7 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.*;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -11,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 
@@ -60,24 +61,24 @@ public class ImportMetrics implements ImportAttempt {
   private Integer typeMaterialCount;
   private Integer vernacularCount;
 
-  private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
-  private Map<Rank, Integer> extinctTaxaByRankCount = Maps.newHashMap();
-  private Map<IgnoreReason, Integer> ignoredByReasonCount = Maps.newHashMap();
-  private Map<Issue, Integer> issuesCount = Maps.newHashMap();
-  private Map<MediaType, Integer> mediaByTypeCount = Maps.newHashMap();
-  private Map<NomCode, Integer> namesByCodeCount = Maps.newHashMap();
-  private Map<Rank, Integer> namesByRankCount = Maps.newHashMap();
-  private Map<NomStatus, Integer> namesByStatusCount = Maps.newHashMap();
-  private Map<NameType, Integer> namesByTypeCount = Maps.newHashMap();
-  private Map<NomRelType, Integer> nameRelationsByTypeCount = Maps.newHashMap();
-  private Map<SpeciesInteractionType, Integer> speciesInteractionsByTypeCount = Maps.newHashMap();
-  private Map<Rank, Integer> synonymsByRankCount = Maps.newHashMap();
-  private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
-  private Map<TaxonConceptRelType, Integer> taxonConceptRelationsByTypeCount = Maps.newHashMap();
-  private Map<TypeStatus, Integer> typeMaterialByStatusCount = Maps.newHashMap();
-  private Map<TaxonomicStatus, Integer> usagesByStatusCount = Maps.newHashMap();
-  private Map<Origin, Integer> usagesByOriginCount = Maps.newHashMap();
-  private Map<String, Integer> vernacularsByLanguageCount = Maps.newHashMap();
+  private Map<Gazetteer, Integer> distributionsByGazetteerCount = new HashMap<>();
+  private Map<Rank, Integer> extinctTaxaByRankCount = new HashMap<>();
+  private Map<IgnoreReason, Integer> ignoredByReasonCount = new HashMap<>();
+  private Map<Issue, Integer> issuesCount = new HashMap<>();
+  private Map<MediaType, Integer> mediaByTypeCount = new HashMap<>();
+  private Map<NomCode, Integer> namesByCodeCount = new HashMap<>();
+  private Map<Rank, Integer> namesByRankCount = new HashMap<>();
+  private Map<NomStatus, Integer> namesByStatusCount = new HashMap<>();
+  private Map<NameType, Integer> namesByTypeCount = new HashMap<>();
+  private Map<NomRelType, Integer> nameRelationsByTypeCount = new HashMap<>();
+  private Map<SpeciesInteractionType, Integer> speciesInteractionsByTypeCount = new HashMap<>();
+  private Map<Rank, Integer> synonymsByRankCount = new HashMap<>();
+  private Map<Rank, Integer> taxaByRankCount = new HashMap<>();
+  private Map<TaxonConceptRelType, Integer> taxonConceptRelationsByTypeCount = new HashMap<>();
+  private Map<TypeStatus, Integer> typeMaterialByStatusCount = new HashMap<>();
+  private Map<TaxonomicStatus, Integer> usagesByStatusCount = new HashMap<>();
+  private Map<Origin, Integer> usagesByOriginCount = new HashMap<>();
+  private Map<String, Integer> vernacularsByLanguageCount = new HashMap<>();
 
   public Integer getDatasetKey() {
     return datasetKey;

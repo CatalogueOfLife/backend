@@ -1,6 +1,5 @@
 package life.catalogue.matching.decision;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetScopedEntity;
@@ -9,13 +8,16 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.db.mapper.BaseDecisionMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
+
+import java.util.List;
+import java.util.Objects;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Objects;
+import com.google.common.base.Preconditions;
 
 public abstract class RematcherBase<
     T extends DatasetScopedEntity<Integer>,

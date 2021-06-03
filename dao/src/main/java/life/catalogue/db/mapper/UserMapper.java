@@ -4,9 +4,10 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.User;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 
 /**
  * Mapper for users.

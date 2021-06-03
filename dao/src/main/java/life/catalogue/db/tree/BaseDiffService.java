@@ -1,14 +1,9 @@
 package life.catalogue.db.tree;
 
-import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ImportAttempt;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.dao.FileMetricsDao;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +14,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 public abstract class BaseDiffService<K> {
   private static final Logger LOG = LoggerFactory.getLogger(BaseDiffService.class);

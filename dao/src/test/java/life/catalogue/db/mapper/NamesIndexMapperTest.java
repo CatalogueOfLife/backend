@@ -3,9 +3,10 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.db.TestDataRule;
-import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

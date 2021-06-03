@@ -3,10 +3,11 @@ package life.catalogue.dao;
 import java.io.File;
 import java.io.IOException;
 
-import com.google.common.io.Files;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.io.Files;
 
 
 public class TreeRepoRule extends ExternalResource {

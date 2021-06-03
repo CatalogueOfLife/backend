@@ -5,17 +5,18 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.tree.TextTreePrinter;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DAO giving read and write access to potentially large text trees and name lists

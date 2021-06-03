@@ -1,6 +1,5 @@
 package life.catalogue.tools;
 
-import com.zaxxer.hikari.HikariDataSource;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -17,12 +16,15 @@ import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.RematcherBase;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class UpdateReleaseTool implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(UpdateReleaseTool.class);

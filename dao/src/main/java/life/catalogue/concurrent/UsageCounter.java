@@ -4,6 +4,7 @@ import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.RankedID;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.TaxonomicStatus;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.HashMap;

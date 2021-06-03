@@ -1,17 +1,19 @@
 package life.catalogue.db.tree;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.ImportAttempt;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.db.mapper.SectorImportMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.util.List;
 import java.util.function.Supplier;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
+import com.google.common.collect.Lists;
 
 public class SectorDiffService extends BaseDiffService<DSID<Integer>> {
 

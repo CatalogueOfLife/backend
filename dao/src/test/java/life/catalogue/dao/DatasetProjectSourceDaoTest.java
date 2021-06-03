@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.db.TestDataRule;
+
 import org.junit.Test;
 
 public class DatasetProjectSourceDaoTest extends DaoTestBase {

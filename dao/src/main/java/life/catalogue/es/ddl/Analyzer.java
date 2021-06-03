@@ -1,8 +1,8 @@
 package life.catalogue.es.ddl;
 
-import com.google.common.base.Preconditions;
-
 import java.util.Set;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Symbolic constants for the Elasticsearch analyzers defined within the CoL document store (see es-settings.json in src/main/resources).

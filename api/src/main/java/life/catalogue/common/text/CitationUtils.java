@@ -157,7 +157,7 @@ public class CitationUtils {
     }
 
     public Integer getImportAttempt() {
-      return d.getImportAttempt();
+      return d.getAttempt();
     }
 
     public DOI getDoi() {

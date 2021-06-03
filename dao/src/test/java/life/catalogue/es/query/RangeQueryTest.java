@@ -1,15 +1,14 @@
 package life.catalogue.es.query;
 
-import java.util.List;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
+
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.gbif.nameparser.api.Rank.KINGDOM;
-import static org.gbif.nameparser.api.Rank.PHYLUM;
-import static org.gbif.nameparser.api.Rank.SPECIES;
-import static org.gbif.nameparser.api.Rank.SUBSPECIES;
+import static org.gbif.nameparser.api.Rank.*;
 import static org.junit.Assert.assertEquals;
 
 public class RangeQueryTest extends EsReadTestBase {

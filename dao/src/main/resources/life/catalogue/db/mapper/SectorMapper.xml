@@ -202,8 +202,8 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO sector (id, dataset_key, sync_attempt, dataset_import_attempt, target_id, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
-    SELECT s.id, #{newDatasetKey}, sync_attempt, dataset_import_attempt, coalesce(<if test="mapIds">m.id2,</if>s.target_id), <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
+    INSERT INTO sector (id, dataset_key, sync_attempt, dataset_attempt, target_id, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
+    SELECT s.id, #{newDatasetKey}, sync_attempt, dataset_attempt, coalesce(<if test="mapIds">m.id2,</if>s.target_id), <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
     FROM sector s
     <if test="mapIds">
       LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=s.target_id
@@ -290,7 +290,7 @@
 
   <update id="updateLastSync" parameterType="integer">
     UPDATE sector s
-    SET sync_attempt = #{attempt}, dataset_import_attempt = d.import_attempt
+    SET sync_attempt = #{attempt}, dataset_attempt = d.attempt
     FROM dataset d
     WHERE s.id = #{key.id} AND s.dataset_key=#{key.datasetKey}
       AND d.key=s.subject_dataset_key

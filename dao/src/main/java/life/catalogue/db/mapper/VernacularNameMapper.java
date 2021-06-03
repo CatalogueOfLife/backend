@@ -4,9 +4,10 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.VernacularNameUsage;
 import life.catalogue.api.search.VernacularSearchRequest;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 
 public interface VernacularNameMapper extends TaxonExtensionMapper<VernacularName> {
 

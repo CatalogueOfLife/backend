@@ -6,9 +6,10 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.es.query.Query;
-import org.junit.Test;
 
 import java.util.Set;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
 

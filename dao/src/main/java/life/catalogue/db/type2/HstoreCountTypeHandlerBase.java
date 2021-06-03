@@ -1,23 +1,23 @@
 package life.catalogue.db.type2;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Functions;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-import org.postgresql.util.HStoreConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
+import org.postgresql.util.HStoreConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Functions;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Ordering;
 
 /**
  * A mybatis base type handler that translates from the generic java.util.Map<Enum, Integer> to the
@@ -52,7 +52,7 @@ abstract class HstoreCountTypeHandlerBase<KEY extends Comparable> extends BaseTy
   }
   
   private Map<KEY, Integer> fromString(String hstring) {
-    HashMap<KEY, Integer> typedMap = Maps.newHashMap();
+    HashMap<KEY, Integer> typedMap = new HashMap<>();
     if (!Strings.isNullOrEmpty(hstring)) {
       Map<String, String> rawMap = HStoreConverter.fromString(hstring);
       for (Map.Entry<String, String> entry : rawMap.entrySet()) {

@@ -1,18 +1,11 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -23,6 +16,14 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Metadata about a dataset which can be archived
  */
@@ -30,6 +31,7 @@ public class Dataset extends DataEntity<Integer> {
   public static final Map<String, Object> NULL_TYPES;
   // properties which are human mediated and can be patched
   public static final List<PropertyDescriptor> PATCH_PROPS;
+
   static {
     try {
       Set<String> exclude = Set.of(
@@ -48,8 +50,8 @@ public class Dataset extends DataEntity<Integer> {
         "aliasOrTitle"
       );
       PATCH_PROPS = Arrays.stream(Introspector.getBeanInfo(Dataset.class).getPropertyDescriptors())
-        .filter(p -> !exclude.contains(p.getName()) && p.getWriteMethod() != null)
-        .collect(Collectors.toUnmodifiableList());
+                          .filter(p -> !exclude.contains(p.getName()) && p.getWriteMethod() != null)
+                          .collect(Collectors.toUnmodifiableList());
 
       Map<String, Object> nullTypes = new HashMap<>();
       for (PropertyDescriptor p : PATCH_PROPS) {
@@ -63,7 +65,7 @@ public class Dataset extends DataEntity<Integer> {
         } else if (p.getPropertyType().equals(Agent.class)) {
           nullType = new Agent("null");
         } else if (p.getPropertyType().equals(LocalDate.class)) {
-          nullType = LocalDate.of(1900,1,1);
+          nullType = LocalDate.of(1900, 1, 1);
         }
         if (nullType != null) {
           nullTypes.put(p.getName(), nullType);
@@ -84,7 +86,7 @@ public class Dataset extends DataEntity<Integer> {
   private DatasetType type;
   @NotNull
   private DatasetOrigin origin;
-  private Integer importAttempt;
+  private Integer attempt;
   private LocalDateTime imported; // from import table
   private LocalDateTime deleted;
   private UUID gbifKey;
@@ -95,8 +97,9 @@ public class Dataset extends DataEntity<Integer> {
 
   // human metadata
   private DOI doi;
-  private Map<String, String> identifier;
-  @NotNull @NotBlank
+  private Map<String, String> identifier = new HashMap<>();
+  @NotNull
+  @NotBlank
   private String title;
   private String alias;
   private String description;
@@ -112,9 +115,11 @@ public class Dataset extends DataEntity<Integer> {
   private String geographicScope;
   private String taxonomicScope;
   private String temporalScope;
-  @Min(1) @Max(5)
+  @Min(1)
+  @Max(5)
   private Integer confidence;
-  @Min(0) @Max(100)
+  @Min(0)
+  @Max(100)
   private Integer completeness;
   private License license;
   @AbsoluteURI
@@ -133,7 +138,7 @@ public class Dataset extends DataEntity<Integer> {
     this.privat = other.privat;
     this.type = other.type;
     this.origin = other.origin;
-    this.importAttempt = other.importAttempt;
+    this.attempt = other.attempt;
     this.imported = other.imported;
     this.deleted = other.deleted;
     this.gbifKey = other.gbifKey;
@@ -176,12 +181,13 @@ public class Dataset extends DataEntity<Integer> {
    * LocalDate: 1900-01-01
    * Person: ???
    * URI: ???
+   *
    * @param patch
    */
   public void applyPatch(Dataset patch) {
     // copy all properties that are not null
     try {
-      for (PropertyDescriptor prop : PATCH_PROPS){
+      for (PropertyDescriptor prop : PATCH_PROPS) {
         Object val = prop.getReadMethod().invoke(patch);
         if (val != null) {
           if (NULL_TYPES.containsKey(prop.getName())) {
@@ -200,15 +206,15 @@ public class Dataset extends DataEntity<Integer> {
   public Integer getKey() {
     return key;
   }
-  
+
   public DatasetType getType() {
     return type;
   }
-  
+
   public void setType(DatasetType type) {
     this.type = type;
   }
-  
+
   @Override
   public void setKey(Integer key) {
     this.key = key;
@@ -225,12 +231,12 @@ public class Dataset extends DataEntity<Integer> {
   /**
    * @return the last successful import attempt that created the current data in the data partitions
    */
-  public Integer getImportAttempt() {
-    return importAttempt;
+  public Integer getAttempt() {
+    return attempt;
   }
 
-  public void setImportAttempt(Integer importAttempt) {
-    this.importAttempt = importAttempt;
+  public void setAttempt(Integer attempt) {
+    this.attempt = attempt;
   }
 
   public DOI getDoi() {
@@ -244,7 +250,7 @@ public class Dataset extends DataEntity<Integer> {
   public String getTitle() {
     return title;
   }
-  
+
   public void setTitle(String title) {
     this.title = title;
   }
@@ -252,7 +258,7 @@ public class Dataset extends DataEntity<Integer> {
   public String getDescription() {
     return description;
   }
-  
+
   public void setDescription(String description) {
     this.description = description;
   }
@@ -517,17 +523,51 @@ public class Dataset extends DataEntity<Integer> {
     if (!(o instanceof Dataset)) return false;
     if (!super.equals(o)) return false;
     Dataset dataset = (Dataset) o;
-    return privat == dataset.privat && Objects.equals(key, dataset.key) && Objects.equals(sourceKey, dataset.sourceKey) && type == dataset.type && origin == dataset.origin && Objects.equals(importAttempt, dataset.importAttempt) && Objects.equals(imported, dataset.imported) && Objects.equals(deleted, dataset.deleted) && Objects.equals(gbifKey, dataset.gbifKey) && Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) && Objects.equals(size, dataset.size) && Objects.equals(notes, dataset.notes) && Objects.equals(doi, dataset.doi) && Objects.equals(identifier, dataset.identifier) && Objects.equals(title, dataset.title) && Objects.equals(alias, dataset.alias) && Objects.equals(description, dataset.description) && Objects.equals(issued, dataset.issued) && Objects.equals(version, dataset.version) && Objects.equals(issn, dataset.issn) && Objects.equals(contact, dataset.contact) && Objects.equals(creator, dataset.creator) && Objects.equals(editor, dataset.editor) && Objects.equals(publisher, dataset.publisher) && Objects.equals(contributor, dataset.contributor) && Objects.equals(distributor, dataset.distributor) && Objects.equals(geographicScope, dataset.geographicScope) && Objects.equals(taxonomicScope, dataset.taxonomicScope) && Objects.equals(temporalScope, dataset.temporalScope) && Objects.equals(confidence, dataset.confidence) && Objects.equals(completeness, dataset.completeness) && license == dataset.license && Objects.equals(url, dataset.url) && Objects.equals(logo, dataset.logo) && Objects.equals(source, dataset.source);
+    return privat == dataset.privat
+           && Objects.equals(key, dataset.key)
+           && Objects.equals(sourceKey, dataset.sourceKey)
+           && type == dataset.type
+           && origin == dataset.origin
+           && Objects.equals(attempt, dataset.attempt)
+           && Objects.equals(imported, dataset.imported)
+           && Objects.equals(deleted, dataset.deleted)
+           && Objects.equals(gbifKey, dataset.gbifKey)
+           && Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey)
+           && Objects.equals(size, dataset.size)
+           && Objects.equals(notes, dataset.notes)
+           && Objects.equals(doi, dataset.doi)
+           && Objects.equals(identifier, dataset.identifier)
+           && Objects.equals(title, dataset.title)
+           && Objects.equals(alias, dataset.alias)
+           && Objects.equals(description, dataset.description)
+           && Objects.equals(issued, dataset.issued)
+           && Objects.equals(version, dataset.version)
+           && Objects.equals(issn, dataset.issn)
+           && Objects.equals(contact, dataset.contact)
+           && Objects.equals(creator, dataset.creator)
+           && Objects.equals(editor, dataset.editor)
+           && Objects.equals(publisher, dataset.publisher)
+           && Objects.equals(contributor, dataset.contributor)
+           && Objects.equals(distributor, dataset.distributor)
+           && Objects.equals(geographicScope, dataset.geographicScope)
+           && Objects.equals(taxonomicScope, dataset.taxonomicScope)
+           && Objects.equals(temporalScope, dataset.temporalScope)
+           && Objects.equals(confidence, dataset.confidence)
+           && Objects.equals(completeness, dataset.completeness)
+           && license == dataset.license
+           && Objects.equals(url, dataset.url)
+           && Objects.equals(logo, dataset.logo)
+           && Objects.equals(source, dataset.source);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, importAttempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes, doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, distributor, geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, source);
+    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes, doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, distributor, geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, source);
   }
 
   @Override
   public String toString() {
-    return "Dataset " + key + ": " + importAttempt;
+    return "Dataset " + key + ": " + attempt;
   }
 
 }

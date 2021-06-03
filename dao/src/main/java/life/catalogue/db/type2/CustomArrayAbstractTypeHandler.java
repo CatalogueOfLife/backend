@@ -12,12 +12,12 @@
  */
 package life.catalogue.db.type2;
 
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
 
 /**
  * Stores object lists as custom type arrays in postgres.

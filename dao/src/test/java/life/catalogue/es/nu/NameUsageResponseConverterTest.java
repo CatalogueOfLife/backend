@@ -1,10 +1,11 @@
 package life.catalogue.es.nu;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.math.BigInteger;
+
+import org.junit.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.assertEquals;
 

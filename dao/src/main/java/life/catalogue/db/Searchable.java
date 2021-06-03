@@ -1,10 +1,11 @@
 package life.catalogue.db;
 
 import life.catalogue.api.model.Page;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.cursor.Cursor;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
 
 /**
  * @param <T> content type

@@ -1,17 +1,19 @@
 package life.catalogue.es.nu;
 
-import com.google.common.base.Charsets;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.*;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.function.Consumer;
+
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Charsets;
 
 public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   

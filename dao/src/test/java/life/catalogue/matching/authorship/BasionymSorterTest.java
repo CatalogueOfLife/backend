@@ -1,16 +1,18 @@
 package life.catalogue.matching.authorship;
 
+import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.Name;
+import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.parser.NameParser;
+
+import org.gbif.nameparser.api.Rank;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.Name;
-import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.parser.NameParser;
-import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -221,7 +223,7 @@ public class BasionymSorterTest {
 
   @Test
   public void testAtrocincta() throws Exception {
-    List<Name> names = Lists.newArrayList();
+    List<Name> names = new ArrayList<>();
 
     names.add(parse("Anthophora atrocincta Lepeletier, 1841", Rank.SPECIES));
     names.add(parse("Amegilla atrocincta (Lepeletier)", Rank.SPECIES));
@@ -236,7 +238,7 @@ public class BasionymSorterTest {
 
   @Test
   public void testPlumipes() throws Exception {
-    List<Name> names = Lists.newArrayList();
+    List<Name> names = new ArrayList<>();
 
     names.add(parse("Anthophora plumipes (Fabricius)", Rank.SPECIES));
     names.add(parse("Apis plumipes Fabricius, 1781", Rank.SPECIES));
