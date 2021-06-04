@@ -121,4 +121,25 @@
     WHERE dataset_key = #{datasetKey}
   </delete>
 
+
+
+  <select id="listRelease" resultMap="citationResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM dataset_source_citation c
+    WHERE dataset_key = #{datasetKey} AND release_key = #{releaseKey}
+    ORDER BY year, title
+  </select>
+
+  <insert id="createRelease" parameterType="map">
+    INSERT INTO dataset_source_citation (release_key, dataset_key, <include refid="COLS"/>)
+    SELECT #{releaseKey}, <include refid="SELECT"/>
+    FROM dataset_archive_citation c
+    WHERE dataset_key = #{datasetKey} and attempt=#{attempt}
+  </insert>
+
+  <delete id="deleteRelease" parameterType="map">
+    DELETE FROM dataset_source_citation
+    WHERE dataset_key = #{datasetKey} AND release_key = #{releaseKey}
+  </delete>
+
 </mapper>

@@ -41,13 +41,13 @@ public interface CitationMapper {
   /**
    * Copies the source citations of a given project source into the source archive.
    * @param releaseKey dataset key of the release to copy to
-   * @param key source dataset key the citations belong to
+   * @param datasetKey source dataset key the citations belong to
    * @param attempt import attempt for source dataset specifying exact version to archive
    */
-  void createRelease(@Param("releaseKey") int releaseKey, @Param("key") int key, @Param("attempt") int attempt);
+  void createRelease(@Param("datasetKey") int datasetKey, @Param("releaseKey") int releaseKey, @Param("attempt") int attempt);
 
-  List<Citation> listRelease(@Param("datasetKey") int datasetKey, @Param("key") int key);
+  List<Citation> listRelease(@Param("datasetKey") int datasetKey, @Param("releaseKey") int releaseKey);
 
-  void deleteRelease(@Param("datasetKey") int datasetKey, @Param("key") int key);
+  void deleteRelease(@Param("datasetKey") int datasetKey, @Param("releaseKey") int releaseKey);
 
 }

@@ -5,6 +5,8 @@ import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
 
+import life.catalogue.api.model.DatasetTest;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.TestDataRule;
 
 import org.junit.Test;
@@ -65,4 +67,37 @@ public class CitationMapperTest extends MapperTestBase<CitationMapper> {
     assertTrue(mapper().listArchive(datasetKey, attempt).isEmpty());
   }
 
+  @Test
+  public void release() throws Exception {
+    for (int id = 1; id<5; id++) {
+      Citation c = CitationTest.create();
+      c.setId("cit"+id);
+      c.setYear("198"+id);
+      mapper().create(datasetKey, c);
+    }
+
+    final int attempt = 3;
+    dmapper().updateLastImport(datasetKey, attempt);
+    mapper().createArchive(datasetKey);
+
+    Dataset rel = DatasetTest.generateTestDataset();
+    rel.setSourceKey(datasetKey);
+    rel.setOrigin(DatasetOrigin.RELEASED);
+    TestEntityGenerator.setUser(rel);
+    dmapper().create(rel);
+    commit();
+
+    // add source to
+    DatasetSourceMapper dcm = mapper(DatasetSourceMapper.class);
+    Dataset src = dmapper().get(datasetKey);
+    dcm.create(rel.getKey(), src);
+
+    mapper().createRelease(datasetKey, rel.getKey(), attempt);
+    var cites = mapper().listRelease(datasetKey, rel.getKey());
+    assertEquals(4, cites.size());
+
+    Dataset d = dcm.getReleaseSource(datasetKey, rel.getKey());
+    assertEquals(cites, d.getSource());
+
+  }
 }

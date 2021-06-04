@@ -14,10 +14,10 @@ import org.apache.ibatis.annotations.Param;
 public interface DatasetSourceMapper {
 
   /**
-   * Copies a given dataset into the project archive.
-   * The archive requires the source datasets key and project datasetKey combined to be unique.
+   * Copies a given dataset into the release source archive.
+   * The archive requires the source datasets key and release datasetKey combination to be unique.
    *
-   * @param datasetKey the project the source dataset belongs to
+   * @param datasetKey the release the source dataset belongs to
    * @param d dataset to store as the projects source
    */
   void create(@Param("datasetKey") int datasetKey, @Param("obj") Dataset d);

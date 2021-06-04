@@ -21,6 +21,11 @@
     dataset_source d LEFT JOIN dataset_import di ON d.attempt=di.attempt AND d.key=di.dataset_key
   </sql>
 
+  <resultMap id="datasetSourceResultMap" type="Dataset" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+    <id property="key" column="key"/>
+    <collection property="source" ofType="Citation" column="{datasetKey=key, releaseKey=dataset_key}" select="life.catalogue.db.mapper.CitationMapper.listRelease" />
+  </resultMap>
+
   <select id="listProjectSources" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     WITH src AS (
       SELECT s.subject_dataset_key AS key, max(s.dataset_attempt) AS attempt
@@ -48,7 +53,7 @@
     ORDER BY 1
   </select>
 
-  <select id="listReleaseSources" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="listReleaseSources" parameterType="map" resultMap="datasetSourceResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.dataset_key = #{datasetKey}
@@ -78,8 +83,8 @@
     WHERE src.attempt = d.attempt OR src.attempt IS NULL
   </select>
 
-  <select id="getReleaseSource" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
-    SELECT <include refid="SELECT"/>
+  <select id="getReleaseSource" resultMap="datasetSourceResultMap">
+    SELECT d.dataset_key, <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
   </select>
