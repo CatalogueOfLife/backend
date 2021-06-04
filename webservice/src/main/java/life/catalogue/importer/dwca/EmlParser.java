@@ -2,8 +2,6 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.Organisation;
-import life.catalogue.api.model.Person;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.parser.CountryParser;

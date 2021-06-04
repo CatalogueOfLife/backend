@@ -665,7 +665,7 @@ CREATE TABLE dataset (
   title TEXT NOT NULL,
   alias TEXT,
   description TEXT,
-  issued DATE,
+  issued TEXT,
   version TEXT,
   issn TEXT,
   contact agent,
@@ -738,7 +738,8 @@ CREATE TABLE dataset_citation (
   publisher agent,
   version TEXT,
   isbn TEXT,
-  issn TEXT
+  issn TEXT,
+  url TEXT
 );
 CREATE INDEX ON dataset_citation (dataset_key);
 
@@ -753,14 +754,24 @@ ALTER TABLE dataset_archive
   DROP COLUMN settings;
 ALTER TABLE dataset_archive ADD FOREIGN KEY (key) REFERENCES dataset;
 
+CREATE TABLE dataset_archive_citation (LIKE dataset_citation INCLUDING INDEXES);
+ALTER TABLE dataset_archive_citation
+  ADD COLUMN attempt INTEGER NOT NULL;
+CREATE INDEX ON dataset_archive_citation (dataset_key, attempt);
+
 CREATE TABLE dataset_source (LIKE dataset_archive INCLUDING INDEXES);
 ALTER TABLE dataset_source
   ADD COLUMN dataset_key INTEGER REFERENCES dataset;
 ALTER TABLE dataset_source ADD PRIMARY KEY (key, dataset_key);
 ALTER TABLE dataset_source ADD FOREIGN KEY (key) REFERENCES dataset;
 
+CREATE TABLE dataset_source_citation (LIKE dataset_citation INCLUDING INDEXES);
+ALTER TABLE dataset_source_citation
+  ADD COLUMN release_key INTEGER REFERENCES dataset;
+CREATE INDEX ON dataset_source_citation (dataset_key, release_key);
+
 -- finally we also assign the primary key of the archive which is different from dataset_source - hence only here
-ALTER TABLE dataset_archive ALTER COLUMN attempt set not null;
+ALTER TABLE dataset_archive ALTER COLUMN attempt SET NOT NULL;
 ALTER TABLE dataset_archive ADD PRIMARY KEY (key, attempt);
 
 -- patches must allow nulls everywhere!

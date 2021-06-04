@@ -9,6 +9,7 @@ public interface DatasetArchiveMapper extends DatasetProcessable<Dataset> {
 
   /**
    * Copies a given dataset key into the archive.
+   * Note that this can be done only once as the datasetKey & attempt must be unique.
    * @param key current dataset key to archive
    */
   void create(@Param("key") int key);

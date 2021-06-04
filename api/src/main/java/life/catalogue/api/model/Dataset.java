@@ -1,5 +1,13 @@
 package life.catalogue.api.model;
 
+import de.undercouch.citeproc.csl.CSLItemData;
+
+import de.undercouch.citeproc.csl.CSLItemDataBuilder;
+
+import de.undercouch.citeproc.csl.CSLName;
+
+import de.undercouch.citeproc.csl.CSLNameBuilder;
+
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -9,6 +17,8 @@ import life.catalogue.api.vocab.License;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDate;
@@ -23,6 +33,9 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.util.YamlUtils;
 
 /**
  * Metadata about a dataset which can be archived
@@ -103,7 +116,7 @@ public class Dataset extends DataEntity<Integer> {
   private String title;
   private String alias;
   private String description;
-  private LocalDate issued;
+  private FuzzyDate issued;
   private String version;
   private String issn;
   private Agent contact;
@@ -126,7 +139,7 @@ public class Dataset extends DataEntity<Integer> {
   private URI url;
   @AbsoluteURI
   private URI logo;
-  private List<Citation> source;
+  private List<Citation> source = new ArrayList<>();
 
   public Dataset() {
   }
@@ -170,6 +183,14 @@ public class Dataset extends DataEntity<Integer> {
     this.source = other.source;
   }
 
+  public static Dataset read(InputStream in){
+    try {
+      return YamlUtils.read(Dataset.class, in);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Applies a dataset metadata patch, setting all non null fields.
    * In order for a patch to specify that a certain field should become NULL, we need to define other values than null which means "do not patch".
@@ -200,6 +221,32 @@ public class Dataset extends DataEntity<Integer> {
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public CSLItemData toCSL() {
+    CSLItemDataBuilder builder = new CSLItemDataBuilder();
+    builder
+      .shortTitle(alias)
+      .title(title)
+      .version(version)
+      .author(Citation.toNames(creator))
+      .editor(Citation.toNames(editor))
+      .ISSN(issn);
+    if (doi != null) {
+      builder.DOI(doi.toString());
+    }
+    if (url != null) {
+      builder.URL(url.toString());
+    }
+    if (issued != null) {
+      builder.issued(issued.toCSLDate());
+    }
+    if (publisher != null && publisher.getOrganisation() != null) {
+      builder.publisher(publisher.getOrganisation());
+      builder.publisherPlace(publisher.getAddress());
+    }
+    // no license, distributor, contributor
+    return builder.build();
   }
 
   @Override
@@ -477,11 +524,11 @@ public class Dataset extends DataEntity<Integer> {
     this.version = version;
   }
 
-  public LocalDate getIssued() {
+  public FuzzyDate getIssued() {
     return issued;
   }
 
-  public void setIssued(LocalDate issued) {
+  public void setIssued(FuzzyDate issued) {
     this.issued = issued;
   }
 

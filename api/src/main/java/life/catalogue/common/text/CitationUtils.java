@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Setting;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +13,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import life.catalogue.common.date.FuzzyDate;
 
 public class CitationUtils {
 
@@ -96,7 +97,7 @@ public class CitationUtils {
       return d.getVersion();
     }
 
-    public LocalDate getIssued() {
+    public FuzzyDate getIssued() {
       return d.getIssued();
     }
 
@@ -128,7 +129,7 @@ public class CitationUtils {
       return d.getTemporalScope();
     }
 
-    public LocalDate getReleased() {
+    public FuzzyDate getReleased() {
       return d.getIssued();
     }
 
@@ -249,38 +250,4 @@ public class CitationUtils {
     return x;
   }
 
-  @VisibleForTesting
-  protected static String buildCitation(Dataset d){
-    // ${d.authorsAndEditors?join(", ")}, eds. (${d.released.format('yyyy')}). ${d.title}, ${d.released.format('yyyy-MM-dd')}. Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.
-    StringBuilder sb = new StringBuilder();
-    boolean isEditors = false;
-    List<Agent> people = Collections.emptyList();
-    if (d.getEditor() != null && !d.getEditor().isEmpty()) {
-      people = d.getEditor();
-      isEditors = true;
-    } else if (d.getCreator() != null && !d.getCreator().isEmpty()) {
-      people = d.getCreator();
-    }
-    for (Agent au : people) {
-      if (sb.length() > 1) {
-        sb.append(", ");
-      }
-      sb.append(au.getName());
-    }
-    if (isEditors) {
-      sb.append(" (ed");
-      if (people.size()>1) {
-        sb.append("s");
-      }
-      sb.append(".)");
-    }
-    sb.append(" (")
-      .append(d.getIssued().getYear())
-      .append("). ")
-      .append(d.getTitle())
-      .append(", ")
-      .append(d.getIssued().toString())
-      .append(".");
-    return sb.toString();
-  }
 }

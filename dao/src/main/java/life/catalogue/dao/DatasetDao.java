@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.DatasetProcessable;
@@ -111,7 +112,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     d.setAlias("alias");
     d.setTitle("title");
     d.setOrigin(DatasetOrigin.MANAGED);
-    d.setIssued(LocalDate.now());
+    d.setIssued(FuzzyDate.now());
     d.setLogo(URI.create("https://gbif.org"));
     d.setUrl(d.getLogo());
     d.setCreated(LocalDateTime.now());
@@ -198,7 +199,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         delete(rk, user);
       }
     }
-
+    // remove source citations
+    session.getMapper(CitationMapper.class).delete(key);
     // remove decisions, sectors, estimates, dataset patches
     for (Class<DatasetProcessable<?>> mClass : new Class[]{SectorMapper.class, DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class}) {
       LOG.info("Delete {}s for dataset {}", mClass.getSimpleName().substring(0, mClass.getSimpleName().length() - 6), key);
@@ -281,13 +283,22 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected boolean createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
-    pullLogo(obj, null, user);
+    // persist source citations
+    if (obj.getSource() != null) {
+      var cm = session.getMapper(CitationMapper.class);
+      for (var c : obj.getSource()) {
+        cm.create(obj.getKey(), c);
+      }
+    }
+    // data partitions
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey(), obj.getOrigin());
       Partitioner.createManagedObjects(factory, obj.getKey());
     }
     session.commit();
     session.close();
+    // other non pg stuff
+    pullLogo(obj, null, user);
     bus.post(DatasetChanged.created(obj));
     return false;
   }
@@ -303,12 +314,25 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected boolean updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session, boolean keepSessionOpen) {
+    // persist source citations if they changed
+    if (!java.util.Objects.equals(old.getSource(), obj.getSource())) {
+      var cm = session.getMapper(CitationMapper.class);
+      // erase and recreate
+      cm.delete(obj.getKey());
+      if (obj.getSource() != null) {
+        for (var c : obj.getSource()) {
+          cm.create(obj.getKey(), c);
+        }
+      }
+    }
+    // data partitions
     if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
       // suspicious. Should there ever be a managed dataset without partitions?
       recreatePartition(obj.getKey(), obj.getOrigin());
     }
     session.commit();
     session.close();
+    // other non pg stuff
     pullLogo(obj, old, user);
     bus.post(DatasetChanged.changed(obj, old));
     if (obj.getDoi() != null && obj.getDoi().isCOL()) {

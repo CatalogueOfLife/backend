@@ -1,10 +1,9 @@
 package life.catalogue.common.csl;
 
-import de.undercouch.citeproc.bibtex.NameParser;
-import de.undercouch.citeproc.csl.CSLItemData;
+import life.catalogue.api.model.Citation;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,13 +13,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.Test;
+
+import de.undercouch.citeproc.bibtex.NameParser;
+import de.undercouch.citeproc.csl.CSLItemData;
+
 public class CslFormatterTest {
 
   @Test
   public void colStyles() throws Exception {
-    var d = DatasetNG.read(Resources.stream("metadata/col.yaml"));
+    var d = Dataset.read(Resources.stream("metadata/col.yaml"));
     CSLItemData csl = d.toCSL();
-    List<CSLItemData> sources = d.source.stream().map(DatasetNG.Citation::toCSL).collect(Collectors.toList());
+    List<CSLItemData> sources = d.getSource().stream().map(Citation::toCSL).collect(Collectors.toList());
 
     List<CslFormatter> styles = Arrays.stream(CslFormatter.STYLE.values()).map(s -> new CslFormatter(s, CslFormatter.FORMAT.TEXT)).collect(Collectors.toList());
     PrintWriter writer = new PrintWriter(System.out);

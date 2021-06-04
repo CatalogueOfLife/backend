@@ -6,6 +6,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 
+import life.catalogue.common.date.FuzzyDate;
+
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
@@ -57,7 +59,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     }
     d.setContact(Agent.parse("Hans Peter"));
     d.setPublisher(Agent.parse("Peter Publish"));
-    d.setIssued(LocalDate.now());
+    d.setIssued(FuzzyDate.now());
     d.setVersion("v123");
     d.setUrl(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
     d.setNotes("my notes");
@@ -116,7 +118,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset d2 = TestEntityGenerator.nullifyDate(mapper().get(d1.getKey()));
 
     assertEquals(d1.getContact(), d2.getContact());
-    printDiff(d1, d2);
     assertEquals(d1, d2);
   }
 

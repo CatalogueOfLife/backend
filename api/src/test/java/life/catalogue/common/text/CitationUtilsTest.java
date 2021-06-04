@@ -7,6 +7,8 @@ import life.catalogue.api.vocab.Datasets;
 import java.time.LocalDate;
 import java.util.*;
 
+import life.catalogue.common.date.FuzzyDate;
+
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -45,28 +47,6 @@ public class CitationUtilsTest {
     assertEquals("Miller F., Miller F., Miller F. (eds.)", CitationUtils.concatEditors(people(3)));
   }
 
-  @Test
-  public void buildCitation() throws Exception {
-    Dataset d = new Dataset();
-    d.setKey(Datasets.COL);
-    d.setTitle("Species 2000 & ITIS Catalogue of Life");
-    d.setEditor(Agent.parse(Lists.newArrayList("Roskov Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
-    d.setIssued(LocalDate.parse("2019-04-21"));
-    assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D. (eds.) (2019). Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
-      CitationUtils.buildCitation(d)
-    );
-
-    d.setCreator(d.getEditor());
-    d.setEditor(Collections.emptyList());
-    assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D. (2019). Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
-      CitationUtils.buildCitation(d)
-    );
-
-    d.setEditor(null);
-    assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D. (2019). Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
-      CitationUtils.buildCitation(d)
-    );
-  }
 
   @Test
   public void buildSourceCitation() throws Exception {
@@ -75,7 +55,7 @@ public class CitationUtilsTest {
     proj.setAlias("COL");
     proj.setTitle("Species 2000 & ITIS Catalogue of Life");
     proj.setEditor(people("Yuri", "Roskov", "Geoff", "Ower", "Thomas", "Orrell", "David", "Nicolson"));
-    proj.setIssued(LocalDate.parse("2019-04-21"));
+    proj.setIssued(FuzzyDate.of("2019-04-21"));
 
     Dataset d = new Dataset();
     d.setKey(1010);
@@ -83,7 +63,7 @@ public class CitationUtilsTest {
     d.setTitle("FishBase");
     d.setVersion("v2.0");
     d.setEditor(people("Rainer", "Froese", "David", "Pauly"));
-    d.setIssued(LocalDate.parse("2019-07-13"));
+    d.setIssued(FuzzyDate.of("2019-07-13"));
 
     assertEquals("Mama",
       CitationUtils.fromTemplate(d,proj, "Mama")

@@ -71,14 +71,21 @@ public class StringUtils {
   /**
    * Concatenates the given parts with a space, skipping any null or empty strings
    */
-  public static String concat(String... parts) {
+  public static String concatWS(String... parts) {
+    return concat(" ", parts);
+  }
+
+  /**
+   * Concatenates the given parts with a given delimiter, skipping any null or empty strings
+   */
+  public static String concat(String delimiter, String... parts) {
     if (parts == null)
       return null;
     StringBuilder sb = new StringBuilder();
     for (String p : parts) {
       if (!org.apache.commons.lang3.StringUtils.isBlank(p)) {
         if (sb.length() > 0) {
-          sb.append(" ");
+          sb.append(delimiter);
         }
         sb.append(p.trim());
       }

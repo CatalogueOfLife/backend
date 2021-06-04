@@ -2,6 +2,10 @@ package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import de.undercouch.citeproc.csl.CSLName;
+
+import de.undercouch.citeproc.csl.CSLNameBuilder;
+
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.util.RegexUtils;
 
@@ -177,6 +181,16 @@ public class Agent {
     this.note = note;
   }
 
+  @JsonIgnore
+  public boolean isPerson(){
+    return familyName != null || givenName != null;
+  }
+
+  @JsonIgnore
+  public boolean isOrganisation(){
+    return !isPerson() && organisation != null;
+  }
+
   public String getGivenName() {
     return givenName;
   }
@@ -210,6 +224,28 @@ public class Agent {
       }
     }
     return sb.toString();
+  }
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public String getAddress(){
+    if (city == null && state == null && country == null) return null;
+    return life.catalogue.common.text.StringUtils.concat(", ", city, state, getCountryTitle());
+  }
+
+  public CSLName toCSL() {
+    if (isPerson()) {
+      return new CSLNameBuilder()
+        .given(givenName)
+        .family(familyName)
+        .isInstitution(false)
+        .build();
+    } else if (isOrganisation()) {
+      return new CSLNameBuilder()
+        .family(organisation)
+        .isInstitution(true)
+        .build();
+    }
+    return null;
   }
 
   static String abbreviate(String givenName) {
@@ -277,6 +313,11 @@ public class Agent {
   @JsonIgnore
   public String getCountryCode() {
     return country == null ? null : country.getIso2LetterCode();
+  }
+
+  @JsonIgnore
+  public String getCountryTitle() {
+    return country == null ? null : country.getTitle();
   }
 
   public void setCountry(Country country) {

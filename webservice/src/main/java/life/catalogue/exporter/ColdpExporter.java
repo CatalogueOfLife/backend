@@ -131,7 +131,7 @@ public class ColdpExporter extends ArchiveExporter {
         writer.set(ColdpTerm.year, csl.getIssued().getDateParts()[0]);
       }
       writer.set(ColdpTerm.source, ObjectUtils.coalesce(csl.getContainerTitle(), csl.getCollectionTitle()));
-      writer.set(ColdpTerm.details, StringUtils.concat(csl.getVolume(), csl.getIssue(), csl.getPage(), r.getPage()));
+      writer.set(ColdpTerm.details, StringUtils.concatWS(csl.getVolume(), csl.getIssue(), csl.getPage(), r.getPage()));
       writer.set(ColdpTerm.doi, csl.getDOI());
       writer.set(ColdpTerm.link, r.getCsl().getURL());
       writer.set(ColdpTerm.remarks, ObjectUtils.coalesce(r.getRemarks(), csl.getNote()));

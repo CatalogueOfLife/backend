@@ -3,6 +3,8 @@ package life.catalogue.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.date.FuzzyDate;
+
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
@@ -403,11 +405,11 @@ public class DatasetWithSettings {
     dataset.setVersion(version);
   }
 
-  public LocalDate getIssued() {
+  public FuzzyDate getIssued() {
     return dataset.getIssued();
   }
 
-  public void setIssued(LocalDate issued) {
+  public void setIssued(FuzzyDate issued) {
     dataset.setIssued(issued);
   }
 

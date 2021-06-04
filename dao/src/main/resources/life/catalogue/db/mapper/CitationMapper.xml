@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.CitationMapper">
+
+  <sql id="SELECT">
+    c.dataset_key,
+    c.id,
+    c.type,
+    c.doi,
+    c.author,
+    c.editor,
+    c.title,
+    c.booktitle,
+    c.journal,
+    c.year,
+    c.month,
+    c.series,
+    c.volume,
+    c.number,
+    c.edition,
+    c.chapter,
+    c.pages,
+    c.publisher,
+    c.version,
+    c.isbn,
+    c.issn,
+    c.url
+  </sql>
+
+  <sql id="COLS">
+    id,
+    type,
+    doi,
+    author,
+    editor,
+    title,
+    booktitle,
+    journal,
+    year,
+    month,
+    series,
+    volume,
+    number,
+    edition,
+    chapter,
+    pages,
+    publisher,
+    version,
+    isbn,
+    issn,
+    url
+  </sql>
+
+  <sql id="PROPS">
+    #{obj.id},
+    #{obj.type},
+    #{obj.doi},
+    #{obj.author, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler}::agent[],
+    #{obj.editor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler}::agent[],
+    #{obj.title},
+    #{obj.booktitle},
+    #{obj.journal},
+    #{obj.year},
+    #{obj.month},
+    #{obj.series},
+    #{obj.volume},
+    #{obj.number},
+    #{obj.edition},
+    #{obj.chapter},
+    #{obj.pages},
+    #{obj.publisher, typeHandler=life.catalogue.db.type.AgentTypeHandler}::agent,
+    #{obj.version},
+    #{obj.isbn},
+    #{obj.issn},
+    #{obj.url}
+  </sql>
+
+  <resultMap id="citationResultMap" type="Citation" autoMapping="true">
+    <id property="id" column="id"/>
+    <result property="author" column="creator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
+    <result property="editor" column="editor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
+    <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
+  </resultMap>
+
+  <select id="list" resultMap="citationResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM dataset_citation c
+    WHERE dataset_key = #{datasetKey}
+    ORDER BY year, title
+  </select>
+
+  <insert id="create" parameterType="map">
+    INSERT INTO dataset_citation (dataset_key, <include refid="COLS"/>)
+    VALUES (#{datasetKey}, <include refid="PROPS"/>)
+  </insert>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM dataset_citation
+    WHERE dataset_key = #{datasetKey}
+  </delete>
+
+
+  <select id="listArchive" resultMap="citationResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM dataset_archive_citation c
+    WHERE dataset_key = #{datasetKey} AND attempt=#{attempt}
+    ORDER BY year, title
+  </select>
+
+  <insert id="createArchive" parameterType="map">
+    INSERT INTO dataset_archive_citation (attempt, dataset_key, <include refid="COLS"/>)
+    SELECT d.attempt, <include refid="SELECT"/>
+    FROM dataset_citation c join dataset d ON d.key=c.dataset_key
+    WHERE c.dataset_key = #{datasetKey}
+  </insert>
+
+  <delete id="deleteArchive" parameterType="map">
+    DELETE FROM dataset_archive_citation
+    WHERE dataset_key = #{datasetKey}
+  </delete>
+
+</mapper>
