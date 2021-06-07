@@ -39,9 +39,10 @@ public class InitDbUtils {
       .put("modified_by", Users.DB_INIT)
       .build());
     // the dataset.csv file was generated as a dump from production with psql:
-    // \copy (select key, type, gbif_key, gbif_publisher_key, license, released, confidence, completeness, origin, title, alias, description, organisations, version, citation, geographic_scope, website, logo, "group", notes, settings, source_key, contact, authors, editors from dataset where not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
+    // \copy (SELECT key,type,gbif_key,gbif_publisher_key,license,issued,confidence,completeness,origin,title,alias,description,version,geographic_scope,taxonomic_scope,url,logo,notes,settings,source_key,contact,creator,editor,publisher,distributor,contributor FROM dataset WHERE not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
     try (Statement st = pgc.createStatement()) {
       st.execute("SELECT setval('dataset_key_seq', (SELECT max(key) FROM dataset))");
+      pgc.commit();
     }
   }
 }

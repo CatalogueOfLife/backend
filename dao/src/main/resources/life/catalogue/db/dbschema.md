@@ -11,6 +11,49 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2021-06-14 dataset NG
+```
+CREATE TYPE agent AS (orcid text, given text, family text,
+  rorid text, organisation text, department text, city text, state text, country CHAR(2),
+  email text, url text, note text
+);
+
+CREATE OR REPLACE FUNCTION p2agent(person) RETURNS agent AS
+$$
+SELECT ROW($1.orcid, $1.given, $1.family, null, null, null, null, null, null, $1.email, null, null)::agent
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION o2agent(organisation) RETURNS agent AS
+$$
+SELECT ROW(null, null, null,  null, $1.name, $1.department, $1.city, $1.state, $1.country, null, null, null)::agent
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE CAST (person AS agent) WITH FUNCTION p2agent;
+CREATE CAST (organisation AS agent) WITH FUNCTION o2agent;
+
+ALTER TABLE dataset RENAME COLUMN contact TO contact_old;
+ALTER TABLE dataset 
+  ADD COLUMN contact agent,
+  ADD COLUMN creator agent[],
+  ADD COLUMN editor agent[],
+  ADD COLUMN publisher agent,
+  ADD COLUMN distributor agent[],
+  ADD COLUMN contributor agent[];
+  
+UPDATE dataset SET contact=contact_old::agent, creator=authors::agent[], editor=editors::agent[], distributor=organisations::agent[];
+
+ALTER TABLE d2 RENAME COLUMN website TO url;
+ALTER TABLE d2 RENAME COLUMN released TO issued;
+ALTER TABLE d2 RENAME COLUMN "group" TO taxonomic_scope;
+ALTER TABLE d2 
+  DROP COLUMN contact_old,
+  DROP COLUMN authors,
+  DROP COLUMN editors,
+  DROP COLUMN organisations,
+  DROP COLUMN citation;
+
+```
+
 ### 2021-05-19 dataset dois
 ```
 ALTER TABLE dataset ADD COLUMN doi TEXT;

@@ -236,7 +236,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     LOG.info("Truncate global tables");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
       st.execute("TRUNCATE \"user\" CASCADE");
+      session.getConnection().commit();
       st.execute("TRUNCATE dataset CASCADE");
+      session.getConnection().commit();
       st.execute("TRUNCATE dataset_archive CASCADE");
       st.execute("TRUNCATE sector CASCADE");
       st.execute("TRUNCATE estimate CASCADE");

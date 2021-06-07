@@ -377,7 +377,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     query.setCreated(LocalDate.parse("2016-02-01"));
     assertEquals(7, mapper().search(query, null, new Page()).size());
 
-    query.setIssued(LocalDate.parse("2007-11-21"));
+    query.setIssued(FuzzyDate.of("2007-11-21"));
     query.setModified(LocalDate.parse("2031-12-31"));
     assertEquals(0, mapper().search(query, null, new Page()).size());
 

@@ -1,18 +1,20 @@
 package life.catalogue.api.search;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.nameparser.api.NomCode;
 
-import javax.validation.constraints.Min;
-import javax.ws.rs.QueryParam;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+
+import javax.validation.constraints.Min;
+import javax.ws.rs.QueryParam;
+
+import com.google.common.base.Preconditions;
 
 public class DatasetSearchRequest {
   
@@ -87,7 +89,7 @@ public class DatasetSearchRequest {
   private LocalDate created;
   
   @QueryParam("issued")
-  private LocalDate issued;
+  private FuzzyDate issued;
 
   @Min(0)
   @QueryParam("minSize")
@@ -209,11 +211,11 @@ public class DatasetSearchRequest {
     this.modified = modified;
   }
   
-  public LocalDate getIssued() {
+  public FuzzyDate getIssued() {
     return issued;
   }
   
-  public void setIssued(LocalDate issued) {
+  public void setIssued(FuzzyDate issued) {
     this.issued = issued;
   }
   
