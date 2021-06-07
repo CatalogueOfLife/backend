@@ -1,15 +1,16 @@
 package life.catalogue.resources;
 
-import freemarker.template.Template;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.License;
 import life.catalogue.exporter.FmUtil;
 
-import org.junit.Test;
-
 import java.io.StringWriter;
 import java.io.Writer;
+
+import org.junit.Test;
+
+import freemarker.template.Template;
 
 public class DatasetSeoTest {
 
@@ -20,7 +21,7 @@ public class DatasetSeoTest {
     d.setTitle("My Title");
     test(d);
 
-    d.addCreator(Person.parse("Albert Einstein"));
+    d.addCreator(Agent.parse("Albert Einstein"));
     test(d);
 
     d.setLicense(License.OTHER);

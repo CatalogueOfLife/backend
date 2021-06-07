@@ -1,11 +1,9 @@
 package life.catalogue.exporter;
 
-import com.google.common.io.Files;
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.Organisation;
-import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
@@ -17,13 +15,16 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImageService;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.junit.*;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.junit.*;
+
+import com.google.common.io.Files;
 
 import static org.junit.Assert.assertEquals;
 
@@ -67,8 +68,8 @@ public class AcefExporterTest extends ExporterTest {
 
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(Datasets.COL);
-      d.setEditor(Person.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
-      d.setOrganisations(Organisation.parse("Species 2000", "ITIS Catalogue of Life"));
+      d.setEditor(Agent.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
+      d.setDistributor(Agent.parse("Species 2000", "ITIS Catalogue of Life"));
       d.setIssued(null);
       dm.update(d);
     }
@@ -106,8 +107,8 @@ public class AcefExporterTest extends ExporterTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(key);
-      d.setEditor(Person.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
-      d.setOrganisations(Organisation.parse("Species 2000", "ITIS Catalogue of Life"));
+      d.setEditor(Agent.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
+      d.setDistributor(Agent.parse("Species 2000", "ITIS Catalogue of Life"));
       d.setIssued(null);
       d.setOrigin(DatasetOrigin.MANAGED);
       dm.update(d);

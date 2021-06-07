@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +32,11 @@ public class DatasetPagerTest {
     final Client client = ClientBuilder.newClient(cfg);
     
     DatasetPager pager = new DatasetPager(client, new GbifConfig());
+
+    // test VASCAN
+    var vascan = pager.get(UUID.fromString("3f8a1297-3259-4700-91fc-acc4170b27ce"));
+    System.out.println(vascan);
+
     while (pager.hasNext()) {
       pager.next().forEach(System.out::println);
     }

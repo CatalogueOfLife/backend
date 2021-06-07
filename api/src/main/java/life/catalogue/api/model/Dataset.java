@@ -460,12 +460,30 @@ public class Dataset extends DataEntity<Integer> {
     this.contributor = contributor;
   }
 
+  public void addContributor(Agent contributor) {
+    if (contributor != null) {
+      if (this.contributor == null) {
+        this.contributor = new ArrayList<>();
+      }
+      this.contributor.add(contributor);
+    }
+  }
+
   public List<Agent> getDistributor() {
     return distributor;
   }
 
   public void setDistributor(List<Agent> distributor) {
     this.distributor = distributor;
+  }
+
+  public void addDistributor(Agent distributor) {
+    if (distributor != null) {
+      if (this.distributor == null) {
+        this.distributor = new ArrayList<>();
+      }
+      this.distributor.add(distributor);
+    }
   }
 
   public String getGeographicScope() {

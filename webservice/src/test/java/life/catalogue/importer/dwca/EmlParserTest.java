@@ -1,17 +1,18 @@
 package life.catalogue.importer.dwca;
 
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.Organisation;
-import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.License;
 import life.catalogue.parser.CountryParser;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
 
+import org.junit.Test;
+
 import static org.apache.commons.lang3.StringUtils.trimToNull;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  *
@@ -24,46 +25,45 @@ public class EmlParserTest {
 
   @Test
   public void orcidParsing() throws Exception {
-    EmlParser.Agent ag = new EmlParser.Agent();
+    EmlParser.EmlAgent ag = new EmlParser.EmlAgent();
 
     ag.surName="Foo";
     ag.userId="1234";
-    assertNull(ag.person().get().getOrcid());
+    assertNull(ag.agent().get().getOrcid());
 
     ag.userId="0000-0001-7757-1889";
-    assertEquals(ag.userId, ag.person().get().getOrcid());
+    assertEquals(ag.userId, ag.agent().get().getOrcid());
 
     ag.userId="0000-0001-7757-1889-1234";
-    assertNull(ag.person().get().getOrcid());
+    assertNull(ag.agent().get().getOrcid());
 
     ag.userId="0001-7757-1889";
-    assertNull(ag.person().get().getOrcid());
+    assertNull(ag.agent().get().getOrcid());
 
     ag.userId="orcid:0000-0001-7757-1889";
-    assertEquals("0000-0001-7757-1889", ag.person().get().getOrcid());
+    assertEquals("0000-0001-7757-1889", ag.agent().get().getOrcid());
 
     ag.userId="https://orcid.org/0000-0001-7757-1889";
-    assertEquals("0000-0001-7757-1889", ag.person().get().getOrcid());
+    assertEquals("0000-0001-7757-1889", ag.agent().get().getOrcid());
 
     ag.userId="http://orcid.org/0000-0001-7757-1889";
-    assertEquals("0000-0001-7757-1889", ag.person().get().getOrcid());
+    assertEquals("0000-0001-7757-1889", ag.agent().get().getOrcid());
   }
 
   @Test
   public void famous() throws Exception {
     DatasetWithSettings d = read("famous.xml");
-    Person markus = new Person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
-    Person bouchard = new Person("Patrice", "Bouchard");
+    Agent markus = new Agent("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
+    Agent bouchard = new Agent("Patrice", "Bouchard");
 
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
-    assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
+    assertEquals("https://github.com/mdoering/famous-organism", d.getUrl().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals(markus, d.getContact());
-    assertEquals(List.of(markus, bouchard), d.getAuthors());
-    assertEquals("2017-01-19", d.getReleased().toString());
+    assertEquals(List.of(markus, bouchard), d.getCreator());
+    assertEquals("2017-01-19", d.getIssued().toString());
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
-    assertEquals("cite my famous dataset", d.getCitation());
     assertEquals("Famous People", d.getAlias());
   }
   
@@ -73,11 +73,11 @@ public class EmlParserTest {
     
     assertEquals("Database of Vascular Plants of Canada (VASCAN)", d.getTitle());
     assertEquals("The Database of Vascular Plants of Canada or VASCAN (http://data.canadensys.net/vascan) is a comprehensive and curated checklist of all vascular plants reported in Canada, Greenland (Denmark), and Saint Pierre and Miquelon (France). VASCAN was developed at the Université de Montréal Biodiversity Centre and is maintained by a group of editors and contributors. For every core taxon in the checklist (species, subspecies, or variety), VASCAN provides the accepted scientific name, the accepted French and English vernacular names, and their synonyms/alternatives in Canada, as well as the distribution status (native, introduced, ephemeral, excluded, extirpated, doubtful or absent) of the plant for each province or territory, and the habit (tree, shrub, herb and/or vine) of the plant in Canada. For reported hybrids (nothotaxa or hybrid formulas) VASCAN also provides the hybrid parents, except if the parents of the hybrid do notoccur in Canada. All taxa are linked to a classification. VASCAN refers to a source for all name, classification and distribution information. All data have been released to the public domain under a CC0 waiver and are available through Canadensys and the Global Biodiversity Information Facility (GBIF). VASCAN is a service to the scientific community and the general public, including administrations, companies, and non-governmental organizations.", d.getDescription());
-    assertEquals("http://data.canadensys.net/vascan/", d.getWebsite().toString());
+    assertEquals("http://data.canadensys.net/vascan/", d.getUrl().toString());
     assertEquals(License.CC0, d.getLicense());
     assertEquals("Brouillet L.", d.getContact().toString());
-    assertEquals("[Brouillet L.]", d.getAuthors().toString());
-    assertEquals("2017-12-18", d.getReleased().toString());
+    assertEquals("[Brouillet L.]", d.getCreator().toString());
+    assertEquals("2017-12-18", d.getIssued().toString());
   }
   
   @Test
@@ -86,8 +86,8 @@ public class EmlParserTest {
     
     assertEquals("World Register of Marine Species", d.getTitle());
     assertEquals("An authoritative classification and catalogue of marine names", d.getDescription());
-    assertEquals(new Person(null, null, "info@marinespecies.org", null), d.getContact());
-    assertNull(d.getAuthors());
+    assertEquals(new Agent(null, null, "info@marinespecies.org", null), d.getContact());
+    assertNull(d.getCreator());
     assertEquals(List.of(
       p("Horton", "Tammy", "tammy.horton@noc.ac.uk"),
       p("Kroh", "Andreas", "andreas.kroh@nhm-wien.ac.at"),
@@ -102,10 +102,7 @@ public class EmlParserTest {
       p("Mees", "Jan", "jan.mees@vliz.be"),
       p("Molodtsova", "Tina", "tina@ocean.ru"),
       p("Paulay", "Gustav", "paulay@flmnh.ufl.edu")
-    ), d.getEditors());
-    for (Organisation o : d.getOrganisations()) {
-      System.out.println(o.quoteParts());
-    }
+    ), d.getEditor());
     assertEquals(List.of(
       o("WoRMS Editorial Board"),
       o("National Oceanography Centre, Southampton; Ocean Biogeochemistry and Ecosystems", "University of Southampton","","","United Kingdom"),
@@ -121,34 +118,33 @@ public class EmlParserTest {
       o("P. P. Shirshov Institute of Oceanology", "Russian Academy of Sciences","","","Russian Federation"),
       o("Florida Museum of Natural History", "University of Florida","","","United States of America"),
       o("World Register of Marine Species")
-    ), d.getOrganisations());
-    assertEquals("2021-03-01", d.getReleased().toString());
+    ), d.getDistributor());
+    assertEquals("2021-03-01", d.getIssued().toString());
     assertEquals("http://www.marinespecies.org/documents/WoRMS%20branding/WoRMS_logo_blue_negative.png", d.getLogo().toString());
     assertNull(d.getAlias());
-    assertEquals("<b>WoRMS Editorial Board</b> (2021). World Register of Marine Species. Available from http://www.marinespecies.org at VLIZ. Accessed 2021-03-01. doi:10.14284/170", d.getCitation());
-    assertEquals("http://www.marinespecies.org/", d.getWebsite().toString());
+    assertEquals("http://www.marinespecies.org/", d.getUrl().toString());
     assertNull(d.getLicense());
     assertEquals("World Oceans", d.getGeographicScope());
   }
 
-  Organisation o(String name) {
-    return new Organisation(name);
+  Agent o(String name) {
+    return new Agent(name);
   }
-  Organisation o(String name, String city, String state, String country) {
+  Agent o(String name, String city, String state, String country) {
     return o(null, name, city, state, country);
   }
-  Organisation o(String department, String name, String city, String state, String country) {
-    return new Organisation(trimToNull(name), trimToNull(department), trimToNull(city), trimToNull(state), CountryParser.PARSER.parseOrNull(country));
+  Agent o(String department, String name, String city, String state, String country) {
+    return new Agent(null, trimToNull(name), trimToNull(department), trimToNull(city), trimToNull(state), CountryParser.PARSER.parseOrNull(country), null, null);
   }
 
-  Person p(String surname, String firstname) {
-    return new Person(firstname,surname, null,null);
+  Agent p(String surname, String firstname) {
+    return new Agent(firstname,surname, null,null);
   }
-  Person p(String surname, String firstname, String email) {
-    return new Person(firstname,surname, email,null);
+  Agent p(String surname, String firstname, String email) {
+    return new Agent(firstname,surname, email,null);
   }
-  Person pmail(String email) {
-    return new Person(null,null,email,null);
+  Agent pmail(String email) {
+    return new Agent(null,null,email,null);
   }
 
 }

@@ -1,7 +1,9 @@
 package life.catalogue.importer.dwca;
 
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.parser.CountryParser;
@@ -22,7 +24,9 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -58,7 +62,7 @@ public class EmlParser {
       boolean isAdditionalMetadata = false;
       StringBuilder text = null;
       StringBuilder para = new StringBuilder();
-      Agent agent = new Agent();
+      EmlAgent agent = new EmlAgent();
       URI url = null;
       int event;
       
@@ -84,7 +88,7 @@ public class EmlParser {
               case "contact":
               case "associatedParty":
               case "personnel":
-                agent = new Agent();
+                agent = new EmlAgent();
                 break;
               case "ulink":
                 String val = parser.getAttributeValue(null, "url");
@@ -189,19 +193,19 @@ public class EmlParser {
                   d.setDescription(para.toString());
                   break;
                 case "distribution":
-                  d.setWebsite(url);
+                  d.setUrl(url);
                   break;
                 case "pubDate":
                   FuzzyDate fuzzy = date(text);
                   if (fuzzy != null) {
-                    d.setReleased(fuzzy.toLocalDate());
+                    d.setIssued(fuzzy);
                   }
                   break;
                 case "geographicDescription":
                   d.setGeographicScope(text(text));
                   break;
                 case "generalTaxonomicCoverage":
-                  d.setGroup(text(text));
+                  d.setTaxonomicScope(text(text));
                   break;
                 case "creator":
                   agent.role = "CREATOR";
@@ -209,6 +213,10 @@ public class EmlParser {
                   break;
                 case "contact":
                   agent.role = "CONTACT";
+                  addAgent(agent, d.getDataset());
+                  break;
+                case "publisher":
+                  agent.role = "PUBLISHER";
                   addAgent(agent, d.getDataset());
                   break;
                 case "associatedParty":
@@ -225,9 +233,6 @@ public class EmlParser {
                   } catch (IllegalArgumentException e) {
                     LOG.warn("Invalid logo URL {}", text.toString());
                   }
-                  break;
-                case "citation":
-                  d.setCitation(text(text));
                   break;
                 case "confidence":
                   d.setConfidence(integer(text));
@@ -262,58 +267,59 @@ public class EmlParser {
 
   private static void consolidate(DatasetWithSettings ds){
     Dataset d = ds.getDataset();
-    // dedupe orgs, authors and editors
-    if (d.getOrganisations() != null) {
-      d.setOrganisations(
-        d.getOrganisations().stream().distinct().collect(Collectors.toList())
-      );
-      // parse out organisation departments if seperated by semicolons
-      for (Organisation o : d.getOrganisations()) {
-        if (o.getDepartment() == null && o.getName() != null) {
-          if (o.getName().contains(";")) {
-            String[] parts = o.getName().split(";", 2);
-            o.setName(parts[0].trim());
-            o.setDepartment(parts[1].trim());
+    // dedupe agents
+    dedupe(d.getCreator(), d::setCreator);
+    dedupe(d.getEditor(), d::setEditor);
+    dedupe(d.getContributor(), d::setContributor);
+    dedupe(d.getDistributor(), d::setDistributor);
+  }
+  private static void dedupe(List<Agent> agents, Consumer<List<Agent>> setter){
+    if (agents != null) {
+      agents = agents.stream().distinct().collect(Collectors.toList());
+      // parse out organisation department if seperated by semicolons
+      for (Agent a : agents) {
+        if (a.getDepartment() == null && a.getOrganisation() != null) {
+          if (a.getOrganisation().contains(";")) {
+            String[] parts = a.getOrganisation().split(";", 2);
+            // assume department is first
+            a.setDepartment(parts[0].trim());
+            a.setOrganisation(parts[1].trim());
           }
         }
       }
-    }
-    if (d.getCreator() != null) {
-      d.setCreator(
-        d.getCreator().stream().distinct().collect(Collectors.toList())
-      );
-    }
-    if (d.getEditor() != null) {
-      d.setEditor(
-        d.getEditor().stream().distinct().collect(Collectors.toList())
-      );
+      setter.accept(agents);
     }
   }
 
-  private static void addAgent(Agent agent, Dataset d){
+  private static void addAgent(EmlAgent agent, Dataset d){
     // require a role!
     if (agent.role == null) return;
     switch (agent.role.toUpperCase().trim()) {
       case "CONTACT":
       case "POINTOFCONTACT":
-        agent.person().ifPresent(d::setContact);
-        agent.organisation().ifPresent(d::addOrganisation);
+        agent.agent().ifPresent(d::setContact);
+        break;
+      case "PUBLISHER":
+        agent.agent().ifPresent(d::setPublisher);
         break;
       case "AUTHOR":
       case "CREATOR":
-        agent.person().map(EmlParser::nullIfNoName).ifPresent(d::addCreator);
-        agent.organisation().ifPresent(d::addOrganisation);
+        agent.agent().map(EmlParser::nullIfNoName).ifPresent(d::addCreator);
         break;
       case "EDITOR":
-        agent.person().map(EmlParser::nullIfNoName).ifPresent(d::addEditor);
-        agent.organisation().ifPresent(d::addOrganisation);
+        agent.agent().map(EmlParser::nullIfNoName).ifPresent(d::addEditor);
+        break;
+      case "DISTRIBUTOR":
+      case "HOST":
+        agent.agent().map(EmlParser::nullIfNoName).ifPresent(d::addDistributor);
         break;
       default:
-        LOG.debug("Ignore EML agent role {}", agent.role);
+        agent.agent().map(EmlParser::nullIfNoName).ifPresent(d::addContributor);
+        break;
     }
   }
 
-  private static Person nullIfNoName(Person p) {
+  private static Agent nullIfNoName(Agent p) {
     if (p.getName()==null) {
       return null;
     }
@@ -337,7 +343,7 @@ public class EmlParser {
     return SafeParser.parse(DateParser.PARSER, text.toString()).orNull();
   }
   
-  static class Agent {
+  static class EmlAgent {
     private static final Pattern ORCID = Pattern.compile("^(?:https?://orcid.org/|orcid:)?(\\d{4}-\\d{4}-\\d{4}-\\d{4})\\s*$", Pattern.CASE_INSENSITIVE);
     public String role;
     public String onlineUrl;
@@ -355,12 +361,11 @@ public class EmlParser {
     public String administrativeArea;
     public String deliveryPoint;
 
-    Optional<Person> person() {
-      if (givenName != null || surName != null || electronicMailAddress != null) {
-        Person p = new Person();
+    Optional<Agent> agent() {
+      if (givenName != null || surName != null || organizationName != null || electronicMailAddress != null) {
+        Agent p = new Agent();
         p.setGivenName(givenName);
         p.setFamilyName(surName);
-        p.setEmail(electronicMailAddress);
         if (userId != null) {
           // verify ORCID pattern
           Matcher m = ORCID.matcher(userId);
@@ -370,22 +375,16 @@ public class EmlParser {
             LOG.debug("UserID {} is not an ORCID", userId);
           }
         }
-        return Optional.of(p);
-      }
-      return Optional.empty();
-    }
-
-    Optional<Organisation> organisation() {
-      if (organizationName != null) {
-        Organisation o = new Organisation();
-        o.setDepartment(null);
-        o.setName(organizationName);
-        o.setCity(city);
-        o.setState(administrativeArea);
+        p.setDepartment(null);
+        p.setOrganisation(organizationName);
+        p.setCity(city);
+        p.setState(administrativeArea);
         if (country != null) {
-          o.setCountry(CountryParser.PARSER.parseOrNull(country));
+          p.setCountry(CountryParser.PARSER.parseOrNull(country));
         }
-        return Optional.of(o);
+        p.setEmail(electronicMailAddress);
+        p.setUrl(ObjectUtils.coalesce(onlineUrl, url));
+        return Optional.of(p);
       }
       return Optional.empty();
     }

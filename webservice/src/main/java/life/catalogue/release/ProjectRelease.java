@@ -5,6 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.VarnishUtils;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
@@ -61,7 +62,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     super.modifyDataset(d, ds);
     d.setOrigin(DatasetOrigin.RELEASED);
 
-    final LocalDate today = LocalDate.now();
+    final FuzzyDate today = FuzzyDate.now();
     d.setIssued(today);
     d.setVersion(today.toString());
 
@@ -70,11 +71,6 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     String title = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
     d.setTitle(title);
-
-    if (ds != null && ds.has(Setting.RELEASE_CITATION_TEMPLATE)) {
-      String citation = CitationUtils.fromTemplate(d, ds.getString(Setting.RELEASE_CITATION_TEMPLATE));
-      d.setCitation(citation);
-    }
 
     d.setPrivat(true); // all releases are private candidate releases first
   }

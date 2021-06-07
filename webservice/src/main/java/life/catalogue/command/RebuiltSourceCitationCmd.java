@@ -68,7 +68,7 @@ public class RebuiltSourceCitationCmd extends AbstractPromptCmd {
       }
     }
 
-    System.out.printf("Citation for release %s: %s\n\n", release.getKey(), release.getCitation());
+    System.out.printf("Title for release %s: %s\n\n", release.getKey(), release.getTitle());
     DatasetSourceDao dao = new DatasetSourceDao(factory);
     if (dryRun) {
       System.out.println("Dry run");
@@ -81,7 +81,7 @@ public class RebuiltSourceCitationCmd extends AbstractPromptCmd {
 
   void show(DatasetSourceDao dao){
     dao.list(release.getKey(), release, true).forEach(d -> {
-      System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
+      System.out.printf("%s: %s\n", d.getKey(), d.getTitle());
     });
   }
 
@@ -95,7 +95,7 @@ public class RebuiltSourceCitationCmd extends AbstractPromptCmd {
       AtomicInteger counter = new AtomicInteger(0);
       dao.list(release.getKey(), release, true).forEach(d -> {
         counter.incrementAndGet();
-        System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
+        System.out.printf("%s: %s\n", d.getKey(), d.getTitle());
         psm.create(release.getKey(), d);
       });
       session.commit();

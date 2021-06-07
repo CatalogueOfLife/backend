@@ -9,6 +9,7 @@ import de.undercouch.citeproc.csl.CSLNameBuilder;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.util.RegexUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -115,7 +116,15 @@ public class Agent {
   }
 
   public static List<Agent> parse(List<String> names) {
-    return names == null ? null : names.stream().map(Agent::parse).collect(Collectors.toList());
+    return names == null ? null : names.stream()
+                                       .map(Agent::parse)
+                                       .collect(Collectors.toList());
+  }
+
+  public static List<Agent> parse(String... names) {
+    return names == null ? null : Arrays.stream(names)
+                                        .map(Agent::parse)
+                                        .collect(Collectors.toList());
   }
 
   public Agent() {

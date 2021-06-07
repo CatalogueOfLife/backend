@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.dao.DatasetExportDao;
 
 import life.catalogue.db.mapper.DatasetMapper;
@@ -106,7 +107,7 @@ public class PublicReleaseListener {
   public void copyExportsToColDownload(Dataset dataset) {
     if (cfg.release.colDownloadDir != null) {
       final int datasetKey = dataset.getKey();
-      final LocalDate released = dataset.getIssued();
+      final FuzzyDate released = dataset.getIssued();
       if (released == null) {
         LOG.error("Updated COL release {} is missing a release date", datasetKey);
         return;
@@ -134,8 +135,8 @@ public class PublicReleaseListener {
     }
   }
 
-  public static File colDownloadFile(File colDownloadDir, LocalDate released, DataFormat format) {
-    String iso = DateTimeFormatter.ISO_DATE.format(released);
+  public static File colDownloadFile(File colDownloadDir, FuzzyDate released, DataFormat format) {
+    String iso = DateTimeFormatter.ISO_DATE.format(released.getDate());
     return new File(colDownloadDir, iso + "_" + format + ".zip");
   }
 

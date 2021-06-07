@@ -73,12 +73,6 @@ public class DatasetYamlWriter {
     }
 
     @Override
-    @JsonProperty("taxonomicScope")
-    public String getGroup() {
-      return super.getGroup();
-    }
-
-    @Override
     @JsonIgnore
     public LocalDateTime getCreated() {
       return super.getCreated();
@@ -100,11 +94,6 @@ public class DatasetYamlWriter {
     @JsonIgnore
     public Integer getModifiedBy() {
       return super.getModifiedBy();
-    }
-
-    @Override
-    public LocalDate getIssued() {
-      return super.getIssued();
     }
   }
 }

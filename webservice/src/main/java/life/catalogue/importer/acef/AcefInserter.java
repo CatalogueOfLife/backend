@@ -249,18 +249,18 @@ public class AcefInserter extends NeoCsvInserter {
       d.setTitle(dr.get(AcefTerm.DatabaseFullName));
       d.setAlias(dr.get(AcefTerm.DatabaseShortName));
       d.setVersion(dr.get(AcefTerm.DatabaseVersion));
-      d.setGroup(dr.get(AcefTerm.GroupNameInEnglish));
+      d.setTaxonomicScope(dr.get(AcefTerm.GroupNameInEnglish));
       d.setDescription(dr.get(AcefTerm.Abstract));
-      d.setReleased(dr.getDate(AcefTerm.ReleaseDate));
+      d.setIssued(dr.getDate(AcefTerm.ReleaseDate));
       d.setCompleteness(dr.getInt(AcefTerm.Completeness));
       d.setConfidence(dr.getInt(AcefTerm.Confidence));
       // TODO: consume local logo file
       d.setLogo(dr.getURI(AcefTerm.LogoFileName));
-      d.setWebsite(dr.getURI(AcefTerm.HomeURL));
+      d.setUrl(dr.getURI(AcefTerm.HomeURL));
       d.setType(dr.get(AcefTerm.Coverage, DatasetTypeParser.PARSER));
-      d.setContact(Person.parse(dr.get(AcefTerm.ContactPerson)));
-      d.setAuthors(Person.parse(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER)));
-      d.setOrganisations(Organisation.parse(dr.get(AcefTerm.Organisation, COMMA_SPLITTER)));
+      d.setContact(Agent.parse(dr.get(AcefTerm.ContactPerson)));
+      d.setCreator(Agent.parse(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER)));
+      d.setDistributor(Agent.parse(dr.get(AcefTerm.Organisation, COMMA_SPLITTER)));
     }
     return Optional.ofNullable(d);
   }
@@ -297,12 +297,8 @@ public class AcefInserter extends NeoCsvInserter {
       return SafeParser.parse(IntegerParser.PARSER, v.get(term)).orNull();
     }
   
-    public LocalDate getDate(Term term) {
-      FuzzyDate fuzzy = SafeParser.parse(DateParser.PARSER, v.get(term)).orNull();
-      if (fuzzy != null) {
-        return fuzzy.toLocalDate();
-      }
-      return null;
+    public FuzzyDate getDate(Term term) {
+      return SafeParser.parse(DateParser.PARSER, v.get(term)).orNull();
     }
   }
   
