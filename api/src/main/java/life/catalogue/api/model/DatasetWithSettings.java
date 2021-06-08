@@ -341,14 +341,6 @@ public class DatasetWithSettings {
     dataset.setContributor(contributor);
   }
 
-  public List<Agent> getDistributor() {
-    return dataset.getDistributor();
-  }
-
-  public void setDistributor(List<Agent> distributor) {
-    dataset.setDistributor(distributor);
-  }
-
   public String getGeographicScope() {
     return dataset.getGeographicScope();
   }

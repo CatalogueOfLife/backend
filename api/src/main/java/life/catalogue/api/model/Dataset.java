@@ -49,6 +49,7 @@ public class Dataset extends DataEntity<Integer> {
     try {
       Set<String> exclude = Set.of(
         "key",
+        "attempt",
         "sourceKey",
         "privat",
         "type",
@@ -124,7 +125,6 @@ public class Dataset extends DataEntity<Integer> {
   private List<Agent> editor;
   private Agent publisher;
   private List<Agent> contributor;
-  private List<Agent> distributor;
   private String geographicScope;
   private String taxonomicScope;
   private String temporalScope;
@@ -171,7 +171,6 @@ public class Dataset extends DataEntity<Integer> {
     this.editor = other.editor;
     this.publisher = other.publisher;
     this.contributor = other.contributor;
-    this.distributor = other.distributor;
     this.geographicScope = other.geographicScope;
     this.taxonomicScope = other.taxonomicScope;
     this.temporalScope = other.temporalScope;
@@ -469,23 +468,6 @@ public class Dataset extends DataEntity<Integer> {
     }
   }
 
-  public List<Agent> getDistributor() {
-    return distributor;
-  }
-
-  public void setDistributor(List<Agent> distributor) {
-    this.distributor = distributor;
-  }
-
-  public void addDistributor(Agent distributor) {
-    if (distributor != null) {
-      if (this.distributor == null) {
-        this.distributor = new ArrayList<>();
-      }
-      this.distributor.add(distributor);
-    }
-  }
-
   public String getGeographicScope() {
     return geographicScope;
   }
@@ -613,7 +595,6 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(editor, dataset.editor)
            && Objects.equals(publisher, dataset.publisher)
            && Objects.equals(contributor, dataset.contributor)
-           && Objects.equals(distributor, dataset.distributor)
            && Objects.equals(geographicScope, dataset.geographicScope)
            && Objects.equals(taxonomicScope, dataset.taxonomicScope)
            && Objects.equals(temporalScope, dataset.temporalScope)
@@ -627,7 +608,7 @@ public class Dataset extends DataEntity<Integer> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes, doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, distributor, geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, source);
+    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes, doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, source);
   }
 
   @Override

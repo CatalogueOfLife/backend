@@ -73,7 +73,7 @@ public class MetadataParser {
 
     @JsonProperty("organisations")
     public void setOrganisations(Object orgs) {
-      super.setDistributor(parseAgents(orgs));
+      super.setContributor(parseAgents(orgs));
     }
 
     List<Agent> parseAgents(Object obj) {

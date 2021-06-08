@@ -50,7 +50,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
       Dataset d = dm.get(projectKey);
       d.setTitle("Catalogue of Life");
-      d.setDistributor(Agent.parse("Species 2000", "ITIS"));
+      d.setContributor(Agent.parse("Species 2000", "ITIS"));
       d.setEditor(List.of(
         new Agent("Yuri","Roskov"),
         new Agent("Geoff", "Ower"),

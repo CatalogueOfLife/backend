@@ -49,12 +49,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setLicense(License.CC0);
     d.setCreator(new ArrayList<>());
     d.setEditor(new ArrayList<>());
-    d.setDistributor(new ArrayList<>());
     d.setContributor(new ArrayList<>());
     for (int i = 0; i < 8; i++) {
       d.getCreator().add(Agent.parse(RandomUtils.randomLatinString(100)));
       d.getEditor().add(Agent.parse(RandomUtils.randomLatinString(100)));
-      d.getDistributor().add(Agent.parse(RandomUtils.randomLatinString(100)));
       d.getContributor().add(Agent.parse(RandomUtils.randomLatinString(100)));
     }
     d.setContact(Agent.parse("Hans Peter"));
@@ -63,10 +61,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setVersion("v123");
     d.setUrl(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
     d.setNotes("my notes");
-    d.setDistributor(new ArrayList<>(List.of(
-      new Agent("my org"),
-      new Agent("your org")
-    )));
     d.setDoi(DOI.test(UUID.randomUUID().toString()));
     d.setSize(0);
     return d;
@@ -542,7 +536,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     if (author != null) {
       ds.setCreator(Agent.parse(List.of(author.split(";"))));
     }
-    ds.setDistributor(List.of(new Agent(organisation)));
+    ds.setContributor(List.of(new Agent(organisation)));
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);

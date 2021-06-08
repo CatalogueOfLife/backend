@@ -42,7 +42,7 @@ public class AcefInserterTest extends InserterBaseTest {
     assertThat(d.getCreator(), is(List.of(Agent.parse("Roskov Y.R."))));
     assertEquals("Legumes", d.getTaxonomicScope());
     assertEquals("The International Legume Database & Information Service (ILDIS) is an international project which aims to document and catalogue the world's legume species diversity in a readily accessible form. Research groups in many countries are participating on a co-operative basis to pool information in the ILDIS World Database of Legumes, which is used to provide a worldwide information service through publications, electronic access and enquiry services.", d.getDescription());
-    assertThat(d.getDistributor(), is(List.of(Agent.parse("International"))));
+    assertThat(d.getContributor(), is(List.of(Agent.parse("International"))));
     assertEquals("http://www.ildis.org", d.getUrl().toString());
     assertEquals((Integer)96, d.getCompleteness());
     assertEquals((Integer)4, d.getConfidence());

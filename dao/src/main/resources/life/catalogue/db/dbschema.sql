@@ -673,7 +673,6 @@ CREATE TABLE dataset (
   editor agent[],
   publisher agent,
   contributor agent[],
-  distributor agent[],
   geographic_scope TEXT,
   taxonomic_scope TEXT,
   temporal_scope TEXT,
@@ -708,7 +707,6 @@ CREATE TABLE dataset (
       setweight(to_tsvector('simple2', coalesce(agent_str(editor), '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(agent_str(publisher), '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(agent_str(contributor), '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(distributor), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
   ) STORED
 );

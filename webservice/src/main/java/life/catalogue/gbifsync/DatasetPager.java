@@ -74,7 +74,9 @@ public class DatasetPager {
                                                                  .accept(MediaType.APPLICATION_JSON_TYPE)
                                                                  .get(GInstallation.class);
                                       if (ins != null && ins.organizationKey != null) {
-                                        return publisherCache.get(ins.organizationKey);
+                                        var host = publisherCache.get(ins.organizationKey);
+                                        host.setNote("Host");
+                                        return host;
                                       }
                                       return null;
                                     }
@@ -176,7 +178,7 @@ public class DatasetPager {
     d.setGbifKey(g.key);
     d.setGbifPublisherKey(g.publishingOrganizationKey);
     d.setPublisher(publisher(g.publishingOrganizationKey));
-    d.getDataset().addDistributor(host(g.installationKey));
+    d.getDataset().addContributor(host(g.installationKey));
     d.setTitle(g.title);
     d.setDescription(g.description);
     DOI.parse(g.doi).ifPresent(d::setDoi);

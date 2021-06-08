@@ -133,7 +133,6 @@ public class GbifSync implements Managed {
       } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
           !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
           !Objects.equals(gbif.getPublisher(), curr.getPublisher()) ||
-          !Objects.equals(gbif.getDistributor(), curr.getDistributor()) ||
           !Objects.equals(gbif.getUrl(), curr.getUrl()) ||
           !Objects.equals(gbif.getDoi(), curr.getDoi())
           ) {
@@ -142,13 +141,11 @@ public class GbifSync implements Managed {
         // - dwca access url
         // - license
         // - publisher (publishOrgKey)
-        // - distributor (instllation/hostOrgKey)
         // - homepage
         // - doi
         curr.setDataAccess(gbif.getDataAccess());
         curr.setLicense(gbif.getLicense());
         curr.setPublisher(gbif.getPublisher());
-        curr.setDistributor(gbif.getDistributor());
         curr.setUrl(gbif.getUrl());
         curr.setDoi(gbif.getDoi());
         mapper.updateAll(curr);

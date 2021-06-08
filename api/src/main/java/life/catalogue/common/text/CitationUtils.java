@@ -85,10 +85,6 @@ public class CitationUtils {
       return d.getContributor();
     }
 
-    public List<Agent> getDistributor() {
-      return d.getDistributor();
-    }
-
     public String getLicense() {
       return d.getLicense() == null ? null : d.getLicense().getTitle();
     }

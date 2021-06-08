@@ -32,7 +32,7 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertNull(d.getDataFormat());
     assertEquals("The full dataset title", d.getTitle());
     assertNotNull(d.getDescription());
-    assertEquals(10, d.getDistributor().size());
+    assertEquals(10, d.getContributor().size());
     assertEquals(new Agent("Rainer", "Froese", "rainer@mailinator.com", null), d.getContact());
     assertEquals(List.of(
         new Agent("Rainer", "Froese", "rainer@mailinator.com", "0000-0001-9745-636X"),

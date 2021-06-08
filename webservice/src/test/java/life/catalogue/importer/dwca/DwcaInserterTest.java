@@ -89,7 +89,7 @@ public class DwcaInserterTest extends InserterBaseTest {
     assertEquals(NomCode.ZOOLOGICAL, d.getCode());
     assertEquals(Gazetteer.ISO, d.getGazetteer());
 
-    assertNull(d.getDistributor());
+    assertNull(d.getContributor());
 
     List<Agent> authors = new ArrayList<>();
     authors.add(donald);

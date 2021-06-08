@@ -69,7 +69,7 @@ public class AcefExporterTest extends ExporterTest {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(Datasets.COL);
       d.setEditor(Agent.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
-      d.setDistributor(Agent.parse("Species 2000", "ITIS Catalogue of Life"));
+      d.setContributor(Agent.parse("Species 2000", "ITIS Catalogue of Life"));
       d.setIssued(null);
       dm.update(d);
     }
@@ -108,7 +108,7 @@ public class AcefExporterTest extends ExporterTest {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(key);
       d.setEditor(Agent.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
-      d.setDistributor(Agent.parse("Species 2000", "ITIS Catalogue of Life"));
+      d.setContributor(Agent.parse("Species 2000", "ITIS Catalogue of Life"));
       d.setIssued(null);
       d.setOrigin(DatasetOrigin.MANAGED);
       dm.update(d);

@@ -37,7 +37,6 @@
     #{editor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
     #{publisher, typeHandler=life.catalogue.db.type.AgentTypeHandler},
     #{contributor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
-    #{distributor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
     #{geographicScope},
     #{taxonomicScope},
     #{temporalScope},

@@ -54,9 +54,6 @@ public class ProjectContribution extends TreeSet<ProjectContribution.Contributor
     if (d.getContributor() != null) {
       d.getContributor().forEach(this::add);
     }
-    if (d.getDistributor() != null) {
-      d.getDistributor().forEach(this::add);
-    }
     add (d.getPublisher());
   }
 

@@ -34,7 +34,6 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
 
     removeDbCreatedProps(u1);
     Dataset u2 = removeDbCreatedProps(mapper().get(Datasets.COL, u1.getKey()));
-    printDiff(u1, u2);
     assertEquals(u1, u2);
 
     // test update

@@ -33,7 +33,7 @@ public class MetadataParserTest {
     assertEquals(List.of(
         new Agent("Field Museum of Natural History"),
         new Agent("Bavarian State Collection of Zoology (ZSM)")
-      ), d.getDistributor());
+      ), d.getContributor());
     assertEquals(new Agent(null, null, "info@marinespecies.org", null), d.getContact());
     assertEquals(List.of(
         new Agent("Sierwald, P."),
@@ -74,7 +74,7 @@ public class MetadataParserTest {
       new Agent(null, "New York Botanical Garden", null, "Bronx NY", null, Country.UNITED_STATES, null, null),
       new Agent(null, "Royal Botanic Gardens", "IUCN / SSC Cycad Specialist Group", "Sydney", "New South Wales", Country.AUSTRALIA, null, null)
     );
-    assertEquals(orgs, d.getDistributor());
+    assertEquals(orgs, d.getContributor());
   
     List<Agent> authors = List.of(
       new Agent("Michael","Calonje", "michaelc@montgomerybotanical.org", "0000-0001-9650-3136"),
@@ -106,7 +106,7 @@ public class MetadataParserTest {
     List<Agent> orgs = Agent.parse("IUCN / SSC Cycad Specialist Group, Montgomery Botanical Center, Coral Gables, FL, USA",
       "New York Botanical Garden, Bronx NY, USA",
       "Royal Botanic Gardens, Sydney, New South Wales, Australia");
-    assertEquals(orgs, d.getDistributor());
+    assertEquals(orgs, d.getContributor());
 
     List<Agent> authors = List.of(
       new Agent("Michael","Calonje"),
@@ -138,7 +138,7 @@ public class MetadataParserTest {
     assertEquals(NomCode.ZOOLOGICAL, d.getCode());
     assertEquals(Gazetteer.ISO, d.getGazetteer());
 
-    assertNull(d.getDistributor());
+    assertNull(d.getContributor());
 
     List<Agent> authors = new ArrayList<>();
     authors.add(donald);
@@ -164,7 +164,7 @@ public class MetadataParserTest {
     Agent o1 = new Agent("The WorldFish Center");
     Agent o2 = new Agent("University of British Columbia, Canada");
     Agent o3 = new Agent("Food and Agriculture Organization of the United Nations; Rome; Italy");
-    assertEquals(List.of(o1, o2, o3), d.getDistributor());
+    assertEquals(List.of(o1, o2, o3), d.getContributor());
 
     assertEquals("Fishes", d.getTaxonomicScope());
 

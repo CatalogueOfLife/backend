@@ -67,6 +67,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final static TestData NONE = new TestData("none", null, null, null, true, false, Collections.emptyMap(),3);
   /**
    * Inits the datasets table with real col data from colplus-repo
+   * The dataset.csv file was generated as a dump from production with psql:
+   *
+   * \copy (SELECT key,type,gbif_key,gbif_publisher_key,license,issued,confidence,completeness,origin,title,alias,description,version,geographic_scope,taxonomic_scope,url,logo,notes,settings,source_key,contact,creator,editor,publisher,contributor FROM dataset WHERE not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
    */
   public final static TestData DATASETS = new TestData("datasets", null, null, null, false, true, Collections.emptyMap());
   public final static TestData APPLE = new TestData("apple", 11, 3, 2, 3, 11, 12);

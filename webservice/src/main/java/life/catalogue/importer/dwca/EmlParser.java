@@ -272,7 +272,6 @@ public class EmlParser {
     dedupe(d.getCreator(), d::setCreator);
     dedupe(d.getEditor(), d::setEditor);
     dedupe(d.getContributor(), d::setContributor);
-    dedupe(d.getDistributor(), d::setDistributor);
   }
   private static void dedupe(List<Agent> agents, Consumer<List<Agent>> setter){
     if (agents != null) {
@@ -319,10 +318,6 @@ public class EmlParser {
         break;
       case "EDITOR":
         agent.agent(false).map(EmlParser::nullIfNoName).ifPresent(d::addEditor);
-        break;
-      case "DISTRIBUTOR":
-      case "HOST":
-        agent.agent(false).map(EmlParser::nullIfNoName).ifPresent(d::addDistributor);
         break;
       default:
         agent.agent(true).map(EmlParser::nullIfNoName).ifPresent(d::addContributor);

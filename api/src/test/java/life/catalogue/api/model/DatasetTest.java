@@ -36,10 +36,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setLogo(URI.create("www.gbif.org"));
     d.setLicense(License.CC0);
     d.setGeographicScope("North Africa");
-    d.setDistributor(new ArrayList<>(List.of(
-      new Agent("dist"),
-      new Agent("dist2")
-    )));
     d.setContact(Agent.parse("foo"));
     d.setCreator(new ArrayList<>(List.of(
       new Agent("crea1"),
@@ -50,6 +46,10 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
       new Agent("editi"),
       new Agent("edito"),
       new Agent("edita")
+    )));
+    d.setContributor(new ArrayList<>(List.of(
+      new Agent("contact"),
+      new Agent("contact2")
     )));
     d.setNotes("cuzdsghazugbe67wqt6c g cuzdsghazugbe67wqt6c g  nhjs");
     return d;
@@ -81,14 +81,17 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
 
     assertEquals(copy, d);
 
+    // empty patch
     d.applyPatch(patch);
     assertEquals(copy, d);
 
+    // single patch prop
     patch.setVersion("my version");
     copy.setVersion("my version");
     d.applyPatch(patch);
     assertEquals(copy, d);
 
+    // key is ignored
     patch.setKey(345678);
     d.applyPatch(patch);
     assertEquals(copy, d);

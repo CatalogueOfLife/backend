@@ -65,7 +65,6 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     mapper().create(Datasets.COL, d1);
 
     Dataset d2 = removeDbCreatedProps(mapper().getReleaseSource(d1.getKey(), Datasets.COL));
-    printDiff(d1, d2);
     assertEquals(d2, d1);
     commit();
   }
