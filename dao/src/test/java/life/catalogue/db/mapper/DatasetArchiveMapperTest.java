@@ -37,7 +37,6 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
 
     Dataset d2 = mapper().get(d1.getKey(), d1.getAttempt());
 
-    printDiff(d1, d2);
     assertTrue(d2.equals(d1));
   }
 
