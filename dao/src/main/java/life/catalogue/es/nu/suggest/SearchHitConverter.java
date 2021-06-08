@@ -5,12 +5,14 @@ import life.catalogue.es.EsMonomial;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.response.SearchHit;
+
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ListIterator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Converts an ES SearchHit instance into a NameUsageSuggestion object.

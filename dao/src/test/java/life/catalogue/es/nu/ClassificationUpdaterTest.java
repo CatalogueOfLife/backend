@@ -6,13 +6,15 @@ import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsUtil;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.gbif.nameparser.api.Rank.*;
 import static org.junit.Assert.assertEquals;

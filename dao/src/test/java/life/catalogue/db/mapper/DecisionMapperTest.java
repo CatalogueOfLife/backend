@@ -10,13 +10,14 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.Resources;
-import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;

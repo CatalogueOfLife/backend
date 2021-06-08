@@ -6,11 +6,12 @@ import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.legacy.LVernacularMapper;
 import life.catalogue.db.mapper.legacy.model.LCommonName;
 import life.catalogue.db.mapper.legacy.model.LName;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.sql.SQLException;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

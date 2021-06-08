@@ -11,11 +11,12 @@ import life.catalogue.dao.NameDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.List;
 import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

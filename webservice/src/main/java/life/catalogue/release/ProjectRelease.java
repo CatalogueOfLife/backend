@@ -5,15 +5,14 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.VarnishUtils;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.text.CitationUtils;
-import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.doi.service.DatasetConverter;
-import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
@@ -30,7 +29,6 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
@@ -42,7 +40,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final CloseableHttpClient client;
   private final ExportManager exportManager;
   private final DoiService doiService;
-  private final DatasetProjectSourceDao sourceDao;
+  private final DatasetSourceDao sourceDao;
   private final DatasetConverter converter;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
@@ -55,7 +53,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
     this.client = client;
     this.exportManager = exportManager;
-    this.sourceDao = new DatasetProjectSourceDao(factory);
+    this.sourceDao = new DatasetSourceDao(factory);
     this.converter = converter;
   }
 
@@ -64,8 +62,8 @@ public class ProjectRelease extends AbstractProjectCopy {
     super.modifyDataset(d, ds);
     d.setOrigin(DatasetOrigin.RELEASED);
 
-    final LocalDate today = LocalDate.now();
-    d.setReleased(today);
+    final FuzzyDate today = FuzzyDate.now();
+    d.setIssued(today);
     d.setVersion(today.toString());
 
     String alias = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
@@ -73,11 +71,6 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     String title = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
     d.setTitle(title);
-
-    if (ds != null && ds.has(Setting.RELEASE_CITATION_TEMPLATE)) {
-      String citation = CitationUtils.fromTemplate(d, ds.getString(Setting.RELEASE_CITATION_TEMPLATE));
-      d.setCitation(citation);
-    }
 
     d.setPrivat(true); // all releases are private candidate releases first
   }
@@ -95,13 +88,13 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     // treat source. Archive dataset metadata & logos & assign a potentially new DOI
     updateState(ImportState.ARCHIVING);
-    DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
+    DatasetSourceDao dao = new DatasetSourceDao(factory);
     try (SqlSession session = factory.openSession(true)) {
       // find previous public release needed for DOI management
       final Integer prevReleaseKey = findPreviousRelease(datasetKey, session);
       LOG.info("Last public release was {}", prevReleaseKey);
 
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       dao.list(datasetKey, newDataset, true).forEach(d -> {
         if (cfg.doi != null) {
@@ -117,7 +110,7 @@ public class ProjectRelease extends AbstractProjectCopy {
           d.setDoi(srcDOI);
         }
 
-        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getImportAttempt(), newDatasetKey);
+        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getAttempt(), newDatasetKey);
         psm.create(newDatasetKey, d);
         // archive logos
         try {
@@ -161,7 +154,7 @@ public class ProjectRelease extends AbstractProjectCopy {
    */
   private DOI findSourceDOI(Integer prevReleaseKey, int sourceKey, SqlSession session) {
     if (prevReleaseKey != null) {
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var prevSrc = psm.getReleaseSource(sourceKey, prevReleaseKey);
       if (prevSrc != null && prevSrc.getDoi() != null) {
         // compare basic metrics

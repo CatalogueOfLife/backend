@@ -4,9 +4,10 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.TestDataRule;
-import org.junit.Test;
 
 import java.util.List;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

@@ -6,9 +6,11 @@ import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.parser.NameParser;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+
 import org.junit.ClassRule;
 import org.junit.Test;
 

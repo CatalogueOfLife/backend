@@ -3,8 +3,6 @@ package life.catalogue.es.nu;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.query.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toMap;
 

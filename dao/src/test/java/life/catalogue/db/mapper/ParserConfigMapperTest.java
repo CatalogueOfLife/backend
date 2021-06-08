@@ -5,9 +5,11 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.vocab.Users;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

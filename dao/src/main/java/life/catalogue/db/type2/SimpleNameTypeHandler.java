@@ -1,15 +1,13 @@
 package life.catalogue.db.type2;
 
 import life.catalogue.api.model.SimpleName;
-import life.catalogue.db.type2.CustomAbstractTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-import org.apache.ibatis.type.MappedJdbcTypes;
-import org.apache.ibatis.type.MappedTypes;
-import org.apache.ibatis.type.TypeException;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.sql.SQLException;
 import java.util.List;
+
+import org.apache.ibatis.type.TypeException;
 
 /**
  * Complex simple_name type handler that supports reads & writes.

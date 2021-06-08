@@ -1,17 +1,19 @@
 package life.catalogue.img;
 
 import life.catalogue.api.exception.NotFoundException;
-import org.imgscalr.Scalr;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
+
+import javax.imageio.ImageIO;
+
+import org.imgscalr.Scalr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ImageServiceFS implements ImageService {
   public static final String IMAGE_FORMAT = "png";

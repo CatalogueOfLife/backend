@@ -1,7 +1,5 @@
 package life.catalogue.db;
 
-import com.zaxxer.hikari.pool.HikariProxyConnection;
-
 import life.catalogue.api.vocab.Users;
 import life.catalogue.postgres.PgCopyUtils;
 
@@ -15,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
+import com.zaxxer.hikari.pool.HikariProxyConnection;
 
 public class InitDbUtils {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbUtils.class);
@@ -39,10 +38,9 @@ public class InitDbUtils {
       .put("created_by", Users.DB_INIT)
       .put("modified_by", Users.DB_INIT)
       .build());
-    // the dataset.csv file was generated as a dump from production with psql:
-    // \copy (select key, type, gbif_key, gbif_publisher_key, license, released, confidence, completeness, origin, title, alias, description, organisations, version, citation, geographic_scope, website, logo, "group", notes, settings, source_key, contact, authors, editors from dataset where not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
     try (Statement st = pgc.createStatement()) {
       st.execute("SELECT setval('dataset_key_seq', (SELECT max(key) FROM dataset))");
+      pgc.commit();
     }
   }
 }

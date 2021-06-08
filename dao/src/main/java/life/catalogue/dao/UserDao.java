@@ -1,20 +1,22 @@
 package life.catalogue.dao;
 
-import com.google.common.eventbus.EventBus;
 import life.catalogue.api.event.UserChanged;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.db.mapper.UserMapper;
+
+import java.util.*;
+
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.Function;
+import com.google.common.eventbus.EventBus;
 
 public class UserDao extends EntityDao<Integer, User, UserMapper> {
 

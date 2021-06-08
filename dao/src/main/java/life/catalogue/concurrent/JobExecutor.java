@@ -1,13 +1,7 @@
 package life.catalogue.concurrent;
 
 import life.catalogue.api.vocab.JobStatus;
-import org.simplejavamail.api.email.Email;
-import org.simplejavamail.api.mailer.Mailer;
-import org.simplejavamail.email.EmailBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -15,6 +9,14 @@ import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.simplejavamail.api.email.Email;
+import org.simplejavamail.api.mailer.Mailer;
+import org.simplejavamail.email.EmailBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The background job executor using a priority ordered queue.

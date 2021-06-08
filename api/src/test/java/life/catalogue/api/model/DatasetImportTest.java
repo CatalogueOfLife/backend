@@ -65,7 +65,7 @@ public class DatasetImportTest extends SerdeTestBase<DatasetImport> {
     json = json.replaceAll("cc0", "");
     
     Dataset d = ApiModule.MAPPER.readValue(json, Dataset.class);
-    assertNull(d.getWebsite());
+    assertNull(d.getUrl());
     assertNull(d.getLogo());
     assertNull(d.getLicense());
   }

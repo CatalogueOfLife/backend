@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.IndexName;
 import life.catalogue.db.CRUD;
+
 import org.apache.ibatis.cursor.Cursor;
 
 /**

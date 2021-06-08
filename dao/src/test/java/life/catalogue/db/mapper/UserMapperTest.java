@@ -1,18 +1,20 @@
 package life.catalogue.db.mapper;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.junit.Test;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

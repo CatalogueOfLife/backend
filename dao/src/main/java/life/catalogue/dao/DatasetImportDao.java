@@ -1,7 +1,5 @@
 package life.catalogue.dao;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -9,21 +7,26 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.type2.StringCount;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 public class DatasetImportDao {
   

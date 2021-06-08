@@ -1,24 +1,25 @@
 package life.catalogue.resources;
 
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Person;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.db.TestDataRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+
+import java.util.List;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-import java.time.LocalDate;
-import java.util.List;
+
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 
 import static life.catalogue.ApiUtils.*;
 import static life.catalogue.api.TestEntityGenerator.nullifyUserDate;
@@ -76,8 +77,8 @@ public class DatasetResourceTest extends ResourceTestBase {
     d.setTitle("s3s3derftg");
     d.setType(DatasetType.OTHER);
     d.setOrigin(DatasetOrigin.EXTERNAL);
-    d.setContact(Person.parse("me"));
-    d.setReleased(LocalDate.now());
+    d.setContact(Agent.parse("me"));
+    d.setIssued(FuzzyDate.now());
     Integer key = editorCreds(base).post(json(d), Integer.class);
     d.setKey(key);
     

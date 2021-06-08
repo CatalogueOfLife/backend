@@ -3,9 +3,7 @@ package life.catalogue.db.tree;
 import life.catalogue.api.model.RankedID;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.concurrent.UsageCounter;
-import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -13,6 +11,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.function.Consumer;
+
+import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * Print an entire dataset in a nested way using start/end calls similar to SAX

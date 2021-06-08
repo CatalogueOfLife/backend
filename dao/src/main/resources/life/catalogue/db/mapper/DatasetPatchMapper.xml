@@ -7,24 +7,27 @@
   <sql id="SELECT">
     d.key,
     d.doi,
-    d.type,
+    d.identifier,
     d.title,
-    d.description,
-    d.organisations,
-    d.contact,
-    d.authors,
-    d.editors,
-    d.license,
-    d.version,
-    d.released,
-    d.citation,
-    d.geographic_scope,
-    d.website,
-    d.logo,
     d.alias,
-    d."group",
+    d.description,
+    d.issued,
+    d.version,
+    d.issn,
+    d.contact,
+    d.creator,
+    d.editor,
+    d.publisher,
+    d.contributor,
+    d.geographic_scope,
+    d.taxonomic_scope,
+    d.temporal_scope,
     d.confidence,
     d.completeness,
+    d.license,
+    d.url,
+    d.logo,
+    d.notes,
     d.created,
     d.created_by,
     d.modified,
@@ -33,24 +36,27 @@
 
   <sql id="COLS">
     doi,
-    type,
+    identifier,
     title,
-    description,
-    organisations,
-    contact,
-    authors,
-    editors,
-    license,
-    version,
-    released,
-    citation,
-    geographic_scope,
-    website,
-    logo,
     alias,
-    "group",
+    description,
+    issued,
+    version,
+    issn,
+    contact,
+    creator,
+    editor,
+    publisher,
+    contributor,
+    geographic_scope,
+    taxonomic_scope,
+    temporal_scope,
     confidence,
     completeness,
+    license,
+    url,
+    logo,
+    notes,
     created_by,
     modified_by
   </sql>
@@ -60,46 +66,49 @@
   -->
   <sql id="PROPS">
     #{obj.doi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
-    #{obj.type}::datasettype,
+    #{obj.identifier, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
     #{obj.title},
-    #{obj.description},
-    #{obj.organisations, typeHandler=life.catalogue.db.type.OrganisationArrayTypeHandler},
-    #{obj.contact, typeHandler=life.catalogue.db.type.PersonTypeHandler},
-    #{obj.authors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
-    #{obj.editors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
-    #{obj.license}::LICENSE,
-    #{obj.version},
-    #{obj.released},
-    #{obj.citation},
-    #{obj.geographicScope},
-    #{obj.website},
-    #{obj.logo},
     #{obj.alias},
-    #{obj.group},
+    #{obj.description},
+    #{obj.issued},
+    #{obj.version},
+    #{obj.issn},
+    #{obj.contact, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{obj.creator, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{obj.editor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{obj.publisher, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{obj.contributor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{obj.geographicScope},
+    #{obj.taxonomicScope},
+    #{obj.temporalScope},
     #{obj.confidence},
     #{obj.completeness},
+    #{obj.license}::LICENSE,
+    #{obj.url},
+    #{obj.logo},
+    #{obj.notes},
     #{obj.createdBy},
     #{obj.modifiedBy}
   </sql>
 
-  <select id="processDataset" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="processDataset" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM dataset_patch d
     WHERE dataset_key = #{datasetKey}
   </select>
 
-  <select id="get" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
+  <select id="get" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM dataset_patch d
     WHERE key = #{key} and dataset_key = #{datasetKey}
   </select>
 
-  <insert id="create" parameterType="ArchivedDataset" useGeneratedKeys="false">
+  <insert id="create" parameterType="Dataset" useGeneratedKeys="false">
     INSERT INTO dataset_patch ( key, dataset_key,<include refid="COLS"/>, created, modified)
     VALUES ( #{obj.key}, #{datasetKey},<include refid="PROPS"/>, now(), now())
   </insert>
 
-  <update id="update" parameterType="ArchivedDataset">
+  <update id="update" parameterType="Dataset">
     UPDATE dataset_patch
     SET (<include refid="COLS"/>, modified)
     = (<include refid="PROPS"/>, now())

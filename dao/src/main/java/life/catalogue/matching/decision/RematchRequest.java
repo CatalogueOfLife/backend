@@ -1,9 +1,10 @@
 package life.catalogue.matching.decision;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.model.DSID;
 
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class RematchRequest implements DSID<Integer> {
   private Integer id;

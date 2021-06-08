@@ -1,12 +1,13 @@
 package life.catalogue.es;
 
-import com.google.common.base.Preconditions;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 public class EsClientFactory {
 

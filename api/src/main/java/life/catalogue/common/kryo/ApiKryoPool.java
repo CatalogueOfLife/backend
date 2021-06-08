@@ -44,8 +44,10 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.setRegistrationRequired(true);
 
     // col core
+    kryo.register(Agent.class);
     kryo.register(Authorship.class);
     kryo.register(BareName.class);
+    kryo.register(Citation.class);
     kryo.register(Classification.class);
     kryo.register(Dataset.class);
     kryo.register(DatasetImport.class);
@@ -57,7 +59,6 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Media.class);
     kryo.register(Name.class);
     kryo.register(ParsedNameUsage.class);
-    kryo.register(Person.class);
     kryo.register(NameRelation.class);
     kryo.register(Page.class);
     kryo.register(ParsedName.class);

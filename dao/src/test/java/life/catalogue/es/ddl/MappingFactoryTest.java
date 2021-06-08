@@ -2,6 +2,7 @@ package life.catalogue.es.ddl;
 
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsNameUsage;
+
 import org.junit.Test;
 
 /**

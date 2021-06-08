@@ -12,15 +12,17 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
-import org.apache.ibatis.exceptions.PersistenceException;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
+
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;

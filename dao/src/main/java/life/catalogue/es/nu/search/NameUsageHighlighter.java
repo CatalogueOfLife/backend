@@ -1,16 +1,18 @@
 package life.catalogue.es.nu.search;
 
-import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
+
 import org.gbif.nameparser.api.Authorship;
 
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.AUTHORSHIP;
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;

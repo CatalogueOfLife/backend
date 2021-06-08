@@ -1,7 +1,5 @@
 package life.catalogue.db.mapper;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
@@ -9,11 +7,14 @@ import life.catalogue.api.model.Reference;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Issue;
-import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Test;
+
+import com.google.common.collect.Sets;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
@@ -172,7 +173,7 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
     assertEquals(1, out.size());
     assertEquals(r2, out.get(0).getId());
     
-    req.setIssues(Lists.newArrayList(Issue.REFTYPE_INVALID, Issue.UNMATCHED_REFERENCE_BRACKETS));
+    req.setIssues(List.of(Issue.REFTYPE_INVALID, Issue.UNMATCHED_REFERENCE_BRACKETS));
     out = mapper().search(Datasets.COL, req, new Page());
     assertEquals(0, out.size());
   }

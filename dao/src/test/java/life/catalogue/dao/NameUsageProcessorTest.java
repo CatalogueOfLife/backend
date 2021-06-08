@@ -8,13 +8,14 @@ import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.NAME4;
 import static life.catalogue.api.vocab.Datasets.COL;

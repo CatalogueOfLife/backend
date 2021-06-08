@@ -1,8 +1,8 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Datasets;
+
 import org.junit.Test;
 
 import static life.catalogue.db.mapper.DatasetMapperTest.create;
@@ -23,6 +23,7 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
   @Test
   public void archive() throws Exception {
     Dataset d1 = create();
+
     dmapper().create(d1);
     dmapper().updateLastImport(d1.getKey(), 3);
 
@@ -30,9 +31,13 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
     commit();
     // reload to also get the creation/modified dates,
     d1 = dmapper().get(d1.getKey());
+    d1.setGbifKey(null);
+    d1.setGbifPublisherKey(null);
+    d1.setSize(null); // we populate size by counting usages - ignore it in comparison
 
-    ArchivedDataset d2 = mapper().get(d1.getKey(), d1.getImportAttempt());
-    
+    Dataset d2 = mapper().get(d1.getKey(), d1.getAttempt());
+
+    printDiff(d1, d2);
     assertTrue(d2.equals(d1));
   }
 

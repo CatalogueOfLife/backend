@@ -1,11 +1,12 @@
 package life.catalogue.matching.authorship;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import org.gbif.nameparser.api.Authorship;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import com.google.common.base.Joiner;
 
 
 /**
@@ -16,7 +17,7 @@ public class BasionymGroup<T> {
   private String epithet;
   private Authorship authorship;
   private T basionym;
-  private List<T> recombinations = Lists.newArrayList();
+  private List<T> recombinations = new ArrayList<>();
   
   public BasionymGroup() {
   }

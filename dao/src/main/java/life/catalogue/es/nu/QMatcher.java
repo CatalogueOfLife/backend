@@ -4,6 +4,7 @@ import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.es.ddl.MultiField;
 import life.catalogue.es.query.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

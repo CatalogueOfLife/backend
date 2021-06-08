@@ -1,22 +1,21 @@
 package life.catalogue.dao;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-
 import life.catalogue.db.mapper.DatasetMapper;
+
+import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
+import com.google.common.eventbus.EventBus;
 
 import static org.junit.Assert.*;
 

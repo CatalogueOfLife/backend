@@ -1,12 +1,8 @@
 package life.catalogue.db.mapper;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.db.TestDataRule;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,6 +10,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;

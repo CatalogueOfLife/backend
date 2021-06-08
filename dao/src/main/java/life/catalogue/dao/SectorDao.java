@@ -8,16 +8,17 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.es.NameUsageIndexService;
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @SuppressWarnings("unused")

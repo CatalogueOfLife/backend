@@ -11,17 +11,18 @@ import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.function.Supplier;
+
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * A junit test rule that loads test data from a text tree file into a given dataset.

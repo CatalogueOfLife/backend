@@ -2,6 +2,7 @@ package life.catalogue.es;
 
 import life.catalogue.api.vocab.*;
 import life.catalogue.es.ddl.*;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;

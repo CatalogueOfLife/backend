@@ -1,8 +1,9 @@
 package life.catalogue.postgres;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.model.Name;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+
+import com.google.common.collect.Lists;
 
 public class AuthorshipNormFunc {
   private final int startIdx;

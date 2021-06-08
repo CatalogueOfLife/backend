@@ -1,12 +1,9 @@
 package life.catalogue.importer.dwca;
 
-import com.google.common.collect.Lists;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.Person;
 import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
 import life.catalogue.importer.InserterBaseTest;
@@ -16,10 +13,6 @@ import life.catalogue.importer.reference.ReferenceFactory;
 
 import org.gbif.nameparser.api.NomCode;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
-
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
@@ -27,7 +20,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.is;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
+
 import static org.junit.Assert.*;
 
 public class DwcaInserterTest extends InserterBaseTest {
@@ -57,18 +53,17 @@ public class DwcaInserterTest extends InserterBaseTest {
     NeoInserter ins = setup("/dwca/38");
     DatasetWithSettings d = ins.readMetadata().get();
 
-    Person markus = new Person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
-    Person bouchard = new Person("Patrice", "Bouchard");
+    Agent markus = new Agent("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
+    Agent bouchard = new Agent("Patrice", "Bouchard");
 
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
-    assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
+    assertEquals("https://github.com/mdoering/famous-organism", d.getUrl().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals(markus, d.getContact());
-    assertEquals(List.of(markus, bouchard), d.getAuthors());
-    assertEquals("2017-01-19", d.getReleased().toString());
+    assertEquals(List.of(markus, bouchard), d.getCreator());
+    assertEquals("2017-01-19", d.getIssued().toString());
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
-    assertEquals("cite my famous dataset", d.getCitation());
     assertEquals("Famous People", d.getAlias());
   }
 
@@ -78,7 +73,7 @@ public class DwcaInserterTest extends InserterBaseTest {
     NeoInserter ins = setup("/dwca/39");
     DatasetWithSettings d = ins.readMetadata().get();
 
-    Person donald = new Person("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
+    Agent donald = new Agent("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
 
     assertEquals("Catalogue of the Alucitoidea of the World", d.getTitle());
     assertEquals("Alucitoidea", d.getAlias());
@@ -86,22 +81,21 @@ public class DwcaInserterTest extends InserterBaseTest {
     assertEquals(donald, d.getContact());
     assertEquals(License.CC_BY, d.getLicense());
     assertEquals("ver. 1.0 (09/2020)", d.getVersion());
-    assertEquals(LocalDate.of(2020, 9, 18), d.getReleased());
-    assertNull(d.getWebsite());
+    assertEquals(LocalDate.of(2020, 9, 18), d.getIssued());
+    assertNull(d.getUrl());
     assertEquals(URI.create("https://hobern.net/img/Alucita_hexadactyla.png"), d.getLogo());
-    assertEquals("Gielis C. & Hobern D. (eds) (2020). Catalogue of the Alucitoidea of the World (version 1.0, 09/2020).", d.getCitation());
     assertNull(d.getCompleteness());
     assertNull(d.getConfidence());
     assertEquals(NomCode.ZOOLOGICAL, d.getCode());
     assertEquals(Gazetteer.ISO, d.getGazetteer());
 
-    assertNull(d.getOrganisations());
+    assertNull(d.getContributor());
 
-    List<Person> authors = new ArrayList<>();
+    List<Agent> authors = new ArrayList<>();
     authors.add(donald);
-    authors.add(new Person("Cees", "Gielis", null, "0000-0003-0857-1679"));
-    assertEquals(authors, d.getAuthors());
-    assertNull(d.getEditors());
+    authors.add(new Agent("Cees", "Gielis", null, "0000-0003-0857-1679"));
+    assertEquals(authors, d.getCreator());
+    assertNull(d.getEditor());
   }
 
 

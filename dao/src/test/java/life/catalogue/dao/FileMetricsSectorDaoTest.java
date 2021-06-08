@@ -5,10 +5,11 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.junit.Before;
 
 import java.sql.Statement;
+
+import org.apache.ibatis.session.SqlSession;
+import org.junit.Before;
 
 public class FileMetricsSectorDaoTest extends FileMetricsDaoTestBase<DSID<Integer>> {
 

@@ -1,16 +1,18 @@
 package life.catalogue.concurrent;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class BackgroundJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(BackgroundJob.class);

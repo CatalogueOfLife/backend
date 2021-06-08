@@ -4,9 +4,10 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TaxonConceptRelation;
 import life.catalogue.api.vocab.TaxonConceptRelType;
 import life.catalogue.db.*;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 
 public interface TaxonConceptRelationMapper extends Create<TaxonConceptRelation>,
                                                     DatasetProcessable<TaxonConceptRelation>,

@@ -3,14 +3,16 @@ package life.catalogue.db;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.common.func.Predicates;
+
 import org.gbif.nameparser.api.Rank;
-import org.postgresql.util.PSQLException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.*;
 import java.util.Arrays;
+
+import org.postgresql.util.PSQLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LookupTables {
 

@@ -141,6 +141,10 @@ public final class FuzzyDate {
     return ta;
   }
 
+  public int getYear() {
+    return ta.get(YEAR);
+  }
+
   /**
    * Returns false if year, month and day are known, true otherwise.
    *

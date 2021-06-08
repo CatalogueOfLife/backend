@@ -3,16 +3,19 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.cursor.Cursor;
+
 import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
 
 /**
  * Mapper dealing with methods returning the NameUsage interface, i.e. a name in the context of either a Taxon, TaxonVernacularUsage,

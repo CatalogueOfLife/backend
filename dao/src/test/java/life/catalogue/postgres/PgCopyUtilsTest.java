@@ -1,18 +1,20 @@
 package life.catalogue.postgres;
 
+import life.catalogue.db.PgSetupRule;
+
 import java.io.File;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.google.common.collect.ImmutableMap;
-import life.catalogue.db.PgSetupRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.postgresql.jdbc.PgConnection;
+
+import com.google.common.collect.ImmutableMap;
 
 import static org.junit.Assert.assertEquals;
 

@@ -4,13 +4,15 @@ import life.catalogue.api.model.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.tree.SectorDataRule;
 import life.catalogue.db.tree.TxtTreeDataRule;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
 
 import java.util.List;
 import java.util.Map;
+
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
 
 import static org.junit.Assert.*;
 

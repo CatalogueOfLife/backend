@@ -1,19 +1,20 @@
 package life.catalogue.dao;
 
-import com.google.common.base.Preconditions;
-import com.google.common.eventbus.Subscribe;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
+import com.google.common.base.Preconditions;
+import com.google.common.eventbus.Subscribe;
 
 /**
  * Cache for Immutable dataset infos that is loaded on demand and never release as the data is immutable
@@ -88,7 +89,7 @@ public class DatasetInfoCache {
     if (d == null) {
       throw NotFoundException.notFound(Dataset.class, key);
     }
-    return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getImportAttempt(), d.hasDeletedDate());
+    return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getAttempt(), d.hasDeletedDate());
   }
 
   public DatasetInfo info(int datasetKey) throws NotFoundException {

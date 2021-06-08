@@ -132,21 +132,21 @@ public class GbifSync implements Managed {
 
       } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
           !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
-          !Objects.equals(gbif.getOrganisations(), curr.getOrganisations()) ||
-          !Objects.equals(gbif.getWebsite(), curr.getWebsite()) ||
+          !Objects.equals(gbif.getPublisher(), curr.getPublisher()) ||
+          !Objects.equals(gbif.getUrl(), curr.getUrl()) ||
           !Objects.equals(gbif.getDoi(), curr.getDoi())
           ) {
-        //we modify core metadata (title, description, contacts, version) via the dwc archive metadata
+        // we modify core metadata (title, description, contacts, version) via the dwc archive metadata
         //gbif syncs only change one of the following
         // - dwca access url
         // - license
-        // - organization (publisher)
+        // - publisher (publishOrgKey)
         // - homepage
         // - doi
         curr.setDataAccess(gbif.getDataAccess());
         curr.setLicense(gbif.getLicense());
-        curr.setOrganisations(gbif.getOrganisations());
-        curr.setWebsite(gbif.getWebsite());
+        curr.setPublisher(gbif.getPublisher());
+        curr.setUrl(gbif.getUrl());
         curr.setDoi(gbif.getDoi());
         mapper.updateAll(curr);
         updated++;

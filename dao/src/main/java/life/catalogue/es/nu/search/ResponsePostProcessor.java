@@ -4,9 +4,10 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.es.UpwardConverter;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+
+import org.apache.commons.lang3.StringUtils;
 
 import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;

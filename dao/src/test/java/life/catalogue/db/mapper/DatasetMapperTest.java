@@ -1,14 +1,14 @@
 package life.catalogue.db.mapper;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
+
+import life.catalogue.common.date.FuzzyDate;
+
 import org.gbif.nameparser.api.NomCode;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -17,6 +17,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -35,35 +38,32 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     return d;
   }
 
-  public static void populate(Dataset d) {
-    populate((ArchivedDataset)d);
+  public static Dataset populate(Dataset d) {
     d.setGbifKey(UUID.randomUUID());
     d.setGbifPublisherKey(UUID.randomUUID());
-  }
-
-  static void populate(ArchivedDataset d) {
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.TAXONOMIC);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setTitle(RandomUtils.randomLatinString(80));
     d.setDescription(RandomUtils.randomLatinString(500));
     d.setLicense(License.CC0);
-    d.setAuthors(new ArrayList<>());
-    d.setEditors(new ArrayList<>());
+    d.setCreator(new ArrayList<>());
+    d.setEditor(new ArrayList<>());
+    d.setContributor(new ArrayList<>());
     for (int i = 0; i < 8; i++) {
-      d.getAuthors().add(Person.parse(RandomUtils.randomLatinString(100)));
-      d.getEditors().add(Person.parse(RandomUtils.randomLatinString(100)));
+      d.getCreator().add(Agent.parse(RandomUtils.randomLatinString(100)));
+      d.getEditor().add(Agent.parse(RandomUtils.randomLatinString(100)));
+      d.getContributor().add(Agent.parse(RandomUtils.randomLatinString(100)));
     }
-    d.setContact(Person.parse("Hans Peter"));
-    d.setReleased(LocalDate.now());
+    d.setContact(Agent.parse("Hans Peter"));
+    d.setPublisher(Agent.parse("Peter Publish"));
+    d.setIssued(FuzzyDate.now());
     d.setVersion("v123");
-    d.setWebsite(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
+    d.setUrl(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
     d.setNotes("my notes");
-    d.setOrganisations(new ArrayList<>(List.of(
-      new Organisation("my org"),
-      new Organisation("your org")
-    )));
     d.setDoi(DOI.test(UUID.randomUUID().toString()));
+    d.setSize(0);
+    return d;
   }
 
   @Test
@@ -111,7 +111,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     Dataset d2 = TestEntityGenerator.nullifyDate(mapper().get(d1.getKey()));
 
-    printDiff(d1.getContact(), d2.getContact());
     assertEquals(d1.getContact(), d2.getContact());
     assertEquals(d1, d2);
   }
@@ -257,7 +256,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   private List<Dataset> createExpected() throws Exception {
-    List<Dataset> ds = Lists.newArrayList();
+    List<Dataset> ds = new ArrayList<>();
     ds.add(mapper().get(Datasets.COL));
     ds.add(mapper().get(TestEntityGenerator.DATASET11.getKey()));
     ds.add(mapper().get(TestEntityGenerator.DATASET12.getKey()));
@@ -372,7 +371,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     query.setCreated(LocalDate.parse("2016-02-01"));
     assertEquals(7, mapper().search(query, null, new Page()).size());
 
-    query.setReleased(LocalDate.parse("2007-11-21"));
+    query.setIssued(FuzzyDate.of("2007-11-21"));
     query.setModified(LocalDate.parse("2031-12-31"));
     assertEquals(0, mapper().search(query, null, new Page()).size());
 
@@ -535,16 +534,16 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset ds = new Dataset();
     ds.setTitle(title);
     if (author != null) {
-      ds.setAuthors(Person.parse(Lists.newArrayList(author.split(";"))));
+      ds.setCreator(Agent.parse(List.of(author.split(";"))));
     }
-    ds.setOrganisations(List.of(new Organisation(organisation)));
+    ds.setContributor(List.of(new Agent(organisation)));
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);
-    ds.setContact(new Person("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
-    ds.setEditors(List.of(
-      new Person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),
-      new Person("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666")
+    ds.setContact(new Agent("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
+    ds.setEditor(List.of(
+      new Agent("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),
+      new Agent("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666")
     ));
     mapper().create(TestEntityGenerator.setUserDate(ds));
 

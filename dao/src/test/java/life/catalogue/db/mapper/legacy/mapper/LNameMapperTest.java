@@ -5,12 +5,14 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.legacy.LNameMapper;
 import life.catalogue.db.mapper.legacy.model.*;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.sql.SQLException;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

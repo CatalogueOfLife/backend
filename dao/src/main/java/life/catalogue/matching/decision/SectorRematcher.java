@@ -5,6 +5,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.SectorMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

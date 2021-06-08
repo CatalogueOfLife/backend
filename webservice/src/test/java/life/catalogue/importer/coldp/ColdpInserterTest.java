@@ -1,24 +1,23 @@
 package life.catalogue.importer.coldp;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Snapshot;
-import com.codahale.metrics.Timer;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.Person;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.reference.ReferenceFactory;
+
 import org.gbif.nameparser.api.NomCode;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -33,19 +32,18 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertNull(d.getDataFormat());
     assertEquals("The full dataset title", d.getTitle());
     assertNotNull(d.getDescription());
-    assertEquals(10, d.getOrganisations().size());
-    assertEquals(new Person("Rainer", "Froese", "rainer@mailinator.com", null), d.getContact());
+    assertEquals(10, d.getContributor().size());
+    assertEquals(new Agent("Rainer", "Froese", "rainer@mailinator.com", null), d.getContact());
     assertEquals(List.of(
-        new Person("Rainer", "Froese", "rainer@mailinator.com", "0000-0001-9745-636X"),
-        new Person("Daniel", "Pauly", null, "0000-0003-3756-4793")
-      ), d.getAuthors());
-    assertNull(d.getEditors());
+        new Agent("Rainer", "Froese", "rainer@mailinator.com", "0000-0001-9745-636X"),
+        new Agent("Daniel", "Pauly", null, "0000-0003-3756-4793")
+      ), d.getCreator());
+    assertNull(d.getEditor());
     assertEquals(License.CC_BY_NC, d.getLicense());
     assertEquals("ver. (06/2018)", d.getVersion());
-    assertEquals("2018-06-01", d.getReleased().toString());
-    assertEquals("https://www.fishbase.org", d.getWebsite().toString());
+    assertEquals("2018-06-01", d.getIssued().toString());
+    assertEquals("https://www.fishbase.org", d.getUrl().toString());
     assertEquals("https://www.fishbase.de/images/gifs/fblogo_new.gif", d.getLogo().toString());
-    assertEquals("Froese R. & Pauly D. (eds) (2018). FishBase (version 06/2018).", d.getCitation());
 
     assertEquals(NomCode.BOTANICAL, d.getCode());
     assertEquals((Integer)4, d.getConfidence());

@@ -11,6 +11,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -118,9 +119,9 @@ public class AcefExporter extends DatasetExporter {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(datasetKey);
-      if (d.getReleased()==null) {
+      if (d.getIssued()==null) {
         // use today as default release date if missing
-        d.setReleased(LocalDate.now());
+        d.setIssued(FuzzyDate.now());
       }
       data.put("d", d);
       

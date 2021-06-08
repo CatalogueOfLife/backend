@@ -1,7 +1,6 @@
 package life.catalogue.db.type;
 
 import life.catalogue.db.type2.AbstractArrayTypeHandler;
-import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Array;
 import java.sql.SQLException;
@@ -10,6 +9,8 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Base class for type handlers that need to convert between columns of enum array type and fields of type Set&lt;Enum&gt;.

@@ -2,9 +2,10 @@ package life.catalogue.db.mapper.legacy;
 
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.mapper.legacy.model.LSpeciesName;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 
 /**
  * Warning: {@link LSpeciesName#getDistribution()} is not mapped

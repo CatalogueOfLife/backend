@@ -1,9 +1,5 @@
 package life.catalogue.dao;
 
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.EntityType;
@@ -12,17 +8,24 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.NameType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.cache.LoadingCache;
+
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
@@ -81,7 +84,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       Synonymy syn = new Synonymy();
       // get all synonyms and misapplied name
       // they come ordered by status, then homotypic group so its easy to arrange them
-      List<Name> group = Lists.newArrayList();
+      List<Name> group = new ArrayList<>();
       for (Synonym s : sm.listByTaxon(datasetKey, taxonId)) {
         if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
           syn.addMisapplied(s);
@@ -93,7 +96,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
                 && !group.get(0).getHomotypicNameId().equals(s.getName().getHomotypicNameId())) {
               // new heterotypic group
               syn.addHeterotypicGroup(group);
-              group = Lists.newArrayList();
+              group = new ArrayList<>();
             }
             // add to group
             group.add(s.getName());

@@ -1,8 +1,8 @@
 package life.catalogue.es.query;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import java.util.Collections;
+
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import static life.catalogue.es.query.SortOptions.Order.ASC;
 import static life.catalogue.es.query.SortOptions.Order.DESC;

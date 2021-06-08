@@ -35,6 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.xml.crypto.Data;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -140,11 +144,11 @@ public class PgImport implements Callable<Boolean> {
       );
       final String aliasOLD = old.getAlias();
       // archive the previous attempt if existing before we update the current metadata and tie it to a new attempt
-      if (old.getDataset().getImportAttempt() != null) {
-        int attempt = old.getDataset().getImportAttempt();
+      if (old.getDataset().getAttempt() != null) {
+        int attempt = old.getDataset().getAttempt();
         DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
         LOG.info("Archive previous dataset metadata with import attempt {} for {}: {}", attempt, dataset.getKey(), dataset.getTitle());
-        ArchivedDataset archived = dam.get(dataset.getKey(), attempt);
+        Dataset archived = dam.get(dataset.getKey(), attempt);
         if (archived == null) {
           // we do not yet have an archived version for given attempt
           dam.create(dataset.getKey());
@@ -181,21 +185,15 @@ public class PgImport implements Callable<Boolean> {
    * @param update
    */
   public static DatasetWithSettings updateMetadata(DatasetWithSettings d, DatasetWithSettings update) {
-    copyIfNotNull(update::getAlias, d::setAlias);
-    copyIfNotNull(update::getAuthors, d::setAuthors);
-    copyIfNotNull(update::getEditors, d::setEditors);
-    copyIfNotNull(update::getCompleteness, d::setCompleteness);
-    copyIfNotNull(update::getConfidence, d::setConfidence);
-    copyIfNotNull(update::getContact, d::setContact);
-    copyIfNotNull(update::getDescription, d::setDescription);
-    copyIfNotNull(update::getGroup, d::setGroup);
-    copyIfNotNull(update::getLicense, d::setLicense);
-    copyIfNotNull(update::getOrganisations, d::setOrganisations);
-    copyIfNotNull(update::getReleased, d::setReleased);
-    copyIfNotNull(update::getTitle, d::setTitle);
+    try {
+      for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
+        Object val = prop.getReadMethod().invoke(d.getDataset());
+        prop.getWriteMethod().invoke(update.getDataset(), val);
+      }
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new RuntimeException(e);
+    }
     copyIfNotNull(update::getType, d::setType);
-    copyIfNotNull(update::getVersion, d::setVersion);
-    copyIfNotNull(update::getWebsite, d::setWebsite);
     return d;
   }
   

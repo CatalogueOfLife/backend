@@ -7,14 +7,16 @@ import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndex;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.time.LocalDateTime;
-import java.util.List;
 
 public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   

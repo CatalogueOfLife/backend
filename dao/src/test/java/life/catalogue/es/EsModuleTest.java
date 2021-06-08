@@ -2,6 +2,7 @@ package life.catalogue.es;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.search.NameUsageWrapper;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

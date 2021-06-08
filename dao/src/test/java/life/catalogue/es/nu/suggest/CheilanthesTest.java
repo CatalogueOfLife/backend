@@ -4,11 +4,13 @@ import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsTestUtils;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.IOException;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

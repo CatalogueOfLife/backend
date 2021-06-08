@@ -1,9 +1,10 @@
 package life.catalogue.db.type2;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.gbif.dwc.terms.Term;
 
 import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * Postgres type handler converting an map of term values into a postgres JSONB data type.

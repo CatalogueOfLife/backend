@@ -5,15 +5,18 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TreeMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import org.gbif.nameparser.api.Rank;
+
 import java.util.*;
 import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TreeDao {
   private static final Logger LOG = LoggerFactory.getLogger(TreeDao.class);

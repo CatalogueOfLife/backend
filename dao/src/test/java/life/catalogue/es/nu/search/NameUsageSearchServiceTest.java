@@ -11,19 +11,21 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
-import org.elasticsearch.client.RestClient;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.*;
+
+import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.*;
 
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;

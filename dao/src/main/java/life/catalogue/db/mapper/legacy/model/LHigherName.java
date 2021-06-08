@@ -1,14 +1,17 @@
 package life.catalogue.db.mapper.legacy.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class LHigherName implements LName {
   private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) [a-z]{1,6}\\. ([a-z]{2}.+)$");

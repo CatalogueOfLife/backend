@@ -1,23 +1,22 @@
 package life.catalogue.dao;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
-
 import life.catalogue.db.TestDataRule;
-
 import life.catalogue.db.mapper.DatasetExportMapperTest;
-
-import org.junit.Test;
 
 import java.io.File;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import com.google.common.eventbus.EventBus;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class DatasetExportDaoIT extends DaoTestBase {
 
@@ -30,7 +29,7 @@ public class DatasetExportDaoIT extends DaoTestBase {
     assertNull(c);
 
     DatasetExport e = DatasetExportMapperTest.create(JobStatus.FINISHED);
-    e.setImportAttempt(null);
+    e.setAttempt(null);
     dao.create(e, Users.TESTER);
     commit();
 

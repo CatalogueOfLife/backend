@@ -1,10 +1,11 @@
 package life.catalogue.db;
 
 import life.catalogue.common.util.YamlUtils;
-import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.Statement;
+
+import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
 

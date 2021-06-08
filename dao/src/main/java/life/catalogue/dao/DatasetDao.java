@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.DatasetProcessable;
@@ -23,7 +24,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -109,9 +112,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     d.setAlias("alias");
     d.setTitle("title");
     d.setOrigin(DatasetOrigin.MANAGED);
-    d.setReleased(LocalDate.now());
+    d.setIssued(FuzzyDate.now());
     d.setLogo(URI.create("https://gbif.org"));
-    d.setWebsite(d.getLogo());
+    d.setUrl(d.getLogo());
     d.setCreated(LocalDateTime.now());
     d.setModified(LocalDateTime.now());
     d.setImported(LocalDateTime.now());
@@ -166,7 +169,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
-  private void postDoiDeletionForSources(ProjectSourceMapper psm, int datasetKey){
+  private void postDoiDeletionForSources(DatasetSourceMapper psm, int datasetKey){
     psm.listReleaseSources(datasetKey).stream()
       .filter(d -> d.getDoi() != null && d.getDoi().isCOL())
       .forEach(d -> bus.post(DoiChange.delete(d.getDoi())));
@@ -180,7 +183,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     // old is null as we have set offerChangeHook to false - we only need it here so lets call it manually
     old = mapper.get(key);
-    ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+    DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
     if (old != null && old.getOrigin() == DatasetOrigin.MANAGED) {
       // This is a recursive project delete.
       Set<Integer> releases = listReleaseKeys(key, user, mapper);
@@ -196,7 +199,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         delete(rk, user);
       }
     }
-
+    // remove source citations
+    session.getMapper(CitationMapper.class).delete(key);
     // remove decisions, sectors, estimates, dataset patches
     for (Class<DatasetProcessable<?>> mClass : new Class[]{SectorMapper.class, DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class}) {
       LOG.info("Delete {}s for dataset {}", mClass.getSimpleName().substring(0, mClass.getSimpleName().length() - 6), key);
@@ -204,7 +208,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     // request DOI update/deletion for all source DOIs - they might be shared across releases so we cannot just delete them
     Set<DOI> dois = psm.listReleaseSources(key).stream()
-        .map(ArchivedDataset::getDoi)
+        .map(Dataset::getDoi)
         .filter(java.util.Objects::nonNull)
         .collect(Collectors.toSet());
     // remove dataset archive
@@ -279,13 +283,22 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected boolean createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
-    pullLogo(obj, null, user);
+    // persist source citations
+    if (obj.getSource() != null) {
+      var cm = session.getMapper(CitationMapper.class);
+      for (var c : obj.getSource()) {
+        cm.create(obj.getKey(), c);
+      }
+    }
+    // data partitions
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey(), obj.getOrigin());
       Partitioner.createManagedObjects(factory, obj.getKey());
     }
     session.commit();
     session.close();
+    // other non pg stuff
+    pullLogo(obj, null, user);
     bus.post(DatasetChanged.created(obj));
     return false;
   }
@@ -301,12 +314,25 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected boolean updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session, boolean keepSessionOpen) {
+    // persist source citations if they changed
+    if (!java.util.Objects.equals(old.getSource(), obj.getSource())) {
+      var cm = session.getMapper(CitationMapper.class);
+      // erase and recreate
+      cm.delete(obj.getKey());
+      if (obj.getSource() != null) {
+        for (var c : obj.getSource()) {
+          cm.create(obj.getKey(), c);
+        }
+      }
+    }
+    // data partitions
     if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
       // suspicious. Should there ever be a managed dataset without partitions?
       recreatePartition(obj.getKey(), obj.getOrigin());
     }
     session.commit();
     session.close();
+    // other non pg stuff
     pullLogo(obj, old, user);
     bus.post(DatasetChanged.changed(obj, old));
     if (obj.getDoi() != null && obj.getDoi().isCOL()) {

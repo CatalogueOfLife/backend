@@ -1,12 +1,12 @@
 package life.catalogue.es.ddl;
 
-import org.junit.Test;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

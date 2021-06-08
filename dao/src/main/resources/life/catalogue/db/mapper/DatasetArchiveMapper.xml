@@ -6,73 +6,68 @@
 
   <sql id="SELECT">
     <include refid="life.catalogue.db.mapper.DatasetPatchMapper.SELECT"/>,
-    d.import_attempt,
-    d.notes,
+    d.attempt,
     d.origin,
+    d.type,
     d.source_key,
     di.finished AS imported
   </sql>
 
   <sql id="COLS">
-    notes,
+    type,
     <include refid="life.catalogue.db.mapper.DatasetPatchMapper.COLS"/>
   </sql>
 
   <sql id="PROPS">
-    #{notes},
+    #{type}::datasettype,
     <!--
-    PROPS_PATCH uses obj. prefix so we cannot share the list
+    DatasetPatchMapper.PROPS uses obj. prefix so we cannot share the list
     But we need to make sure we have the same order so the COLS match up!
     -->
     #{doi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
-    #{type}::datasettype,
+    #{identifier, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
     #{title},
-    #{description},
-    #{organisations, typeHandler=life.catalogue.db.type.OrganisationArrayTypeHandler},
-    #{contact, typeHandler=life.catalogue.db.type.PersonTypeHandler},
-    #{authors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
-    #{editors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
-    #{license}::LICENSE,
-    #{version},
-    #{released},
-    #{citation},
-    #{geographicScope},
-    #{website},
-    #{logo},
     #{alias},
-    #{group},
+    #{description},
+    #{issued},
+    #{version},
+    #{issn},
+    #{contact, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{creator, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{editor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{publisher, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{contributor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{geographicScope},
+    #{taxonomicScope},
+    #{temporalScope},
     #{confidence},
     #{completeness},
+    #{license}::LICENSE,
+    #{url},
+    #{logo},
+    #{notes},
     #{createdBy},
     #{modifiedBy}
   </sql>
 
   <sql id="FROM">
-    dataset_archive d LEFT JOIN dataset_import di ON d.import_attempt=di.attempt AND d.key=di.dataset_key
+    dataset_archive d LEFT JOIN dataset_import di ON d.attempt=di.attempt AND d.key=di.dataset_key
   </sql>
 
-  <resultMap id="archiveResultMap" type="ArchivedDataset" autoMapping="true">
-    <id property="key" column="key"/>
-    <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.OrganisationArrayTypeHandler"/>
-    <result property="contact" column="contact" typeHandler="life.catalogue.db.type.PersonTypeHandler"/>
-    <result property="authors" column="authors" typeHandler="life.catalogue.db.type.PersonArrayTypeHandler"/>
-    <result property="editors" column="editors" typeHandler="life.catalogue.db.type.PersonArrayTypeHandler"/>
-  </resultMap>
-
-  <select id="get" resultMap="archiveResultMap">
+  <select id="get" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE d.key = #{key} AND d.import_attempt = #{attempt}
+    WHERE d.key = #{key} AND d.attempt = #{attempt}
   </select>
 
   <insert id="create" parameterType="map">
-    INSERT INTO dataset_archive (key, import_attempt, <include refid="COLS"/>, source_key, origin, created, modified)
-    SELECT key, import_attempt, <include refid="COLS"/>, source_key, origin, now(), now()
+    INSERT INTO dataset_archive (key, attempt, <include refid="COLS"/>, source_key, origin, created, modified)
+    SELECT key, attempt, <include refid="COLS"/>, source_key, origin, now(), now()
     FROM dataset d
     WHERE d.key = #{key}
   </insert>
 
-  <select id="processDataset" parameterType="map" resultMap="archiveResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="processDataset" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.key = #{datasetKey}

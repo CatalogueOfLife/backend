@@ -3,13 +3,16 @@ package life.catalogue.matching.authorship;
 import life.catalogue.api.model.ScientificName;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
-import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.Authorship;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import javax.annotation.Nullable;
-import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static life.catalogue.api.util.ObjectUtils.getIfNotNull;
 import static life.catalogue.common.tax.AuthorshipNormalizer.Author;

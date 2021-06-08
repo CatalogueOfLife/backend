@@ -1,8 +1,8 @@
 package life.catalogue.es.query;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 class BoolConstraint extends Constraint {
   private List<Query> must;

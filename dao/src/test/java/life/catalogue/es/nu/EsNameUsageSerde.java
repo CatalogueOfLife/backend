@@ -7,14 +7,16 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.EnumSet;
+
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,7 +1,5 @@
 package life.catalogue.es.nu;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Iterables;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
@@ -18,12 +16,6 @@ import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.*;
-import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +27,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;

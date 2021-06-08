@@ -1,9 +1,9 @@
 package life.catalogue.db.mapper.legacy.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class LCommonName implements LName {
   private String name;

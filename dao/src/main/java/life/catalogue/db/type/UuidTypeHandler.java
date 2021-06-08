@@ -1,14 +1,15 @@
 package life.catalogue.db.type;
 
-import com.google.common.base.Strings;
+import java.sql.*;
+import java.util.UUID;
+
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
-import java.util.UUID;
+import com.google.common.base.Strings;
 
 /**
  * Handler for UUID types.

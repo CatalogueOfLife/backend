@@ -2,13 +2,14 @@ package life.catalogue.matching;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.IndexName;
+
+import java.io.File;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mapdb.DBMaker;
-
-import java.io.File;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

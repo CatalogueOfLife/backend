@@ -5,12 +5,13 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.SpeciesEstimate;
 import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.db.mapper.EstimateMapper;
+
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class EstimateDao extends DatasetEntityDao<Integer, SpeciesEstimate, EstimateMapper> {
   

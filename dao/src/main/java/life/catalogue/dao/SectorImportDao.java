@@ -4,15 +4,17 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.mapper.SectorImportMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static life.catalogue.dao.DatasetImportDao.countMap;
 public class SectorImportDao {

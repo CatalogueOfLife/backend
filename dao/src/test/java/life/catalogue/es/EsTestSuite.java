@@ -1,26 +1,15 @@
 package life.catalogue.es;
 
+import life.catalogue.es.ddl.MappingFactoryTest;
+import life.catalogue.es.ddl.MappingUtilTest;
+import life.catalogue.es.nu.*;
+import life.catalogue.es.nu.search.*;
+import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEsTest;
+import life.catalogue.es.query.*;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-import life.catalogue.es.ddl.MappingFactoryTest;
-import life.catalogue.es.ddl.MappingUtilTest;
-import life.catalogue.es.nu.ClassificationUpdaterTest;
-import life.catalogue.es.nu.EsNameUsageSerde;
-import life.catalogue.es.nu.Issue333;
-import life.catalogue.es.nu.MultiValuedMapTest;
-import life.catalogue.es.nu.NameUsageFieldLookupTest;
-import life.catalogue.es.nu.NameUsageIndexServiceIT;
-import life.catalogue.es.nu.NameUsageResponseConverterTest;
-import life.catalogue.es.nu.NameUsageWrapperConverterTest;
-import life.catalogue.es.nu.QMatchingTest;
-import life.catalogue.es.nu.search.*;
-import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEsTest;
-import life.catalogue.es.query.CollapsibleListTest;
-import life.catalogue.es.query.PrefixQueryTest;
-import life.catalogue.es.query.QueryTest;
-import life.catalogue.es.query.RangeQueryTest;
-import life.catalogue.es.query.TermQueryTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({

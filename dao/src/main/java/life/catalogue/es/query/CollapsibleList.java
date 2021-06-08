@@ -1,10 +1,10 @@
 package life.catalogue.es.query;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * An extension of ArrayList solely aimed at reflecting a peculiarity of the Elasticsearch Query DSL, which allows you to write

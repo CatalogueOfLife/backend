@@ -1,8 +1,8 @@
 package life.catalogue.concurrent;
 
-import com.google.common.base.Preconditions;
-
 import javax.validation.constraints.Min;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Background job configuration for processing of asynchroneous tasks.

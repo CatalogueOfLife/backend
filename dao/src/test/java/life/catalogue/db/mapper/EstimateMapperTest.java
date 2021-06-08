@@ -7,6 +7,7 @@ import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.db.PgSetupRule;
+
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;

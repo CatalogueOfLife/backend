@@ -4,16 +4,18 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.db.mapper.ReferenceMapper;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
 
 public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceDao.class);

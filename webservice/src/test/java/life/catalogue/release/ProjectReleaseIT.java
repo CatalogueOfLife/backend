@@ -50,12 +50,12 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
       Dataset d = dm.get(projectKey);
       d.setTitle("Catalogue of Life");
-      d.setOrganisations(Organisation.parse("Species 2000", "ITIS"));
-      d.setEditors(List.of(
-        new Person("Yuri","Roskov"),
-        new Person("Geoff", "Ower"),
-        new Person("Thomas", "Orrell"),
-        new Person("David", "Nicolson")
+      d.setContributor(Agent.parse("Species 2000", "ITIS"));
+      d.setEditor(List.of(
+        new Agent("Yuri","Roskov"),
+        new Agent("Geoff", "Ower"),
+        new Agent("Thomas", "Orrell"),
+        new Agent("David", "Nicolson")
       ));
 
       dm.updateAll(new DatasetWithSettings(d, ds));
@@ -71,9 +71,6 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     ProjectRelease pr = buildRelease();
     assertEquals("CoL20.10", pr.newDataset.getAlias());
     assertEquals("Catalogue of Life - Release 4, October 2020", pr.newDataset.getTitle());
-    assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D. (eds.) (2020). Species 2000 & ITIS Catalogue of Life, 6th October 2020. Digital resource at www.catalogueoflife.org. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.",
-      pr.newDataset.getCitation()
-    );
   }
 
   @Test

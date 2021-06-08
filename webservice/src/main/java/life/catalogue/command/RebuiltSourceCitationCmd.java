@@ -6,10 +6,10 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.apache.ibatis.session.SqlSession;
@@ -68,8 +68,8 @@ public class RebuiltSourceCitationCmd extends AbstractPromptCmd {
       }
     }
 
-    System.out.printf("Citation for release %s: %s\n\n", release.getKey(), release.getCitation());
-    DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
+    System.out.printf("Title for release %s: %s\n\n", release.getKey(), release.getTitle());
+    DatasetSourceDao dao = new DatasetSourceDao(factory);
     if (dryRun) {
       System.out.println("Dry run");
       show(dao);
@@ -79,15 +79,15 @@ public class RebuiltSourceCitationCmd extends AbstractPromptCmd {
     System.out.println("Done.");
   }
 
-  void show(DatasetProjectSourceDao dao){
+  void show(DatasetSourceDao dao){
     dao.list(release.getKey(), release, true).forEach(d -> {
-      System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
+      System.out.printf("%s: %s\n", d.getKey(), d.getTitle());
     });
   }
 
-  void update(DatasetProjectSourceDao dao) {
+  void update(DatasetSourceDao dao) {
     try (SqlSession session = factory.openSession(false)) {
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       int cnt = psm.deleteByRelease(release.getKey());
       session.commit();
       System.out.printf("Deleted %s old source metadata records\n", cnt);
@@ -95,7 +95,7 @@ public class RebuiltSourceCitationCmd extends AbstractPromptCmd {
       AtomicInteger counter = new AtomicInteger(0);
       dao.list(release.getKey(), release, true).forEach(d -> {
         counter.incrementAndGet();
-        System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
+        System.out.printf("%s: %s\n", d.getKey(), d.getTitle());
         psm.create(release.getKey(), d);
       });
       session.commit();

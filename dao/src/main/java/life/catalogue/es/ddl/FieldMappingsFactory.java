@@ -1,12 +1,12 @@
 package life.catalogue.es.ddl;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import static java.lang.reflect.Modifier.isStatic;
 import static life.catalogue.es.ddl.ESDataType.NESTED;

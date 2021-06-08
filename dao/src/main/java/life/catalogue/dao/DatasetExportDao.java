@@ -1,24 +1,26 @@
 package life.catalogue.dao;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.api.event.ExportChanged;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.db.mapper.DatasetExportMapper;
-
 import life.catalogue.db.mapper.DatasetMapper;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
+import com.google.common.eventbus.EventBus;
 
 public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExportMapper> {
   Set<JobStatus> GOOD = Set.of(JobStatus.FINISHED, JobStatus.WAITING, JobStatus.BLOCKED, JobStatus.RUNNING);
@@ -58,7 +60,7 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
         DatasetExport ex = result.get(0);
         // make sure its based on the same import attempt
         var d = session.getMapper(DatasetMapper.class).get(req.getDatasetKey());
-        if (d != null && Objects.equals(d.getImportAttempt(), ex.getImportAttempt())) {
+        if (d != null && Objects.equals(d.getAttempt(), ex.getAttempt())) {
           return ex;
         }
       }

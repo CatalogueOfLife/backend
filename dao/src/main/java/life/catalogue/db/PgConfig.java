@@ -1,18 +1,20 @@
 package life.catalogue.db;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Strings;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.postgresql.jdbc.PgConnection;
-
-import javax.validation.constraints.Min;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
+
+import javax.validation.constraints.Min;
+
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.postgresql.jdbc.PgConnection;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * A configuration for the postgres database connection pool as used by the mybatis layer.

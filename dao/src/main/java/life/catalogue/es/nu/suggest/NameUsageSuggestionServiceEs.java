@@ -1,6 +1,5 @@
 package life.catalogue.es.nu.suggest;
 
-import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
@@ -9,14 +8,17 @@ import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.nu.NameUsageQueryService;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.response.EsResponse;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.annotations.VisibleForTesting;
 
 import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
 

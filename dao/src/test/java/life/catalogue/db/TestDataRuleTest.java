@@ -5,14 +5,16 @@ import life.catalogue.api.model.Page;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NamesIndexMapperTest;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

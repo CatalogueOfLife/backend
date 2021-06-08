@@ -1,6 +1,5 @@
 package life.catalogue.es.nu.search;
 
-import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
@@ -10,11 +9,14 @@ import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.nu.NameUsageQueryService;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.response.EsResponse;
+
+import java.io.IOException;
+
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import com.google.common.annotations.VisibleForTesting;
 
 import static life.catalogue.api.search.NameUsageRequest.SearchType.EXACT;
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;

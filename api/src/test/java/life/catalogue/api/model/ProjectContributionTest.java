@@ -12,28 +12,26 @@ public class ProjectContributionTest {
   public void testAdd() {
     ProjectContribution contrib = new ProjectContribution();
     contrib.add(DatasetTest.generateTestDataset());
+    assertEquals(8, contrib.size());
+    // same agents again
     contrib.add(DatasetTest.generateTestDataset());
-
-    assertEquals(0, contrib.getContributor().size());
-    assertEquals(1, contrib.getOrganisations().size());
+    assertEquals(8, contrib.size());
 
     Dataset d = DatasetTest.generateTestDataset();
-    d.setAuthors(List.of(Person.parse("Mama")));
-    d.setEditors(List.of(Person.parse("Mama Joe")));
-    d.setOrganisations(List.of(Organisation.parse("Mama-Joe")));
+    d.setCreator(List.of(Agent.parse("Mama")));
+    d.setEditor(List.of(Agent.parse("Mama Joe")));
+    d.setContributor(List.of(Agent.parse("Mama-Joe")));
     contrib.add(d);
 
-    assertEquals(2, contrib.getContributor().size());
-    assertEquals(2, contrib.getOrganisations().size());
+    assertEquals(11, contrib.size());
 
     // ignore the empty persons and orgs
     d = DatasetTest.generateTestDataset();
-    d.setAuthors(List.of(new Person(null, null, "null@null.io", null)));
-    d.setEditors(List.of(new Person(null, null, "null@null.io", null)));
-    d.getOrganisations().add(new Organisation(null, null, null, null, null));
+    d.setCreator(List.of(new Agent(null, null, "null@null.io", null)));
+    d.setEditor(List.of(new Agent(null, null, "null@null.io", null)));
+    d.getContributor().add(new Agent(null, null, null, null, null, null, null, null));
     contrib.add(d);
 
-    assertEquals(2, contrib.getContributor().size());
-    assertEquals(2, contrib.getOrganisations().size());
+    assertEquals(11, contrib.size());
   }
 }

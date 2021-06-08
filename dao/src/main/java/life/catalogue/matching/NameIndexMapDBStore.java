@@ -1,14 +1,20 @@
 package life.catalogue.matching;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
-import com.google.common.base.Preconditions;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
-import org.apache.commons.lang3.ArrayUtils;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
+
+import java.io.File;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.mapdb.DB;
 import org.mapdb.DBException;
 import org.mapdb.DBMaker;
@@ -16,11 +22,9 @@ import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
+import com.google.common.base.Preconditions;
 
 /**
  * NameIndexStore implementation that is backed by a mapdb using kryo serialization.

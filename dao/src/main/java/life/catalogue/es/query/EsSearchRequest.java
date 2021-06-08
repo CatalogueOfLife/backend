@@ -1,7 +1,5 @@
 package life.catalogue.es.query;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsModule;
@@ -10,6 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Class modeling a complete Elasticsearch search request. Serializing it to JSON produces a syntactically valid

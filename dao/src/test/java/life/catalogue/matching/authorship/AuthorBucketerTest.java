@@ -1,18 +1,21 @@
 package life.catalogue.matching.authorship;
 
+import life.catalogue.common.collection.ColumnExtractor;
+import life.catalogue.common.io.Resources;
+import life.catalogue.common.tax.AuthorshipNormalizer;
+
+import org.gbif.nameparser.api.Authorship;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.LineIterator;
+import org.junit.Test;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.apache.commons.io.LineIterator;
-import life.catalogue.common.collection.ColumnExtractor;
-import life.catalogue.common.io.Resources;
-import life.catalogue.common.tax.AuthorshipNormalizer;
-import org.gbif.nameparser.api.Authorship;
-import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 

@@ -5,15 +5,11 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.License;
+import life.catalogue.api.vocab.*;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.config.GbifConfig;
-import life.catalogue.parser.CountryParser;
-import life.catalogue.parser.LicenseParser;
-import life.catalogue.parser.SafeParser;
-import life.catalogue.parser.UriParser;
+import life.catalogue.parser.*;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +24,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
+import static life.catalogue.api.util.ObjectUtils.coalesce;
 /**
  *
  */
@@ -39,38 +35,64 @@ public class DatasetPager {
   private boolean hasNext = true;
   final WebTarget dataset;
   final WebTarget datasets;
-  final WebTarget publisher;
+  final WebTarget organization;
+  final WebTarget installation;
   final Client client;
-  private final LoadingCache<UUID, Organisation> pCache;
-  
+  private final LoadingCache<UUID, Agent> publisherCache;
+  private final LoadingCache<UUID, Agent> hostCache;
+
   public DatasetPager(Client client, GbifConfig gbif) {
     this.client = client;
     dataset = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"));
     datasets = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
-    publisher = client.target(UriBuilder.fromUri(gbif.api).path("/organization/"));
-    
-    pCache = CacheBuilder.newBuilder()
-        .maximumSize(1000)
-        .build(new CacheLoader<UUID, Organisation>() {
+    organization = client.target(UriBuilder.fromUri(gbif.api).path("/organization/"));
+    installation = client.target(UriBuilder.fromUri(gbif.api).path("/installation/"));
+    publisherCache = CacheBuilder.newBuilder()
+                                 .maximumSize(1000)
+                                 .build(new CacheLoader<UUID, Agent>() {
                  @Override
-                 public Organisation load(UUID key) throws Exception {
-                   WebTarget pubDetail = publisher.path(key.toString());
-                   LOG.info("Retrieve publisher {}", pubDetail.getUri());
-                   GPublisher p = pubDetail.request()
-                       .accept(MediaType.APPLICATION_JSON_TYPE)
-                       .get(GPublisher.class);
-                   Organisation org = null;
-                   if (p != null && p.title != null) {
-                     org = new Organisation(p.title, null, p.city, null, CountryParser.PARSER.parseOrNull(p.country));
-                   }
-                   return org;
+                 public Agent load(UUID key) throws Exception {
+                   WebTarget pubDetail = organization.path(key.toString());
+                   LOG.info("Retrieve organization {}", pubDetail.getUri());
+                   GAgent p = pubDetail.request()
+                                              .accept(MediaType.APPLICATION_JSON_TYPE)
+                                              .get(GAgent.class);
+                   return p.toAgent();
                  }
                }
         );
+
+    hostCache = CacheBuilder.newBuilder()
+                            .maximumSize(1000)
+                            .build(new CacheLoader<UUID, Agent>() {
+                                    @Override
+                                    public Agent load(UUID key) throws Exception {
+                                      WebTarget insDetail = installation.path(key.toString());
+                                      LOG.info("Retrieve installation {}", insDetail.getUri());
+                                      GInstallation ins = insDetail.request()
+                                                                 .accept(MediaType.APPLICATION_JSON_TYPE)
+                                                                 .get(GInstallation.class);
+                                      if (ins != null && ins.organizationKey != null) {
+                                        var host = publisherCache.get(ins.organizationKey);
+                                        host.setNote("Host");
+                                        return host;
+                                      }
+                                      return null;
+                                    }
+                                  }
+                           );
+
     LOG.info("Created dataset pager for {}", datasets.getUri());
   }
-  
+
+  <T> T getFirst(List<T> vals) {
+    for (T val : vals) {
+      if (val != null) return val;
+    }
+    return null;
+  }
+
   public boolean hasNext() {
     return hasNext;
   }
@@ -85,15 +107,24 @@ public class DatasetPager {
     return 1 + page.getOffset() / page.getLimit();
   }
   
-  private Organisation publisher(final UUID key) {
+  private Agent publisher(final UUID key) {
     try {
-      return pCache.get(key);
+      return publisherCache.get(key);
     } catch (ExecutionException e) {
       LOG.error("Failed to retrieve publisher {} from cache", key, e);
       throw new IllegalStateException(e);
     }
   }
-  
+
+  private Agent host(final UUID key) {
+    try {
+      return hostCache.get(key);
+    } catch (ExecutionException e) {
+      LOG.error("Failed to retrieve host {} from cache", key, e);
+      throw new IllegalStateException(e);
+    }
+  }
+
   public DatasetWithSettings get(UUID gbifKey) {
     LOG.debug("retrieve {}", gbifKey);
     return dataset.path(gbifKey.toString())
@@ -105,7 +136,7 @@ public class DatasetPager {
         .toCompletableFuture()
         .join();
   }
-  
+
   public List<DatasetWithSettings> next() {
     LOG.info("retrieve {}", page);
     try {
@@ -146,7 +177,8 @@ public class DatasetPager {
     DatasetWithSettings d = new DatasetWithSettings();
     d.setGbifKey(g.key);
     d.setGbifPublisherKey(g.publishingOrganizationKey);
-    d.getOrganisations().add(publisher(g.publishingOrganizationKey));
+    d.setPublisher(publisher(g.publishingOrganizationKey));
+    d.getDataset().addContributor(host(g.installationKey));
     d.setTitle(g.title);
     d.setDescription(g.description);
     DOI.parse(g.doi).ifPresent(d::setDoi);
@@ -184,7 +216,7 @@ public class DatasetPager {
     } else {
       d.setType(DatasetType.OTHER);
     }
-    d.setWebsite(uri(g.homepage));
+    d.setUrl(uri(g.homepage));
     d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.OTHER));
     d.setGeographicScope(coverage(g.geographicCoverages));
     // convert contact and authors based on contact type: https://github.com/gbif/gbif-api/blob/master/src/main/java/org/gbif/api/vocabulary/ContactType.java
@@ -193,27 +225,33 @@ public class DatasetPager {
     if (!contacts.isEmpty()) {
       d.setContact(contacts.get(0));
     }
-    d.setAuthors(byType(g.contacts, "ORIGINATOR", "PRINCIPAL_INVESTIGATOR", "AUTHOR", "CONTENT_PROVIDER"));
-    d.setEditors(byType(g.contacts, "EDITOR", "CURATOR", "CUSTODIAN_STEWARD"));
+    d.setCreator(byType(g.contacts, "ORIGINATOR", "PRINCIPAL_INVESTIGATOR", "AUTHOR", "CONTENT_PROVIDER"));
+    d.setEditor(byType(g.contacts, "EDITOR", "CURATOR", "CUSTODIAN_STEWARD"));
+    List<Agent> contributors = g.contacts.stream()
+                                         .map(GAgent::toAgent)
+                                         .filter(a -> a != null
+                                                      && !d.getCreator().contains(a)
+                                                      && !d.getEditor().contains(a)
+                                                      && !Objects.equals(d.getContact(), a)
+                                                      && !Objects.equals(d.getPublisher(), a))
+                                         .collect(Collectors.toList());
+    d.setContributor(contributors);
     d.setNotes(null);
-    d.setVersion(opt(g.pubDate));
+    d.setIssued(g.pubDate);
     d.setCreated(LocalDateTime.now());
     LOG.debug("Dataset {} converted: {}", g.key, g.title);
     return d;
   }
 
-  static List<Person> byType(List<GContact> contacts, String... type) {
-    List<Person> people = new ArrayList<>();
+  static List<Agent> byType(List<GAgent> contacts, String... type) {
+    List<Agent> people = new ArrayList<>();
     var types = Set.of(type);
-    for (GContact c : contacts) {
+    for (GAgent c : contacts) {
       if (c.type != null && types.contains(c.type.toUpperCase())) {
-        people.add(new Person(c.firstName, c.lastName, c.email == null ? null : c.email.get(0), null));
+        people.add(c.toAgent());
       }
     }
     return people;
-  }
-  static String opt(Object obj) {
-    return obj == null ? null : obj.toString();
   }
   
   static URI uri(String url) {
@@ -235,6 +273,7 @@ public class DatasetPager {
   static class GDataset {
     public UUID key;
     public UUID parentDatasetKey;
+    public UUID installationKey;
     public UUID publishingOrganizationKey;
     public String doi;
     public String subtype;
@@ -243,10 +282,19 @@ public class DatasetPager {
     public String homepage;
     public GCitation citation;
     public List<GCoverage> geographicCoverages;
+    //public List<?> temporalCoverages;
     public String license;
-    public LocalDate pubDate;
+    public FuzzyDate pubDate;
     public List<GEndpoint> endpoints;
-    public List<GContact> contacts;
+    public List<GAgent> contacts;
+
+    public void setPubDate(String pubDate) {
+      try {
+        this.pubDate = DateParser.PARSER.parse(pubDate).orElse(null);
+      } catch (UnparsableException e) {
+        LOG.warn("Failed to parse pubDate {}", pubDate, e);
+      }
+    }
   }
   
   static class GCitation {
@@ -262,33 +310,61 @@ public class DatasetPager {
     public String type;
     public String url;
   }
-  
-  static class GContact extends GAgent {
+
+  static class GInstallation {
+    public UUID key;
+    public UUID organizationKey;
+    public String title;
+    public List<GEndpoint> endpoints;
+    public List<GAgent> contacts;
+  }
+
+  static class GAgent {
+    public String key;
     public String type;
+    public String title;
     public String firstName;
     public String lastName;
     public List<String> position;
     public String organization;
-  }
-  
-  static class GPublisher extends GAgent {
-    public UUID key;
-    public String title;
-    public String latitude;
-    public String longitude;
-    public String city;
-    public String country;
-    public List<GContact> contacts;
-  }
-  
-  static abstract class GAgent {
     public List<String> address;
     public String city;
+    public String postalCode;
+    public String province;
     public String country;
+    public String latitude;
+    public String longitude;
     public List<String> homepage;
     public List<String> email;
     public List<String> phone;
-    
+    public List<GAgent> contacts;
+
+    public Agent toAgent(){
+      Agent org = new Agent(null, lastName, firstName,
+            null, coalesce(organization, title), null, city, province, CountryParser.PARSER.parseOrNull(country),
+            firstEmail(), firstHomepage(), null);
+      if (contacts != null) {
+        for (var c : contacts) {
+          if (c.lastName != null || c.firstName != null || c.email != null) {
+            org.setFamilyName(c.lastName);
+            org.setGivenName(c.firstName);
+            if (org.getEmail() != null) {
+              org.setEmail(c.firstEmail());
+            }
+          }
+        }
+      }
+      return org.getName() != null ? org : null;
+    }
+
+    String firstHomepage() {
+      return homepage == null || homepage.isEmpty() ? null : homepage.get(0);
+    }
+
+    String firstEmail() {
+      return email == null || email.isEmpty() ? null : email.get(0);
+    }
+
     @Override
     public String toString() {
       return "GAgent{" +

@@ -1,22 +1,14 @@
 package life.catalogue.exporter;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +16,16 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 import static org.junit.Assert.assertFalse;
 
@@ -42,11 +44,11 @@ public class EmlWriterTest {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
 
       Dataset d = dm.get(TestDataRule.APPLE.key);
-      d.setAuthors(List.of(
-        new Person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"),
-        new Person("Fax", "Feier", null, null)
+      d.setCreator(List.of(
+        new Agent("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"),
+        new Agent("Fax", "Feier", null, null)
       ));
-      d.setEditors(List.of(new Person("Derek & Dan", "Dillinger's")));
+      d.setEditor(List.of(new Agent("Derek & Dan", "Dillinger's")));
       d.setLicense(License.CC0);
       EmlWriter.write(d, f);
 

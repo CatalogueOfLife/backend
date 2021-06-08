@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.db.Searchable;
+
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 

@@ -4,14 +4,16 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;

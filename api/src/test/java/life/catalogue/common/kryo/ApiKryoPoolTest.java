@@ -8,6 +8,8 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.common.date.FuzzyDate;
+
 import org.gbif.dwc.terms.*;
 import org.junit.Test;
 
@@ -44,10 +46,10 @@ public class ApiKryoPoolTest {
   public void testDataset() throws Exception {
     Dataset d = TestEntityGenerator.newDataset("Unmut");
     d.setKey(1234);
-    d.setReleased(LocalDate.now());
+    d.setIssued(FuzzyDate.now());
     d.setGbifKey(UUID.randomUUID());
-    d.setAuthors(Person.parse(List.of("Karl", "Frank")));
-    d.setEditors(Person.parse(List.of("Karlo", "Franko")));
+    d.setCreator(Agent.parse(List.of("Karl", "Frank")));
+    d.setEditor(Agent.parse(List.of("Karlo", "Franko")));
     assertSerde(d);
   }
 

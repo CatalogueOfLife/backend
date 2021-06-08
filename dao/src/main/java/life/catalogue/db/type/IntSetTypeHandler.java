@@ -12,13 +12,14 @@
  */
 package life.catalogue.db.type;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntSets;
 import life.catalogue.db.type2.AbstractArrayTypeHandler;
 
 import java.sql.Array;
 import java.sql.SQLException;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntSets;
 
 /**
  * Stores primitive fastutils IntSet instances as non null arrays in postgres, avoiding nulls and uses empty sets instead.

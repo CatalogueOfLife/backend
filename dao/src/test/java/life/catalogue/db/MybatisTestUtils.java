@@ -14,15 +14,17 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.SQLException;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static life.catalogue.api.vocab.Datasets.COL;
 

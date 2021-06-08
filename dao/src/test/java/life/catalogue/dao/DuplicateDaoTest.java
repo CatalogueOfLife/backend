@@ -1,7 +1,5 @@
 package life.catalogue.dao;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
@@ -14,11 +12,8 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.postgres.AuthorshipNormFunc;
 import life.catalogue.postgres.PgCopyUtils;
-import org.apache.commons.lang3.time.StopWatch;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.*;
-import org.postgresql.jdbc.PgConnection;
 
 import java.sql.Connection;
 import java.util.Collections;
@@ -26,6 +21,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.ibatis.session.SqlSession;
+import org.junit.*;
+import org.postgresql.jdbc.PgConnection;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 import static org.junit.Assert.*;
 

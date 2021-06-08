@@ -1,8 +1,8 @@
 package life.catalogue.es.ddl;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The heart of an index definition: its analyzers, tokenizers and character filters. However we currently just define them as raw maps

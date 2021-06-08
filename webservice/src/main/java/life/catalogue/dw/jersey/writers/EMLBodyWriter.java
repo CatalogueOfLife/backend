@@ -1,6 +1,6 @@
 package life.catalogue.dw.jersey.writers;
 
-import life.catalogue.api.model.ArchivedDataset;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.exporter.EmlWriter;
 
 import javax.ws.rs.Produces;
@@ -19,15 +19,15 @@ import java.lang.reflect.Type;
  */
 @Produces({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
 @Provider
-public class EMLBodyWriter implements MessageBodyWriter<ArchivedDataset> {
+public class EMLBodyWriter implements MessageBodyWriter<Dataset> {
   
   @Override
   public boolean isWriteable(Class<?> type, Type type1, Annotation[] antns, MediaType mt) {
-    return ArchivedDataset.class.isAssignableFrom(type);
+    return Dataset.class.isAssignableFrom(type);
   }
 
   @Override
-  public void writeTo(ArchivedDataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
+  public void writeTo(Dataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
     EmlWriter.write(dataset, out);
   }
 

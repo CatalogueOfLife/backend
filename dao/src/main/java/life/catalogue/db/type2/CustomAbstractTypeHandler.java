@@ -1,10 +1,6 @@
 package life.catalogue.db.type2;
 
 import life.catalogue.common.text.CSVUtils;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-import org.apache.ibatis.type.MappedJdbcTypes;
-import org.postgresql.util.PGobject;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -13,6 +9,11 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedJdbcTypes;
+import org.postgresql.util.PGobject;
 
 /**
  * A generic mybatis type handler that translates an object to a postgres custom type.

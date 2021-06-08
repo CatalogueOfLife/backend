@@ -4,9 +4,10 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SpeciesInteraction;
 import life.catalogue.api.vocab.SpeciesInteractionType;
 import life.catalogue.db.*;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 
 public interface SpeciesInteractionMapper extends Create<SpeciesInteraction>,
                                                     DatasetProcessable<SpeciesInteraction>,

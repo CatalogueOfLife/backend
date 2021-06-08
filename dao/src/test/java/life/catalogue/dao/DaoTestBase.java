@@ -1,12 +1,16 @@
 package life.catalogue.dao;
 
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import org.junit.*;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 
 public abstract class DaoTestBase {
   

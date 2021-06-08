@@ -1,16 +1,19 @@
 package life.catalogue.matching.authorship;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import life.catalogue.api.model.Name;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
 import life.catalogue.parser.NameParser;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.ParsedAuthorship;
-import org.junit.Test;
 
 import java.util.List;
+
+import org.junit.Test;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

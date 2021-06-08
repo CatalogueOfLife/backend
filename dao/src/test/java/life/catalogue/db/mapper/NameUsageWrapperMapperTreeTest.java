@@ -9,14 +9,15 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.TestDataRule;
-import org.apache.ibatis.cursor.Cursor;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.ibatis.cursor.Cursor;
+import org.junit.Assert;
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.NAME4;
 import static org.junit.Assert.*;

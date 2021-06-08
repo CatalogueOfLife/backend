@@ -1,15 +1,12 @@
 package life.catalogue.db;
 
-import com.google.common.base.Joiner;
-import com.google.common.reflect.ClassPath;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.type.BaseEnumSetTypeHandler;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.ClassRule;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.sql.Array;
@@ -19,6 +16,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import com.google.common.base.Joiner;
+import com.google.common.reflect.ClassPath;
 
 import static junit.framework.TestCase.assertEquals;
 

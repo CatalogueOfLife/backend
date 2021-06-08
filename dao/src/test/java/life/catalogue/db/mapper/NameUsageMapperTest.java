@@ -9,13 +9,15 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
+
 import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;

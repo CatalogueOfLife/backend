@@ -1,6 +1,5 @@
 package life.catalogue.db.mapper;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
@@ -11,13 +10,17 @@ import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;

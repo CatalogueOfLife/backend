@@ -12,18 +12,16 @@
  */
 package life.catalogue.db.type2;
 
-import java.sql.Array;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.google.common.collect.Sets;
-
-import org.checkerframework.checker.units.qual.A;
-
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
+
+import java.sql.Array;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Stores term sets as text arrays in postgres, avoiding nulls and uses empty sets instead.

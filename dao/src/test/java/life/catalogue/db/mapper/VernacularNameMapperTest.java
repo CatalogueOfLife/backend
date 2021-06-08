@@ -6,12 +6,13 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.VernacularNameUsage;
 import life.catalogue.api.search.VernacularSearchRequest;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.newVernacularName;
 import static org.junit.Assert.assertEquals;

@@ -7,6 +7,7 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsReadTestBase;
+
 import org.junit.Before;
 import org.junit.Test;
 

@@ -333,7 +333,7 @@ public class IdProvider {
       DatasetSearchRequest dsr = new DatasetSearchRequest();
       dsr.setReleasedFrom(projectKey);
       List<Dataset> releases = dm.search(dsr, null, new Page(0, 1000));
-      releases.sort(Comparator.comparing(Dataset::getImportAttempt).reversed());
+      releases.sort(Comparator.comparing(Dataset::getAttempt).reversed());
       final LoadStats stats = new LoadStats();
       for (Dataset rel : releases) {
         if (cfg.since != null && rel.getCreated().isBefore(cfg.since)) {
@@ -341,14 +341,14 @@ public class IdProvider {
           continue;
         }
         final int sizeBefore = ids.size();
-        if (rel.getImportAttempt() == null) {
+        if (rel.getAttempt() == null) {
           throw new IllegalStateException("Release "+rel.getKey()+" of project "+projectKey+" has no importAttempt");
         }
-        final int attempt = rel.getImportAttempt();
+        final int attempt = rel.getAttempt();
         session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey())
           .forEach(sn -> addReleaseId(rel.getKey(), attempt, sn, stats));
         LOG.info("Read {} from previous release {} key={}. Adding {} new released ids to a total of {}",
-          stats, rel.getImportAttempt(), rel.getKey(), ids.size()-sizeBefore, ids.size());
+          stats, rel.getAttempt(), rel.getKey(), ids.size() - sizeBefore, ids.size());
       }
     }
   }

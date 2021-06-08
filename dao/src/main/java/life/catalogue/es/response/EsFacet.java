@@ -1,7 +1,8 @@
 package life.catalogue.es.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.es.nu.search.FacetsTranslator;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The data structure within the ES search response representing a single facet (or GROUP BY field in SQL speak). It

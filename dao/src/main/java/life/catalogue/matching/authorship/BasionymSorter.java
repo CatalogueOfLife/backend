@@ -1,16 +1,19 @@
 package life.catalogue.matching.authorship;
 
-import com.google.common.base.Functions;
-import com.google.common.collect.Lists;
 import life.catalogue.api.model.Name;
-import org.gbif.nameparser.api.Authorship;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import org.gbif.nameparser.api.Authorship;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Functions;
 
 /**
  * A utility to sort a queue of parsed names into sets sharing the same basionym judging only the authorship not epithets.
@@ -44,7 +47,7 @@ public class BasionymSorter {
   }
   
   private <T> T findBasionym(Authorship authorship, List<T> originals, Function<T, Name> func) throws MultipleBasionymException {
-    List<T> basionyms = Lists.newArrayList();
+    List<T> basionyms = new ArrayList<>();
     for (T obj : originals) {
       Name b = func.apply(obj);
       if (authorComp.compareStrict(authorship, b.getCombinationAuthorship())) {
@@ -86,11 +89,11 @@ public class BasionymSorter {
    * The queue of groups returned only contains groups with no or one known basionym. Any uncertain cases like groups with multiple basionyms are excluded!
    */
   public <T> Collection<BasionymGroup<T>> groupBasionyms(Iterable<T> names, Function<T, Name> func) {
-    List<BasionymGroup<T>> groups = Lists.newArrayList();
+    List<BasionymGroup<T>> groups = new ArrayList<>();
     // first split names into recombinations and original names not having a basionym authorship
     // note that we drop any name without authorship here!
-    List<T> recombinations = Lists.newArrayList();
-    List<T> originals = Lists.newArrayList();
+    List<T> recombinations = new ArrayList<>();
+    List<T> originals = new ArrayList<>();
     for (T obj : names) {
       Name p = func.apply(obj);
       if (p != null) {

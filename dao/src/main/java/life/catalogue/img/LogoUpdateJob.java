@@ -1,11 +1,20 @@
 package life.catalogue.img;
 
-import com.google.common.base.Strings;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.io.DownloadException;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.db.mapper.DatasetMapper;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+
+import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -13,13 +22,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
+import com.google.common.base.Strings;
 
 public class LogoUpdateJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(LogoUpdateJob.class);

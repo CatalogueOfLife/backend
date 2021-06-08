@@ -2,14 +2,16 @@ package life.catalogue.db.type2;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.db.PgSetupRule;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.postgresql.jdbc.PgConnection;
 
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.List;
+
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.postgresql.jdbc.PgConnection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

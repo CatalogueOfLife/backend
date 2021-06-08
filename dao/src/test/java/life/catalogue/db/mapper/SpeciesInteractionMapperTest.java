@@ -5,10 +5,11 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SpeciesInteraction;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.SpeciesInteractionType;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.assertEquals;

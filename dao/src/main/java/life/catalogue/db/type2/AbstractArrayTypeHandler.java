@@ -12,10 +12,10 @@
  */
 package life.catalogue.db.type2;
 
+import java.sql.*;
+
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
-
-import java.sql.*;
 
 /**
  * Stores objects as arrays in postgres.

@@ -4,12 +4,13 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.RematchJob;
+
+import java.util.function.Supplier;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.function.Supplier;
 
 /**
  * A junit test rule that sets up a new in memory names index and rematches all names

@@ -1,12 +1,12 @@
 package life.catalogue.es.ddl;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toLowerCase;

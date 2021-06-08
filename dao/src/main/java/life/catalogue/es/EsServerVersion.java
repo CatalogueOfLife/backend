@@ -1,11 +1,11 @@
 package life.catalogue.es;
 
+import java.util.Arrays;
+import java.util.HashMap;
+
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
-
-import java.util.Arrays;
-import java.util.HashMap;
 
 import static life.catalogue.es.EsUtil.executeRequest;
 import static life.catalogue.es.EsUtil.readFromResponse;

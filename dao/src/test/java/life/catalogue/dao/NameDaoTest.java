@@ -9,6 +9,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
+
 import org.junit.Assert;
 import org.junit.Test;
 

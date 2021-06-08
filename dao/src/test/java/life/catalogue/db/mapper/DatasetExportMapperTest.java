@@ -1,22 +1,25 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.datapackage.ColdpTerm;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
-
 import life.catalogue.db.TestDataRule;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -37,7 +40,7 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
 
     DatasetExport d = new DatasetExport();
     d.setKey(UUID.randomUUID());
-    d.setImportAttempt(1);
+    d.setAttempt(1);
     d.setStatus(status);
     d.setRequest(req);
     d.setTaxonCount(1324);

@@ -2,6 +2,7 @@ package life.catalogue.db.type;
 
 
 import life.catalogue.api.vocab.Frequency;
+
 import org.apache.ibatis.type.MappedTypes;
 
 /**

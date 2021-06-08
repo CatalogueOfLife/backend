@@ -2,6 +2,8 @@ package life.catalogue.common.text;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.common.date.FuzzyDate;
+
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
@@ -22,7 +24,7 @@ public class SimpleTemplateTest {
     d.setTitle("Catalogue of Life");
     d.setAlias("CoL");
     d.setType(DatasetType.TAXONOMIC);
-    d.setReleased(LocalDate.of(1999, 5, 15));
+    d.setIssued(FuzzyDate.of(1999, 5, 15));
 
     assertEquals("col", SimpleTemplate.render("col", d));
     assertEquals("Catalogue of Life (CoL)", SimpleTemplate.render("{title} ({alias})", d));

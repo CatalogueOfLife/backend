@@ -1,9 +1,10 @@
 package life.catalogue.db.mapper.legacy;
 
 import life.catalogue.db.mapper.legacy.model.LName;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 
 public interface LVernacularMapper {
 

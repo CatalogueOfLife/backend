@@ -6,13 +6,12 @@ import life.catalogue.api.event.DoiChange;
 import com.google.common.eventbus.Subscribe;
 
 import life.catalogue.api.model.DOI;
-import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiException;
@@ -116,7 +115,7 @@ public class DoiUpdater {
   private void update(DOI doi, int datasetKey, int sourceDatasetKey) {
     try (SqlSession session = factory.openSession()) {
       Dataset project = session.getMapper(DatasetMapper.class).get(datasetKey);
-      var source = session.getMapper(ProjectSourceMapper.class).getProjectSource(sourceDatasetKey, datasetKey);
+      var source = session.getMapper(DatasetSourceMapper.class).getProjectSource(sourceDatasetKey, datasetKey);
       source.setDoi(doi); // make sure we dont accidently update some other DOI
       boolean latest = datasetKeyCache.isLatestRelease(datasetKey);
       var attr = converter.source(source, project, latest);

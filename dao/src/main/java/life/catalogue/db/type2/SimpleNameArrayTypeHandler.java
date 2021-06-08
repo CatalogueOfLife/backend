@@ -2,13 +2,14 @@ package life.catalogue.db.type2;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.text.CSVUtils;
-import org.postgresql.util.PGobject;
 
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.postgresql.util.PGobject;
 
 /**
  * Complex simple_name PG Array type handler that only supports reads, but not writes.

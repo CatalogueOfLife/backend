@@ -15,16 +15,18 @@ import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
+
+import org.apache.ibatis.session.SqlSession;
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;

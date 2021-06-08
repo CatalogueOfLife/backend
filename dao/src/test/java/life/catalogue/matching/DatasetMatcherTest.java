@@ -3,6 +3,7 @@ package life.catalogue.matching;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

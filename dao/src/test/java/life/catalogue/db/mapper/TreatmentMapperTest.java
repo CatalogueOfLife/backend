@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Treatment;
 import life.catalogue.api.vocab.TreatmentFormat;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

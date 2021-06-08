@@ -1,7 +1,8 @@
 package life.catalogue.es.query;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import life.catalogue.es.nu.search.FacetsTranslator;
+
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * Models the Elastic search filter aggregation type. This type of aggregation is used in two ways:

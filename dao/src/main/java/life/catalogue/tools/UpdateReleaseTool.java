@@ -1,6 +1,5 @@
 package life.catalogue.tools;
 
-import com.zaxxer.hikari.HikariDataSource;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -10,19 +9,22 @@ import life.catalogue.dao.*;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.RematcherBase;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class UpdateReleaseTool implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(UpdateReleaseTool.class);
@@ -55,8 +57,8 @@ public class UpdateReleaseTool implements AutoCloseable {
    * Rebuilds the source metadata from latest patches and templates
    */
   public void rebuildSourceMetadata(){
-    System.out.printf("%s: %s\n\n", release.getKey(), release.getCitation());
-    DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
+    System.out.printf("%s: %s\n\n", release.getKey(), release.getTitle());
+    DatasetSourceDao dao = new DatasetSourceDao(factory);
     show(dao);
     //update(dao);
   }
@@ -87,21 +89,21 @@ public class UpdateReleaseTool implements AutoCloseable {
     System.out.println("Estimates: " + mc2);
   }
 
-  void show(DatasetProjectSourceDao dao){
-    System.out.printf("%s\n", release.getCitation());
+  void show(DatasetSourceDao dao){
+    System.out.printf("%s\n", release.getTitle());
     if (settings.has(Setting.RELEASE_CITATION_TEMPLATE)) {
       String citation = CitationUtils.fromTemplate(release, settings.getString(Setting.RELEASE_CITATION_TEMPLATE));
-      release.setCitation(citation);
+      release.setTitle(citation);
     }
-    System.out.printf("%s\n", release.getCitation());
+    System.out.printf("%s\n", release.getTitle());
     dao.list(release.getKey(), release, true).forEach(d -> {
-      System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
+      System.out.printf("%s: %s\n", d.getKey(), d.getTitle());
     });
   }
 
-  void update(DatasetProjectSourceDao dao) {
+  void update(DatasetSourceDao dao) {
     try (SqlSession session = factory.openSession(false)) {
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       int cnt = psm.deleteByRelease(release.getKey());
       session.commit();
       System.out.printf("Deleted %s old source metadata records\n", cnt);
@@ -109,7 +111,7 @@ public class UpdateReleaseTool implements AutoCloseable {
       AtomicInteger counter = new AtomicInteger(0);
       dao.list(release.getKey(), release, true).forEach(d -> {
         counter.incrementAndGet();
-        System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
+        System.out.printf("%s: %s\n", d.getKey(), d.getTitle());
         psm.create(release.getKey(), d);
       });
       session.commit();

@@ -6,24 +6,24 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.mapper.*;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static life.catalogue.api.vocab.DatasetOrigin.MANAGED;
 import static life.catalogue.api.vocab.DatasetOrigin.RELEASED;
 
-public class DatasetProjectSourceDao {
-  private final static Logger LOG = LoggerFactory.getLogger(DatasetProjectSourceDao.class);
+public class DatasetSourceDao {
+  private final static Logger LOG = LoggerFactory.getLogger(DatasetSourceDao.class);
   private final SqlSessionFactory factory;
 
-  public DatasetProjectSourceDao(SqlSessionFactory factory) {
+  public DatasetSourceDao(SqlSessionFactory factory) {
     this.factory = factory;
   }
 
@@ -32,12 +32,12 @@ public class DatasetProjectSourceDao {
    * @param sourceDatasetKey the dataset key of the source within the release or project
    * @param dontPatch if true return the original project source metadata without the patch. This works only for managed datasets, not releases
    */
-  public ArchivedDataset get(int datasetKey, int sourceDatasetKey, boolean dontPatch){
+  public Dataset get(int datasetKey, int sourceDatasetKey, boolean dontPatch){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
-    ArchivedDataset d;
+    Dataset d;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (MANAGED == info.origin) {
         d = psm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
@@ -71,11 +71,11 @@ public class DatasetProjectSourceDao {
    * @param projectForPatching optional dataset used for building the source citations, if null master project is used
    * @param rebuild if true force to rebuild source metadata and not take it from the source archive
    */
-  public List<ArchivedDataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild){
+  public List<Dataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASED, MANAGED);
-    List<ArchivedDataset> sources;
+    List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {
-      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (RELEASED == info.origin && !rebuild) {
         sources = psm.listReleaseSources(datasetKey);
 
@@ -105,8 +105,8 @@ public class DatasetProjectSourceDao {
    * @param settings project settings
    * @return the same dataset instance d as given
    */
-  private ArchivedDataset patch(ArchivedDataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm, DatasetSettings settings){
-    ArchivedDataset patch = pm.get(projectKey, d.getKey());
+  private Dataset patch(Dataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm, DatasetSettings settings){
+    Dataset patch = pm.get(projectKey, d.getKey());
     if (patch != null) {
       LOG.info("Apply dataset patch from project {} to {}: {}", patchProject.getKey(), d.getKey(), d.getTitle());
       d.applyPatch(patch);
@@ -115,7 +115,7 @@ public class DatasetProjectSourceDao {
     if (settings != null && settings.has(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)) {
       try {
         String citation = CitationUtils.fromTemplate(d, patchProject, settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)).trim();
-        d.setCitation(citation);
+        //TODO: d.setCitation(citation);
       } catch (IllegalArgumentException e) {
         LOG.warn("Failed to create citation for source dataset {}", d.getKey(), e);
       }
@@ -156,7 +156,7 @@ public class DatasetProjectSourceDao {
 
       // get current source in CLB
       var source = session.getMapper(DatasetMapper.class).getOrThrow(sourceKey, Dataset.class);
-      metrics.setLatestAttempt(source.getImportAttempt());
+      metrics.setLatestAttempt(source.getAttempt());
       metrics.setLatestUsagesCount(source.getSize());
 
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);

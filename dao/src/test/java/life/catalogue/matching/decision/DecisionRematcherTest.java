@@ -11,8 +11,10 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.es.NameUsageIndexService;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.nameparser.api.Rank;
+
+import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

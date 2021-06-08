@@ -1,5 +1,17 @@
 package life.catalogue.jackson;
 
+import life.catalogue.api.jackson.FastutilsSerde;
+import life.catalogue.api.jackson.PermissiveEnumSerde;
+import life.catalogue.api.model.Agent;
+import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.License;
+import life.catalogue.parser.CountryParser;
+import life.catalogue.parser.LicenseParser;
+
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
@@ -9,19 +21,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import life.catalogue.api.jackson.FastutilsSerde;
-import life.catalogue.api.jackson.PermissiveEnumSerde;
-import life.catalogue.api.model.Organisation;
-import life.catalogue.api.model.Person;
-import life.catalogue.api.vocab.Country;
-import life.catalogue.api.vocab.License;
-import life.catalogue.parser.CountryParser;
-import life.catalogue.parser.LicenseParser;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * ColDP metadata parser that falls back to EML if no YAML metadata is found.
@@ -65,19 +66,13 @@ public class YamlMapper {
       ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
       ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
       super.setupModule(ctxt);
-      ctxt.setMixInAnnotations(Person.class, PersonMixIn.class);
-      ctxt.setMixInAnnotations(Organisation.class, OrganisationMixIn.class);
+      ctxt.setMixInAnnotations(Agent.class, AgentMixIn.class);
     }
   }
 
-  abstract class PersonMixIn {
+  abstract class AgentMixIn {
     @JsonIgnore
     abstract String getName();
-  }
-
-  abstract class OrganisationMixIn {
-    @JsonIgnore
-    abstract String getLabel();
   }
 
 }

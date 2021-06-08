@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.db.CRUD;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 
 /**

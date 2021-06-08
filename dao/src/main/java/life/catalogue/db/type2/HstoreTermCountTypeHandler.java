@@ -1,14 +1,7 @@
 package life.catalogue.db.type2;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
-import org.postgresql.util.HStoreConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -16,6 +9,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
+import org.postgresql.util.HStoreConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
 
 /**
  * A mybatis base type handler that translates from the generic java.util.Map<Enum, Integer> to the
@@ -50,7 +51,7 @@ public class HstoreTermCountTypeHandler extends BaseTypeHandler<Map<Term, Intege
   }
   
   private Map<Term, Integer> fromString(String hstring) {
-    HashMap<Term, Integer> typedMap = Maps.newHashMap();
+    HashMap<Term, Integer> typedMap = new HashMap<>();
     if (!Strings.isNullOrEmpty(hstring)) {
       Map<String, String> rawMap = HStoreConverter.fromString(hstring);
       for (Map.Entry<String, String> entry : rawMap.entrySet()) {

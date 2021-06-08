@@ -1,9 +1,12 @@
 package life.catalogue.db;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.DatasetInfoCache;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -12,9 +15,8 @@ import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * A junit test rule that creates a {@link HikariDataSource} and SqlSessionFactory for the clb postgres db and stops it the end.

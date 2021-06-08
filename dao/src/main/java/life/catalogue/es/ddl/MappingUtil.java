@@ -1,6 +1,5 @@
 package life.catalogue.es.ddl;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.gbif.common.shaded.com.google.common.base.Preconditions;
 
 import java.lang.reflect.*;
@@ -8,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import static life.catalogue.es.ddl.ESDataType.KEYWORD;
 

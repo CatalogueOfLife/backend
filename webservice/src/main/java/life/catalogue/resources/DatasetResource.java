@@ -8,10 +8,8 @@ import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.SectorImportMapper;
-import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
@@ -27,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -53,12 +50,12 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
   private final DatasetDao dao;
-  private final DatasetProjectSourceDao sourceDao;
+  private final DatasetSourceDao sourceDao;
   private final ImageService imgService;
   private final AssemblyCoordinator assembly;
   private final ReleaseManager releaseManager;
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetProjectSourceDao sourceDao, ImageService imgService, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, ImageService imgService, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.sourceDao = sourceDao;
@@ -207,16 +204,16 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("/{key}/source")
-  public List<ArchivedDataset> projectSources(@PathParam("key") int datasetKey) {
+  public List<Dataset> projectSources(@PathParam("key") int datasetKey) {
     return sourceDao.list(datasetKey, null, false);
   }
 
   @GET
   @Path("/{key}/source/{id}")
-  public ArchivedDataset projectSource(@PathParam("key") int datasetKey,
-                                       @PathParam("id") int id,
-                                       @QueryParam("original") boolean original,
-                                       @Context SqlSession session) {
+  public Dataset projectSource(@PathParam("key") int datasetKey,
+                               @PathParam("id") int id,
+                               @QueryParam("original") boolean original,
+                               @Context SqlSession session) {
     return sourceDao.get(datasetKey, id, original);
   }
 

@@ -1,7 +1,5 @@
 package life.catalogue.es;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.google.common.base.Preconditions;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
@@ -12,11 +10,8 @@ import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.Query;
-import org.elasticsearch.client.RestClient;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.ClassRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -24,6 +19,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.elasticsearch.client.RestClient;
+import org.junit.ClassRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.google.common.base.Preconditions;
 
 import static java.util.stream.Collectors.toList;
 

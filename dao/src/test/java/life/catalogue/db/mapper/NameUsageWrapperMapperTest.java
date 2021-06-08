@@ -8,12 +8,13 @@ import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
-import org.apache.ibatis.cursor.Cursor;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.ibatis.cursor.Cursor;
+import org.junit.Assert;
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.NAME4;
 import static life.catalogue.api.TestEntityGenerator.TAXON2;
