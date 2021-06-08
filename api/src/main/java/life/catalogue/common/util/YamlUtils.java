@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
+import life.catalogue.api.jackson.ApiModule;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,6 +22,7 @@ public class YamlUtils {
     MAPPER.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
     MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    MAPPER.registerModule(new ApiModule());
   }
 
   /**
