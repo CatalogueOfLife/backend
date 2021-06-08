@@ -2,6 +2,7 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.License;
 import life.catalogue.parser.CountryParser;
 
@@ -11,8 +12,7 @@ import java.util.List;
 import org.junit.Test;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -29,31 +29,32 @@ public class EmlParserTest {
 
     ag.surName="Foo";
     ag.userId="1234";
-    assertNull(ag.agent().get().getOrcid());
+    assertNull(ag.agent(false).get().getOrcid());
 
     ag.userId="0000-0001-7757-1889";
-    assertEquals(ag.userId, ag.agent().get().getOrcid());
+    assertEquals(ag.userId, ag.agent(false).get().getOrcid());
 
     ag.userId="0000-0001-7757-1889-1234";
-    assertNull(ag.agent().get().getOrcid());
+    assertNull(ag.agent(false).get().getOrcid());
 
     ag.userId="0001-7757-1889";
-    assertNull(ag.agent().get().getOrcid());
+    assertNull(ag.agent(false).get().getOrcid());
 
     ag.userId="orcid:0000-0001-7757-1889";
-    assertEquals("0000-0001-7757-1889", ag.agent().get().getOrcid());
+    assertEquals("0000-0001-7757-1889", ag.agent(false).get().getOrcid());
 
     ag.userId="https://orcid.org/0000-0001-7757-1889";
-    assertEquals("0000-0001-7757-1889", ag.agent().get().getOrcid());
+    assertEquals("0000-0001-7757-1889", ag.agent(false).get().getOrcid());
 
     ag.userId="http://orcid.org/0000-0001-7757-1889";
-    assertEquals("0000-0001-7757-1889", ag.agent().get().getOrcid());
+    assertEquals("0000-0001-7757-1889", ag.agent(false).get().getOrcid());
   }
 
   @Test
   public void famous() throws Exception {
     DatasetWithSettings d = read("famous.xml");
     Agent markus = new Agent("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
+    markus.setOrganisation("GBIF");
     Agent bouchard = new Agent("Patrice", "Bouchard");
 
     assertEquals("Species named after famous people", d.getTitle());
@@ -86,39 +87,30 @@ public class EmlParserTest {
     
     assertEquals("World Register of Marine Species", d.getTitle());
     assertEquals("An authoritative classification and catalogue of marine names", d.getDescription());
-    assertEquals(new Agent(null, null, "info@marinespecies.org", null), d.getContact());
-    assertNull(d.getCreator());
+    assertEquals(o("World Register of Marine Species", "info@marinespecies.org", null), d.getContact());
     assertEquals(List.of(
-      p("Horton", "Tammy", "tammy.horton@noc.ac.uk"),
-      p("Kroh", "Andreas", "andreas.kroh@nhm-wien.ac.at"),
-      p("Ahyong", "Shane", "Shane.Ahyong@austmus.gov.au"),
-      p("Bailly", "Nicolas", "n.bailly@q-quatics.org"),
-      p("Boyko", "Christopher", "cboyko@amnh.org"),
-      p("Brandão", "Simone", "brandao.sn.100@gmail.com"),
-      p("Gofas", "Serge", "sgofas@uma.es"),
-      p("Hooper", "John", "john.hooper@qm.qld.gov.au"),
-      p("Hernandez", "Francisco", "francisco.hernandez@vliz.be"),
-      p("Holovachov", "Oleksandr", "oleksandr.holovachov@nrm.se"),
-      p("Mees", "Jan", "jan.mees@vliz.be"),
-      p("Molodtsova", "Tina", "tina@ocean.ru"),
-      p("Paulay", "Gustav", "paulay@flmnh.ufl.edu")
+      o("WoRMS Editorial Board", "info@marinespecies.org", "http://www.marinespecies.org")
+    ), d.getCreator());
+    assertEquals(List.of(
+      p("Horton", "Tammy", "tammy.horton@noc.ac.uk", "University of Southampton", "National Oceanography Centre, Southampton; Ocean Biogeochemistry and Ecosystems", Country.UNITED_KINGDOM),
+      p("Kroh", "Andreas", "andreas.kroh@nhm-wien.ac.at", "Natural History Museum Vienna", null, Country.AUSTRIA),
+      p("Ahyong", "Shane", "Shane.Ahyong@austmus.gov.au", "Australian Museum", "Marine Invertebrates", Country.AUSTRALIA),
+      p("Bailly", "Nicolas", "n.bailly@q-quatics.org", "Quantitative Aquatics, Inc.", null, Country.PHILIPPINES),
+      p("Boyko", "Christopher", "cboyko@amnh.org", "American Museum of Natural History", "Division of Invertebrate Zoology", Country.UNITED_STATES),
+      p("Brandão", "Simone", "brandao.sn.100@gmail.com", "Universidade Estadual de Santa Cruz", "Departamento de Ciências Biológicas", Country.BRAZIL),
+      p("Gofas", "Serge", "sgofas@uma.es", "University of Málaga", "Faculty of Sciences; Departamento de Biología Animal", Country.SPAIN),
+      p("Hooper", "John", "john.hooper@qm.qld.gov.au", "Queensland Museum", null, Country.AUSTRALIA),
+      p("Hernandez", "Francisco", "francisco.hernandez@vliz.be", "Vlaams Instituut voor de Zee", null, Country.BELGIUM),
+      p("Holovachov", "Oleksandr", "oleksandr.holovachov@nrm.se", "Swedish Museum of Natural History", null, Country.SWEDEN),
+      p("Mees", "Jan", "jan.mees@vliz.be", "Vlaams Instituut voor de Zee", null, Country.BELGIUM),
+      p("Molodtsova", "Tina", "tina@ocean.ru", "Russian Academy of Sciences", "P. P. Shirshov Institute of Oceanology", Country.RUSSIAN_FEDERATION),
+      p("Paulay", "Gustav", "paulay@flmnh.ufl.edu", "University of Florida", "Florida Museum of Natural History", Country.UNITED_STATES)
     ), d.getEditor());
+    assertNull(d.getDistributor());
     assertEquals(List.of(
-      o("WoRMS Editorial Board"),
-      o("National Oceanography Centre, Southampton; Ocean Biogeochemistry and Ecosystems", "University of Southampton","","","United Kingdom"),
-      o("Natural History Museum Vienna","","","Austria"),
-      o("Marine Invertebrates", "Australian Museum","","","Australia"),
-      o("Quantitative Aquatics, Inc.","","","Philippines"),
-      o("Division of Invertebrate Zoology", "American Museum of Natural History","","","United States of America"),
-      o("Departamento de Ciências Biológicas", "Universidade Estadual de Santa Cruz","","","Brazil"),
-      o("Faculty of Sciences; Departamento de Biología Animal", "University of Málaga","","","Spain"),
-      o("Queensland Museum","","","Australia"),
-      o("Vlaams Instituut voor de Zee","","","Belgium"),
-      o("Swedish Museum of Natural History","","","Sweden"),
-      o("P. P. Shirshov Institute of Oceanology", "Russian Academy of Sciences","","","Russian Federation"),
-      o("Florida Museum of Natural History", "University of Florida","","","United States of America"),
-      o("World Register of Marine Species")
-    ), d.getDistributor());
+      new Agent(null, "Leen", "Vandepitte", null, "Vlaams Instituut voor de Zee", null, null, null, Country.BELGIUM, "leen.vandepitte@vliz.be", null, "custodianSteward"),
+      o("WoRMS Steering Committee", "info@marinespecies.org", null, "owner")
+    ),  d.getContributor());
     assertEquals("2021-03-01", d.getIssued().toString());
     assertEquals("http://www.marinespecies.org/documents/WoRMS%20branding/WoRMS_logo_blue_negative.png", d.getLogo().toString());
     assertNull(d.getAlias());
@@ -130,11 +122,22 @@ public class EmlParserTest {
   Agent o(String name) {
     return new Agent(name);
   }
-  Agent o(String name, String city, String state, String country) {
+  Agent o(String name, String email, String url) {
+    return o(null, name, null, null, null, email, url);
+  }
+  Agent o(String name, String email, String url, String role) {
+    Agent a = o(null, name, null, null, null, email, url);
+    a.setNote(role);
+    return a;
+  }
+  Agent o(String name, String city, String state, Country country) {
     return o(null, name, city, state, country);
   }
-  Agent o(String department, String name, String city, String state, String country) {
-    return new Agent(null, trimToNull(name), trimToNull(department), trimToNull(city), trimToNull(state), CountryParser.PARSER.parseOrNull(country), null, null);
+  Agent o(String department, String name, String city, String state, Country country) {
+    return o(department, name, city, state, country, null, null);
+  }
+  Agent o(String department, String name, String city, String state, Country country, String email, String url) {
+    return new Agent(null, trimToNull(name), trimToNull(department), trimToNull(city), trimToNull(state), country, email, url);
   }
 
   Agent p(String surname, String firstname) {
@@ -143,6 +146,19 @@ public class EmlParserTest {
   Agent p(String surname, String firstname, String email) {
     return new Agent(firstname,surname, email,null);
   }
+  Agent p(String surname, String firstname, String email, String role) {
+    var a = new Agent(firstname,surname, email,null);
+    a.setNote(role);
+    return a;
+  }
+  Agent p(String surname, String firstname, String email, String organization, String department, Country country) {
+    var a = new Agent(firstname,surname, email,null);
+    a.setOrganisation(organization);
+    a.setDepartment(department);
+    a.setCountry(country);
+    return a;
+  }
+
   Agent pmail(String email) {
     return new Agent(null,null,email,null);
   }

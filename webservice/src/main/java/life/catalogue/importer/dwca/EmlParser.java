@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
  */
 public class EmlParser {
   private static final Logger LOG = LoggerFactory.getLogger(EmlParser.class);
+  private static final Pattern INTSTITUTE_PATTERN = Pattern.compile("\\b(Instituu?te?|Museum|Academ[yi]|Universi[dt])", Pattern.CASE_INSENSITIVE);
   private static final XMLInputFactory factory;
   
   static {
@@ -276,19 +277,29 @@ public class EmlParser {
   private static void dedupe(List<Agent> agents, Consumer<List<Agent>> setter){
     if (agents != null) {
       agents = agents.stream().distinct().collect(Collectors.toList());
-      // parse out organisation department if seperated by semicolons
+      // parse out organisation department if separated by semicolons
       for (Agent a : agents) {
         if (a.getDepartment() == null && a.getOrganisation() != null) {
           if (a.getOrganisation().contains(";")) {
             String[] parts = a.getOrganisation().split(";", 2);
-            // assume department is first
-            a.setDepartment(parts[0].trim());
-            a.setOrganisation(parts[1].trim());
+            // test for common intitution terms, otherwise assume organisation is first
+            String org = parts[0].trim();
+            String dep = parts[1].trim();
+            if (!isInstitute(org) && isInstitute(dep)) {
+              org = dep;
+              dep = parts[1].trim();
+            }
+            a.setOrganisation(org);
+            a.setDepartment(dep);
           }
         }
       }
       setter.accept(agents);
     }
+  }
+
+  private static boolean isInstitute(String x) {
+    return INTSTITUTE_PATTERN.matcher(x).find();
   }
 
   private static void addAgent(EmlAgent agent, Dataset d){
@@ -297,24 +308,24 @@ public class EmlParser {
     switch (agent.role.toUpperCase().trim()) {
       case "CONTACT":
       case "POINTOFCONTACT":
-        agent.agent().ifPresent(d::setContact);
+        agent.agent(false).ifPresent(d::setContact);
         break;
       case "PUBLISHER":
-        agent.agent().ifPresent(d::setPublisher);
+        agent.agent(false).ifPresent(d::setPublisher);
         break;
       case "AUTHOR":
       case "CREATOR":
-        agent.agent().map(EmlParser::nullIfNoName).ifPresent(d::addCreator);
+        agent.agent(false).map(EmlParser::nullIfNoName).ifPresent(d::addCreator);
         break;
       case "EDITOR":
-        agent.agent().map(EmlParser::nullIfNoName).ifPresent(d::addEditor);
+        agent.agent(false).map(EmlParser::nullIfNoName).ifPresent(d::addEditor);
         break;
       case "DISTRIBUTOR":
       case "HOST":
-        agent.agent().map(EmlParser::nullIfNoName).ifPresent(d::addDistributor);
+        agent.agent(false).map(EmlParser::nullIfNoName).ifPresent(d::addDistributor);
         break;
       default:
-        agent.agent().map(EmlParser::nullIfNoName).ifPresent(d::addContributor);
+        agent.agent(true).map(EmlParser::nullIfNoName).ifPresent(d::addContributor);
         break;
     }
   }
@@ -361,7 +372,7 @@ public class EmlParser {
     public String administrativeArea;
     public String deliveryPoint;
 
-    Optional<Agent> agent() {
+    Optional<Agent> agent(boolean inclRole) {
       if (givenName != null || surName != null || organizationName != null || electronicMailAddress != null) {
         Agent p = new Agent();
         p.setGivenName(givenName);
@@ -384,6 +395,9 @@ public class EmlParser {
         }
         p.setEmail(electronicMailAddress);
         p.setUrl(ObjectUtils.coalesce(onlineUrl, url));
+        if (inclRole) {
+          p.setNote(role);
+        }
         return Optional.of(p);
       }
       return Optional.empty();
