@@ -536,7 +536,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     if (author != null) {
       ds.setCreator(Agent.parse(List.of(author.split(";"))));
     }
-    ds.setContributor(List.of(new Agent(organisation)));
+    ds.setContributor(List.of(Agent.parse(organisation)));
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);

@@ -114,7 +114,7 @@ public class MetadataParser {
           return (Agent)obj;
 
         } else if (obj instanceof String) {
-          return new Agent((String)obj);
+          return Agent.parse((String)obj);
 
         } else if (obj instanceof Map) {
           return YamlMapper.MAPPER.convertValue(obj, Agent.class);

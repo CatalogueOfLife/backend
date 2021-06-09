@@ -38,18 +38,18 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setGeographicScope("North Africa");
     d.setContact(Agent.parse("foo"));
     d.setCreator(new ArrayList<>(List.of(
-      new Agent("crea1"),
-      new Agent("crea2"),
-      new Agent("crea3")
+      Agent.parse("crea1"),
+      Agent.parse("crea2"),
+      Agent.parse("crea3")
     )));
     d.setEditor(new ArrayList<>(List.of(
-      new Agent("editi"),
-      new Agent("edito"),
-      new Agent("edita")
+      Agent.parse("editi"),
+      Agent.parse("edito"),
+      Agent.parse("edita")
     )));
     d.setContributor(new ArrayList<>(List.of(
-      new Agent("contact"),
-      new Agent("contact2")
+      Agent.parse("contact"),
+      Agent.parse("contact2")
     )));
     d.setNotes("cuzdsghazugbe67wqt6c g cuzdsghazugbe67wqt6c g  nhjs");
     return d;

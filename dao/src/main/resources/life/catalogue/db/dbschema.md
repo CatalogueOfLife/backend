@@ -18,6 +18,23 @@ CREATE TYPE agent AS (orcid text, given text, family text,
   email text, url text, note text
 );
 
+CREATE OR REPLACE FUNCTION agent_str(agent) RETURNS text AS
+$$
+SELECT $1::text
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION agent_str(agent[]) RETURNS text AS
+$$
+SELECT array_to_string($1, ' ')
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION text2agent(text) RETURNS agent AS
+$$
+SELECT ROW(null, null, $1, null, null, null, null, null, null, null, null, null)::agent
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE CAST (text AS agent) WITH FUNCTION text2agent;
+
 CREATE OR REPLACE FUNCTION p2agent(person) RETURNS agent AS
 $$
 SELECT ROW($1.orcid, $1.given, $1.family, null, null, null, null, null, null, $1.email, null, null)::agent
@@ -31,27 +48,193 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 CREATE CAST (person AS agent) WITH FUNCTION p2agent;
 CREATE CAST (organisation AS agent) WITH FUNCTION o2agent;
 
+--
+-- DATASET TABLE
+--
 ALTER TABLE dataset RENAME COLUMN contact TO contact_old;
 ALTER TABLE dataset 
+  ADD COLUMN identifier HSTORE,
+  ADD COLUMN issn TEXT,
+  ADD COLUMN temporal_scope TEXT,
   ADD COLUMN contact agent,
   ADD COLUMN creator agent[],
   ADD COLUMN editor agent[],
   ADD COLUMN publisher agent,
-  ADD COLUMN distributor agent[],
   ADD COLUMN contributor agent[];
   
-UPDATE dataset SET contact=contact_old::agent, creator=authors::agent[], editor=editors::agent[], distributor=organisations::agent[];
+UPDATE dataset SET contact=contact_old::agent, creator=authors::agent[], editor=editors::agent[], contributor=organisations::agent[];
 
-ALTER TABLE d2 RENAME COLUMN website TO url;
-ALTER TABLE d2 RENAME COLUMN released TO issued;
-ALTER TABLE d2 RENAME COLUMN "group" TO taxonomic_scope;
-ALTER TABLE d2 
+ALTER TABLE dataset RENAME COLUMN website TO url;
+ALTER TABLE dataset RENAME COLUMN released TO issued;
+ALTER TABLE dataset RENAME COLUMN "group" TO taxonomic_scope;
+ALTER TABLE dataset RENAME COLUMN import_attempt TO attempt;
+ALTER TABLE dataset DROP COLUMN doc;
+ALTER TABLE dataset 
+  DROP COLUMN contact_old,
+  DROP COLUMN authors,
+  DROP COLUMN editors,
+  DROP COLUMN organisations,
+  DROP COLUMN citation;
+ALTER TABLE dataset ALTER COLUMN alias DROP NOT NULL;
+ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+      setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(title,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(issn, '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(identifier::text, '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(creator), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(version, '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(description,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(geographic_scope,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(taxonomic_scope,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(temporal_scope,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(contact), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(editor), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(publisher), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(contributor), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
+  ) STORED;
+
+CREATE TABLE dataset_citation (
+  dataset_key INTEGER REFERENCES dataset,
+  id TEXT,
+  type TEXT,
+  doi TEXT,
+  author agent[],
+  editor agent[],
+  title TEXT,
+  booktitle TEXT,
+  journal TEXT,
+  year TEXT,
+  month TEXT,
+  series TEXT,
+  volume TEXT,
+  number TEXT,
+  edition TEXT,
+  chapter TEXT,
+  pages TEXT,
+  publisher agent,
+  version TEXT,
+  isbn TEXT,
+  issn TEXT,
+  url TEXT
+);
+CREATE INDEX ON dataset_citation (dataset_key);
+
+
+--
+-- DATASET_ARCHIVE TABLE
+--
+ALTER TABLE dataset_archive RENAME COLUMN contact TO contact_old;
+ALTER TABLE dataset_archive 
+  ADD COLUMN identifier HSTORE,
+  ADD COLUMN issn TEXT,
+  ADD COLUMN temporal_scope TEXT,
+  ADD COLUMN contact agent,
+  ADD COLUMN creator agent[],
+  ADD COLUMN editor agent[],
+  ADD COLUMN publisher agent,
+  ADD COLUMN contributor agent[];
+  
+UPDATE dataset_archive SET contact=contact_old::agent, creator=authors::agent[], editor=editors::agent[], contributor=organisations::agent[];
+
+ALTER TABLE dataset_archive RENAME COLUMN website TO url;
+ALTER TABLE dataset_archive RENAME COLUMN released TO issued;
+ALTER TABLE dataset_archive RENAME COLUMN "group" TO taxonomic_scope;
+ALTER TABLE dataset_archive RENAME COLUMN import_attempt TO attempt;
+ALTER TABLE dataset_archive 
   DROP COLUMN contact_old,
   DROP COLUMN authors,
   DROP COLUMN editors,
   DROP COLUMN organisations,
   DROP COLUMN citation;
 
+ALTER TABLE dataset_archive ALTER COLUMN attempt SET NOT NULL;
+ALTER TABLE dataset_archive ADD FOREIGN KEY (key) REFERENCES dataset;
+ALTER TABLE dataset_archive DROP CONSTRAINT dataset_archive_key_import_attempt_key;
+ALTER TABLE dataset_archive ADD PRIMARY KEY (key, attempt);
+
+CREATE TABLE dataset_archive_citation (LIKE dataset_citation INCLUDING INDEXES);
+ALTER TABLE dataset_archive_citation
+  ADD COLUMN attempt INTEGER NOT NULL;
+CREATE INDEX ON dataset_archive_citation (dataset_key, attempt);
+
+
+--
+-- DATASET_SOURCE TABLE
+--
+ALTER TABLE project_source DROP CONSTRAINT project_source_key_dataset_key_key;
+ALTER TABLE project_source RENAME TO dataset_source;
+ALTER TABLE dataset_source RENAME COLUMN contact TO contact_old;
+ALTER TABLE dataset_source 
+  ADD COLUMN identifier HSTORE,
+  ADD COLUMN issn TEXT,
+  ADD COLUMN temporal_scope TEXT,
+  ADD COLUMN contact agent,
+  ADD COLUMN creator agent[],
+  ADD COLUMN editor agent[],
+  ADD COLUMN publisher agent,
+  ADD COLUMN contributor agent[];
+  
+UPDATE dataset_source SET contact=contact_old::agent, creator=authors::agent[], editor=editors::agent[], contributor=organisations::agent[];
+
+ALTER TABLE dataset_source RENAME COLUMN website TO url;
+ALTER TABLE dataset_source RENAME COLUMN released TO issued;
+ALTER TABLE dataset_source RENAME COLUMN "group" TO taxonomic_scope;
+ALTER TABLE dataset_source RENAME COLUMN import_attempt TO attempt;
+ALTER TABLE dataset_source 
+  DROP COLUMN contact_old,
+  DROP COLUMN authors,
+  DROP COLUMN editors,
+  DROP COLUMN organisations,
+  DROP COLUMN citation;
+
+ALTER TABLE dataset_source ADD PRIMARY KEY (key, dataset_key);
+ALTER TABLE dataset_source ADD FOREIGN KEY (key) REFERENCES dataset;
+
+CREATE TABLE dataset_source_citation (LIKE dataset_citation INCLUDING INDEXES);
+ALTER TABLE dataset_source_citation
+  ADD COLUMN release_key INTEGER REFERENCES dataset;
+CREATE INDEX ON dataset_source_citation (dataset_key, release_key);
+
+--
+-- DATASET_PATCH TABLE
+--
+ALTER TABLE dataset_patch RENAME COLUMN contact TO contact_old;
+ALTER TABLE dataset_patch 
+  ADD COLUMN identifier HSTORE,
+  ADD COLUMN issn TEXT,
+  ADD COLUMN temporal_scope TEXT,
+  ADD COLUMN contact agent,
+  ADD COLUMN creator agent[],
+  ADD COLUMN editor agent[],
+  ADD COLUMN publisher agent,
+  ADD COLUMN contributor agent[];
+  
+UPDATE dataset_patch SET contact=contact_old::agent, creator=authors::agent[], editor=editors::agent[], contributor=organisations::agent[];
+
+ALTER TABLE dataset_patch RENAME COLUMN website TO url;
+ALTER TABLE dataset_patch RENAME COLUMN released TO issued;
+ALTER TABLE dataset_patch RENAME COLUMN "group" TO taxonomic_scope;
+ALTER TABLE dataset_patch 
+  DROP COLUMN type,
+  DROP COLUMN contact_old,
+  DROP COLUMN authors,
+  DROP COLUMN editors,
+  DROP COLUMN organisations,
+  DROP COLUMN citation;
+
+
+--
+-- OTHER
+--
+ALTER TABLE dataset_export RENAME COLUMN import_attempt TO attempt;
+ALTER TABLE sector RENAME COLUMN dataset_import_attempt TO dataset_attempt;
+
+
+DROP FUNCTION p2agent CASCADE;
+DROP FUNCTION o2agent CASCADE; 
+DROP TYPE person CASCADE;
+DROP TYPE organisation CASCADE;
 ```
 
 ### 2021-05-19 dataset dois

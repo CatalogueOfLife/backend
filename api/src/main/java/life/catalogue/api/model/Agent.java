@@ -145,10 +145,6 @@ public class Agent {
     this.note = other.note;
   }
 
-  public Agent(String unparsedName) {
-    parse(this, unparsedName);
-  }
-
   public Agent(String givenName, String familyName) {
     this.givenName = givenName;
     this.familyName = familyName;
@@ -197,39 +193,33 @@ public class Agent {
 
   @JsonIgnore
   public boolean isOrganisation(){
-    return !isPerson() && organisation != null;
-  }
-
-  public String getGivenName() {
-    return givenName;
-  }
-
-  public void setGivenName(String givenName) {
-    this.givenName = StringUtils.trimToNull(givenName);
-  }
-
-  public String getFamilyName() {
-    return familyName;
-  }
-
-  public void setFamilyName(String familyName) {
-    this.familyName = StringUtils.trimToNull(familyName);
+    return !isPerson() && (organisation != null && department != null);
   }
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getName(){
-    if (givenName == null && familyName == null) return organisation;
-
     StringBuilder sb = new StringBuilder();
-    if (familyName != null) {
-      sb.append(familyName);
-    }
-    if (givenName != null) {
+    if (givenName == null && familyName == null) {
+      if (department != null) {
+        sb.append(department);
+      }
+      if (organisation != null) {
+        if (department != null) {
+          sb.append(", ");
+        }
+        sb.append(organisation);
+      }
+    } else {
       if (familyName != null) {
-        sb.append(" ");
-        sb.append(abbreviate(givenName));
-      } else {
-        sb.append(givenName);
+        sb.append(familyName);
+      }
+      if (givenName != null) {
+        if (familyName != null) {
+          sb.append(" ");
+          sb.append(abbreviate(givenName));
+        } else {
+          sb.append(givenName);
+        }
       }
     }
     return sb.toString();
@@ -275,6 +265,22 @@ public class Agent {
     return orcid;
   }
 
+  public String getGivenName() {
+    return givenName;
+  }
+
+  public void setGivenName(String givenName) {
+    this.givenName = StringUtils.trimToNull(givenName);
+  }
+
+  public String getFamilyName() {
+    return familyName;
+  }
+
+  public void setFamilyName(String familyName) {
+    this.familyName = StringUtils.trimToNull(familyName);
+  }
+
   public String getRorid() {
     return rorid;
   }
@@ -283,6 +289,7 @@ public class Agent {
     this.rorid = rorid;
   }
 
+  @JsonProperty("organisation")
   public String getOrganisation() {
     return organisation;
   }

@@ -77,7 +77,7 @@ public class Dataset extends DataEntity<Integer> {
         } else if (p.getPropertyType().equals(Integer.class)) {
           nullType = Integer.MIN_VALUE;
         } else if (p.getPropertyType().equals(Agent.class)) {
-          nullType = new Agent("null");
+          nullType = Agent.parse("null");
         } else if (p.getPropertyType().equals(LocalDate.class)) {
           nullType = LocalDate.of(1900, 1, 1);
         }

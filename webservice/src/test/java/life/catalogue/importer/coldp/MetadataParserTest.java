@@ -33,13 +33,13 @@ public class MetadataParserTest {
     assertEquals("WoRMS_Myriapoda", d.getAlias());
     assertEquals("MilliBase is a global taxonomic database, managed by a group of diplopod experts that aims to capture all described millipede, pauropod and symphylan species with the associated literature, the authorities and original descriptions of species, genera and all units of higher classification", d.getDescription());
     assertEquals(List.of(
-        new Agent("Field Museum of Natural History"),
-        new Agent("Bavarian State Collection of Zoology (ZSM)")
+        Agent.parse("Field Museum of Natural History"),
+        Agent.parse("Bavarian State Collection of Zoology (ZSM)")
       ), d.getContributor());
     assertEquals(new Agent(null, null, "info@marinespecies.org", null), d.getContact());
     assertEquals(List.of(
-        new Agent("Sierwald, P."),
-        new Agent("Spelda, J.")
+        Agent.parse("Sierwald, P."),
+        Agent.parse("Spelda, J.")
       ), d.getCreator());
     assertNull(d.getEditor());
     assertEquals(License.CC_BY_NC, d.getLicense());
@@ -163,9 +163,9 @@ public class MetadataParserTest {
     assertEquals(rainer, d.getContact());
     assertEquals(List.of(rainer, daniel), d.getCreator());
 
-    Agent o1 = new Agent("The WorldFish Center");
-    Agent o2 = new Agent("University of British Columbia, Canada");
-    Agent o3 = new Agent("Food and Agriculture Organization of the United Nations; Rome; Italy");
+    Agent o1 = Agent.parse("The WorldFish Center");
+    Agent o2 = Agent.parse("University of British Columbia, Canada");
+    Agent o3 = Agent.parse("Food and Agriculture Organization of the United Nations; Rome; Italy");
     assertEquals(List.of(o1, o2, o3), d.getContributor());
 
     assertEquals("Fishes", d.getTaxonomicScope());

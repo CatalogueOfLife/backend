@@ -122,7 +122,7 @@ public class EmlParserTest {
   }
 
   Agent o(String name) {
-    return new Agent(name);
+    return Agent.parse(name);
   }
   Agent o(String name, String email, String url) {
     return o(null, name, null, null, null, email, url);
