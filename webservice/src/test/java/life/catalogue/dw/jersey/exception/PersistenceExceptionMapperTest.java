@@ -81,14 +81,9 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
   public void uniqueConstraints() throws Exception {
     Dataset d = DatasetMapperTest.create();
     d.setGbifKey(null);
-    d.setAlias(null);
     d.setDoi(null);
     testUnique(d, null);
 
-    d.setAlias("uniqAli");
-    testUnique(d, "Dataset with alias='uniqAli' already exists");
-
-    d.setAlias(null);
     UUID gbif = UUID.randomUUID();
     d.setGbifKey(gbif);
     testUnique(d, "Dataset with gbif_key='"+gbif+"' already exists");
