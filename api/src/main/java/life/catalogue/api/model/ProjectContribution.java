@@ -10,8 +10,8 @@ import static java.util.Comparator.nullsFirst;
 public class ProjectContribution extends TreeSet<ProjectContribution.Contributor> {
 
   static class Contributor extends Agent implements Comparable<Agent> {
-    static final Comparator<Agent> COMP = Comparator.comparing(Agent::getFamilyName, nullsFirst(naturalOrder()))
-        .thenComparing(Agent::getFamilyName, nullsFirst(naturalOrder()));
+    static final Comparator<Agent> COMP = Comparator.comparing(Agent::getFamily, nullsFirst(naturalOrder()))
+        .thenComparing(Agent::getFamily, nullsFirst(naturalOrder()));
 
     public final Map<Integer, String> sources = new HashMap<>();
 
@@ -28,13 +28,13 @@ public class ProjectContribution extends TreeSet<ProjectContribution.Contributor
       if (o == null || getClass() != o.getClass()) return false;
       if (!super.equals(o)) return false;
       Agent that = (Agent) o;
-      return Objects.equals(getFamilyName(), that.getFamilyName()) &&
-        Objects.equals(getGivenName(), that.getGivenName());
+      return Objects.equals(getFamily(), that.getFamily()) &&
+             Objects.equals(getGiven(), that.getGiven());
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(getFamilyName(), getGivenName());
+      return Objects.hash(getFamily(), getGiven());
     }
 
     @Override

@@ -22,7 +22,7 @@ public class AgentTypeHandler extends CustomAbstractTypeHandler<Agent> {
   }
 
   static String[] to(Agent obj) throws SQLException {
-    return new String[]{obj.getOrcid(), obj.getGivenName(), obj.getFamilyName(),
+    return new String[]{obj.getOrcid(), obj.getGiven(), obj.getFamily(),
       obj.getRorid(), obj.getOrganisation(), obj.getDepartment(), obj.getCity(), obj.getState(), obj.getCountryCode(),
       obj.getEmail(), obj.getUrl(), obj.getNote()
     };

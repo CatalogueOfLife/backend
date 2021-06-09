@@ -63,7 +63,7 @@ public class DatasetConverter {
     // creator
     if (release.getCreator() != null) {
       attr.setCreators(release.getCreator().stream()
-        .map(a -> new Creator(a.getGivenName(), a.getFamilyName(), a.getOrcid()))
+        .map(a -> new Creator(a.getGiven(), a.getFamily(), a.getOrcid()))
         .collect(Collectors.toList())
       );
     } else {
@@ -81,7 +81,7 @@ public class DatasetConverter {
     // contributors
     if (release.getEditor() != null) {
       attr.setContributors(release.getEditor().stream()
-        .map(a -> new Contributor(a.getGivenName(), a.getFamilyName(), a.getOrcid(), ContributorType.EDITOR))
+        .map(a -> new Contributor(a.getGiven(), a.getFamily(), a.getOrcid(), ContributorType.EDITOR))
         .collect(Collectors.toList())
       );
     }

@@ -6,23 +6,21 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.Resources;
 
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-@Ignore("METADATA WORK IN PROGRESS")
 public class MetadataParserTest {
 
   @Test
@@ -44,7 +42,7 @@ public class MetadataParserTest {
     assertNull(d.getEditor());
     assertEquals(License.CC_BY_NC, d.getLicense());
     assertEquals("ver. (02/2021)", d.getVersion());
-    assertEquals(LocalDate.of(2021, 2, 3), d.getIssued());
+    assertEquals(FuzzyDate.of(2021, 2, 3), d.getIssued());
     assertEquals(URI.create("http://www.millibase.org"), d.getUrl());
     assertEquals(URI.create("http://www.millibase.org/images/logo_sp2000.jpg"), d.getLogo());
     assertEquals(Gazetteer.MRGID, d.getGazetteer());
@@ -63,7 +61,7 @@ public class MetadataParserTest {
     assertEquals(new Agent("Michael", "Calonje", "michaelc@montgomerybotanical.org", null), d.getContact());
     assertEquals(License.UNSPECIFIED, d.getLicense());
     assertEquals("ver. (02/2019)", d.getVersion());
-    assertEquals(LocalDate.of(2019, 2, 15), d.getIssued());
+    assertEquals(FuzzyDate.of(2019, 2, 15), d.getIssued());
     assertEquals(URI.create("http://cycadlist.org"), d.getUrl());
     assertEquals(URI.create("http://www.catalogueoflife.org/col/images/databases/The_World_List_of_Cycads.png"), d.getLogo());
     assertEquals(100, (int) d.getCompleteness());
@@ -97,7 +95,7 @@ public class MetadataParserTest {
     assertEquals(new Agent("Michael", "Calonje", "michaelc@montgomerybotanical.org", null), d.getContact());
     assertEquals(License.UNSPECIFIED, d.getLicense());
     assertEquals("ver. (02/2019)", d.getVersion());
-    assertEquals(LocalDate.of(2019, 2, 15), d.getIssued());
+    assertEquals(FuzzyDate.of(2019, 2, 15), d.getIssued());
     assertEquals(URI.create("http://cycadlist.org"), d.getUrl());
     assertEquals(URI.create("http://www.catalogueoflife.org/col/images/databases/The_World_List_of_Cycads.png"), d.getLogo());
     assertEquals(100, (int) d.getCompleteness());
@@ -132,7 +130,7 @@ public class MetadataParserTest {
     assertEquals(donald, d.getContact());
     assertEquals(License.CC_BY, d.getLicense());
     assertEquals("ver. 1.0 (09/2020)", d.getVersion());
-    assertEquals(LocalDate.of(2020, 9, 18), d.getIssued());
+    assertEquals(FuzzyDate.of(2020, 9, 18), d.getIssued());
     assertNull(d.getUrl());
     assertEquals(URI.create("https://hobern.net/img/Alucita_hexadactyla.png"), d.getLogo());
     assertNull(d.getCompleteness());

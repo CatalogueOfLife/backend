@@ -2,6 +2,7 @@ package life.catalogue.importer.coldp;
 
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.dwca.EmlParser;
 import life.catalogue.jackson.YamlMapper;
 
@@ -12,6 +13,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import life.catalogue.parser.DateParser;
+
+import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.UnparsableException;
+
+import life.catalogue.parser.UriParser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +40,10 @@ public class MetadataParser {
     DATASET_YAML_READER = YamlMapper.MAPPER.readerFor(YamlDataset.class);
   }
 
+  /**
+   * Wrapper class that allows us to support multiple names for the same property
+   * and also setting both simple unparsed strings and complex agents.
+   */
   static class YamlDataset extends DatasetWithSettings {
 
     @JsonProperty("contact")
@@ -54,6 +66,11 @@ public class MetadataParser {
     @JsonProperty("creators")
     public void setCreators(Object creators) {
       super.setCreator(parseAgents(creators));
+    }
+
+    @JsonProperty("author")
+    public void setAuthor(Object authors) {
+      super.setCreator(parseAgents(authors));
     }
 
     @JsonProperty("authors")
@@ -117,6 +134,11 @@ public class MetadataParser {
           return Agent.parse((String)obj);
 
         } else if (obj instanceof Map) {
+          // allow name as alternative to organisation to support older YAML format
+          Map<Object, Object> map = (Map<Object, Object>) obj;
+          if (map.containsKey("name") && !map.containsKey("organisation")) {
+            map.put("organisation", map.get("name"));
+          }
           return YamlMapper.MAPPER.convertValue(obj, Agent.class);
 
         }
@@ -131,10 +153,15 @@ public class MetadataParser {
 
     @JsonProperty("website")
     public void setWebsite(String website) {
-      try {
-        setUrl(URI.create(website));
-      } catch (IllegalArgumentException e) {
-        LOG.warn("Ignore bad url {}", website);
+      setUrl(UriParser.parseDontThrow(website));
+    }
+
+    @JsonProperty("released")
+    public void setIssued(String issued) {
+      if (issued == null) {
+        super.setIssued(null);
+      } else {
+        super.setIssued(SafeParser.parse(DateParser.PARSER, issued).orNull());
       }
     }
   }

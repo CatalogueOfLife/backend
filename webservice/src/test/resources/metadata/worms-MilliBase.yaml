@@ -3,7 +3,7 @@ alias: WoRMS_Myriapoda
 description: 'MilliBase is a global taxonomic database, managed by a group of diplopod experts that aims to capture all described millipede, pauropod and symphylan species with the associated literature, the authorities and original descriptions of species, genera and all units of higher classification'
 organisations: 'Field Museum of Natural History; Bavarian State Collection of Zoology (ZSM)'
 contact: info@marinespecies.org
-authorsAndEditors: 'Sierwald, P.; Spelda, J.'
+authors: 'Sierwald, P.; Spelda, J.'
 geographicScope: Global
 taxonomicScope: Myriapoda
 code: null

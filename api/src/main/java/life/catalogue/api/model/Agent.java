@@ -33,10 +33,11 @@ public class Agent {
   private static final Pattern SHORTNAME_REVERSE = Pattern.compile("^\\s*" + FAMILY_NAME+"(?:\\s+|\\s*,\\s*)" + INITIALS +"\\s*$");
   private static final Pattern BRACKET_SUFFIX = Pattern.compile("^(.+)(\\(.+\\)\\.?)\\s*$");
   private static final Pattern EMAIL = Pattern.compile("<?\\s*\\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,})\\s*>?", Pattern.CASE_INSENSITIVE);
+
   // person properties
   private String orcid;
-  private String givenName;
-  private String familyName;
+  private String given;
+  private String family;
   // organisation properties
   private String rorid;
   private String organisation;
@@ -57,7 +58,7 @@ public class Agent {
   }
 
   static void parse(Agent p, final String originalName) {
-    if (originalName != null && p != null) {
+    if (!StringUtils.isBlank(originalName) && p != null) {
       // see if we have brackets at the end, often for roles
       String brackets = null;
       String name = originalName;
@@ -77,39 +78,39 @@ public class Agent {
       // try with 4 distinct & common patterns
       m = FULLNAME.matcher(name);
       if (m.find()) {
-        p.setGivenName(m.group(1));
-        p.setFamilyName(m.group(2));
+        p.setGiven(m.group(1));
+        p.setFamily(m.group(2));
       } else {
 
         m = FULLNAME_REVERSE.matcher(name);
         if (m.find()) {
-          p.setFamilyName(m.group(1));
-          p.setGivenName(m.group(2));
+          p.setFamily(m.group(1));
+          p.setGiven(m.group(2));
         } else {
 
           m = SHORTNAME.matcher(name);
           if (m.find()) {
-            p.setGivenName(m.group(1));
-            p.setFamilyName(m.group(2));
+            p.setGiven(m.group(1));
+            p.setFamily(m.group(2));
           } else {
 
             m = SHORTNAME_REVERSE.matcher(name);
             if (m.find()) {
               RegexUtils.log(m);
-              p.setFamilyName(m.group(1));
-              p.setGivenName(m.group(2));
+              p.setFamily(m.group(1));
+              p.setGiven(m.group(2));
             } else {
-              // no luck
-              p.setFamilyName(name);
+              // NO LUCK - consider this an organisation name as last resort!
+              p.setOrganisation(StringUtils.trimToNull(name));
             }
           }
         }
       }
       if (brackets != null) {
-        if (p.getGivenName() == null) {
-          p.setGivenName(brackets);
+        if (p.getGiven() == null) {
+          p.setGiven(brackets);
         } else {
-          p.setGivenName(p.getGivenName() + " " + brackets);
+          p.setGiven(p.getGiven() + " " + brackets);
         }
       }
     }
@@ -132,8 +133,8 @@ public class Agent {
 
   public Agent(Agent other) {
     this.orcid = other.orcid;
-    this.givenName = other.givenName;
-    this.familyName = other.familyName;
+    this.given = other.given;
+    this.family = other.family;
     this.rorid = other.rorid;
     this.organisation = other.organisation;
     this.department = other.department;
@@ -145,14 +146,14 @@ public class Agent {
     this.note = other.note;
   }
 
-  public Agent(String givenName, String familyName) {
-    this.givenName = givenName;
-    this.familyName = familyName;
+  public Agent(String given, String family) {
+    this.given = given;
+    this.family = family;
   }
 
-  public Agent(String givenName, String familyName, String email, String orcid) {
-    this.givenName = givenName;
-    this.familyName = familyName;
+  public Agent(String given, String family, String email, String orcid) {
+    this.given = given;
+    this.family = family;
     this.email = email;
     this.orcid = orcid;
   }
@@ -168,13 +169,13 @@ public class Agent {
     this.url = url;
   }
 
-  public Agent(String orcid, String givenName, String familyName,
+  public Agent(String orcid, String given, String family,
                String rorid, String organisation, String department, String city, String state, Country country,
                String email, String url, String note
   ) {
     this.orcid = orcid;
-    this.givenName = givenName;
-    this.familyName = familyName;
+    this.given = given;
+    this.family = family;
     this.rorid = rorid;
     this.organisation = organisation;
     this.department = department;
@@ -188,7 +189,7 @@ public class Agent {
 
   @JsonIgnore
   public boolean isPerson(){
-    return familyName != null || givenName != null;
+    return family != null || given != null;
   }
 
   @JsonIgnore
@@ -199,7 +200,7 @@ public class Agent {
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getName(){
     StringBuilder sb = new StringBuilder();
-    if (givenName == null && familyName == null) {
+    if (given == null && family == null) {
       if (department != null) {
         sb.append(department);
       }
@@ -210,15 +211,15 @@ public class Agent {
         sb.append(organisation);
       }
     } else {
-      if (familyName != null) {
-        sb.append(familyName);
+      if (family != null) {
+        sb.append(family);
       }
-      if (givenName != null) {
-        if (familyName != null) {
+      if (given != null) {
+        if (family != null) {
           sb.append(" ");
-          sb.append(abbreviate(givenName));
+          sb.append(abbreviate(given));
         } else {
-          sb.append(givenName);
+          sb.append(given);
         }
       }
     }
@@ -234,8 +235,8 @@ public class Agent {
   public CSLName toCSL() {
     if (isPerson()) {
       return new CSLNameBuilder()
-        .given(givenName)
-        .family(familyName)
+        .given(given)
+        .family(family)
         .isInstitution(false)
         .build();
     } else if (isOrganisation()) {
@@ -265,20 +266,28 @@ public class Agent {
     return orcid;
   }
 
-  public String getGivenName() {
-    return givenName;
+  public String getGiven() {
+    return given;
   }
 
-  public void setGivenName(String givenName) {
-    this.givenName = StringUtils.trimToNull(givenName);
+  public void setGiven(String given) {
+    this.given = StringUtils.trimToNull(given);
+  }
+  @Deprecated
+  public void setGivenName(String given) {
+    setGiven(given);
   }
 
-  public String getFamilyName() {
-    return familyName;
+  public String getFamily() {
+    return family;
   }
 
-  public void setFamilyName(String familyName) {
-    this.familyName = StringUtils.trimToNull(familyName);
+  public void setFamily(String family) {
+    this.family = StringUtils.trimToNull(family);
+  }
+  @Deprecated
+  public void setFamilyName(String family) {
+    setFamily(family);
   }
 
   public String getRorid() {
@@ -373,14 +382,23 @@ public class Agent {
     if (this == o) return true;
     if (!(o instanceof Agent)) return false;
     Agent agent = (Agent) o;
-    return Objects.equals(orcid, agent.orcid) && Objects.equals(givenName, agent.givenName) && Objects.equals(familyName, agent.familyName) &&
-      Objects.equals(rorid, agent.rorid) &&
-      Objects.equals(organisation, agent.organisation) && Objects.equals(department, agent.department) && Objects.equals(city, agent.city) && Objects.equals(state, agent.state) && country == agent.country && Objects.equals(email, agent.email) && Objects.equals(url, agent.url) && Objects.equals(note, agent.note);
+    return Objects.equals(orcid, agent.orcid)
+           && Objects.equals(given, agent.given)
+           && Objects.equals(family, agent.family)
+           && Objects.equals(rorid, agent.rorid)
+           && Objects.equals(organisation, agent.organisation)
+           && Objects.equals(department, agent.department)
+           && Objects.equals(city, agent.city)
+           && Objects.equals(state, agent.state)
+           && country == agent.country
+           && Objects.equals(email, agent.email)
+           && Objects.equals(url, agent.url)
+           && Objects.equals(note, agent.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(orcid, givenName, familyName, rorid, organisation, department, city, state, country, email, url, note);
+    return Objects.hash(orcid, given, family, rorid, organisation, department, city, state, country, email, url, note);
   }
 
   @Override

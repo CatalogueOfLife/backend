@@ -12,10 +12,10 @@ public class AgentTest {
     Agent p = new Agent("Markus", "Döring");
     assertEquals("Döring M.", p.getName());
 
-    p.setGivenName(null);
+    p.setGiven(null);
     assertEquals("Döring", p.getName());
 
-    p.setFamilyName(null);
+    p.setFamily(null);
     assertNull(p.getName());
 
     p = new Agent("Markus", null);

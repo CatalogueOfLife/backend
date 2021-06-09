@@ -19,7 +19,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -346,8 +345,8 @@ public class DatasetPager {
       if (contacts != null) {
         for (var c : contacts) {
           if (c.lastName != null || c.firstName != null || c.email != null) {
-            org.setFamilyName(c.lastName);
-            org.setGivenName(c.firstName);
+            org.setFamily(c.lastName);
+            org.setGiven(c.firstName);
             if (org.getEmail() != null) {
               org.setEmail(c.firstEmail());
             }

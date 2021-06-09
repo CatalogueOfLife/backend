@@ -6,20 +6,20 @@ description: |
 
 # single point of contact for questions
 contact:
-  givenName: Donald
-  familyName: Hobern
+  given: Donald
+  family: Hobern
   email: dhobern@gmail.com
   orcid: 0000-0001-6492-4016
 
 # list of authors and editors.
 # Please provide an ORCID if you can so it can be included in DOI metadata
-authorsAndEditors:
-  - givenName: Donald
-    familyName: Hobern
+creator:
+  - given: Donald
+    family: Hobern
     email: dhobern@gmail.com
     orcid: 0000-0001-6492-4016
-  - givenName: Cees
-    familyName: Gielis
+  - given: Cees
+    family: Gielis
     orcid: 0000-0003-0857-1679
 
 # description of the geographical scope of the dataset
@@ -48,6 +48,3 @@ released: 2020-09-18
 
 # URL to large logo image
 logo: https://hobern.net/img/Alucita_hexadactyla.png
-
-# how to cite the dataset
-citation: Gielis C. & Hobern D. (eds) (2020). Catalogue of the Alucitoidea of the World (version 1.0, 09/2020).

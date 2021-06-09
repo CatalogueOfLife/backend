@@ -101,8 +101,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset d1 = create();
     // this also tests the custom PersonTypeHandler and PersonArrayTypeHandler
     // thats why we need lots of strange potentially data that needs to be escaped properly
-    d1.getContact().setFamilyName("O'Hara");
-    d1.getContact().setGivenName("Œre-Fölíñgé");
+    d1.getContact().setFamily("O'Hara");
+    d1.getContact().setGiven("Œre-Fölíñgé");
     d1.getContact().setEmail("Maxi\t<oere@foo.bar>\nhidden");
     d1.getContact().setOrcid("1234,\"5678\".90/x");
     mapper().create(d1);

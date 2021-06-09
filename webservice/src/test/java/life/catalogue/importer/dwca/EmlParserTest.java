@@ -18,7 +18,6 @@ import static org.junit.Assert.assertNull;
 /**
  *
  */
-@Ignore("METADATA WORK IN PROGRESS")
 public class EmlParserTest {
 
   private DatasetWithSettings read(String name) throws IOException {

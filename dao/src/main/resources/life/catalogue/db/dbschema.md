@@ -223,6 +223,8 @@ ALTER TABLE dataset_patch
   DROP COLUMN organisations,
   DROP COLUMN citation;
 
+ALTER TABLE dataset_patch ADD COLUMN notes TEXT;
+
 
 --
 -- OTHER

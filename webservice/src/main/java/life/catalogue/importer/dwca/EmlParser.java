@@ -370,8 +370,8 @@ public class EmlParser {
     Optional<Agent> agent(boolean inclRole) {
       if (givenName != null || surName != null || organizationName != null || electronicMailAddress != null) {
         Agent p = new Agent();
-        p.setGivenName(givenName);
-        p.setFamilyName(surName);
+        p.setGiven(givenName);
+        p.setFamily(surName);
         if (userId != null) {
           // verify ORCID pattern
           Matcher m = ORCID.matcher(userId);
