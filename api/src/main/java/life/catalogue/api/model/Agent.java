@@ -222,7 +222,7 @@ public class Agent {
         }
       }
     }
-    return sb.toString();
+    return sb.length() > 0 ? sb.toString() : null;
   }
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)

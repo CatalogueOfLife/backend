@@ -108,7 +108,6 @@ public class EmlParserTest {
       p("Molodtsova", "Tina", "tina@ocean.ru", "Russian Academy of Sciences", "P. P. Shirshov Institute of Oceanology", Country.RUSSIAN_FEDERATION),
       p("Paulay", "Gustav", "paulay@flmnh.ufl.edu", "University of Florida", "Florida Museum of Natural History", Country.UNITED_STATES)
     ), d.getEditor());
-    assertNull(d.getContributor());
     assertEquals(List.of(
       new Agent(null, "Leen", "Vandepitte", null, "Vlaams Instituut voor de Zee", null, null, null, Country.BELGIUM, "leen.vandepitte@vliz.be", null, "custodianSteward"),
       o("WoRMS Steering Committee", "info@marinespecies.org", null, "owner")
