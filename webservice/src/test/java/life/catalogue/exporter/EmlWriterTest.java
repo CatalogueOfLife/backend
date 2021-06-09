@@ -45,8 +45,8 @@ public class EmlWriterTest {
 
       Dataset d = dm.get(TestDataRule.APPLE.key);
       d.setCreator(List.of(
-        new Agent("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"),
-        new Agent("Fax", "Feier", null, null)
+        Agent.person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"),
+        Agent.person("Fax", "Feier")
       ));
       d.setEditor(List.of(new Agent("Derek & Dan", "Dillinger's")));
       d.setLicense(License.CC0);

@@ -17,12 +17,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-@Ignore("METADATA WORK IN PROGRESS")
 public class ColdpInserterTest extends InserterBaseTest {
   
   @Test
@@ -32,27 +30,31 @@ public class ColdpInserterTest extends InserterBaseTest {
     
     assertNull(d.getType());
     assertNull(d.getDataFormat());
-    assertEquals("The full dataset title", d.getTitle());
+    assertEquals("ColDP Example. The full dataset title", d.getTitle());
     assertNotNull(d.getDescription());
-    assertEquals(10, d.getContributor().size());
-    assertEquals(new Agent("Rainer", "Froese", "rainer@mailinator.com", null), d.getContact());
+    assertEquals(8, d.getContributor().size());
+    assertEquals(Agent.person("Rainer", "Froese", "rainer@mailinator.com"), d.getContact());
     assertEquals(List.of(
-        new Agent("Rainer", "Froese", "rainer@mailinator.com", "0000-0001-9745-636X"),
-        new Agent("Daniel", "Pauly", null, "0000-0003-3756-4793")
+        Agent.person("Nicolas", "Bailly", null, "0000-0003-4994-0653"),
+        Agent.person("Rainer", "Froese", null, "0000-0001-9745-636X"),
+        Agent.person("Daniel", "Pauly", null, "0000-0003-3756-4793")
       ), d.getCreator());
-    assertNull(d.getEditor());
-    assertEquals(License.CC_BY_NC, d.getLicense());
-    assertEquals("ver. (06/2018)", d.getVersion());
+    assertEquals(List.of(
+      Agent.person("Rainer", "Froese", "rainer@mailinator.com", "0000-0001-9745-636X"),
+      Agent.person("Daniel", "Pauly", null, "0000-0003-3756-4793")
+    ), d.getEditor());
+    assertEquals(License.CC0, d.getLicense());
+    assertEquals("v.48 (06/2018)", d.getVersion());
     assertEquals("2018-06-01", d.getIssued().toString());
     assertEquals("https://www.fishbase.org", d.getUrl().toString());
     assertEquals("https://www.fishbase.de/images/gifs/fblogo_new.gif", d.getLogo().toString());
 
-    assertEquals(NomCode.BOTANICAL, d.getCode());
-    assertEquals((Integer)4, d.getConfidence());
-    assertEquals((Integer)32, d.getCompleteness());
+    assertNull(d.getCode());
+    assertEquals((Integer)5, d.getConfidence());
+    assertEquals((Integer)95, d.getCompleteness());
     assertEquals("my personal,\n" +
                           "very long notes", d.getNotes());
-    assertEquals("shortname", d.getAlias());
+    assertEquals("ColDP Example", d.getAlias());
   }
   
   @Test

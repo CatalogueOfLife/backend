@@ -51,19 +51,19 @@ public class AgentTest {
   @Test
   public void parse() {
     assertNull(Agent.parse((String)null));
-    assertEquals(new Agent("T.", "O’Hara"), Agent.parse("O’Hara T."));
-    assertEquals(new Agent("Markus", "Döring", "markus@mailinator.com", null), Agent.parse("Markus Döring <markus@mailinator.com>"));
-    assertEquals(new Agent(null, "Döring", "m.doering@mailinator.com", null), Agent.parse("Döring<m.doering@mailinator.com>"));
-    assertEquals(new Agent("K. (eds).", "Fauchald"), Agent.parse("Fauchald K. (eds)."));
-    assertEquals(new Agent("R.", "DeSalle"), Agent.parse("DeSalle R."));
-    assertEquals(new Agent(null, "Markus"), Agent.parse("Markus"));
-    assertEquals(new Agent("Markus", "Döring"), Agent.parse("Markus Döring"));
-    assertEquals(new Agent("M.", "Döring"), Agent.parse("Döring M."));
-    assertEquals(new Agent("Markus", "de la Orca"), Agent.parse("Markus de la Orca"));
-    assertEquals(new Agent("A.S.", "Kroupa"), Agent.parse("Kroupa A.S."));
-    assertEquals(new Agent("U.", "Neu-Becker"), Agent.parse("Neu-Becker U."));
-    assertEquals(new Agent("F. (data managers)", "Zinetti"), Agent.parse("Zinetti F. (data managers)"));
-    assertEquals(new Agent(null, "data managers are great people"), Agent.parse("data managers are great people"));
+    assertEquals(Agent.person(null, "Markus"), Agent.parse("Markus"));
+    assertEquals(Agent.person("T.", "O’Hara"), Agent.parse("O’Hara T."));
+    assertEquals(Agent.person("Markus", "Döring", "markus@mailinator.com"), Agent.parse("Markus Döring <markus@mailinator.com>"));
+    assertEquals(Agent.person(null, "Döring", "m.doering@mailinator.com"), Agent.parse("Döring<m.doering@mailinator.com>"));
+    assertEquals(Agent.person("K.", "Fauchald", null, null, "eds"), Agent.parse("Fauchald K. (eds)."));
+    assertEquals(Agent.person("R.", "DeSalle"), Agent.parse("DeSalle R."));
+    assertEquals(Agent.person("Markus", "Döring"), Agent.parse("Markus Döring"));
+    assertEquals(Agent.person("M.", "Döring"), Agent.parse("Döring M."));
+    assertEquals(Agent.person("Markus", "de la Orca"), Agent.parse("Markus de la Orca"));
+    assertEquals(Agent.person("A.S.", "Kroupa"), Agent.parse("Kroupa A.S."));
+    assertEquals(Agent.person("U.", "Neu-Becker"), Agent.parse("Neu-Becker U."));
+    assertEquals(Agent.person("F.", "Zinetti", null, null, "data managers"), Agent.parse("Zinetti F. (data managers)"));
+    assertEquals(Agent.organisation("data managers are great people"), Agent.parse("data managers are great people"));
   }
 
   @Test

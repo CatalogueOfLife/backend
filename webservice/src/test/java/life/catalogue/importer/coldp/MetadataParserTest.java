@@ -34,7 +34,7 @@ public class MetadataParserTest {
         Agent.parse("Field Museum of Natural History"),
         Agent.parse("Bavarian State Collection of Zoology (ZSM)")
       ), d.getContributor());
-    assertEquals(new Agent(null, null, "info@marinespecies.org", null), d.getContact());
+    assertEquals(Agent.person(null, null, "info@marinespecies.org"), d.getContact());
     assertEquals(List.of(
         Agent.parse("Sierwald, P."),
         Agent.parse("Spelda, J.")
@@ -58,7 +58,7 @@ public class MetadataParserTest {
     assertEquals("The World List of Cycads, online edition", d.getTitle());
     assertEquals("Cycad List", d.getAlias());
     assertEquals("The World List of Cycads is a working list of known cycad species names with the primary goal of providing reliable information on the taxonomy of cycads for use by researchers, conservation planners, and others. It is developed in close collaboration with world's foremost cycad experts and published under the auspices of the IUCN's Cycad Specialist Group. The printed edition is published in the proceedings of the International Conference of Cycad Biology, which is held every three years.", d.getDescription());
-    assertEquals(new Agent("Michael", "Calonje", "michaelc@montgomerybotanical.org", null), d.getContact());
+    assertEquals(Agent.person("Michael", "Calonje", "michaelc@montgomerybotanical.org"), d.getContact());
     assertEquals(License.UNSPECIFIED, d.getLicense());
     assertEquals("ver. (02/2019)", d.getVersion());
     assertEquals(FuzzyDate.of(2019, 2, 15), d.getIssued());
@@ -70,16 +70,16 @@ public class MetadataParserTest {
     assertEquals(Gazetteer.ISO, d.getGazetteer());
 
     List<Agent> orgs = List.of(
-      new Agent(null, "Montgomery Botanical Center", "IUCN / SSC Cycad Specialist Group", "Coral Gables", "FL", Country.UNITED_STATES, null, null),
-      new Agent(null, "New York Botanical Garden", null, "Bronx NY", null, Country.UNITED_STATES, null, null),
-      new Agent(null, "Royal Botanic Gardens", "IUCN / SSC Cycad Specialist Group", "Sydney", "New South Wales", Country.AUSTRALIA, null, null)
+      Agent.organisation("Montgomery Botanical Center", "IUCN / SSC Cycad Specialist Group", "Coral Gables", "FL", Country.UNITED_STATES),
+      Agent.organisation("New York Botanical Garden", null, "Bronx NY", null, Country.UNITED_STATES),
+      Agent.organisation("Royal Botanic Gardens", "IUCN / SSC Cycad Specialist Group", "Sydney", "New South Wales", Country.AUSTRALIA)
     );
     assertEquals(orgs, d.getContributor());
   
     List<Agent> authors = List.of(
-      new Agent("Michael","Calonje", "michaelc@montgomerybotanical.org", "0000-0001-9650-3136"),
-      new Agent("Leonie", "Stanberg"),
-      new Agent("Dennis", "Stevenson",null, "0000-0002-2986-7076")
+      Agent.person("Michael","Calonje", "michaelc@montgomerybotanical.org", "0000-0001-9650-3136"),
+      Agent.person("Leonie", "Stanberg"),
+      Agent.person("Dennis", "Stevenson",null, "0000-0002-2986-7076")
     );
     assertEquals(authors, d.getCreator());
     assertEquals(authors, d.getEditor());
@@ -92,7 +92,7 @@ public class MetadataParserTest {
     assertEquals("The World List of Cycads, online edition", d.getTitle());
     assertEquals("Cycad List", d.getAlias());
     assertEquals("The World List of Cycads is a working list of known cycad species names with the primary goal of providing reliable information on the taxonomy of cycads for use by researchers, conservation planners, and others. It is developed in close collaboration with world's foremost cycad experts and published under the auspices of the IUCN's Cycad Specialist Group. The printed edition is published in the proceedings of the International Conference of Cycad Biology, which is held every three years.", d.getDescription());
-    assertEquals(new Agent("Michael", "Calonje", "michaelc@montgomerybotanical.org", null), d.getContact());
+    assertEquals(Agent.person("Michael", "Calonje", "michaelc@montgomerybotanical.org"), d.getContact());
     assertEquals(License.UNSPECIFIED, d.getLicense());
     assertEquals("ver. (02/2019)", d.getVersion());
     assertEquals(FuzzyDate.of(2019, 2, 15), d.getIssued());
@@ -122,7 +122,7 @@ public class MetadataParserTest {
     Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/Alucitoidea.yaml"));
     DatasetWithSettings d = m.get();
 
-    Agent donald = new Agent("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
+    Agent donald = Agent.person("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
 
     assertEquals("Catalogue of the Alucitoidea of the World", d.getTitle());
     assertEquals("Alucitoidea", d.getAlias());
@@ -142,7 +142,7 @@ public class MetadataParserTest {
 
     List<Agent> authors = new ArrayList<>();
     authors.add(donald);
-    authors.add(new Agent("Cees", "Gielis", null, "0000-0003-0857-1679"));
+    authors.add(Agent.person("Cees", "Gielis", null, "0000-0003-0857-1679"));
     assertEquals(authors, d.getCreator());
     assertNull(d.getEditor());
   }
@@ -155,8 +155,8 @@ public class MetadataParserTest {
     Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/simple-person.yaml"));
     Dataset d = m.get().getDataset();
 
-    Agent rainer = new Agent("Rainer","Froese","rainer@mailinator.com",null);
-    Agent daniel = new Agent("Daniel","Pauly");
+    Agent rainer = Agent.person("Rainer","Froese","rainer@mailinator.com");
+    Agent daniel = Agent.person("Daniel","Pauly");
 
     assertEquals(rainer, d.getContact());
     assertEquals(List.of(rainer, daniel), d.getCreator());

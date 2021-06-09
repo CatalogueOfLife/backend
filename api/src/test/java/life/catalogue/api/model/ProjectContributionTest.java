@@ -27,9 +27,9 @@ public class ProjectContributionTest {
 
     // ignore the empty persons and orgs
     d = DatasetTest.generateTestDataset();
-    d.setCreator(List.of(new Agent(null, null, "null@null.io", null)));
-    d.setEditor(List.of(new Agent(null, null, "null@null.io", null)));
-    d.getContributor().add(new Agent(null, null, null, null, null, null, null, null));
+    d.setCreator(List.of(Agent.person(null, null, "null@null.io")));
+    d.setEditor(List.of(Agent.person(null, null, "null@null.io")));
+    d.getContributor().add(new Agent(null, null));
     contrib.add(d);
 
     assertEquals(11, contrib.size());

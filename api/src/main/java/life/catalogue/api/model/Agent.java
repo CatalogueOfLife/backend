@@ -31,7 +31,7 @@ public class Agent {
   private static final Pattern FULLNAME_REVERSE = Pattern.compile("^\\s*" + FAMILY_NAME + "\\s*,\\s*" + GIVEN_NAME + "\\s*$");
   private static final Pattern SHORTNAME = Pattern.compile("^\\s*" + INITIALS + "\\s+" + FAMILY_NAME + "\\s*$");
   private static final Pattern SHORTNAME_REVERSE = Pattern.compile("^\\s*" + FAMILY_NAME+"(?:\\s+|\\s*,\\s*)" + INITIALS +"\\s*$");
-  private static final Pattern BRACKET_SUFFIX = Pattern.compile("^(.+)(\\(.+\\)\\.?)\\s*$");
+  private static final Pattern BRACKET_SUFFIX = Pattern.compile("^(.+)\\((.+)\\)\\.?\\s*$");
   private static final Pattern EMAIL = Pattern.compile("<?\\s*\\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,})\\s*>?", Pattern.CASE_INSENSITIVE);
 
   // person properties
@@ -50,22 +50,53 @@ public class Agent {
   private String url;
   private String note;
 
-  public static Agent parse(final String originalName) {
-    if (originalName == null) return null;
+  public static Agent person(String given, String family) {
+    return new Agent(null, given, family, null, null, null, null, null, null, null, null, null);
+  }
+
+  public static Agent person(String given, String family, String email) {
+    return new Agent(null, given, family, null, null, null, null, null, null, email, null, null);
+  }
+
+  public static Agent person(String given, String family, String email, String orcid) {
+    return new Agent(orcid, given, family, null, null, null, null, null, null, email, null, null);
+  }
+
+  public static Agent person(String given, String family, String email, String orcid, String note) {
+    return new Agent(orcid, given, family, null, null, null, null, null, null, email, null, note);
+  }
+
+  public static Agent organisation(String organisation) {
+    return new Agent(null, null, null, null, organisation, null, null, null, null, null, null, null);
+  }
+
+  public static Agent organisation(String organisation, String department) {
+    return new Agent(null, null, null, null, organisation, department, null, null, null, null, null, null);
+  }
+
+  public static Agent organisation(String organisation, String department, String city, String state, Country country) {
+    return new Agent(null, null, null, null, organisation, department, city, state, country, null, null, null);
+  }
+
+  public static Agent organisation(String rorid, String organisation, String department, String city, String state, Country country, String email, String url, String notes) {
+    return new Agent(null, null, null, rorid, organisation, department, city, state, country, email, url, notes);
+  }
+
+  public static Agent parse(final String raw) {
+    if (raw == null) return null;
     Agent p = new Agent();
-    parse(p, originalName);
+    parse(p, raw);
     return p;
   }
 
   static void parse(Agent p, final String originalName) {
     if (!StringUtils.isBlank(originalName) && p != null) {
-      // see if we have brackets at the end, often for roles
-      String brackets = null;
       String name = originalName;
       Matcher m = BRACKET_SUFFIX.matcher(name);
       if (m.find()) {
+        // brackets at the end, often for roles
         name = m.group(1);
-        brackets = m.group(2);
+        p.setNote(m.group(2));
       }
 
       // email?
@@ -100,17 +131,14 @@ public class Agent {
               p.setFamily(m.group(1));
               p.setGiven(m.group(2));
             } else {
-              // NO LUCK - consider this an organisation name as last resort!
-              p.setOrganisation(StringUtils.trimToNull(name));
+              // NO LUCK - use family if its a single word, otherwise consider this an organisation name as last resort!
+              if (name.contains(" ")) {
+                p.setOrganisation(StringUtils.trimToNull(name));
+              } else {
+                p.setFamily(StringUtils.trimToNull(name));
+              }
             }
           }
-        }
-      }
-      if (brackets != null) {
-        if (p.getGiven() == null) {
-          p.setGiven(brackets);
-        } else {
-          p.setGiven(p.getGiven() + " " + brackets);
         }
       }
     }
@@ -146,27 +174,14 @@ public class Agent {
     this.note = other.note;
   }
 
+  // needed for YAML parser and jackson bindings to support simple strings as agents
+  public Agent(String literal) {
+    parse(this, literal);
+  }
+
   public Agent(String given, String family) {
     this.given = given;
     this.family = family;
-  }
-
-  public Agent(String given, String family, String email, String orcid) {
-    this.given = given;
-    this.family = family;
-    this.email = email;
-    this.orcid = orcid;
-  }
-
-  public Agent(String rorid, String organisation, String department, String city, String state, Country country, String email, String url) {
-    this.rorid = rorid;
-    this.organisation = organisation;
-    this.department = department;
-    this.city = city;
-    this.state = state;
-    this.country = country;
-    this.email = email;
-    this.url = url;
   }
 
   public Agent(String orcid, String given, String family,

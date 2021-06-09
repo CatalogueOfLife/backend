@@ -540,10 +540,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);
-    ds.setContact(new Agent("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
+    ds.setContact(Agent.person("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
     ds.setEditor(List.of(
-      new Agent("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),
-      new Agent("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666")
+      Agent.person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),
+      Agent.person("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666")
     ));
     mapper().create(TestEntityGenerator.setUserDate(ds));
 

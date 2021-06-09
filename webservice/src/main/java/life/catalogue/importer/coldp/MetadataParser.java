@@ -157,7 +157,7 @@ public class MetadataParser {
     }
 
     @JsonProperty("released")
-    public void setIssued(String issued) {
+    public void setReleased(String issued) {
       if (issued == null) {
         super.setIssued(null);
       } else {

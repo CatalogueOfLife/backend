@@ -54,8 +54,8 @@ public class DwcaInserterTest extends InserterBaseTest {
     NeoInserter ins = setup("/dwca/38");
     DatasetWithSettings d = ins.readMetadata().get();
 
-    Agent markus = new Agent("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
-    Agent bouchard = new Agent("Patrice", "Bouchard");
+    Agent markus = Agent.person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
+    Agent bouchard = Agent.person("Patrice", "Bouchard");
 
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
@@ -74,7 +74,7 @@ public class DwcaInserterTest extends InserterBaseTest {
     NeoInserter ins = setup("/dwca/39");
     DatasetWithSettings d = ins.readMetadata().get();
 
-    Agent donald = new Agent("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
+    Agent donald = Agent.person("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
 
     assertEquals("Catalogue of the Alucitoidea of the World", d.getTitle());
     assertEquals("Alucitoidea", d.getAlias());
@@ -94,7 +94,7 @@ public class DwcaInserterTest extends InserterBaseTest {
 
     List<Agent> authors = new ArrayList<>();
     authors.add(donald);
-    authors.add(new Agent("Cees", "Gielis", null, "0000-0003-0857-1679"));
+    authors.add(Agent.person("Cees", "Gielis", null, "0000-0003-0857-1679"));
     assertEquals(authors, d.getCreator());
     assertNull(d.getEditor());
   }

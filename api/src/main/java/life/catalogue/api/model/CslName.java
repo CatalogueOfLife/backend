@@ -6,6 +6,9 @@ public class CslName {
   
   private String family;
   private String given;
+  private String literal;
+
+  // ignore the rest below ...
   @JsonProperty("dropping-particle")
   private String droppingParticle;
   @JsonProperty("non-dropping-particle")
@@ -17,7 +20,6 @@ public class CslName {
   private Boolean commaSuffix;
   private Boolean staticOrdering;
   private Boolean staticParticles;
-  private String literal;
   private Boolean parseNames;
   private Boolean isInstitution;
 

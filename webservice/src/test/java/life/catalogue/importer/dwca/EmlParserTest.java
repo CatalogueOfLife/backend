@@ -54,9 +54,9 @@ public class EmlParserTest {
   @Test
   public void famous() throws Exception {
     DatasetWithSettings d = read("famous.xml");
-    Agent markus = new Agent("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
+    Agent markus = Agent.person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
     markus.setOrganisation("GBIF");
-    Agent bouchard = new Agent("Patrice", "Bouchard");
+    Agent bouchard = Agent.person("Patrice", "Bouchard");
 
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
@@ -137,22 +137,22 @@ public class EmlParserTest {
     return o(department, name, city, state, country, null, null);
   }
   Agent o(String department, String name, String city, String state, Country country, String email, String url) {
-    return new Agent(null, trimToNull(name), trimToNull(department), trimToNull(city), trimToNull(state), country, email, url);
+    return Agent.organisation(null, trimToNull(name), trimToNull(department), trimToNull(city), trimToNull(state), country, email, url, null);
   }
 
   Agent p(String surname, String firstname) {
-    return new Agent(firstname,surname, null,null);
+    return Agent.person(firstname,surname);
   }
   Agent p(String surname, String firstname, String email) {
-    return new Agent(firstname,surname, email,null);
+    return Agent.person(firstname,surname, email);
   }
   Agent p(String surname, String firstname, String email, String role) {
-    var a = new Agent(firstname,surname, email,null);
+    var a = Agent.person(firstname,surname, email);
     a.setNote(role);
     return a;
   }
   Agent p(String surname, String firstname, String email, String organization, String department, Country country) {
-    var a = new Agent(firstname,surname, email,null);
+    var a = Agent.person(firstname,surname, email);
     a.setOrganisation(organization);
     a.setDepartment(department);
     a.setCountry(country);
@@ -160,7 +160,7 @@ public class EmlParserTest {
   }
 
   Agent pmail(String email) {
-    return new Agent(null,null,email,null);
+    return Agent.person(null,null,email,null);
   }
 
 }
