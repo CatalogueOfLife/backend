@@ -1,106 +1,107 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.undercouch.citeproc.bibtex.PageParser;
 import de.undercouch.citeproc.bibtex.PageRange;
 import de.undercouch.citeproc.csl.*;
+
+import life.catalogue.common.date.FuzzyDate;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Citation {
-  // identifier for the reference
   private String id;
-  // the BibTeX Entry type, ie. article, book, inbook or misc which is the default if none is given
   private CSLType type;
-  // DOI for the reference. Can be in addition to another identifier used as the ID above
   private String doi;
-  // The name(s) of the author(s) as Person objects with familyName & givenName (see above)
-  private List<Agent> author;
-  // The name(s) of the editor(s) as Person objects
-  private List<Agent> editor;
+  private List<CslName> author;
+  private List<CslName> editor;
   // The title of the work
   private String title;
-  // The title of the book, if only part of it is being cited
-  private String booktitle;
-  // The journal or magazine the work was published in
-  private String journal;
-  // The year of publication (or, if unpublished, the year of creation)
-  private String year;
-  // The month of publication (or, if unpublished, the month of creation) using integers from 1-12
-  private String month;
-  // The series of books the book was published in
-  private String series;
-  // The volume of a journal or multi-volume book
+  // author(s) of the container holding the item (e.g. the book author for a book chapter)
+  @JsonProperty("container-author")
+  private List<CslName> containerAuthor;
+  // title of the container holding the item (e.g. the book title for a book chapter, the journal title for a journal article)
+  @JsonProperty("container-title")
+  private String containerTitle;
+  // date the item was issued/published
+  private FuzzyDate issued;
+  // date the item has been accessed
+  private FuzzyDate accessed;
+  // title of the collection holding the item (e.g. the series title for a book)
+  @JsonProperty("collection-title")
+  private String collectionTitle;
+  // editor of the collection holding the item (e.g. the series editor for a book)
+  @JsonProperty("collection-editor")
+  private List<CslName> collectionEditor;
+  // (container) volume holding the item (e.g. “2” when citing a chapter from book volume 2)
   private String volume;
-  // The "(issue) number" of a journal or magazine if applicable. Note that this is not the "article number" assigned by some journals`.
-  private String number;
-  // The edition of a book, long form (such as "First" or "Second")
+  // (container) issue holding the item (e.g. “5” when citing a journal article from journal volume 2, issue 5)
+  private String issue;
+  // (container) edition holding the item (e.g. “3” when citing a chapter in the third edition of a book)
   private String edition;
-  // The chapter number
-  private String chapter;
-  // Page numbers, separated either by commas or double-hyphens.
-  private String pages;
+  // range of pages the item (e.g. a journal article) covers in a container (e.g. a journal issue)
+  private String page;
   // The publisher's name
-  private Agent publisher;
-
+  private String publisher;
+  // The publisher's name
+  @JsonProperty("publisher-place")
+  private String publisherPlace;
   // dataset version
   private String version;
   // ISBN number (books)
   private String isbn;
   // ISSN serial number
   private String issn;
+  // link to webpage for electronic resources
   private String url;
+  private String note;
 
   public CSLItemData toCSL() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
     builder
       .type(type)
       .DOI(doi)
+      .title(title)
       .volume(volume)
-      .number(number)
-      .issue(number)
+      .issue(issue)
       .edition(edition)
+      .publisher(publisher)
+      .publisherPlace(publisherPlace)
+      .containerTitle(containerTitle)
+      .collectionTitle(collectionTitle)
       .version(version)
       .ISBN(isbn)
       .ISSN(issn)
       .URL(url);
 
-    // publisher
-    if (publisher != null) {
-      builder
-        .publisher(publisher.getName())
-        .publisherPlace(publisher.getAddress());
+    // names
+    if (author != null) {
+      builder.author(toNames(author));
     }
-    // title or chapter
-    if (title != null) {
-      builder.title(title);
-    } else if (chapter != null) {
-      builder.title(chapter);
+    if (editor != null) {
+      builder.editor(toNames(editor));
+    }
+    if (containerAuthor != null) {
+      builder.containerAuthor(toNames(containerAuthor));
+    }
+    if (collectionEditor != null) {
+      builder.collectionEditor(toNames(collectionEditor));
     }
 
-    // issued
-    if (year != null) {
-      try {
-        int y = Integer.parseInt(year.trim());
-        if (month != null) {
-          try {
-            int m = Integer.parseInt(month.trim());
-            builder.issued(y, m);
-          } catch (NumberFormatException e) {
-            builder.issued(y);
-          }
-        } else {
-          builder.issued(y);
-        }
-      } catch (NumberFormatException e) {
-        // nothing
-      }
+    // dates
+    if (issued != null) {
+      builder.issued(issued.toCSLDate());
+    }
+    if (accessed != null) {
+      builder.issued(accessed.toCSLDate());
     }
 
     // pages
-    if (pages != null) {
-      PageRange pr = PageParser.parse(pages);
+    if (page != null) {
+      PageRange pr = PageParser.parse(page);
       builder.page(pr.getLiteral());
       builder.pageFirst(pr.getPageFirst());
       if (pr.getNumberOfPages() != null) {
@@ -108,36 +109,13 @@ public class Citation {
       }
     }
 
-    // map journal/journaltitle, booktitle, series
-    if (journal != null) {
-      builder
-        .containerTitle(journal)
-        .collectionTitle(journal);
-
-    } else if (booktitle != null) {
-      builder
-        .containerTitle(booktitle)
-        .collectionTitle(booktitle);
-    } else if (series != null) {
-      builder
-        .containerTitle(series)
-        .collectionTitle(series);
-    }
-
-    if (author != null) {
-      builder.author(toNames(author));
-    }
-    if (editor != null) {
-      builder.editor(toNames(editor));
-    }
-    // TODO: series
     return builder.build();
   }
 
-  static CSLName[] toNames(List<Agent> agents) {
-    if (agents == null || agents.isEmpty()) return null;
-    return agents.stream()
-          .map(Agent::toCSL)
+  static CSLName[] toNames(List<CslName> names) {
+    if (names == null || names.isEmpty()) return null;
+    return names.stream()
+          .map(CslName::toCSL)
           .collect(Collectors.toList())
           .toArray(CSLName[]::new);
   }
@@ -166,24 +144,20 @@ public class Citation {
     this.doi = doi;
   }
 
-  public List<Agent> getAuthor() {
+  public List<CslName> getAuthor() {
     return author;
   }
 
-  public void setAuthor(List<Agent> author) {
+  public void setAuthor(List<CslName> author) {
     this.author = author;
   }
 
-  public List<Agent> getEditor() {
+  public List<CslName> getEditor() {
     return editor;
   }
 
-  public void setEditor(List<Agent> editor) {
+  public void setEditor(List<CslName> editor) {
     this.editor = editor;
-  }
-
-  public void setPublisher(Agent publisher) {
-    this.publisher = publisher;
   }
 
   public String getTitle() {
@@ -194,44 +168,52 @@ public class Citation {
     this.title = title;
   }
 
-  public String getBooktitle() {
-    return booktitle;
+  public List<CslName> getContainerAuthor() {
+    return containerAuthor;
   }
 
-  public void setBooktitle(String booktitle) {
-    this.booktitle = booktitle;
+  public void setContainerAuthor(List<CslName> containerAuthor) {
+    this.containerAuthor = containerAuthor;
   }
 
-  public String getJournal() {
-    return journal;
+  public String getContainerTitle() {
+    return containerTitle;
   }
 
-  public void setJournal(String journal) {
-    this.journal = journal;
+  public void setContainerTitle(String containerTitle) {
+    this.containerTitle = containerTitle;
   }
 
-  public String getYear() {
-    return year;
+  public FuzzyDate getIssued() {
+    return issued;
   }
 
-  public void setYear(String year) {
-    this.year = year;
+  public void setIssued(FuzzyDate issued) {
+    this.issued = issued;
   }
 
-  public String getMonth() {
-    return month;
+  public FuzzyDate getAccessed() {
+    return accessed;
   }
 
-  public void setMonth(String month) {
-    this.month = month;
+  public void setAccessed(FuzzyDate accessed) {
+    this.accessed = accessed;
   }
 
-  public String getSeries() {
-    return series;
+  public String getCollectionTitle() {
+    return collectionTitle;
   }
 
-  public void setSeries(String series) {
-    this.series = series;
+  public void setCollectionTitle(String collectionTitle) {
+    this.collectionTitle = collectionTitle;
+  }
+
+  public List<CslName> getCollectionEditor() {
+    return collectionEditor;
+  }
+
+  public void setCollectionEditor(List<CslName> collectionEditor) {
+    this.collectionEditor = collectionEditor;
   }
 
   public String getVolume() {
@@ -242,12 +224,12 @@ public class Citation {
     this.volume = volume;
   }
 
-  public String getNumber() {
-    return number;
+  public String getIssue() {
+    return issue;
   }
 
-  public void setNumber(String number) {
-    this.number = number;
+  public void setIssue(String issue) {
+    this.issue = issue;
   }
 
   public String getEdition() {
@@ -258,20 +240,28 @@ public class Citation {
     this.edition = edition;
   }
 
-  public String getChapter() {
-    return chapter;
+  public String getPage() {
+    return page;
   }
 
-  public void setChapter(String chapter) {
-    this.chapter = chapter;
+  public void setPage(String page) {
+    this.page = page;
   }
 
-  public String getPages() {
-    return pages;
+  public String getPublisher() {
+    return publisher;
   }
 
-  public void setPages(String pages) {
-    this.pages = pages;
+  public void setPublisher(String publisher) {
+    this.publisher = publisher;
+  }
+
+  public String getPublisherPlace() {
+    return publisherPlace;
+  }
+
+  public void setPublisherPlace(String publisherPlace) {
+    this.publisherPlace = publisherPlace;
   }
 
   public String getVersion() {
@@ -298,16 +288,20 @@ public class Citation {
     this.issn = issn;
   }
 
-  public Agent getPublisher() {
-    return publisher;
-  }
-
   public String getUrl() {
     return url;
   }
 
   public void setUrl(String url) {
     this.url = url;
+  }
+
+  public String getNote() {
+    return note;
+  }
+
+  public void setNote(String note) {
+    this.note = note;
   }
 
   @Override
@@ -321,25 +315,27 @@ public class Citation {
            && Objects.equals(author, citation.author)
            && Objects.equals(editor, citation.editor)
            && Objects.equals(title, citation.title)
-           && Objects.equals(booktitle, citation.booktitle)
-           && Objects.equals(journal, citation.journal)
-           && Objects.equals(year, citation.year)
-           && Objects.equals(month, citation.month)
-           && Objects.equals(series, citation.series)
+           && Objects.equals(containerAuthor, citation.containerAuthor)
+           && Objects.equals(containerTitle, citation.containerTitle)
+           && Objects.equals(issued, citation.issued)
+           && Objects.equals(accessed, citation.accessed)
+           && Objects.equals(collectionTitle, citation.collectionTitle)
+           && Objects.equals(collectionEditor, citation.collectionEditor)
            && Objects.equals(volume, citation.volume)
-           && Objects.equals(number, citation.number)
+           && Objects.equals(issue, citation.issue)
            && Objects.equals(edition, citation.edition)
-           && Objects.equals(chapter, citation.chapter)
-           && Objects.equals(pages, citation.pages)
+           && Objects.equals(page, citation.page)
            && Objects.equals(publisher, citation.publisher)
+           && Objects.equals(publisherPlace, citation.publisherPlace)
            && Objects.equals(version, citation.version)
            && Objects.equals(isbn, citation.isbn)
            && Objects.equals(issn, citation.issn)
-           && Objects.equals(url, citation.url);
+           && Objects.equals(url, citation.url)
+           && Objects.equals(note, citation.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, type, doi, author, editor, title, booktitle, journal, year, month, series, volume, number, edition, chapter, pages, publisher, version, isbn, issn, url);
+    return Objects.hash(id, type, doi, author, editor, title, containerAuthor, containerTitle, issued, accessed, collectionTitle, collectionEditor, volume, issue, edition, page, publisher, publisherPlace, version, isbn, issn, url, note);
   }
 }

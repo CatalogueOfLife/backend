@@ -23,6 +23,7 @@ public final class FuzzyDate {
   // only Year, YearMonth or LocalDate allowed here!!!
   private final TemporalAccessor ta;
 
+  @JsonCreator
   public static FuzzyDate of(int year) {
     return new FuzzyDate(Year.of(year));
   }

@@ -2,6 +2,8 @@ package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.undercouch.citeproc.csl.CSLName;
+
 public class CslName {
   
   private String family;
@@ -130,7 +132,14 @@ public class CslName {
   public void setIsInstitution(Boolean isInstitution) {
     this.isInstitution = isInstitution;
   }
-  
+
+  public CSLName toCSL() {
+    return new CSLName(getFamily(), getGiven(), getDroppingParticle(),
+      getNonDroppingParticle(), getSuffix(), getCommaPrefix(), getCommaSuffix(),
+      getStaticOrdering(), getStaticParticles(), getLiteral(), getParseNames(),
+      getIsInstitution());
+  }
+
   @Override
   public int hashCode() {
     int result = 1;

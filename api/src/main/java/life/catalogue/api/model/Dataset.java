@@ -107,7 +107,6 @@ public class Dataset extends DataEntity<Integer> {
   private UUID gbifPublisherKey;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Integer size;
-  private String notes;
 
   // human metadata
   private DOI doi;
@@ -140,6 +139,7 @@ public class Dataset extends DataEntity<Integer> {
   @AbsoluteURI
   private URI logo;
   private List<Citation> source = new ArrayList<>();
+  private String notes;
 
   public Dataset() {
   }
@@ -228,8 +228,8 @@ public class Dataset extends DataEntity<Integer> {
       .shortTitle(alias)
       .title(title)
       .version(version)
-      .author(Citation.toNames(creator))
-      .editor(Citation.toNames(editor))
+      .author(toNames(creator))
+      .editor(toNames(editor))
       .ISSN(issn);
     if (doi != null) {
       builder.DOI(doi.toString());
@@ -246,6 +246,14 @@ public class Dataset extends DataEntity<Integer> {
     }
     // no license, distributor, contributor
     return builder.build();
+  }
+
+  private static CSLName[] toNames(List<Agent> names) {
+    if (names == null || names.isEmpty()) return null;
+    return names.stream()
+                .map(Agent::toCSL)
+                .collect(Collectors.toList())
+                .toArray(CSLName[]::new);
   }
 
   @Override

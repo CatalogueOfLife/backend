@@ -1,12 +1,14 @@
 package life.catalogue.api.model;
 
-import de.undercouch.citeproc.csl.CSLType;
-
-import org.junit.Test;
+import life.catalogue.common.date.FuzzyDate;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import de.undercouch.citeproc.csl.CSLType;
+
+import static org.junit.Assert.assertNotNull;
 
 public class CitationTest {
 
@@ -15,13 +17,12 @@ public class CitationTest {
     c.setType(CSLType.ARTICLE);
     c.setTitle("Corona epidemic forever");
     c.setAuthor(List.of(
-      new Agent("Bernd", "Schneider"),
-      new Agent("Tim", "Berners Lee")
+      new CslName("Bernd", "Schneider"),
+      new CslName("Tim", "Berners Lee")
     ));
-    c.setJournal("Global Pandemics");
+    c.setCollectionTitle("Global Pandemics");
     c.setIssn("3456-45x6");
-    c.setYear("2024");
-    c.setMonth("November");
+    c.setIssued(FuzzyDate.of(2024, 11));
     return c;
   }
 

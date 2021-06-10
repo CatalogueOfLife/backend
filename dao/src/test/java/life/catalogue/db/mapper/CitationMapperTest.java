@@ -7,6 +7,7 @@ import life.catalogue.api.model.Dataset;
 
 import life.catalogue.api.model.DatasetTest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.db.TestDataRule;
 
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class CitationMapperTest extends MapperTestBase<CitationMapper> {
     for (int id = 1; id<5; id++) {
       Citation c = CitationTest.create();
       c.setId("cit"+id);
-      c.setYear("198"+id);
+      c.setIssued(FuzzyDate.of(1980 + id));
       mapper().create(datasetKey, c);
     }
     var list = mapper().list(datasetKey);
@@ -50,7 +51,7 @@ public class CitationMapperTest extends MapperTestBase<CitationMapper> {
     for (int id = 1; id<5; id++) {
       Citation c = CitationTest.create();
       c.setId("cit"+id);
-      c.setYear("198"+id);
+      c.setIssued(FuzzyDate.of(1980 + id));
       mapper().create(datasetKey, c);
     }
 
@@ -72,7 +73,7 @@ public class CitationMapperTest extends MapperTestBase<CitationMapper> {
     for (int id = 1; id<5; id++) {
       Citation c = CitationTest.create();
       c.setId("cit"+id);
-      c.setYear("198"+id);
+      c.setIssued(FuzzyDate.of(1980 + id));
       mapper().create(datasetKey, c);
     }
 
