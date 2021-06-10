@@ -4,6 +4,8 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
@@ -87,7 +89,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(CslDate.class);
     kryo.register(CslName.class);
     kryo.register(CslName[].class);
-    kryo.register(CSLRefType.class);
+    kryo.register(CSLType.class);
     kryo.register(int[][].class);
     kryo.register(String[].class);
 

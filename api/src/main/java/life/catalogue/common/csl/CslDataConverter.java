@@ -1,21 +1,23 @@
 package life.catalogue.common.csl;
 
+import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.CslData;
+import life.catalogue.api.model.CslDate;
+import life.catalogue.api.model.CslName;
+
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+
 import de.undercouch.citeproc.csl.CSLDate;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLName;
 import de.undercouch.citeproc.csl.CSLType;
 import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
-import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.CslData;
-import life.catalogue.api.model.CslDate;
-import life.catalogue.api.model.CslName;
-import life.catalogue.api.vocab.CSLRefType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 /**
  * Converts a CslData instance to a CSLItemData instance.
@@ -150,9 +152,10 @@ public class CslDataConverter {
   }
   
   @VisibleForTesting
-  static CSLType toCSLType(CSLRefType src) {
-    if (src == null) {
+  static CSLType toCSLType(CSLType src) {
+    if (src == null || src == CSLType.ARTICLE) {
       // We must return something, otherwise citation generation by citeproc-java will fail.
+      // we remap ARTICLE to be a journal article. It is really used for legal works, but users often get this wrong!
       return CSLType.ARTICLE_JOURNAL;
     }
     return CSLType.valueOf(src.name());

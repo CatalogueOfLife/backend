@@ -1,9 +1,10 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import life.catalogue.api.vocab.CSLRefType;
-
 import java.util.Arrays;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * Official CSL variables as defined in
@@ -13,7 +14,7 @@ import java.util.Arrays;
 public class CslData {
   
   private String id;
-  private CSLRefType type;
+  private CSLType type;
   private String[] categories;
   private String language;
   private String journalAbbreviation;
@@ -128,11 +129,11 @@ public class CslData {
     this.id = id;
   }
   
-  public CSLRefType getType() {
+  public CSLType getType() {
     return type;
   }
   
-  public void setType(CSLRefType type) {
+  public void setType(CSLType type) {
     this.type = type;
   }
   

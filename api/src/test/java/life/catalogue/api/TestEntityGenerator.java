@@ -1,14 +1,12 @@
 package life.catalogue.api;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.ApiKryoPool;
+
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 
@@ -16,6 +14,12 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
+import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * utility class to metrics new test instances to be used in tests.
@@ -498,7 +502,7 @@ public class TestEntityGenerator {
     r.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
     CslData csl = new CslData();
     r.setCsl(csl);
-    csl.setType(CSLRefType.ARTICLE_JOURNAL);
+    csl.setType(CSLType.ARTICLE_JOURNAL);
     csl.setTitle(title);
     csl.setContainerTitle("Nature");
     csl.setVolume("556");

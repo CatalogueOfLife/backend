@@ -13,40 +13,40 @@
 package life.catalogue.api.jackson;
 
 
-import life.catalogue.api.vocab.CSLRefType;
+import java.io.IOException;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
+import de.undercouch.citeproc.csl.CSLType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-@Ignore // If we switch over to the @JsonCreator & @JsonValue way of doing it
-public class CSLRefTypeSerdeTest extends EnumSerdeTestBase<CSLRefType> {
+public class CSLRefTypeSerdeTest extends EnumSerdeTestBase<CSLType> {
   
   public CSLRefTypeSerdeTest() {
-    super(CSLRefType.class);
+    super(CSLType.class);
   }
   
   @Test
   public void testUnderscores() throws IOException {
-    assertEquals("\"article-magazine\"", ApiModule.MAPPER.writeValueAsString(CSLRefType.ARTICLE_MAGAZINE));
-    assertEquals("\"article\"", ApiModule.MAPPER.writeValueAsString(CSLRefType.ARTICLE));
-    assertEquals("\"personal_communication\"", ApiModule.MAPPER.writeValueAsString(CSLRefType.PERSONAL_COMMUNICATION));
+    assertEquals("\"article-magazine\"", ApiModule.MAPPER.writeValueAsString(CSLType.ARTICLE_MAGAZINE));
+    assertEquals("\"article\"", ApiModule.MAPPER.writeValueAsString(CSLType.ARTICLE));
+    assertEquals("\"personal_communication\"", ApiModule.MAPPER.writeValueAsString(CSLType.PERSONAL_COMMUNICATION));
     
-    assertEquals(CSLRefType.ARTICLE_MAGAZINE, ApiModule.MAPPER.readValue("\"article-magazine\"", CSLRefType.class));
-    assertEquals(CSLRefType.ARTICLE, ApiModule.MAPPER.readValue("\"article\"", CSLRefType.class));
-    assertEquals(CSLRefType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal-Communication\"", CSLRefType.class));
-    assertEquals(CSLRefType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal_communication\"", CSLRefType.class));
-    assertEquals(CSLRefType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal communication\"", CSLRefType.class));
+    assertEquals(CSLType.ARTICLE_MAGAZINE, ApiModule.MAPPER.readValue("\"article-magazine\"", CSLType.class));
+    assertEquals(CSLType.ARTICLE, ApiModule.MAPPER.readValue("\"article\"", CSLType.class));
+    assertEquals(CSLType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal-Communication\"", CSLType.class));
+    assertEquals(CSLType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal_communication\"", CSLType.class));
+    assertEquals(CSLType.PERSONAL_COMMUNICATION, ApiModule.MAPPER.readValue("\"personal communication\"", CSLType.class));
   }
   
   @Test
   public void testBadAnystyleValues() throws IOException {
-    assertNull(ApiModule.MAPPER.readValue("\"Misc\"", CSLRefType.class));
-    assertNull(ApiModule.MAPPER.readValue("\"III\"", CSLRefType.class));
-    assertNull(ApiModule.MAPPER.readValue("\"197\"", CSLRefType.class));
+    assertNull(ApiModule.MAPPER.readValue("\"Misc\"", CSLType.class));
+    assertNull(ApiModule.MAPPER.readValue("\"III\"", CSLType.class));
+    assertNull(ApiModule.MAPPER.readValue("\"197\"", CSLType.class));
   }
   
 }

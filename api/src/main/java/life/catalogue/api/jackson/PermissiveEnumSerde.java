@@ -1,5 +1,21 @@
 package life.catalogue.api.jackson;
 
+import life.catalogue.api.model.EnumValue;
+import life.catalogue.api.util.VocabularyUtils;
+import life.catalogue.api.vocab.Country;
+import life.catalogue.common.func.Predicates;
+
+import org.gbif.dwc.terms.Term;
+
+import java.io.IOException;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.*;
@@ -10,20 +26,7 @@ import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.google.common.collect.ImmutableSet;
 
-import life.catalogue.api.model.EnumValue;
-import life.catalogue.api.util.VocabularyUtils;
-import life.catalogue.api.vocab.CSLRefType;
-import life.catalogue.api.vocab.Country;
-import life.catalogue.common.func.Predicates;
-import org.apache.commons.lang3.StringUtils;
-import org.gbif.dwc.terms.Term;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * A module for deserializing enums that is more permissive than the default.
@@ -39,7 +42,7 @@ public class PermissiveEnumSerde {
   // enums that are not treated with the regular permissive enum serde code, but something custom
   static final Set<Class> ENUM_CLASSES_SPECIAL = ImmutableSet.<Class>builder().addAll(LowerCamelCaseEnumSerde.ENUM_CLASSES_LCC)
     .add(Country.class)
-    .add(CSLRefType.class)
+    .add(CSLType.class)
     .add(Term.class)
     .build();
 

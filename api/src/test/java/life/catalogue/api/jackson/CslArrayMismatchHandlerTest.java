@@ -1,13 +1,16 @@
 package life.catalogue.api.jackson;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import life.catalogue.api.model.CslData;
-import life.catalogue.api.vocab.CSLRefType;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+
+import org.junit.Test;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import de.undercouch.citeproc.csl.CSLType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -28,7 +31,7 @@ public class CslArrayMismatchHandlerTest {
     assertEquals("10.1093/database/baw125", r.getDOI());
     assertEquals("http://dx.doi.org/10.1093/database/baw125", r.getURL());
     assertEquals("1758-0463", r.getISSN());
-    assertEquals(CSLRefType.ARTICLE_JOURNAL, r.getType());
+    assertEquals(CSLType.ARTICLE_JOURNAL, r.getType());
   
     r = refs.get(1);
     // should not fail

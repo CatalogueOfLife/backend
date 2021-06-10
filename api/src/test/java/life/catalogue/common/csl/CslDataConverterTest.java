@@ -1,13 +1,14 @@
 package life.catalogue.common.csl;
 
-import de.undercouch.citeproc.csl.CSLItemData;
-import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
-import life.catalogue.api.vocab.CSLRefType;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import de.undercouch.citeproc.csl.CSLItemData;
+import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -16,13 +17,6 @@ public class CslDataConverterTest {
   @Test
   @Ignore
   public void toCSLItemData() {
-  }
-  
-  @Test
-  public void toCSLType() {
-    for (CSLRefType t : CSLRefType.values()) {
-      assertNotNull(CslDataConverter.toCSLType(t));
-    }
   }
   
   @Test

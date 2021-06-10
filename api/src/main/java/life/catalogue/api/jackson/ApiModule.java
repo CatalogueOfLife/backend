@@ -1,5 +1,21 @@
 package life.catalogue.api.jackson;
 
+import life.catalogue.api.datapackage.ColdpTerm;
+import life.catalogue.api.model.DOI;
+import life.catalogue.api.vocab.ColDwcTerm;
+import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.TxtTreeTerm;
+
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
+import org.gbif.nameparser.api.Authorship;
+
+import java.io.IOException;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
@@ -11,21 +27,8 @@ import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
-import life.catalogue.api.datapackage.ColdpTerm;
-import life.catalogue.api.model.DOI;
-import life.catalogue.api.vocab.CSLRefType;
-import life.catalogue.api.vocab.ColDwcTerm;
-import life.catalogue.api.vocab.Country;
-import life.catalogue.api.vocab.TxtTreeTerm;
-import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.TermFactory;
-import org.gbif.nameparser.api.Authorship;
 
-import java.io.IOException;
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * Jackson module that defines all serde rules for all CoL API model classes.
@@ -70,7 +73,7 @@ public class ApiModule extends SimpleModule {
     // first deserializers
     addDeserializer(Country.class, new CountrySerde.Deserializer());
     addDeserializer(Term.class, new TermSerde.Deserializer());
-    addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
+    addDeserializer(CSLType.class, new CSLTypeSerde.Deserializer());
     addDeserializer(URI.class, new URIDeserializer());
     addDeserializer(UUID.class, new UUIDSerde.Deserializer());
     addDeserializer(DOI.class, new DOISerde.Deserializer());
@@ -81,7 +84,7 @@ public class ApiModule extends SimpleModule {
     // then serializers:
     addSerializer(Country.class, new CountrySerde.Serializer());
     addSerializer(Term.class, new TermSerde.Serializer());
-    addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
+    addSerializer(CSLType.class, new CSLTypeSerde.Serializer());
     addSerializer(UUID.class, new UUIDSerde.Serializer());
     addSerializer(DOI.class, new DOISerde.Serializer());
 
