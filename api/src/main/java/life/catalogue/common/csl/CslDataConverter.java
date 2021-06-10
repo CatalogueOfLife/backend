@@ -128,19 +128,9 @@ public class CslDataConverter {
     }
     CSLName[] target = new CSLName[src.length];
     for (int i = 0; i < src.length; i++) {
-      target[i] = toCSLName(src[i]);
+      target[i] = src[i].toCSL();
     }
     return target;
-  }
-  
-  private static CSLName toCSLName(CslName src) {
-    if (src == null) {
-      return null;
-    }
-    return new CSLName(src.getFamily(), src.getGiven(), src.getDroppingParticle(),
-        src.getNonDroppingParticle(), src.getSuffix(), src.getCommaPrefix(), src.getCommaSuffix(),
-        src.getStaticOrdering(), src.getStaticParticles(), src.getLiteral(), src.getParseNames(),
-        src.getIsInstitution());
   }
   
   @VisibleForTesting

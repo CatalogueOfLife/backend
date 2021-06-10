@@ -12,21 +12,23 @@
     c.author,
     c.editor,
     c.title,
-    c.booktitle,
-    c.journal,
-    c.year,
-    c.month,
-    c.series,
+    c.container_author,
+    c.container_title,
+    c.issued,
+    c.accessed,
+    c.collection_editor,
+    c.collection_title,
     c.volume,
-    c.number,
+    c.issue,
     c.edition,
-    c.chapter,
-    c.pages,
+    c.page,
     c.publisher,
+    c.publisher_place,
     c.version,
     c.isbn,
     c.issn,
-    c.url
+    c.url,
+    c.note
   </sql>
 
   <sql id="COLS">
@@ -36,59 +38,64 @@
     author,
     editor,
     title,
-    booktitle,
-    journal,
-    year,
-    month,
-    series,
+    container_author,
+    container_title,
+    issued,
+    accessed,
+    collection_editor,
+    collection_title,
     volume,
-    number,
+    issue,
     edition,
-    chapter,
-    pages,
+    page,
     publisher,
+    publisher_place,
     version,
     isbn,
     issn,
-    url
+    url,
+    note
   </sql>
 
   <sql id="PROPS">
     #{obj.id},
     #{obj.type},
     #{obj.doi},
-    #{obj.author, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler}::agent[],
-    #{obj.editor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler}::agent[],
+    #{obj.author, typeHandler=life.catalogue.db.type.CslNameArrayTypeHandler}::cslname[],
+    #{obj.editor, typeHandler=life.catalogue.db.type.CslNameArrayTypeHandler}::cslname[],
     #{obj.title},
-    #{obj.booktitle},
-    #{obj.journal},
-    #{obj.year},
-    #{obj.month},
-    #{obj.series},
+    #{obj.containerAuthor, typeHandler=life.catalogue.db.type.CslNameArrayTypeHandler}::cslname[],
+    #{obj.containerTitle},
+    #{obj.issued},
+    #{obj.accessed},
+    #{obj.collectionEditor, typeHandler=life.catalogue.db.type.CslNameArrayTypeHandler}::cslname[],
+    #{obj.collectionTitle},
     #{obj.volume},
-    #{obj.number},
+    #{obj.issue},
     #{obj.edition},
-    #{obj.chapter},
-    #{obj.pages},
-    #{obj.publisher, typeHandler=life.catalogue.db.type.AgentTypeHandler}::agent,
+    #{obj.page},
+    #{obj.publisher},
+    #{obj.publisherPlace},
     #{obj.version},
     #{obj.isbn},
     #{obj.issn},
-    #{obj.url}
+    #{obj.url},
+    #{obj.note}
   </sql>
 
   <resultMap id="citationResultMap" type="Citation" autoMapping="true">
     <id property="id" column="id"/>
-    <result property="author" column="creator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
-    <result property="editor" column="editor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
-    <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
+    <result property="author" column="creator" typeHandler="life.catalogue.db.type.CslNameArrayTypeHandler"/>
+    <result property="editor" column="editor" typeHandler="life.catalogue.db.type.CslNameArrayTypeHandler"/>
+    <result property="containerAuthor" column="container_author" typeHandler="life.catalogue.db.type.CslNameArrayTypeHandler"/>
+    <result property="collectionEditor" column="collection_editor" typeHandler="life.catalogue.db.type.CslNameArrayTypeHandler"/>
   </resultMap>
 
   <select id="list" resultMap="citationResultMap">
     SELECT <include refid="SELECT"/>
     FROM dataset_citation c
     WHERE dataset_key = #{datasetKey}
-    ORDER BY year, title
+    ORDER BY issued, title
   </select>
 
   <insert id="create" parameterType="map">
@@ -106,7 +113,7 @@
     SELECT <include refid="SELECT"/>
     FROM dataset_archive_citation c
     WHERE dataset_key = #{datasetKey} AND attempt=#{attempt}
-    ORDER BY year, title
+    ORDER BY issued, title
   </select>
 
   <insert id="createArchive" parameterType="map">
@@ -127,7 +134,7 @@
     SELECT <include refid="SELECT"/>
     FROM dataset_source_citation c
     WHERE dataset_key = #{datasetKey} AND release_key = #{releaseKey}
-    ORDER BY year, title
+    ORDER BY issued, title
   </select>
 
   <insert id="createRelease" parameterType="map">

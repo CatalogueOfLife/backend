@@ -18,6 +18,26 @@ CREATE TYPE agent AS (orcid text, given text, family text,
   email text, url text, note text
 );
 
+CREATE TYPE cslname AS (given text, family text, literal text);
+
+CREATE OR REPLACE FUNCTION cslname_str(cslname) RETURNS text AS
+$$
+SELECT $1::text
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION cslname_str(cslname[]) RETURNS text AS
+$$
+SELECT array_to_string($1, ' ')
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION text2cslname(text) RETURNS cslname AS
+$$
+SELECT ROW(null, null, $1)::cslname
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE CAST (text AS cslname) WITH FUNCTION text2cslname;
+
+
 CREATE OR REPLACE FUNCTION agent_str(agent) RETURNS text AS
 $$
 SELECT $1::text
@@ -99,24 +119,26 @@ CREATE TABLE dataset_citation (
   id TEXT,
   type TEXT,
   doi TEXT,
-  author agent[],
-  editor agent[],
+  author cslname[],
+  editor cslname[],
   title TEXT,
-  booktitle TEXT,
-  journal TEXT,
-  year TEXT,
-  month TEXT,
-  series TEXT,
+  container_author cslname[],
+  container_title TEXT,
+  issued TEXT,
+  accessed TEXT,
+  collection_editor cslname[],
+  collection_title TEXT,
   volume TEXT,
-  number TEXT,
+  issue TEXT,
   edition TEXT,
-  chapter TEXT,
-  pages TEXT,
-  publisher agent,
+  page TEXT,
+  publisher TEXT,
+  publisher_place TEXT,
   version TEXT,
   isbn TEXT,
   issn TEXT,
-  url TEXT
+  url TEXT,
+  note TEXT
 );
 CREATE INDEX ON dataset_citation (dataset_key);
 

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class Citation {
   private String id;
   private CSLType type;
-  private String doi;
+  private DOI doi;
   private List<CslName> author;
   private List<CslName> editor;
   // The title of the work
@@ -63,7 +63,6 @@ public class Citation {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
     builder
       .type(type)
-      .DOI(doi)
       .title(title)
       .volume(volume)
       .issue(issue)
@@ -77,6 +76,10 @@ public class Citation {
       .ISSN(issn)
       .URL(url);
 
+    // DOI
+    if (doi != null) {
+      builder.DOI(doi.toString());
+    }
     // names
     if (author != null) {
       builder.author(toNames(author));
@@ -136,11 +139,11 @@ public class Citation {
     this.type = type;
   }
 
-  public String getDoi() {
+  public DOI getDoi() {
     return doi;
   }
 
-  public void setDoi(String doi) {
+  public void setDoi(DOI doi) {
     this.doi = doi;
   }
 

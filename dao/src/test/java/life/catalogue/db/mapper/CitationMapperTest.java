@@ -16,7 +16,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@Ignore("METADATA WORK IN PROGRESS")
 public class CitationMapperTest extends MapperTestBase<CitationMapper> {
   final int datasetKey = TestDataRule.APPLE.key;
 
