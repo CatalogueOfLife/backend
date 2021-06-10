@@ -1,11 +1,13 @@
 package life.catalogue.dw.health;
 
 
-import com.codahale.metrics.health.HealthCheck;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
-import life.catalogue.api.vocab.CSLRefType;
 import life.catalogue.common.csl.CslUtil;
+
+import com.codahale.metrics.health.HealthCheck;
+
+import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * Calls the name parser with a known binomial to check its health.
@@ -17,7 +19,7 @@ public class CslUtilsHealthCheck extends HealthCheck {
   
   public CslUtilsHealthCheck() {
     csl.setTitle("Test the real thing");
-    csl.setType(CSLRefType.ARTICLE);
+    csl.setType(CSLType.ARTICLE);
     csl.setContainerTitle("Proceedings of Nature in Space");
     csl.setVolume("42");
     csl.setIssued(new CslDate());
