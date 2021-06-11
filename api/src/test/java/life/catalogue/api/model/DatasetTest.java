@@ -11,6 +11,8 @@ import org.junit.Test;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -28,6 +30,11 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     Dataset d = new Dataset();
     d.setKey(12345);
     d.setSourceKey(12345);
+    d.setDoi(DOI.test("123456789"));
+    d.setIdentifier(Map.of(
+      "gbif", UUID.randomUUID().toString(),
+      "col", "1001"
+    ));
     d.setTitle("gfdscdscw");
     d.setDescription("gefzw fuewh gczew fw hfueh j ijdfeiw jfie eö.. few . few .");
     d.setOrigin(DatasetOrigin.EXTERNAL);
@@ -36,21 +43,24 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setLogo(URI.create("www.gbif.org"));
     d.setLicense(License.CC0);
     d.setGeographicScope("North Africa");
-    d.setContact(Agent.parse("foo"));
+    d.setContact(Agent.contact("Helpdesk", "info@mailinator.com"));
     d.setCreator(new ArrayList<>(List.of(
-      Agent.parse("crea1"),
-      Agent.parse("crea2"),
-      Agent.parse("crea3")
+      Agent.person("Roy", "Black"),
+      Agent.person("Gerhard", "Höllerich"),
+      Agent.organisation("The Honky Tonks")
     )));
     d.setEditor(new ArrayList<>(List.of(
-      Agent.parse("editi"),
-      Agent.parse("edito"),
-      Agent.parse("edita")
+      Agent.person("William N", "Eschmeyer"),
+      Agent.person("Rudolf", "Van der Laan")
     )));
     d.setContributor(new ArrayList<>(List.of(
-      Agent.parse("contact"),
-      Agent.parse("contact2")
+      Agent.person("Connie", "Francis"),
+      Agent.person("Herbert", "Feuerstein")
     )));
+    d.setSource(List.of(
+      CitationTest.create(),
+      CitationTest.create()
+    ));
     d.setNotes("cuzdsghazugbe67wqt6c g cuzdsghazugbe67wqt6c g  nhjs");
     return d;
   }

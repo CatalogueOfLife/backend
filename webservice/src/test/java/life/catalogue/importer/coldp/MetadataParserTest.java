@@ -9,6 +9,8 @@ import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.Resources;
 
+import life.catalogue.importer.NeoInserter;
+
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
@@ -18,10 +20,77 @@ import java.util.Optional;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class MetadataParserTest {
+
+  @Test
+  public void coldpSpecs() throws Exception {
+    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("coldp/0/metadata.yaml"));
+    DatasetWithSettings d = m.get();
+
+    assertNull(d.getType());
+    assertNull(d.getDataFormat());
+    assertEquals("ColDP Example. The full dataset title", d.getTitle());
+    assertNotNull(d.getDescription());
+    assertEquals(8, d.getContributor().size());
+    assertEquals(Agent.person("Rainer", "Froese", "rainer@mailinator.com"), d.getContact());
+    assertEquals(List.of(
+      Agent.person("Nicolas", "Bailly", null, "0000-0003-4994-0653"),
+      Agent.person("Rainer", "Froese", null, "0000-0001-9745-636X"),
+      Agent.person("Daniel", "Pauly", null, "0000-0003-3756-4793")
+    ), d.getCreator());
+    assertEquals(List.of(
+      Agent.person("Rainer", "Froese", "rainer@mailinator.com", "0000-0001-9745-636X"),
+      Agent.person("Daniel", "Pauly", null, "0000-0003-3756-4793")
+    ), d.getEditor());
+    assertEquals(License.CC0, d.getLicense());
+    assertEquals("v.48 (06/2018)", d.getVersion());
+    assertEquals("2018-06-01", d.getIssued().toString());
+    assertEquals("https://www.fishbase.org", d.getUrl().toString());
+    assertEquals("https://www.fishbase.de/images/gifs/fblogo_new.gif", d.getLogo().toString());
+
+    assertNull(d.getCode());
+    assertEquals((Integer)5, d.getConfidence());
+    assertEquals((Integer)95, d.getCompleteness());
+    assertEquals("Remarks, comments and usage notes about this dataset", d.getNotes());
+    assertEquals("ColDP Example", d.getAlias());
+  }
+
+  @Test
+  public void coldpSpecsCslStyle() throws Exception {
+    // uses proper csl field names like container-title
+    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/coldpspecs-cslstyle.yaml"));
+    DatasetWithSettings d = m.get();
+
+    assertNull(d.getType());
+    assertNull(d.getDataFormat());
+    assertEquals("ColDP Example. The full dataset title", d.getTitle());
+    assertNotNull(d.getDescription());
+    assertEquals(8, d.getContributor().size());
+    assertEquals(Agent.person("Rainer", "Froese", "rainer@mailinator.com"), d.getContact());
+    assertEquals(List.of(
+      Agent.person("Nicolas", "Bailly", null, "0000-0003-4994-0653"),
+      Agent.person("Rainer", "Froese", null, "0000-0001-9745-636X"),
+      Agent.person("Daniel", "Pauly", null, "0000-0003-3756-4793")
+    ), d.getCreator());
+    assertEquals(List.of(
+      Agent.person("Rainer", "Froese", "rainer@mailinator.com", "0000-0001-9745-636X"),
+      Agent.person("Daniel", "Pauly", null, "0000-0003-3756-4793")
+    ), d.getEditor());
+    assertEquals(License.CC0, d.getLicense());
+    assertEquals("v.48 (06/2018)", d.getVersion());
+    assertEquals("2018-06-01", d.getIssued().toString());
+    assertEquals("https://www.fishbase.org", d.getUrl().toString());
+    assertEquals("https://www.fishbase.de/images/gifs/fblogo_new.gif", d.getLogo().toString());
+
+    assertNull(d.getCode());
+    assertEquals((Integer)5, d.getConfidence());
+    assertEquals((Integer)95, d.getCompleteness());
+    assertEquals("my personal,\n" +
+                 "very long notes", d.getNotes());
+    assertEquals("ColDP Example", d.getAlias());
+  }
 
   @Test
   public void milliBase() throws Exception {

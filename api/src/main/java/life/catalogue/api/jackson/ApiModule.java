@@ -66,9 +66,12 @@ public class ApiModule extends SimpleModule {
     
     return mapper;
   }
-  
+
   public ApiModule() {
-    super("ColApi", new Version(1, 0, 0, null, "org.catalogueoflife", "api"));
+    this("ColApi");
+  }
+  public ApiModule(String name) {
+    super(name, new Version(1, 0, 0, null, "org.catalogueoflife", "api"));
 
     // first deserializers
     addDeserializer(Country.class, new CountrySerde.Deserializer());

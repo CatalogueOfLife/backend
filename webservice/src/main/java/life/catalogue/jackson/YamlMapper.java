@@ -1,28 +1,35 @@
 package life.catalogue.jackson;
 
-import life.catalogue.api.jackson.FastutilsSerde;
-import life.catalogue.api.jackson.PermissiveEnumSerde;
+import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
+
+import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.jackson.FuzzyDateCSLSerde;
 import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.Citation;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.LicenseParser;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * ColDP metadata parser that falls back to EML if no YAML metadata is found.
@@ -45,12 +52,13 @@ public class YamlMapper {
     .registerModule(new ColdpMetadataModule());
   }
 
-  public static  class ColdpMetadataModule extends SimpleModule {
+  public static  class ColdpMetadataModule extends ApiModule {
     public ColdpMetadataModule() {
       super("ColdpYaml");
       EnumParserSerde<License> lserde = new EnumParserSerde<License>(LicenseParser.PARSER);
       addDeserializer(License.class, lserde.new Deserializer());
-      addDeserializer(IntSet.class, new FastutilsSerde.SetDeserializer());
+      // use CSL style dates
+      // override normal deserializer to use the parser so we can accept various values for countries
       addDeserializer(Country.class, new JsonDeserializer<Country>(){
         @Override
         public Country deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
@@ -62,11 +70,10 @@ public class YamlMapper {
     @Override
     public void setupModule(SetupContext ctxt) {
       // default enum serde
-      ctxt.addSerializers(new PermissiveEnumSerde.PermissiveEnumSerializers());
-      ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
-      ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
       super.setupModule(ctxt);
       ctxt.setMixInAnnotations(Agent.class, AgentMixIn.class);
+      ctxt.setMixInAnnotations(Dataset.class, DatasetMixIn.class);
+      ctxt.setMixInAnnotations(Citation.class, CitationMixIn.class);
     }
   }
 
@@ -75,4 +82,50 @@ public class YamlMapper {
     abstract String getName();
   }
 
+  abstract class DatasetMixIn {
+
+    @JsonIgnore
+    abstract Integer getKey();
+
+    @JsonIgnore
+    abstract boolean isPrivat();
+
+    @JsonIgnore
+    abstract Integer getSourceKey();
+
+    @JsonIgnore
+    abstract Integer getAttempt();
+
+    @JsonIgnore
+    abstract DatasetOrigin getOrigin();
+
+    @JsonIgnore
+    abstract String getAliasOrTitle();
+
+    @JsonIgnore
+    abstract LocalDateTime getCreated();
+
+    @JsonIgnore
+    abstract Integer getCreatedBy();
+
+    @JsonIgnore
+    abstract LocalDateTime getModified();
+
+    @JsonIgnore
+    abstract Integer getModifiedBy();
+  }
+
+  abstract class CitationMixIn {
+
+    @JsonIgnore
+    abstract String getTitle();
+
+    @JsonIgnore
+    @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = FromStringDeserializer.Std.class)
+    abstract FuzzyDate getIssued();
+
+    @JsonIgnore
+    abstract FuzzyDate getAccessed();
+  }
 }

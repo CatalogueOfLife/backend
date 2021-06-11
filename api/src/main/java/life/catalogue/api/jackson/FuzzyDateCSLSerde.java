@@ -1,0 +1,97 @@
+package life.catalogue.api.jackson;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+
+import com.fasterxml.jackson.databind.*;
+
+import com.fasterxml.jackson.databind.util.ClassUtil;
+
+import life.catalogue.api.vocab.Country;
+
+import life.catalogue.common.date.FuzzyDate;
+
+import org.gbif.dwc.terms.Term;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Optional;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for {@link FuzzyDate}
+ * that uses the CSL-Date syntax using a 2 dimensional int array.
+ * See https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html#date-fields
+ */
+public class FuzzyDateCSLSerde {
+  private static final Logger LOG = LoggerFactory.getLogger(FuzzyDateCSLSerde.class);
+
+  /**
+   * Jackson {@link JsonSerializer} for {@link Country}.
+   */
+  public static class Serializer extends JsonSerializer<FuzzyDate> {
+    
+    @Override
+    public void serialize(FuzzyDate value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+      if (value == null) {
+        jgen.writeNull();
+      } else {
+        int[] parts = value.toCslDate().getDateParts()[0];
+        jgen.writeStartArray();
+        jgen.writeArray(parts, 0, parts.length);
+        jgen.writeEndArray();
+      }
+    }
+  }
+  
+  /**
+   * Deserializes the value from an int array
+   */
+  public static class Deserializer extends JsonDeserializer<FuzzyDate> {
+
+    @Override
+    public FuzzyDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+      // outer array
+      if (p.isExpectedStartArrayToken()) {
+        // look for inner arrays
+        JsonToken t = p.nextToken();
+        if (t == JsonToken.START_ARRAY) {
+          FuzzyDate date = FuzzyDate.of(readArray(p, ctxt));
+          t = p.nextToken();
+          if (t == JsonToken.START_ARRAY) {
+            int[] end = readArray(p, ctxt);
+            LOG.debug("csl end date {} found, but fuzzy date cannot handle this", end);
+            t = p.nextToken();
+          }
+          if (t == JsonToken.END_ARRAY) {
+            return date;
+          }
+        }
+      }
+      // if we reach here some token was wrong
+      ctxt.handleUnexpectedToken(FuzzyDate.class, p);
+      return null;
+    }
+
+    private int[] readArray(JsonParser p, DeserializationContext ctxt) throws IOException {
+      int idx = 0;
+      int[] array = new int[3];
+      JsonToken t;
+      while ((t = p.nextToken()) != JsonToken.END_ARRAY) {
+        if (t == JsonToken.VALUE_NUMBER_INT) {
+          if (idx==3) {
+            ctxt.handleUnexpectedToken(FuzzyDate.class, p);
+          }
+          array[idx++] = p.getIntValue();
+        }
+      }
+      return idx == 3 ? array : Arrays.copyOf(array, idx);
+    }
+  }
+  
+}

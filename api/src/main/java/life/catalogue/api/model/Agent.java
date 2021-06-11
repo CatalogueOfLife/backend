@@ -66,6 +66,10 @@ public class Agent {
     return new Agent(orcid, given, family, null, null, null, null, null, null, email, null, note);
   }
 
+  public static Agent contact(String organisation, String email) {
+    return new Agent(null, null, null, null, organisation, null, null, null, null, email, null, null);
+  }
+
   public static Agent organisation(String organisation) {
     return new Agent(null, null, null, null, organisation, null, null, null, null, null, null, null);
   }

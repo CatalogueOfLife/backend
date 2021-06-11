@@ -2,16 +2,24 @@ package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import de.undercouch.citeproc.bibtex.PageParser;
 import de.undercouch.citeproc.bibtex.PageRange;
 import de.undercouch.citeproc.csl.*;
 
+import life.catalogue.api.jackson.FuzzyDateCSLSerde;
 import life.catalogue.common.date.FuzzyDate;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Class with core CSL fields to represent common citations.
+ * Jackson serialisation is setup to generate proper CSL, incl in array dates.
+ */
 public class Citation {
   private String id;
   private CSLType type;
@@ -27,8 +35,12 @@ public class Citation {
   @JsonProperty("container-title")
   private String containerTitle;
   // date the item was issued/published
+  @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
+  @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
   private FuzzyDate issued;
   // date the item has been accessed
+  @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
+  @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
   private FuzzyDate accessed;
   // title of the collection holding the item (e.g. the series title for a book)
   @JsonProperty("collection-title")

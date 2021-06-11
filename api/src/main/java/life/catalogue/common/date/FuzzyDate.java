@@ -41,6 +41,16 @@ public final class FuzzyDate {
   }
 
   /**
+   * Reads a CSL date style int array.
+   */
+  public static FuzzyDate of(int[] parts) {
+    if (parts.length == 1) return of(parts[0]);
+    if (parts.length == 2) return of(parts[0], parts[1]);
+    if (parts.length == 3) return of(parts[0], parts[1], parts[2]);
+    return null;
+  }
+
+  /**
    * Potentially incomplete iso date with year required
    * E.g. 1919, 1919-10, 1919-10-23
    */

@@ -23,9 +23,9 @@ import de.undercouch.citeproc.csl.CSLType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class CSLRefTypeSerdeTest extends EnumSerdeTestBase<CSLType> {
+public class CSLTypeSerdeTest extends EnumSerdeTestBase<CSLType> {
   
-  public CSLRefTypeSerdeTest() {
+  public CSLTypeSerdeTest() {
     super(CSLType.class);
   }
   
