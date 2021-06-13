@@ -35,12 +35,8 @@ public class Citation {
   @JsonProperty("container-title")
   private String containerTitle;
   // date the item was issued/published
-  @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
-  @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
   private FuzzyDate issued;
   // date the item has been accessed
-  @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
-  @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
   private FuzzyDate accessed;
   // title of the collection holding the item (e.g. the series title for a book)
   @JsonProperty("collection-title")

@@ -1,10 +1,15 @@
 package life.catalogue.api.jackson;
 
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import life.catalogue.api.datapackage.ColdpTerm;
+import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.TxtTreeTerm;
+
+import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
@@ -63,7 +68,8 @@ public class ApiModule extends SimpleModule {
     mapper.registerModule(new AfterburnerModule());
   
     mapper.addHandler(new CslArrayMismatchHandler());
-    
+    // we do not do this in the ApiModule as we want the YAML mapper to use the regular ISO serde
+    mapper.addMixIn(Citation.class, CitationMixIn.class);
     return mapper;
   }
 
@@ -125,6 +131,7 @@ public class ApiModule extends SimpleModule {
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);
     ctxt.setMixInAnnotations(Term.class, TermMixIn.class);
+    ctxt.setMixInAnnotations(Citation.class, CitationMixIn.class);
   }
   
   abstract class AuthorshipMixIn {
@@ -136,6 +143,17 @@ public class ApiModule extends SimpleModule {
   @JsonDeserialize(using = TermSerde.Deserializer.class, keyUsing = TermSerde.KeyDeserializer.class)
   static abstract class TermMixIn {
 
+  }
+
+  abstract class CitationMixIn {
+
+    @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
+    @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
+    abstract FuzzyDate getIssued();
+
+    @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
+    @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
+    abstract FuzzyDate getAccessed();
   }
 
   static class URIDeserializer extends FromStringDeserializer<URI> {

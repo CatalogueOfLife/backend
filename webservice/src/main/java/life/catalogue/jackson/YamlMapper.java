@@ -73,7 +73,6 @@ public class YamlMapper {
       super.setupModule(ctxt);
       ctxt.setMixInAnnotations(Agent.class, AgentMixIn.class);
       ctxt.setMixInAnnotations(Dataset.class, DatasetMixIn.class);
-      ctxt.setMixInAnnotations(Citation.class, CitationMixIn.class);
     }
   }
 
@@ -113,19 +112,5 @@ public class YamlMapper {
 
     @JsonIgnore
     abstract Integer getModifiedBy();
-  }
-
-  abstract class CitationMixIn {
-
-    @JsonIgnore
-    abstract String getTitle();
-
-    @JsonIgnore
-    @JsonSerialize(using = ToStringSerializer.class)
-    @JsonDeserialize(using = FromStringDeserializer.Std.class)
-    abstract FuzzyDate getIssued();
-
-    @JsonIgnore
-    abstract FuzzyDate getAccessed();
   }
 }
