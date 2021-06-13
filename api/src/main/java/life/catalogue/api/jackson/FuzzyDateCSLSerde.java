@@ -27,9 +27,14 @@ import org.slf4j.LoggerFactory;
  * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for {@link FuzzyDate}
  * that uses the CSL-Date syntax using a 2 dimensional int array.
  * See https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html#date-fields
+ *
+ * "accessed": {
+ *      "date-parts": [[ 2005, 4, 12 ]]
+ * },
  */
 public class FuzzyDateCSLSerde {
   private static final Logger LOG = LoggerFactory.getLogger(FuzzyDateCSLSerde.class);
+  private static String DATE_PARTS= "date-parts";
 
   /**
    * Jackson {@link JsonSerializer} for {@link Country}.
@@ -41,38 +46,55 @@ public class FuzzyDateCSLSerde {
       if (value == null) {
         jgen.writeNull();
       } else {
+        jgen.writeStartObject();
         int[] parts = value.toCslDate().getDateParts()[0];
-        jgen.writeStartArray();
+        jgen.writeFieldName("raw");
+        jgen.writeString(value.toString());
+        jgen.writeArrayFieldStart(DATE_PARTS);
         jgen.writeArray(parts, 0, parts.length);
         jgen.writeEndArray();
+        jgen.writeEndObject();
       }
     }
   }
   
   /**
-   * Deserializes the value from an int array
+   * Deserializes the value from an object with field date-parts being an 2d int array
    */
   public static class Deserializer extends JsonDeserializer<FuzzyDate> {
 
     @Override
     public FuzzyDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-      // outer array
-      if (p.isExpectedStartArrayToken()) {
-        // look for inner arrays
-        JsonToken t = p.nextToken();
-        if (t == JsonToken.START_ARRAY) {
-          FuzzyDate date = FuzzyDate.of(readArray(p, ctxt));
-          t = p.nextToken();
-          if (t == JsonToken.START_ARRAY) {
-            int[] end = readArray(p, ctxt);
-            LOG.debug("csl end date {} found, but fuzzy date cannot handle this", end);
-            t = p.nextToken();
+      // outer object with field "date-parts" - others should be ignored
+      if (p.isExpectedStartObjectToken()) {
+        JsonToken t;
+        while ((t = p.nextToken()) != JsonToken.END_OBJECT) {
+          if (t == JsonToken.FIELD_NAME && p.getCurrentName().equalsIgnoreCase(DATE_PARTS)) {
+
           }
-          if (t == JsonToken.END_ARRAY) {
-            return date;
+          if (t == JsonToken.FIELD_NAME && p.getCurrentName().equalsIgnoreCase(DATE_PARTS)) {
+            // outer array next
+            p.nextToken();
+            if (p.isExpectedStartArrayToken()) {
+              // look for inner arrays
+              t = p.nextToken();
+              if (t == JsonToken.START_ARRAY) {
+                FuzzyDate date = FuzzyDate.of(readArray(p, ctxt));
+                t = p.nextToken();
+                if (t == JsonToken.START_ARRAY) {
+                  int[] end = readArray(p, ctxt);
+                  LOG.debug("csl end date {} found, but fuzzy date cannot handle this", end);
+                  t = p.nextToken();
+                }
+                if (t == JsonToken.END_ARRAY) {
+                  return date;
+                }
+              }
+            }
           }
         }
       }
+
       // if we reach here some token was wrong
       ctxt.handleUnexpectedToken(FuzzyDate.class, p);
       return null;
