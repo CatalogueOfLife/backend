@@ -52,8 +52,7 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertNull(d.getCode());
     assertEquals((Integer)5, d.getConfidence());
     assertEquals((Integer)95, d.getCompleteness());
-    assertEquals("my personal,\n" +
-                          "very long notes", d.getNotes());
+    assertEquals("Remarks, comments and usage notes about this dataset", d.getNotes());
     assertEquals("ColDP Example", d.getAlias());
   }
   

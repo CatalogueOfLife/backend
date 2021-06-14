@@ -10,14 +10,16 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.dw.auth.BasicAuthClientFilter;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.client.JerseyClientBuilder;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 
-/**
+ /**
  * An adaptation of the generic DropwizardAppRule that can be used as a junit class rule
  * to create integration tests against a running dropwizard instance.
  * <p>
@@ -97,7 +99,9 @@ public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
   protected JerseyClientBuilder clientBuilder() {
     JerseyClientBuilder builder = super.clientBuilder();
     BasicAuthClientFilter basicAuthFilter = new BasicAuthClientFilter();
-    builder.register(basicAuthFilter);
+    var logF = new LoggingFeature(java.util.logging.Logger.getLogger(getClass().getName()), Level.OFF, LoggingFeature.Verbosity.PAYLOAD_TEXT, 8192);
+    builder.register(basicAuthFilter)
+           .register(logF);
     return builder;
   }
   

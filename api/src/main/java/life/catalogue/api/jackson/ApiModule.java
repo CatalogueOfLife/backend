@@ -1,15 +1,9 @@
 package life.catalogue.api.jackson;
 
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-
 import life.catalogue.api.datapackage.ColdpTerm;
-import life.catalogue.api.model.Citation;
-import life.catalogue.api.model.DOI;
 import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.TxtTreeTerm;
-
-import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
@@ -113,7 +107,7 @@ public class ApiModule extends SimpleModule {
     ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
     ctxt.addSerializers(new PermissiveEnumSerde.PermissiveEnumSerializers());
     ctxt.addKeySerializers(new PermissiveEnumSerde.PermissiveEnumKeySerializers());
-    // lower camel case, permissive enum serde
+    // lower camel case, permissive enum serde - currently only used for NameUsageSearchParameter
     ctxt.addDeserializers(new LowerCamelCaseEnumSerde.LowerCamelCaseEnumDeserializers());
     ctxt.addKeyDeserializers(new LowerCamelCaseEnumSerde.LowerCamelCaseEnumKeyDeserializers());
     ctxt.addSerializers(new LowerCamelCaseEnumSerde.LowerCamelCaseEnumSerializers());
