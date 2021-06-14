@@ -21,13 +21,13 @@ public class CitationTest {
     Citation c = new Citation();
     c.setId(id);
     c.setDoi(doi);
-    c.setType(CSLType.ARTICLE);
+    c.setType(CSLType.ARTICLE_JOURNAL);
     c.setTitle("Corona epidemic forever");
     c.setAuthor(List.of(
       new CslName("Bernd", "Schneider"),
       new CslName("Tim", "Berners Lee")
     ));
-    c.setCollectionTitle("Global Pandemics");
+    c.setContainerTitle("Global Pandemics");
     c.setVolume("34");
     c.setIssue("4");
     c.setPage("1345-1412");

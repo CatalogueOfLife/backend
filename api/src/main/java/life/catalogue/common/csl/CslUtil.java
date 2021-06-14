@@ -5,7 +5,8 @@ import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.Reference;
 
 public class CslUtil {
-  private final static CslFormatter apa = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT);
+  private final static CslFormatter apaHtml = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.HTML);
+  private final static CslFormatter apaText = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT);
 
   /**
    * WARNING!
@@ -18,20 +19,22 @@ public class CslUtil {
   
   public static String buildCitation(CslData data) {
     if (data != null) {
-      return apa.cite(data);
+      return apaText.cite(data);
     }
     return null;
   }
 
   public static String buildCitation(CSLItemData data) {
     if (data != null) {
-      return apa.cite(data);
+      return apaText.cite(data);
     }
     return null;
   }
 
-  
-  
-  
-  
+  public static String buildCitationHtml(CSLItemData data) {
+    if (data != null) {
+      return apaHtml.cite(data);
+    }
+    return null;
+  }
 }

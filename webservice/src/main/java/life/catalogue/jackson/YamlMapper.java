@@ -1,11 +1,15 @@
 package life.catalogue.jackson;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.FuzzyDateCSLSerde;
+import life.catalogue.api.jackson.FuzzyDateISOSerde;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Citation;
+import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -18,6 +22,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -73,6 +78,7 @@ public class YamlMapper {
       super.setupModule(ctxt);
       ctxt.setMixInAnnotations(Agent.class, AgentMixIn.class);
       ctxt.setMixInAnnotations(Dataset.class, DatasetMixIn.class);
+      ctxt.setMixInAnnotations(Citation.class, CitationMixIn.class);
     }
   }
 
@@ -113,4 +119,36 @@ public class YamlMapper {
     @JsonIgnore
     abstract Integer getModifiedBy();
   }
+
+  abstract class CitationMixIn {
+    @JsonSerialize(using = FuzzyDateISOSerde.Serializer.class)
+    @JsonDeserialize(using = FuzzyDateISOSerde.Deserializer.class)
+    private FuzzyDate issued;
+
+    @JsonSerialize(using = FuzzyDateISOSerde.Serializer.class)
+    @JsonDeserialize(using = FuzzyDateISOSerde.Deserializer.class)
+    private FuzzyDate accessed;
+
+    @JsonAlias("container-title")
+    @JsonProperty("containerTitle")
+    private String containerTitle;
+
+    @JsonAlias("container-author")
+    @JsonProperty("containerAuthor")
+    private List<CslName> containerAuthor;
+
+    @JsonAlias("collection-title")
+    @JsonProperty("collectionTitle")
+    private String collectionTitle;
+
+    @JsonAlias("collection-editor")
+    @JsonProperty("collectionEditor")
+    private List<CslName> collectionEditor;
+
+    @JsonAlias("publisher-place")
+    @JsonProperty("publisherPlace")
+    private String publisherPlace;
+
+  }
+
 }

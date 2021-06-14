@@ -12,10 +12,10 @@ public class ProjectContributionTest {
   public void testAdd() {
     ProjectContribution contrib = new ProjectContribution();
     contrib.add(DatasetTest.generateTestDataset());
-    assertEquals(8, contrib.size());
+    assertEquals(7, contrib.size());
     // same agents again
     contrib.add(DatasetTest.generateTestDataset());
-    assertEquals(8, contrib.size());
+    assertEquals(7, contrib.size());
 
     Dataset d = DatasetTest.generateTestDataset();
     d.setCreator(List.of(Agent.parse("Mama")));
@@ -23,7 +23,7 @@ public class ProjectContributionTest {
     d.setContributor(List.of(Agent.parse("Mama-Joe")));
     contrib.add(d);
 
-    assertEquals(11, contrib.size());
+    assertEquals(10, contrib.size());
 
     // ignore the empty persons and orgs
     d = DatasetTest.generateTestDataset();
@@ -32,6 +32,6 @@ public class ProjectContributionTest {
     d.getContributor().add(new Agent(null, null));
     contrib.add(d);
 
-    assertEquals(11, contrib.size());
+    assertEquals(10, contrib.size());
   }
 }

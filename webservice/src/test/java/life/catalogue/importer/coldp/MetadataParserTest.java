@@ -9,8 +9,6 @@ import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.Resources;
 
-import life.catalogue.importer.NeoInserter;
-
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
@@ -60,7 +58,7 @@ public class MetadataParserTest {
   @Test
   public void coldpSpecsCslStyle() throws Exception {
     // uses proper csl field names like container-title
-    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/coldpspecs-cslstyle.yaml"));
+    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/coldpspecs2.yaml"));
     DatasetWithSettings d = m.get();
 
     assertNull(d.getType());

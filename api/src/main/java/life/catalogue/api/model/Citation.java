@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -10,6 +11,8 @@ import de.undercouch.citeproc.bibtex.PageRange;
 import de.undercouch.citeproc.csl.*;
 
 import life.catalogue.api.jackson.FuzzyDateCSLSerde;
+import life.catalogue.common.csl.CslFormatter;
+import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
 import java.util.List;
@@ -30,18 +33,26 @@ public class Citation {
   private String title;
   // author(s) of the container holding the item (e.g. the book author for a book chapter)
   @JsonProperty("container-author")
+  @JsonAlias("containerAuthor")
   private List<CslName> containerAuthor;
   // title of the container holding the item (e.g. the book title for a book chapter, the journal title for a journal article)
+  @JsonAlias("containerTitle")
   @JsonProperty("container-title")
   private String containerTitle;
   // date the item was issued/published
+//  @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
+//  @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
   private FuzzyDate issued;
   // date the item has been accessed
+//  @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
+//  @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
   private FuzzyDate accessed;
   // title of the collection holding the item (e.g. the series title for a book)
+  @JsonAlias("collectionTitle")
   @JsonProperty("collection-title")
   private String collectionTitle;
   // editor of the collection holding the item (e.g. the series editor for a book)
+  @JsonAlias("collectionEditor")
   @JsonProperty("collection-editor")
   private List<CslName> collectionEditor;
   // (container) volume holding the item (e.g. “2” when citing a chapter from book volume 2)
@@ -55,6 +66,7 @@ public class Citation {
   // The publisher's name
   private String publisher;
   // The publisher's name
+  @JsonAlias("publisherPlace")
   @JsonProperty("publisher-place")
   private String publisherPlace;
   // dataset version
@@ -313,6 +325,11 @@ public class Citation {
 
   public void setNote(String note) {
     this.note = note;
+  }
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public String getCitation() {
+    return CslUtil.buildCitationHtml(toCSL());
   }
 
   @Override

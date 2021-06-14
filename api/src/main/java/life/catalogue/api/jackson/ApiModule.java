@@ -68,8 +68,6 @@ public class ApiModule extends SimpleModule {
     mapper.registerModule(new AfterburnerModule());
   
     mapper.addHandler(new CslArrayMismatchHandler());
-    // we do not do this in the ApiModule as we want the YAML mapper to use the regular ISO serde
-    mapper.addMixIn(Citation.class, CitationMixIn.class);
     return mapper;
   }
 
@@ -85,7 +83,6 @@ public class ApiModule extends SimpleModule {
     addDeserializer(CSLType.class, new CSLTypeSerde.Deserializer());
     addDeserializer(URI.class, new URIDeserializer());
     addDeserializer(UUID.class, new UUIDSerde.Deserializer());
-    addDeserializer(DOI.class, new DOISerde.Deserializer());
     // override the JavaTimeModule to use a permissive localdate deserializer catching parsing exceptions
     addDeserializer(LocalDateTime.class, new PermissiveJavaDateSerde.LocalDateTimeDeserializer());
     addDeserializer(LocalDate.class, new PermissiveJavaDateSerde.LocalDateDeserializer());
@@ -95,7 +92,6 @@ public class ApiModule extends SimpleModule {
     addSerializer(Term.class, new TermSerde.Serializer());
     addSerializer(CSLType.class, new CSLTypeSerde.Serializer());
     addSerializer(UUID.class, new UUIDSerde.Serializer());
-    addSerializer(DOI.class, new DOISerde.Serializer());
 
     // then key deserializers
     addKeyDeserializer(Term.class, new TermSerde.KeyDeserializer());
@@ -131,7 +127,6 @@ public class ApiModule extends SimpleModule {
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);
     ctxt.setMixInAnnotations(Term.class, TermMixIn.class);
-    ctxt.setMixInAnnotations(Citation.class, CitationMixIn.class);
   }
   
   abstract class AuthorshipMixIn {
@@ -143,17 +138,6 @@ public class ApiModule extends SimpleModule {
   @JsonDeserialize(using = TermSerde.Deserializer.class, keyUsing = TermSerde.KeyDeserializer.class)
   static abstract class TermMixIn {
 
-  }
-
-  abstract class CitationMixIn {
-
-    @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
-    @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
-    abstract FuzzyDate getIssued();
-
-    @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
-    @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
-    abstract FuzzyDate getAccessed();
   }
 
   static class URIDeserializer extends FromStringDeserializer<URI> {

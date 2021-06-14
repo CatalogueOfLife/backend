@@ -37,10 +37,10 @@ public class FuzzyDateCSLSerde {
   private static String DATE_PARTS= "date-parts";
 
   /**
-   * Jackson {@link JsonSerializer} for {@link Country}.
+   * Jackson {@link JsonSerializer} for {@link FuzzyDate}.
    */
   public static class Serializer extends JsonSerializer<FuzzyDate> {
-    
+
     @Override
     public void serialize(FuzzyDate value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
       if (value == null) {
@@ -68,10 +68,8 @@ public class FuzzyDateCSLSerde {
       // outer object with field "date-parts" - others should be ignored
       if (p.isExpectedStartObjectToken()) {
         JsonToken t;
+        FuzzyDate date = null;
         while ((t = p.nextToken()) != JsonToken.END_OBJECT) {
-          if (t == JsonToken.FIELD_NAME && p.getCurrentName().equalsIgnoreCase(DATE_PARTS)) {
-
-          }
           if (t == JsonToken.FIELD_NAME && p.getCurrentName().equalsIgnoreCase(DATE_PARTS)) {
             // outer array next
             p.nextToken();
@@ -79,20 +77,18 @@ public class FuzzyDateCSLSerde {
               // look for inner arrays
               t = p.nextToken();
               if (t == JsonToken.START_ARRAY) {
-                FuzzyDate date = FuzzyDate.of(readArray(p, ctxt));
+                date = FuzzyDate.of(readArray(p, ctxt));
+                // range with end date?
                 t = p.nextToken();
                 if (t == JsonToken.START_ARRAY) {
                   int[] end = readArray(p, ctxt);
                   LOG.debug("csl end date {} found, but fuzzy date cannot handle this", end);
-                  t = p.nextToken();
-                }
-                if (t == JsonToken.END_ARRAY) {
-                  return date;
                 }
               }
             }
           }
         }
+        return date;
       }
 
       // if we reach here some token was wrong
@@ -115,5 +111,5 @@ public class FuzzyDateCSLSerde {
       return idx == 3 ? array : Arrays.copyOf(array, idx);
     }
   }
-  
+
 }

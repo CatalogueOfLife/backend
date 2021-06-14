@@ -13,6 +13,11 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import life.catalogue.api.jackson.DOISerde;
+import life.catalogue.api.jackson.FuzzyDateCSLSerde;
 import life.catalogue.common.id.IdConverter;
 
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 
+@JsonSerialize(using = DOISerde.Serializer.class)
+@JsonDeserialize(using = DOISerde.Deserializer.class)
 public class DOI implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(DOI.class);
   private static final String CHAR_ENCODING = "UTF-8";
