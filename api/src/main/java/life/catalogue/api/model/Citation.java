@@ -78,6 +78,7 @@ public class Citation {
   // link to webpage for electronic resources
   private String url;
   private String note;
+  private String _citation; // cache field
 
   public CSLItemData toCSL() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
@@ -327,9 +328,13 @@ public class Citation {
     this.note = note;
   }
 
+
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getCitation() {
-    return CslUtil.buildCitationHtml(toCSL());
+    if (_citation == null) {
+      _citation = CslUtil.buildCitationHtml(toCSL());
+    }
+    return _citation;
   }
 
   @Override

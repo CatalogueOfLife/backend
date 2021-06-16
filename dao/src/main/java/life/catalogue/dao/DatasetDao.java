@@ -419,4 +419,14 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     return copy;
   }
+
+  /**
+   * Reads a specific copy by its attempt from the dataset metadata archive.
+   */
+  public Dataset getArchive(Integer key, Integer attempt) {
+    try (SqlSession session = factory.openSession()){
+      DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
+      return dam.get(key, attempt);
+    }
+  }
 }

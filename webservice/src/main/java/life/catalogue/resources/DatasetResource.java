@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import de.undercouch.citeproc.csl.CSLItemData;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -89,12 +91,38 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return super.get(key);
   }
 
+  @GET
+  @Path("{key}")
+  @VaryAccept
+  @Produces({MoreMediaTypes.APP_JSON_CSL})
+  public CSLItemData getCSL(@PathParam("key") Integer key) {
+    var d = super.get(key);
+    return d.toCSL();
+  }
+
+  @GET
+  @Path("{key}")
+  @VaryAccept
+  @Produces({MoreMediaTypes.APP_BIBTEX})
+  public CSLItemData getBibtex(@PathParam("key") Integer key) {
+    var d = super.get(key);
+    return d.toCSL();
+  }
+
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
   public void updateAlt(@PathParam("key") Integer key, Dataset obj, @Auth User user) {
     this.update(key, obj, user);
+  }
+
+  @GET
+  @Path("{key}/{attempt}")
+  @VaryAccept
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+  public Dataset getArchive(@PathParam("key") Integer key, @PathParam("attempt") Integer attempt) {
+    return dao.getArchive(key, attempt);
   }
 
   @GET

@@ -34,6 +34,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.util.YamlUtils;
 
@@ -140,6 +141,7 @@ public class Dataset extends DataEntity<Integer> {
   private URI logo;
   private List<Citation> source = new ArrayList<>();
   private String notes;
+  private String _citation; // cache field
 
   public Dataset() {
   }
@@ -570,6 +572,14 @@ public class Dataset extends DataEntity<Integer> {
 
   public void setIssn(String issn) {
     this.issn = issn;
+  }
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public String getCitation() {
+    if (_citation == null) {
+      _citation = CslUtil.buildCitationHtml(toCSL());
+    }
+    return _citation;
   }
 
   @Override

@@ -86,6 +86,8 @@ UPDATE dataset SET contact=contact_old::agent, creator=authors::agent[], editor=
 
 ALTER TABLE dataset RENAME COLUMN website TO url;
 ALTER TABLE dataset RENAME COLUMN released TO issued;
+ALTER TABLE dataset ALTER COLUMN issued TYPE TEXT;
+
 ALTER TABLE dataset RENAME COLUMN "group" TO taxonomic_scope;
 ALTER TABLE dataset RENAME COLUMN import_attempt TO attempt;
 ALTER TABLE dataset DROP COLUMN doc;
@@ -161,6 +163,7 @@ UPDATE dataset_archive SET contact=contact_old::agent, creator=authors::agent[],
 
 ALTER TABLE dataset_archive RENAME COLUMN website TO url;
 ALTER TABLE dataset_archive RENAME COLUMN released TO issued;
+ALTER TABLE dataset_archive ALTER COLUMN issued TYPE TEXT;
 ALTER TABLE dataset_archive RENAME COLUMN "group" TO taxonomic_scope;
 ALTER TABLE dataset_archive RENAME COLUMN import_attempt TO attempt;
 ALTER TABLE dataset_archive 
@@ -201,6 +204,7 @@ UPDATE dataset_source SET contact=contact_old::agent, creator=authors::agent[], 
 
 ALTER TABLE dataset_source RENAME COLUMN website TO url;
 ALTER TABLE dataset_source RENAME COLUMN released TO issued;
+ALTER TABLE dataset_source ALTER COLUMN issued TYPE TEXT;
 ALTER TABLE dataset_source RENAME COLUMN "group" TO taxonomic_scope;
 ALTER TABLE dataset_source RENAME COLUMN import_attempt TO attempt;
 ALTER TABLE dataset_source 
@@ -236,6 +240,7 @@ UPDATE dataset_patch SET contact=contact_old::agent, creator=authors::agent[], e
 
 ALTER TABLE dataset_patch RENAME COLUMN website TO url;
 ALTER TABLE dataset_patch RENAME COLUMN released TO issued;
+ALTER TABLE dataset_patch ALTER COLUMN issued TYPE TEXT;
 ALTER TABLE dataset_patch RENAME COLUMN "group" TO taxonomic_scope;
 ALTER TABLE dataset_patch 
   DROP COLUMN type,

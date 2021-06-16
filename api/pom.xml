@@ -52,7 +52,11 @@
         </dependency>
 
 
-        <!-- citeproc CSL -->
+        <!-- citeproc CSL / BibTeX -->
+        <dependency>
+          <groupId>org.jbibtex</groupId>
+          <artifactId>jbibtex</artifactId>
+        </dependency>
         <dependency>
             <groupId>de.undercouch</groupId>
             <artifactId>citeproc-java</artifactId>
