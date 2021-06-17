@@ -226,9 +226,34 @@ public class CslDataConverter {
   }
 
   private static void addField(BibTeXEntry entry, String field, CSLName[] value) {
-    StringBuilder sb = new StringBuilder();
+    if (value != null && value.length > 0) {
+      StringBuilder sb = new StringBuilder();
+      for (CSLName n : value) {
+        if (n != null && (n.getFamily() != null || n.getLiteral() != null)) {
+          if (sb.length()>0) {
+            sb.append(" and ");
+          }
 
+          if (n.getLiteral() != null) {
+            sb.append("{")
+              .append(n.getLiteral())
+              .append("}");
+          } else {
+            sb.append("{")
+              .append(n.getFamily())
+              .append("}");
+            if (n.getGiven() != null) {
+              sb.append(", {")
+                .append(n.getGiven())
+                .append("}");
+            }
+          }
+        }
+      }
+      addField(entry, field, sb.toString());
+    }
   }
+  
   private static void addField(BibTeXEntry entry, String field, Integer value) {
     if (value != null) {
       entry.addField(new Key(field), new DigitStringValue(value.toString()));
