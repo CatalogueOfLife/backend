@@ -48,8 +48,6 @@ import static life.catalogue.api.model.User.userkey;
 @Path("/dataset")
 @SuppressWarnings("static-method")
 public class DatasetResource extends AbstractGlobalResource<Dataset> {
-  
-  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
   private final DatasetDao dao;
   private final DatasetSourceDao sourceDao;
@@ -86,27 +84,14 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("{key}")
   @Override
   @VaryAccept
-  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+  @Produces({MediaType.APPLICATION_JSON,
+    MediaType.APPLICATION_XML, MediaType.TEXT_XML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML,
+    MoreMediaTypes.APP_JSON_CSL,
+    MoreMediaTypes.APP_BIBTEX
+  })
   public Dataset get(@PathParam("key") Integer key) {
     return super.get(key);
-  }
-
-  @GET
-  @Path("{key}")
-  @VaryAccept
-  @Produces({MoreMediaTypes.APP_JSON_CSL})
-  public CSLItemData getCSL(@PathParam("key") Integer key) {
-    var d = super.get(key);
-    return d.toCSL();
-  }
-
-  @GET
-  @Path("{key}")
-  @VaryAccept
-  @Produces({MoreMediaTypes.APP_BIBTEX})
-  public CSLItemData getBibtex(@PathParam("key") Integer key) {
-    var d = super.get(key);
-    return d.toCSL();
   }
 
   @PUT
@@ -120,7 +105,12 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("{key}/{attempt}")
   @VaryAccept
-  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+  @Produces({MediaType.APPLICATION_JSON,
+    MediaType.APPLICATION_XML, MediaType.TEXT_XML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML,
+    MoreMediaTypes.APP_JSON_CSL,
+    MoreMediaTypes.APP_BIBTEX
+  })
   public Dataset getArchive(@PathParam("key") Integer key, @PathParam("attempt") Integer attempt) {
     return dao.getArchive(key, attempt);
   }
@@ -136,19 +126,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void putSettings(@PathParam("key") int key, DatasetSettings settings, @Auth User user) {
     dao.putSettings(key, settings, user.getKey());
-  }
-
-  /**
-   * Convenience method to get the latest release of a project.
-   * This can also be achieved using the search, but it is a common operation we make as simple as possible in the API.
-   *
-   * See also {@link DatasetKeyRewriteFilter} on using <pre>LR</pre> as a suffix in dataset keys to indicate the latest release.
-   * @param key
-   */
-  @GET
-  @Path("{key}/latest")
-  public Dataset getLatestRelease(@PathParam("key") int key) {
-    return dao.latestRelease(key);
   }
 
   @GET
@@ -238,6 +215,12 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("/{key}/source/{id}")
+  @Produces({MediaType.APPLICATION_JSON,
+    MediaType.APPLICATION_XML, MediaType.TEXT_XML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML,
+    MoreMediaTypes.APP_JSON_CSL,
+    MoreMediaTypes.APP_BIBTEX
+  })
   public Dataset projectSource(@PathParam("key") int datasetKey,
                                @PathParam("id") int id,
                                @QueryParam("original") boolean original,

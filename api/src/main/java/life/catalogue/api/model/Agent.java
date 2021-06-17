@@ -213,7 +213,7 @@ public class Agent {
 
   @JsonIgnore
   public boolean isOrganisation(){
-    return !isPerson() && (organisation != null && department != null);
+    return !isPerson() && (organisation != null || department != null);
   }
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)

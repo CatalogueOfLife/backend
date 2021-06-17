@@ -22,7 +22,7 @@ public class CslFormatter {
   public final STYLE style;
 
   public enum FORMAT {TEXT, HTML, RTF}
-  public enum STYLE {APA, CSE, IEEE, MLA, CHICAGO, NATURE}
+  public enum STYLE {APA, CSE, IEEE, MLA, CHICAGO, NATURE, HARVARD}
 
   static class SingleItemProvider implements ItemDataProvider {
     private static final String KEY = "1";

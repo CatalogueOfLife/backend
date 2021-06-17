@@ -1,23 +1,21 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import de.undercouch.citeproc.bibtex.PageParser;
-import de.undercouch.citeproc.bibtex.PageRange;
-import de.undercouch.citeproc.csl.*;
-
-import life.catalogue.api.jackson.FuzzyDateCSLSerde;
-import life.catalogue.common.csl.CslFormatter;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.undercouch.citeproc.bibtex.PageParser;
+import de.undercouch.citeproc.bibtex.PageRange;
+import de.undercouch.citeproc.csl.CSLItemData;
+import de.undercouch.citeproc.csl.CSLItemDataBuilder;
+import de.undercouch.citeproc.csl.CSLName;
+import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * Class with core CSL fields to represent common citations.
@@ -26,14 +24,16 @@ import java.util.stream.Collectors;
 public class Citation {
   private String id;
   private CSLType type;
+  @JsonAlias("doi")
+  @JsonProperty("DOI")
   private DOI doi;
   private List<CslName> author;
   private List<CslName> editor;
   // The title of the work
   private String title;
   // author(s) of the container holding the item (e.g. the book author for a book chapter)
-  @JsonProperty("container-author")
   @JsonAlias("containerAuthor")
+  @JsonProperty("container-author")
   private List<CslName> containerAuthor;
   // title of the container holding the item (e.g. the book title for a book chapter, the journal title for a journal article)
   @JsonAlias("containerTitle")
@@ -72,10 +72,16 @@ public class Citation {
   // dataset version
   private String version;
   // ISBN number (books)
+  @JsonAlias("isbn")
+  @JsonProperty("ISBN")
   private String isbn;
   // ISSN serial number
+  @JsonAlias("issn")
+  @JsonProperty("ISSN")
   private String issn;
   // link to webpage for electronic resources
+  @JsonAlias("url")
+  @JsonProperty("URL")
   private String url;
   private String note;
   private String _citation; // cache field
@@ -120,7 +126,7 @@ public class Citation {
       builder.issued(issued.toCSLDate());
     }
     if (accessed != null) {
-      builder.issued(accessed.toCSLDate());
+      builder.accessed(accessed.toCSLDate());
     }
 
     // pages

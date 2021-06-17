@@ -60,7 +60,6 @@
     <fastutil.version>8.3.0</fastutil.version>
     <ganglia.version>1.0.7</ganglia.version>
     <gbif-api.version>0.99</gbif-api.version>
-    <graalvm.version>19.3.0</graalvm.version>
     <hikaricp.version>3.3.1</hikaricp.version>
     <hk2.version>2.5.0-b32</hk2.version>
     <!-- even though managed in DW BOM, it conflicts with ES BOM and we gotta manage this manually -->
@@ -632,20 +631,6 @@
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-runtime</artifactId>
         <version>${antlr.version}</version>
-      </dependency>
-
-      <!--
-      citeproc depends on graalvm.js 19.2 that includes an old ASM 6.x version. Force a newer one
-      -->
-      <dependency>
-        <groupId>org.graalvm.js</groupId>
-        <artifactId>js</artifactId>
-        <version>${graalvm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.citationstyles</groupId>
-        <artifactId>styles</artifactId>
-        <version>${citeproc-styles.version}</version>
       </dependency>
       <dependency>
         <groupId>org.citationstyles</groupId>

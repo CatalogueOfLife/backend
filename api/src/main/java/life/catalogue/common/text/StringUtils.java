@@ -3,7 +3,6 @@ package life.catalogue.common.text;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
-import com.ibm.icu.text.StringCharacterIterator;
 import org.apache.commons.text.WordUtils;
 
 import java.nio.ByteBuffer;
@@ -11,6 +10,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.text.CharacterIterator;
 import java.text.Normalizer;
+import java.text.StringCharacterIterator;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;

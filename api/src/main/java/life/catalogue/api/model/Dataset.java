@@ -254,6 +254,7 @@ public class Dataset extends DataEntity<Integer> {
     if (names == null || names.isEmpty()) return null;
     return names.stream()
                 .map(Agent::toCSL)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList())
                 .toArray(CSLName[]::new);
   }

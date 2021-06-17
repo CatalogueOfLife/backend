@@ -1,12 +1,15 @@
 package life.catalogue.common.csl;
 
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
 import life.catalogue.api.model.CslName;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
+import org.jbibtex.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +23,8 @@ import de.undercouch.citeproc.csl.CSLType;
 import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
 
 /**
- * Converts a CslData instance to a CSLItemData instance.
+ * Converts a CslData instance to a CSLItemData instance
+ * and CSLItemData to BibTeX entries.
  */
 public class CslDataConverter {
   private static final Logger LOG = LoggerFactory.getLogger(CslDataConverter.class);
@@ -150,5 +154,90 @@ public class CslDataConverter {
     }
     return CSLType.valueOf(src.name());
   }
-  
+
+  @VisibleForTesting
+  static String toBibTexType(CSLType type) {
+    if (type != null) {
+      switch (type) {
+        case ARTICLE:
+        case ARTICLE_JOURNAL:
+        case ARTICLE_MAGAZINE:
+        case ARTICLE_NEWSPAPER:
+          return "article";
+        case BOOK:
+          return "book";
+        case CHAPTER:
+          return "incollection";
+      }
+    }
+    return "misc";
+  }
+
+
+  public static BibTeXEntry toBibTex(CSLItemData data) {
+    final CSLType type = data.getType();
+    BibTeXEntry entry = new BibTeXEntry(new Key(toBibTexType(type)), new Key(data.getId()));
+
+    addField(entry, "volume", data.getVolume());
+    addField(entry, "number", data.getIssue());
+    addField(entry, "edition", data.getEdition());
+    addField(entry, "publisher", data.getPublisher());
+    addField(entry, "address", data.getPublisherPlace());
+    addField(entry, "version", data.getVersion());
+    addField(entry, "isbn", data.getISBN());
+    addField(entry, "issn", data.getISSN());
+    addField(entry, "url", data.getURL());
+    addField(entry, "doi", data.getDOI());
+    addField(entry, "series", data.getCollectionTitle());
+    addField(entry, "pages", data.getPage());
+    addField(entry, "url", data.getURL());
+    addField(entry, "note", data.getNote());
+    addField(entry, "title", data.getTitle());
+    addField(entry, "author", data.getAuthor());
+    addField(entry, "editor", data.getEditor());
+
+    if (type != null) {
+      switch (type) {
+        case ARTICLE:
+        case ARTICLE_JOURNAL:
+        case ARTICLE_MAGAZINE:
+        case ARTICLE_NEWSPAPER:
+          addField(entry, "journal", data.getContainerTitle());
+          addField(entry, "editor", data.getCollectionEditor());
+          break;
+        case CHAPTER:
+          addField(entry, "booktitle", data.getContainerTitle());
+          addField(entry, "editor", data.getCollectionEditor());
+          break;
+      }
+    }
+
+    if (data.getIssued() != null) {
+      int[] date = data.getIssued().getDateParts()[0];
+      addField(entry, "year", date[0]);
+      if (date.length>1) {
+        addField(entry, "month", date[1]);
+      }
+    }
+
+    //TODO: can we map this to anything ???
+    // collectionEditor
+    return entry;
+  }
+
+  private static void addField(BibTeXEntry entry, String field, CSLName[] value) {
+    StringBuilder sb = new StringBuilder();
+
+  }
+  private static void addField(BibTeXEntry entry, String field, Integer value) {
+    if (value != null) {
+      entry.addField(new Key(field), new DigitStringValue(value.toString()));
+    }
+  }
+
+  private static void addField(BibTeXEntry entry, String field, String value) {
+    if (!StringUtils.isBlank(value)) {
+      entry.addField(new Key(field), new StringValue(value, StringValue.Style.BRACED));
+    }
+  }
 }

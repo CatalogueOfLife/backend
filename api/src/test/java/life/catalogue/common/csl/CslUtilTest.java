@@ -6,15 +6,20 @@ import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLType;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.CslData;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.common.io.Resources;
+import life.catalogue.common.io.UTF8IoUtils;
+
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -26,7 +31,14 @@ public class CslUtilTest {
       System.out.println(CslUtil.buildCitation(TestEntityGenerator.newReference()));
     }
   }
-  
+
+  @Test
+  public void bibtex() throws Exception {
+    var d = Dataset.read(Resources.stream("metadata/col.yaml"));
+    System.out.println( CslUtil.toBibTexString(d.toCSL()) );
+  }
+
+
   @Test
   @Ignore("citeproc bug: https://github.com/michel-kraemer/citeproc-java/issues/101")
   public void buildCitation() throws IOException {
