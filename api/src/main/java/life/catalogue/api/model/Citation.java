@@ -62,6 +62,7 @@ public class Citation {
   // (container) edition holding the item (e.g. “3” when citing a chapter in the third edition of a book)
   private String edition;
   // range of pages the item (e.g. a journal article) covers in a container (e.g. a journal issue)
+  @JsonAlias("pages")
   private String page;
   // The publisher's name
   private String publisher;

@@ -1,12 +1,6 @@
 package life.catalogue.api.model;
 
-import de.undercouch.citeproc.csl.CSLItemData;
-
-import de.undercouch.citeproc.csl.CSLItemDataBuilder;
-
-import de.undercouch.citeproc.csl.CSLName;
-
-import de.undercouch.citeproc.csl.CSLNameBuilder;
+import de.undercouch.citeproc.csl.*;
 
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
@@ -227,6 +221,7 @@ public class Dataset extends DataEntity<Integer> {
   public CSLItemData toCSL() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
     builder
+      .type(CSLType.DATASET)
       .shortTitle(alias)
       .title(title)
       .version(version)

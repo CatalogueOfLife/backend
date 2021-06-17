@@ -6,6 +6,7 @@ import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLType;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.Dataset;
@@ -36,6 +37,12 @@ public class CslUtilTest {
   public void bibtex() throws Exception {
     var d = Dataset.read(Resources.stream("metadata/col.yaml"));
     System.out.println( CslUtil.toBibTexString(d.toCSL()) );
+
+    System.out.println("\n" + CslUtil.buildCitation(d.toCSL()) );
+
+    d.setCreator(List.of(d.getCreator().get(0), Agent.parse("et al.")));
+    var csl = d.toCSL();
+    System.out.println("\n" + CslUtil.buildCitationHtml(csl) );
   }
 
 

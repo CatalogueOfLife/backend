@@ -14,7 +14,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.ext.Provider;
 import java.net.URI;
 import java.util.Map;
-
+import static java.util.Map.entry;
 /**
  * Filter that adds an Accept header based on a file suffix found in the URL path.
  * See SuffixAcceptRequestFilter#SUFFICES for supported mime types.
@@ -23,16 +23,19 @@ import java.util.Map;
 @PreMatching
 public class SuffixAcceptRequestFilter implements ContainerRequestFilter {
   private static final Logger LOG = LoggerFactory.getLogger(SuffixAcceptRequestFilter.class);
-  private final static Map<String, String> SUFFICES = Map.of(
-    "xml", MediaType.APPLICATION_XML,
-    "json", MediaType.APPLICATION_JSON,
-    "yaml", MoreMediaTypes.TEXT_YAML,
-    "txt", MediaType.TEXT_PLAIN,
-    "html", MediaType.TEXT_HTML,
-    "tsv", MoreMediaTypes.TEXT_TSV,
-    "csv", MoreMediaTypes.TEXT_CSV,
-    "zip", MoreMediaTypes.APP_ZIP,
-    "png", MoreMediaTypes.IMG_PNG
+  private final static Map<String, String> SUFFICES = Map.ofEntries(
+    entry("xml", MediaType.APPLICATION_XML),
+    entry("json", MediaType.APPLICATION_JSON),
+    entry("yaml", MoreMediaTypes.TEXT_YAML),
+    entry("txt", MediaType.TEXT_PLAIN),
+    entry("html", MediaType.TEXT_HTML),
+    entry("tsv", MoreMediaTypes.TEXT_TSV),
+    entry("csv", MoreMediaTypes.TEXT_CSV),
+    entry("zip", MoreMediaTypes.APP_ZIP),
+    entry("png", MoreMediaTypes.IMG_PNG),
+    entry("bib", MoreMediaTypes.APP_BIBTEX),
+    entry("csljs", MoreMediaTypes.APP_JSON_CSL),
+    entry("coldp", MoreMediaTypes.APP_JSON_COLDP)
   );
 
   @Override

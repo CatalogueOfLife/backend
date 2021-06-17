@@ -26,7 +26,7 @@ public class CslFormatterTest {
     CSLItemData csl = d.toCSL();
     List<CSLItemData> sources = d.getSource().stream().map(Citation::toCSL).collect(Collectors.toList());
 
-    List<CslFormatter> styles = Arrays.stream(CslFormatter.STYLE.values()).map(s -> new CslFormatter(s, CslFormatter.FORMAT.TEXT)).collect(Collectors.toList());
+    List<CslFormatter> styles = Arrays.stream(CslFormatter.STYLE.values()).map(s -> new CslFormatter(s, CslFormatter.FORMAT.HTML)).collect(Collectors.toList());
     PrintWriter writer = new PrintWriter(System.out);
     for (var style : styles) {
       writer.println(style.style);

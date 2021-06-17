@@ -24,25 +24,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 /**
- * Dataset body reader that understands YAML, JSON or XML given as EML.
+ * Dataset body reader that understands YAML or XML given as EML.
  */
 @Provider
-@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
 public class DatasetMessageBodyReader implements MessageBodyReader<Dataset> {
-
-  private static final ObjectReader DATASET_JSON_READER;
-  static {
-    ObjectMapper OM = new ObjectMapper()
-      .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-      .registerModule(new JavaTimeModule())
-      .registerModule(new YamlMapper.ColdpMetadataModule());
-    DATASET_JSON_READER = OM.readerFor(Dataset.class);
-  }
 
   @Override
   public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return mediaType.isCompatible(MediaType.APPLICATION_JSON_TYPE) ||
-      mediaType.isCompatible(MediaType.APPLICATION_XML_TYPE) ||
+    return mediaType.isCompatible(MediaType.APPLICATION_XML_TYPE) ||
       mediaType.isCompatible(MediaType.TEXT_XML_TYPE) ||
       mediaType.isCompatible(MoreMediaTypes.APP_YAML_TYPE) ||
       mediaType.isCompatible(MoreMediaTypes.TEXT_YAML_TYPE);
@@ -56,17 +46,15 @@ public class DatasetMessageBodyReader implements MessageBodyReader<Dataset> {
       case EML:
         return EmlParser.parse(entityStream).map(DatasetWithSettings::getDataset).orElse(null);
       default:
-        return DATASET_JSON_READER.readValue(entityStream);
+        throw new IllegalStateException("I should only ever deal with YAML and EML");
     }
   }
 
   public static MetadataFormat parseType(MediaType mediaType) {
     if (mediaType.getSubtype().toLowerCase().contains("yaml")) {
       return MetadataFormat.YAML;
-    } else if (mediaType.getSubtype().equalsIgnoreCase("xml")) {
-      return MetadataFormat.EML;
     } else {
-      return MetadataFormat.JSON;
+      return MetadataFormat.EML;
     }
   }
 
