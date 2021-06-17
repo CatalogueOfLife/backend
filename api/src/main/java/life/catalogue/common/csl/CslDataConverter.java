@@ -253,7 +253,7 @@ public class CslDataConverter {
       addField(entry, field, sb.toString());
     }
   }
-  
+
   private static void addField(BibTeXEntry entry, String field, Integer value) {
     if (value != null) {
       entry.addField(new Key(field), new DigitStringValue(value.toString()));

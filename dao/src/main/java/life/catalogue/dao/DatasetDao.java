@@ -81,7 +81,28 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.indexService = indexService;
     this.bus = bus;
   }
-  
+
+  private void sanitize(Dataset d) {
+    if (d != null) {
+      if (d.getType() == null) {
+        d.setType(DatasetType.OTHER);
+      }
+      // remove null sources & agents
+      if (d.getSource() != null) {
+        d.getSource().removeIf(java.util.Objects::isNull);
+      }
+      if (d.getCreator() != null) {
+        d.getCreator().removeIf(java.util.Objects::isNull);
+      }
+      if (d.getEditor() != null) {
+        d.getEditor().removeIf(java.util.Objects::isNull);
+      }
+      if (d.getContributor() != null) {
+        d.getContributor().removeIf(java.util.Objects::isNull);
+      }
+    }
+  }
+
   public ResultPage<Dataset> list(Page page) {
     return super.list(DatasetMapper.class, page);
   }
@@ -275,9 +296,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   @Override
   public Integer create(Dataset obj, int user) {
     // apply some defaults for required fields
-    if (obj.getType() == null) {
-      obj.setType(DatasetType.OTHER);
-    }
+    sanitize(obj);
     return super.create(obj, user);
   }
 
@@ -309,6 +328,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (obj.getType() == null) {
       obj.setType(old.getType());
     }
+    sanitize(obj);
     super.updateBefore(obj, old, user, mapper, session);
   }
 
