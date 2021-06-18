@@ -72,7 +72,6 @@ public class DatasetResourceTest extends ResourceTestBase {
   }
   
   @Test
-  @Ignore("METADATA WORK IN PROGRESS")
   public void create() {
     Dataset d = new Dataset();
     d.setTitle("s3s3derftg");
