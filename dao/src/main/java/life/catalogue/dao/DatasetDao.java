@@ -417,17 +417,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       copy.setKey(null); // make sure we have no key so we create
     }
 
-    try {
-      create(copy, userKey);
-    } catch (PersistenceException e) {
-      if (PgUtils.isUniqueConstraint(e)) {
-        // make sure alias is unique - will fail otherwise
-        copy.setAlias(null);
-        create(copy, userKey);
-      } else {
-        throw e;
-      }
-    }
+    create(copy, userKey);
 
     // TODO: copy editor rights
     // copy logo files

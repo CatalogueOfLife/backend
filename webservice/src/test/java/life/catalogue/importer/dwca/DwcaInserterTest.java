@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -80,7 +81,7 @@ public class DwcaInserterTest extends InserterBaseTest {
     assertEquals(donald, d.getContact());
     assertEquals(License.CC_BY, d.getLicense());
     assertEquals("ver. 1.0 (09/2020)", d.getVersion());
-    assertEquals(LocalDate.of(2020, 9, 18), d.getIssued());
+    assertEquals(FuzzyDate.of(2020, 9, 18), d.getIssued());
     assertNull(d.getUrl());
     assertEquals(URI.create("https://hobern.net/img/Alucita_hexadactyla.png"), d.getLogo());
     assertNull(d.getCompleteness());

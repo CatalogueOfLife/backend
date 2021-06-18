@@ -13,7 +13,7 @@ contact:
 
 # list of authors and editors.
 # Please provide an ORCID if you can so it can be included in DOI metadata
-authorsAndEditors:
+authors:
   - givenName: Donald
     familyName: Hobern
     email: dhobern@gmail.com

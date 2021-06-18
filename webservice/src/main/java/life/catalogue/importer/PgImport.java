@@ -142,7 +142,6 @@ public class PgImport implements Callable<Boolean> {
         dm.get(dataset.getKey()),
         dm.getSettings(dataset.getKey())
       );
-      final String aliasOLD = old.getAlias();
       // archive the previous attempt if existing before we update the current metadata and tie it to a new attempt
       if (old.getDataset().getAttempt() != null) {
         int attempt = old.getDataset().getAttempt();
@@ -158,20 +157,7 @@ public class PgImport implements Callable<Boolean> {
       LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       updateMetadata(old, dataset);
 
-      try {
-        dm.updateAll(old);
-      } catch (PersistenceException e) {
-        PSQLException pe = (PSQLException) e.getCause();
-        // https://www.postgresql.org/docs/12/errcodes-appendix.html
-        // 23505 = unique_violation
-        if (pe.getSQLState().equals("23505")) {
-          // make sure alias is unique - will fail otherwise
-          old.setAlias(aliasOLD);
-          dm.updateAll(old);
-        } else {
-          throw e;
-        }
-      }
+      dm.updateAll(old);
 
       dm.updateLastImport(dataset.getKey(), attempt);
       LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());

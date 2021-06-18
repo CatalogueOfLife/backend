@@ -56,7 +56,11 @@ public class Dataset extends DataEntity<Integer> {
         "gbifPublisherKey",
         "size",
         "notes",
-        "aliasOrTitle"
+        "aliasOrTitle",
+        "created",
+        "createdBy",
+        "modified",
+        "modifiedBy"
       );
       PATCH_PROPS = Arrays.stream(Introspector.getBeanInfo(Dataset.class).getPropertyDescriptors())
                           .filter(p -> !exclude.contains(p.getName()) && p.getWriteMethod() != null)
