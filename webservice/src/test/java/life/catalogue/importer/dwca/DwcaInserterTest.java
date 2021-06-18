@@ -26,7 +26,6 @@ import org.neo4j.graphdb.Transaction;
 
 import static org.junit.Assert.*;
 
-@Ignore("METADATA WORK IN PROGRESS")
 public class DwcaInserterTest extends InserterBaseTest {
   
   @Override
@@ -55,12 +54,12 @@ public class DwcaInserterTest extends InserterBaseTest {
     DatasetWithSettings d = ins.readMetadata().get();
 
     Agent markus = Agent.person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
+    markus.setOrganisation("GBIF");
     Agent bouchard = Agent.person("Patrice", "Bouchard");
 
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
     assertEquals("https://github.com/mdoering/famous-organism", d.getUrl().toString());
-    //assertEquals("Species named after famous people", d.getLicense());
     assertEquals(markus, d.getContact());
     assertEquals(List.of(markus, bouchard), d.getCreator());
     assertEquals("2017-01-19", d.getIssued().toString());
@@ -69,7 +68,6 @@ public class DwcaInserterTest extends InserterBaseTest {
   }
 
   @Test
-  @Ignore
   public void readYamlMetadata() throws Exception {
     NeoInserter ins = setup("/dwca/39");
     DatasetWithSettings d = ins.readMetadata().get();
