@@ -28,7 +28,6 @@ import com.google.common.io.Files;
 
 import static org.junit.Assert.assertEquals;
 
-@Ignore("METADATA WORK IN PROGRESS")
 public class AcefExporterTest extends ExporterTest {
   
   WsServerConfig cfg;
@@ -93,9 +92,6 @@ public class AcefExporterTest extends ExporterTest {
             "1048\t1\tFír\t\\N\teng\t\\N\t\\N\t2\t500\t\\N\tr2\n" +
             "1049\t2\tWeiß-Tanne\t\\N\tdeu\t\\N\t\\N\t3\t500\t\\N\tr3\n" +
             "1050\t2\tEuropean silver fir\t\\N\teng\t\\N\t\\N\t\\N\t500\t\\N\t\\N", content.trim());
-
-    content = FileUtils.readFileToString(new File(check, "credits.ini"), StandardCharsets.UTF_8);
-    System.out.println(content);
   }
 
   @Test

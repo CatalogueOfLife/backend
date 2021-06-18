@@ -14,7 +14,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
-@Ignore("METADATA WORK IN PROGRESS")
+
 public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMapper> {
   public PersistenceExceptionMapperTest() {
     super(DecisionMapper.class);

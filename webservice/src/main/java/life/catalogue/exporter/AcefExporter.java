@@ -45,7 +45,6 @@ import java.util.regex.Pattern;
 public class AcefExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(AcefExporter.class);
   private static final String EXPORT_SQL = "/export/acef/ac-export.sql";
-  private static final String CREDITS_FTL = "/acef/credits.ftl";
   private static final String COPY_WITH = "CSV HEADER NULL '\\N' DELIMITER E'\\t' QUOTE E'\\f' ENCODING 'UTF8' ";
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
@@ -79,9 +78,6 @@ public class AcefExporter extends DatasetExporter {
     // include images
     exportLogos();
 
-    // export citation.ini
-    exportCitations();
-
     // get metrics
     updateMetrics();
   }
@@ -110,30 +106,6 @@ public class AcefExporter extends DatasetExporter {
     }
   }
 
-  private void exportCitations() throws IOException {
-    LOG.info("Export credits");
-    File cf = new File(tmpDir, "credits.ini");
-  
-    Map<String, Object> data = new HashMap<>();
-  
-    try (SqlSession session = factory.openSession(true)) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      Dataset d = dm.get(datasetKey);
-      if (d.getIssued()==null) {
-        // use today as default release date if missing
-        d.setIssued(FuzzyDate.now());
-      }
-      data.put("d", d);
-      
-      Template temp = FmUtil.FMK.getTemplate(CREDITS_FTL);
-      Writer out = UTF8IoUtils.writerFromFile(cf);
-      temp.process(data, out);
-    } catch (TemplateException e) {
-      LOG.error("Failed to write credits", e);
-      throw new RuntimeException(e);
-    }
-  }
-  
   private void exportLogos() throws IOException {
     LOG.info("Export logos for sources of project " + datasetKey);
     File logoDir = new File(tmpDir, "logos");
@@ -182,7 +154,6 @@ public class AcefExporter extends DatasetExporter {
         // copy to file
         File f = new File(tmpDir, m.group(1).trim());
         Files.createParentDirs(f);
-        LOG.info("Exporting " + f.getName());
         LOG.info("Exporting {}", f.getName());
         PgCopyUtils.dump(con, sb.toString(), f, COPY_WITH);
         sb = new StringBuilder();

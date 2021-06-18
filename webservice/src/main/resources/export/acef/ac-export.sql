@@ -29,19 +29,19 @@ SELECT DISTINCT ON (d.key)
  CASE WHEN d.alias IS NOT NULL AND d.alias != d.title THEN d.alias || ': ' || d.title ELSE d.title END AS database_name_displayed,
  coalesce(d.alias, d.title) AS database_name,
  d.title AS database_full_name,
- d.website AS web_site,
- array_to_string(d.organisations, '; ') AS organization,
+ d.url AS web_site,
+ array_to_string(d.contributor, '; ') AS organization,
  coalesce((d.contact).given || ' ', '') || (d.contact).family AS contact_person,
- d.group AS taxa,
+ d.taxonomic_scope AS taxa,
  cov.coverage AS taxonomic_coverage,
  repl_ws(d.description) AS abstract,
  d.version AS version,
- coalesce(d.released, CURRENT_DATE) AS release_date,
+ coalesce(d.issued, CURRENT_DATE::text) AS release_date,
  coalesce((i.taxa_by_rank_count -> 'SPECIES')::int, 0) AS SpeciesCount,
  NULL AS SpeciesEst,
  (
    SELECT string_agg((ae).family || coalesce((ae).given || ' ', ''), ', ') AS authors_editors
-   FROM unnest(d.editors || d.authors) as ae
+   FROM unnest(d.editor || d.creator) as ae
  ),
  NULL AS accepted_species_names,
  NULL AS accepted_infraspecies_names,
@@ -97,7 +97,7 @@ INSERT INTO __ref_keys (id) SELECT id FROM reference_{{datasetKey}};
 
 -- references
 COPY (
-  SELECT rk.key AS record_id, 
+  SELECT rk.key AS record_id,
     coalesce(
       csl-> 'author' ->0 ->> 'literal', (
        SELECT string_agg(coalesce(aJson->>'given', '') || CASE WHEN aJson ? 'given' AND aJson ? 'family' THEN ' ' ELSE '' END || coalesce(aJson->>'family', ''), ', ')
@@ -115,7 +115,7 @@ COPY (
   FROM reference_{{datasetKey}} r
     JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON r.sector_key=s.id AND s.dataset_key={{datasetKey}}
-    
+
 ) TO 'references.csv';
 
 
@@ -247,14 +247,14 @@ CREATE UNIQUE INDEX ON __classification (id);
 COPY (
 SELECT key AS record_id,
       NULL AS hierarchy_code,
-      kingdom, 
+      kingdom,
       coalesce(phylum, 'Not assigned') AS phylum,
       coalesce(class, 'Not assigned') AS class,
       coalesce("order", 'Not assigned') AS "order",
       coalesce(family, 'Not assigned') AS family,
-      superfamily, 
+      superfamily,
       coalesce(dataset_key, 1500) - 1000 AS database_id,
-      id AS family_code, 
+      id AS family_code,
       1 AS is_accepted_name
     FROM __classification
     WHERE rank='FAMILY'
@@ -362,19 +362,19 @@ WHERE n.rank = 'GENUS'::rank
 ) TO 'scientific_names.csv';
 
 
--- common_names 
+-- common_names
 COPY (
   SELECT nextval('__record_id_seq') AS record_id,
-    v.taxon_id AS name_code, 
-    v.name AS common_name, 
-    v.latin AS transliteration, 
+    v.taxon_id AS name_code,
+    v.name AS common_name,
+    v.latin AS transliteration,
     trim(v.language) AS language,
     trim(v.country) AS country,
     trim(v.area) AS area,
     rk.key as reference_id,
     coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id,
     NULL AS is_infraspecies,
-    r.id as reference_code 
+    r.id as reference_code
   FROM vernacular_name_{{datasetKey}} v
     JOIN name_usage_{{datasetKey}} t ON t.id=v.taxon_id
     LEFT JOIN reference_{{datasetKey}} r ON r.id=v.reference_id
@@ -386,7 +386,7 @@ COPY (
 -- distribution
 COPY (
   SELECT nextval('__record_id_seq') AS record_id,
-    d.taxon_id AS name_code, 
+    d.taxon_id AS name_code,
     CASE WHEN d.gazetteer = 'ISO'::GAZETTEER THEN c.title ELSE d.area END AS distribution,
     d.gazetteer::text AS StandardInUse,
     initcap(d.status::text) AS DistributionStatus,
@@ -427,4 +427,3 @@ COPY (
     LEFT JOIN sector s ON r.sector_key=s.id AND s.dataset_key={{datasetKey}}
 
 ) TO 'scientific_name_references.csv';
-
