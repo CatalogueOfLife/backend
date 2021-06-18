@@ -1,5 +1,10 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import life.catalogue.api.jackson.FuzzyDateCSLSerde;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
@@ -40,12 +45,12 @@ public class Citation {
   @JsonProperty("container-title")
   private String containerTitle;
   // date the item was issued/published
-//  @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
-//  @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
+  @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
+  @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
   private FuzzyDate issued;
   // date the item has been accessed
-//  @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
-//  @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
+  @JsonSerialize(using = FuzzyDateCSLSerde.Serializer.class)
+  @JsonDeserialize(using = FuzzyDateCSLSerde.Deserializer.class)
   private FuzzyDate accessed;
   // title of the collection holding the item (e.g. the series title for a book)
   @JsonAlias("collectionTitle")

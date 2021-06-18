@@ -12,6 +12,6 @@ import javax.ws.rs.ext.Provider;
 public class UnsupportedFormatExceptionMapper extends JsonExceptionMapperBase<UnsupportedFormatException> {
   
   public UnsupportedFormatExceptionMapper() {
-    super(Response.Status.BAD_REQUEST, false, false);
+    super(Response.Status.BAD_REQUEST, false, false, "Unsupported format");
   }
 }

@@ -13,6 +13,6 @@ import javax.ws.rs.ext.Provider;
 public class UnavailableExceptionMapper extends JsonExceptionMapperBase<UnavailableException> {
 
   public UnavailableExceptionMapper() {
-    super(Response.Status.SERVICE_UNAVAILABLE, false, false);
+    super(Response.Status.SERVICE_UNAVAILABLE, false, false, null);
   }
 }

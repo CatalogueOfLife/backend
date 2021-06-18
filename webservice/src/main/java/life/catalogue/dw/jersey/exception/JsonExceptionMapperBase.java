@@ -21,15 +21,21 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
   private final Response.StatusType errorCode;
   private final boolean debug;
   private final boolean stacktrace;
-  
+  private final String defaultMessage;
+
   public JsonExceptionMapperBase(Response.StatusType errorCode) {
-    this(errorCode, false, true);
+    this(errorCode,null);
   }
-  
-  public JsonExceptionMapperBase(Response.StatusType errorCode, boolean debug, boolean stacktrace) {
+
+  public JsonExceptionMapperBase(Response.StatusType errorCode, String defaultMessage) {
+    this(errorCode, false, true, defaultMessage);
+  }
+
+  public JsonExceptionMapperBase(Response.StatusType errorCode, boolean debug, boolean stacktrace, String defaultMessage) {
     this.errorCode = errorCode;
     this.debug = debug;
     this.stacktrace = stacktrace;
+    this.defaultMessage = defaultMessage;
   }
 
   private static Response.ResponseBuilder jsonErrorResponseBuilder(Response.StatusType errorCode, String message, String details) {
@@ -67,10 +73,10 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
       }
     }
 
-    if (message == null) {
+    if (message == null && defaultMessage == null) {
       return jsonErrorResponse(errorCode, message(ex));
     }
-    return jsonErrorResponse(errorCode, message, message(ex));
+    return jsonErrorResponse(errorCode, message == null ? defaultMessage : message, message(ex));
   }
   
   String message(T e) {

@@ -11,6 +11,6 @@ import javax.ws.rs.ext.Provider;
 public class BadRequestExceptionMapper extends JsonExceptionMapperBase<BadRequestException> {
   
   public BadRequestExceptionMapper() {
-    super(Response.Status.BAD_REQUEST, false, false);
+    super(Response.Status.BAD_REQUEST, false, false, null);
   }
 }

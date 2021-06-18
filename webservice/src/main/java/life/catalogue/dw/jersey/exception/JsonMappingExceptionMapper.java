@@ -12,6 +12,6 @@ import javax.ws.rs.ext.Provider;
 public class JsonMappingExceptionMapper extends JsonExceptionMapperBase<JsonMappingException> {
   
   public JsonMappingExceptionMapper() {
-    super(Response.Status.BAD_REQUEST);
+    super(Response.Status.BAD_REQUEST, "Bad JSON argument");
   }
 }

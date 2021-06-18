@@ -6,6 +6,8 @@ import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.date.FuzzyDate;
+
 import org.junit.Test;
 
 import java.net.URI;
@@ -14,8 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -31,6 +32,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setKey(12345);
     d.setSourceKey(12345);
     d.setDoi(DOI.test("123456789"));
+    d.setIssued(FuzzyDate.of("1999-09-21"));
     d.setIdentifier(Map.of(
       "gbif", UUID.randomUUID().toString(),
       "col", "1001"
@@ -68,6 +70,14 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
   @Override
   public Dataset genTestValue() throws Exception {
     return generateTestDataset();
+  }
+
+  @Override
+  protected void assertSerialisation(String json) {
+    // dataset issued uses ISO style dates
+    assertTrue(json.contains("\"1999-09-21\""));
+    // CSL citation arrays
+    assertTrue(json.contains("[[2024,11]]"));
   }
 
   @Test

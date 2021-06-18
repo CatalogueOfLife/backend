@@ -11,6 +11,6 @@ import javax.ws.rs.ext.Provider;
 public class UnauthorizedExceptionMapper extends JsonExceptionMapperBase<BadRequestException> {
 
   public UnauthorizedExceptionMapper() {
-    super(Response.Status.BAD_REQUEST, false, false);
+    super(Response.Status.BAD_REQUEST, false, false, null);
   }
 }

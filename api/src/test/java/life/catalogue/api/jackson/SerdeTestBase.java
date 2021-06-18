@@ -42,8 +42,14 @@ public abstract class SerdeTestBase<T> {
   public void testSerialisation() throws Exception {
     String json = ApiModule.MAPPER.writeValueAsString(new Wrapper<T>(genTestValue()));
     assertFalse(StringUtils.isBlank(json));
+    System.out.println(json);
+    assertSerialisation(json);
   }
-  
+
+  protected void assertSerialisation(String json) {
+    // nothing by default, override to test sth specific
+  }
+
   protected String serialize() throws Exception {
     return ApiModule.MAPPER.writeValueAsString(new Wrapper<T>(genTestValue()));
   }

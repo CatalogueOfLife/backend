@@ -12,6 +12,6 @@ import javax.ws.rs.ext.Provider;
 public class NotFoundExceptionMapper extends JsonExceptionMapperBase<NotFoundException> {
   
   public NotFoundExceptionMapper() {
-    super(Response.Status.NOT_FOUND, true, false);
+    super(Response.Status.NOT_FOUND, true, false, null);
   }
 }

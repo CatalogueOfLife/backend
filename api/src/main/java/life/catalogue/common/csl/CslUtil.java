@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.regex.Pattern;
 
 public class CslUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CslUtil.class);
