@@ -603,7 +603,7 @@ CREATE TYPE USER_ROLE AS ENUM (
 -- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
 CREATE TYPE simple_name AS (id text, rank rank, name text, authorship text);
 
--- Agent type for dataset to avoid extra tables
+-- Agent type for dataset to avoid extra tables. 12 fields (11 commas)
 CREATE TYPE agent AS (orcid text, given text, family text,
   rorid text, organisation text, department text, city text, state text, country CHAR(2),
   email text, url text, note text

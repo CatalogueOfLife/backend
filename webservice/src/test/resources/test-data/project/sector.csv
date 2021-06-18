@@ -1,2 +1,2 @@
-dataset_key,id,mode,target_id,subject_dataset_key,subject_id,sync_attempt,dataset_import_attempt
+dataset_key,id,mode,target_id,subject_dataset_key,subject_id,sync_attempt,dataset_attempt
 3,1,ATTACH,,100,,,

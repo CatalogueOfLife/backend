@@ -46,7 +46,7 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
 
   /**
    * Updates the last sync attempt column of the given sector
-   * and the dataset_import_attempt column using the current last attempt from the source dataset.
+   * and the dataset_attempt column using the current last attempt from the source dataset.
    * @param key sector key to update
    * @param attempt
    */

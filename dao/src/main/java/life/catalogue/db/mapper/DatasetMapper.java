@@ -116,7 +116,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   /**
    * Looks up the dataset key of a specific release attempt
    * @param key the project key
-   * @param attempt the release attempt, i.e. import_attempt
+   * @param attempt the release attempt
    * @return dataset key of the requested release attempt or null if no release exists that matches
    */
   Integer releaseAttempt(@Param("key") int key, @Param("attempt") int attempt);
