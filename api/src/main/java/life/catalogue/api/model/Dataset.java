@@ -38,6 +38,7 @@ import life.catalogue.common.util.YamlUtils;
 public class Dataset extends DataEntity<Integer> {
   public static final Map<String, Object> NULL_TYPES;
   // properties which are human mediated and can be patched
+  // title is the only required property, make sure it is not null !!!
   public static final List<PropertyDescriptor> PATCH_PROPS;
 
   static {

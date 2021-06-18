@@ -174,7 +174,10 @@ public class PgImport implements Callable<Boolean> {
     try {
       for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
         Object val = prop.getReadMethod().invoke(update.getDataset());
-        prop.getWriteMethod().invoke(d.getDataset(), val);
+        // title is the only required property
+        if (val != null || !prop.getName().equalsIgnoreCase("title")) {
+          prop.getWriteMethod().invoke(d.getDataset(), val);
+        }
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
