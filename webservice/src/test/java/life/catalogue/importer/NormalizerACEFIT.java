@@ -29,7 +29,6 @@ import static org.junit.Assert.*;
 /**
  *
  */
-@Ignore("METADATA WORK IN PROGRESS")
 public class NormalizerACEFIT extends NormalizerITBase {
   
   public NormalizerACEFIT() {

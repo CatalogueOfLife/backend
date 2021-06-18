@@ -132,6 +132,7 @@ abstract class NormalizerITBase {
       dws.setKey(store.getDatasetKey());
       dws.setDataFormat(format);
       dws.setCode(code);
+      dws.setNotes("INITIAL dws");
       Normalizer norm = new Normalizer(dws, store, arch, nameIndexSupplier.get(), ImageService.passThru());
       norm.call();
     

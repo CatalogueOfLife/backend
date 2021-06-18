@@ -187,8 +187,8 @@ public class PgImport implements Callable<Boolean> {
   public static DatasetWithSettings updateMetadata(DatasetWithSettings d, DatasetWithSettings update) {
     try {
       for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
-        Object val = prop.getReadMethod().invoke(d.getDataset());
-        prop.getWriteMethod().invoke(update.getDataset(), val);
+        Object val = prop.getReadMethod().invoke(update.getDataset());
+        prop.getWriteMethod().invoke(d.getDataset(), val);
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
