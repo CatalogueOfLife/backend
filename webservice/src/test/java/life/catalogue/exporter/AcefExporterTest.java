@@ -119,9 +119,5 @@ public class AcefExporterTest extends ExporterTest {
     // test decompressed archive
     File check = new File(cfg.normalizer.scratchDir, "archiveCheck");
     CompressionUtil.unzipFile(check, arch);
-
-    String credits = FileUtils.readFileToString(new File(check, "credits.ini"), StandardCharsets.UTF_8);
-    System.out.println(credits);
-
   }
 }
