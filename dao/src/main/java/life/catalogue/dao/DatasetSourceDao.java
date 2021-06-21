@@ -69,7 +69,7 @@ public class DatasetSourceDao {
    * and then patched.
    * @param datasetKey project or release key
    * @param projectForPatching optional dataset used for building the source citations, if null master project is used
-   * @param rebuild if true force to rebuild source metadata and not take it from the source archive
+   * @param rebuild if true force to rebuild source metadata and not take it from the source archive. Only relevant for release.
    */
   public List<Dataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASED, MANAGED);
@@ -114,7 +114,7 @@ public class DatasetSourceDao {
     // build an in project citation?
     if (settings != null && settings.has(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)) {
       try {
-        String citation = CitationUtils.fromTemplate(d, patchProject, settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)).trim();
+        //String citation = CitationUtils.fromTemplate(d, patchProject, settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)).trim();
         //TODO: d.setCitation(citation);
       } catch (IllegalArgumentException e) {
         LOG.warn("Failed to create citation for source dataset {}", d.getKey(), e);

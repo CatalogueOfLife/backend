@@ -48,7 +48,7 @@
     <antlr.version>4.7.2</antlr.version>
     <asm.version></asm.version>
     <assertj.version>3.11.1</assertj.version>
-    <citeproc.version>3.0.0-alpha.1</citeproc.version>
+    <citeproc.version>3.0.0-SNAPSHOT</citeproc.version>
     <citeproc-styles.version>2.0.0</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.19</commons-compress.version>
@@ -97,7 +97,6 @@
 
     <!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
     <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
-    <jaxb2-rich-contract-plugin.version>2.0.1</jaxb2-rich-contract-plugin.version>
     <jaxb2_commons.version>0.12.0</jaxb2_commons.version>
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -106,7 +105,6 @@
     <maven-git-commit-id-plugin.version>4.0.4</maven-git-commit-id-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
     <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
-    <maven-jaxb2-plugin.version>0.14.0</maven-jaxb2-plugin.version>
     <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
     <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
     <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
@@ -169,19 +167,17 @@
       <url>http://repository.gbif.org/repository/thirdparty</url>
     </repository>
     <repository>
-      <id>jaxb2-plugins</id>
-      <name>JAXB2 XJC Plugin Repository</name>
-      <url>http://maven.klemm-scs.com/release</url>
+      <id>sonatype-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
     </repository>
   </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>jaxb2-plugins</id>
-      <name>JAXB2 XJC Plugin Repository</name>
-      <url>http://maven.klemm-scs.com/release</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <modules>
     <module>api</module>

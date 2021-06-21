@@ -50,7 +50,6 @@ public class Dataset extends DataEntity<Integer> {
         "privat",
         "type",
         "origin",
-        "importAttempt",
         "imported",
         "deleted",
         "gbifKey",

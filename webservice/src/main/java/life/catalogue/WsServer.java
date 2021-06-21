@@ -137,6 +137,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new RebuiltSourceCitationCmd());
     bootstrap.addCommand(new UpdMetricCmd());
     bootstrap.addCommand(new ExportCmd());
+    bootstrap.addCommand(new ExportSourcesCmd());
   }
 
   @Override

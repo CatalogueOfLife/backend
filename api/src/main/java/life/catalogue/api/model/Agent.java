@@ -396,6 +396,22 @@ public class Agent {
     this.orcid = orcid;
   }
 
+  @JsonIgnore
+  public boolean isEmpty() {
+    return    StringUtils.isBlank(orcid)
+           && StringUtils.isBlank(given)
+           && StringUtils.isBlank(family)
+           && StringUtils.isBlank(rorid)
+           && StringUtils.isBlank(organisation)
+           && StringUtils.isBlank(department)
+           && StringUtils.isBlank(city)
+           && StringUtils.isBlank(state)
+           && country == null
+           && StringUtils.isBlank(email)
+           && StringUtils.isBlank(url)
+           && StringUtils.isBlank(note);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

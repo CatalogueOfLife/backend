@@ -1,7 +1,6 @@
 package life.catalogue.jackson;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 
 import life.catalogue.api.jackson.ApiModule;
@@ -13,6 +12,7 @@ import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.parser.CountryParser;
@@ -23,9 +23,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
@@ -93,7 +92,18 @@ public class YamlMapper {
     abstract Integer getKey();
 
     @JsonIgnore
+    abstract UUID getGbifKey();
+
+    @JsonIgnore
+    abstract UUID getGbifPublisherKey();
+
+    @JsonIgnore
     abstract boolean isPrivat();
+
+    // JsonIgnore is not applied as the original field uses JsonProperty (seems to be a jackson bug)
+    // but we can mark the field as write only to not show it in serialisations
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    abstract Integer getSize();
 
     @JsonIgnore
     abstract Integer getSourceKey();
@@ -102,10 +112,22 @@ public class YamlMapper {
     abstract Integer getAttempt();
 
     @JsonIgnore
+    abstract DatasetType getType();
+
+    @JsonIgnore
     abstract DatasetOrigin getOrigin();
 
     @JsonIgnore
     abstract String getAliasOrTitle();
+
+    @JsonIgnore
+    abstract String getCitation();
+
+    @JsonIgnore
+    abstract LocalDateTime getImported();
+
+    @JsonIgnore
+    abstract LocalDateTime getDeleted();
 
     @JsonIgnore
     abstract LocalDateTime getCreated();
