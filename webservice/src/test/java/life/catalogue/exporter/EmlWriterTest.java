@@ -48,7 +48,17 @@ public class EmlWriterTest {
         Agent.person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"),
         Agent.person("Fax", "Feier")
       ));
-      d.setEditor(List.of(new Agent("Derek & Dan", "Dillinger's")));
+      d.setPublisher(new Agent("Peter", "Publish"));
+      d.setEditor(List.of(
+        new Agent("Derek", "Dillinger's"),
+        new Agent("Dan", "Dillinger's")
+      ));
+      d.setContributor(List.of(
+        Agent.person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456", "Collector"),
+        Agent.person("Max", "Groningen", null, "0789-5678-9012-3455", "Programmer"),
+        Agent.person("Morn", "Microfel", null, null, "Library research, UK"),
+        Agent.person("Fax", "Feier")
+      ));
       d.setLicense(License.CC0);
       EmlWriter.write(d, f);
 

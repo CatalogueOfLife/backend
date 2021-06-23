@@ -221,7 +221,7 @@ public class Agent implements Comparable<Agent> {
 
   @JsonIgnore
   public boolean isOrganisation(){
-    return !isPerson() && (organisation != null || department != null);
+    return organisation != null || department != null;
   }
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)

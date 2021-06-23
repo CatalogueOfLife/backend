@@ -10,60 +10,52 @@
 </#if>
 </#macro>
 
-<#macro person p indent>
-<#if p.familyName??>
+<#macro agent a indent>
+<#if a.isPerson()>
 <#list 0..<indent as i> </#list><individualName>
-    <@tag name="givenName" value=p.givenName! indent=indent+2 />
-    <@tag name="surName" value=p.familyName! indent=indent+2 />
-    <@tag name="electronicMailAddress" value=p.email! indent=indent+2 />
-    <@tag name="userId" value=p.orcid! indent=indent+2 />
+    <@tag name="givenName" value=a.given! indent=indent+2 />
+    <@tag name="surName" value=a.family! indent=indent+2 />
+    <@tag name="userId" value=a.orcid! indent=indent+2 />
 <#list 0..<indent as i> </#list></individualName>
 </#if>
-</#macro>
-
-<#macro organisation o indent>
-<#if o.name??>
-<#list 0..<indent as i> </#list><organizationName>${o.name}</organizationName>
-<#if o.city?has_content || o.state?has_content || o.country?has_content>
+<#if a.isOrganisation()>
+<#list 0..<indent as i> </#list><organizationName>${a.organization}</organizationName>
+</#if>
+<#if a.city?has_content || a.state?has_content || a.country?has_content>
 <#list 0..<indent as i> </#list><address>
-    <@tag name="city" value=o.city! indent=indent+2 />
-    <@tag name="administrativeArea" value=o.state! indent=indent+2 />
-    <@tag name="country" value=o.country! indent=indent+2 />
+    <@tag name="city" value=a.city! indent=indent+2 />
+    <@tag name="administrativeArea" value=a.state! indent=indent+2 />
+    <@tag name="country" value=a.country! indent=indent+2 />
 <#list 0..<indent as i> </#list></address>
 </#if>
-</#if>
+<@tag name="electronicMailAddress" value=a.email! indent=indent />
+<@tag name="onlineUrl" value=a.url! indent=indent />
+</#macro>
+
+<#macro party role agents>
+  <#if agents?has_content>
+   <#list agents as a>
+  <associatedParty>
+    <@agent a=a indent=4 />
+    <role>${role}</role>
+  </associatedParty>
+   </#list>
+  </#if>
 </#macro>
 
 <dataset>
   <@tag name="title" value=title indent=2 />
-  <#if authors?has_content>
+  <@tag name="shortName" value=alias! indent=2 />
+  <#if creator?has_content>
   <creator>
-    <@person p=authors?first indent=4/>
+    <@agent a=creator?first indent=4/>
   </creator>
   </#if>
-  <#if organisations??>
-   <#list organisations as o>
-  <associatedParty>
-    <@organisation o=o indent=4 />
-  </associatedParty>
-   </#list>
+  <#if creator?has_content>
+    <@party role="author" agents=creator[1..] />
   </#if>
-  <#if authors?has_content>
-   <#list authors[1..] as p>
-  <associatedParty>
-    <@person p=p indent=4 />
-    <role>author</role>
-  </associatedParty>
-   </#list>
-  </#if>
-  <#if editors??>
-   <#list editors as p>
-  <associatedParty>
-    <@person p=p indent=4 />
-    <role>editor</role>
-  </associatedParty>
-   </#list>
-  </#if>
+  <@party role="editor" agents=editor />
+  <@party role="contributor" agents=contributor />
   <@tag name="pubDate" value=released! indent=4 />
   <language>english</language>
   <#if description??>
@@ -76,24 +68,36 @@
     <para><ulink url="${license.url}"><citetitle>${license.title}</citetitle></ulink></para>
   </intellectualRights>
   </#if>
-  <#if website??>
+  <#if url??>
   <distribution scope="document">
     <online>
-      <url function="information">${website}</url>
+      <url function="information">${url}</url>
     </online>
   </distribution>
   </#if>
-  <#if geographicScope??>
+  <#if geographicScope?? || taxonomicScope?? >
   <coverage>
+    <#if geographicScope?? >
     <geographicCoverage>
       <geographicDescription>${geographicScope}</geographicDescription>
     </geographicCoverage>
-  </coverage>
+    </#if>
+    <#if taxonomicScope?? >
+    <taxonomicCoverage>
+      <generalTaxonomicCoverage>${taxonomicScope}</generalTaxonomicCoverage>
+    </taxonomicCoverage>
+    </#if>
+    </coverage>
   </#if>
   <#if contact??>
   <contact>
-    <@person p=contact indent=4 />
+    <@agent a=contact indent=4 />
   </contact>
+  </#if>
+  <#if publisher??>
+  <publisher>
+    <@agent a=publisher indent=4 />
+  </publisher>
   </#if>
 </dataset>
 
