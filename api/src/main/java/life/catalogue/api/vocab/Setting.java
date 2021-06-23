@@ -54,6 +54,12 @@ public enum Setting {
   REMATCH_DECISIONS(Boolean.class, EXTERNAL, MANAGED),
 
   /**
+   * Setting that will inform the importer not to update any metadata from archives.
+   * Metadata will be locked and can only be edited manually.
+   */
+  LOCK_METADATA(Boolean.class, EXTERNAL, MANAGED),
+
+  /**
    * Template used to build a new release title.
    * Use dataset properties in curly brackets, e.g. {title}
    * and the current {date} followed by an optional {@link java.time.format.DateTimeFormatter} syntax.

@@ -7,6 +7,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
@@ -154,10 +155,14 @@ public class PgImport implements Callable<Boolean> {
         }
       }
       // update current
-      LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
-      updateMetadata(old, dataset);
+      if (dataset.has(Setting.LOCK_METADATA) && dataset.getBool(Setting.LOCK_METADATA)) {
+        LOG.warn("Dataset metadata is locked and won't be updated for {}: {}", dataset.getKey(), dataset.getTitle());
 
-      dm.updateAll(old);
+      } else {
+        LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
+        updateMetadata(old, dataset);
+        dm.updateAll(old);
+      }
 
       dm.updateLastImport(dataset.getKey(), attempt);
       LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());
