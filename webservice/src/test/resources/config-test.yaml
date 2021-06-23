@@ -66,3 +66,4 @@ metricsRepo: ${metrics.repo}
 mail:
   from: download@catalogueoflife.org
   fromName: COL Downloads
+  replyTo: download@catalogueoflife.org

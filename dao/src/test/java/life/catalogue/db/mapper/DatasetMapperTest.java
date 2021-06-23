@@ -63,6 +63,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setNotes("my notes");
     d.setDoi(DOI.test(UUID.randomUUID().toString()));
     d.setSize(0);
+    // we dont add source citations as the DatasetMapper does not persist them
+    // this is done in the DAO only and should be tested there!
     return d;
   }
 

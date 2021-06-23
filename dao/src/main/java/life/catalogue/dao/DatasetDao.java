@@ -89,7 +89,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
       // remove null sources & agents
       if (d.getSource() != null) {
-        d.getSource().removeIf(java.util.Objects::isNull);
+        try {
+          d.getSource().removeIf(java.util.Objects::isNull);
+        } catch (UnsupportedOperationException e) {
+          // tests use immutable collections sometimes - ignore
+        }
         // generate a citation ID if missing
         Set<String> ids = d.getSource().stream()
                            .map(Citation::getId)

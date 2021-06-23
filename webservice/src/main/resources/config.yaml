@@ -19,6 +19,7 @@ mail:
   host: smtp.gbif.org
   from: col-test@mailinator.com
   fromName: Catalogue of Life TEST
+  replyTo: col-test@mailinator.com
   bcc:
     - col-test2@mailinator.com
 db:

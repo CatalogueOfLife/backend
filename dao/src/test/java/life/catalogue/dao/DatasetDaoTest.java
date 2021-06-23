@@ -1,6 +1,8 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetTest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
@@ -11,6 +13,7 @@ import life.catalogue.img.ImageService;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
@@ -18,6 +21,7 @@ import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class DatasetDaoTest extends DaoTestBase {
@@ -36,6 +40,22 @@ public class DatasetDaoTest extends DaoTestBase {
       null,
       new EventBus()
     );
+  }
+
+  @Test
+  public void roundtrip() throws Exception {
+    Dataset d1 = DatasetMapperTest.create();
+    d1.setSource(List.of(
+      CitationTest.create(),
+      CitationTest.create()
+    ));
+
+    dao.create(d1, Users.TESTER);
+    commit();
+
+    var d2 = dao.get(d1.getKey());
+    //printDiff(u1, u2);
+    assertEquals(d1, d2);
   }
 
   @Test(expected = IllegalArgumentException.class)

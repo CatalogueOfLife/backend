@@ -85,7 +85,7 @@
 
   <resultMap id="citationResultMap" type="Citation" autoMapping="true">
     <id property="id" column="id"/>
-    <result property="author" column="creator" typeHandler="life.catalogue.db.type.CslNameArrayTypeHandler"/>
+    <result property="author" column="author" typeHandler="life.catalogue.db.type.CslNameArrayTypeHandler"/>
     <result property="editor" column="editor" typeHandler="life.catalogue.db.type.CslNameArrayTypeHandler"/>
     <result property="containerAuthor" column="container_author" typeHandler="life.catalogue.db.type.CslNameArrayTypeHandler"/>
     <result property="collectionEditor" column="collection_editor" typeHandler="life.catalogue.db.type.CslNameArrayTypeHandler"/>
