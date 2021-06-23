@@ -56,6 +56,14 @@ public class DatasetWithSettings {
     return settings.getBool(key);
   }
 
+  public boolean isEnabled(Setting key) {
+    return settings.isEnabled(key);
+  }
+
+  public boolean isDisabled(Setting key) {
+    return settings.isDisabled(key);
+  }
+
   public Integer getInt(Setting key) {
     return settings.getInt(key);
   }

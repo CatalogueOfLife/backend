@@ -18,6 +18,7 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -27,7 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectRelease extends AbstractProjectCopy {
@@ -40,7 +41,6 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final CloseableHttpClient client;
   private final ExportManager exportManager;
   private final DoiService doiService;
-  private final DatasetSourceDao sourceDao;
   private final DatasetConverter converter;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
@@ -53,7 +53,6 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
     this.client = client;
     this.exportManager = exportManager;
-    this.sourceDao = new DatasetSourceDao(factory);
     this.converter = converter;
   }
 
@@ -71,6 +70,43 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     String title = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
     d.setTitle(title);
+
+    // append authors for release?
+    final List<Agent> authors = new ArrayList<>();
+    if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {
+      srcDao.list(datasetKey, null, false).forEach(src -> {
+        if (src.getCreator() != null) {
+          authors.addAll(src.getCreator());
+        }
+        if (src.getEditor() != null) {
+          authors.addAll(src.getEditor());
+        }
+      });
+    }
+    if (ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS) && d.getContributor() != null) {
+      authors.addAll(d.getContributor());
+    }
+    // remove authors without a family name and distinct them based in the generated name alone!
+    Map<String, Agent> uniq = new HashMap<>();
+    for (Agent a : authors) {
+      if (a != null) {
+        String name = a.getName();
+        if (name != null) {
+          uniq.put(name.toLowerCase(), a);
+        }
+      }
+    }
+    // sort them alphabetically
+    if (!uniq.isEmpty()) {
+      authors.clear();
+      authors.addAll(uniq.values());
+      Collections.sort(authors);
+      // now append them to already existing creators
+      if (d.getCreator() == null) {
+        d.setCreator(new ArrayList<>());
+      }
+      d.getCreator().addAll(authors);
+    }
 
     d.setPrivat(true); // all releases are private candidate releases first
   }
@@ -158,8 +194,8 @@ public class ProjectRelease extends AbstractProjectCopy {
       var prevSrc = psm.getReleaseSource(sourceKey, prevReleaseKey);
       if (prevSrc != null && prevSrc.getDoi() != null) {
         // compare basic metrics
-        var metrics = sourceDao.projectSourceMetrics(datasetKey, sourceKey);
-        var prevMetrics = sourceDao.projectSourceMetrics(prevReleaseKey, sourceKey);
+        var metrics = srcDao.projectSourceMetrics(datasetKey, sourceKey);
+        var prevMetrics = srcDao.projectSourceMetrics(prevReleaseKey, sourceKey);
         if (Objects.equals(metrics.getTaxaByRankCount(), prevMetrics.getTaxaByRankCount())
             && Objects.equals(metrics.getSynonymsByRankCount(), prevMetrics.getSynonymsByRankCount())
             && Objects.equals(metrics.getVernacularsByLanguageCount(), prevMetrics.getVernacularsByLanguageCount())

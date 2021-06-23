@@ -9,9 +9,7 @@ import static java.util.Comparator.nullsFirst;
 
 public class ProjectContribution extends TreeSet<ProjectContribution.Contributor> {
 
-  static class Contributor extends Agent implements Comparable<Agent> {
-    static final Comparator<Agent> COMP = Comparator.comparing(Agent::getFamily, nullsFirst(naturalOrder()))
-        .thenComparing(Agent::getFamily, nullsFirst(naturalOrder()));
+  static class Contributor extends Agent {
 
     public final Map<Integer, String> sources = new HashMap<>();
 
@@ -37,10 +35,6 @@ public class ProjectContribution extends TreeSet<ProjectContribution.Contributor
       return Objects.hash(getFamily(), getGiven());
     }
 
-    @Override
-    public int compareTo(@NotNull Agent o) {
-      return COMP.compare(this, o);
-    }
   }
 
   public void add(Dataset d) {

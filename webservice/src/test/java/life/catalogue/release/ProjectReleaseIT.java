@@ -27,7 +27,6 @@ import org.junit.rules.TestRule;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-@Ignore("METADATA WORK IN PROGRESS")
 public class ProjectReleaseIT extends ProjectBaseIT {
 
   NameMatchingRule matchingRule = new NameMatchingRule();
@@ -47,7 +46,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
       DatasetSettings ds = dm.getSettings(projectKey);
       ds.put(Setting.RELEASE_ALIAS_TEMPLATE, "CoL{created,yy.M}");
       ds.put(Setting.RELEASE_TITLE_TEMPLATE, "Catalogue of Life - Release {importAttempt}, {created,MMMM yyyy}");
-      ds.put(Setting.RELEASE_CITATION_TEMPLATE, "{editors} ({created,yyyy}). Species 2000 & ITIS Catalogue of Life, {created,ddd MMMM yyyy}. Digital resource at www.catalogueoflife.org. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
+      ds.put(Setting.RELEASE_SOURCE_TITLE_TEMPLATE, "{title} in Catalogue of Life");
 
       Dataset d = dm.get(projectKey);
       d.setTitle("Catalogue of Life");
@@ -126,26 +125,6 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     ReleaseConfig cfg = new ReleaseConfig();
     cfg.restart = false;
     return releaseManager.buildRelease(projectKey, Users.TESTER);
-  }
-  
-  @Test
-  @Ignore("We deactivated the blocking of parallel releases. This runs anyways in an executor with limited threads")
-  public void releaseConcurrently() throws Exception {
-    Thread t1 = new Thread(buildRelease());
-    t1.start();
-  
-    try {
-      buildRelease();
-      fail("Parallel releases should not be allowed!");
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
-    // wait for release to be done and run another one
-    t1.join();
-  
-    Thread t2 = new Thread(buildRelease());
-    t2.start();
-    t2.join();
   }
   
 }

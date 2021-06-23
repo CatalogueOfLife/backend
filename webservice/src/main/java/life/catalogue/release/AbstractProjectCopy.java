@@ -5,10 +5,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.dao.DaoUtils;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.Partitioner;
+import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -30,6 +27,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected final SqlSessionFactory factory;
   protected final DatasetImportDao diDao;
   protected final DatasetDao dDao;
+  protected final DatasetSourceDao srcDao;
   protected final NameUsageIndexService indexService;
   protected final int user;
   protected final int datasetKey;
@@ -49,6 +47,7 @@ public abstract class AbstractProjectCopy implements Runnable {
     this.factory = factory;
     this.diDao = diDao;
     this.dDao = dDao;
+    this.srcDao = new DatasetSourceDao(factory);
     this.indexService = indexService;
     this.user = userKey;
     this.mapIds = mapIds;

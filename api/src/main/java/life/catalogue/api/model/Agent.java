@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.Country;
 import life.catalogue.common.util.RegexUtils;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -20,7 +21,14 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Agent {
+import org.jetbrains.annotations.NotNull;
+
+import static java.util.Comparator.*;
+
+public class Agent implements Comparable<Agent> {
+  static final Comparator<Agent> COMP = Comparator.comparing(Agent::getFamily, nullsLast(naturalOrder()))
+                                                  .thenComparing(Agent::getGiven, nullsLast(naturalOrder()))
+                                                  .thenComparing(Agent::getOrganisation, nullsLast(naturalOrder()));
   private static final Pattern CAMELCASE = Pattern.compile("\\b(\\p{Lu})(\\p{Ll}+)\\b");
 
   private static final String GIVEN_NAME = "((?:\\p{Lu}\\p{Ll}+){1,3})";
@@ -440,4 +448,10 @@ public class Agent {
   public String toString() {
     return getName();
   }
+
+  @Override
+  public int compareTo(@NotNull Agent o) {
+    return COMP.compare(this, o);
+  }
+
 }

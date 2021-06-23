@@ -155,7 +155,7 @@ public class PgImport implements Callable<Boolean> {
         }
       }
       // update current
-      if (dataset.has(Setting.LOCK_METADATA) && dataset.getBool(Setting.LOCK_METADATA)) {
+      if (dataset.isEnabled(Setting.LOCK_METADATA)) {
         LOG.warn("Dataset metadata is locked and won't be updated for {}: {}", dataset.getKey(), dataset.getTitle());
 
       } else {

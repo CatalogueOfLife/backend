@@ -111,4 +111,11 @@ public class DatasetSettings extends HashMap<Setting, Object> {
     return containsKey(key);
   }
 
+  public boolean isEnabled(Setting key) {
+    return containsKey(key) && getBool(key);
+  }
+
+  public boolean isDisabled(Setting key) {
+    return !containsKey(key) || !getBool(key);
+  }
 }

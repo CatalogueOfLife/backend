@@ -172,8 +172,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // try with all templates, throwing IAE if bad
     verifySetting(ds, Setting.RELEASE_ALIAS_TEMPLATE, d, null);
     verifySetting(ds, Setting.RELEASE_TITLE_TEMPLATE, d, null);
-    verifySetting(ds, Setting.RELEASE_CITATION_TEMPLATE, d, null);
-    verifySetting(ds, Setting.RELEASE_SOURCE_CITATION_TEMPLATE, d, d);
+    verifySetting(ds, Setting.RELEASE_SOURCE_TITLE_TEMPLATE, d, d);
   }
 
   static void verifySetting(DatasetSettings ds, Setting setting, Dataset d, Dataset d2) throws IllegalArgumentException {

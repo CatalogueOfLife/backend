@@ -83,10 +83,10 @@ public class DatasetSourceDao {
         // get latest version with patch applied
         final int projectKey = RELEASED == info.origin ? info.sourceKey : datasetKey;
         final DatasetSettings settings = session.getMapper(DatasetMapper.class).getSettings(projectKey);
-        if (settings != null && settings.has(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)) {
-          LOG.debug("Use source citation template >>>{}<<< from project {}", settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE), projectKey);
+        if (settings != null && settings.has(Setting.RELEASE_SOURCE_TITLE_TEMPLATE)) {
+          LOG.debug("Use source title template >>>{}<<< from project {}", settings.getString(Setting.RELEASE_SOURCE_TITLE_TEMPLATE), projectKey);
         } else {
-          LOG.warn("No source citation template configured from project {}", projectKey);
+          LOG.info("No source title template configured from project {}", projectKey);
         }
 
         final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(datasetKey);
@@ -111,13 +111,13 @@ public class DatasetSourceDao {
       LOG.info("Apply dataset patch from project {} to {}: {}", patchProject.getKey(), d.getKey(), d.getTitle());
       d.applyPatch(patch);
     }
-    // build an in project citation?
-    if (settings != null && settings.has(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)) {
+    // build an in project title?
+    if (settings != null && settings.has(Setting.RELEASE_SOURCE_TITLE_TEMPLATE)) {
       try {
-        //String citation = CitationUtils.fromTemplate(d, patchProject, settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)).trim();
-        //TODO: d.setCitation(citation);
+        String title = CitationUtils.fromTemplate(d, patchProject, settings.getString(Setting.RELEASE_SOURCE_TITLE_TEMPLATE)).trim();
+        d.setTitle(title);
       } catch (IllegalArgumentException e) {
-        LOG.warn("Failed to create citation for source dataset {}", d.getKey(), e);
+        LOG.warn("Failed to create title for source dataset {}", d.getKey(), e);
       }
     }
     return d;
