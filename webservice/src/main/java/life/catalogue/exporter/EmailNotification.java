@@ -138,6 +138,10 @@ public class EmailNotification {
       return fromName;
     }
 
+    public String getReplyTo() {
+      return replyTo;
+    }
+
     public DatasetExport getExport() {
       return export;
     }

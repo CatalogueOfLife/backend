@@ -34,6 +34,7 @@ public class EmailNotificationTest {
     cfg.mail.host = "localhost";
     cfg.mail.from = "col@mailinator.com";
     cfg.mail.fromName = "Catalogue of Life";
+    cfg.mail.replyTo = "col@mailinator.com";
 
     ExportRequest req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
 
