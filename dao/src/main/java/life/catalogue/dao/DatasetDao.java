@@ -90,6 +90,22 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       // remove null sources & agents
       if (d.getSource() != null) {
         d.getSource().removeIf(java.util.Objects::isNull);
+        // generate a citation ID if missing
+        Set<String> ids = d.getSource().stream()
+                           .map(Citation::getId)
+                           .filter(java.util.Objects::nonNull)
+                           .collect(Collectors.toSet());
+        d.getSource().forEach(cite -> {
+          if (cite.getId() == null) {
+            String id = buildID(cite);
+            String prefix = id;
+            int x = 1;
+            while (ids.contains(id)) {
+              id = prefix + "-" + x++;
+            }
+            cite.setId(id);
+          }
+        });
       }
       if (d.getCreator() != null) {
         d.getCreator().removeIf(java.util.Objects::isNull);
@@ -103,6 +119,16 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
+  private static String buildID(Citation c) {
+    StringBuilder sb = new StringBuilder();
+    if (c.getAuthor() != null && c.getAuthor().size() > 0) {
+      sb.append(c.getAuthor().get(0).getFamily());
+    }
+    if (c.getIssued() != null) {
+      sb.append(c.getIssued().getYear());
+    }
+    return sb.toString();
+  }
   public ResultPage<Dataset> list(Page page) {
     return super.list(DatasetMapper.class, page);
   }

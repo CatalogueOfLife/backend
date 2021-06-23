@@ -124,6 +124,9 @@ public class YamlMapper {
     abstract String getCitation();
 
     @JsonIgnore
+    abstract String getAddress();
+
+    @JsonIgnore
     abstract LocalDateTime getImported();
 
     @JsonIgnore

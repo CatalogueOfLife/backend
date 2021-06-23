@@ -43,6 +43,12 @@ public class MailConfig {
   public String fromName;
 
   /**
+   * Default address to be used for replying.
+   */
+  @NotNull
+  public String replyTo;
+
+  /**
    * Optional address to sent mails to when background jobs throw an error
    */
   public String onErrorTo;

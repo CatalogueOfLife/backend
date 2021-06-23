@@ -65,6 +65,7 @@ public class EmailNotification {
         Email mail = EmailBuilder.startingBlank()
           .to(user.getName(), user.getEmail())
           .from(cfg.mail.fromName, cfg.mail.from)
+          .withReplyTo(cfg.mail.replyTo)
           .bccAddresses(cfg.mail.bcc)
           .withSubject(String.format("COL download %s %s", export.getKey(), export.getStatus().name().toLowerCase()))
           .withPlainText(text)
@@ -113,6 +114,7 @@ public class EmailNotification {
     private final Dataset dataset;
     private final String from;
     private final String fromName;
+    private final String replyTo;
 
     public DownloadModel(DatasetExport export, Dataset dataset, User user, WsServerConfig cfg) {
       this.key = export.getKey();
@@ -121,6 +123,7 @@ public class EmailNotification {
       this.dataset = dataset;
       this.from = cfg.mail.from;
       this.fromName = cfg.mail.fromName;
+      this.replyTo = cfg.mail.replyTo;
     }
 
     public UUID getKey() {
