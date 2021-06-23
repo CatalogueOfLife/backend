@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -65,6 +66,11 @@ public class EmlWriterTest {
       String eml = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
       System.out.println(eml);
       assertFalse(eml.contains("COL backend services"));
+
+      // try with empty agents
+      d.setEditor(null);
+      d.setContributor(new ArrayList<>());
+      EmlWriter.write(d, f);
 
     } finally {
       f.delete();

@@ -32,7 +32,7 @@
 <@tag name="onlineUrl" value=a.url! indent=indent />
 </#macro>
 
-<#macro party role agents>
+<#macro party role agents=[]>
   <#if agents?has_content>
    <#list agents as a>
   <associatedParty>
