@@ -104,10 +104,17 @@
 <#if citation?has_content || logo?has_content || completeness?has_content || confidence?has_content>
 <additionalMetadata>
   <metadata>
-   <#if citation?has_content || logo?has_content>
+   <#if citation?has_content || logo?has_content || source?has_content>
     <gbif>
       <@tag name="citation" value=citation! indent=6 />
       <@tag name="resourceLogoUrl" value=logo! indent=6 />
+      <#if source?has_content>
+      <bibliography>
+       <#list source as src>
+        <citation<#if src.doi??> identifier="${src.doi.getUrl()}"</#if>>${src.citationText!}</citation>
+       </#list>
+      </bibliography>
+      </#if>
     </gbif>
    </#if>
    <#if completeness?has_content || confidence?has_content>

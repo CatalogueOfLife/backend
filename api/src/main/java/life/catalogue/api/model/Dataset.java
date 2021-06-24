@@ -566,6 +566,15 @@ public class Dataset extends DataEntity<Integer> {
     this.source = source;
   }
 
+  public void addSource(Citation citation) {
+    if (citation != null) {
+      if (source == null) {
+        source = new ArrayList<>();
+      }
+      source.add(citation);
+    }
+  }
+
   public String getIssn() {
     return issn;
   }

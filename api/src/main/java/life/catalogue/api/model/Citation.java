@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -91,6 +92,7 @@ public class Citation {
   private String url;
   private String note;
   private String _citation; // cache field
+  private String _citationText; // cache field
 
   public CSLItemData toCSL() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
@@ -347,6 +349,14 @@ public class Citation {
       _citation = CslUtil.buildCitationHtml(toCSL());
     }
     return _citation;
+  }
+
+  @JsonIgnore
+  public String getCitationText() {
+    if (_citationText == null) {
+      _citationText = CslUtil.buildCitation(toCSL());
+    }
+    return _citationText;
   }
 
   @Override

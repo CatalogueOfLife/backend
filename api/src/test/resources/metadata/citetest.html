@@ -1,0 +1,39 @@
+<html>
+<body>
+<script src="citeproc.js" type="text/javascript"></script>
+<script type="text/javascript">
+	var citationData = JSON.parse('{"id":"ID1","type":"dataset","author":[{"family":"Andrella","given":"Giovani Carlos"},{"family":"Atahuachi Burgos","given":"Margoth"}],"editor":[{"family":"Govaerts","given":"Rafaël"}],"accessed":{"dateParts":[[1999]]},"issued":{"dateParts":[[2021,5,16]]},"DOI":"10.1093/database/baw125","ISSN":"1758-0463","title":"The World Checklist of Vascular Plants (WCVP): Fabaceae","URL":"gbif.org","version":"1.0"}');
+    console.log(citationData);
+
+    var citations = {"ID1": citationData};
+	var itemIDs = ["ID1"];
+
+var citeprocSys = {
+  retrieveLocale: function (lang){
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://raw.githubusercontent.com/Juris-M/citeproc-js-docs/master/locales-' + lang + '.xml', false);
+    xhr.send(null);
+    return xhr.responseText;
+  },
+  retrieveItem: function(id){
+    return citations[id];
+  }
+};
+
+function getApaProcessor() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://www.zotero.org/styles/apa', false);
+  xhr.send(null);
+  var styleAsText = xhr.responseText;
+  var citeproc = new CSL.Engine(citeprocSys, styleAsText);
+  return citeproc;
+};
+
+  var citeproc = getApaProcessor();
+  citeproc.updateItems(itemIDs);
+  var result = citeproc.makeBibliography(format='text');
+  console.log(result[1].join('\n'));
+</script>
+
+</body>
+</html>

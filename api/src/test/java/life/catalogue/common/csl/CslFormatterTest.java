@@ -1,5 +1,10 @@
 package life.catalogue.common.csl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import de.undercouch.citeproc.csl.*;
+
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.io.Resources;
@@ -16,7 +21,8 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import de.undercouch.citeproc.bibtex.NameParser;
-import de.undercouch.citeproc.csl.CSLItemData;
+
+import static org.junit.Assert.assertEquals;
 
 public class CslFormatterTest {
 
@@ -54,6 +60,28 @@ public class CslFormatterTest {
       }
       html.write("</body></html>\n");
     }
+  }
+
+  @Test
+  public void datasetCitation() throws JsonProcessingException {
+    CSLItemDataBuilder builder = new CSLItemDataBuilder()
+      .type(CSLType.DATASET)
+      .title("The World Checklist of Vascular Plants (WCVP): Fabaceae")
+      .issued(2021, 5, 16)
+      .accessed(1999)
+      .author(
+        new CSLNameBuilder().given("Giovani Carlos").family("Andrella").build(),
+        new CSLNameBuilder().given("Margoth").family("Atahuachi Burgos").build()
+      )
+      .editor("Rafaël", "Govaerts")
+      .DOI("10.1093/database/baw125")
+      .URL("gbif.org")
+      .ISSN("1758-0463")
+      .version("1.0");
+
+    var format = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.HTML);
+    System.out.println(ApiModule.MAPPER.writeValueAsString(builder.build()));
+    System.out.println(format.cite(builder.build()));
   }
 
   /**

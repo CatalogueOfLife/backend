@@ -1,11 +1,11 @@
 package life.catalogue.importer.dwca;
 
-import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
+import life.catalogue.importer.neo.ReferenceStore;
+import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.DateParser;
 import life.catalogue.parser.LicenseParser;
@@ -13,6 +13,8 @@ import life.catalogue.parser.SafeParser;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import scala.annotation.meta.setter;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -56,7 +58,7 @@ public class EmlParser {
   public static Optional<DatasetWithSettings> parse(InputStream stream, Charset encoding) {
     try {
       XMLStreamReader parser = factory.createXMLStreamReader(stream, encoding.name());
-      
+
       final DatasetWithSettings d = new DatasetWithSettings();
       boolean isDataset = false;
       boolean isProject = false;
@@ -65,12 +67,14 @@ public class EmlParser {
       StringBuilder para = new StringBuilder();
       EmlAgent agent = new EmlAgent();
       URI url = null;
+      String identifier = null;
       int event;
       
       while ((event = parser.next()) != XMLStreamConstants.END_DOCUMENT) {
         switch (event) {
           case XMLStreamConstants.START_ELEMENT:
             text = new StringBuilder();
+            identifier = null;
             switch (parser.getLocalName()) {
               case "dataset":
                 isDataset = true;
@@ -101,6 +105,9 @@ public class EmlParser {
                     url = null;
                   }
                 }
+                break;
+              case "citation":
+                identifier = parser.getAttributeValue(null, "identifier");
                 break;
             }
             break;
@@ -240,6 +247,26 @@ public class EmlParser {
                   break;
                 case "completeness":
                   d.setCompleteness(integer(text));
+                  break;
+                case "citation":
+                  Citation cite = new Citation();
+                  cite.setTitle(text.toString());
+                  d.getDataset().addSource(cite);
+                  if (identifier != null) {
+                    var opt = DOI.parse(identifier);
+                    if (opt.isPresent()) {
+                      cite.setDoi(opt.get());
+                      cite.setId(cite.getDoi().getDoiName());
+                    } else {
+                      try {
+                        URI link = URI.create(identifier);
+                        cite.setUrl(link.toString());
+                      } catch (IllegalArgumentException e) {
+                        LOG.debug("No URI identifier {}, place it in notes", identifier);
+                        cite.setNote(identifier);
+                      }
+                    }
+                  }
                   break;
               }
             }

@@ -2,6 +2,7 @@ package life.catalogue.exporter;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.License;
@@ -61,6 +62,10 @@ public class EmlWriterTest {
         Agent.person("Fax", "Feier")
       ));
       d.setLicense(License.CC0);
+      d.setSource(List.of(
+        CitationTest.create(),
+        CitationTest.create()
+      ));
       EmlWriter.write(d, f);
 
       String eml = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
