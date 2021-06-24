@@ -54,6 +54,12 @@
     dataset_archive d LEFT JOIN dataset_import di ON d.attempt=di.attempt AND d.key=di.dataset_key
   </sql>
 
+  <!--  A mapping to Name, mostly auto mapped -->
+  <resultMap id="datasetArchiveResultMap" type="Dataset" autoMapping="true" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+    <id property="key" column="key"/>
+    <collection property="source" ofType="Citation" column="{datasetKey=key, attempt=attempt}" select="life.catalogue.db.mapper.CitationMapper.listArchive" />
+  </resultMap>
+
   <select id="get" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

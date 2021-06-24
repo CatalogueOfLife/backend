@@ -112,7 +112,6 @@
     </if>
   </sql>
 
-  <!--  A mapping to Name, mostly auto mapped -->
   <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
     <id property="key" column="key"/>
     <result property="privat" column="private"/>

@@ -54,7 +54,7 @@
   </select>
 
   <select id="listReleaseSources" parameterType="map" resultMap="datasetSourceResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT"/>
+    SELECT d.dataset_key, <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.dataset_key = #{datasetKey}
   </select>

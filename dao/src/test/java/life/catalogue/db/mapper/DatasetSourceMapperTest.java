@@ -101,6 +101,9 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     Dataset rs2 = removeDbCreatedProps(mapper().getReleaseSource(rs.getKey(), Datasets.COL));
     commit();
     assertEquals(rs2, rs);
+
+    // now try to list sources
+    mapper().listReleaseSources(Datasets.COL);
   }
 
   Dataset removeDbCreatedProps(Dataset obj) {
