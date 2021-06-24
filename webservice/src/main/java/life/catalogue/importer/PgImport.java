@@ -152,6 +152,8 @@ public class PgImport implements Callable<Boolean> {
         if (archived == null) {
           // we do not yet have an archived version for given attempt
           dam.create(dataset.getKey());
+          var cm = session.getMapper(CitationMapper.class);
+          cm.createArchive(dataset.getKey());
         }
       }
       // update current

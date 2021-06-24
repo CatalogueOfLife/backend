@@ -5,6 +5,8 @@ import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Datasets;
 
+import life.catalogue.dao.DatasetDao;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -51,32 +53,54 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     mapper().listReleaseSources(Datasets.COL);
   }
 
-  @Test
-  @Ignore("METADATA WORK IN PROGRESS")
-  public void roundtripProject() throws Exception {
-    Dataset ds = new Dataset(createProjectSource());
-    Dataset d = new Dataset(ds);
-    mapper(DatasetMapper.class).create(d);
-    ds.setKey(d.getKey());
-
-    Dataset ds2 = mapper().getProjectSource(ds.getKey(), Datasets.COL);
-    // no import attempt expected as there are no synced sectors
-    ds.setAttempt(null);
-
-    commit();
-    assertEquals(ds2, ds);
+  void persistDatasetCitations(Dataset d){
+    var cm = mapper(CitationMapper.class);
+    for (var c : d.getSource()) {
+      cm.create(d.getKey(), c);
+    }
   }
 
   @Test
-  @Ignore("METADATA WORK IN PROGRESS")
-  public void roundtripRelease() throws Exception {
-    Dataset d1 = createProjectSource();
-    d1.setKey(TestEntityGenerator.DATASET11.getKey());
-    mapper().create(Datasets.COL, d1);
+  public void roundtripProject() throws Exception {
+    // the project source dataset is not archived, just a regular dataset
+    Dataset d = createProjectSource();
+    mapper(DatasetMapper.class).create(d);
+    // persist source citations, sth the DatasetDao normally does
+    persistDatasetCitations(d);
+    Dataset d2 = mapper().getProjectSource(d.getKey(), Datasets.COL);
+    // no import attempt expected as there are no synced sectors
+    d.setAttempt(null);
 
-    Dataset d2 = removeDbCreatedProps(mapper().getReleaseSource(d1.getKey(), Datasets.COL));
-    assertEquals(d2, d1);
     commit();
+    assertEquals(d2, d);
+  }
+
+  @Test
+  public void roundtripRelease() throws Exception {
+    var cm = mapper(CitationMapper.class);
+    var dm = mapper(DatasetMapper.class);
+
+    // source dataset
+    Dataset s = createProjectSource();
+    dm.create(s);
+    // persist source citations, sth the DatasetDao normally does
+    persistDatasetCitations(s);
+    // attempt is updated separately, but needed to copy citations into a release
+    dm.updateLastImport(s.getKey(), s.getAttempt());
+
+    // archived source dataset
+    mapper(DatasetArchiveMapper.class).create(s.getKey());
+    cm.createArchive(s.getKey());
+
+    // release source
+    Dataset rs = new Dataset(s);
+    mapper().create(Datasets.COL, rs);
+    // persist source citations for release
+    cm.createRelease(rs.getKey(), Datasets.COL, rs.getAttempt());
+
+    Dataset rs2 = removeDbCreatedProps(mapper().getReleaseSource(rs.getKey(), Datasets.COL));
+    commit();
+    assertEquals(rs2, rs);
   }
 
   Dataset removeDbCreatedProps(Dataset obj) {

@@ -13,7 +13,6 @@ import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.DatasetProcessable;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
@@ -22,7 +21,6 @@ import life.catalogue.img.LogoUpdateJob;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -39,7 +37,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -250,7 +247,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     // remove source citations
-    session.getMapper(CitationMapper.class).delete(key);
+    var cm = session.getMapper(CitationMapper.class);
+    cm.delete(key);
     // remove decisions, sectors, estimates, dataset patches
     for (Class<DatasetProcessable<?>> mClass : new Class[]{SectorMapper.class, DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class}) {
       LOG.info("Delete {}s for dataset {}", mClass.getSimpleName().substring(0, mClass.getSimpleName().length() - 6), key);
@@ -261,10 +259,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         .map(Dataset::getDoi)
         .filter(java.util.Objects::nonNull)
         .collect(Collectors.toSet());
-    // remove dataset archive
+    // remove dataset archive & its citations
     LOG.info("Delete dataset archive for dataset {}", key);
     session.getMapper(DatasetArchiveMapper.class).deleteByDataset(key);
-    // remove import & sync history - we keep them with projects, so deleteing a single release will not have any impact on them
+    cm.deleteArchive(key);
+    // remove import & sync history - we keep them with projects, so deleting a single release will not have any impact on them
     LOG.info("Delete sector sync history for dataset {}", key);
     session.getMapper(SectorImportMapper.class).deleteByDataset(key);
     LOG.info("Delete dataset import history for dataset {}", key);
@@ -278,9 +277,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     diDao.removeMetrics(key);
     // remove exports & project sources if dataset was private
     if (old != null && old.isPrivat()) {
-      // project source dataset archives
+      // project source dataset archives & its citations
       LOG.info("Delete archived sources for private dataset {}", key);
       psm.deleteByRelease(key);
+      cm.deleteByRelease(key);
       // exports
       LOG.info("Delete exports for private dataset {}", key);
       exportDao.deleteByDataset(key, user);

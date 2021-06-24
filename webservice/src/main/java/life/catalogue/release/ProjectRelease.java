@@ -10,6 +10,7 @@ import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.doi.service.DatasetConverter;
@@ -131,6 +132,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       LOG.info("Last public release was {}", prevReleaseKey);
 
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      var cm = session.getMapper(CitationMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       dao.list(datasetKey, newDataset, true).forEach(d -> {
         if (cfg.doi != null) {
@@ -148,6 +150,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
         LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getAttempt(), newDatasetKey);
         psm.create(newDatasetKey, d);
+        cm.createRelease(d.getKey(), newDatasetKey, d.getAttempt());
         // archive logos
         try {
           imageService.archiveDatasetLogo(newDatasetKey, d.getKey());

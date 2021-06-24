@@ -15,6 +15,7 @@ public interface DatasetSourceMapper {
 
   /**
    * Copies a given dataset into the release source archive.
+   * Source citations are NOT copied, this must be done using the CitationMapper!
    * The archive requires the source datasets key and release datasetKey combination to be unique.
    *
    * @param datasetKey the release the source dataset belongs to

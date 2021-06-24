@@ -8,6 +8,7 @@ import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
+import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -104,6 +105,7 @@ public class UpdateReleaseTool implements AutoCloseable {
   void update(DatasetSourceDao dao) {
     try (SqlSession session = factory.openSession(false)) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      var cm = session.getMapper(CitationMapper.class);
       int cnt = psm.deleteByRelease(release.getKey());
       session.commit();
       System.out.printf("Deleted %s old source metadata records\n", cnt);
@@ -113,6 +115,7 @@ public class UpdateReleaseTool implements AutoCloseable {
         counter.incrementAndGet();
         System.out.printf("%s: %s\n", d.getKey(), d.getTitle());
         psm.create(release.getKey(), d);
+        cm.createRelease(d.getKey(), release.getKey(), d.getAttempt());
       });
       session.commit();
       System.out.printf("Created %s new source metadata records\n", counter);
