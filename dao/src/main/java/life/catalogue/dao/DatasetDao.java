@@ -353,6 +353,17 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected void updateBefore(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+    // changing a private to a public release is only allowed if there is no newer pubic release already!
+    if (old != null && obj.getSourceKey() != null && obj.getOrigin() == DatasetOrigin.RELEASED
+        && old.isPrivat() // was private before
+        && !obj.isPrivat() // but now is public
+    ) {
+      var lr = mapper.latestRelease(obj.getSourceKey(), true);
+      // we make use of the fact that datasetKeys are sequential numbers
+      if (lr != null && lr > obj.getKey()) {
+        throw new IllegalArgumentException("A newer public release already exists. You cannot turn this private release public");
+      }
+    }
     // copy all required fields from old copy if missing
     if (obj.getType() == null) {
       obj.setType(old.getType());
