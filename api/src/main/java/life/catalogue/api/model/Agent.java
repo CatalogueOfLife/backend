@@ -275,6 +275,21 @@ public class Agent implements Comparable<Agent> {
     return null;
   }
 
+  public CslName toCsl() {
+    CslName n = null;
+    if (isPerson()) {
+      n = new CslName();
+      n.setGiven(given);
+      n.setFamily(family);
+      n.setIsInstitution(false);
+    } else if (isOrganisation()) {
+      n = new CslName();
+      n.setFamily(family);
+      n.setIsInstitution(true);
+    }
+    return n;
+  }
+
   static String abbreviate(String givenName) {
     if (givenName != null) {
       Matcher m = BRACKET_SUFFIX.matcher(givenName);

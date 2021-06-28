@@ -98,7 +98,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
       exportTaxonRels();
       exportReferences();
       closeWriter();
-      exportMetadata(dataset);
+      exportMetadata();
     }
   }
 
@@ -349,7 +349,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
     }
   }
 
-  abstract void exportMetadata(Dataset d) throws IOException;
+  abstract void exportMetadata() throws IOException;
 
   private void closeWriter() throws IOException {
     if (writer != null) {

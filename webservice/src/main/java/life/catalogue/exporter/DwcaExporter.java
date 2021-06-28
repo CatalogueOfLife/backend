@@ -57,23 +57,23 @@ public class DwcaExporter extends ArchiveExporter {
   }
 
   @Override
-  void exportMetadata(Dataset d) throws IOException {
+  void exportMetadata() throws IOException {
     // add CLB logo URL if missing
-    if (d.getLogo() == null && imageService.datasetLogoExists(d.getKey())) {
-      d.setLogo(logoUriBuilder.build(d.getKey()));
+    if (dataset.getLogo() == null && imageService.datasetLogoExists(dataset.getKey())) {
+      dataset.setLogo(logoUriBuilder.build(dataset.getKey()));
     }
 
     // main dataset metadata
-    EmlWriter.write(d, new File(tmpDir, EML_FILENAME));
+    EmlWriter.write(dataset, new File(tmpDir, EML_FILENAME));
 
     // extract unique source datasets if sectors were given
     Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
     // for releases and projects also include an EML for each source dataset as defined by all sectors
     for (Integer key : sourceKeys) {
       Dataset src = null;
-      if (DatasetOrigin.MANAGED == d.getOrigin()) {
+      if (DatasetOrigin.MANAGED == dataset.getOrigin()) {
         src = projectSourceMapper.getProjectSource(key, datasetKey);
-      } else if (DatasetOrigin.RELEASED == d.getOrigin()) {
+      } else if (DatasetOrigin.RELEASED == dataset.getOrigin()) {
         src = projectSourceMapper.getReleaseSource(key, datasetKey);
       }
       if (src == null) {

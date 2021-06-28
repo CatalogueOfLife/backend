@@ -240,21 +240,22 @@ public class ColdpExporter extends ArchiveExporter {
   }
 
   @Override
-  void exportMetadata(Dataset d) throws IOException {
+  void exportMetadata() throws IOException {
     Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
     // for releases and projects also include a source entry
     for (Integer key : sourceKeys) {
       Dataset src = null;
-      if (DatasetOrigin.MANAGED == d.getOrigin()) {
+      if (DatasetOrigin.MANAGED == dataset.getOrigin()) {
         src = projectSourceMapper.getProjectSource(key, datasetKey);
-      } else if (DatasetOrigin.RELEASED == d.getOrigin()) {
+      } else if (DatasetOrigin.RELEASED == dataset.getOrigin()) {
         src = projectSourceMapper.getReleaseSource(key, datasetKey);
       }
       if (src == null) {
         LOG.warn("Skip missing dataset {} for archive metadata", key);
         return;
       }
-      // TODO: create source entry in dataset, not separate file
+      // create source entry in dataset and separate file
+      dataset.addSource(src.toCitation());
       File f = new File(tmpDir, String.format("source/%s.yaml", key));
       DatasetYamlWriter.write(src, f);
     }

@@ -229,8 +229,8 @@ public class Dataset extends DataEntity<Integer> {
       .shortTitle(alias)
       .title(title)
       .version(version)
-      .author(toNames(creator))
-      .editor(toNames(editor))
+      .author(toNamesArray(creator))
+      .editor(toNamesArray(editor))
       .ISSN(issn);
     if (doi != null) {
       builder.DOI(doi.toString());
@@ -249,13 +249,45 @@ public class Dataset extends DataEntity<Integer> {
     return builder.build();
   }
 
-  private static CSLName[] toNames(List<Agent> names) {
+  public Citation toCitation() {
+    Citation c = new Citation();
+    if (key != null) {
+      c.setId(key.toString());
+    }
+    c.setType(CSLType.DATASET);
+    c.setTitle(title);
+    c.setIssued(issued);
+    c.setVersion(version);
+    c.setAuthor(toNames(creator));
+    c.setEditor(toNames(editor));
+    c.setIssn(issn);;
+    c.setDoi(doi);
+    if (url != null) {
+      c.setUrl(url.toString());
+    }
+    if (publisher != null && publisher.getOrganisation() != null) {
+      c.setPublisher(publisher.getOrganisation());
+      c.setPublisherPlace(publisher.getAddress());
+    }
+    // no license, distributor, contributor
+    return c;
+  }
+
+  private static CSLName[] toNamesArray(List<Agent> names) {
     if (names == null || names.isEmpty()) return null;
     return names.stream()
                 .map(Agent::toCSL)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList())
                 .toArray(CSLName[]::new);
+  }
+
+  private static List<CslName> toNames(List<Agent> names) {
+    if (names == null || names.isEmpty()) return null;
+    return names.stream()
+                .map(Agent::toCsl)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
   }
 
   @Override

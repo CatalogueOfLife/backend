@@ -27,6 +27,7 @@ public class FuzzyDateSerdeTest extends SerdeTestBase<FuzzyDate> {
     String json = ApiModule.MAPPER.writeValueAsString(wrapper);
     System.out.println(json);
     assertTrue(json.contains("[[1999,1,13]]"));
+    assertTrue(json.contains("date-parts"));
     CslWrapper wrapper2 = ApiModule.MAPPER.readValue(json, CslWrapper.class);
     assertEquals(wrapper.value, wrapper2.value);
   }
