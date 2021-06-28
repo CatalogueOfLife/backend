@@ -77,9 +77,24 @@ public class DatasetConverter {
     return attr;
   }
 
-  public DoiAttributes source(Dataset source, Dataset project, boolean latest) {
+  public DoiAttributes source(Dataset source, @Nullable DOI originalSourceDOI, Dataset release, boolean latest) {
     DoiAttributes attr = common(source, latest, null);
-    attr.setUrl(sourceURI(project.getKey(), source.getKey(), latest).toString());
+    attr.setUrl(sourceURI(release.getKey(), source.getKey(), latest).toString());
+    // release relation
+    if (release.getDoi() != null) {
+      RelatedIdentifier id = new RelatedIdentifier();
+      id.setRelatedIdentifier(release.getDoi().getDoiName());
+      id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
+      id.setRelationType(RelationType.IS_PART_OF);
+      attr.getRelatedIdentifiers().add(id);
+    }
+    if (originalSourceDOI != null) {
+      RelatedIdentifier id = new RelatedIdentifier();
+      id.setRelatedIdentifier(originalSourceDOI.getDoiName());
+      id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
+      id.setRelationType(RelationType.IS_DERIVED_FROM);
+      attr.getRelatedIdentifiers().add(id);
+    }
     // source relations
     if (source.getSource() != null) {
       for (var src : source.getSource()) {

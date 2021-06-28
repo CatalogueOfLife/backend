@@ -125,11 +125,12 @@ public class DoiUpdater {
    */
   private void update(DOI doi, int datasetKey, int sourceDatasetKey) {
     try (SqlSession session = factory.openSession()) {
-      Dataset project = session.getMapper(DatasetMapper.class).get(datasetKey);
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset release = dm.get(datasetKey);
       var source = session.getMapper(DatasetSourceMapper.class).getProjectSource(sourceDatasetKey, datasetKey);
       source.setDoi(doi); // make sure we dont accidently update some other DOI
       boolean latest = datasetKeyCache.isLatestRelease(datasetKey);
-      var attr = converter.source(source, project, latest);
+      var attr = buildSourceMetadata(source, release, latest);
       update(attr);
     }
   }
@@ -181,7 +182,10 @@ public class DoiUpdater {
   }
 
   public DoiAttributes buildSourceMetadata(Dataset source, Dataset project, boolean latest) {
-    return converter.source(source, project, latest);
+    try (SqlSession session = factory.openSession(true)) {
+      Dataset originalSource = session.getMapper(DatasetMapper.class).get(source.getKey());
+      return converter.source(source, originalSource.getDoi(), project, latest);
+    }
   }
 
 }
