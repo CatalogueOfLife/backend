@@ -279,6 +279,8 @@ public class WsServer extends Application<WsServerConfig> {
 
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao);
+
+    // DOI
     DoiService doiService;
     if (cfg.doi == null) {
       doiService = DoiService.passThru();
@@ -287,9 +289,10 @@ public class WsServer extends Application<WsServerConfig> {
       doiService = new DataCiteService(cfg.doi, jerseyClient, mail.getMailer(), cfg.job.onErrorTo, cfg.job.onErrorFrom);
     }
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
+    DoiUpdater doiUpdater = new DoiUpdater(cfg, getSqlSessionFactory(), doiService, coljersey.getCache(), converter);
 
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, doiService, converter, getSqlSessionFactory(), cfg);
+    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), cfg);
 
     // importer
     importManager = new ImportManager(cfg,
@@ -367,7 +370,7 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(DatasetInfoCache.CACHE);
     bus.register(new CacheFlush(httpClient, cfg.apiURI));
     bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService, converter));
-    bus.register(new DoiUpdater(cfg, getSqlSessionFactory(), doiService, coljersey.getCache(), converter));
+    bus.register(doiUpdater);
   }
 
   @Override

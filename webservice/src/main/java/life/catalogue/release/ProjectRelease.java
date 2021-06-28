@@ -13,6 +13,7 @@ import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
+import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -42,11 +43,11 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final CloseableHttpClient client;
   private final ExportManager exportManager;
   private final DoiService doiService;
-  private final DatasetConverter converter;
+  private final DoiUpdater doiUpdater;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
-                 DoiService doiService, DatasetConverter converter) {
+                 DoiService doiService, DoiUpdater doiUpdater) {
     super("releasing", factory, diDao, dDao, indexService, userKey, datasetKey, true);
     this.imageService = imageService;
     this.doiService = doiService;
@@ -54,7 +55,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
     this.client = client;
     this.exportManager = exportManager;
-    this.converter = converter;
+    this.doiUpdater = doiUpdater;
   }
 
   @Override
@@ -112,24 +113,27 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setPrivat(true); // all releases are private candidate releases first
   }
 
+
   @Override
   void prepWork() throws Exception {
-    // assign DOIs?
-    if (cfg.doi != null) {
-      newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
-      updateDataset(newDataset);
-      var attr = converter.release(newDataset, false);
-      LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
-      doiService.createSilently(attr);
-    }
-
-    // treat source. Archive dataset metadata & logos & assign a potentially new DOI
-    updateState(ImportState.ARCHIVING);
-    DatasetSourceDao dao = new DatasetSourceDao(factory);
     try (SqlSession session = factory.openSession(true)) {
       // find previous public release needed for DOI management
       final Integer prevReleaseKey = findPreviousRelease(datasetKey, session);
       LOG.info("Last public release was {}", prevReleaseKey);
+
+      // assign DOIs?
+      if (cfg.doi != null) {
+        newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
+        updateDataset(newDataset);
+
+        var attr = doiUpdater.buildReleaseMetadata(datasetKey, false, newDataset, prevReleaseKey);
+        LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
+        doiService.createSilently(attr);
+      }
+
+      // treat source. Archive dataset metadata & logos & assign a potentially new DOI
+      updateState(ImportState.ARCHIVING);
+      DatasetSourceDao dao = new DatasetSourceDao(factory);
 
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var cm = session.getMapper(CitationMapper.class);
@@ -142,7 +146,7 @@ public class ProjectRelease extends AbstractProjectCopy {
             srcDOI = cfg.doi.datasetSourceDOI(newDatasetKey, d.getKey());
             d.setDoi(srcDOI);
             LOG.info("Creating new DOI {} for modified source {} of release {}", srcDOI, d.getKey(), newDatasetKey);
-            var srcAttr = converter.source(d, newDataset, true);
+            var srcAttr = doiUpdater.buildSourceMetadata(d, newDataset, true);
             doiService.createSilently(srcAttr);
           }
           d.setDoi(srcDOI);
@@ -174,7 +178,7 @@ public class ProjectRelease extends AbstractProjectCopy {
    * @param datasetKey
    * @param session
    */
-  static Integer findPreviousRelease(int datasetKey, SqlSession session){
+  public static Integer findPreviousRelease(int datasetKey, SqlSession session){
     DatasetMapper dm = session.getMapper(DatasetMapper.class);
     DatasetSearchRequest req = new DatasetSearchRequest();
     req.setPrivat(true);

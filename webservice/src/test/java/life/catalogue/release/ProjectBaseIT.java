@@ -2,8 +2,10 @@ package life.catalogue.release;
 
 import life.catalogue.HttpClientUtils;
 import life.catalogue.WsServerConfig;
+import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -48,13 +50,15 @@ public abstract class ProjectBaseIT {
     UserDao udao = mock(UserDao.class);
     DoiService doiService = mock(DoiService.class);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
+    LatestDatasetKeyCache lrCache = mock(LatestDatasetKeyCache.class);
+    DoiUpdater doiUpdater = new DoiUpdater(cfg, PgSetupRule.getSqlSessionFactory(), doiService, lrCache, converter);
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus);
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
     client = HttpClientUtils.httpsClient();
-    releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, converter, PgSetupRule.getSqlSessionFactory(), cfg);
+    releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), cfg);
   }
 
   @After

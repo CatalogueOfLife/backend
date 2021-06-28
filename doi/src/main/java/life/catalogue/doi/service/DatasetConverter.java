@@ -1,5 +1,7 @@
 package life.catalogue.doi.service;
 
+import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.doi.datacite.model.*;
@@ -9,10 +11,12 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.core.UriBuilder;
 
 /**
@@ -44,15 +48,59 @@ public class DatasetConverter {
    *  - url
    *
    * @param release
-   * @param latest
+   * @param latest if true points to the portal, not checklist bank
    * @return
    */
-  public DoiAttributes release(Dataset release, boolean latest) {
+  public DoiAttributes release(Dataset release, boolean latest, @Nullable DOI project, @Nullable DOI previousVersion) {
+    DoiAttributes attr = common(release, latest, previousVersion);
+    // other relations
+    if (project != null) {
+      for (RelationType rt : List.of(RelationType.IS_VERSION_OF, RelationType.IS_DERIVED_FROM)) {
+        RelatedIdentifier id = new RelatedIdentifier();
+        id.setRelatedIdentifier(project.getDoiName());
+        id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
+        id.setRelationType(rt);
+        attr.getRelatedIdentifiers().add(id);
+      }
+    }
+    if (release.getSource() != null) {
+      for (var src : release.getSource()) {
+        if (src.getDoi() != null) {
+          RelatedIdentifier id = new RelatedIdentifier();
+          id.setRelatedIdentifier(src.getDoi().getDoiName());
+          id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
+          id.setRelationType(RelationType.HAS_PART);
+          attr.getRelatedIdentifiers().add(id);
+        }
+      }
+    }
+    return attr;
+  }
+
+  public DoiAttributes source(Dataset source, Dataset project, boolean latest) {
+    DoiAttributes attr = common(source, latest, null);
+    attr.setUrl(sourceURI(project.getKey(), source.getKey(), latest).toString());
+    // source relations
+    if (source.getSource() != null) {
+      for (var src : source.getSource()) {
+        if (src.getDoi() != null) {
+          RelatedIdentifier id = new RelatedIdentifier();
+          id.setRelatedIdentifier(src.getDoi().getDoiName());
+          id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
+          id.setRelationType(RelationType.IS_DERIVED_FROM);
+          attr.getRelatedIdentifiers().add(id);
+        }
+      }
+    }
+    return attr;
+  }
+
+  private DoiAttributes common(Dataset release, boolean latest, @Nullable DOI previousVersion) {
     DoiAttributes attr = new DoiAttributes(release.getDoi());
     // title
     attr.setTitles(List.of(new Title(release.getTitle())));
     // publisher
-    attr.setPublisher("Catalogue of Life");
+    attr.setPublisher(release.getPublisher().getName());
     // PublicationYear
     if (release.getIssued() != null) {
       attr.setPublicationYear(release.getIssued().getYear());
@@ -60,11 +108,18 @@ public class DatasetConverter {
       LOG.warn("No release date given. Use today instead");
       attr.setPublicationYear(LocalDate.now().getYear());
     }
+    // version
+    attr.setVersion(release.getVersion());
     // creator
     if (release.getCreator() != null) {
       attr.setCreators(release.getCreator().stream()
-        .map(a -> new Creator(a.getGiven(), a.getFamily(), a.getOrcid()))
-        .collect(Collectors.toList())
+                              .map(a -> {
+                                if (a.isPerson()) {
+                                  return new Creator(a.getGiven(), a.getFamily(), a.getOrcid());
+                                }
+                                return new Creator(a.getName(), NameType.ORGANIZATIONAL);
+                              })
+                              .collect(Collectors.toList())
       );
     } else {
       LOG.warn("No authors given. Use dataset creator instead");
@@ -79,22 +134,81 @@ public class DatasetConverter {
       attr.setCreators(List.of(creator));
     }
     // contributors
-    if (release.getEditor() != null) {
-      attr.setContributors(release.getEditor().stream()
-        .map(a -> new Contributor(a.getGiven(), a.getFamily(), a.getOrcid(), ContributorType.EDITOR))
-        .collect(Collectors.toList())
+    List<Contributor> contribs = new ArrayList<>();
+    if (release.getContributor() != null) {
+      contribs.addAll(release.getContributor().stream()
+                             .map(a -> agent2Contributor(a, null))
+                             .collect(Collectors.toList())
       );
     }
+    if (release.getEditor() != null) {
+      contribs.addAll(release.getEditor().stream()
+                             .map(a -> agent2Contributor(a, ContributorType.EDITOR))
+                             .collect(Collectors.toList())
+      );
+    }
+    attr.setContributors(contribs);
     // url
     attr.setUrl(datasetURI(release.getKey(), latest).toString());
+    // ids
+    if (release.getIdentifier() != null) {
+      List<Identifier> ids = new ArrayList<>();
+      for (var entry : release.getIdentifier().entrySet()) {
+        Identifier id = null;
+        // we can only map DOI, URL or URNs
+        var doi = DOI.parse(entry.getValue());
+        if (doi.isPresent()) {
+          id = new Identifier();
+          id.setIdentifier(doi.toString());
+          id.setIdentifierType(Identifier.DOI_TYPE);
+        } else if (entry.getValue().toLowerCase().startsWith("urn:")) {
+          id = new Identifier();
+          id.setIdentifier(entry.getValue());
+          id.setIdentifierType("URN");
+        } else if (entry.getValue().toLowerCase().startsWith("http")) {
+          id = new Identifier();
+          id.setIdentifier(entry.getValue());
+          id.setIdentifierType("URL");
+        }
+
+        if (id != null) {
+          ids.add(id);
+        }
+      }
+      attr.setIdentifiers(ids);
+    }
+    // relations
+    List<RelatedIdentifier> ids = new ArrayList<>();
+    if (previousVersion != null) {
+      RelatedIdentifier id = new RelatedIdentifier();
+      id.setRelatedIdentifier(previousVersion.getDoiName());
+      id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
+      id.setRelationType(RelationType.IS_NEW_VERSION_OF);
+      ids.add(id);
+    }
+    attr.setRelatedIdentifiers(ids);
     return attr;
   }
 
-  public DoiAttributes source(Dataset source, Dataset project, boolean latest) {
-    DoiAttributes attr = release(source, latest);
-    attr.setUrl(sourceURI(project.getKey(), source.getKey(), latest).toString());
-    return attr;
+  Contributor agent2Contributor(Agent a, @Nullable ContributorType type) {
+    if (type == null) {
+      if (a.getNote() != null) {
+        try {
+          type = ContributorType.fromValue(a.getNote());
+        } catch (IllegalArgumentException e) {
+          // TODO: try known ones
+        }
+      }
+      if (type == null) {
+        type = ContributorType.OTHER;
+      }
+    }
+    if (a.isPerson()) {
+      return new Contributor(a.getGiven(), a.getFamily(), a.getOrcid(), type);
+    }
+    return new Contributor(a.getName(), NameType.ORGANIZATIONAL, type);
   }
+
 
   public URI datasetURI(int datasetKey, boolean portal) {
     return portal ? this.portal : clbBuilder.build(datasetKey);

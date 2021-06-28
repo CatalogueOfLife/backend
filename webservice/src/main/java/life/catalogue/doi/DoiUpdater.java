@@ -17,10 +17,14 @@ import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiException;
 import life.catalogue.doi.service.DoiService;
 
+import life.catalogue.release.ProjectRelease;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 import java.net.URI;
 import java.util.Set;
@@ -102,16 +106,23 @@ public class DoiUpdater {
     }
   }
 
+  /**
+   * Updates a release
+   */
   private void update(DOI doi, int datasetKey) {
     try (SqlSession session = factory.openSession()) {
       Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
       d.setDoi(doi); // make sure we don't accidently update some other DOI
       boolean latest = datasetKeyCache.isLatestRelease(datasetKey);
-      var attr = converter.release(d, latest);
+      final Integer prevReleaseKey = ProjectRelease.findPreviousRelease(datasetKey, session);
+      var attr = buildReleaseMetadata(d.getSourceKey(), latest, d, prevReleaseKey);
       update(attr);
     }
   }
 
+  /**
+   * Updates a release source
+   */
   private void update(DOI doi, int datasetKey, int sourceDatasetKey) {
     try (SqlSession session = factory.openSession()) {
       Dataset project = session.getMapper(DatasetMapper.class).get(datasetKey);
@@ -152,6 +163,25 @@ public class DoiUpdater {
     } catch (DoiException e) {
       LOG.error("Error deleting COL DOI {}", doi, e);
     }
+  }
+
+  private DOI doi(Dataset d) {
+    return d != null ? d.getDoi() : null;
+  }
+
+  public DoiAttributes buildReleaseMetadata(int projectKey, boolean latest, Dataset release, @Nullable Integer prevReleaseKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      Dataset project = session.getMapper(DatasetMapper.class).get(projectKey);
+      Dataset prevRelease = null;
+      if (prevReleaseKey != null) {
+        prevRelease = session.getMapper(DatasetMapper.class).get(prevReleaseKey);
+      }
+      return converter.release(release, latest, doi(project), doi(prevRelease));
+    }
+  }
+
+  public DoiAttributes buildSourceMetadata(Dataset source, Dataset project, boolean latest) {
+    return converter.source(source, project, latest);
   }
 
 }

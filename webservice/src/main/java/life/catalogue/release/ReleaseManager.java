@@ -7,6 +7,7 @@ import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -34,7 +35,7 @@ public class ReleaseManager {
   private final DatasetDao dDao;
   private final NameUsageIndexService indexService;
   private final DoiService doiService;
-  private final DatasetConverter converter;
+  private final DoiUpdater doiUpdater;
   private final SqlSessionFactory factory;
   private final ImageService imageService;
   private final CloseableHttpClient client;
@@ -42,7 +43,7 @@ public class ReleaseManager {
   private AbstractProjectCopy job;
 
   public ReleaseManager(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, ExportManager exportManager, NameUsageIndexService indexService,
-                        ImageService imageService, DoiService doiService, DatasetConverter converter, SqlSessionFactory factory, WsServerConfig cfg) {
+                        ImageService imageService, DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, WsServerConfig cfg) {
     this.client = client;
     this.exportManager = exportManager;
     this.diDao = diDao;
@@ -50,7 +51,7 @@ public class ReleaseManager {
     this.indexService = indexService;
     this.imageService = imageService;
     this.doiService = doiService;
-    this.converter = converter;
+    this.doiUpdater = doiUpdater;
     this.factory = factory;
     this.cfg = cfg;
   }
@@ -106,7 +107,7 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
-    return new ProjectRelease(factory, indexService, diDao, dDao, imageService, projectKey, userKey, cfg, client, exportManager, doiService, converter);
+    return new ProjectRelease(factory, indexService, diDao, dDao, imageService, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater);
   }
 
   /**
