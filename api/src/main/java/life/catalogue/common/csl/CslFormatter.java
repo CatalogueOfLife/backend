@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * A formatter for single CSL items according to a specific citation style.
@@ -52,8 +54,8 @@ public class CslFormatter {
     }
 
     @Override
-    public String[] getIds() {
-      return new String[]{KEY};
+    public Collection<String> getIds() {
+      return List.of(KEY);
     }
   }
 
