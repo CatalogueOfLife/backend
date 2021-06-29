@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import de.undercouch.citeproc.bibtex.NameParser;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class CslFormatterTest {
 
@@ -81,7 +81,10 @@ public class CslFormatterTest {
 
     var format = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.HTML);
     System.out.println(ApiModule.MAPPER.writeValueAsString(builder.build()));
-    System.out.println(format.cite(builder.build()));
+
+    String x = format.cite(builder.build());
+    System.out.println(x);
+    assertFalse(x.contains("[Data set]"));
   }
 
   /**

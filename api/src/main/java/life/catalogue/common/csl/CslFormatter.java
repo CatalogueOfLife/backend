@@ -89,11 +89,18 @@ public class CslFormatter {
     csl.registerCitationItems(key);
     try {
       String[] entries = csl.makeBibliography().getEntries();
-      return entries == null || entries.length==0 ? null : entries[0].trim();
+      return entries == null || entries.length==0 ? null : customCleaning(entries[0].trim());
 
     } catch (RuntimeException e) {
       LOG.warn("Failed to create citation", e);
       return null;
     }
+  }
+
+  /**
+   * Apply some custom cleaning that allows us to adapt the CSL style without changing the complex CSL files.
+   */
+  static String customCleaning(String x){
+    return x.replaceAll(" *\\[Data +set\\]", "");
   }
 }
