@@ -71,7 +71,7 @@
     <javers.version>5.6.3</javers.version>
     <jbibtex.version>1.0.18</jbibtex.version>
     <jjwt.version>0.10.7</jjwt.version>
-    <junit.version>4.12</junit.version>
+    <junit.version>4.13.1</junit.version>
     <kryo-serializers.version>0.45</kryo-serializers.version>
     <kryo.version>5.0.0-RC5</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
