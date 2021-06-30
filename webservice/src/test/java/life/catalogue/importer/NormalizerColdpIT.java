@@ -308,10 +308,12 @@ public class NormalizerColdpIT extends NormalizerITBase {
       NeoName nn = nameByID(key);
       assertEquals("Jupunba abbottii", nn.getName().getScientificName());
       assertEquals("(Rose & Leonard) Britton & Rose", nn.getName().getAuthorship());
-      assertEquals((Integer)1928, nn.getName().getPublishedInYear());
 
       var nu = usageByID(key);
-      List<Relationship> rels = Iterators.asList( nu.node.getRelationships(RelType.PARENT_OF).iterator() );
+      assertTrue(nu.isSynonym());
+      List<Relationship> rels = Iterators.asList( nu.node.getRelationships().iterator() );
+      assertEquals(2, rels.size());
+      rels.removeIf(r -> !r.getType().name().equals(RelType.SYNONYM_OF.name()));
       assertEquals(1, rels.size());
     }
   }
