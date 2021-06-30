@@ -186,7 +186,11 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
     // source
     if (loadSource) {
-      info.setSource(session.getMapper(VerbatimSourceMapper.class).get(taxon));
+      var d = DatasetInfoCache.CACHE.info(taxon.getDatasetKey());
+      if (d.origin.isManagedOrRelease()) {
+        // only managed and releases have this table - we'll yield an exception for external datasets!
+        info.setSource(session.getMapper(VerbatimSourceMapper.class).get(taxon));
+      }
     }
 
     // treatment
