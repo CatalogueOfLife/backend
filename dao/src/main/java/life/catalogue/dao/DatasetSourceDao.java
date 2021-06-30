@@ -108,7 +108,7 @@ public class DatasetSourceDao {
   private Dataset patch(Dataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm, DatasetSettings settings){
     Dataset patch = pm.get(projectKey, d.getKey());
     if (patch != null) {
-      LOG.info("Apply dataset patch from project {} to {}: {}", patchProject.getKey(), d.getKey(), d.getTitle());
+      LOG.debug("Apply dataset patch from project {} to {}: {}", patchProject.getKey(), d.getKey(), d.getTitle());
       d.applyPatch(patch);
     }
     // build an in project title?

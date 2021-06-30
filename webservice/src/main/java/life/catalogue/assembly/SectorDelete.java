@@ -20,7 +20,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
- * Deletes a sector and all its imports, but keeps synced data of rank above species level by default.
+ * Deletes a sector but keeps its imports so we can still show historical releases properly which access the sync history of projects.
+ * A sector deletion keeps synced data of rank above species level by default!
  * Names and taxa of ranks above species are kept, but the sectorKey is removed from all entities that previously belonged to the deleted sector.
  * At the same time all verbatim source records are removed
  */
@@ -29,10 +30,10 @@ public class SectorDelete extends SectorRunnable {
   private static final Rank maxAmbiguousRank = Arrays.stream(Rank.values()).filter(Rank::isAmbiguous).max(Rank::compareTo).orElseThrow(() -> new IllegalStateException("No ambiguous ranks exist"));
   private Rank cutoffRank = Rank.SPECIES;
 
-  public SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, SectorImportDao sid,
+  public SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, false, false, factory, indexService, sid, successCallback, errorCallback, user);
+    super(sectorKey, false, false, factory, indexService, dao, sid, successCallback, errorCallback, user);
   }
 
   @Override

@@ -3,6 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.EstimateDao;
+import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.*;
@@ -47,10 +48,11 @@ public class SectorSync extends SectorRunnable {
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
 
-  public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, SectorImportDao sid,
+  public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
+                    SectorDao sdao, SectorImportDao sid,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, true, true, factory, indexService, sid, successCallback, errorCallback, user);
+    super(sectorKey, true, true, factory, indexService, sdao, sid, successCallback, errorCallback, user);
     this.sid = sid;
     this.nameIndex = nameIndex;
   }

@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.assembly.SectorSyncIT;
+import life.catalogue.dao.SectorDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.importer.PgImportRule;
@@ -59,7 +60,7 @@ public class ProjectDuplicationIT extends ProjectBaseIT {
     SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
 
     SectorSyncIT.setupNamesIndex(PgSetupRule.getSqlSessionFactory());
-    SectorSyncIT.syncAll(siDao);
+    SectorSyncIT.syncAll(sdao, siDao);
 
     ProjectDuplication dupe = releaseManager.buildDuplication(Datasets.COL, Users.TESTER);
     final int datasetKey = dupe.newDatasetKey;

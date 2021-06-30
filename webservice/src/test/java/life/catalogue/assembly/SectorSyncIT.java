@@ -27,6 +27,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,6 +71,7 @@ public class SectorSyncIT {
   DatasetImportDao diDao;
   SectorImportDao siDao;
   TaxonDao tdao;
+  SectorDao sdao;
 
   public static void setupNamesIndex(SqlSessionFactory factory) {
     match = new IndexName(TestEntityGenerator.NAME4);
@@ -88,6 +90,7 @@ public class SectorSyncIT {
     dataRule.loadData(true);
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
+    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao);
     setupNamesIndex(PgSetupRule.getSqlSessionFactory());
   }
   
@@ -168,23 +171,23 @@ public class SectorSyncIT {
   }
 
   public void syncAll() {
-    syncAll(siDao);
+    syncAll(sdao, siDao);
   }
 
-  public static void syncAll(SectorImportDao siDao) {
+  public static void syncAll(SectorDao sdao, SectorImportDao siDao) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
-        sync(s, siDao);
+        sync(s, sdao, siDao);
       }
     }
   }
 
   void sync(Sector s) {
-    sync(s, siDao);
+    sync(s, sdao, siDao);
   }
 
-  static void sync(Sector s, SectorImportDao siDao) {
-    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), siDao,
+  static void sync(Sector s, SectorDao sdao, SectorImportDao siDao) {
+    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), sdao, siDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();
@@ -192,13 +195,13 @@ public class SectorSyncIT {
   
   private void deleteFull(Sector s) {
     SectorDeleteFull sd = new SectorDeleteFull(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
-        siDao, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+        sdao, siDao, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR FULL DELETION " + s.getKey() + " ***");
     sd.run();
   }
 
   private void delete(Sector s) {
-    SectorDelete sd = new SectorDelete(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), siDao,
+    SectorDelete sd = new SectorDelete(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), sdao, siDao,
       SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();

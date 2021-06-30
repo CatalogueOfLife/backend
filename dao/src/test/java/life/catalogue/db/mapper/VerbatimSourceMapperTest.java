@@ -64,6 +64,9 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
 
     mapper().deleteBySector(s);
     assertNull(mapper().get(v1));
+
+    mapper().delete(v1);
+    assertNull(mapper().get(v1));
   }
 
   @Test

@@ -4,9 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 
 import java.util.ArrayList;
@@ -17,6 +15,9 @@ import java.util.stream.Collectors;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,6 +169,55 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @Override
   public int delete(DSID<Integer> key, int user) {
     throw new UnsupportedOperationException("Sectors have to be deleted asynchronously through a SectorDelete job");
+  }
+
+  /**
+   * A full sector deletion method that removes also associated usages.
+   * This can be used in the SectorDelete jobs and elsewhere, but should not be used blindly as a replacement for a sector dao delete
+   * which we disabled for good reasons.
+   *
+   * Note that this method does NOT deal with nested sectors and their recursive deletion!
+   *
+   * @param subSector flag to indicate in logs that we deleted a subsector in case of recursive deletions
+   */
+  public void deleteSector(DSID<Integer> sectorKey, boolean subSector) {
+    try (SqlSession session = factory.openSession(true)) {
+      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
+      if (s == null) {
+        throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
+      }
+      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
+      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
+      NameMapper nm = session.getMapper(NameMapper.class);
+      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
+      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+
+      // cascading delete removes vernacular, distributions, descriptions, media
+      int count = um.deleteBySector(sectorKey);
+      String sectorType = subSector ? "subsector" : "sector";
+      LOG.info("Deleted all {} name usage and related information from {} {}", count, sectorType, sectorKey);
+
+      // name matches
+      nmm.deleteBySector(sectorKey);
+
+      // names - they should not be shared by other usages as they also belong to the same sector
+      nm.deleteBySector(sectorKey);
+
+      // remove verbatim sources from remaining usages
+      vsm.deleteBySector(s);
+
+      // reference
+      rm.deleteBySector(sectorKey);
+
+      // update datasetSectors counts
+      SectorDao.incSectorCounts(session, s, -1);
+
+      // we don't remove any sector metric anymore to avoid previous releases to be broken
+      // see https://github.com/CatalogueOfLife/backend/issues/986
+      //session.getMapper(SectorImportMapper.class).delete(sectorKey);
+      session.getMapper(SectorMapper.class).delete(sectorKey);
+      LOG.info("Deleted {} {}", sectorType, sectorKey);
+    }
   }
 
   /**

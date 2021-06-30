@@ -34,6 +34,7 @@ public abstract class ProjectBaseIT {
 
   DatasetImportDao diDao;
   SectorImportDao siDao;
+  SectorDao sdao;
   DatasetDao dDao;
   TaxonDao tdao;
   ReleaseManager releaseManager;
@@ -57,6 +58,8 @@ public abstract class ProjectBaseIT {
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
+    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao);
+    tdao.setSectorDao(sdao);
     client = HttpClientUtils.httpsClient();
     releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), cfg);
   }

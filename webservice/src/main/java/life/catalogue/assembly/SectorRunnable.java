@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.License;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -36,6 +37,7 @@ abstract class SectorRunnable implements Runnable {
   final boolean validateSector;
   final SqlSessionFactory factory;
   final NameUsageIndexService indexService;
+  final SectorDao dao;
   final SectorImportDao sid;
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
@@ -53,12 +55,13 @@ abstract class SectorRunnable implements Runnable {
    * @throws IllegalArgumentException if the sectors dataset is not of MANAGED origin
    */
   SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, SqlSessionFactory factory,
-                 NameUsageIndexService indexService, SectorImportDao sid,
+                 NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
                  Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
     this.validateSector = validateSector;
     this.factory = factory;
     this.indexService = indexService;
+    this.dao = dao;
     this.sid = sid;
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;

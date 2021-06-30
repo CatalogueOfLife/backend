@@ -9,6 +9,7 @@ import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
@@ -25,6 +26,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class AssemblyCoordinatorTest {
   @ClassRule
@@ -44,7 +46,8 @@ public class AssemblyCoordinatorTest {
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
 
     SectorImportDao sid = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sid, NameUsageIndexService.passThru(), new MetricRegistry());
+    SectorDao sdao = Mockito.mock(SectorDao.class);
+    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sdao, sid, NameUsageIndexService.passThru(), new MetricRegistry());
   }
   
   @Test(expected = IllegalArgumentException.class)

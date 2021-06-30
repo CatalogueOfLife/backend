@@ -30,9 +30,9 @@ public class SectorDeleteFull extends SectorRunnable {
   private final Set<Integer> visitedSectors = new HashSet<>();
   
   public SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
-                          SectorImportDao sid, Consumer<SectorRunnable> successCallback,
+                          SectorDao dao, SectorImportDao sid, Consumer<SectorRunnable> successCallback,
                           BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, false, false, factory, indexService, sid, successCallback, errorCallback, user);
+    super(sectorKey, false, false, factory, indexService, dao, sid, successCallback, errorCallback, user);
   }
 
   @Override
@@ -69,23 +69,7 @@ public class SectorDeleteFull extends SectorRunnable {
   private void deleteSector(DSID<Integer> sectorKey) {
     if (!visitedSectors.contains(sectorKey.getId())) {
       visitedSectors.add(sectorKey.getId());
-      try (SqlSession session = factory.openSession(true)) {
-        Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-        if (s == null) {
-          throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
-        }
-        NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-        int count = um.deleteBySector(sectorKey);
-        String sectorType = sectorKey == this.sectorKey ? "sector" : "subsector";
-        LOG.info("Deleted {} existing taxa with their synonyms and related information from {} {}", count, sectorType, sectorKey);
-      
-        // update datasetSectors counts
-        SectorDao.incSectorCounts(session, s, -1);
-        
-        session.getMapper(SectorImportMapper.class).delete(sectorKey);
-        session.getMapper(SectorMapper.class).delete(sectorKey);
-        LOG.info("Deleted {} {}", sectorType, sectorKey);
-      }
+      dao.deleteSector(sectorKey, sectorKey != this.sectorKey);
     }
   }
 

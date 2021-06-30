@@ -273,6 +273,7 @@ public class WsServer extends Application<WsServerConfig> {
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao);
+    tdao.setSectorDao(secdao);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     UserDao udao = new UserDao(getSqlSessionFactory(), bus);
@@ -314,7 +315,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(ManagedUtils.stopOnly(gbifSync));
 
     // assembly
-    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), ni, siDao, indexService, env.metrics());
+    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), ni, secdao, siDao, indexService, env.metrics());
     env.lifecycle().manage(assembly);
 
     // link assembly and import manager so they are aware of each other

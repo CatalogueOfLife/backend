@@ -3,9 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.SectorImportDao;
-import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.dao.*;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -41,6 +39,8 @@ public class SectorSyncTest {
 
   DatasetImportDao diDao;
   SectorImportDao siDao;
+  SectorDao sdao;
+  TaxonDao tdao;
 
   final int datasetKey = DATASET11.getKey();
   Sector sector;
@@ -87,6 +87,9 @@ public class SectorSyncTest {
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
+    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
+    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao);
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
   }
 
@@ -97,7 +100,7 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.COL));
     }
 
-    SectorSync ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), siDao,
+    SectorSync ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), sdao, siDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 
@@ -140,7 +143,7 @@ public class SectorSyncTest {
       sm.update(sector);
     }
 
-    ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), siDao,
+    ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), sdao, siDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 

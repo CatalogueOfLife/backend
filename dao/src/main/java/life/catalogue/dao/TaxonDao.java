@@ -31,7 +31,12 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   private final NameUsageIndexService indexService;
   private final NameDao nameDao;
+  private SectorDao sectorDao;
 
+  /**
+   * Warn: you must set a sector dao manually before using the TaxonDao.
+   * We have circular dependency that cannot be satisfied with final properties through constructors
+   */
   public TaxonDao(SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService) {
     super(true, factory, TaxonMapper.class);
     this.indexService = indexService;
@@ -40,6 +45,10 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
   public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user) {
     return copyTaxon(session, t, target, user, Collections.emptySet());
+  }
+
+  public void setSectorDao(SectorDao sectorDao) {
+    this.sectorDao = sectorDao;
   }
 
   /**
@@ -468,7 +477,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
 
       // remember sector count map so we can update parents at the end
       TaxonSectorCountMap delta = tm.getCounts(id);
@@ -480,13 +489,15 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       }
       List<TaxonSectorCountMap> parents = tm.classificationCounts(id);
 
-      // we remove usages, names and associated infos.
+      // we remove usages, names, verbatim sources and associated infos.
       // but NOT name_rels or refs
       int counter = 0;
       DSID<String> key = DSID.copy(id);
       for (UsageNameID unid : num.processTreeIds(id)) {
         // cascading delete removes vernacular, distributions, descriptions, media
-        num.delete(key.id(unid.usageId));
+        var nuKey = key.id(unid.usageId);
+        num.delete(nuKey);
+        vsm.delete(nuKey);
         nm.delete(key.id(unid.nameId));
       }
       session.commit();
@@ -500,15 +511,14 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
           }
         }
       }
+      session.commit();
 
       // remove included sectors
       for (int skey : sectorKeys) {
         LOG.info("Delete sector {} from project {} and its imports by user {}", skey, id.getDatasetKey(), user);
         DSID<Integer> sectorKey = DSID.of(id.getDatasetKey(), skey);
-        sim.delete(sectorKey);
-        sm.delete(sectorKey);
+        sectorDao.deleteSector(sectorKey, false);
       }
-      session.commit();
     }
     
     // update ES

@@ -23,6 +23,8 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   void update(@Param("key") DSID<String> key, @Param("issues") Set<Issue> issues);
 
+  void delete(@Param("key") DSID<String> key);
+
   void deleteBySector(@Param("key") DSID<Integer> key);
 }
 

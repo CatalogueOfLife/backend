@@ -33,7 +33,7 @@
   </sql>
 
   <sql id="FROM">
-    verbatim_source v
+    verbatim_source_${partition} v
   </sql>
 
   <resultMap id="verbatimResultMap" type="VerbatimSource" autoMapping="true">
@@ -41,9 +41,10 @@
   </resultMap>
 
   <select id="get" resultMap="verbatimResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
+    WHERE id = #{key.id}
   </select>
 
   <select id="getIssues" resultMap="verbatimResultMap">
@@ -54,7 +55,6 @@
   </select>
 
   <insert id="create" parameterType="VerbatimSource">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     INSERT INTO verbatim_source_${datasetKey} (<include refid="COLS"/>)
     VALUES (<include refid="PROPS"/>)
   </insert>
@@ -76,10 +76,16 @@
   </update>
 
   <select id="processDataset" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey}
   </select>
+
+  <delete id="delete" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM verbatim_source_${partition}
+    WHERE id = #{key.id}
+  </delete>
 
   <delete id="deleteByDataset" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
