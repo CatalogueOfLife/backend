@@ -115,7 +115,9 @@ public class DatasetConverter {
     // title
     attr.setTitles(List.of(new Title(release.getTitle())));
     // publisher
-    attr.setPublisher(release.getPublisher().getName());
+    if (release.getPublisher() != null) {
+      attr.setPublisher(release.getPublisher().getName());
+    }
     // PublicationYear
     if (release.getIssued() != null) {
       attr.setPublicationYear(release.getIssued().getYear());
