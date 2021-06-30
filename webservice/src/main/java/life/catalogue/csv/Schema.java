@@ -49,6 +49,26 @@ public class Schema {
       this.index = index;
       this.delimiter = delimiter;
     }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append(term);
+      if (index != null || value != null) {
+        sb.append("[");
+        if (index != null) {
+          sb.append(index);
+        }
+        if (value != null) {
+          if (index != null) {
+            sb.append(", ");
+          }
+          sb.append(value);
+        }
+        sb.append("]");
+      }
+      return sb.toString();
+    }
   }
   
   public Field field(Term term) {

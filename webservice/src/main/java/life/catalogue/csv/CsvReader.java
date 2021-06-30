@@ -33,6 +33,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -261,6 +262,8 @@ public class CsvReader {
   }
   
   private static Optional<Term> findTerm(String termPrefix, String name, boolean isClassTerm) {
+    // TermFactory will through IAE in case there is whitespace in the term name. Avoid that by cleaning up the provided argument first.
+    name = name.replaceAll("\\s","_");
     String qualName = name;
     if (termPrefix != null && !name.contains(":")) {
       qualName = termPrefix + ":" + name;
@@ -351,7 +354,7 @@ public class CsvReader {
     try {
       try (CharsetDetectingStream in = CharsetDetectingStream.create(Files.newInputStream(df))) {
         final Charset charset = in.getCharset();
-        LOG.debug("Use encoding {} for file {}", charset, PathUtils.getFilename(df));
+        LOG.info("Use encoding {} for file {}", charset, PathUtils.getFilename(df));
         
         List<String> lines = Lists.newArrayList();
         BufferedReader br = CharsetDetectingStream.createReader(in, in.getCharset());
@@ -377,6 +380,7 @@ public class CsvReader {
             LOG.warn("{} contains no data", PathUtils.getFilename(df));
             
           } else {
+            int idx = 0;
             List<Schema.Field> columns = Lists.newArrayList();
             int unknownCounter = 0;
             for (String col : header) {
@@ -384,13 +388,14 @@ public class CsvReader {
               Optional<Term> termOpt = findTerm(termPrefix, col, false);
               if (termOpt.isPresent()) {
                 Term term = termOpt.get();
-                columns.add(new Schema.Field(term, columns.size()));
+                columns.add(new Schema.Field(term, idx++));
                 if (term instanceof UnknownTerm) {
                   unknownCounter++;
-                  LOG.debug("Unknown Term {} found in file {}", term.qualifiedName(), PathUtils.getFilename(df));
+                  LOG.info("Unknown Term {} found in file {}", term.qualifiedName(), PathUtils.getFilename(df));
                 }
               } else {
-                LOG.debug("Illegal term {} found in file {}", col, PathUtils.getFilename(df));
+                idx++;
+                LOG.warn("Illegal term {} found in file {}", col, PathUtils.getFilename(df));
               }
             }
             if (columns.isEmpty()) {
@@ -408,7 +413,12 @@ public class CsvReader {
             // we create a tmp dummy schema with wrong rowType for convenience to find the real rowType - it will not survive
             final Optional<Term> rowType = detectRowType(new Schema(df, DwcTerm.Taxon, charset, set, columns), termPrefix);
             if (rowType.isPresent()) {
-              LOG.info("CSV {} schema with {} columns found for {} encoded file {}", rowType.get().prefixedName(), columns.size(), charset, PathUtils.getFilename(df));
+              LOG.info("CSV {} schema with {} columns found for {} encoded file {}: {}",
+                rowType.get().prefixedName(), columns.size(), charset, PathUtils.getFilename(df),
+                columns.stream()
+                       .map(Schema.Field::toString)
+                       .collect(Collectors.joining(","))
+              );
               return new Schema(df, rowType.get(), charset, set, columns);
             }
             LOG.warn("Failed to identify row type for {}", PathUtils.getFilename(df));

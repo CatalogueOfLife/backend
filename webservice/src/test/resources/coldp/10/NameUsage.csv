@@ -1,0 +1,22 @@
+﻿sort_name,ID,ipni_id,subfamily,tribe,family,genus,rank,status_orig,status,scientificName,place_of_publication,volume_and_page,raw year,geographic_area,namePublishedInYear,nameReferenceID,remarks,parentID,accepted_name
+12,609286,30032383-2,Caesalpinioideae,,Fabaceae,,Genus,Accepted,Accepted,Abarema Pittier,Trab. Mus. Comercial Venezuela,1: 86,(1927),Trop. America,1927,609286,,,
+12,331501,22687-1,,,Fabaceae,,Genus,Synonym,Synonym,Jupunba Britton & Rose,N. Amer. Fl.,23: 24,(1928),,1928,331501,,609286,Abarema Pittier
+12,336286,294708-2,,,Fabaceae,,Genus,Synonym,Synonym,Klugiodendron Britton & Killip,Ann. New York Acad. Sci.,35: 125,(1936),,1936,336286,,609286,Abarema Pittier
+12,537531,23399-1,Caesalpinioideae,,Fabaceae,,Genus,Synonym,Synonym,Punjuba Britton & Rose,N. Amer. Fl.,23: 28,(1928),,1928,537531,,609286,Abarema Pittier
+13,609287,1077629-2,Caesalpinioideae,,Fabaceae,Abarema,Species,Accepted,Accepted,Abarema abbottii (Rose & Leonard) Barneby & J.W.Grimes,Mem. New York Bot. Gard.,74(1): 105,(1996),Hispaniola,1996,609287,,,
+13,331502,132561-2,,,Fabaceae,,Species,Synonym,Synonym,Jupunba abbottii (Rose & Leonard) Britton & Rose,N. Amer. Fl.,23: 27,(1928),,1928,331502,,609287,Abarema abbottii (Rose & Leonard) Barneby & J.W.Grimes
+13,554634,200611-2,Caesalpinioideae,,Fabaceae,,Species,Synonym,Synonym,Pithecellobium abbottii Rose & Leonard,J. Washington Acad. Sci.,17: 254,(1927),"Dominican Republic (Caribbean, Southern America)",1927,554634,,609287,Abarema abbottii (Rose & Leonard) Barneby & J.W.Grimes
+14,609290,989366-1,Caesalpinioideae,,Fabaceae,Abarema,Species,Accepted,Accepted,Abarema adenophora (Ducke) Barneby & J.W.Grimes,Mem. New York Bot. Gard.,74(1): 74,(1996),C. & S. Trop. America,1996,609290,,,
+14,540119,200615-2,Caesalpinioideae,,Fabaceae,,Species,Synonym,Synonym,Pithecellobium adenophorum Ducke,Arq. Inst. Biol. Veg.,4: 5,(1938),,1938,540119,,609290,Abarema adenophora (Ducke) Barneby & J.W.Grimes
+15,609291,989387-1,Caesalpinioideae,,Fabaceae,Abarema,Species,Accepted,Accepted,Abarema alexandri (Urb.) Barneby & J.W.Grimes,Mem. New York Bot. Gard.,74(1): 101,(1996),Jamaica,1996,609291,,,
+15,331503,132562-2,,,Fabaceae,,Species,Synonym,Synonym,Jupunba alexandri (Urb.) Britton & Rose,N. Amer. Fl.,23: 24,(1928),,1928,331503,,609291,Abarema alexandri (Urb.) Barneby & J.W.Grimes
+15,539274,200619-2,Caesalpinioideae,,Fabaceae,,Species,Synonym,Synonym,Pithecellobium alexandri (Urb.) Urb.,Symb. Antill.,5: 358,(1908),,1908,539274,,609291,Abarema alexandri (Urb.) Barneby & J.W.Grimes
+15,554629,200620-2,Caesalpinioideae,,Fabaceae,,Variety,Synonym,Synonym,Pithecellobium alexandri var. intermedium Urb.,Symb. Antill.,5: 359,(1908),"Jamaica (Caribbean, Southern America)",1908,554629,,609291,Abarema alexandri (Urb.) Barneby & J.W.Grimes
+15,554894,200716-2,Caesalpinioideae,,Fabaceae,,Variety,Synonym,Synonym,Pithecellobium jupunba var. alexandri Urb.,Symb. Antill.,2: 258,(1900),"Jamaica (Caribbean, Southern America)",1900,554894,,609291,Abarema alexandri (Urb.) Barneby & J.W.Grimes
+16,609292,989388-1,Caesalpinioideae,,Fabaceae,Abarema,Variety,Accepted,Accepted,Abarema alexandri var. troyana (Urb.) Barneby & J.W.Grimes,Mem. New York Bot. Gard.,74(1): 103,(1996),Jamaica,1996,609292,,,
+16,331555,132576-2,,,Fabaceae,,Species,Synonym,Synonym,Jupunba troyana (Urb.) Britton & Rose,N. Amer. Fl.,23: 25,(1928),,1928,331555,,609292,Abarema alexandri var. troyana (Urb.) Barneby & J.W.Grimes
+16,554628,200621-2,Caesalpinioideae,,Fabaceae,,Variety,Synonym,Synonym,Pithecellobium alexandri var. troyanum Urb.,Symb. Antill.,5: 359,(1908),"Jamaica (Caribbean, Southern America)",1908,554628,,609292,Abarema alexandri var. troyana (Urb.) Barneby & J.W.Grimes
+17,609295,989384-1,Caesalpinioideae,,Fabaceae,Abarema,Species,Accepted,Accepted,Abarema asplenifolia (Griseb.) Barneby & J.W.Grimes,Mem. New York Bot. Gard.,74(1): 97,(1996),Cuba,1996,609295,,,
+17,808845,494830-1,,,Fabaceae,,Species,Synonym,Synonym,Feuilleea asplenifolia (Griseb.) Kuntze,Revis. Gen. Pl.,1: 187,(1891),,1891,808845,,609295,Abarema asplenifolia (Griseb.) Barneby & J.W.Grimes
+#0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
+#sort_name,ID,ipni_id,subfamily,tribe,family,genus,rank,status_orig,status,scientificName,place_of_publication,volume_and_page,raw year,geographic_area,namePublishedInYear,nameReferenceID,remarks,parentID,accepted_name

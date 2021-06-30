@@ -13,6 +13,18 @@ import static org.junit.Assert.assertTrue;
 public class ColdpReaderTest {
 
   @Test
+  public void excelExport() throws Exception {
+    ColdpReader reader = ColdpReader.from(FileUtils.getClasspathFile("coldp/10").toPath());
+
+    assertEquals(1, reader.schemas().size());
+    assertTrue(reader.hasSchema(ColdpTerm.NameUsage));
+
+    var schema = reader.schema(ColdpTerm.NameUsage).get();
+    assertEquals(20, schema.columns.size());
+    assertTrue(schema.hasTerm(ColdpTerm.parentID));
+  }
+
+  @Test
   public void pluralFilenames() throws Exception {
     ColdpReader reader = ColdpReader.from(FileUtils.getClasspathFile("coldp/1").toPath());
     
