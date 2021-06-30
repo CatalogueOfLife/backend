@@ -18,7 +18,7 @@
     <@tag name="userId" value=a.orcid! indent=indent+2 />
 <#list 0..<indent as i> </#list></individualName>
 </#if>
-<#if a.isOrganisation()>
+<#if a.organization?has_content>
 <#list 0..<indent as i> </#list><organizationName>${a.organization}</organizationName>
 </#if>
 <#if a.city?has_content || a.state?has_content || a.country?has_content>
