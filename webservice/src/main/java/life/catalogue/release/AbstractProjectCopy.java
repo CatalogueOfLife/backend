@@ -31,6 +31,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected final NameUsageIndexService indexService;
   protected final int user;
   protected final int datasetKey;
+  protected final int attempt;
   protected final DatasetImport metrics;
   protected final String actionName;
   protected final Dataset newDataset;
@@ -54,7 +55,7 @@ public abstract class AbstractProjectCopy implements Runnable {
     this.datasetKey = datasetKey;
     metrics = diDao.createWaiting(datasetKey, this, userKey);
     metrics.setJob(getClass().getSimpleName());
-
+    attempt = metrics.getAttempt();
     newDataset = dDao.copy(datasetKey, userKey, this::modifyDataset);
     newDatasetKey = newDataset.getKey();
     newDatasetOrigin = newDataset.getOrigin();
@@ -66,7 +67,7 @@ public abstract class AbstractProjectCopy implements Runnable {
     d.setGbifPublisherKey(null);
     d.setDoi(null);
     // use the current attempt which gets written into the dataset table only at the end of the (successful) job
-    d.setAttempt(metrics.getAttempt());
+    d.setAttempt(attempt);
   }
 
   public int getDatasetKey() {

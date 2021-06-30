@@ -152,9 +152,9 @@ public class ProjectRelease extends AbstractProjectCopy {
           d.setDoi(srcDOI);
         }
 
-        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getAttempt(), newDatasetKey);
+        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), attempt, newDatasetKey);
         psm.create(newDatasetKey, d);
-        cm.createRelease(d.getKey(), newDatasetKey, d.getAttempt());
+        cm.createRelease(d.getKey(), newDatasetKey, attempt);
         // archive logos
         try {
           imageService.archiveDatasetLogo(newDatasetKey, d.getKey());
@@ -168,7 +168,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     // map ids
     updateState(ImportState.MATCHING);
-    IdProvider idProvider = new IdProvider(datasetKey, metrics.getAttempt(), newDatasetKey, cfg.release, factory);
+    IdProvider idProvider = new IdProvider(datasetKey, attempt, newDatasetKey, cfg.release, factory);
     idProvider.run();
   }
 
@@ -220,8 +220,8 @@ public class ProjectRelease extends AbstractProjectCopy {
     // update both the projects and release datasets import attempt pointer
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      dm.updateLastImport(datasetKey, metrics.getAttempt());
-      dm.updateLastImport(newDatasetKey, metrics.getAttempt());
+      dm.updateLastImport(datasetKey, attempt);
+      dm.updateLastImport(newDatasetKey, attempt);
     }
     // flush varnish cache for dataset/3LR and LRC
     if (client != null && datasetApiBuilder != null) {
@@ -242,7 +242,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   void onError() {
     // remove reports
-    File dir = cfg.release.reportDir(datasetKey, metrics.getAttempt());
+    File dir = cfg.release.reportDir(datasetKey, attempt);
     if (dir.exists()) {
       LOG.debug("Remove release report {}-{} for failed dataset {}", datasetKey, metrics.attempt(), newDatasetKey);
       FileUtils.deleteQuietly(dir);
