@@ -5,6 +5,7 @@ import life.catalogue.api.event.DoiChange;
 
 import com.google.common.eventbus.Subscribe;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -65,17 +66,21 @@ public class DoiUpdater {
   @Subscribe
   public void update(DoiChange event){
     if (event.getDoi().isCOL()) {
-      int datasetKey;
+      int datasetKey = -1;
       Integer sourceKey = null;
       try {
         // a dataset/release DOI
         datasetKey = event.getDoi().datasetKey();
         // make sure we have a project release
-        var info = DatasetInfoCache.CACHE.info(datasetKey);
+        var info = DatasetInfoCache.CACHE.info(datasetKey, true);
         if (info.origin != DatasetOrigin.RELEASED || info.sourceKey == null) {
           LOG.warn("COL dataset DOI {} that is not a release: {}", event.getDoi(), datasetKey);
           return;
         }
+      } catch (NotFoundException e) {
+        LOG.warn("COL dataset DOI {} that points to a non existing dataset {}", event.getDoi(), datasetKey);
+        return;
+
       } catch (IllegalArgumentException e) {
         // a source dataset DOI
         var key = event.getDoi().sourceDatasetKey();
