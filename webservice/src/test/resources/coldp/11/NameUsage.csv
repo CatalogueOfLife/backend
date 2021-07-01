@@ -1,0 +1,16 @@
+﻿ID,parentID,status,rank,scientificName
+1,,accepted,family,Leperditiidae
+2,1,accepted,genus,Leperditia
+3,2,accepted,genus,Briartina
+4,1,accepted,superfamily,Lepersuper
+5,4,accepted,subfamily,Lepersub
+6,1,accepted,,Leperblank
+7,6,accepted,family,Leperditiidae2
+8a,7,accepted,species aggregate,Leper vulgaris agg.
+8,8a,accepted,species,Leper vulgaris
+9,8,accepted,subspecies,Leper vulgaris marina
+10,9,accepted,,Leper vulgaris marona
+11,9,accepted,infrasubspecific name,Leper vulgaris maruna
+12,9,accepted,biovar,Leper vulgaris biota
+13,2,synonym,genus,Leperdutia
+14,9,synonym,species,Leperdutia vulgaris

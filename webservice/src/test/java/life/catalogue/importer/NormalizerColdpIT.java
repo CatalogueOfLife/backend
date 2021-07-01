@@ -298,7 +298,6 @@ public class NormalizerColdpIT extends NormalizerITBase {
     }
   }
 
-
   @Test
   public void excelFabaceae() throws Exception {
     normalize(10);
@@ -317,4 +316,22 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals(1, rels.size());
     }
   }
-}
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1035
+   */
+  @Test
+  public void badlyNestedRanks() throws Exception {
+    normalize(11);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      for (String id : List.of("3","4","7")) {
+        var t = usageByID(id);
+        assertTrue("Missing issue for "+id, hasIssues(t, Issue.CLASSIFICATION_RANK_ORDER_INVALID));
+      }
+      for (String id : List.of("1","2","8a","8","9","10","11","12","13","14")) {
+        var t = usageByID(id);
+        assertFalse("Wrong issue for "+id, hasIssues(t, Issue.CLASSIFICATION_RANK_ORDER_INVALID));
+      }
+    }
+  }}

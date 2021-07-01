@@ -176,7 +176,27 @@ public class Traversals {
     }
     return null;
   }
-  
+
+
+  /**
+   * Tries to find a parent node with a rank which is notOtherOrUnranked
+   *
+   * @param start node to start looking for parents, excluded from search
+   * @return the parent node with requested rank or null
+   */
+  public static Node parentWithConcreteRank(Node start) {
+    try (ResourceIterator<Node> parents = Traversals.PARENTS.traverse(start).nodes().iterator()) {
+      while (parents.hasNext()) {
+        Node p = parents.next();
+        Rank r = NeoProperties.getRank(NeoProperties.getNameNode(p), Rank.UNRANKED);
+        if (r.notOtherOrUnranked()) {
+          return p;
+        }
+      }
+    }
+    return null;
+  }
+
   /**
    * List all parents or until a given start node is reached, excluding both start and end node.
    */

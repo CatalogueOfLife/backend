@@ -200,9 +200,10 @@ public class Normalizer implements Callable<Boolean> {
       public void process(Node n) {
         RankedUsage ru = NeoProperties.getRankedUsage(n);
         // compare with parent rank
-        Node pNode = Traversals.parentOf(n);
+        Node pNode = Traversals.parentWithConcreteRank(n);
         if (pNode != null && !ru.rank.isUncomparable()) {
-          Rank pRank = NeoProperties.getRank(pNode, Rank.UNRANKED);
+          Node pNameNode = NeoProperties.getNameNode(pNode);
+          Rank pRank = NeoProperties.getRank(pNameNode, Rank.UNRANKED);
           if (ru.rank == pRank || RankUtils.higherThanCodeAgnostic(ru.rank, pRank)) {
             store.addUsageIssues(n, Issue.CLASSIFICATION_RANK_ORDER_INVALID);
           }
