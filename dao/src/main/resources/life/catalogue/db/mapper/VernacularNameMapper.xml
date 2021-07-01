@@ -114,6 +114,20 @@
     WHERE vn.id = #{key.id}
   </select>
 
+  <select id="searchAll" resultMap="vernacularNameUsageResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM vernacular_name vn
+    <where>
+      <if test="q != null">
+        vn.doc @@ to_tsquery('${q}')
+      </if>
+      <if test="lang != null">
+        AND vn.language = #{lang}
+      </if>
+    </where>
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
   <select id="search" resultMap="vernacularNameUsageResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
