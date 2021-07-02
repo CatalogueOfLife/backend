@@ -38,7 +38,7 @@ public abstract class BaseDiffServiceTest<K> extends DaoTestBase {
     final File f1 = Resources.toFile("trees/coldp.tree.gz");
     final File f2 = Resources.toFile("trees/coldp2.tree.gz");
 
-    BufferedReader br = diff.udiff(provideTestKey(), new int[]{1,2}, i -> {
+    BufferedReader br = diff.udiff(provideTestKey(), new int[]{1,2}, 2, i -> {
       switch (i) {
         case 1: return f1;
         case 2: return f2;
@@ -47,16 +47,16 @@ public abstract class BaseDiffServiceTest<K> extends DaoTestBase {
     });
 
 
-    String version = IOUtils.toString(br);
-    System.out.println(version);
+    String udiff = IOUtils.toString(br);
+    System.out.println(udiff);
 
-    Assert.assertTrue(version.startsWith("---"));
+    Assert.assertTrue(udiff.startsWith("---"));
   }
 
   abstract K provideTestKey();
 
   @Test(expected = FileMetricsDao.AttemptMissingException.class)
-  public void namesDiff() throws Exception {
+  public void missingFile() throws Exception {
     final File bad = new File("/tmp/I do not exist");
     diff.namesDiff(provideTestKey(), new int[]{1,2,3}, i -> {
       switch (i) {
@@ -90,7 +90,7 @@ public abstract class BaseDiffServiceTest<K> extends DaoTestBase {
   }
 
   @Test
-  public void namesdiff() throws Exception {
+  public void namesDiff() throws Exception {
     final File f1 = Resources.toFile("names1.txt");
     final File f2 = Resources.toFile("names2.txt");
 

@@ -1,0 +1,15 @@
+﻿ID,parentID,status,rank,code,scientificName,authorship,species,genus,family,superfamily,suborder,order,subclass,class,subphylum,phylum,kingdom
+4,,accepted,order,ICZN,Decapoda,,,,,,,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia
+5,4,accepted,suborder,ICZN,Pleocyemata,,,,,,,Decapoda,,,Crustaceae,Arthropoda,Animalia
+6,1,accepted,superfamily,ICZN,Cryptochiroidea,,,,,,,Decapoda,,,Crustaceae,Arthropoda,Animalia
+7,6,accepted,family,ICZN,Cryptochiridae,,,,,,,Decapoda,,,Crustaceae,Arthropoda,Animalia
+106679,broken,accepted,section,ICZN,Eubrachyura,"Saint Laurent, 1980",,,,,Pleocyemata,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia
+106682,106679,accepted,subsection,ICZN,Thoracotremata,"Guinot, 1977",,,,,Pleocyemata,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia
+106696,106682,accepted,Superfamily,ICZN,Cryptochiroidea,"Paulson, 1875",,,,Cryptochiroidea,Pleocyemata,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia
+106753,106696,accepted,Family,ICZN,Cryptochiridae,"Paulson, 1875",,,Cryptochiridae,Cryptochiroidea,Pleocyemata,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia
+439231,106753,accepted,Genus,ICZN,Lithoscaptus,"A. Milne-Edwards, 1862",,Lithoscaptus,Cryptochiridae,Cryptochiroidea,Pleocyemata,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia
+444415,439231,accepted,species,ICZN,Lithoscaptus grandis,"(Takeda & Tamura, 1983)",grandis,Lithoscaptus,Cryptochiridae,Cryptochiroidea,Pleocyemata,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia
+10,106679,accepted,subsection,ICZN,Heterotremata,"Guinot, 1977",,,,,Pleocyemata,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia
+11,10,accepted,superfamily,ICZN,Aethroidea,"Dana, 1851",,,,,Pleocyemata,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia
+12,11,accepted,family,ICZN,Aethridae,"Dana, 1851",,,,,Pleocyemata,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia
+13,12,accepted,genus,ICZN,Actaeomorpha,"Miers, 1877",,,,,Pleocyemata,Decapoda,Eumalacostraca,Malacostraca,Crustaceae,Arthropoda,Animalia

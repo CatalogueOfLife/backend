@@ -55,8 +55,8 @@ public class NamesDiff {
         "key=" + key +
         ", attempt1=" + attempt1 +
         ", attempt2=" + attempt2 +
-        ", deleted=" + deleted +
-        ", inserted=" + inserted +
+        ", deleted=" + deleted.size() +
+        ", inserted=" + inserted.size() +
         '}';
   }
 }

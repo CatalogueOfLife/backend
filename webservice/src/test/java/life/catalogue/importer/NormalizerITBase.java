@@ -278,5 +278,9 @@ abstract class NormalizerITBase {
   public void debug() throws Exception {
     store.dump(new File("graphs/debugtree.dot"));
   }
-  
+
+  public void printTree() throws Exception {
+    store.debug();
+  }
+
 }

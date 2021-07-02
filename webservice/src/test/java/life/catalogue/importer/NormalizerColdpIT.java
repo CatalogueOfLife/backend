@@ -334,4 +334,19 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertFalse("Wrong issue for "+id, hasIssues(t, Issue.CLASSIFICATION_RANK_ORDER_INVALID));
       }
     }
-  }}
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/testing/issues/141
+   */
+  @Test
+  public void zooSection() throws Exception {
+    normalize(12);
+
+    printTree();
+
+    //try (Transaction tx = store.getNeo().beginTx()) {
+    //}
+  }
+
+}

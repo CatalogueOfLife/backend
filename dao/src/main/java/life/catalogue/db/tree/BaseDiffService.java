@@ -3,6 +3,7 @@ package life.catalogue.db.tree;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ImportAttempt;
 import life.catalogue.common.io.InputStreamUtils;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.FileMetricsDao;
 
 import java.io.*;
@@ -10,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -36,12 +38,12 @@ public abstract class BaseDiffService<K> {
 
   public Reader treeDiff(K key, String attempts) {
     int[] atts = parseAttempts(key, attempts);
-    return udiff(key, atts, a -> dao.treeFile(key, a));
+    return udiff(key, atts, 2, a -> dao.treeFile(key, a));
   }
 
   public Reader namesDiff(K key, String attempts) {
     int[] atts = parseAttempts(key, attempts);
-    return udiff(key, atts, a -> dao.namesFile(key, a));
+    return udiff(key, atts, 0, a -> dao.namesFile(key, a));
   }
 
   abstract int[] parseAttempts(K key, String attempts);
@@ -124,25 +126,42 @@ public abstract class BaseDiffService<K> {
     return InputStreamUtils.readEntireStream(ps.getInputStream());
   }
 
+  private String label(K key, int attempt) {
+    return "dataset_" + key + "#" + attempt;
+  }
+
   /**
    * Generates a unified diff from two gzipped files using a native unix process.
+   * It allows a maximum of 10s before timing out.
    * @param atts
+   * @param context number of lines of the context to include
    * @param getFile
    */
   @VisibleForTesting
-  protected BufferedReader udiff(K key, int[] atts, Function<Integer, File> getFile) {
+  protected BufferedReader udiff(K key, int[] atts, int context, Function<Integer, File> getFile) {
     File[] files = attemptToFiles(key, atts, getFile);
     try {
-      String cmd = String.format("export LC_CTYPE=en_US.UTF-8; diff -B -d -U 2 <(gunzip -c %s) <(gunzip -c %s)", files[0].getAbsolutePath(), files[1].getAbsolutePath());
+      String cmd = String.format("export LC_CTYPE=en_US.UTF-8; diff --label %s --label %s -B -d -U %s <(gunzip -c %s) <(gunzip -c %s)",
+        label(key,atts[0]), label(key,atts[1]), context, files[0].getAbsolutePath(), files[1].getAbsolutePath());
+      // we write the diff to a temp file as we get into problems with the process not returning when streaming the results directly. Especially when http connections are aborted.
+      File tmp = File.createTempFile("coldiff-"+key, ".diff");
+      tmp.deleteOnExit();
       LOG.debug("Execute: {}", cmd);
       ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd + "; exit 0");
+      pb.redirectOutput(tmp);
+
       Process ps = pb.start();
+      // limit to 10s, see https://stackoverflow.com/questions/37043114/how-to-stop-a-command-being-executed-after-4-5-seconds-through-process-builder/37065167#37065167
+      if (!ps.waitFor(10, TimeUnit.SECONDS)) {
+        LOG.warn("Diff for {} attempts {} has timed out after 10s", key, atts);
+        ps.destroy(); // make sure we leave no process behind
+      }
       int status = ps.waitFor();
       if (status != 0) {
         String error = InputStreamUtils.readEntireStream(ps.getErrorStream());
         throw new RuntimeException("Unix diff failed with status " + status + ": " + error);
       }
-      return new BufferedReader(new InputStreamReader(ps.getInputStream(), StandardCharsets.UTF_8));
+      return UTF8IoUtils.readerFromFile(tmp);
 
     } catch (IOException e) {
       throw new RuntimeException("Unix diff failed", e);
