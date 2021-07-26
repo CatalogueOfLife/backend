@@ -17,7 +17,7 @@ public enum ColDwcTerm implements Term, AlternativeNames {
   relationRemarks;
   
   private static final String PREFIX = "coldwc";
-  private static final String NS = "http://rs.col.plus/terms/dwc/";
+  private static final String NS = "http://rs.catalogueoflife.org/terms/dwc";
   private static final URI NS_URI = URI.create(NS);
   
   private final boolean isClass;

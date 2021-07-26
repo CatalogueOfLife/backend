@@ -28,7 +28,7 @@ public class Classification {
       Rank.SUBTRIBE,
       Rank.GENUS,
       Rank.SUBGENUS,
-      Rank.SECTION,
+      Rank.SECTION, // this is a botanical placement!
       Rank.SPECIES
   );
   private static final List<Rank> RANKS_REVERSED = ImmutableList.copyOf(Lists.reverse(RANKS));
