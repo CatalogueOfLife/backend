@@ -33,5 +33,19 @@ public class ProjectContributionTest {
     contrib.add(d);
 
     assertEquals(10, contrib.size());
+
+    // Add same agent again with different source
+    d = DatasetTest.generateTestDataset();
+    d.setKey(101);
+    d.setCreator(List.of(Agent.parse("Mama")));
+    d.setEditor(List.of(Agent.parse("M. Joe")));
+    contrib.add(d);
+
+    assertEquals(10, contrib.size());
+    for (ProjectContribution.Contributor c : contrib) {
+      if (c.getName().equals("Joe M.")) {
+        assertEquals(2, c.sources.size());
+      }
+    }
   }
 }

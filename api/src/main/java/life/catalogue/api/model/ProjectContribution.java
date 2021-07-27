@@ -11,49 +11,61 @@ public class ProjectContribution extends TreeSet<ProjectContribution.Contributor
 
   static class Contributor extends Agent {
 
-    public final Map<Integer, String> sources = new HashMap<>();
+    private final Map<Integer, String> sources = new HashMap<>();
 
-    public Contributor() {
+    public Contributor(Agent p, Dataset d) {
+      super(p);
+      addSource(d);
     }
 
-    public Contributor(Agent p) {
-      super(p);
+    public Map<Integer, String> getSources() {
+      return sources;
+    }
+
+    public void addSource(final Dataset d) {
+      sources.put(d.getKey(), d.getAlias());
     }
 
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
-      if (!super.equals(o)) return false;
       Agent that = (Agent) o;
-      return Objects.equals(getFamily(), that.getFamily()) &&
-             Objects.equals(getGiven(), that.getGiven());
+      return Objects.equals(getName(), that.getName());
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(getFamily(), getGiven());
+      return Objects.hash(getName());
     }
 
   }
 
-  public void add(Dataset d) {
+  public void add(final Dataset d) {
     // we do not include the contact - its not a contributor and often void of a name
     if (d.getCreator() != null) {
-      d.getCreator().forEach(this::add);
+      d.getCreator().forEach(a -> this.add(d, a));
     }
     if (d.getEditor() != null) {
-      d.getEditor().forEach(this::add);
+      d.getEditor().forEach(a -> this.add(d, a));
     }
     if (d.getContributor() != null) {
-      d.getContributor().forEach(this::add);
+      d.getContributor().forEach(a -> this.add(d, a));
     }
-    add (d.getPublisher());
+    add(d, d.getPublisher());
   }
 
-  public void add(Agent p) {
+  public void add(Dataset d, Agent p) {
     if (p != null && p.getName() != null) {
-      add(new Contributor(p));
+      Contributor c = new Contributor(p, d);
+      // prefer to reuse existing one and add the source
+      for (Contributor old : this) {
+        if (old.equals(c)) {
+          old.addSource(d);
+          return;
+        }
+      }
+      add(c);
     }
   }
 }
