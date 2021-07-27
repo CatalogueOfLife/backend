@@ -173,16 +173,18 @@ public class PgImport implements Callable<Boolean> {
 
   /**
    * Updates the given dataset d with the provided metadata update,
-   * retaining managed properties like keys and settings
+   * retaining managed properties like keys and settings.
+   * Mandatory properties like title and license are only changed if not null.
    * @param d
    * @param update
    */
   public static DatasetWithSettings updateMetadata(DatasetWithSettings d, DatasetWithSettings update) {
+    Set<String> nonNullProps = Set.of("title", "license");
     try {
       for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
         Object val = prop.getReadMethod().invoke(update.getDataset());
         // title is the only required property
-        if (val != null || !prop.getName().equalsIgnoreCase("title")) {
+        if (val != null || !nonNullProps.contains(prop.getName())) {
           prop.getWriteMethod().invoke(d.getDataset(), val);
         }
       }

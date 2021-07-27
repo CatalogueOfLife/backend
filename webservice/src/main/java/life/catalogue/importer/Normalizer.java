@@ -897,7 +897,6 @@ public class Normalizer implements Callable<Boolean> {
           throw new NormalizationFailedException("Unsupported data format " + format);
       }
       // first metadata, the key will be preserved by the store
-      //TODO: should we not also read the nom code and other potential settings?
       inserter.readMetadata().ifPresent(d -> PgImport.updateMetadata(dataset, d));
       // data
       inserter.insertAll();
