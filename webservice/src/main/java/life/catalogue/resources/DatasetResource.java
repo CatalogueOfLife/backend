@@ -25,7 +25,9 @@ import life.catalogue.release.ReleaseManager;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
@@ -209,8 +211,21 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("/{key}/source")
-  public List<Dataset> projectSources(@PathParam("key") int datasetKey) {
-    return sourceDao.list(datasetKey, null, false);
+  public List<Dataset> projectSources(@PathParam("key") int datasetKey, @QueryParam("notCurrentOnly") boolean notCurrentOnly) {
+    var ds = sourceDao.list(datasetKey, null, false);
+    if (notCurrentOnly) {
+      List<Dataset> notCurrent = new ArrayList<>();
+      for (Dataset d : ds) {
+        Dataset curr = dao.get(d.getKey());
+        if (curr != null && !Objects.equals(curr.getAttempt(), d.getAttempt())) {
+          notCurrent.add(d);
+        }
+      }
+      return notCurrent;
+
+    } else {
+      return ds;
+    }
   }
 
   @GET
