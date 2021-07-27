@@ -62,6 +62,24 @@ public class DatasetSourceDao {
     return d;
   }
 
+  public int update(int datasetKey, Dataset source, int user) {
+    source.applyUser(user);
+
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (RELEASED != info.origin) {
+      throw new IllegalArgumentException("source has to be from a release");
+    }
+
+    try (SqlSession session = factory.openSession()) {
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      if (psm.delete(source.getKey(), datasetKey) > 0) {
+        psm.create(datasetKey, source);
+        return 1;
+      }
+    }
+    return 0;
+  }
+
   /**
    * List the source datasets for a project or release.
    * If the key points to a release the patched and archived source metadata is returned.

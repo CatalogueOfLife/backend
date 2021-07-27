@@ -51,6 +51,13 @@ public interface DatasetSourceMapper {
   List<Dataset> listProjectSources(@Param("datasetKey") int datasetKey);
 
   /**
+   * Deletes a single source dataset for the given release
+   * @param key the source dataset key
+   * @param datasetKey the release dataset key. No project keys allowed!
+   */
+  int delete(@Param("key") int key, @Param("datasetKey") int datasetKey);
+
+  /**
    * Deletes all source datasets for the given release
    * @param datasetKey the release dataset key. No project keys allowed!
    */

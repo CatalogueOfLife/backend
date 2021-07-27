@@ -238,9 +238,24 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   })
   public Dataset projectSource(@PathParam("key") int datasetKey,
                                @PathParam("id") int id,
-                               @QueryParam("original") boolean original,
-                               @Context SqlSession session) {
+                               @QueryParam("original") boolean original) {
     return sourceDao.get(datasetKey, id, original);
+  }
+
+  @PUT
+  @Path("/{key}/source/{id}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @Consumes({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+  public void updateProjectSource(@PathParam("key") int datasetKey, @PathParam("id") int id, Dataset obj, @Auth User user) {
+    if (obj==null) {
+      throw new IllegalArgumentException("No source entity given for key " + id);
+    }
+    obj.setKey(id);
+    obj.applyUser(user);
+    int i = sourceDao.update(datasetKey, obj, user.getKey());
+    if (i == 0) {
+      throw NotFoundException.notFound(Dataset.class, DSID.of(datasetKey, id));
+    }
   }
 
   @GET

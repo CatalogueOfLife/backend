@@ -94,6 +94,10 @@
     VALUES (#{obj.key}, #{datasetKey}, #{obj.attempt}, <include refid="PROPS"/>, #{obj.sourceKey}, #{obj.origin}::DATASETORIGIN, now(), now())
   </insert>
 
+  <delete id="delete" parameterType="map">
+    DELETE FROM dataset_source WHERE dataset_key = #{datasetKey} AND key = #{key};
+  </delete>
+
   <delete id="deleteByRelease" parameterType="map">
     DELETE FROM dataset_source WHERE dataset_key = #{datasetKey};
   </delete>
