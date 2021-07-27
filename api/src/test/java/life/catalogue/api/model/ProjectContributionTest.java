@@ -44,7 +44,7 @@ public class ProjectContributionTest {
     assertEquals(10, contrib.size());
     for (ProjectContribution.Contributor c : contrib) {
       if (c.getName().equals("Joe M.")) {
-        assertEquals(2, c.sources.size());
+        assertEquals(2, c.getSources().size());
       }
     }
   }
