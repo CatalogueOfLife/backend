@@ -421,7 +421,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   private void changeEditor(int key, int editorKey, User user, Consumer<DatasetMapper> action) {
-    if (!user.isAuthorized(key)) {
+    if (!user.hasRole(User.Role.ADMIN) && !user.isEditor(key)) {
       throw new WebApplicationException(Response.Status.FORBIDDEN);
     }
     User editor;
@@ -459,7 +459,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     create(copy, userKey);
 
-    // TODO: copy editor rights
     // copy logo files
     try {
       imgService.copyDatasetLogo(datasetKey, copy.getKey());

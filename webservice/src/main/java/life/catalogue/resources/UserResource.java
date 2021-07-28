@@ -5,8 +5,10 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.dw.auth.AuthFilter;
 import life.catalogue.dw.auth.JwtCodec;
 import life.catalogue.dw.auth.Roles;
 
@@ -109,7 +111,7 @@ public class UserResource {
   @GET
   @Path("/dataset/{key}")
   public boolean isAuthorized(@PathParam("key") int key, @Auth User user) {
-    return user.isAuthorized(key);
+    return AuthFilter.isAuthorized(user, key);
   }
 
   @PUT

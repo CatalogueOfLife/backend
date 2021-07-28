@@ -6,7 +6,10 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import life.catalogue.api.model.User;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.jersey.exception.JsonExceptionMapperBase;
+
+import org.parboiled.support.Checks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,7 +124,22 @@ public class AuthFilter implements ContainerRequestFilter {
       @Override
       public boolean isUserInRole(String role) {
         Integer datasetKey = requestedDataset(req.getUriInfo());
-        return user.user.hasRole(role, datasetKey);
+        try {
+          User.Role r = User.Role.valueOf(role.trim().toUpperCase());
+          if (user.user.hasRole(r)) {
+            // the editor role is scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
+            // Check if the user has permissions. For releases use the project key for evaluation.
+            if (r == User.Role.EDITOR) {
+              return isAuthorized(user.user, datasetKey);
+            }
+            return true;
+          }
+
+        } catch (IllegalArgumentException e) {
+          // swallow, we dont know this role so the user doesnt have it.
+        }
+        return false;
+
       }
 
       @Override
@@ -135,6 +153,17 @@ public class AuthFilter implements ContainerRequestFilter {
       }
     });
 
+  }
+
+  /**
+   * Evaluates if a user has editorial permission on a given dataset.
+   * Admins have access to all datasets. Editors only to the ones explicitly listed in the users dataset property.
+   * Project releases are evaluated by the project only, thus an editor of a project always has access to all releases.
+   */
+  public static boolean isAuthorized(User user, int datasetKey){
+    // use the project key to evaluate permissions
+    int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(datasetKey);
+    return user.hasRole(User.Role.ADMIN) || user.isEditor(masterKey);
   }
 
   static Integer requestedDataset(UriInfo uri){

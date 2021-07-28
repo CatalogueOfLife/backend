@@ -28,7 +28,7 @@ public class User implements Entity<Integer>, Principal {
   public static Integer userkey(Optional<User> user){
     if (user.isPresent()) {
       User u = user.get();
-      if (u.hasRole(Role.ADMIN, null)) {
+      if (u.hasRole(Role.ADMIN)) {
         return ADMIN_MAGIC_KEY;
       }
       return u.getKey();
@@ -80,17 +80,6 @@ public class User implements Entity<Integer>, Principal {
   public boolean implies(Subject subject) {
     return false;
   }
-  
-  public boolean hasRole(String role, Integer datasetKey) {
-    try {
-      Role r = Role.valueOf(role.trim().toUpperCase());
-      return hasRole(r, datasetKey);
-      
-    } catch (IllegalArgumentException e) {
-      // swallow, we dont know this role so the user doesnt have it.
-    }
-    return false;
-  }
 
   /**
    * Checks if a user has the given role. Note that the {@link Role#EDITOR} role is dataset specific.
@@ -100,26 +89,7 @@ public class User implements Entity<Integer>, Principal {
     return roles.contains(role);
   }
 
-  /**
-   * Checks if a user has the given role and evaluates for the {@link Role#EDITOR} role also the given datasetKey
-   */
-  public boolean hasRole(Role role, Integer datasetKey) {
-    // the editor role is scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
-    return roles.contains(role) &&
-      (role == Role.ADMIN || datasetKey == null || isEditor(datasetKey)
-      );
-  }
-
-  /**
-   * @return true if the user is an {@link Role#ADMIN} or {@link Role#EDITOR} with the given datasetKey listed in datasets
-   */
-  public boolean isAuthorized(Integer datasetKey) {
-    if (datasetKey == null) return true;
-    return roles.contains(Role.ADMIN) || isEditor(datasetKey);
-  }
-
-  @VisibleForTesting
-  boolean isEditor(int datasetKey) {
+  public boolean isEditor(int datasetKey) {
     return roles.contains(Role.EDITOR) && datasets.contains(datasetKey);
   }
 

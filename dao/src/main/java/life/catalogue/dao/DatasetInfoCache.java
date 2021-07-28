@@ -101,6 +101,15 @@ public class DatasetInfoCache {
   }
 
   /**
+   * @return the source=project key for releases or the given key for all other origins
+   * @throws NotFoundException
+   */
+  public int keyOrProjectKey(int datasetKey) throws NotFoundException {
+    var info = get(datasetKey, true);
+    return info.origin == DatasetOrigin.RELEASED ? info.sourceKey : datasetKey;
+  }
+
+  /**
    * Makes sure the dataset key exists and is not deleted.
    * @param datasetKey
    * @throws NotFoundException

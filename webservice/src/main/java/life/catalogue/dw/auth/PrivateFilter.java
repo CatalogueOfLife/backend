@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMaps;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import life.catalogue.api.model.User;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -19,7 +20,7 @@ import java.io.IOException;
 import java.util.function.IntPredicate;
 
 /**
- * Avoids unpriveleged access to private datasets.
+ * Avoids unprivileged access to private datasets.
  * See https://github.com/CatalogueOfLife/backend/issues/659
  * <p>
  * To prevent performance penalties a low memory footprint cache is used.
@@ -50,7 +51,7 @@ public class PrivateFilter implements ContainerRequestFilter {
         SecurityContext secCtxt = req.getSecurityContext();
         if (secCtxt != null && secCtxt.getUserPrincipal() != null && secCtxt.getUserPrincipal() instanceof User) {
           User user = (User) secCtxt.getUserPrincipal();
-          if (!user.isAuthorized(datasetKey)) {
+          if (!AuthFilter.isAuthorized(user, datasetKey)) {
             throw new ForbiddenException("Dataset " + datasetKey + " is private");
           }
         } else {
