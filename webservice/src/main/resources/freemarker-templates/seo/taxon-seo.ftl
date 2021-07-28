@@ -1,5 +1,5 @@
 <#assign _title>${info.taxon.getLabel()} | COL</#assign>
-<#assign _description>${info.taxon.label} in the Catalogue of Life<#if source??> based on ${source.citation!source.title!"unknown"}</#if></#assign>
+<#assign _description>${info.taxon.label} in the Catalogue of Life<#if source??> based on ${source.title!""}</#if></#assign>
 
 <meta name="title" content="${_title}" />
 <meta name="description" content="${_description}" />
