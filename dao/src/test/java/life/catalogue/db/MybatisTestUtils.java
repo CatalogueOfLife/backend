@@ -102,8 +102,8 @@ public class MybatisTestUtils {
     populateTestTree(COL, session);
   
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
-    tm.incDatasetSectorCount(DSID.draftID("t4"), 11, 1);
-    tm.incDatasetSectorCount(DSID.draftID("t5"), 11, 1);
+    tm.incDatasetSectorCount(DSID.colID("t4"), 11, 1);
+    tm.incDatasetSectorCount(DSID.colID("t5"), 11, 1);
     session.commit();
   }
   

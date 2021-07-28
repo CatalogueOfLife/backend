@@ -34,12 +34,10 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
   private final TaxonDao dao;
-  private final DatasetSourceDao sourceDao;
 
-  public TaxonResource(TaxonDao dao, DatasetSourceDao sourceDao) {
+  public TaxonResource(TaxonDao dao) {
     super(Taxon.class, dao);
     this.dao = dao;
-    this.sourceDao = sourceDao;
   }
 
   public static class TaxonSearchRequest {
@@ -70,48 +68,6 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
       }
     }
     return obj;
-  }
-
-  @GET
-  @Hidden
-  @Path("{id}/seo")
-  @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
-  public Response getHtmlHeader(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    final var key = new DSIDValue<>(datasetKey, id);
-    Taxon t = dao.get(key);
-    if (t == null) {
-      throw NotFoundException.notFound(Taxon.class, key);
-    }
-
-    final Map<String, Object> data = new HashMap<>();
-    TaxonInfo info = new TaxonInfo();
-    info.setTaxon(t);
-    data.put("info", info);
-    try (SqlSession session = dao.getFactory().openSession()) {
-      dao.fillTaxonInfo(session, info, null,
-        true,
-        true,
-        false,
-        true,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false
-      );
-      // put source dataset title into the ID field so we can show a real title
-      if (info.getSource()!=null) {
-        var source = sourceDao.get(datasetKey, info.getSource().getSourceDatasetKey(), false);
-        //session.getMapper(DatasetMapper.class).get(info.getSource().getDatasetKey());
-        data.put("source", source);
-      }
-      if (info.getTaxon().getParentId()!=null) {
-        SimpleName parent = session.getMapper(NameUsageMapper.class).getSimple(DSID.of(datasetKey, info.getTaxon().getParentId()));
-        data.put("parent", parent);
-      }
-    }
-    return ResourceUtils.streamFreemarker(data, "seo/taxon-seo.ftl", MediaType.TEXT_PLAIN_TYPE);
   }
 
   @GET

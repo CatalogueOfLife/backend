@@ -44,17 +44,17 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
     MybatisTestUtils.populateDraftTree(session());
 
-    tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t4"));
+    tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t4"));
     assertNotNull(tn.getDatasetSectors());
     assertEquals(1, (int) tn.getDatasetSectors().get(11));
   
-    tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t3"));
+    tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t3"));
     assertEquals(2, (int) tn.getDatasetSectors().get(11));
   
-    tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t2"));
+    tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t2"));
     assertEquals(2, (int) tn.getDatasetSectors().get(11));
   
-    tn = mapper().get(Datasets.COL, null, DSID.draftID("t1"));
+    tn = mapper().get(Datasets.COL, null, DSID.colID("t1"));
     assertNull(tn.getDatasetSectors());
     assertNull(tn.getSectorKey());
     assertNull(tn.getDecision());
@@ -168,19 +168,19 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     sm.create(s2);
     commit();
     
-    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t1"), null, true, new Page());
+    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t1"), null, true, new Page());
     assertEquals(1, nodes.size());
     noSectors(nodes);
   
-    nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t2"), null, true, new Page());
+    nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t2"), null, true, new Page());
     assertEquals(1, nodes.size());
     noSectors(nodes);
     
-    nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t3"), null, true, new Page());
+    nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t3"), null, true, new Page());
     assertEquals(2, nodes.size());
     valid(nodes);
 
-    nodes = mapper().classification(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t4"));
+    nodes = mapper().classification(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t4"));
     assertEquals(4, nodes.size());
     valid(nodes);
   }

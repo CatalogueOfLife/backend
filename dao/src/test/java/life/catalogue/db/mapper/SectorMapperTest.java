@@ -148,7 +148,7 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   }
 
   public static Sector create() {
-    return create(DSID.draftID(UUID.randomUUID().toString()), DSID.of(subjectDatasetKey, UUID.randomUUID().toString()));
+    return create(DSID.colID(UUID.randomUUID().toString()), DSID.of(subjectDatasetKey, UUID.randomUUID().toString()));
   }
 
   public static Sector create(DSID<String> target, DSID<String> subject) {

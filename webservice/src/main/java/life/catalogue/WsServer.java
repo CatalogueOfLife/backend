@@ -330,6 +330,7 @@ public class WsServer extends Application<WsServerConfig> {
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
       importManager, gbifSync, ni, executor, idMap));
+    j.register(new ColSeoResource(tdao, dsdao, coljersey.getCache()));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetExportResource(getSqlSessionFactory(), exportManager, diDao, cfg));
@@ -352,7 +353,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, tdao, fmsDao, assembly));
     j.register(new SynonymResource(sdao));
-    j.register(new TaxonResource(tdao, dsdao));
+    j.register(new TaxonResource(tdao));
     j.register(new TreeResource(tdao, trDao));
     j.register(new UserResource(auth.getJwtCodec(), udao));
     j.register(new VerbatimResource());

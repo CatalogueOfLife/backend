@@ -93,7 +93,7 @@ public interface DSID<K> extends DatasetScoped, Entity<DSID<K>> {
     return new DSIDValue<K>(datasetKey, id);
   }
 
-  static <K> DSIDValue<K> draftID(K id) {
+  static <K> DSIDValue<K> colID(K id) {
     return new DSIDValue<K>(COL, id);
   }
 

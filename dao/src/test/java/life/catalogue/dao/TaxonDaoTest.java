@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
@@ -274,7 +273,7 @@ public class TaxonDaoTest extends DaoTestBase {
   @Test
   public void updateParentChange(){
     MybatisTestUtils.populateDraftTree(session());
-    Taxon t5 = tDao.get(DSID.draftID("t5"));
+    Taxon t5 = tDao.get(DSID.colID("t5"));
     assertEquals("t3", t5.getParentId());
     t5.setParentId("t4");
     tDao.update(t5, USER_EDITOR.getKey());
@@ -283,7 +282,7 @@ public class TaxonDaoTest extends DaoTestBase {
   @Test(expected = IllegalArgumentException.class)
   public void updateIllegalParentChange(){
     MybatisTestUtils.populateDraftTree(session());
-    Taxon t5 = tDao.get(DSID.draftID("t5"));
+    Taxon t5 = tDao.get(DSID.colID("t5"));
     assertEquals("t3", t5.getParentId());
     t5.setSectorKey(1);
     tDao.update(t5, USER_EDITOR.getKey());

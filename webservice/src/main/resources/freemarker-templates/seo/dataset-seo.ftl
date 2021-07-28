@@ -60,12 +60,12 @@
   "datePublished": "${released!}",
   "publisher": {
     "@type": "Organization",
-    "name": "The Catalogue of Life Partnership",
+    "name": "Catalogue of Life (COL)",
     "url": "http://www.catalogueoflife.org/"
   },
   "provider": {
     "@type": "Organization",
-    "name": "GBIF",
+    "name": "Global Biodiversity Information Facility (GBIF)",
     "url": "https://www.gbif.org",
     "logo": "https://www.gbif.org/img/logo/GBIF50.png",
     "email": "info@gbif.org",

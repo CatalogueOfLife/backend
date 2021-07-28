@@ -69,23 +69,23 @@ public class SectorDaoTest extends DaoTestBase {
     try (SqlSession session = factory().openSession(true)) {
       TreeMapper tm = session.getMapper(TreeMapper.class);
     
-      TreeNode tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t5"));
+      TreeNode tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t5"));
       assertEquals(0, tn.getDatasetSectors().get(11));
       assertEquals(1, tn.getDatasetSectors().get(12));
   
-      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t4"));
+      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t4"));
       assertEquals(1, tn.getDatasetSectors().get(11));
       assertEquals(0, tn.getDatasetSectors().get(12));
 
-      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t3"));
+      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t3"));
       assertEquals(1, tn.getDatasetSectors().get(11));
       assertEquals(2, tn.getDatasetSectors().get(12));
     
-      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t2"));
+      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t2"));
       assertEquals(1, tn.getDatasetSectors().get(11));
       assertEquals(2, tn.getDatasetSectors().get(12));
     
-      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t1"));
+      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t1"));
       assertEquals(1, tn.getDatasetSectors().get(11));
       assertEquals(2, tn.getDatasetSectors().get(12));
     }

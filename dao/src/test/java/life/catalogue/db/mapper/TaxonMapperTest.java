@@ -286,7 +286,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     assertEquals(9, getTreeNode("t1").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
   
   
-    mapper().incDatasetSectorCount(DSID.draftID("unreal"), sector.getSubjectDatasetKey(), 10);
+    mapper().incDatasetSectorCount(DSID.colID("unreal"), sector.getSubjectDatasetKey(), 10);
     // no change
     assertEquals(9, getTreeNode("t3").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
     assertEquals(9, getTreeNode("t2").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
@@ -303,7 +303,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
   }
   
   private TreeNode getTreeNode(String id) {
-    return session().getMapper(TreeMapper.class).get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID(id));
+    return session().getMapper(TreeMapper.class).get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID(id));
     
   }
 
