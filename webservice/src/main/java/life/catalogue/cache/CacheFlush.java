@@ -15,12 +15,14 @@ import java.net.URI;
 public class CacheFlush {
   private final UriBuilder projectUrlBuilder;
   private final UriBuilder datasetUrlBuilder;
+  private final URI colseo;
   private final CloseableHttpClient client;
 
   public CacheFlush(CloseableHttpClient client, URI api) {
     this.client = client;
     this.projectUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}LR");
     this.datasetUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}/");
+    this.colseo = UriBuilder.fromUri(api).path("colseo").build();
   }
 
   @Subscribe
@@ -33,6 +35,7 @@ public class CacheFlush {
       if (event.obj.isPrivat() != event.old.isPrivat() && event.obj.getOrigin() == DatasetOrigin.RELEASED) {
         int projectKey = event.obj.getSourceKey();
         VarnishUtils.ban(client, projectUrlBuilder.build(projectKey));
+        VarnishUtils.ban(client, colseo);
       }
     }
   }

@@ -40,6 +40,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ImageService imageService;
   private final WsServerConfig cfg;
   private final UriBuilder datasetApiBuilder;
+  private final URI colseo;
   private final CloseableHttpClient client;
   private final ExportManager exportManager;
   private final DoiService doiService;
@@ -53,6 +54,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.doiService = doiService;
     this.cfg = cfg;
     this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
+    this.colseo = UriBuilder.fromUri(cfg.apiURI).path("colseo").build();
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
@@ -227,6 +229,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     if (client != null && datasetApiBuilder != null) {
       URI api = datasetApiBuilder.build(datasetKey);
       VarnishUtils.ban(client, api);
+      VarnishUtils.ban(client, colseo); // flush also /colseo which also points to latest releases
     }
     // kick off exports
     for (DataFormat df : DataFormat.values()) {
