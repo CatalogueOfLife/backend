@@ -10,6 +10,8 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.UserChanged;
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DatasetOrigin;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -92,8 +94,8 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     } else {
       privateFilter.updateCache(event.key, event.obj.isPrivat());
     }
-    // a new dataset, add key to creator
-    if (event.isCreated() && event.obj.getCreatedBy() != null) {
+    // a new dataset, add key to creator unless it is a release
+    if (event.isCreated() && event.obj.getCreatedBy() != null && event.obj.getOrigin() != DatasetOrigin.RELEASED) {
       User creator = idService.get(event.obj.getCreatedBy());
       creator.addDataset(event.key);
     }
