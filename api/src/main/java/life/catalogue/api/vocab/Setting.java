@@ -20,20 +20,20 @@ public enum Setting {
    * When importing data from text files this overrides
    * the field delimiter character used
    */
-  CSV_DELIMITER(String.class, EXTERNAL, MANAGED),
+  CSV_DELIMITER(String.class, EXTERNAL),
 
   /**
    * When importing data from text files this overrides
    * the quote character used
    */
-  CSV_QUOTE(String.class, EXTERNAL, MANAGED),
+  CSV_QUOTE(String.class, EXTERNAL),
 
   /**
    * When importing data from text files this overrides
    * the single character used for escaping quotes inside an already quoted value.
    * For example '"' for CSV
    */
-  CSV_QUOTE_ESCAPE(String.class, EXTERNAL, MANAGED),
+  CSV_QUOTE_ESCAPE(String.class, EXTERNAL),
 
   /**
    * Overrides the gazetteer standard to use in all distribution interpretations for the dataset.
@@ -114,7 +114,7 @@ public enum Setting {
   /**
    * If set to true the dataset metadata is locked and the gbif registry sync will not be applied to the dataset.
    */
-  GBIF_SYNC_LOCK(Boolean.class, false, EXTERNAL, MANAGED);
+  GBIF_SYNC_LOCK(Boolean.class, false, EXTERNAL);
 
   private final Class type;
   private final DatasetOrigin[] origin;

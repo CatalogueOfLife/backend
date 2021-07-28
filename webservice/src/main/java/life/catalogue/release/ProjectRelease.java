@@ -94,7 +94,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       if (a != null) {
         String name = a.getName();
         if (name != null) {
-          uniq.put(name.toLowerCase(), a);
+          uniq.put(name.replaceAll("\\.", " ").replaceAll("  +", " ").toLowerCase(), a);
         }
       }
     }
