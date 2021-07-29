@@ -5,6 +5,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
+
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.User;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.jersey.exception.JsonExceptionMapperBase;
@@ -129,7 +131,7 @@ public class AuthFilter implements ContainerRequestFilter {
           if (user.user.hasRole(r)) {
             // the editor role is scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
             // Check if the user has permissions. For releases use the project key for evaluation.
-            if (r == User.Role.EDITOR) {
+            if (r == User.Role.EDITOR && datasetKey != null) {
               return isAuthorized(user.user, datasetKey);
             }
             return true;
@@ -161,9 +163,13 @@ public class AuthFilter implements ContainerRequestFilter {
    * Project releases are evaluated by the project only, thus an editor of a project always has access to all releases.
    */
   public static boolean isAuthorized(User user, int datasetKey){
-    // use the project key to evaluate permissions
-    int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(datasetKey);
-    return user.hasRole(User.Role.ADMIN) || user.isEditor(masterKey);
+    try {
+      // use the project key to evaluate permissions
+      int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(datasetKey);
+      return user.hasRole(User.Role.ADMIN) || user.isEditor(masterKey);
+    } catch (NotFoundException e) {
+      return false;
+    }
   }
 
   static Integer requestedDataset(UriInfo uri){

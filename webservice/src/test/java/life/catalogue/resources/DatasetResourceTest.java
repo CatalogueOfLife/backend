@@ -36,12 +36,6 @@ public class DatasetResourceTest extends ResourceTestBase {
     super("/dataset");
   }
 
-  @Test(expected = NotAuthorizedException.class)
-  @Ignore("auth is currently NOT required")
-  public void auth() {
-    // we require authentication on every request
-    base.request().get(Dataset.class);
-  }
 
   @Test
   public void list() {

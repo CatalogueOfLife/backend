@@ -1,0 +1,8 @@
+key,origin,source_key,private,attempt,type,title,created_by,modified_by,created
+10,MANAGED,,false,4,OTHER,My project,100,100,2017-03-24
+11,RELEASED,10,false,1,OTHER,My project - March,100,100,2018-03-01
+12,RELEASED,10,false,2,OTHER,My project - April,100,100,2018-04-01
+13,RELEASED,10,false,3,OTHER,My project - May,100,100,2018-05-01
+14,RELEASED,10,true,4,OTHER,My project - June,100,100,2018-06-01
+20,EXTERNAL,,false,,OTHER,External dataset 1,100,100,2019-01-03
+21,EXTERNAL,,true,,OTHER,External dataset 2,100,100,2019-01-05

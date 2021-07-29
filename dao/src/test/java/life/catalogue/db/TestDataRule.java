@@ -72,6 +72,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
    * \copy (SELECT key,type,gbif_key,gbif_publisher_key,license,issued,confidence,completeness,origin,title,alias,description,version,geographic_scope,taxonomic_scope,url,logo,notes,settings,source_key,contact,creator,editor,publisher,contributor FROM dataset WHERE not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
    */
   public final static TestData DATASETS = new TestData("datasets", null, null, null, false, true, Collections.emptyMap());
+  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, false, Collections.emptyMap());
   public final static TestData APPLE = new TestData("apple", 11, 3, 2, 3, 11, 12);
   public final static TestData FISH = new TestData("fish", 100, 2, 4, 3, 100, 101, 102);
   public final static TestData TREE = new TestData("tree", 11, 2, 2, 3, 11);
@@ -147,6 +148,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public static TestDataRule datasets() {
     return new TestDataRule(DATASETS);
+  }
+
+  public static TestDataRule datasetMix() {
+    return new TestDataRule(DATASET_MIX);
   }
 
   public static TestDataRule datasets(SqlSessionFactory sqlSessionFactory) {
