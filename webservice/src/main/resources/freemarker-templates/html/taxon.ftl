@@ -1,3 +1,4 @@
+<#ftl output_format="HTML">
 <div class="level${cssLevel}" id="${info.getId()}">
   <div class="Name">${info.taxon.name.rank}: ${info.taxon.labelHtml}
   <#if info.taxon.name.publishedInId??>
