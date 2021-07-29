@@ -1,3 +1,4 @@
+<#ftl output_format="XHTML">
 <#assign _title>${info.taxon.getLabel()} | COL</#assign>
 <#assign _description>${info.taxon.label} in the Catalogue of Life<#if source??> based on ${source.title!""}</#if></#assign>
 

@@ -1,3 +1,4 @@
+<#ftl output_format="XHTML">
 <#assign _title>${title!} | COL</#assign>
 <#assign _description>${description!title!}</#assign>
 <#--
