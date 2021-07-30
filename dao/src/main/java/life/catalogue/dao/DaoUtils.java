@@ -9,6 +9,7 @@ import life.catalogue.db.mapper.DatasetPartitionMapper;
 import java.util.function.IntPredicate;
 
 import org.apache.ibatis.session.SqlSession;
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,10 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 public class DaoUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(DaoUtils.class);
+
+  public static String stripHtml(String x) {
+    return x == null ? null : Jsoup.parse(x).wholeText().trim();
+  }
 
   public static void requireManaged(int datasetKey) throws NotFoundException {
     requireManaged(datasetKey, "Only data from managed datasets can be modified.");

@@ -214,6 +214,39 @@ public class MetadataParserTest {
     assertNull(d.getEditor());
   }
 
+  @Test
+  public void alucitoideaWithHtml() throws Exception {
+    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/AlucitoideaWithHtml.yaml"));
+    DatasetWithSettings d = m.get();
+
+    Agent donald = Agent.person("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
+
+    assertEquals("Catalogue of the Alucitoidea of the World", d.getTitle());
+    assertEquals("Alucitoidea", d.getAlias());
+    assertEquals("This GSD is derived from C. Gielis (2003) Pterophoroidea & Alucitoidea (Lepidoptera) (World Catalogue of Insects, volume 4), as subsequently maintained and updated by Cees Gielis."
+                 + "\nThe database has been edited for inclusion in the Catalogue of Life and updated by Donald Hobern."
+                 + "\nA current version of the dataset is presented as a web document at https://hobern.net.Alucitoidea.html."
+                 + "\nVersion 1.0 includes updates to reflect recent changes in taxonomy and new species.", d.getDescription());
+    assertEquals(donald, d.getContact());
+    assertEquals(License.CC_BY, d.getLicense());
+    assertEquals("ver. 1.0 (09/2020)", d.getVersion());
+    assertEquals(FuzzyDate.of(2020, 9, 18), d.getIssued());
+    assertNull(d.getUrl());
+    assertEquals(URI.create("https://hobern.net/img/Alucita_hexadactyla.png"), d.getLogo());
+    assertNull(d.getCompleteness());
+    assertNull(d.getConfidence());
+    assertEquals(NomCode.ZOOLOGICAL, d.getCode());
+    assertEquals(Gazetteer.ISO, d.getGazetteer());
+
+    assertNull(d.getContributor());
+
+    List<Agent> authors = new ArrayList<>();
+    authors.add(donald);
+    authors.add(Agent.person("Cees", "Gielis", null, "0000-0003-0857-1679"));
+    assertEquals(authors, d.getCreator());
+    assertNull(d.getEditor());
+  }
+
   /**
    * we try to support simple strings given for person and organisation instead of complex types.
    */

@@ -4,22 +4,12 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
-import life.catalogue.importer.neo.ReferenceStore;
-import life.catalogue.importer.reference.ReferenceFactory;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.DateParser;
 import life.catalogue.parser.LicenseParser;
 import life.catalogue.parser.SafeParser;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import scala.annotation.meta.setter;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -32,6 +22,15 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -360,7 +359,7 @@ public class EmlParser {
   }
 
   private static String text(StringBuilder text) {
-    return text == null || text.length() < 1 ? null : StringUtils.trimToNull(text.toString());
+    return text == null || text.length() < 1 ? null : StringUtils.trimToNull(DaoUtils.stripHtml(text.toString()));
   }
 
   private static Integer integer(StringBuilder text) {

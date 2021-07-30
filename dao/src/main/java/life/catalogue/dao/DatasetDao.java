@@ -39,6 +39,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,6 +117,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
       if (d.getContributor() != null) {
         d.getContributor().removeIf(java.util.Objects::isNull);
+      }
+      if (d.getDescription() != null) {
+        d.setDescription(DaoUtils.stripHtml(d.getDescription()));
+      }
+      if (d.getTitle() != null) {
+        d.setTitle(DaoUtils.stripHtml(d.getTitle()));
       }
     }
   }

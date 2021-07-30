@@ -2,24 +2,19 @@ package life.catalogue.importer.coldp;
 
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.importer.dwca.EmlParser;
 import life.catalogue.jackson.YamlMapper;
+import life.catalogue.parser.DateParser;
+import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.UriParser;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import life.catalogue.parser.DateParser;
-
-import life.catalogue.parser.SafeParser;
-import life.catalogue.parser.UnparsableException;
-
-import life.catalogue.parser.UriParser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +40,16 @@ public class MetadataParser {
    * and also setting both simple unparsed strings and complex agents.
    */
   static class YamlDataset extends DatasetWithSettings {
+
+    @Override
+    public void setDescription(String description) {
+      super.setDescription(DaoUtils.stripHtml(description));
+    }
+
+    @Override
+    public void setTitle(String title) {
+      super.setTitle(DaoUtils.stripHtml(title));
+    }
 
     @JsonProperty("contact")
     public void setContact(Object contact) {
@@ -199,9 +204,6 @@ public class MetadataParser {
   public static Optional<DatasetWithSettings> readMetadata(InputStream stream) throws IOException {
     if (stream != null) {
       DatasetWithSettings d = DATASET_YAML_READER.readValue(stream);
-      if (d.getDescription() != null) {
-        d.setDescription(d.getDescription().trim());
-      }
       return Optional.of(d);
   }
     return Optional.empty();

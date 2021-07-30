@@ -3,6 +3,10 @@ package life.catalogue.jackson;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
+import com.fasterxml.jackson.databind.node.TextNode;
+
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.FuzzyDateCSLSerde;
 import life.catalogue.api.jackson.FuzzyDateISOSerde;
