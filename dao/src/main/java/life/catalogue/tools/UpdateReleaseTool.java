@@ -128,11 +128,11 @@ public class UpdateReleaseTool implements AutoCloseable {
 
   public static void main(String[] args) {
     PgConfig cfg = new PgConfig();
-    cfg.host = "";
+    cfg.host = "pg1.catalogueoflife.org";
     cfg.database = "col";
     cfg.user = "col";
     cfg.password = "";
-    try (UpdateReleaseTool reg = new UpdateReleaseTool(2230,cfg, 101)) { // 101=markus
+    try (UpdateReleaseTool reg = new UpdateReleaseTool(2328,cfg, 101)) { // 101=markus
       reg.rebuildSourceMetadata();
     }
   }

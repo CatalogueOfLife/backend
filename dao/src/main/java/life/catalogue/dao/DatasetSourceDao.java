@@ -74,6 +74,7 @@ public class DatasetSourceDao {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (psm.delete(source.getKey(), datasetKey) > 0) {
         psm.create(datasetKey, source);
+        session.commit();
         return 1;
       }
     }

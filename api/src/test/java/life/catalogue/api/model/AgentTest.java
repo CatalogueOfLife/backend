@@ -46,6 +46,9 @@ public class AgentTest {
 
     p = new Agent("Jean Baptise", "Lamour");
     assertEquals("Lamour J. B.", p.getName());
+
+    p = new Agent("Tony (compiler)", "Rees");
+    assertEquals("Rees T.", p.getName());
   }
 
   @Test
