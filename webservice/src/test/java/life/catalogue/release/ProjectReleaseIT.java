@@ -45,8 +45,6 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
       DatasetSettings ds = dm.getSettings(projectKey);
       ds.put(Setting.RELEASE_ALIAS_TEMPLATE, "CoL{created,yy.M}");
-      ds.put(Setting.RELEASE_TITLE_TEMPLATE, "Catalogue of Life - Release {importAttempt}, {created,MMMM yyyy}");
-      ds.put(Setting.RELEASE_SOURCE_TITLE_TEMPLATE, "{title} in Catalogue of Life");
 
       Dataset d = dm.get(projectKey);
       d.setTitle("Catalogue of Life");
@@ -70,7 +68,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
     ProjectRelease pr = buildRelease();
     assertEquals("CoL20.10", pr.newDataset.getAlias());
-    assertEquals("Catalogue of Life - Release 4, October 2020", pr.newDataset.getTitle());
+    assertEquals("Catalogue of Life", pr.newDataset.getTitle());
   }
 
   @Test

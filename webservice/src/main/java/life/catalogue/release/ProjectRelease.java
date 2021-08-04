@@ -72,9 +72,6 @@ public class ProjectRelease extends AbstractProjectCopy {
     String alias = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
     d.setAlias(alias);
 
-    String title = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
-    d.setTitle(title);
-
     // append authors for release?
     final List<Agent> authors = new ArrayList<>();
     if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {

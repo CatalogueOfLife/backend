@@ -60,15 +60,6 @@ public enum Setting {
   LOCK_METADATA(Boolean.class, EXTERNAL, MANAGED),
 
   /**
-   * Template used to build a new release title.
-   * Use dataset properties in curly brackets, e.g. {title}
-   * and the current {date} followed by an optional {@link java.time.format.DateTimeFormatter} syntax.
-   *
-   * See https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html
-   */
-  RELEASE_TITLE_TEMPLATE(String.class, MANAGED),
-
-  /**
    * Template used to build a new release alias.
    * See RELEASE_TITLE_TEMPLATE for usage.
    */
@@ -83,14 +74,6 @@ public enum Setting {
    * If true a release will include as its authors all contributors of the project (not source contributors).
    */
   RELEASE_ADD_CONTRIBUTORS(Boolean.class, MANAGED),
-
-  /**
-   * Template used to build a new title for each source dataset in a release.
-   * See RELEASE_TITLE_TEMPLATE for usage.
-   * In addition to the regular dataset properties there is also a project variable available that
-   * offers access to the parent projects dataset metadata.
-   */
-  RELEASE_SOURCE_TITLE_TEMPLATE(String.class, MANAGED),
 
   DATA_FORMAT(DataFormat.class, EXTERNAL, MANAGED),
 

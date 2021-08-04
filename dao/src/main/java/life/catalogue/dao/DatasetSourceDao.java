@@ -42,9 +42,8 @@ public class DatasetSourceDao {
         d = psm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
           // get latest version with patch applied
-          final DatasetSettings settings = dm.getSettings(datasetKey);
           final Dataset project = dm.get(datasetKey);
-          patch(d, datasetKey, project, session.getMapper(DatasetPatchMapper.class), settings);
+          patch(d, datasetKey, project, session.getMapper(DatasetPatchMapper.class));
         }
 
       } else if (RELEASED == info.origin) {
@@ -101,18 +100,11 @@ public class DatasetSourceDao {
       } else {
         // get latest version with patch applied
         final int projectKey = RELEASED == info.origin ? info.sourceKey : datasetKey;
-        final DatasetSettings settings = session.getMapper(DatasetMapper.class).getSettings(projectKey);
-        if (settings != null && settings.has(Setting.RELEASE_SOURCE_TITLE_TEMPLATE)) {
-          LOG.debug("Use source title template >>>{}<<< from project {}", settings.getString(Setting.RELEASE_SOURCE_TITLE_TEMPLATE), projectKey);
-        } else {
-          LOG.info("No source title template configured from project {}", projectKey);
-        }
-
         final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(datasetKey);
         DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
 
         sources = psm.listProjectSources(datasetKey);
-        sources.forEach(d -> patch(d, projectKey, project, pm, settings));
+        sources.forEach(d -> patch(d, projectKey, project, pm));
       }
     }
     return sources;
@@ -121,23 +113,13 @@ public class DatasetSourceDao {
   /**
    * Applies the projects dataset patch if existing to the dataset d
    * @param d dataset to be patched
-   * @param settings project settings
    * @return the same dataset instance d as given
    */
-  private Dataset patch(Dataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm, DatasetSettings settings){
+  private Dataset patch(Dataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm){
     Dataset patch = pm.get(projectKey, d.getKey());
     if (patch != null) {
       LOG.debug("Apply dataset patch from project {} to {}: {}", patchProject.getKey(), d.getKey(), d.getTitle());
       d.applyPatch(patch);
-    }
-    // build an in project title?
-    if (settings != null && settings.has(Setting.RELEASE_SOURCE_TITLE_TEMPLATE)) {
-      try {
-        String title = CitationUtils.fromTemplate(d, patchProject, settings.getString(Setting.RELEASE_SOURCE_TITLE_TEMPLATE)).trim();
-        d.setTitle(title);
-      } catch (IllegalArgumentException e) {
-        LOG.warn("Failed to create title for source dataset {}", d.getKey(), e);
-      }
     }
     return d;
   }

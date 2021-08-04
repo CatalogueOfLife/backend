@@ -92,11 +92,6 @@ public class UpdateReleaseTool implements AutoCloseable {
 
   void show(DatasetSourceDao dao){
     System.out.printf("%s\n", release.getTitle());
-    if (settings.has(Setting.RELEASE_TITLE_TEMPLATE)) {
-      String title = CitationUtils.fromTemplate(release, settings.getString(Setting.RELEASE_TITLE_TEMPLATE));
-      release.setTitle(title);
-    }
-    System.out.printf("%s\n", release.getTitle());
     dao.list(release.getKey(), release, true).forEach(d -> {
       System.out.printf("%s: %s\n", d.getKey(), d.getTitle());
     });
