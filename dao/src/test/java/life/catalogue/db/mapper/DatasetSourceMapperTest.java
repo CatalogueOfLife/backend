@@ -5,14 +5,11 @@ import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Datasets;
 
-import life.catalogue.dao.DatasetDao;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -67,9 +64,20 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     mapper(DatasetMapper.class).create(d);
     // persist source citations, sth the DatasetDao normally does
     persistDatasetCitations(d);
+    commit();
+
     Dataset d2 = mapper().getProjectSource(d.getKey(), Datasets.COL);
     // no import attempt expected as there are no synced sectors
     d.setAttempt(null);
+
+    // COL container
+    Dataset col = mapper(DatasetMapper.class).get(Datasets.COL);
+    assertNull(col.getContainerKey());
+    assertNull(col.getContainerTitle());
+    assertNull(col.getContainerCreator());
+    d.setContainerKey(col.getKey());
+    d.setContainerTitle(col.getTitle());
+    d.setContainerCreator(col.getCreator());
 
     commit();
     assertEquals(d2, d);
@@ -100,6 +108,12 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
 
     Dataset rs2 = removeDbCreatedProps(mapper().getReleaseSource(rs.getKey(), Datasets.COL));
     commit();
+
+    // COL container
+    Dataset col = mapper(DatasetMapper.class).get(Datasets.COL);
+    rs.setContainerKey(col.getKey());
+    rs.setContainerTitle(col.getTitle());
+    rs.setContainerCreator(col.getCreator());
     assertEquals(rs2, rs);
 
     // now try to list sources

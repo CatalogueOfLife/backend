@@ -1,26 +1,26 @@
 package life.catalogue.common.csl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import de.undercouch.citeproc.csl.CSLItemData;
-import de.undercouch.citeproc.csl.CSLItemDataBuilder;
-import de.undercouch.citeproc.csl.CSLType;
+
+import de.undercouch.citeproc.csl.*;
+
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.io.Resources;
-import life.catalogue.common.io.UTF8IoUtils;
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.junit.Ignore;
+import org.checkerframework.checker.units.qual.A;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.Test;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -86,4 +86,73 @@ public class CslUtilTest {
     System.out.println(performance + "ms/citation");
   }
 
+  static CSLName person(String family, String given) {
+        return new CSLNameBuilder()
+        .given(given)
+        .family(family)
+        .isInstitution(false)
+        .build();
+  }
+
+  static CSLName[] persons(String... parts) {
+    List<CSLName> names = new ArrayList<>();
+    var iter = Arrays.stream(parts).iterator();
+    while (iter.hasNext()) {
+      names.add(person(iter.next(), iter.next()));
+    }
+    return names.toArray(new CSLName[0]);
+  }
+
+  static CSLDate date(int year, int month, int day) {
+    return new CSLDateBuilder()
+      .dateParts(new int[]{year, month, day})
+      .build();
+  }
+
+  static CSLName[] colFirst(){
+    return persons("Bánki", "Olaf", "Roskov", "Yuri", "Vandepitte", "Leen", "DeWalt", "R. E.", "Remsen", "David", "Schalk", "Peter", "Orrell", "Thomas", "Miller", "Joe");
+  }
+
+  static CSLName[] colSources(){
+    return persons("Aalbu", "R.", "Adlard", "R.", "Adriaenssens", "E.", "Aedo", "C.", "Aescht", "E.", "Akkari", "N.", "Alonso-Zarazaga", "M. A.", "Alvarez", "B.", "Alvarez", "F.", "Anderson", "G.", "Angel", "M", "Döring", "Markus", "Stjernegaard Jeppesen", "Thomas", "Ower", "Geoff");
+  }
+
+  static CSLName[] colAll(){
+    return CollectionUtils.concat(colFirst(), colSources());
+  }
+
+  @Test
+  public void colSource() {
+    CSLItemDataBuilder builder = new CSLItemDataBuilder()
+      .type(CSLType.DATASET)
+      .title("Catalogue of Life Checklist")
+      .publisher("Catalogue of Life")
+      .publisherPlace("Leiden, NL")
+      .issued(date(2021,7,29))
+      .version("2021-07-29")
+      .author(colAll())
+      .ISBN("2405-8858")
+      .DOI("10.1093/database/baw125");
+
+    System.out.println("\nMonthly July 2021");
+    System.out.println(CslUtil.buildCitation(builder.build()));
+
+    System.out.println("\nAnnual 2021");
+    builder
+      .version("Annual Checklist 2021");
+    System.out.println(CslUtil.buildCitation(builder.build()));
+
+
+    // SOURCE
+    System.out.println("\nSource as chapter");
+    builder
+      .type(CSLType.CHAPTER)
+      .title("3i World Auchenorrhyncha Database")
+      .containerTitle("Catalogue of Life Checklist")
+      .containerAuthor(colAll())
+      //.author("D. A.", "Dmitriev")
+      .author(persons("Dmitriev","D. A.", "McKamey", "S.", "Sanborn", "A.", "Takiya", "D. M.", "Zahniser","J."))
+      .version("Jun 2021");
+    System.out.println(CslUtil.buildCitation(builder.build()));
+  }
 }

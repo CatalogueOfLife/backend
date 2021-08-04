@@ -5,7 +5,10 @@
 <mapper namespace="life.catalogue.db.mapper.DatasetSourceMapper">
 
   <sql id="SELECT">
-    <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>
+    <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
+    con.key AS containerKey,
+    con.title AS containerTitle,
+    con.creator AS containerCreator
   </sql>
 
   <sql id="COLS">
@@ -18,15 +21,23 @@
   </sql>
 
   <sql id="FROM">
-    dataset_source d LEFT JOIN dataset_import di ON d.attempt=di.attempt AND d.key=di.dataset_key
+    dataset_source d
+      LEFT JOIN dataset_import di ON d.attempt=di.attempt AND d.key=di.dataset_key
+      LEFT JOIN dataset con ON con.key = #{datasetKey}
   </sql>
 
-  <resultMap id="datasetSourceResultMap" type="Dataset" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+  <resultMap id="datasetSourceReleaseResultMap" type="Dataset" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     <id property="key" column="key"/>
+    <result property="containerCreator" column="containerCreator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
     <collection property="source" ofType="Citation" column="{datasetKey=key, releaseKey=dataset_key}" select="life.catalogue.db.mapper.CitationMapper.listRelease" />
   </resultMap>
 
-  <select id="listProjectSources" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <resultMap id="datasetSourceProjectResultMap" type="Dataset" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+    <id property="key" column="key"/>
+    <result property="containerCreator" column="containerCreator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
+  </resultMap>
+
+  <select id="listProjectSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     WITH src AS (
       SELECT s.subject_dataset_key AS key, max(s.dataset_attempt) AS attempt
       FROM sector s
@@ -39,6 +50,7 @@
       JOIN dataset d2 ON d2.key = src.key
       LEFT JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
+      LEFT JOIN dataset con ON con.key = #{datasetKey}
     WHERE src.attempt != d2.attempt
 
     UNION
@@ -48,18 +60,19 @@
     FROM src
       JOIN dataset d ON d.key = src.key
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
+      LEFT JOIN dataset con ON con.key = #{datasetKey}
     WHERE src.attempt = d.attempt OR src.attempt IS NULL
 
     ORDER BY 1
   </select>
 
-  <select id="listReleaseSources" parameterType="map" resultMap="datasetSourceResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="listReleaseSources" parameterType="map" resultMap="datasetSourceReleaseResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT d.dataset_key, <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.dataset_key = #{datasetKey}
   </select>
 
-  <select id="getProjectSource" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+  <select id="getProjectSource" resultMap="datasetSourceProjectResultMap">
     WITH src AS (
       SELECT max(s.dataset_attempt) AS attempt
       FROM sector s
@@ -71,6 +84,7 @@
       JOIN dataset d2 ON d2.key = #{key}
       LEFT JOIN dataset_archive d ON d.key = #{key} AND d.attempt = src.attempt
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
+      LEFT JOIN dataset con ON con.key = #{datasetKey}
     WHERE src.attempt != d2.attempt
 
     UNION
@@ -80,10 +94,11 @@
     FROM src
       JOIN dataset d ON d.key = #{key}
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
+      LEFT JOIN dataset con ON con.key = #{datasetKey}
     WHERE src.attempt = d.attempt OR src.attempt IS NULL
   </select>
 
-  <select id="getReleaseSource" resultMap="datasetSourceResultMap">
+  <select id="getReleaseSource" resultMap="datasetSourceReleaseResultMap">
     SELECT d.dataset_key, <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}

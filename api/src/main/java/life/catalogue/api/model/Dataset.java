@@ -123,6 +123,9 @@ public class Dataset extends DataEntity<Integer> {
   private List<Agent> editor;
   private Agent publisher;
   private List<Agent> contributor;
+  private Integer containerKey;
+  private String containerTitle;
+  private List<Agent> containerCreator;
   private String geographicScope;
   private String taxonomicScope;
   private String temporalScope;
@@ -171,6 +174,9 @@ public class Dataset extends DataEntity<Integer> {
     this.editor = other.editor;
     this.publisher = other.publisher;
     this.contributor = other.contributor;
+    this.containerKey = other.containerKey;
+    this.containerTitle = other.containerTitle;
+    this.containerCreator = other.containerCreator;
     this.geographicScope = other.geographicScope;
     this.taxonomicScope = other.taxonomicScope;
     this.temporalScope = other.temporalScope;
@@ -232,6 +238,12 @@ public class Dataset extends DataEntity<Integer> {
       .author(toNamesArray(creator))
       .editor(toNamesArray(editor))
       .ISSN(issn);
+    if (containerTitle != null) {
+      builder
+        .type(CSLType.CHAPTER)
+        .containerTitle(containerTitle)
+        .containerAuthor(toNamesArray(containerCreator));
+    }
     if (doi != null) {
       builder.DOI(doi.toString());
     }
@@ -262,6 +274,11 @@ public class Dataset extends DataEntity<Integer> {
     c.setEditor(toNames(editor));
     c.setIssn(issn);;
     c.setDoi(doi);
+    if (containerTitle != null) {
+      c.setType(CSLType.CHAPTER);
+      c.setContainerTitle(containerTitle);
+      c.setContainerAuthor(toNames(containerCreator));
+    }
     if (url != null) {
       c.setUrl(url.toString());
     }
@@ -379,6 +396,30 @@ public class Dataset extends DataEntity<Integer> {
       this.editor = new ArrayList<>();
     }
     this.editor.add(editor);
+  }
+
+  public Integer getContainerKey() {
+    return containerKey;
+  }
+
+  public void setContainerKey(Integer containerKey) {
+    this.containerKey = containerKey;
+  }
+
+  public String getContainerTitle() {
+    return containerTitle;
+  }
+
+  public void setContainerTitle(String containerTitle) {
+    this.containerTitle = containerTitle;
+  }
+
+  public List<Agent> getContainerCreator() {
+    return containerCreator;
+  }
+
+  public void setContainerCreator(List<Agent> containerCreator) {
+    this.containerCreator = containerCreator;
   }
 
   @JsonIgnore
@@ -654,6 +695,9 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(editor, dataset.editor)
            && Objects.equals(publisher, dataset.publisher)
            && Objects.equals(contributor, dataset.contributor)
+           && Objects.equals(containerKey, dataset.containerKey)
+           && Objects.equals(containerTitle, dataset.containerTitle)
+           && Objects.equals(containerCreator, dataset.containerCreator)
            && Objects.equals(geographicScope, dataset.geographicScope)
            && Objects.equals(taxonomicScope, dataset.taxonomicScope)
            && Objects.equals(temporalScope, dataset.temporalScope)
@@ -667,7 +711,10 @@ public class Dataset extends DataEntity<Integer> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes, doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, source);
+    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes,
+      doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor,
+      containerKey, containerTitle, containerCreator,
+      geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, source);
   }
 
   @Override
