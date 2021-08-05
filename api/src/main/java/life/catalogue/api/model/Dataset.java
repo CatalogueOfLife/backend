@@ -235,14 +235,17 @@ public class Dataset extends DataEntity<Integer> {
       .shortTitle(alias)
       .title(title)
       .version(version)
-      .author(toNamesArray(creator))
-      .editor(toNamesArray(editor))
       .ISSN(issn);
     if (containerTitle != null) {
       builder
         .type(CSLType.CHAPTER)
+        .author(toNamesArray(merge(creator, editor)))
         .containerTitle(containerTitle)
         .containerAuthor(toNamesArray(containerCreator));
+    } else {
+      builder
+        .author(toNamesArray(creator))
+        .editor(toNamesArray(editor));
     }
     if (doi != null) {
       builder.DOI(doi.toString());
@@ -270,14 +273,16 @@ public class Dataset extends DataEntity<Integer> {
     c.setTitle(title);
     c.setIssued(issued);
     c.setVersion(version);
-    c.setAuthor(toNames(creator));
-    c.setEditor(toNames(editor));
     c.setIssn(issn);;
     c.setDoi(doi);
     if (containerTitle != null) {
       c.setType(CSLType.CHAPTER);
+      c.setAuthor(toNames(merge(creator, editor)));
       c.setContainerTitle(containerTitle);
       c.setContainerAuthor(toNames(containerCreator));
+    } else {
+      c.setAuthor(toNames(creator));
+      c.setEditor(toNames(editor));
     }
     if (url != null) {
       c.setUrl(url.toString());
@@ -288,6 +293,16 @@ public class Dataset extends DataEntity<Integer> {
     }
     // no license, distributor, contributor
     return c;
+  }
+
+  private static List<Agent> merge(List<Agent>... names) {
+    List<Agent> all = new ArrayList<>();
+    for (List<Agent> n : names) {
+      if (n != null && !n.isEmpty()) {
+        all.addAll(n);
+      }
+    }
+    return all;
   }
 
   private static CSLName[] toNamesArray(List<Agent> names) {

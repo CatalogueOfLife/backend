@@ -2,11 +2,404 @@
 <body>
 <script src="citeproc.js" type="text/javascript"></script>
 <script type="text/javascript">
-	var citationData = JSON.parse('{"id":"ID1","type":"dataset","author":[{"family":"Andrella","given":"Giovani Carlos"},{"family":"Atahuachi Burgos","given":"Margoth"}],"editor":[{"family":"Govaerts","given":"Rafaël"}],"accessed":{"dateParts":[[1999]]},"issued":{"dateParts":[[2021,5,16]]},"DOI":"10.1093/database/baw125","ISSN":"1758-0463","title":"The World Checklist of Vascular Plants (WCVP): Fabaceae","URL":"gbif.org","version":"1.0"}');
-    console.log(citationData);
 
-    var citations = {"ID1": citationData};
-	var itemIDs = ["ID1"];
+var csldata = `
+{ "project": {
+  "id": "project",
+  "type": "dataset",
+  "title": "Catalogue of Life Checklist",
+  "author": [
+        {
+            "family": "Bánki",
+            "given": "Olaf"
+        },
+        {
+            "family": "Roskov",
+            "given": "Yury"
+        },
+        {
+            "family": "Vandepitte",
+            "given": "Leen"
+        },
+        {
+            "family": "DeWalt",
+            "given": "R. Edward"
+        },
+        {
+            "family": "Remsen",
+            "given": "David"
+        },
+        {
+            "family": "Schalk",
+            "given": "Peter"
+        },
+        {
+            "family": "Orrell",
+            "given": "Thomas"
+        },
+        {
+          "family":"Keping",
+          "given":"Ma"
+        },
+        {
+            "family": "Miller",
+            "given": "Joe"
+        }
+  ],
+  "editor": [
+    {
+      "family": "Roskov",
+      "given": "Yuri"
+    }
+  ],
+  "publisher": "Catalogue of Life",
+  "publisher-place": "Leiden, NL",
+  "ISSN": "2405-8858",
+  "URL": "https://data.catalogueoflife.org/dataset/3",
+  "version": "working draft"
+
+
+
+}, "monthly": {
+  "id": "monthly",
+  "type": "dataset",
+  "title": "Catalogue of Life Checklist",
+  "author": [
+        {
+            "family": "Bánki",
+            "given": "Olaf"
+        },
+        {
+            "family": "Roskov",
+            "given": "Yury"
+        },
+        {
+            "family": "Vandepitte",
+            "given": "Leen"
+        },
+        {
+            "family": "DeWalt",
+            "given": "R. Edward"
+        },
+        {
+            "family": "Remsen",
+            "given": "David"
+        },
+        {
+            "family": "Schalk",
+            "given": "Peter"
+        },
+        {
+            "family": "Orrell",
+            "given": "Thomas"
+        },
+        {
+          "family":"Keping",
+          "given":"Ma"
+        },
+        {
+            "family": "Miller",
+            "given": "Joe"
+        },
+        {
+            "family": "Aalbu",
+            "given": "Rolf"
+        },
+        {
+            "family": "Adlard",
+            "given": "Robert"
+        },
+        {
+            "family": "Adriaenssens",
+            "given": "Evelien"
+        },
+        {
+            "family": "Aedo",
+            "given": "Carlos"
+        },
+        {
+            "family": "Aescht",
+            "given": "E."
+        },
+        {
+            "family": "Akkari",
+            "given": "Nesrine"
+        },
+        {
+            "family": "Alonso-Zarazaga",
+            "given": "Miguel A."
+        },
+        {
+            "family": "Alvarez",
+            "given": "Belinda"
+        },
+        {
+            "family": "Alvarez",
+            "given": "Fernando"
+        },
+        {
+            "family": "Anderson",
+            "given": "Gary"
+        },
+        {
+          "family":"Angel",
+          "given":"Martin"
+        },
+        {
+          "family":"Appeltans",
+          "given":"Ward"
+        },
+        {
+          "family":"Arango",
+          "given":"Claudia"
+        },
+
+        {
+        "family":"van Nieukerken",
+        "given":"E.J."
+        },
+        {
+        "family":"van Soest",
+        "given":"Rob"
+        },
+        {
+        "family":"van Tol",
+        "given":"J."
+        },
+        {
+        "family":"von Konrat",
+        "given":"M."
+        }
+  ],
+  "editor": [
+    {
+      "family": "Roskov",
+      "given": "Yuri"
+    }
+  ],
+  "publisher": "Catalogue of Life",
+  "publisher-place": "Leiden, NL",
+  "ISSN": "2405-8858",
+  "DOI": "10.48580/d4sb",
+  "issued": {
+      "date-parts": [
+          [
+              2021,
+              7,
+              29
+          ]
+      ]
+  },
+  "version": "2021-07-29"
+
+
+
+}, "annual": {
+  "id": "annual",
+  "type": "dataset",
+  "title": "Catalogue of Life Checklist",
+  "author": [
+        {
+            "family": "Bánki",
+            "given": "Olaf"
+        },
+        {
+            "family": "Roskov",
+            "given": "Yury"
+        },
+        {
+            "family": "Vandepitte",
+            "given": "Leen"
+        },
+        {
+            "family": "DeWalt",
+            "given": "R. Edward"
+        },
+        {
+            "family": "Remsen",
+            "given": "David"
+        },
+        {
+            "family": "Schalk",
+            "given": "Peter"
+        },
+        {
+            "family": "Orrell",
+            "given": "Thomas"
+        },
+        {
+          "family":"Keping",
+          "given":"Ma"
+        },
+        {
+            "family": "Miller",
+            "given": "Joe"
+        },
+        {
+            "family": "Aalbu",
+            "given": "Rolf"
+        },
+        {
+            "family": "Adlard",
+            "given": "Robert"
+        },
+        {
+            "family": "Adriaenssens",
+            "given": "Evelien"
+        },
+        {
+            "family": "Aedo",
+            "given": "Carlos"
+        },
+        {
+            "family": "Aescht",
+            "given": "E."
+        },
+        {
+            "family": "Akkari",
+            "given": "Nesrine"
+        },
+        {
+            "family": "Alonso-Zarazaga",
+            "given": "Miguel A."
+        },
+        {
+            "family": "Alvarez",
+            "given": "Belinda"
+        },
+        {
+            "family": "Alvarez",
+            "given": "Fernando"
+        },
+        {
+            "family": "Anderson",
+            "given": "Gary"
+        },
+        {
+          "family":"Angel",
+          "given":"Martin"
+        },
+        {
+          "family":"Appeltans",
+          "given":"Ward"
+        },
+        {
+          "family":"Arango",
+          "given":"Claudia"
+        },
+
+        {
+        "family":"van Nieukerken",
+        "given":"E.J."
+        },
+        {
+        "family":"van Soest",
+        "given":"Rob"
+        },
+        {
+        "family":"van Tol",
+        "given":"J."
+        },
+        {
+        "family":"von Konrat",
+        "given":"M."
+        }
+
+  ],
+  "editor": [
+    {
+      "family": "Roskov",
+      "given": "Yuri"
+    }
+  ],
+  "publisher": "Catalogue of Life",
+  "publisher-place": "Leiden, NL",
+  "ISSN": "2405-8858",
+  "issued": {
+      "date-parts": [
+          [
+              2021,
+              7,
+              29
+          ]
+      ]
+  },
+  "version": "Annual Checklist 2021"
+
+
+
+}, "Alucitoidea": {
+  "id": "Alucitoidea",
+  "type": "chapter",
+  "title": "Catalogue of the Alucitoidea of the World",
+  "DOI": "10.1093/database/baw125",
+  "author": [
+    {
+      "family": "Hobern",
+      "given": "Donald"
+    },
+    {
+      "family": "Gielis",
+      "given": "C."
+    }
+  ],
+  "container-title": "Catalogue of Life Checklist",
+  "container-author": [
+        {
+            "family": "Bánki",
+            "given": "Olaf"
+        },
+        {
+            "family": "Roskov",
+            "given": "Yury"
+        },
+        {
+            "family": "Vandepitte",
+            "given": "Leen"
+        },
+        {
+            "family": "DeWalt",
+            "given": "R. Edward"
+        },
+        {
+            "family": "Remsen",
+            "given": "David"
+        },
+        {
+            "family": "Schalk",
+            "given": "Peter"
+        },
+        {
+            "family": "Orrell",
+            "given": "Thomas"
+        },
+        {
+          "family":"Keping",
+          "given":"Ma"
+        },
+        {
+            "family": "Miller",
+            "given": "Joe"
+        }
+  ],
+  "issued": {
+    "date-parts": [
+      [
+        2021,
+        7,
+        18
+      ]
+    ]
+  },
+  "version": "1.0.21.199 (18 Jul 2021)"
+}
+}
+`
+
+
+var citations = JSON.parse(csldata);
+console.log(citations);
+
 
 var citeprocSys = {
   retrieveLocale: function (lang){
@@ -29,10 +422,16 @@ function getApaProcessor() {
   return citeproc;
 };
 
-  var citeproc = getApaProcessor();
-  citeproc.updateItems(itemIDs);
-  var result = citeproc.makeBibliography(format='text');
-  console.log(result[1].join('\n'));
+var citeproc = getApaProcessor();
+citeproc.updateItems(["project", "monthly", "annual", "Alucitoidea"]);
+
+citeproc.setOutputFormat("text");
+var result = citeproc.makeBibliography();
+console.log(result[1].join('\n'));
+
+citeproc.setOutputFormat("html");
+result = citeproc.makeBibliography();
+console.log(result[1].join('\n'));
 </script>
 
 </body>

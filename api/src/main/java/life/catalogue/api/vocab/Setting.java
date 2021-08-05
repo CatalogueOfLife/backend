@@ -7,8 +7,7 @@ import org.gbif.nameparser.api.Rank;
 import java.net.URI;
 import java.time.LocalDate;
 
-import static life.catalogue.api.vocab.DatasetOrigin.EXTERNAL;
-import static life.catalogue.api.vocab.DatasetOrigin.MANAGED;
+import static life.catalogue.api.vocab.DatasetOrigin.*;
 
 
 /**
@@ -74,6 +73,12 @@ public enum Setting {
    * If true a release will include as its authors all contributors of the project (not source contributors).
    */
   RELEASE_ADD_CONTRIBUTORS(Boolean.class, MANAGED),
+
+  /**
+   * Number of first authors to use for the container authors of a source chapter-in-a-book citation.
+   * If not given all authors are used.
+   */
+  CONTAINER_AUTHORS_MAX(Integer.class, RELEASED),
 
   DATA_FORMAT(DataFormat.class, EXTERNAL, MANAGED),
 

@@ -457,7 +457,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
       if (modifier != null) {
         DatasetSettings ds = dm.getSettings(datasetKey);
+        int before = ds.hashCode();
         modifier.accept(copy, ds);
+        // modifier might have changed the settings, persist if so!
+        if (ds.hashCode() != before) {
+          dm.updateSettings(datasetKey, ds, userKey);
+        }
       }
       copy.setKey(null); // make sure we have no key so we create
     }

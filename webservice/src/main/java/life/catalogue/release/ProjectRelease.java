@@ -14,13 +14,11 @@ import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.doi.DoiUpdater;
-import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -29,7 +27,6 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -105,6 +102,9 @@ public class ProjectRelease extends AbstractProjectCopy {
       // now append them to already existing creators
       if (d.getCreator() == null) {
         d.setCreator(new ArrayList<>());
+        ds.put(Setting.CONTAINER_AUTHORS_MAX, 0);
+      } else {
+        ds.put(Setting.CONTAINER_AUTHORS_MAX, d.getCreator().size());
       }
       d.getCreator().addAll(authors);
     }

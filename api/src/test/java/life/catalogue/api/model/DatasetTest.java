@@ -6,6 +6,7 @@ import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
 import org.junit.Test;
@@ -135,5 +136,28 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     assertNull(d.getUrl());
     assertNull(d.getLogo());
     assertNull(d.getLicense());
+  }
+
+  @Test
+  public void testColCitation() throws Exception {
+
+  }
+
+  @Test
+  public void testSourceCitation() throws Exception {
+    Dataset d = new Dataset();
+    d.setKey(1000);
+    d.setOrigin(DatasetOrigin.EXTERNAL);
+    d.setTitle("Catalogue of the Alucitoidea of the World");
+    d.setCreator(Agent.parse(List.of("Hobern, Donald", "Gielis, C.")));
+    d.setEditor(Agent.parse(List.of("Hobern, Donald")));
+    d.setVersion("1.0.21.199 (18 Jul 2021)");
+    d.setIssued(FuzzyDate.of(2021,7,18));
+    d.setUrl(URI.create("https://alucitoidea.hobern.net"));
+    d.setDoi(DOI.col("e456fgvzb"));
+    d.setContainerTitle("Catalogue of Life Checklist");
+    d.setContainerCreator(Agent.parse(List.of("Banki, Olaf", "Roskov, Yuri")));
+
+    System.out.println(CslUtil.buildCitation(d.toCSL()));
   }
 }
