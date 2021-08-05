@@ -160,4 +160,46 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
 
     System.out.println(CslUtil.buildCitation(d.toCSL()));
   }
+
+  @Test
+  public void toCSL() throws Exception {
+    Dataset d = new Dataset();
+    d.setKey(1000);
+    d.setOrigin(DatasetOrigin.EXTERNAL);
+    d.setTitle("Catalogue of the Alucitoidea of the World");
+    d.setCreator(Agent.parse(List.of("Hobern, Donald", "Gielis, C.")));
+    d.setEditor(Agent.parse(List.of("Hobern, Donald", "Hobern, Markus")));
+    d.setVersion("1.0.21.199 (18 Jul 2021)");
+    d.setIssued(FuzzyDate.of(2021,7,18));
+    d.setUrl(URI.create("https://alucitoidea.hobern.net"));
+    d.setDoi(DOI.col("e456fgvzb"));
+    d.setContainerTitle("Catalogue of Life Checklist");
+    d.setContainerCreator(Agent.parse(List.of("Banki, Olaf", "Roskov, Yuri")));
+
+    var csl = d.toCSL();
+    assertEquals(3, csl.getAuthor().length);
+    assertNull(csl.getEditor());
+    assertEquals("Catalogue of Life Checklist", csl.getContainerTitle());
+  }
+
+  @Test
+  public void toCitation() throws Exception {
+    Dataset d = new Dataset();
+    d.setKey(1000);
+    d.setOrigin(DatasetOrigin.EXTERNAL);
+    d.setTitle("Catalogue of the Alucitoidea of the World");
+    d.setCreator(Agent.parse(List.of("Hobern, Donald", "Gielis, C.")));
+    d.setEditor(Agent.parse(List.of("Hobern, Donald", "Hobern, Markus")));
+    d.setVersion("1.0.21.199 (18 Jul 2021)");
+    d.setIssued(FuzzyDate.of(2021,7,18));
+    d.setUrl(URI.create("https://alucitoidea.hobern.net"));
+    d.setDoi(DOI.col("e456fgvzb"));
+    d.setContainerTitle("Catalogue of Life Checklist");
+    d.setContainerCreator(Agent.parse(List.of("Banki, Olaf", "Roskov, Yuri")));
+
+    var csl = d.toCitation();
+    assertEquals(3, csl.getAuthor().size());
+    assertNull(csl.getEditor());
+    assertEquals("Catalogue of Life Checklist", csl.getContainerTitle());
+  }
 }

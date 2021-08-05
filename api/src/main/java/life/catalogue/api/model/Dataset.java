@@ -18,6 +18,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.Max;
@@ -239,7 +240,7 @@ public class Dataset extends DataEntity<Integer> {
     if (containerTitle != null) {
       builder
         .type(CSLType.CHAPTER)
-        .author(toNamesArray(merge(creator, editor)))
+        .author(toNamesArray(unique(merge(creator, editor))))
         .containerTitle(containerTitle)
         .containerAuthor(toNamesArray(containerCreator));
     } else {
@@ -277,7 +278,7 @@ public class Dataset extends DataEntity<Integer> {
     c.setDoi(doi);
     if (containerTitle != null) {
       c.setType(CSLType.CHAPTER);
-      c.setAuthor(toNames(merge(creator, editor)));
+      c.setAuthor(toNames(unique(merge(creator, editor))));
       c.setContainerTitle(containerTitle);
       c.setContainerAuthor(toNames(containerCreator));
     } else {
@@ -303,6 +304,18 @@ public class Dataset extends DataEntity<Integer> {
       }
     }
     return all;
+  }
+
+  private static List<Agent> unique(List<Agent> names) {
+    final Set<String> seen = ConcurrentHashMap.newKeySet();
+    names.removeIf(n -> {
+      if (!seen.contains(n.getName())) {
+        seen.add(n.getName());
+        return false;
+      }
+      return true;
+    });
+    return names;
   }
 
   private static CSLName[] toNamesArray(List<Agent> names) {

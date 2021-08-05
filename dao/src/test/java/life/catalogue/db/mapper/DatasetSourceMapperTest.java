@@ -1,11 +1,15 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.vocab.Datasets;
 
 import java.util.List;
+
+import life.catalogue.api.vocab.Setting;
 
 import org.junit.Test;
 
@@ -88,6 +92,17 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     var cm = mapper(CitationMapper.class);
     var dm = mapper(DatasetMapper.class);
 
+    // add creators to col dataset
+    Dataset col = dm.get(Datasets.COL);
+    col.setCreator(List.of(
+      Agent.person("Afred", "Biolek"),
+      Agent.person("Afred", "Mansun"),
+      Agent.person("Afred", "Rodriguéz"),
+      Agent.person("Ali", "Mohammed"),
+      Agent.person("Aaron", "Price")
+    ));
+    dm.update(col);
+
     // source dataset
     Dataset s = createProjectSource();
     dm.create(s);
@@ -110,7 +125,6 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     commit();
 
     // COL container
-    Dataset col = mapper(DatasetMapper.class).get(Datasets.COL);
     rs.setContainerKey(col.getKey());
     rs.setContainerTitle(col.getTitle());
     rs.setContainerCreator(col.getCreator());
@@ -118,6 +132,16 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
 
     // now try to list sources
     mapper().listReleaseSources(Datasets.COL);
+
+    // limit container authors to just 2 and verify
+    DatasetSettings ds = dm.getSettings(Datasets.COL);
+    ds.put(Setting.CONTAINER_AUTHORS_MAX, 2);
+    dm.updateSettings(Datasets.COL, ds, 1);
+    commit();
+
+    rs2 = removeDbCreatedProps(mapper().getReleaseSource(rs.getKey(), Datasets.COL));
+    rs.setContainerCreator(col.getCreator().subList(0,2));
+    assertEquals(rs2, rs);
   }
 
   Dataset removeDbCreatedProps(Dataset obj) {
