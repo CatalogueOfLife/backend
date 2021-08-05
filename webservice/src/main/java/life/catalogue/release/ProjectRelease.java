@@ -102,9 +102,9 @@ public class ProjectRelease extends AbstractProjectCopy {
       // now append them to already existing creators
       if (d.getCreator() == null) {
         d.setCreator(new ArrayList<>());
-        ds.put(Setting.DATASET_SOURCE_MAX_CONTAINER_AUTHORS, 0);
+        ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, 0);
       } else {
-        ds.put(Setting.DATASET_SOURCE_MAX_CONTAINER_AUTHORS, d.getCreator().size());
+        ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, d.getCreator().size());
       }
       d.getCreator().addAll(authors);
     }

@@ -134,7 +134,7 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
 
     // limit container authors to just 2 and verify
     DatasetSettings ds = dm.getSettings(Datasets.COL);
-    ds.put(Setting.DATASET_SOURCE_MAX_CONTAINER_AUTHORS, 2);
+    ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, 2);
     dm.updateSettings(Datasets.COL, ds, 1);
     commit();
 

@@ -8,7 +8,7 @@
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
     con.key AS containerKey,
     con.title AS containerTitle,
-    con.creator[:coalesce((con.settings->>'dataset source max container authors')::int, 100)] AS containerCreator
+    con.creator[:coalesce((con.settings->>'source max container authors')::int, 100)] AS containerCreator
   </sql>
 
   <sql id="COLS">
