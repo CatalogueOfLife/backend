@@ -290,7 +290,7 @@ public class WsServer extends Application<WsServerConfig> {
       doiService = new DataCiteService(cfg.doi, jerseyClient, mail.getMailer(), cfg.job.onErrorTo, cfg.job.onErrorFrom);
     }
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    DoiUpdater doiUpdater = new DoiUpdater(cfg, getSqlSessionFactory(), doiService, coljersey.getCache(), converter);
+    DoiUpdater doiUpdater = new DoiUpdater(getSqlSessionFactory(), doiService, coljersey.getCache(), converter);
 
     // release
     final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), cfg);

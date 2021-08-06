@@ -43,15 +43,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DoiUpdater {
   private static final Logger LOG = LoggerFactory.getLogger(DoiUpdater.class);
-  private final WsServerConfig cfg;
   private final SqlSessionFactory factory;
   private final DoiService doiService;
   private final DatasetConverter converter;
   private final Set<DOI> deleted = ConcurrentHashMap.newKeySet();
   private final LatestDatasetKeyCache datasetKeyCache;
 
-  public DoiUpdater(WsServerConfig cfg, SqlSessionFactory factory, DoiService doiService, LatestDatasetKeyCache datasetKeyCache, DatasetConverter converter) {
-    this.cfg = cfg;
+  public DoiUpdater(SqlSessionFactory factory, DoiService doiService, LatestDatasetKeyCache datasetKeyCache, DatasetConverter converter) {
     this.factory = factory;
     this.doiService = doiService;
     this.converter = converter;

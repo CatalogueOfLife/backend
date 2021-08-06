@@ -52,7 +52,7 @@ public abstract class ProjectBaseIT {
     DoiService doiService = mock(DoiService.class);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
     LatestDatasetKeyCache lrCache = mock(LatestDatasetKeyCache.class);
-    DoiUpdater doiUpdater = new DoiUpdater(cfg, PgSetupRule.getSqlSessionFactory(), doiService, lrCache, converter);
+    DoiUpdater doiUpdater = new DoiUpdater(PgSetupRule.getSqlSessionFactory(), doiService, lrCache, converter);
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus);
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
