@@ -70,7 +70,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
                     NameUsageIndexService indexService,
                     BiFunction<Integer, String, File> scratchFileFunc,
                     EventBus bus) {
-    super(true, factory, DatasetMapper.class);
+    super(true, factory, Dataset.class, DatasetMapper.class);
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;

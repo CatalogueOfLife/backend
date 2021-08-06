@@ -20,8 +20,8 @@ public class DatasetEntityDao<K, T extends DatasetScopedEntity<K>, M extends CRU
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetEntityDao.class);
   
-  public DatasetEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<M> mapperClass) {
-    super(offerChangedHook, factory, mapperClass);
+  public DatasetEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass) {
+    super(offerChangedHook, factory, entityClass, mapperClass);
   }
   
   public ResultPage<T> list(int datasetKey, Page page) {

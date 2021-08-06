@@ -255,7 +255,6 @@ public class DatasetImportDao {
   
   private void update(DatasetImport di, DatasetImportMapper mapper) {
     Preconditions.checkNotNull(di.getDatasetKey(), "datasetKey required for update");
-    Preconditions.checkNotNull(di.getAttempt(), "attempt required for update");
     mapper.update(di);
   }
   

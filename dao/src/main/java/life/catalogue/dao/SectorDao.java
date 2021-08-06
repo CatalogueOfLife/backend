@@ -28,7 +28,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   private final TaxonDao tDao;
 
   public SectorDao(SqlSessionFactory factory, NameUsageIndexService indexService, TaxonDao tDao) {
-    super(true, factory, SectorMapper.class);
+    super(true, factory, Sector.class, SectorMapper.class);
     this.indexService = indexService;
     this.tDao = tDao;
   }

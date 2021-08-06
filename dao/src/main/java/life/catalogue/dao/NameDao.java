@@ -26,7 +26,7 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   private final NameIndex nameIndex;
 
   public NameDao(SqlSessionFactory factory, NameUsageIndexService indexService, NameIndex nameIndex) {
-    super(false, factory, NameMapper.class);
+    super(false, factory, Name.class, NameMapper.class);
     this.indexService = indexService;
     this.nameIndex = nameIndex;
   }

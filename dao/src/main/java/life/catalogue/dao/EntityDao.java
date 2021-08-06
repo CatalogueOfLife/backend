@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Entity;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -28,6 +29,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(EntityDao.class);
   protected final SqlSessionFactory factory;
+  protected final Class<T> entityClass;
   protected final Class<M> mapperClass;
   private final boolean updateHook;
   private final boolean deleteHook;
@@ -36,11 +38,8 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
    * @param offerChangedHook if true loads the old version of the updated or deleted object and offers it to the before and after methods.
    *                         If false the old value will always be null but performance will be better
    */
-  public EntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<M> mapperClass) {
-    this.updateHook = offerChangedHook;
-    this.deleteHook = offerChangedHook;
-    this.factory = factory;
-    this.mapperClass = mapperClass;
+  public EntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass) {
+    this(offerChangedHook, offerChangedHook, factory, entityClass, mapperClass);
   }
 
   /**
@@ -49,10 +48,11 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
    * @param deleteHook if true loads the old version of the deleted object and offers it to the before and after methods.
    *                         If false the old value will always be null but performance will be better
    */
-  public EntityDao(boolean updateHook, boolean deleteHook, SqlSessionFactory factory, Class<M> mapperClass) {
+  public EntityDao(boolean updateHook, boolean deleteHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass) {
     this.updateHook = updateHook;
     this.deleteHook = deleteHook;
     this.factory = factory;
+    this.entityClass = entityClass;
     this.mapperClass = mapperClass;
   }
 
@@ -126,6 +126,10 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
    * @param keepSessionOpen if true prevents any early closing of the session
    */
   private int update(T obj, T old, int user, SqlSession session, boolean keepSessionOpen) {
+    // if an updateHook is requested we make sure that we have an old instance to avoid NPEs later on
+    if (updateHook && old == null) {
+      throw NotFoundException.notFound(entityClass, obj.getKey());
+    }
     M mapper = session.getMapper(mapperClass);
     updateBefore(obj, old, user, mapper, session);
     int changed = mapper.update(obj);
@@ -158,6 +162,10 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     M mapper = session.getMapper(mapperClass);
 
     T old = deleteHook ? mapper.get(key) : null;
+    // if an deleteHook is requested we make sure that we have an old instance to avoid NPEs later on
+    if (deleteHook && old == null) {
+      throw NotFoundException.notFound(entityClass, key);
+    }
     deleteBefore(key, old, user, mapper, session);
     int changed = mapper.delete(key);
     session.commit();

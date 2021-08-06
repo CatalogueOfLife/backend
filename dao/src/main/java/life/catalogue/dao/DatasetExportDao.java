@@ -28,7 +28,7 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
   private final File exportDir;
 
   public DatasetExportDao(File exportDir, SqlSessionFactory factory, EventBus bus) {
-    super(false, true, factory, DatasetExportMapper.class);
+    super(false, true, factory, DatasetExport.class, DatasetExportMapper.class);
     this.bus = bus;
     this.exportDir = exportDir;
   }

@@ -26,7 +26,7 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   private final EventBus bus;
 
   public UserDao(SqlSessionFactory factory, EventBus bus) {
-    super(true, factory, UserMapper.class);
+    super(true, factory, User.class, UserMapper.class);
     this.bus = bus;
   }
 

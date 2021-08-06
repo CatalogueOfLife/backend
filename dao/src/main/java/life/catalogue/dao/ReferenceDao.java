@@ -21,7 +21,7 @@ public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMap
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceDao.class);
 
   public ReferenceDao(SqlSessionFactory factory) {
-    super(false, factory, ReferenceMapper.class);
+    super(false, factory, Reference.class, ReferenceMapper.class);
   }
   
   public Reference get(DSID<String> did, @Nullable String page) {

@@ -38,7 +38,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    * We have circular dependency that cannot be satisfied with final properties through constructors
    */
   public TaxonDao(SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService) {
-    super(true, factory, TaxonMapper.class);
+    super(true, factory, Taxon.class, TaxonMapper.class);
     this.indexService = indexService;
     this.nameDao = nameDao;
   }

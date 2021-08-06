@@ -26,7 +26,7 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
   private final NameUsageIndexService indexService;
 
   public DecisionDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
-    super(true, factory, DecisionMapper.class);
+    super(true, factory, EditorialDecision.class, DecisionMapper.class);
     this.indexService = indexService;
   }
 

@@ -16,8 +16,8 @@ public class DatasetStringEntityDao<T extends DatasetScopedEntity<String>, M ext
 
   private static final Logger LOG = LoggerFactory.getLogger(DatasetStringEntityDao.class);
 
-  public DatasetStringEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<M> mapperClass) {
-    super(offerChangedHook, factory, mapperClass);
+  public DatasetStringEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass) {
+    super(offerChangedHook, factory, entityClass, mapperClass);
   }
   
   @Override

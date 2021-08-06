@@ -20,7 +20,7 @@ public class EstimateDao extends DatasetEntityDao<Integer, SpeciesEstimate, Esti
   
 
   public EstimateDao(SqlSessionFactory factory) {
-    super(true, factory, EstimateMapper.class);
+    super(true, factory, SpeciesEstimate.class, EstimateMapper.class);
   }
   
   public ResultPage<SpeciesEstimate> search(EstimateSearchRequest request, Page page) {

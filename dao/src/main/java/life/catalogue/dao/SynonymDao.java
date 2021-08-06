@@ -19,7 +19,7 @@ public class SynonymDao extends DatasetEntityDao<String, Synonym, SynonymMapper>
   private static final Logger LOG = LoggerFactory.getLogger(SynonymDao.class);
   
   public SynonymDao(SqlSessionFactory factory) {
-    super(false, factory, SynonymMapper.class);
+    super(false, factory, Synonym.class, SynonymMapper.class);
   }
   
   private static String devNull(Reference r) {
