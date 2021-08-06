@@ -78,7 +78,7 @@ public enum Setting {
    * Number of first authors to use for the container authors of a source chapter-in-a-book citation.
    * If not given all authors are used.
    */
-  SOURCE_MAX_CONTAINER_AUTHORS(Integer.class, RELEASED),
+  SOURCE_MAX_CONTAINER_AUTHORS(Integer.class, MANAGED, RELEASED),
 
   DATA_FORMAT(DataFormat.class, EXTERNAL, MANAGED),
 
