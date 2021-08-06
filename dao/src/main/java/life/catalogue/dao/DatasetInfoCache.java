@@ -40,20 +40,15 @@ public class DatasetInfoCache {
     public final int key;
     public final DatasetOrigin origin;
     public final Integer sourceKey;
-    public final Integer importAttempt; // only immutable for releases !!!
     public final boolean deleted; // this can change, so we listen to deletion events. But once deleted it can never be reverted.
 
-    DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, Integer importAttempt, boolean deleted) {
+    DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, boolean deleted) {
       this.key = key;
       this.origin = Preconditions.checkNotNull(origin, "origin is required");
       this.sourceKey = sourceKey;
       this.deleted = deleted;
-      this.importAttempt = importAttempt;
       if (origin == DatasetOrigin.RELEASED) {
         Preconditions.checkNotNull(sourceKey, "sourceKey is required for release " + key);
-        if (!deleted) {
-          Preconditions.checkNotNull(importAttempt, "importAttempt is required for release " + key);
-        }
       }
     }
 
@@ -68,8 +63,7 @@ public class DatasetInfoCache {
     public String toString() {
       return "DS " + key +
         " origin=" + origin +
-        " source=" + sourceKey +
-        " attempt=" + importAttempt;
+        " source=" + sourceKey;
     }
   }
 
@@ -89,7 +83,7 @@ public class DatasetInfoCache {
     if (d == null) {
       throw NotFoundException.notFound(Dataset.class, key);
     }
-    return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getAttempt(), d.hasDeletedDate());
+    return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.hasDeletedDate());
   }
 
   public DatasetInfo info(int datasetKey) throws NotFoundException {
@@ -122,7 +116,7 @@ public class DatasetInfoCache {
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       var info = get(event.key, true);
-      infos.put(event.key, new DatasetInfo(info.key, info.origin, info.sourceKey, info.importAttempt, true));
+      infos.put(event.key, new DatasetInfo(info.key, info.origin, info.sourceKey, true));
     }
   }
 

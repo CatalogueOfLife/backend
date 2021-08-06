@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -7,6 +9,8 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.type2.StringCount;
+
+import org.checkerframework.checker.units.qual.K;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
@@ -101,7 +105,19 @@ public class DatasetImportDao {
       return session.getMapper(DatasetImportMapper.class).get(datasetKey, attempt);
     }
   }
-  
+
+  public DatasetImport getReleaseAttempt(int releaseKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      var release = session.getMapper(DatasetMapper.class).get(releaseKey);
+      if (release == null) {
+        throw NotFoundException.notFound(Dataset.class, releaseKey);
+      } else if (release.getOrigin() != DatasetOrigin.RELEASED) {
+        throw new IllegalArgumentException(releaseKey + " is not a release");
+      }
+      return session.getMapper(DatasetImportMapper.class).get(release.getSourceKey(), release.getAttempt());
+    }
+  }
+
   /**
    * Generates new metrics, but does not persist them as an import record.
    */
@@ -193,7 +209,7 @@ public class DatasetImportDao {
     return map;
   }
   
-  public static <K extends Enum<K>> Map<K, Integer> countMap(Class<K> clazz, List<StringCount> counts) {
+  public static <K extends Enum<K>> Map<K, Integer> countMap(Class < K > clazz, List < StringCount > counts) {
     Map<K, Integer> map = new HashMap<>(counts.size());
     for (StringCount cnt : counts) {
       if (cnt.getKey() != null) {

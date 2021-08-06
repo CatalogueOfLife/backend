@@ -39,8 +39,7 @@ public class DatasetImportResource {
     // a release? use mother project in that case
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(key);
     if (info.origin == DatasetOrigin.RELEASED) {
-      // importAttempt is required for releases
-      return List.of(diDao.getAttempt(info.sourceKey, info.importAttempt));
+      return List.of(diDao.getReleaseAttempt(key));
 
     } else {
       return diDao.list(key, states, new Page(0, limit)).getResult();
