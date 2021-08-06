@@ -296,7 +296,7 @@ public class Dataset extends DataEntity<Integer> {
     return c;
   }
 
-  private static List<Agent> merge(List<Agent>... names) {
+  static List<Agent> merge(List<Agent>... names) {
     List<Agent> all = new ArrayList<>();
     for (List<Agent> n : names) {
       if (n != null && !n.isEmpty()) {
@@ -306,10 +306,10 @@ public class Dataset extends DataEntity<Integer> {
     return all;
   }
 
-  private static List<Agent> unique(List<Agent> names) {
+  static List<Agent> unique(List<Agent> names) {
     final Set<String> seen = ConcurrentHashMap.newKeySet();
     names.removeIf(n -> {
-      if (!seen.contains(n.getName())) {
+      if (n != null && n.getName() != null && !seen.contains(n.getName())) {
         seen.add(n.getName());
         return false;
       }

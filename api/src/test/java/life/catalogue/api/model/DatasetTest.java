@@ -202,4 +202,28 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     assertNull(csl.getEditor());
     assertEquals("Catalogue of Life Checklist", csl.getContainerTitle());
   }
+
+  @Test
+  public void merge() throws Exception {
+    var res = Dataset.merge(
+      Agent.parse(List.of("Hobern, Donald", "Hobern, Markus")),
+      Agent.parse(List.of("Hobern, Donald", "Hobern, Markus"))
+    );
+
+    assertEquals(4, res.size());
+  }
+
+  @Test
+  public void unique() throws Exception {
+    var res = Dataset.unique(
+      Agent.parse(List.of("Hobern, Donald", "Hobern, Markus", "Döring, Markus", "Döring, Melitta"))
+    );
+    assertEquals(3, res.size());
+
+    List<Agent> agents = Agent.parse(List.of("Hobern, Donald", "Hobern, Markus", "Döring, Markus", "Döring, Melitta"));
+    agents.add(null);
+    agents.add(new Agent(null, null));
+    res = Dataset.unique(agents);
+    assertEquals(3, res.size());
+  }
 }
