@@ -1,5 +1,7 @@
 package life.catalogue.doi.datacite.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -12,8 +14,8 @@ public class Creator {
   protected NameType nameType;
   protected String givenName;
   protected String familyName;
-  protected List<NameIdentifier> nameIdentifier;
-  protected List<String> affiliation;
+  protected List<NameIdentifier> nameIdentifiers;
+  protected List<Affiliation> affiliation;
 
   public Creator() {
   }
@@ -32,7 +34,7 @@ public class Creator {
   public Creator(String givenName, String familyName, String orcid) {
     this(givenName, familyName);
     if (orcid != null) {
-      this.nameIdentifier = List.of(NameIdentifier.orcid(orcid));
+      this.nameIdentifiers = List.of(NameIdentifier.orcid(orcid));
     }
   }
 
@@ -68,19 +70,19 @@ public class Creator {
     this.familyName = familyName;
   }
 
-  public List<NameIdentifier> getNameIdentifier() {
-    return nameIdentifier;
+  public List<NameIdentifier> getNameIdentifiers() {
+    return nameIdentifiers;
   }
 
-  public void setNameIdentifier(List<NameIdentifier> nameIdentifier) {
-    this.nameIdentifier = nameIdentifier;
+  public void setNameIdentifiers(List<NameIdentifier> nameIdentifiers) {
+    this.nameIdentifiers = nameIdentifiers;
   }
 
-  public List<String> getAffiliation() {
+  public List<Affiliation> getAffiliation() {
     return affiliation;
   }
 
-  public void setAffiliation(List<String> affiliation) {
+  public void setAffiliation(List<Affiliation> affiliation) {
     this.affiliation = affiliation;
   }
 
@@ -89,23 +91,23 @@ public class Creator {
     if (this == o) return true;
     if (!(o instanceof Creator)) return false;
     Creator creator = (Creator) o;
-    return Objects.equals(name, creator.name) && nameType == creator.nameType && Objects.equals(givenName, creator.givenName) && Objects.equals(familyName, creator.familyName) && Objects.equals(nameIdentifier, creator.nameIdentifier) && Objects.equals(affiliation, creator.affiliation);
+    return Objects.equals(name, creator.name) && nameType == creator.nameType && Objects.equals(givenName, creator.givenName) && Objects.equals(familyName, creator.familyName) && Objects.equals(nameIdentifiers, creator.nameIdentifiers) && Objects.equals(affiliation, creator.affiliation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, nameType, givenName, familyName, nameIdentifier, affiliation);
+    return Objects.hash(name, nameType, givenName, familyName, nameIdentifiers, affiliation);
   }
 
   @Override
   public String toString() {
     return "Creator{" +
-      "name='" + name + '\'' +
-      ", nameType=" + nameType +
-      ", givenName='" + givenName + '\'' +
-      ", familyName='" + familyName + '\'' +
-      ", nameIdentifier=" + nameIdentifier +
-      ", affiliation=" + affiliation +
-      '}';
+           "name='" + name + '\'' +
+           ", nameType=" + nameType +
+           ", givenName='" + givenName + '\'' +
+           ", familyName='" + familyName + '\'' +
+           ", nameIdentifier=" + nameIdentifiers +
+           ", affiliation=" + affiliation +
+           '}';
   }
 }

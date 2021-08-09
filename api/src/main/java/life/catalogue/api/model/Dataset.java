@@ -692,6 +692,11 @@ public class Dataset extends DataEntity<Integer> {
     return _citation;
   }
 
+  @JsonIgnore
+  public String getCitationAsText() {
+    return CslUtil.buildCitation(toCSL());
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

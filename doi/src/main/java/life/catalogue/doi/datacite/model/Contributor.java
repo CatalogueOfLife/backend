@@ -2,7 +2,6 @@ package life.catalogue.doi.datacite.model;
 
 import javax.validation.constraints.NotNull;
 
-import java.util.List;
 import java.util.Objects;
 
 public class Contributor extends Creator {
@@ -53,13 +52,13 @@ public class Contributor extends Creator {
   @Override
   public String toString() {
     return "Contributor{" +
-      "type=" + contributorType +
-      ", name='" + name + '\'' +
-      ", nameType=" + nameType +
-      ", givenName='" + givenName + '\'' +
-      ", familyName='" + familyName + '\'' +
-      ", nameIdentifier=" + nameIdentifier +
-      ", affiliation=" + affiliation +
-      '}';
+           "type=" + contributorType +
+           ", name='" + name + '\'' +
+           ", nameType=" + nameType +
+           ", givenName='" + givenName + '\'' +
+           ", familyName='" + familyName + '\'' +
+           ", nameIdentifier=" + nameIdentifiers +
+           ", affiliation=" + affiliation +
+           '}';
   }
 }

@@ -235,6 +235,16 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     // old is null as we have set offerChangeHook to false - we only need it here so lets call it manually
     old = mapper.get(key);
+    // avoid deletions of annual releases of COL
+    if (old != null
+        && old.getOrigin() == DatasetOrigin.RELEASED
+        && old.getSourceKey().equals(Datasets.COL)
+        && !old.isPrivat()
+        && old.getVersion().startsWith("Annual Checklist")
+    ) {
+      throw new IllegalArgumentException("You cannot delete public annual releases of the COL project");
+    }
+
     DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
     if (old != null && old.getOrigin() == DatasetOrigin.MANAGED) {
       // This is a recursive project delete.

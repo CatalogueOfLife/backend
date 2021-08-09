@@ -115,43 +115,76 @@ public class UpdateReleaseTool implements AutoCloseable {
   }
 
   /**
-   * Updates DOIs for all sources and makes them public if not already.
+   * Updates the metadata for all source which are based on an older attempt and archived version
+   * from the most current, global dataset metadata and persists it in the source archive.
    */
-  public void publishSourceDOIs(){
-    System.out.printf("%s: %s\n\n", release.getKey(), release.getTitle());
+  public void updateNotCurrentSourceMetadataFromLatest(){
+    System.out.printf("Update all non current source metadata for %s: %s\n\n", release.getKey(), release.getTitle());
     DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger counter = new AtomicInteger(0);
+    dao.list(release.getKey(), release, false).forEach(d -> {
+      try (SqlSession session = factory.openSession()) {
+        var dm = session.getMapper(DatasetMapper.class);
+        var dsm = session.getMapper(DatasetSourceMapper.class);
+        var cm = session.getMapper(CitationMapper.class);
+        var global = dm.get(d.getKey());
+        if (global.getAttempt() > d.getAttempt()) {
+          System.out.printf("Update source %s %s from attempt %s to %s:\n", d.getKey(), d.getAlias(), d.getAttempt(), global.getAttempt());
+          System.out.println(global.getCitationAsText());
+          dsm.delete(d.getKey(), release.getKey());
+          dsm.create(release.getKey(), global);
+          session.commit();
+          counter.incrementAndGet();
+        }
+      }
+    });
+    System.out.printf("Updated %s sources for release %s\n\n", counter, release.getKey());
+  }
+
+  /**
+   * Updates DOIs for all sources and makes them public if not already.
+   */
+  public void updateSourceDOIs(){
+    System.out.printf("Publish all source DOIs for %s: %s\n\n", release.getKey(), release.getTitle());
+    DatasetSourceDao dao = new DatasetSourceDao(factory);
+    AtomicInteger updated = new AtomicInteger(0);
+    AtomicInteger published = new AtomicInteger(0);
     dao.list(release.getKey(), release, false).forEach(d -> {
       if (d.getDoi() != null) {
         final DOI doi = d.getDoi();
         try {
           var data = doiService.resolve(doi);
-          if (data.getState() != DoiState.REGISTERED) {
+          var srcAttr = doiUpdater.buildSourceMetadata(d, release, true);
+          System.out.printf("Update DOI %s for source %s %s\n", doi, d.getKey(), d.getAlias());
+          doiService.update(srcAttr);
+          updated.incrementAndGet();
+          if (data.getState() != DoiState.FINDABLE) {
             System.out.printf("Publish DOI %s for source %s %s\n", doi, d.getKey(), d.getAlias());
             doiService.publish(doi);
-            counter.incrementAndGet();
+            published.incrementAndGet();
           }
 
         } catch (DoiException e) {
           System.err.printf("Error updating DOI %s for source %s\n", doi, d.getKey());
-          e.printStackTrace();
+          throw new RuntimeException(e);
         }
       }
     });
-    System.out.printf("Published %s DOIs for release %s\n\n", counter, release.getKey());
+    System.out.printf("\nUpdated %s DOIs for release %s\n", updated, release.getKey());
+    System.out.printf("Published %s DOIs for release %s\n\n", published, release.getKey());
   }
 
   /**
    * Rebuilds the source metadata from latest patches and templates
    */
   public void rebuildSourceMetadata(boolean addMissingDOIs){
-    System.out.printf("%s: %s\n\n", release.getKey(), release.getTitle());
+    System.out.printf("Rebuilt all source metadata for  %s: %s\n\n", release.getKey(), release.getTitle());
     DatasetSourceDao dao = new DatasetSourceDao(factory);
 
     try (SqlSession session = factory.openSession(false)) {
-      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
       var cm = session.getMapper(CitationMapper.class);
-      int cnt = psm.deleteByRelease(release.getKey());
+      int cnt = dsm.deleteByRelease(release.getKey());
       session.commit();
       System.out.printf("Deleted %s old source metadata records\n", cnt);
 
@@ -174,7 +207,7 @@ public class UpdateReleaseTool implements AutoCloseable {
           doiService.createSilently(srcAttr);
         }
         System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
-        psm.create(release.getKey(), d);
+        dsm.create(release.getKey(), d);
         cm.createRelease(d.getKey(), release.getKey(), d.getAttempt());
       });
       session.commit();
@@ -199,7 +232,8 @@ public class UpdateReleaseTool implements AutoCloseable {
     doiCfg.password = "";
     try (UpdateReleaseTool reg = new UpdateReleaseTool(2328,cfg, doiCfg, 101)) { // 101=markus
       //reg.rebuildSourceMetadata(true);
-      reg.publishSourceDOIs();
+      //reg.updateNotCurrentSourceMetadataFromLatest();
+      reg.updateSourceDOIs();
     }
   }
 }

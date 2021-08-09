@@ -6,6 +6,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.doi.datacite.model.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,67 +111,66 @@ public class DatasetConverter {
     return attr;
   }
 
-  private DoiAttributes common(Dataset release, boolean latest, @Nullable DOI previousVersion) {
-    DoiAttributes attr = new DoiAttributes(release.getDoi());
+  private DoiAttributes common(Dataset d, boolean latest, @Nullable DOI previousVersion) {
+    DoiAttributes attr = new DoiAttributes(d.getDoi());
     // title
-    attr.setTitles(List.of(new Title(release.getTitle())));
+    attr.setTitles(List.of(new Title(d.getTitle())));
     // publisher
-    if (release.getPublisher() != null) {
-      attr.setPublisher(release.getPublisher().getName());
+    if (d.getPublisher() != null) {
+      attr.setPublisher(d.getPublisher().getName());
+    } else {
+      // this is required !!!
+      LOG.warn("No required publisher given, use COL instead");
+      attr.setPublisher("Catalogue of Life");
     }
     // PublicationYear
-    if (release.getIssued() != null) {
-      attr.setPublicationYear(release.getIssued().getYear());
+    if (d.getIssued() != null) {
+      attr.setPublicationYear(d.getIssued().getYear());
     } else {
       LOG.warn("No release date given. Use today instead");
       attr.setPublicationYear(LocalDate.now().getYear());
     }
     // version
-    attr.setVersion(release.getVersion());
+    attr.setVersion(d.getVersion());
     // creator
-    if (release.getCreator() != null) {
-      attr.setCreators(release.getCreator().stream()
-                              .map(a -> {
-                                if (a.isPerson()) {
-                                  return new Creator(a.getGiven(), a.getFamily(), a.getOrcid());
-                                }
-                                return new Creator(a.getName(), NameType.ORGANIZATIONAL);
-                              })
-                              .collect(Collectors.toList())
-      );
+    if (d.getCreator() != null && !d.getCreator().isEmpty()) {
+      attr.setCreators(toCreators(d.getCreator()));
+    } else if (d.getEditor() != null && !d.getEditor().isEmpty()) {
+      LOG.warn("No authors given. Use dataset editors instead");
+      attr.setCreators(toCreators(d.getEditor()));
     } else {
       LOG.warn("No authors given. Use dataset creator instead");
-      User user = userByID.apply(release.getCreatedBy());
+      User user = userByID.apply(d.getCreatedBy());
       Creator creator;
       if (user.getLastname() != null) {
         creator = new Creator(user.getFirstname(), user.getLastname());
       } else {
         creator = new Creator(user.getUsername(), NameType.PERSONAL);
       }
-      creator.setNameIdentifier(List.of(NameIdentifier.gbif(user.getUsername())));
+      creator.setNameIdentifiers(List.of(NameIdentifier.gbif(user.getUsername())));
       attr.setCreators(List.of(creator));
     }
     // contributors
     List<Contributor> contribs = new ArrayList<>();
-    if (release.getContributor() != null) {
-      contribs.addAll(release.getContributor().stream()
+    if (d.getContributor() != null) {
+      contribs.addAll(d.getContributor().stream()
                              .map(a -> agent2Contributor(a, null))
                              .collect(Collectors.toList())
       );
     }
-    if (release.getEditor() != null) {
-      contribs.addAll(release.getEditor().stream()
+    if (d.getEditor() != null) {
+      contribs.addAll(d.getEditor().stream()
                              .map(a -> agent2Contributor(a, ContributorType.EDITOR))
                              .collect(Collectors.toList())
       );
     }
     attr.setContributors(contribs);
     // url
-    attr.setUrl(datasetURI(release.getKey(), latest).toString());
+    attr.setUrl(datasetURI(d.getKey(), latest).toString());
     // ids
-    if (release.getIdentifier() != null) {
+    if (d.getIdentifier() != null) {
       List<Identifier> ids = new ArrayList<>();
-      for (var entry : release.getIdentifier().entrySet()) {
+      for (var entry : d.getIdentifier().entrySet()) {
         Identifier id = null;
         // we can only map DOI, URL or URNs
         var doi = DOI.parse(entry.getValue());
@@ -207,6 +207,31 @@ public class DatasetConverter {
     return attr;
   }
 
+  static <T extends Creator> void  addAffiliation(T c, Agent a) {
+    if (!StringUtils.isBlank(a.getOrganisation())) {
+      c.setAffiliation(List.of(new Affiliation(a)));
+    }
+  }
+
+  public List<Creator> toCreators(List<Agent> agents) {
+    return agents.stream()
+                 .map(a -> {
+                   if (a.isPerson()) {
+                     Creator c = new Creator(a.getGiven(), a.getFamily(), a.getOrcid());
+                     addAffiliation(c, a);
+                     return c;
+                   }
+                   return new Creator(a.getName(), NameType.ORGANIZATIONAL);
+                 })
+                 .collect(Collectors.toList());
+  }
+
+  public List<Contributor> toContributor(List<Agent> agents, @Nullable ContributorType type) {
+    return agents.stream()
+                 .map(a -> agent2Contributor(a, type))
+                 .collect(Collectors.toList());
+  }
+
   Contributor agent2Contributor(Agent a, @Nullable ContributorType type) {
     if (type == null) {
       if (a.getNote() != null) {
@@ -221,11 +246,12 @@ public class DatasetConverter {
       }
     }
     if (a.isPerson()) {
-      return new Contributor(a.getGiven(), a.getFamily(), a.getOrcid(), type);
+      Contributor c = new Contributor(a.getGiven(), a.getFamily(), a.getOrcid(), type);
+      addAffiliation(c, a);
+      return c;
     }
     return new Contributor(a.getName(), NameType.ORGANIZATIONAL, type);
   }
-
 
   public URI datasetURI(int datasetKey, boolean portal) {
     return portal ? this.portal : clbBuilder.build(datasetKey);
