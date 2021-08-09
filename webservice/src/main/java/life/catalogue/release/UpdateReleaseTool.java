@@ -17,6 +17,7 @@ import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.doi.DoiUpdater;
+import life.catalogue.doi.datacite.model.DoiState;
 import life.catalogue.doi.service.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
@@ -114,6 +115,33 @@ public class UpdateReleaseTool implements AutoCloseable {
   }
 
   /**
+   * Updates DOIs for all sources and makes them public if not already.
+   */
+  public void publishSourceDOIs(){
+    System.out.printf("%s: %s\n\n", release.getKey(), release.getTitle());
+    DatasetSourceDao dao = new DatasetSourceDao(factory);
+    AtomicInteger counter = new AtomicInteger(0);
+    dao.list(release.getKey(), release, false).forEach(d -> {
+      if (d.getDoi() != null) {
+        final DOI doi = d.getDoi();
+        try {
+          var data = doiService.resolve(doi);
+          if (data.getState() != DoiState.REGISTERED) {
+            System.out.printf("Publish DOI %s for source %s %s\n", doi, d.getKey(), d.getAlias());
+            doiService.publish(doi);
+            counter.incrementAndGet();
+          }
+
+        } catch (DoiException e) {
+          System.err.printf("Error updating DOI %s for source %s\n", doi, d.getKey());
+          e.printStackTrace();
+        }
+      }
+    });
+    System.out.printf("Published %s DOIs for release %s\n\n", counter, release.getKey());
+  }
+
+  /**
    * Rebuilds the source metadata from latest patches and templates
    */
   public void rebuildSourceMetadata(boolean addMissingDOIs){
@@ -170,7 +198,8 @@ public class UpdateReleaseTool implements AutoCloseable {
     doiCfg.username = "";
     doiCfg.password = "";
     try (UpdateReleaseTool reg = new UpdateReleaseTool(2328,cfg, doiCfg, 101)) { // 101=markus
-      reg.rebuildSourceMetadata(true);
+      //reg.rebuildSourceMetadata(true);
+      reg.publishSourceDOIs();
     }
   }
 }
