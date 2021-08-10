@@ -10,12 +10,16 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 
+import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.dao.DatasetExportDao;
 
+import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
+import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
+import life.catalogue.doi.service.DoiException;
 import life.catalogue.doi.service.DoiService;
 
 import org.apache.commons.io.FileUtils;
@@ -26,10 +30,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -70,10 +74,35 @@ public class PublicReleaseListener {
 
       // COL specifics
       if (Datasets.COL == event.obj.getSourceKey()) {
+        publishColSourceDois(event.obj);
         updateColDoiUrls(event.obj);
         copyExportsToColDownload(event.obj);
       }
     }
+  }
+
+  private void publishColSourceDois(Dataset release) {
+    LOG.info("Publish all draft source DOIs for COL release {}: {}", release.getKey(), release.getVersion());
+    DatasetSourceDao dao = new DatasetSourceDao(factory);
+    AtomicInteger published = new AtomicInteger(0);
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
+      dao.list(release.getKey(), release, false).forEach(d -> {
+        if (d.getDoi() == null) {
+          LOG.error("COL source {} {} without a DOI", d.getKey(), d.getAlias());
+        } else {
+          final DOI doi = d.getDoi();
+          try {
+            var srcAttr = converter.source(d, null, release, true);
+            doiService.update(srcAttr);
+            doiService.publish(doi);
+          } catch (DoiException e) {
+            LOG.error("Error publishing DOI {} for COL source {} {}", doi, d.getKey(), d.getAlias(), e);
+          }
+        }
+      });
+    }
+    LOG.info("Published {} draft source DOIs for COL release {}: {}", published, release.getKey(), release.getVersion());
   }
 
   /**
