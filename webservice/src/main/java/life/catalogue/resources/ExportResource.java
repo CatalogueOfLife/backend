@@ -1,15 +1,21 @@
 package life.catalogue.resources;
 
+import io.dropwizard.auth.Auth;
+
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.model.User;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.dao.DatasetExportDao;
+import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 
 import java.util.UUID;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -54,6 +60,16 @@ public class ExportResource {
     return Response.status(Response.Status.FOUND)
       .location(DatasetExport.downloadURI(key))
       .build();
+  }
+
+  @DELETE
+  @Path("{id}")
+  @RolesAllowed(Roles.ADMIN)
+  public void delete(@PathParam("id") UUID key, @Auth User user) {
+    int deleted = dao.delete(key, user.getKey());
+    if (deleted == 0) {
+      throw NotFoundException.notFound(DatasetExport.class, key);
+    }
   }
 
 }

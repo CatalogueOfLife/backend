@@ -235,6 +235,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     // old is null as we have set offerChangeHook to false - we only need it here so lets call it manually
     old = mapper.get(key);
+
     // avoid deletions of annual releases of COL
     if (old != null
         && old.getOrigin() == DatasetOrigin.RELEASED
