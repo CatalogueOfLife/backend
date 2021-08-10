@@ -175,6 +175,50 @@ public class UpdateReleaseTool implements AutoCloseable {
   }
 
   /**
+   * Updates DOIs for all sources and makes them public if not already.
+   */
+  public void addMissingSourceDOIs(){
+    System.out.printf("Issue missing source DOIs for %s: %s\n\n", release.getKey(), release.getTitle());
+    DatasetSourceDao dao = new DatasetSourceDao(factory);
+    AtomicInteger created = new AtomicInteger(0);
+    final boolean publish = !release.isPrivat();
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
+        dao.list(release.getKey(), release, false).forEach(d -> {
+        if (d.getDoi() == null) {
+          final DOI doi = doiCfg.datasetSourceDOI(release.getKey(), d.getKey());
+          System.out.printf("Creating new DOI %s for source %s %s\n", doi, d.getKey(), d.getCitation());
+          // update source
+          d.setDoi(doi);
+          dsm.delete(d.getKey(), release.getKey());
+          dsm.create(release.getKey(), d);
+          try {
+            // make sure we done have any draft DOI still
+            if (!doiService.delete(doi)) {
+              System.err.printf("Failed to remove DOI %s for source %s\n", doi, d.getKey());
+            }
+          } catch (DoiException e) {
+            System.err.printf("Error removing DOI %s for source %s\n", doi, d.getKey());
+            e.printStackTrace();
+          }
+          var srcAttr = doiUpdater.buildSourceMetadata(d, release, true);
+          doiService.createSilently(srcAttr);
+          created.incrementAndGet();
+          if (publish) {
+            try {
+              doiService.update(srcAttr);
+              doiService.publish(doi);
+            } catch (DoiException e) {
+              e.printStackTrace();
+            }
+          }
+        }
+      });
+    }
+    System.out.printf("Created %s new source DOIs for release %s\n\n", created, release.getKey());
+  }
+
+  /**
    * Rebuilds the source metadata from latest patches and templates
    */
   public void rebuildSourceMetadata(boolean addMissingDOIs){
@@ -233,7 +277,8 @@ public class UpdateReleaseTool implements AutoCloseable {
     try (UpdateReleaseTool reg = new UpdateReleaseTool(2328,cfg, doiCfg, 101)) { // 101=markus
       //reg.rebuildSourceMetadata(true);
       //reg.updateNotCurrentSourceMetadataFromLatest();
-      reg.updateSourceDOIs();
+      //reg.updateSourceDOIs();
+      reg.addMissingSourceDOIs();
     }
   }
 }
