@@ -91,8 +91,12 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
       execute();
 
     } finally {
-      dataSource.close();
-      jerseyClient.close();
+      if (dataSource != null) {
+        dataSource.close();
+      }
+      if (jerseyClient != null) {
+        jerseyClient.close();
+      }
     }
   }
 
