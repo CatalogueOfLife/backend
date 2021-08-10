@@ -166,7 +166,7 @@ public class PublicReleaseListener {
 
   public static File colDownloadFile(File colDownloadDir, FuzzyDate released, DataFormat format) {
     String iso = DateTimeFormatter.ISO_DATE.format(released.getDate());
-    return new File(colDownloadDir, iso + "_" + format + ".zip");
+    return new File(colDownloadDir, iso + "_" + format.getName().toLowerCase() + ".zip");
   }
 
 }

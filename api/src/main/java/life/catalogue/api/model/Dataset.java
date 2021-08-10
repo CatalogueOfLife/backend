@@ -144,6 +144,7 @@ public class Dataset extends DataEntity<Integer> {
   private List<Citation> source = new ArrayList<>();
   private String notes;
   private String _citation; // cache field
+  private String _citationText; // cache field
 
   public Dataset() {
   }
@@ -693,8 +694,11 @@ public class Dataset extends DataEntity<Integer> {
   }
 
   @JsonIgnore
-  public String getCitationAsText() {
-    return CslUtil.buildCitation(toCSL());
+  public String getCitationText() {
+    if (_citationText == null) {
+      _citationText = CslUtil.buildCitation(toCSL());
+    }
+    return _citationText;
   }
 
   @Override

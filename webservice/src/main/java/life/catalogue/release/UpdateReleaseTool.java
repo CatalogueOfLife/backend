@@ -130,7 +130,7 @@ public class UpdateReleaseTool implements AutoCloseable {
         var global = dm.get(d.getKey());
         if (global.getAttempt() > d.getAttempt()) {
           System.out.printf("Update source %s %s from attempt %s to %s:\n", d.getKey(), d.getAlias(), d.getAttempt(), global.getAttempt());
-          System.out.println(global.getCitationAsText());
+          System.out.println(global.getCitationText());
           dsm.delete(d.getKey(), release.getKey());
           dsm.create(release.getKey(), global);
           session.commit();
