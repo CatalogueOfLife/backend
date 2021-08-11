@@ -39,7 +39,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   int threads = 4;
 
   public NamesIndexCmd() {
-    super("nidx", "Rebuilt names index and rematch all datasets");
+    super("nidx", false, "Rebuilt names index and rematch all datasets");
 
   }
 

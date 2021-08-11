@@ -56,7 +56,7 @@ public class ExportCmd extends AbstractMybatisCmd {
   private boolean force;
 
   public ExportCmd() {
-    super("export", "Export a single dataset or all its releases if it is a project.");
+    super("export", false, "Export a single dataset or all its releases if it is a project.");
   }
   
   @Override

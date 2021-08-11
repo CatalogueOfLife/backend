@@ -59,7 +59,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   private int key;
 
   public DoiUpdateCmd() {
-    super("updDoi", "Update all release and release source DOIs for the given release or project dataset key");
+    super("updDoi", true, "Update all release and release source DOIs for the given release or project dataset key");
   }
 
   @Override

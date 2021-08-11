@@ -42,7 +42,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
   private Set<SectorAttempt> done = new HashSet<>();
 
   public UpdMetricCmd() {
-    super("updMetrics", "Update all release sector metrics for the given projects dataset key");
+    super("updMetrics", false, "Update all release sector metrics for the given projects dataset key");
   }
 
   @Override
