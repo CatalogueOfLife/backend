@@ -6,6 +6,7 @@ import de.undercouch.citeproc.csl.CSLItemData;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.common.csl.CslUtil;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.exporter.DatasetYamlWriter;
 
@@ -36,7 +37,7 @@ public class DatasetCslBodyWriter implements MessageBodyWriter<Dataset> {
 
   @Override
   public void writeTo(Dataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
-    JSON_WRITER.writeValue(out, dataset);
+    JSON_WRITER.writeValue(out, dataset.toCSL());
   }
 
 }

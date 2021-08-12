@@ -230,6 +230,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("/{key}/source/{id}")
+  @VaryAccept
   @Produces({MediaType.APPLICATION_JSON,
     MediaType.APPLICATION_XML, MediaType.TEXT_XML,
     MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML,

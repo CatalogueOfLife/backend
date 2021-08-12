@@ -86,4 +86,7 @@ public class ObjectUtils {
     return false;
   }
 
+  public static String toString(Object obj) {
+    return obj == null ? null : obj.toString();
+  }
 }
