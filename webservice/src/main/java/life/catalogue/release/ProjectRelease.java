@@ -74,15 +74,15 @@ public class ProjectRelease extends AbstractProjectCopy {
     if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {
       srcDao.list(datasetKey, null, false).forEach(src -> {
         if (src.getCreator() != null) {
-          authors.addAll(src.getCreator());
+          authors.addAll(setSourceNote(src, src.getCreator()));
         }
         if (src.getEditor() != null) {
-          authors.addAll(src.getEditor());
+          authors.addAll(setSourceNote(src, src.getEditor()));
         }
       });
     }
     if (ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS) && d.getContributor() != null) {
-      authors.addAll(d.getContributor());
+      authors.addAll(setSourceNote(d, d.getContributor()));
     }
     // remove authors without a family name and distinct them based in the generated name alone!
     Map<String, Agent> uniq = new HashMap<>();
@@ -90,7 +90,18 @@ public class ProjectRelease extends AbstractProjectCopy {
       if (a != null) {
         String name = a.getName();
         if (name != null) {
-          uniq.put(name.replaceAll("\\.", " ").replaceAll("  +", " ").toLowerCase(), a);
+          String key = name.replaceAll("\\.", " ").replaceAll("  +", " ").toLowerCase();
+          if (uniq.containsKey(key)) {
+            var prev = uniq.get(key);
+            if (prev.getNote() != null && a.getNote() != null) {
+              // merge notes
+              prev.setNote(prev.getNote() + "; " + a.getNote());
+            } else if (a.getNote() != null){
+              prev.setNote(a.getNote());
+            }
+          } else {
+            uniq.put(key, a);
+          }
         }
       }
     }
@@ -112,6 +123,10 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setPrivat(true); // all releases are private candidate releases first
   }
 
+  private List<Agent> setSourceNote(Dataset d, List<Agent> agents) {
+    agents.forEach(a -> a.setNote(d.getAliasOrTitle()));
+    return agents;
+  }
 
   @Override
   void prepWork() throws Exception {
