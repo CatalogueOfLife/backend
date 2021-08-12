@@ -233,12 +233,15 @@ public class Dataset extends DataEntity<Integer> {
   public CSLItemData toCSL() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
     builder
-      .id(ObjectUtils.toString(key))
       .type(CSLType.DATASET)
       .shortTitle(alias)
       .title(title)
       .version(version)
       .ISSN(issn);
+    if (key != null) {
+      builder.id(key.toString());
+    }
+
     if (containerTitle != null) {
       builder
         .type(CSLType.CHAPTER)

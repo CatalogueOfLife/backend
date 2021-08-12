@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class CslUtilTest {
 
@@ -37,6 +37,9 @@ public class CslUtilTest {
   public void bibtex() throws Exception {
     var d = Dataset.read(Resources.stream("metadata/col.yaml"));
     System.out.println( CslUtil.toBibTexString(d.toCSL()) );
+
+    d.setKey(999);
+    assertTrue(CslUtil.toBibTexString(d.toCSL()).startsWith("@misc{999,"));
 
     System.out.println("\n" + CslUtil.buildCitation(d.toCSL()) );
 
