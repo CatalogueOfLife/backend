@@ -100,7 +100,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
-  public void updateAlt(@PathParam("key") Integer key, Dataset obj, @Auth User user) {
+  public void updateAlt(@PathParam("key") Integer key, @Valid Dataset obj, @Auth User user) {
     this.update(key, obj, user);
   }
 

@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -119,13 +120,19 @@ public class Dataset extends DataEntity<Integer> {
   private FuzzyDate issued;
   private String version;
   private String issn;
+  @Valid
   private Agent contact;
+  @Valid
   private List<Agent> creator;
+  @Valid
   private List<Agent> editor;
+  @Valid
   private Agent publisher;
+  @Valid
   private List<Agent> contributor;
   private Integer containerKey;
   private String containerTitle;
+  @Valid
   private List<Agent> containerCreator;
   private String geographicScope;
   private String taxonomicScope;
@@ -141,6 +148,7 @@ public class Dataset extends DataEntity<Integer> {
   private URI url;
   @AbsoluteURI
   private URI logo;
+  @Valid
   private List<Citation> source = new ArrayList<>();
   private String notes;
   private String _citation; // cache field

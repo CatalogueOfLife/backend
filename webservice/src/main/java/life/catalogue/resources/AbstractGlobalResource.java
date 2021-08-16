@@ -58,7 +58,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("key") Integer key, T obj, @Auth User user) {
+  public void update(@PathParam("key") Integer key, @Valid T obj, @Auth User user) {
     if (obj==null) {
       throw new IllegalArgumentException("No update object given for key " + key);
     }

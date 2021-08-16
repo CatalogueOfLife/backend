@@ -2,6 +2,8 @@ package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.undercouch.citeproc.csl.CSLName;
 
 import de.undercouch.citeproc.csl.CSLNameBuilder;
@@ -43,10 +45,12 @@ public class Agent implements Comparable<Agent> {
   private static final Pattern EMAIL = Pattern.compile("<?\\s*\\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,})\\s*>?", Pattern.CASE_INSENSITIVE);
 
   // person properties
+  @javax.validation.constraints.Pattern(regexp = "^(\\d\\d\\d\\d-){3}\\d\\d\\d\\d$", message = "No valid ORCID. Do not use a URL")
   private String orcid;
   private String given;
   private String family;
   // organisation properties
+  @javax.validation.constraints.Pattern(regexp = "^0[a-z0-9]{6}\\d\\d$", message = "No valid RORID. Should be zero followed by 6 alphanumerics and 2 final digits. No URL")
   private String rorid;
   private String organisation;
   private String department;
@@ -336,10 +340,6 @@ public class Agent implements Comparable<Agent> {
     return rorid;
   }
 
-  public void setRorid(String rorid) {
-    this.rorid = rorid;
-  }
-
   @JsonProperty("organisation")
   public String getOrganisation() {
     return organisation;
@@ -416,7 +416,27 @@ public class Agent implements Comparable<Agent> {
   }
 
   public void setOrcid(String orcid) {
-    this.orcid = orcid;
+    this.orcid = removeUrlPrefix(orcid, "orcid.org");
+  }
+
+  public void setRorid(String rorid) {
+    this.rorid = removeUrlPrefix(rorid, "ror.org");
+  }
+
+  @VisibleForTesting
+  static String removeUrlPrefix(String url, String domain) {
+    if (url != null) {
+      String x = "";
+      if (url.startsWith("http://")) {
+        x = url.substring(7);
+      } else if (url.startsWith("https://")) {
+        x = url.substring(8);
+      }
+      if (x.toLowerCase().startsWith(domain + "/")) {
+        return x.substring(domain.length() + 1);
+      }
+    }
+    return StringUtils.trimToNull(url);
   }
 
   @JsonIgnore

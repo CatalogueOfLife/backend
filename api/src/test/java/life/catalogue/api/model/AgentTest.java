@@ -52,6 +52,20 @@ public class AgentTest {
   }
 
   @Test
+  public void removeUrlPrefix() {
+    assertNull(Agent.removeUrlPrefix(null, "orcid.org"));
+    assertNull(Agent.removeUrlPrefix("", "orcid.org"));
+    assertNull(Agent.removeUrlPrefix(" ", "orcid.org"));
+    assertEquals("112345", Agent.removeUrlPrefix("112345", "orcid.org"));
+    assertEquals("112345", Agent.removeUrlPrefix("http://orcid.org/112345", "orcid.org"));
+    assertEquals("112345", Agent.removeUrlPrefix("https://orcid.org/112345", "orcid.org"));
+
+    assertEquals("http://orid.org/112345", Agent.removeUrlPrefix("http://orid.org/112345", "orcid.org"));
+
+    assertEquals("045gste699", Agent.removeUrlPrefix("https://ror.org/045gste699", "ror.org"));
+  }
+
+  @Test
   public void parse() {
     assertNull(Agent.parse((String)null));
     assertEquals(Agent.person(null, "Markus"), Agent.parse("Markus"));
