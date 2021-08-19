@@ -25,6 +25,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.validation.constraints.Email;
+
 import static java.util.Comparator.*;
 
 public class Agent implements Comparable<Agent> {
@@ -45,7 +47,7 @@ public class Agent implements Comparable<Agent> {
   private static final Pattern EMAIL = Pattern.compile("<?\\s*\\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,})\\s*>?", Pattern.CASE_INSENSITIVE);
 
   // person properties
-  @javax.validation.constraints.Pattern(regexp = "^(\\d\\d\\d\\d-){3}\\d\\d\\d\\d$", message = "No valid ORCID. Do not use a URL")
+  @javax.validation.constraints.Pattern(regexp = "^(\\d\\d\\d\\d-){3}\\d\\d\\d[\\dX]$", message = "No valid ORCID. Do not use a URL")
   private String orcid;
   private String given;
   private String family;
@@ -58,6 +60,7 @@ public class Agent implements Comparable<Agent> {
   private String state;
   private Country country;
   // shared properties
+  @Email
   private String email;
   private String url;
   private String note;

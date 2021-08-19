@@ -129,6 +129,31 @@
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.SettingsTypeHandler"/>
   </resultMap>
 
+
+
+  <select id="listAgents" resultMap="datasetResultMap">
+    SELECT key, contact, creator, editor, publisher, contributor FROM dataset
+  </select>
+
+  <update id="updateAgents" parameterType="Dataset">
+    UPDATE dataset SET (
+    contact,
+    creator,
+    editor,
+    publisher,
+    contributor
+    ) = (
+    #{contact, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{creator, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{editor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{publisher, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{contributor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler}
+    )
+    WHERE key = #{key}
+  </update>
+
+
+
   <select id="keys" resultType="integer">
     SELECT key
     FROM dataset

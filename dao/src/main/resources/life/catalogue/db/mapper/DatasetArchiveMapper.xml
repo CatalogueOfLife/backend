@@ -83,4 +83,25 @@
     DELETE FROM dataset_archive WHERE key = #{datasetKey};
   </delete>
 
+
+  <select id="listAgents" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+  SELECT key, contact, creator, editor, publisher, contributor FROM dataset_archive
+  </select>
+
+  <update id="updateAgents" parameterType="Dataset">
+    UPDATE dataset_archive SET (
+    contact,
+    creator,
+    editor,
+    publisher,
+    contributor
+    ) = (
+    #{contact, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{creator, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{editor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{publisher, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{contributor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler}
+    )
+    WHERE key = #{key}
+  </update>
 </mapper>

@@ -21,6 +21,11 @@ import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -32,13 +37,15 @@ public class DatasetDaoTest extends DaoTestBase {
   public void init() {
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     DatasetExportDao exDao = new DatasetExportDao(new File("/tmp/exports"), PgSetupRule.getSqlSessionFactory(), new EventBus());
+    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     dao = new DatasetDao(factory(),
       null,
       ImageService.passThru(),
       diDao, exDao,
       NameUsageIndexService.passThru(),
       null,
-      new EventBus()
+      new EventBus(),
+      validator
     );
   }
 
@@ -56,6 +63,13 @@ public class DatasetDaoTest extends DaoTestBase {
     var d2 = dao.get(d1.getKey());
     //printDiff(u1, u2);
     assertEquals(d1, d2);
+  }
+
+  @Test(expected = ConstraintViolationException.class)
+  public void invalid() throws Exception {
+    Dataset d = DatasetMapperTest.create();
+    d.setOrigin(null);
+    dao.create(d, Users.TESTER);
   }
 
   @Test(expected = IllegalArgumentException.class)

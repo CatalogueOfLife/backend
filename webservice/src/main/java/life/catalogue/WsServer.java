@@ -59,6 +59,7 @@ import org.gbif.dwc.terms.TermFactory;
 import java.io.IOException;
 import java.sql.Connection;
 
+import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
 import org.apache.commons.io.FileUtils;
@@ -265,9 +266,12 @@ public class WsServer extends Application<WsServerConfig> {
       LookupTables.recreateTables(c);
     }
 
+    // validation
+    Validator validator = env.getValidator();
+
     // daos
     DatasetExportDao exdao = new DatasetExportDao(cfg.exportDir, getSqlSessionFactory(), bus);
-    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus);
+    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());

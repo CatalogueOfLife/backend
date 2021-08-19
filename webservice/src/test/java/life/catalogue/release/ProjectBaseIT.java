@@ -22,6 +22,9 @@ import org.junit.ClassRule;
 
 import com.google.common.eventbus.EventBus;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import static org.mockito.Mockito.mock;
 
 public abstract class ProjectBaseIT {
@@ -53,8 +56,9 @@ public abstract class ProjectBaseIT {
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
     LatestDatasetKeyCache lrCache = mock(LatestDatasetKeyCache.class);
     DoiUpdater doiUpdater = new DoiUpdater(PgSetupRule.getSqlSessionFactory(), doiService, lrCache, converter);
+    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus);
+    dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus, validator);
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());

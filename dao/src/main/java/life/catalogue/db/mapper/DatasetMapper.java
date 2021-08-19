@@ -19,7 +19,7 @@ import org.apache.ibatis.cursor.Cursor;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
 
-public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
+public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset>, DatasetAgentMapper {
   int MAGIC_ADMIN_USER_KEY = -42;
 
   void deletePhysically(@Param("key") int key);

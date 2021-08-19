@@ -5,7 +5,7 @@ import life.catalogue.db.DatasetProcessable;
 
 import org.apache.ibatis.annotations.Param;
 
-public interface DatasetArchiveMapper extends DatasetProcessable<Dataset> {
+public interface DatasetArchiveMapper extends DatasetProcessable<Dataset>, DatasetAgentMapper {
 
   /**
    * Copies a given dataset key into the archive.

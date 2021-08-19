@@ -117,4 +117,26 @@
     DELETE FROM dataset_source WHERE dataset_key = #{datasetKey};
   </delete>
 
+
+  <select id="listAgents" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+  SELECT key, contact, creator, editor, publisher, contributor FROM dataset_source
+  </select>
+
+  <update id="updateAgents" parameterType="Dataset">
+    UPDATE dataset_source SET (
+    contact,
+    creator,
+    editor,
+    publisher,
+    contributor
+    ) = (
+    #{contact, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{creator, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{editor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
+    #{publisher, typeHandler=life.catalogue.db.type.AgentTypeHandler},
+    #{contributor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler}
+    )
+    WHERE key = #{key}
+  </update>
+
 </mapper>

@@ -195,6 +195,25 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+      <!-- hibernate validator in tests includes javax.el -->
+      <dependency>
+        <groupId>org.hibernate.validator</groupId>
+        <artifactId>hibernate-validator</artifactId>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>javax.el</groupId>
+        <artifactId>javax.el-api</artifactId>
+        <version>3.0.0</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish</groupId>
+        <artifactId>javax.el</artifactId>
+        <version>3.0.0</version>
+        <scope>test</scope>
+      </dependency>
+
 		<dependency>
 			<groupId>org.catalogueoflife</groupId>
 			<artifactId>api</artifactId>

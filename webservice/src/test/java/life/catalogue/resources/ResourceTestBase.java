@@ -19,6 +19,8 @@ import org.javers.core.diff.Diff;
 import org.junit.Before;
 import org.junit.ClassRule;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
 import javax.ws.rs.client.WebTarget;
 
 import static org.mockito.Mockito.mock;
@@ -35,7 +37,8 @@ public class ResourceTestBase {
     baseURL = String.format("http://localhost:%d"+path, RULE.getLocalPort());
     base = RULE.client().target(baseURL);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
-    ddao = new DatasetDao(factory(), null, ImageService.passThru(), null, exDao, NameUsageIndexService.passThru(), null, RULE.getServer().getBus());
+    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    ddao = new DatasetDao(factory(), null, ImageService.passThru(), null, exDao, NameUsageIndexService.passThru(), null, RULE.getServer().getBus(), validator);
   }
   
   @ClassRule

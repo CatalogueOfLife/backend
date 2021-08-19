@@ -2,6 +2,7 @@ package life.catalogue.api.util;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -36,7 +37,16 @@ public class ObjectUtils {
     }
     return null;
   }
-  
+
+  /**
+   * Call setter with value only if the current value is null.
+   */
+  public static <V> void setIfNull(V current, Consumer<V> setter, V value) {
+    if (current == null) {
+      setter.accept(value);
+    }
+  }
+
   /**
    * Similar to Guavas Preconditions.checkNotNull() but raising IllegalArgumentException instead.
    */
@@ -44,7 +54,8 @@ public class ObjectUtils {
     if (obj == null) {
       throw new IllegalArgumentException();
     }
-    return obj;  }
+    return obj;
+  }
   
   /**
    * Similar to Guavas Preconditions.checkNotNull() but raising IllegalArgumentException instead.

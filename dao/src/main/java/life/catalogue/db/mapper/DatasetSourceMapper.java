@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Param;
  * The table dataset_source only stores sources for releases, not the project itself.
  * The live project sources are determined based on the sector mappings alone and are the reason for the name of the mapper.
  */
-public interface DatasetSourceMapper {
+public interface DatasetSourceMapper extends DatasetAgentMapper {
 
   /**
    * Copies a given dataset into the release source archive.

@@ -5,6 +5,7 @@ import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
@@ -32,6 +33,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -58,6 +61,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final DatasetExportDao exportDao;
   private final NameUsageIndexService indexService;
   private final EventBus bus;
+  private final Validator validator;
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
@@ -69,7 +73,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
                     DatasetExportDao exportDao,
                     NameUsageIndexService indexService,
                     BiFunction<Integer, String, File> scratchFileFunc,
-                    EventBus bus) {
+                    EventBus bus,
+                    Validator validator) {
     super(true, factory, Dataset.class, DatasetMapper.class);
     this.downloader = downloader;
     this.imgService = imgService;
@@ -78,6 +83,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.exportDao = exportDao;
     this.indexService = indexService;
     this.bus = bus;
+    this.validator = validator;
   }
 
   private void sanitize(Dataset d) {
@@ -124,6 +130,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       if (d.getTitle() != null) {
         d.setTitle(DaoUtils.stripHtml(d.getTitle()));
       }
+    }
+
+    var violations = validator.validate(d);
+    if (!violations.isEmpty()) {
+      throw new ConstraintViolationException(violations);
     }
   }
 
@@ -381,8 +392,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     // copy all required fields from old copy if missing
-    if (obj.getType() == null) {
-      obj.setType(old.getType());
+    if (old != null) {
+      ObjectUtils.setIfNull(obj.getOrigin(), obj::setOrigin, old.getOrigin());
+      ObjectUtils.setIfNull(obj.getType(), obj::setType, old.getType());
+      ObjectUtils.setIfNull(obj.getTitle(), obj::setTitle, old.getTitle());
     }
     sanitize(obj);
     super.updateBefore(obj, old, user, mapper, session);
