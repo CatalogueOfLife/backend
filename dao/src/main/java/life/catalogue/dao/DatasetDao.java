@@ -61,7 +61,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final DatasetExportDao exportDao;
   private final NameUsageIndexService indexService;
   private final EventBus bus;
-  private final Validator validator;
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
@@ -75,7 +74,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
                     BiFunction<Integer, String, File> scratchFileFunc,
                     EventBus bus,
                     Validator validator) {
-    super(true, factory, Dataset.class, DatasetMapper.class);
+    super(true, factory, Dataset.class, DatasetMapper.class, validator);
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
@@ -83,7 +82,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.exportDao = exportDao;
     this.indexService = indexService;
     this.bus = bus;
-    this.validator = validator;
   }
 
   private void sanitize(Dataset d) {
@@ -130,11 +128,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       if (d.getTitle() != null) {
         d.setTitle(DaoUtils.stripHtml(d.getTitle()));
       }
-    }
-
-    var violations = validator.validate(d);
-    if (!violations.isEmpty()) {
-      throw new ConstraintViolationException(violations);
     }
   }
 

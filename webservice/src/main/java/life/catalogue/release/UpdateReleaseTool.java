@@ -39,12 +39,15 @@ import org.slf4j.LoggerFactory;
 
 import com.zaxxer.hikari.HikariDataSource;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 public class UpdateReleaseTool implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(UpdateReleaseTool.class);
 
+  static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   final SqlSessionFactory factory;
   final HikariDataSource dataSource;
   final Dataset release;
@@ -78,7 +81,7 @@ public class UpdateReleaseTool implements AutoCloseable {
     jerseyCfg.register(new UserAgentFilter());
     final Client client = ClientBuilder.newClient(jerseyCfg);
     doiService = new DataCiteService(doiCfg, client);
-    UserDao udao = new UserDao(factory, new EventBus());
+    UserDao udao = new UserDao(factory, new EventBus(), validator);
     DatasetConverter converter = new DatasetConverter(
       URI.create("https://www.catalogueoflife.org"),
       URI.create("https://data.catalogueoflife.org"),
@@ -95,10 +98,10 @@ public class UpdateReleaseTool implements AutoCloseable {
     System.out.printf("Matching all sector targets of %s: %s\n\n", release.getKey(), release.getTitle());
 
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
-    EstimateDao edao = new EstimateDao(factory);
-    NameDao ndao = new NameDao(factory, indexService, NameIndexFactory.passThru());
-    TaxonDao tdao = new TaxonDao(factory, ndao, indexService);
-    SectorDao sdao = new SectorDao(factory, indexService, tdao);
+    EstimateDao edao = new EstimateDao(factory, validator);
+    NameDao ndao = new NameDao(factory, indexService, NameIndexFactory.passThru(), validator);
+    TaxonDao tdao = new TaxonDao(factory, ndao, indexService, validator);
+    SectorDao sdao = new SectorDao(factory, indexService, tdao, validator);
 
     SectorRematchRequest req = new SectorRematchRequest();
     req.setAllowImmutableDatasets(true);

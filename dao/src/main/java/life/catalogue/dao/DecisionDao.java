@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import javax.validation.Validator;
+
 public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, DecisionMapper> {
 
   @SuppressWarnings("unused")
@@ -25,8 +27,8 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
 
   private final NameUsageIndexService indexService;
 
-  public DecisionDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
-    super(true, factory, EditorialDecision.class, DecisionMapper.class);
+  public DecisionDao(SqlSessionFactory factory, NameUsageIndexService indexService, Validator validator) {
+    super(true, factory, EditorialDecision.class, DecisionMapper.class, validator);
     this.indexService = indexService;
   }
 

@@ -28,6 +28,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Validator;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -63,11 +64,11 @@ public class AdminResource {
   private final AssemblyCoordinator assembly;
   private final NameIndex namesIndex;
   private final JobExecutor exec;
-
+  private final Validator validator;
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, GbifSync gbifSync,
-                       NameIndex namesIndex, JobExecutor executor, IdMap idMap) {
+                       NameIndex namesIndex, JobExecutor executor, IdMap idMap, Validator validator) {
     this.factory = factory;
     this.assembly = assembly;
     this.imgService = imgService;
@@ -81,6 +82,7 @@ public class AdminResource {
     this.namesIndex = namesIndex;
     this.exec = executor;
     this.idMap = idMap;
+    this.validator = validator;
   }
   
   public static class ServerSettings {
@@ -247,7 +249,7 @@ public class AdminResource {
   @Path("sector-count-update")
   public BackgroundJob updateAllSectorCounts(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
     Preconditions.checkArgument(datasetKey != null, "A datasetKey parameter must be given");
-    return runJob(new SectorCountJob(user.getKey(), factory, indexService, datasetKey));
+    return runJob(new SectorCountJob(user.getKey(), factory, indexService, validator, datasetKey));
   }
 
 

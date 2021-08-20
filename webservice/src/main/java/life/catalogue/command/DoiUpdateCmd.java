@@ -43,6 +43,8 @@ import com.google.common.base.Preconditions;
 
 import net.sourceforge.argparse4j.inf.Subparser;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
@@ -79,7 +81,8 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
 
     // setup
     doiService = new DataCiteService(cfg.doi, jerseyClient);
-    UserDao udao = new UserDao(factory, new EventBus());
+    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    UserDao udao = new UserDao(factory, new EventBus(), validator);
     converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
 
     try (SqlSession session = factory.openSession()) {

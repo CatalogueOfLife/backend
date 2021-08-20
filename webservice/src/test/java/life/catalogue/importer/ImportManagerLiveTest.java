@@ -27,6 +27,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validator;
+
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +50,8 @@ public class ImportManagerLiveTest {
   DatasetImportDao diDao;
   @Mock
   ReleaseManager releaseManager;
+  @Mock
+  Validator validator;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -82,13 +86,14 @@ public class ImportManagerLiveTest {
     final WsServerConfig cfg = provideConfig();
 
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru());
-    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService);
-    SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao);
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
+    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService, validator);
+    SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao, validator);
+    DecisionDao dDao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.passThru(), sDao, indexService, new ImageServiceFS(cfg.img), releaseManager);
+        NameIndexFactory.passThru(), sDao, dDao, indexService, new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());

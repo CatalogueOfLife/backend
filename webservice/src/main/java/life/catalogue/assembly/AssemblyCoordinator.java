@@ -6,6 +6,8 @@ import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.dao.DecisionDao;
+import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.NameMapper;
@@ -43,6 +45,7 @@ public class AssemblyCoordinator implements Managed {
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
   private final SectorImportDao sid;
+  private final EstimateDao estimateDao;
   private final SectorDao sdao;
   private final Map<DSID<Integer>, SectorFuture> syncs = Collections.synchronizedMap(new LinkedHashMap<>());
   private final Timer timer;
@@ -63,10 +66,11 @@ public class AssemblyCoordinator implements Managed {
     }
   }
   
-  public AssemblyCoordinator(SqlSessionFactory factory, NameIndex nameIndex, SectorDao sdao, SectorImportDao sid, NameUsageIndexService indexService, MetricRegistry registry) {
+  public AssemblyCoordinator(SqlSessionFactory factory, NameIndex nameIndex, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao, NameUsageIndexService indexService, MetricRegistry registry) {
     this.factory = factory;
     this.sid = sid;
     this.sdao = sdao;
+    this.estimateDao = estimateDao;
     this.indexService = indexService;
     this.nameIndex = nameIndex;
     timer = registry.timer("life.catalogue.assembly.timer");
@@ -191,7 +195,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   private synchronized void syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
-    SectorSync ss = new SectorSync(sectorKey, factory, nameIndex, indexService, sdao, sid, this::successCallBack, this::errorCallBack, user);
+    SectorSync ss = new SectorSync(sectorKey, factory, nameIndex, indexService, sdao, sid, estimateDao, this::successCallBack, this::errorCallBack, user);
     queueJob(ss);
   }
 

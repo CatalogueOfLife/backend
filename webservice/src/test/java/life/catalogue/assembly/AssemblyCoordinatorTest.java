@@ -8,10 +8,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.SectorDao;
-import life.catalogue.dao.SectorImportDao;
-import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -28,10 +25,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 public class AssemblyCoordinatorTest {
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
+
+  final static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
   @Rule
   public final TestDataRule testDataRule = TestDataRule.draft();
   
@@ -47,7 +49,8 @@ public class AssemblyCoordinatorTest {
 
     SectorImportDao sid = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     SectorDao sdao = Mockito.mock(SectorDao.class);
-    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sdao, sid, NameUsageIndexService.passThru(), new MetricRegistry());
+    EstimateDao edao = Mockito.mock(EstimateDao.class);
+    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sdao, sid, edao, NameUsageIndexService.passThru(), new MetricRegistry());
   }
   
   @Test(expected = IllegalArgumentException.class)

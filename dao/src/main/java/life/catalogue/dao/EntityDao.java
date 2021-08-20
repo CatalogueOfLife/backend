@@ -15,6 +15,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 /**
  * Generic CRUD DAO for keyed entities
  * that allows to hook post actions for create, update and delete
@@ -31,29 +34,32 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   protected final SqlSessionFactory factory;
   protected final Class<T> entityClass;
   protected final Class<M> mapperClass;
+  private final Validator validator;
   private final boolean updateHook;
   private final boolean deleteHook;
 
   /**
    * @param offerChangedHook if true loads the old version of the updated or deleted object and offers it to the before and after methods.
    *                         If false the old value will always be null but performance will be better
+   * @param validator
    */
-  public EntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass) {
-    this(offerChangedHook, offerChangedHook, factory, entityClass, mapperClass);
+  public EntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass, Validator validator) {
+    this(offerChangedHook, offerChangedHook, factory, entityClass, mapperClass, validator);
   }
 
   /**
    * @param updateHook if true loads the old version of the updated object and offers it to the before and after methods.
    *                         If false the old value will always be null but performance will be better
    * @param deleteHook if true loads the old version of the deleted object and offers it to the before and after methods.
-   *                         If false the old value will always be null but performance will be better
+   * @param validator
    */
-  public EntityDao(boolean updateHook, boolean deleteHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass) {
+  public EntityDao(boolean updateHook, boolean deleteHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass, Validator validator) {
     this.updateHook = updateHook;
     this.deleteHook = deleteHook;
     this.factory = factory;
     this.entityClass = entityClass;
     this.mapperClass = mapperClass;
+    this.validator = validator;
   }
 
   public SqlSessionFactory getFactory() {
@@ -84,7 +90,15 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     }
   }
 
+  private void validate(T obj) throws ConstraintViolationException {
+    var violations = validator.validate(obj);
+    if (!violations.isEmpty()) {
+      throw new ConstraintViolationException(violations);
+    }
+  }
+
   public K create(T obj, int user) {
+    validate(obj);
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
       mapper.create(obj);
@@ -105,6 +119,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   }
 
   public int update(T obj, int user) {
+    validate(obj);
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
       T old = updateHook ? mapper.get(obj.getKey()) : null;

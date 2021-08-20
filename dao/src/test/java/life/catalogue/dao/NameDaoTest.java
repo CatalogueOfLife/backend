@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
 public class NameDaoTest extends DaoTestBase {
 
   static final IndexName match = new IndexName(TestEntityGenerator.NAME4, 1);
-  NameDao dao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.fixed(match));
+  NameDao dao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.fixed(match), validator);
   
   @Test
   public void authorshipNormalization() throws Exception {

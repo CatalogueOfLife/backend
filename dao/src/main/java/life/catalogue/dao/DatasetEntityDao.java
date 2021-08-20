@@ -10,6 +10,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validator;
+
 /**
  * Generic CRUD DAO for dataset scoped entities
  * that allows to hook post actions for create, update and delete
@@ -20,8 +22,8 @@ public class DatasetEntityDao<K, T extends DatasetScopedEntity<K>, M extends CRU
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetEntityDao.class);
   
-  public DatasetEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass) {
-    super(offerChangedHook, factory, entityClass, mapperClass);
+  public DatasetEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass, Validator validator) {
+    super(offerChangedHook, factory, entityClass, mapperClass, validator);
   }
   
   public ResultPage<T> list(int datasetKey, Page page) {

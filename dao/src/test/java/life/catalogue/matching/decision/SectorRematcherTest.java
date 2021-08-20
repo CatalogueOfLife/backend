@@ -23,10 +23,15 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class SectorRematcherTest {
+
+  static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
   NameDao nDao;
   TaxonDao tDao;
@@ -40,9 +45,9 @@ public class SectorRematcherTest {
 
   @Before
   public void init(){
-    nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
-    tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
-    dao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tDao);
+    nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    dao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tDao, validator);
   }
 
   @Test

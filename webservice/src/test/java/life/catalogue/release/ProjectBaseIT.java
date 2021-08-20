@@ -37,9 +37,11 @@ public abstract class ProjectBaseIT {
 
   DatasetImportDao diDao;
   SectorImportDao siDao;
+  EstimateDao eDao;
   SectorDao sdao;
   DatasetDao dDao;
   TaxonDao tdao;
+  Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   ReleaseManager releaseManager;
   CloseableHttpClient client;
 
@@ -60,9 +62,10 @@ public abstract class ProjectBaseIT {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus, validator);
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
-    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao);
+    eDao = new EstimateDao(PgSetupRule.getSqlSessionFactory(), validator);
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     client = HttpClientUtils.httpsClient();
     releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), cfg);

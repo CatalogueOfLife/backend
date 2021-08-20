@@ -7,7 +7,6 @@ import life.catalogue.dao.DataEntityDao;
 import life.catalogue.dw.auth.Roles;
 
 import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -40,7 +39,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
    */
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer create(@Valid T obj, @Auth User user) {
+  public Integer create(T obj, @Auth User user) {
     obj.applyUser(user);
     return dao.create(obj, user.getKey());
   }
@@ -58,7 +57,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("key") Integer key, @Valid T obj, @Auth User user) {
+  public void update(@PathParam("key") Integer key, T obj, @Auth User user) {
     if (obj==null) {
       throw new IllegalArgumentException("No update object given for key " + key);
     }

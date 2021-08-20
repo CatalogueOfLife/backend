@@ -27,6 +27,8 @@ import com.google.common.cache.LoadingCache;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
+import javax.validation.Validator;
+
 public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   private final NameUsageIndexService indexService;
@@ -37,8 +39,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    * Warn: you must set a sector dao manually before using the TaxonDao.
    * We have circular dependency that cannot be satisfied with final properties through constructors
    */
-  public TaxonDao(SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService) {
-    super(true, factory, Taxon.class, TaxonMapper.class);
+  public TaxonDao(SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService, Validator validator) {
+    super(true, factory, Taxon.class, TaxonMapper.class, validator);
     this.indexService = indexService;
     this.nameDao = nameDao;
   }

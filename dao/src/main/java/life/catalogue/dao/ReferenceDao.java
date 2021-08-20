@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
+import javax.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -20,8 +21,8 @@ import org.slf4j.LoggerFactory;
 public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceDao.class);
 
-  public ReferenceDao(SqlSessionFactory factory) {
-    super(false, factory, Reference.class, ReferenceMapper.class);
+  public ReferenceDao(SqlSessionFactory factory, Validator validator) {
+    super(false, factory, Reference.class, ReferenceMapper.class, validator);
   }
   
   public Reference get(DSID<String> did, @Nullable String page) {

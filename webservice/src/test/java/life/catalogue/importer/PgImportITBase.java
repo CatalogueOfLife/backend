@@ -28,6 +28,9 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
@@ -54,6 +57,7 @@ public class PgImportITBase {
   TaxonDao tdao;
   NameDao ndao;
   ReferenceDao rdao;
+  Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   NameUsageIndexService indexService = NameUsageIndexService.passThru();
 
   @ClassRule
@@ -81,10 +85,10 @@ public class PgImportITBase {
       testDataRule.commit();
     }
 
-    sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory());
-    ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru());
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), ndao, indexService);
-    rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory());
+    sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory(), validator);
+    ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
+    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), ndao, indexService, validator);
+    rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory(), validator);
   }
   
   @After

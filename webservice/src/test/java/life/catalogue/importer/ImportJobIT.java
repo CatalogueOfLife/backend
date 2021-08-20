@@ -25,9 +25,13 @@ import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
 
 import java.net.URI;
 
@@ -41,6 +45,8 @@ public class ImportJobIT {
   DatasetImportDao diDao;
   @Mock
   ReleaseManager releaseManager;
+  @Mock
+  Validator validator;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -56,6 +62,7 @@ public class ImportJobIT {
   private DatasetWithSettings d;
   private NameUsageIndexService indexService;
   private SectorDao sDao;
+  private DecisionDao dDao;
 
   private static WsServerConfig provideConfig() {
     WsServerConfig cfg = new WsServerConfig();
@@ -85,10 +92,10 @@ public class ImportJobIT {
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     indexService = NameUsageIndexService.passThru();
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru());
-    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService);
-    sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao);
-
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
+    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService, validator);
+    sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao, validator);
+    dDao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
     LOG.warn("Test initialized");
   }
 
@@ -128,7 +135,7 @@ public class ImportJobIT {
 
     ImportRequest req = new ImportRequest(d.getKey(), Users.TESTER, false, false, false);
     job = new ImportJob(req, d, cfg, new DownloadUtil(hc), PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
-      indexService, new ImageServiceFS(cfg.img), sDao, this::start, this::success, this::error);
+      indexService, new ImageServiceFS(cfg.img), sDao, dDao, this::start, this::success, this::error);
 
   }
 

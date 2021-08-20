@@ -270,19 +270,19 @@ public class WsServer extends Application<WsServerConfig> {
     Validator validator = env.getValidator();
 
     // daos
-    DatasetExportDao exdao = new DatasetExportDao(cfg.exportDir, getSqlSessionFactory(), bus);
+    DatasetExportDao exdao = new DatasetExportDao(cfg.exportDir, getSqlSessionFactory(), bus, validator);
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
-    DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
-    EstimateDao edao = new EstimateDao(getSqlSessionFactory());
-    NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni);
-    ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService);
-    SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao);
+    DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
+    EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
+    NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
+    ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), validator);
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService, validator);
+    SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
-    SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
+    SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
-    UserDao udao = new UserDao(getSqlSessionFactory(), bus);
+    UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao);
@@ -307,7 +307,7 @@ public class WsServer extends Application<WsServerConfig> {
       httpClient,
       getSqlSessionFactory(),
       ni,
-      secdao,
+      secdao, decdao,
       indexService,
       imgService,
       releaseManager
@@ -321,7 +321,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(ManagedUtils.stopOnly(gbifSync));
 
     // assembly
-    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), ni, secdao, siDao, indexService, env.metrics());
+    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), ni, secdao, siDao, edao, indexService, env.metrics());
     env.lifecycle().manage(assembly);
 
     // link assembly and import manager so they are aware of each other
@@ -335,7 +335,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
-      importManager, gbifSync, ni, executor, idMap));
+      importManager, gbifSync, ni, executor, idMap, validator));
     j.register(new ColSeoResource(tdao, dsdao, coljersey.getCache()));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));

@@ -60,7 +60,7 @@ public class ProjectDuplicationIT extends ProjectBaseIT {
     SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
 
     SectorSyncIT.setupNamesIndex(PgSetupRule.getSqlSessionFactory());
-    SectorSyncIT.syncAll(sdao, siDao);
+    SectorSyncIT.syncAll(sdao, siDao, eDao);
 
     ProjectDuplication dupe = releaseManager.buildDuplication(Datasets.COL, Users.TESTER);
     final int datasetKey = dupe.newDatasetKey;

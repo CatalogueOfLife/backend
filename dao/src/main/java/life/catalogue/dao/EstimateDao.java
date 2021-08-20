@@ -13,14 +13,16 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validator;
+
 public class EstimateDao extends DatasetEntityDao<Integer, SpeciesEstimate, EstimateMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(EstimateDao.class);
   
 
-  public EstimateDao(SqlSessionFactory factory) {
-    super(true, factory, SpeciesEstimate.class, EstimateMapper.class);
+  public EstimateDao(SqlSessionFactory factory, Validator validator) {
+    super(true, factory, SpeciesEstimate.class, EstimateMapper.class, validator);
   }
   
   public ResultPage<SpeciesEstimate> search(EstimateSearchRequest request, Page page) {

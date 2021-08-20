@@ -83,7 +83,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
-    DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
+    DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc, validator);
     dao.create(decision, 0);
 
     NameUsageSearchRequest request = new NameUsageSearchRequest();
@@ -111,10 +111,10 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     Taxon taxon = (Taxon) nuw.getUsage();
 
     // Insert that taxon into Postgres
-    NameDao ndao = new NameDao(getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
+    NameDao ndao = new NameDao(getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
     DSID<String> dsid = ndao.create(taxon.getName(), USER_ID);
     LOG.info(">>>>>>> Name inserted into database. ID: {}\n", dsid.getId());
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, NameUsageIndexService.passThru());
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, NameUsageIndexService.passThru(), validator);
     dsid = tdao.create(taxon, USER_ID);
     LOG.info(">>>>>>> Taxon inserted into database. ID: {}\n", EsModule.writeDebug(taxon));
 
@@ -134,7 +134,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // the taxon has been assigned a new id, use it for the decision
     decision.getSubject().setId(taxon.getId());
 
-    DecisionDao ddao = new DecisionDao(getSqlSessionFactory(), svc);
+    DecisionDao ddao = new DecisionDao(getSqlSessionFactory(), svc, validator);
     int key = ddao.create(decision, USER_ID).getId();
     LOG.info(">>>>>>> Decision inserted into database: {}\n", EsModule.writeDebug(decision));
 
@@ -164,7 +164,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
-    DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
+    DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc, validator);
     int key = dao.create(decision, edited.getCreatedBy()).getId();
 
     NameUsageSearchRequest request = new NameUsageSearchRequest();
@@ -200,7 +200,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
-    DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
+    DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc, validator);
     DSID<Integer> key = dao.create(decision, edited.getCreatedBy());
 
     NameUsageSearchRequest request = new NameUsageSearchRequest();

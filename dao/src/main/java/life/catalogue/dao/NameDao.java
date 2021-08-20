@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -25,8 +26,8 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   private final NameUsageIndexService indexService;
   private final NameIndex nameIndex;
 
-  public NameDao(SqlSessionFactory factory, NameUsageIndexService indexService, NameIndex nameIndex) {
-    super(false, factory, Name.class, NameMapper.class);
+  public NameDao(SqlSessionFactory factory, NameUsageIndexService indexService, NameIndex nameIndex, Validator validator) {
+    super(false, factory, Name.class, NameMapper.class, validator);
     this.indexService = indexService;
     this.nameIndex = nameIndex;
   }

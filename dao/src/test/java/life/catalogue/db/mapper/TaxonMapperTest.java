@@ -176,7 +176,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     Taxon parent = TestEntityGenerator.newTaxon("parent-1");
     mapper().create(parent);
   
-    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
+    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
     
     Name n1 = TestEntityGenerator.newName("XXX");
     n1.setScientificName("XXX");

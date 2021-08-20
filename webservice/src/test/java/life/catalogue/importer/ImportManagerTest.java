@@ -12,6 +12,7 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.Resources;
+import life.catalogue.dao.DecisionDao;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.TaxonDao;
@@ -30,6 +31,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.validation.Validator;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -60,6 +63,8 @@ public class ImportManagerTest {
   ReleaseManager releaseManager;
   @Mock
   ImageServiceFS imgService;
+  @Mock
+  Validator validator;
 
   private static WsServerConfig provideConfig() {
     WsServerConfig cfg = new WsServerConfig();
@@ -93,14 +98,15 @@ public class ImportManagerTest {
     }
 
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru());
-    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService);
-    SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao);
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
+    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService, validator);
+    SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao, validator);
+    DecisionDao dDao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
 
     MetricRegistry metrics = new MetricRegistry();
     final WsServerConfig cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sDao, indexService, imgService, releaseManager);
+    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sDao, dDao, indexService, imgService, releaseManager);
     manager.start();
   }
 

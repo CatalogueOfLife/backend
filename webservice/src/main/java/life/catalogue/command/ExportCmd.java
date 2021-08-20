@@ -38,6 +38,9 @@ import org.apache.ibatis.session.SqlSession;
 
 import net.sourceforge.argparse4j.inf.Subparser;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 /**
  * Command that exports a single dataset or all its releases if it is a project.
  */
@@ -106,13 +109,14 @@ public class ExportCmd extends AbstractMybatisCmd {
     List<Dataset> datasets;
     try (SqlSession session = factory.openSession()){
       EventBus bus = new EventBus();
+      Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       mail.run(cfg, null);
       exec = new JobExecutor(cfg.job, mail.getMailer());
       final ImageService imageService = new ImageServiceFS(cfg.img);
-      final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, bus);
+      final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, bus, validator);
       manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao);
       JerseyClientBuilder builder = new JerseyClientBuilder(new MetricRegistry()).using(cfg.client);
-      UserDao udao = new UserDao(factory, bus);
+      UserDao udao = new UserDao(factory, bus, validator);
       DoiService doiService = new DataCiteService(cfg.doi, builder.build("datacite-client"));
       DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
       copy = new PublicReleaseListener(cfg, factory, exportDao, doiService, converter);

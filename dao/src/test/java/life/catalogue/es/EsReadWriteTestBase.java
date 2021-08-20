@@ -28,6 +28,9 @@ import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -35,6 +38,7 @@ import static java.util.stream.Collectors.toList;
  */
 public class EsReadWriteTestBase extends ExternalResource {
 
+  protected static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   private static final Logger LOG = LoggerFactory.getLogger(EsReadWriteTestBase.class);
 
   @ClassRule

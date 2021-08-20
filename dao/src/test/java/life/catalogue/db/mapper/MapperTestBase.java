@@ -20,12 +20,15 @@ import org.junit.Rule;
 
 import com.google.common.base.Preconditions;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 /**
  * A reusable base class for all mybatis mapper tests that takes care of postgres & mybatis.
  * It offers a mapper to test in the implementing subclass.
  */
 public abstract class MapperTestBase<M> {
-  
+  static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   private final Class<M> mapperClazz;
 
   @ClassRule

@@ -22,13 +22,15 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import com.google.common.eventbus.EventBus;
 
+import javax.validation.Validator;
+
 public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExportMapper> {
   Set<JobStatus> GOOD = Set.of(JobStatus.FINISHED, JobStatus.WAITING, JobStatus.BLOCKED, JobStatus.RUNNING);
   private final EventBus bus;
   private final File exportDir;
 
-  public DatasetExportDao(File exportDir, SqlSessionFactory factory, EventBus bus) {
-    super(false, true, factory, DatasetExport.class, DatasetExportMapper.class);
+  public DatasetExportDao(File exportDir, SqlSessionFactory factory, EventBus bus, Validator validator) {
+    super(false, true, factory, DatasetExport.class, DatasetExportMapper.class, validator);
     this.bus = bus;
     this.exportDir = exportDir;
   }

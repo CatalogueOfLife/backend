@@ -21,14 +21,16 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validator;
+
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
   private final NameUsageIndexService indexService;
   private final TaxonDao tDao;
 
-  public SectorDao(SqlSessionFactory factory, NameUsageIndexService indexService, TaxonDao tDao) {
-    super(true, factory, Sector.class, SectorMapper.class);
+  public SectorDao(SqlSessionFactory factory, NameUsageIndexService indexService, TaxonDao tDao, Validator validator) {
+    super(true, factory, Sector.class, SectorMapper.class, validator);
     this.indexService = indexService;
     this.tDao = tDao;
   }

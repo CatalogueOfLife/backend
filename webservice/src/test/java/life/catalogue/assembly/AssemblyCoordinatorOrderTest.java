@@ -6,13 +6,16 @@ import life.catalogue.api.model.SimpleNameLink;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import static life.catalogue.api.model.Sector.Mode;
 
 public class AssemblyCoordinatorOrderTest {
-  
+
   @Test
   public void compareTo() {
     List<Sector> secs = new ArrayList<>();

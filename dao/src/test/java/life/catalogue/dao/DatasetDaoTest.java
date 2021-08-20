@@ -36,8 +36,7 @@ public class DatasetDaoTest extends DaoTestBase {
   @Before
   public void init() {
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    DatasetExportDao exDao = new DatasetExportDao(new File("/tmp/exports"), PgSetupRule.getSqlSessionFactory(), new EventBus());
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    DatasetExportDao exDao = new DatasetExportDao(new File("/tmp/exports"), PgSetupRule.getSqlSessionFactory(), new EventBus(), validator);
     dao = new DatasetDao(factory(),
       null,
       ImageService.passThru(),

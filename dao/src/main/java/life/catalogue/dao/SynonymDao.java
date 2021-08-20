@@ -15,11 +15,13 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validator;
+
 public class SynonymDao extends DatasetEntityDao<String, Synonym, SynonymMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(SynonymDao.class);
   
-  public SynonymDao(SqlSessionFactory factory) {
-    super(false, factory, Synonym.class, SynonymMapper.class);
+  public SynonymDao(SqlSessionFactory factory, Validator validator) {
+    super(false, factory, Synonym.class, SynonymMapper.class, validator);
   }
   
   private static String devNull(Reference r) {

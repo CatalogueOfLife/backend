@@ -19,10 +19,15 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class DecisionRematcherTest {
+
+  static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
   @ClassRule
   public static PgSetupRule pg = new PgSetupRule();
@@ -52,7 +57,7 @@ public class DecisionRematcherTest {
       SimpleNameLink.of("null", "Larus", Rank.GENUS)
     );
 
-    DecisionDao dao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    DecisionDao dao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
     DecisionRematchRequest req = new DecisionRematchRequest(Datasets.COL, false);
     req.setSubjectDatasetKey(datasetKey);
     DecisionRematcher.match(dao, req, Users.TESTER);

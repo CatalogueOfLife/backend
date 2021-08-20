@@ -12,10 +12,14 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 public abstract class DaoTestBase {
   
   SqlSession session;
-  
+  static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   

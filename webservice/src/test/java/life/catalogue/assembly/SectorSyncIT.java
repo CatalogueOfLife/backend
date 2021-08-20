@@ -29,6 +29,9 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.mockito.Mockito;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -46,6 +49,7 @@ import static org.junit.Assert.*;
 public class SectorSyncIT {
   
   final static PgSetupRule pg = new PgSetupRule();
+  final static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   final static TestDataRule dataRule = TestDataRule.draft();
   final static PgImportRule importRule = PgImportRule.create(
       NomCode.BOTANICAL,
@@ -70,6 +74,8 @@ public class SectorSyncIT {
 
   DatasetImportDao diDao;
   SectorImportDao siDao;
+  EstimateDao eDao;
+
   TaxonDao tdao;
   SectorDao sdao;
 
@@ -85,12 +91,13 @@ public class SectorSyncIT {
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    eDao = new EstimateDao(PgSetupRule.getSqlSessionFactory(), validator);
     // reset draft
     dataRule.truncateDraft();
     dataRule.loadData(true);
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
-    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao);
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     setupNamesIndex(PgSetupRule.getSqlSessionFactory());
   }
   
@@ -171,23 +178,23 @@ public class SectorSyncIT {
   }
 
   public void syncAll() {
-    syncAll(sdao, siDao);
+    syncAll(sdao, siDao, eDao);
   }
 
-  public static void syncAll(SectorDao sdao, SectorImportDao siDao) {
+  public static void syncAll(SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
-        sync(s, sdao, siDao);
+        sync(s, sdao, siDao, eDao);
       }
     }
   }
 
   void sync(Sector s) {
-    sync(s, sdao, siDao);
+    sync(s, sdao, siDao, eDao);
   }
 
-  static void sync(Sector s, SectorDao sdao, SectorImportDao siDao) {
-    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), sdao, siDao,
+  static void sync(Sector s, SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
+    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), sdao, siDao, eDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();

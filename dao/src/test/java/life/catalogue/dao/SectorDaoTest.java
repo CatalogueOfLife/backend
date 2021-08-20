@@ -30,9 +30,9 @@ public class SectorDaoTest extends DaoTestBase {
 
   @Before
   public void init(){
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
-    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
-    dao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao);
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    dao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao, validator);
   }
 
   @Test

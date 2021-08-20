@@ -10,6 +10,7 @@ import life.catalogue.db.mapper.UserMapper;
 import java.util.*;
 
 import javax.annotation.Nullable;
+import javax.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -25,8 +26,8 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
 
   private final EventBus bus;
 
-  public UserDao(SqlSessionFactory factory, EventBus bus) {
-    super(true, factory, User.class, UserMapper.class);
+  public UserDao(SqlSessionFactory factory, EventBus bus, Validator validator) {
+    super(true, factory, User.class, UserMapper.class, validator);
     this.bus = bus;
   }
 

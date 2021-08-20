@@ -45,15 +45,17 @@ public class SectorSync extends SectorRunnable {
     ReferenceMapper.class
   );
 
+  private final EstimateDao estimateDao;
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
 
   public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
-                    SectorDao sdao, SectorImportDao sid,
+                    SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, true, factory, indexService, sdao, sid, successCallback, errorCallback, user);
     this.sid = sid;
+    this.estimateDao = estimateDao;
     this.nameIndex = nameIndex;
   }
   
@@ -117,7 +119,7 @@ public class SectorSync extends SectorRunnable {
    */
   private void rematchEstimates() {
     RematchRequest req = new RematchRequest(sectorKey.getDatasetKey(), true);
-    EstimateRematcher.match(new EstimateDao(factory), req, user.getKey());
+    EstimateRematcher.match(estimateDao, req, user.getKey());
   }
 
   /**

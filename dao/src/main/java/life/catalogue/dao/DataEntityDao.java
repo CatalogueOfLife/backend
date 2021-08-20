@@ -5,6 +5,8 @@ import life.catalogue.db.CRUD;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import javax.validation.Validator;
+
 /**
  * Generic CRUD Data DAO for keyed entities
  * that manages created/mpdified by properties.
@@ -19,8 +21,8 @@ public class DataEntityDao<K, T extends DataEntity<K>, M extends CRUD<K, T>> ext
    * @param offerChangedHook if true loads the old version of the updated or deleted object and offers it to the before and after methods.
    *                         If false the old value will always be null but performance will be better
    */
-  public DataEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass) {
-    super(offerChangedHook, factory, entityClass, mapperClass);
+  public DataEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass, Validator validator) {
+    super(offerChangedHook, factory, entityClass, mapperClass, validator);
   }
 
   

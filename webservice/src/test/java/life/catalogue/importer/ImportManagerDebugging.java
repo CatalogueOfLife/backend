@@ -11,10 +11,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.dao.NameDao;
-import life.catalogue.dao.SectorDao;
-import life.catalogue.dao.TaxonDao;
-import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -28,6 +25,8 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import javax.validation.Validator;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,7 +42,9 @@ public class ImportManagerDebugging {
   CloseableHttpClient hc;
   @Mock
   ReleaseManager releaseManager;
-  
+  @Mock
+  Validator validator;
+
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
 
@@ -78,14 +79,15 @@ public class ImportManagerDebugging {
     //new InitDbCmd().execute(cfg);
 
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru());
-    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService);
-    SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao);
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
+    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService, validator);
+    SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao, validator);
+    DecisionDao dDao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
         NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started(),
-        sDao, indexService, new ImageServiceFS(cfg.img), releaseManager);
+        sDao, dDao, indexService, new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   }
   
