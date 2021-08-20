@@ -119,7 +119,6 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   }
 
   public int update(T obj, int user) {
-    validate(obj);
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
       T old = updateHook ? mapper.get(obj.getKey()) : null;
@@ -147,6 +146,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     }
     M mapper = session.getMapper(mapperClass);
     updateBefore(obj, old, user, mapper, session);
+    validate(obj);
     int changed = mapper.update(obj);
     session.commit();
     if (updateAfter(obj, old, user, mapper, session, keepSessionOpen)) {

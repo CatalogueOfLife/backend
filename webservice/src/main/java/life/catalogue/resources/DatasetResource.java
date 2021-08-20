@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import de.undercouch.citeproc.csl.CSLItemData;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -15,7 +13,6 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;

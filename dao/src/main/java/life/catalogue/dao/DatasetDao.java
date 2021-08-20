@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -371,10 +372,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     return false;
   }
 
+  /**
+   * @param old never null as updateHook is enabled!
+   */
   @Override
-  protected void updateBefore(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+  protected void updateBefore(Dataset obj, @NotNull Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     // changing a private to a public release is only allowed if there is no newer pubic release already!
-    if (old != null && obj.getSourceKey() != null && obj.getOrigin() == DatasetOrigin.RELEASED
+    if (obj.getSourceKey() != null && obj.getOrigin() == DatasetOrigin.RELEASED
         && old.isPrivat() // was private before
         && !obj.isPrivat() // but now is public
     ) {
@@ -385,11 +389,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     // copy all required fields from old copy if missing
-    if (old != null) {
-      ObjectUtils.setIfNull(obj.getOrigin(), obj::setOrigin, old.getOrigin());
-      ObjectUtils.setIfNull(obj.getType(), obj::setType, old.getType());
-      ObjectUtils.setIfNull(obj.getTitle(), obj::setTitle, old.getTitle());
+    ObjectUtils.setIfNull(obj.getOrigin(), obj::setOrigin, old.getOrigin());
+    if (!java.util.Objects.equals(obj.getOrigin(), old.getOrigin())) {
+      throw new IllegalArgumentException("origin is immutable and must remain " + old.getOrigin());
     }
+    ObjectUtils.setIfNull(obj.getType(), obj::setType, old.getType());
+    ObjectUtils.setIfNull(obj.getTitle(), obj::setTitle, old.getTitle());
     sanitize(obj);
     super.updateBefore(obj, old, user, mapper, session);
   }
