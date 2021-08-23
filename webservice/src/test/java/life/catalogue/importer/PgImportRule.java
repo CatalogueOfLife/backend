@@ -24,6 +24,9 @@ import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -158,12 +161,13 @@ public class PgImportRule extends ExternalResource {
       
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
-      Normalizer norm = new Normalizer(dataset, store, source, NameIndexFactory.passThru(), ImageService.passThru());
+      Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+      Normalizer norm = new Normalizer(dataset, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator);
       norm.call();
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(1, dataset, store, PgSetupRule.getSqlSessionFactory(), icfg, NameUsageIndexService.passThru());
+      PgImport importer = new PgImport(1, dataset, store, PgSetupRule.getSqlSessionFactory(), icfg, NameUsageIndexService.passThru(), validator);
       importer.call();
       
     } catch (Exception e) {

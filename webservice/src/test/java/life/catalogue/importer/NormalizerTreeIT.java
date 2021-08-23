@@ -24,6 +24,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.neo4j.graphdb.Transaction;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -146,8 +149,9 @@ public class NormalizerTreeIT {
       d.setDataFormat(format);
       // check if dataset.yaml file exists for extended dataset properties
       NormalizerITBase.readDatasetCode(resourceDir).ifPresent(d::setCode);
-      
-      Normalizer norm = new Normalizer(d, store, source, NameIndexFactory.passThru(), ImageService.passThru());
+
+      Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+      Normalizer norm = new Normalizer(d, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator);
       norm.call();
       // reopen the neo db
       store = NeoDbFactory.open(datasetKey, 1, cfg);

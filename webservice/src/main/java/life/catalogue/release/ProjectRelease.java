@@ -3,6 +3,7 @@ package life.catalogue.release;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.date.FuzzyDate;
@@ -23,15 +24,16 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import javax.validation.Validator;
 import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class ProjectRelease extends AbstractProjectCopy {
-  private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
 
   private final ImageService imageService;
@@ -42,10 +44,11 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ExportManager exportManager;
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
+  private final Validator validator;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
-                 DoiService doiService, DoiUpdater doiUpdater) {
+                 DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super("releasing", factory, diDao, dDao, indexService, userKey, datasetKey, true);
     this.imageService = imageService;
     this.doiService = doiService;
@@ -55,6 +58,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
+    this.validator = validator;
   }
 
   @Override
@@ -92,13 +96,7 @@ public class ProjectRelease extends AbstractProjectCopy {
         if (name != null) {
           String key = name.replaceAll("\\.", " ").replaceAll("  +", " ").toLowerCase();
           if (uniq.containsKey(key)) {
-            var prev = uniq.get(key);
-            if (prev.getNote() != null && a.getNote() != null) {
-              // merge notes
-              prev.setNote(prev.getNote() + "; " + a.getNote());
-            } else if (a.getNote() != null){
-              prev.setNote(a.getNote());
-            }
+            uniq.get(key).merge(a);
           } else {
             uniq.put(key, a);
           }
@@ -117,6 +115,8 @@ public class ProjectRelease extends AbstractProjectCopy {
       } else {
         ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, d.getCreator().size());
       }
+      // verify emails as they can break validation on insert
+      authors.forEach(a -> a.validateAndNullify(validator));
       d.getCreator().addAll(authors);
     }
 

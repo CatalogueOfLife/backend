@@ -31,6 +31,9 @@ import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
 import javax.annotation.Nullable;
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -133,7 +136,8 @@ abstract class NormalizerITBase {
       dws.setDataFormat(format);
       dws.setCode(code);
       dws.setNotes("INITIAL dws");
-      Normalizer norm = new Normalizer(dws, store, arch, nameIndexSupplier.get(), ImageService.passThru());
+      Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+      Normalizer norm = new Normalizer(dws, store, arch, nameIndexSupplier.get(), ImageService.passThru(), validator);
       norm.call();
     
       // reopen

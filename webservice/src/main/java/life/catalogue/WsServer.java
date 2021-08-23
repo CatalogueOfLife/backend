@@ -299,7 +299,7 @@ public class WsServer extends Application<WsServerConfig> {
     DoiUpdater doiUpdater = new DoiUpdater(getSqlSessionFactory(), doiService, coljersey.getCache(), converter);
 
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), cfg);
+    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
 
     // importer
     importManager = new ImportManager(cfg,

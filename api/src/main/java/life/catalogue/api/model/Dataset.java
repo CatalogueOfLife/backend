@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -473,6 +474,26 @@ public class Dataset extends DataEntity<Integer> {
     return deleted != null;
   }
 
+  public void processAllAgents(Consumer<Agent> processor){
+    processAgent(contact, processor);
+    processAllAgents(creator, processor);
+    processAllAgents(editor, processor);
+    processAgent(publisher, processor);
+    processAllAgents(contributor, processor);
+    processAllAgents(containerCreator, processor);
+  }
+
+  private void processAgent(Agent agent, Consumer<Agent> processor){
+    if (agent != null) {
+      processor.accept(agent);
+    }
+  }
+
+  private void processAllAgents(List<Agent> agents, Consumer<Agent> processor){
+    if (agents != null) {
+      agents.forEach(processor);
+    }
+  }
 
   @JsonProperty("private")
   public boolean isPrivat() {

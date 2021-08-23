@@ -17,6 +17,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -84,7 +87,8 @@ public class PgImportTest {
 
     DatasetWithSettings ds = new DatasetWithSettings(d2, new DatasetSettings());
     d2.setAlias(d.getAlias());
-    PgImport imp = new PgImport(1, ds, null, PgSetupRule.getSqlSessionFactory(), new ImporterConfig(), null);
+    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    PgImport imp = new PgImport(1, ds, null, PgSetupRule.getSqlSessionFactory(), new ImporterConfig(), null, validator);
     imp.updateMetadata();
   }
 

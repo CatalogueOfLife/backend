@@ -18,6 +18,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validator;
+
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -39,11 +41,12 @@ public class ReleaseManager {
   private final SqlSessionFactory factory;
   private final ImageService imageService;
   private final CloseableHttpClient client;
+  private final Validator validator;
   private final WsServerConfig cfg;
   private AbstractProjectCopy job;
 
   public ReleaseManager(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, ExportManager exportManager, NameUsageIndexService indexService,
-                        ImageService imageService, DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, WsServerConfig cfg) {
+                        ImageService imageService, DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator, WsServerConfig cfg) {
     this.client = client;
     this.exportManager = exportManager;
     this.diDao = diDao;
@@ -53,6 +56,7 @@ public class ReleaseManager {
     this.doiService = doiService;
     this.doiUpdater = doiUpdater;
     this.factory = factory;
+    this.validator = validator;
     this.cfg = cfg;
   }
 
@@ -107,7 +111,7 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
-    return new ProjectRelease(factory, indexService, diDao, dDao, imageService, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater);
+    return new ProjectRelease(factory, indexService, diDao, dDao, imageService, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**

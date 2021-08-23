@@ -8,6 +8,7 @@ import de.undercouch.citeproc.csl.CSLName;
 
 import de.undercouch.citeproc.csl.CSLNameBuilder;
 
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.util.RegexUtils;
 
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.validation.Validator;
 import javax.validation.constraints.Email;
 
 import static java.util.Comparator.*;
@@ -440,6 +442,56 @@ public class Agent implements Comparable<Agent> {
       }
     }
     return StringUtils.trimToNull(url);
+  }
+
+  /**
+   * Merges additional agent information into this instance when the current value is null.
+   * If a value already exists it will be kept as is. The only exception are notes which will be appended.
+   */
+  public void merge(Agent addition) {
+    ObjectUtils.setIfNull(getOrcid(), this::setOrcid, addition.getOrcid());
+    ObjectUtils.setIfNull(getRorid(), this::setRorid, addition.getRorid());
+    ObjectUtils.setIfNull(getOrganisation(), this::setOrganisation, addition.getOrganisation());
+    ObjectUtils.setIfNull(getDepartment(), this::setDepartment, addition.getDepartment());
+    ObjectUtils.setIfNull(getCity(), this::setCity, addition.getCity());
+    ObjectUtils.setIfNull(getState(), this::setState, addition.getState());
+    ObjectUtils.setIfNull(getCountry(), this::setCountry, addition.getCountry());
+    ObjectUtils.setIfNull(getEmail(), this::setEmail, addition.getEmail());
+    ObjectUtils.setIfNull(getUrl(), this::setUrl, addition.getUrl());
+    if (note != null && addition.getNote() != null) {
+      // merge notes
+      setNote(note + "; " + addition.getNote());
+    } else if (addition.getNote() != null){
+      setNote(addition.getNote());
+    }
+  }
+
+  /**
+   * Does execute a bean validation and if properties are not valid replace them with NULL.
+   * @param validator bean validator to use
+   * @return true if the agent was valid, false if properties had been set to null
+   */
+  public boolean validateAndNullify(Validator validator){
+    var constraints = validator.validate(this);
+    if (!constraints.isEmpty()) {
+      for (var c : constraints) {
+        switch (c.getPropertyPath().toString()) {
+          case "email":
+            setEmail(null);
+            break;
+          case "orcid":
+            setOrcid(null);
+            break;
+          case "rorid":
+            setRorid(null);
+            break;
+          default:
+            throw new IllegalStateException("Unknown value constraint on agent " + toString());
+        }
+      }
+      return false;
+    }
+    return true;
   }
 
   @JsonIgnore

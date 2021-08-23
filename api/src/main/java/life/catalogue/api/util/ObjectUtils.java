@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  *
@@ -36,6 +37,13 @@ public class ObjectUtils {
           return i;
     }
     return null;
+  }
+
+  public static <T> void copyIfNotNull(Supplier<T> getter, Consumer<T> setter) {
+    T val = getter.get();
+    if (val != null) {
+      setter.accept(val);
+    }
   }
 
   /**

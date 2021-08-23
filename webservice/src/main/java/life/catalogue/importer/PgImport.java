@@ -6,6 +6,7 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
@@ -23,7 +24,7 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.neo.traverse.StartEndHandler;
 import life.catalogue.importer.neo.traverse.TreeWalker;
-import org.apache.ibatis.exceptions.PersistenceException;
+
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -31,12 +32,11 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
-import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import javax.xml.crypto.Data;
+import javax.validation.Validator;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
@@ -46,7 +46,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -66,6 +65,7 @@ public class PgImport implements Callable<Boolean> {
   private final NameUsageIndexService indexService;
   private final int attempt;
   private final DatasetWithSettings dataset;
+  private final Validator validator;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private LoadingCache<Integer, Set<Issue>> verbatimIssueCache;
   private LoadingCache<String, String> citationCache;
@@ -84,13 +84,14 @@ public class PgImport implements Callable<Boolean> {
   private int tRelCounter;
   private int sRelCounter;
 
-  public PgImport(int attempt, DatasetWithSettings dataset, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg, NameUsageIndexService indexService) {
+  public PgImport(int attempt, DatasetWithSettings dataset, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg, NameUsageIndexService indexService, Validator validator) {
     this.attempt = attempt;
     this.dataset = dataset;
     this.store = store;
     this.batchSize = cfg.batchSize;
     this.sessionFactory = sessionFactory;
     this.indexService = indexService;
+    this.validator = validator;
     verbatimIssueCache = Caffeine.newBuilder()
       .maximumSize(10000)
       .build(key -> store.getVerbatim(key).getIssues());
@@ -162,7 +163,7 @@ public class PgImport implements Callable<Boolean> {
 
       } else {
         LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
-        updateMetadata(old, dataset);
+        updateMetadata(old, dataset, validator);
         dm.updateAll(old);
       }
 
@@ -178,7 +179,7 @@ public class PgImport implements Callable<Boolean> {
    * @param d
    * @param update
    */
-  public static DatasetWithSettings updateMetadata(DatasetWithSettings d, DatasetWithSettings update) {
+  public static DatasetWithSettings updateMetadata(DatasetWithSettings d, DatasetWithSettings update, Validator validator) {
     Set<String> nonNullProps = Set.of("title", "license");
     try {
       for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
@@ -191,16 +192,13 @@ public class PgImport implements Callable<Boolean> {
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
-    copyIfNotNull(update::getType, d::setType);
+    ObjectUtils.copyIfNotNull(update::getType, d::setType);
+    // verify emails, orcids & rorid as they can break validation on insert
+    d.getDataset().processAllAgents(a -> a.validateAndNullify(validator));
     return d;
   }
   
-  private static <T> void copyIfNotNull(Supplier<T> getter, Consumer<T> setter) {
-    T val = getter.get();
-    if (val != null) {
-      setter.accept(val);
-    }
-  }
+
   
   private void insertVerbatim() throws InterruptedException {
     try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {

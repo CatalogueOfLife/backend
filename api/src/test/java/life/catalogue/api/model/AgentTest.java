@@ -2,10 +2,40 @@ package life.catalogue.api.model;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import javax.validation.Validation;
+import javax.validation.Validator;
+
+import static org.junit.Assert.*;
 
 public class AgentTest {
+
+
+  @Test
+  public void validateAndNullify() {
+    final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+    Agent p = new Agent("Markus", "Döring");
+    assertTrue(p.validateAndNullify(validator));
+
+    p.setEmail("markus@me.com");
+    assertTrue(p.validateAndNullify(validator));
+
+    p.setEmail("markus at me.com");
+    assertFalse(p.validateAndNullify(validator));
+    assertNull(p.getEmail());
+
+    p.setOrcid("1234-1234-1234-123X");
+    assertTrue(p.validateAndNullify(validator));
+    assertEquals("1234-1234-1234-123X", p.getOrcid());
+
+    p.setOrcid("123456-1234-1234-123X");
+    assertFalse(p.validateAndNullify(validator));
+    assertNull(p.getOrcid());
+
+    p.setRorid("123456-1234-1234-123X");
+    assertFalse(p.validateAndNullify(validator));
+    assertNull(p.getRorid());
+  }
 
   @Test
   public void getName() {

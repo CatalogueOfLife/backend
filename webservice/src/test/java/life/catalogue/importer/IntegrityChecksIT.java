@@ -23,6 +23,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import java.net.URL;
 import java.nio.file.Paths;
 
@@ -86,14 +89,15 @@ public class IntegrityChecksIT {
       
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
+      Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       Normalizer norm = new Normalizer(dataset, store, Paths.get(url.toURI()),
         NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
-        ImageService.passThru());
+        ImageService.passThru(), validator);
       norm.call();
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(1, dataset, store, PgSetupRule.getSqlSessionFactory(), icfg, NameUsageIndexService.passThru());
+      PgImport importer = new PgImport(1, dataset, store, PgSetupRule.getSqlSessionFactory(), icfg, NameUsageIndexService.passThru(), validator);
       importer.call();
       
     } catch (Exception e) {

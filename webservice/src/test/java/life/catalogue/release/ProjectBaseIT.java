@@ -68,7 +68,7 @@ public abstract class ProjectBaseIT {
     sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     client = HttpClientUtils.httpsClient();
-    releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), cfg);
+    releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), validator, cfg);
   }
 
   @After

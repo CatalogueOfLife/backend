@@ -33,6 +33,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validator;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -227,11 +229,12 @@ public class ImportJob implements Runnable {
     try {
       final boolean doImport = prepareSourceData(sourceDir);
       checkIfCancelled();
+      Validator validator = null;
       if (doImport) {
         LOG.info("Normalizing {}", datasetKey);
         updateState(ImportState.PROCESSING);
         store = NeoDbFactory.create(datasetKey, getAttempt(), cfg.normalizer);
-        new Normalizer(dataset, store, sourceDir, index, imgService).call();
+        new Normalizer(dataset, store, sourceDir, index, imgService, validator).call();
   
         LOG.info("Fetching logo for {}", datasetKey);
         LogoUpdateJob.updateDatasetAsync(dataset.getDataset(), factory, downloader, cfg.normalizer::scratchFile, imgService, req.createdBy);
@@ -239,7 +242,7 @@ public class ImportJob implements Runnable {
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
-        new PgImport(di.getAttempt(), dataset, store, factory, cfg.importer, indexService).call();
+        new PgImport(di.getAttempt(), dataset, store, factory, cfg.importer, indexService, validator).call();
 
         LOG.info("Build import metrics for dataset {}", datasetKey);
         updateState(ImportState.ANALYZING);

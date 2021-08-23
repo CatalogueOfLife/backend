@@ -5,7 +5,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import life.catalogue.api.model.*;
@@ -36,6 +35,8 @@ import org.neo4j.helpers.collection.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validator;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,10 +61,11 @@ public class Normalizer implements Callable<Boolean> {
   private final ImageService imgService;
   private final NameIndex index;
   private final DatasetWithSettings dataset;
+  private final Validator validator;
   private MappingFlags meta;
 
 
-  public Normalizer(DatasetWithSettings dataset, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService) {
+  public Normalizer(DatasetWithSettings dataset, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService, Validator validator) {
     this.format = Preconditions.checkNotNull(dataset.getDataFormat(), "Data format not given");
     this.dataset = dataset;
     this.sourceDir = sourceDir;
@@ -72,6 +74,7 @@ public class Normalizer implements Callable<Boolean> {
     refFactory = new ReferenceFactory(datasetKey, store.references());
     this.index = index;
     this.imgService = imgService;
+    this.validator = validator;
   }
 
   /**
@@ -897,7 +900,7 @@ public class Normalizer implements Callable<Boolean> {
           throw new NormalizationFailedException("Unsupported data format " + format);
       }
       // first metadata, the key will be preserved by the store
-      inserter.readMetadata().ifPresent(d -> PgImport.updateMetadata(dataset, d));
+      inserter.readMetadata().ifPresent(d -> PgImport.updateMetadata(dataset, d, validator));
       // data
       inserter.insertAll();
       meta = inserter.getMappingFlags();
