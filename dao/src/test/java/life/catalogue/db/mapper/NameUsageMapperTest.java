@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
@@ -65,10 +66,17 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void listRelated() throws Exception {
-    mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), null, null);
-    mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), null, UUID.randomUUID());
-    mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), List.of(1,2,3), UUID.randomUUID());
-    mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), List.of(1,2,3), null);
+    var results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), null, null);
+    assertEquals(1, results.size());
+    assertEquals("s1", results.get(0).getId());
+
+    results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), List.of(testDataRule.testData.key), null);
+    assertEquals(1, results.size());
+    assertEquals("s1", results.get(0).getId());
+
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), null, UUID.randomUUID()).isEmpty());
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), List.of(1,2,3), UUID.randomUUID()).isEmpty());
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), List.of(1,2,3), null).isEmpty());
   }
 
   @Test

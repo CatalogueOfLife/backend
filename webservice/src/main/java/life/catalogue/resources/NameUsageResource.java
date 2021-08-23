@@ -83,6 +83,9 @@ public class NameUsageResource {
                                      @QueryParam("datasetKey") List<Integer> datasetKeys,
                                      @QueryParam("publisherKey") UUID publisherKey,
                                      @Context SqlSession session) {
+    if ((datasetKeys == null || datasetKeys.isEmpty()) && publisherKey == null) {
+      throw new IllegalArgumentException("datasetKey or publisherKey parameter is required");
+    }
     return session.getMapper(NameUsageMapper.class).listRelated(DSID.of(datasetKey, id), datasetKeys, publisherKey);
   }
 

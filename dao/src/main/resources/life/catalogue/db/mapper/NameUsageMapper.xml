@@ -242,7 +242,7 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
-  <select id="listRelated" resultType="life.catalogue.api.model.NameUsageBase">
+  <select id="listRelated" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
