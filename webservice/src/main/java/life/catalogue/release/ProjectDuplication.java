@@ -7,14 +7,16 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import javax.validation.Validator;
+
 /**
  * Job to duplicate a managed project with all its data, decisions and metadata
  */
 public class ProjectDuplication extends AbstractProjectCopy {
 
-  ProjectDuplication(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao,
+  ProjectDuplication(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, Validator validator,
                      int datasetKey, int userKey) {
-    super("duplicating", factory, diDao, dDao, indexService, userKey, datasetKey, false);
+    super("duplicating", factory, diDao, dDao, indexService, validator, userKey, datasetKey, false);
   }
 
   @Override

@@ -44,12 +44,11 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ExportManager exportManager;
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
-  private final Validator validator;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super("releasing", factory, diDao, dDao, indexService, userKey, datasetKey, true);
+    super("releasing", factory, diDao, dDao, indexService, validator, userKey, datasetKey, true);
     this.imageService = imageService;
     this.doiService = doiService;
     this.cfg = cfg;
@@ -58,7 +57,6 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
-    this.validator = validator;
   }
 
   @Override

@@ -14,6 +14,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validator;
+
 import java.time.LocalDateTime;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
@@ -29,6 +31,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected final DatasetDao dDao;
   protected final DatasetSourceDao srcDao;
   protected final NameUsageIndexService indexService;
+  protected final Validator validator;
   protected final int user;
   protected final int datasetKey;
   protected final int attempt;
@@ -41,7 +44,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected DatasetSettings settings;
 
 
-  public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, DatasetDao dDao, NameUsageIndexService indexService,
+  public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, DatasetDao dDao, NameUsageIndexService indexService, Validator validator,
                              int userKey, int datasetKey, boolean mapIds) {
     DaoUtils.requireManaged(datasetKey, "Only managed datasets can be duplicated.");
     this.actionName = actionName;
@@ -50,6 +53,7 @@ public abstract class AbstractProjectCopy implements Runnable {
     this.dDao = dDao;
     this.srcDao = new DatasetSourceDao(factory);
     this.indexService = indexService;
+    this.validator = validator;
     this.user = userKey;
     this.mapIds = mapIds;
     this.datasetKey = datasetKey;

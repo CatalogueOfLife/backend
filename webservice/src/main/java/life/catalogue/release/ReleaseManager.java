@@ -121,7 +121,7 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectDuplication buildDuplication(int projectKey, int userKey) {
-    return new ProjectDuplication(factory, indexService, diDao, dDao, projectKey, userKey);
+    return new ProjectDuplication(factory, indexService, diDao, dDao, validator, projectKey, userKey);
   }
 
 }

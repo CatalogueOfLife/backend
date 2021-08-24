@@ -473,7 +473,7 @@ public class Agent implements Comparable<Agent> {
    */
   public boolean validateAndNullify(Validator validator){
     var constraints = validator.validate(this);
-    if (!constraints.isEmpty()) {
+    if (constraints != null && !constraints.isEmpty()) {
       for (var c : constraints) {
         switch (c.getPropertyPath().toString()) {
           case "email":
