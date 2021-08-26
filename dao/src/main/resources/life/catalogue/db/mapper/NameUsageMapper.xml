@@ -129,6 +129,11 @@
     </discriminator>
   </resultMap>
 
+  <resultMap id="bareNameResultMap" type="BareName" autoMapping="true">
+    <id column="n_id"/>
+    <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
+  </resultMap>
+
   <resultMap id="simpleResultMap" type="SimpleName" autoMapping="true">
     <id property="id" column="id"/>
     <result property="parent" column="parent_id"/>
@@ -326,6 +331,26 @@
     <where>
       <if test="maxRank != null">
         n.rank >= #{maxRank}::rank
+      </if>
+      <if test="minRank != null">
+        AND n.rank &lt;= #{minRank}::rank
+      </if>
+    </where>
+  </select>
+
+  <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+      <property name="alias" value="n"/>
+      <property name="prefix" value="n_"/>
+    </include>
+    FROM name_${partition} n
+    LEFT JOIN name_usage_${partition} u ON n.id = u.name_id
+    <where>
+      u.id IS NULL
+      <if test="maxRank != null">
+        AND n.rank >= #{maxRank}::rank
       </if>
       <if test="minRank != null">
         AND n.rank &lt;= #{minRank}::rank

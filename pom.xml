@@ -37,14 +37,16 @@
         by these BOMs (use the right versions):
 
         Main two Dropwizard BOMs:
-        https://github.com/dropwizard/dropwizard/blob/v2.0.2/dropwizard-bom/pom.xml
-        io.dropwizard:dropwizard-dependencies
-        Which also imports the Jersey BOM: https://github.com/jersey/jersey/blob/2.25.1/bom/pom.xml
-        and Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.9.6/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v2.0.21/dropwizard-bom/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v2.0.21/dropwizard-dependencies/pom.xml
 
-        These BOMs manage dependency
-        versions for many things including: commons-lang3, guava, jersey, commons-text, servlet api, httpclient,
-        liquibase, freemarker, jetty, jackson, metrics, etc. -->
+        Which also imports the Jersey BOM: https://github.com/eclipse-ee4j/jersey/blob/2.33/bom/pom.xml
+        and Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.10.5.20201202/pom.xml
+
+        These BOMs manage dependency versions for many things including:
+        commons-lang3, guava, jersey, commons-text, servlet api, httpclient,
+        liquibase, freemarker, jetty, jackson, metrics, etc.
+    -->
     <antlr.version>4.7.2</antlr.version>
     <asm.version></asm.version>
     <assertj.version>3.11.1</assertj.version>
@@ -54,7 +56,7 @@
     <commons-compress.version>1.19</commons-compress.version>
     <commons-io.version>2.6</commons-io.version>
     <dropwizard.version>2.0.21</dropwizard.version>
-    <dwc-api.version>1.33</dwc-api.version>
+    <dwc-api.version>1.34</dwc-api.version>
     <dwca-io.version>2.9</dwca-io.version>
     <elasticsearch.version>7.4.2</elasticsearch.version>
     <fastutil.version>8.3.0</fastutil.version>

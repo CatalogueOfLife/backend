@@ -10,6 +10,8 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 
+import org.apache.ibatis.cursor.Cursor;
+
 import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
@@ -45,6 +47,30 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void copyDataset() throws Exception {
     CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
+  }
+
+  @Test
+  public void processDataset() throws Exception {
+    assertSize(mapper().processDataset(testDataRule.testData.key, null, null), 4);
+    assertSize(mapper().processDataset(testDataRule.testData.key, Rank.SPECIES, Rank.GENUS), 4);
+    assertSize(mapper().processDataset(testDataRule.testData.key, Rank.SUBGENUS, Rank.GENUS), 0);
+    assertSize(mapper().processDataset(testDataRule.testData.key, Rank.VARIETY, Rank.SPECIES), 4);
+  }
+
+  @Test
+  public void processDatasetBareNames() throws Exception {
+    assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, null, null), 1);
+    assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, Rank.SPECIES, Rank.GENUS), 1);
+    assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, Rank.SUBGENUS, Rank.GENUS), 0);
+    assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, Rank.VARIETY, Rank.SPECIES), 1);
+  }
+
+  static void assertSize(Cursor<?> cursor, int size) {
+    final AtomicInteger cnt = new AtomicInteger(0);
+    cursor.forEach(u -> {
+      cnt.incrementAndGet();
+    });
+    assertEquals(size, cnt.get());
   }
 
   @Test

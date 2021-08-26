@@ -20,4 +20,14 @@ public class DwcaExporterTest extends ExporterTest {
     assertTrue(exp.getArchive().exists());
   }
 
+  @Test
+  public void withBareNames() {
+    var req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA);
+    req.setBareNames(true);
+    DwcaExporter exp = new DwcaExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+
+    assertTrue(exp.getArchive().exists());
+  }
+
 }

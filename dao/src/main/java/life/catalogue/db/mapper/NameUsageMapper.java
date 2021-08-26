@@ -93,6 +93,13 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                                        @Nullable @Param("maxRank") Rank maxRank);
 
   /**
+   * Iterates over all bare names for a given dataset, optionally filtered by a minimum/maximum rank to include.
+   */
+  Cursor<BareName> processDatasetBareNames(@Param("datasetKey") int datasetKey,
+                                       @Nullable @Param("minRank") Rank minRank,
+                                       @Nullable @Param("maxRank") Rank maxRank);
+
+  /**
    * Move all children including synonyms of a given taxon to a new parent.
    * @param datasetKey
    * @param parentId the current parentId

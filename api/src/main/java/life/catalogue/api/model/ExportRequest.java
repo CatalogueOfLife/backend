@@ -17,6 +17,7 @@ public class ExportRequest {
   private boolean excel;
   private SimpleName root;
   private boolean synonyms = true;
+  private boolean bareNames = false;
   private Rank minRank;
   private boolean force; // this makes sure we run a new export
 
@@ -73,6 +74,14 @@ public class ExportRequest {
     this.synonyms = synonyms;
   }
 
+  public boolean isBareNames() {
+    return bareNames;
+  }
+
+  public void setBareNames(boolean bareNames) {
+    this.bareNames = bareNames;
+  }
+
   public Rank getMinRank() {
     return minRank;
   }
@@ -93,7 +102,7 @@ public class ExportRequest {
    * @return true if any filter has been used apart from the mandatory datasetKey & format
    */
   public boolean hasFilter() {
-    return !synonyms || root!=null || minRank!=null;
+    return !synonyms || bareNames || root!=null || minRank!=null;
   }
 
   @Override
@@ -101,7 +110,10 @@ public class ExportRequest {
     if (this == o) return true;
     if (!(o instanceof ExportRequest)) return false;
     ExportRequest that = (ExportRequest) o;
-    return excel == that.excel && synonyms == that.synonyms && force == that.force && Objects.equals(datasetKey, that.datasetKey) && format == that.format && Objects.equals(root, that.root) && minRank == that.minRank;
+    return excel == that.excel
+           && synonyms == that.synonyms
+           && bareNames == that.bareNames
+           && force == that.force && Objects.equals(datasetKey, that.datasetKey) && format == that.format && Objects.equals(root, that.root) && minRank == that.minRank;
   }
 
   @Override

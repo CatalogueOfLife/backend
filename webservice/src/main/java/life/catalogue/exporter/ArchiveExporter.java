@@ -136,6 +136,12 @@ public abstract class ArchiveExporter extends DatasetExporter {
         cursor = num.processTree(datasetKey, null, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms(), true);
       }
       cursor.forEach(this::consumeUsage);
+
+      // add bare names?
+      if (req.isBareNames()) {
+        num.processDatasetBareNames(datasetKey, null, null).forEach(this::consumeUsage);
+      }
+
     } catch (RuntimeException e) {
       catchTruncation(e);
     } finally {
@@ -162,6 +168,22 @@ public abstract class ArchiveExporter extends DatasetExporter {
       refIDs.add(u.getName().getPublishedInId());
       refIDs.add(u.getAccordingToId());
       refIDs.addAll(u.getReferenceIds());
+    }
+    // metrics
+    counter.inc(u);
+
+    try {
+      write(u);
+      writer.next();
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void consumeUsage(BareName u){
+    if (!fullDataset) {
+      nameIDs.add(u.getName().getId());
+      refIDs.add(u.getName().getPublishedInId());
     }
     // metrics
     counter.inc(u);
@@ -385,6 +407,9 @@ public abstract class ArchiveExporter extends DatasetExporter {
   abstract Term[] define(EntityType entity);
 
   void write(NameUsageBase u){
+  }
+
+  void write(BareName n){
   }
 
   void write(Reference r) throws IOException {

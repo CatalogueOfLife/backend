@@ -377,7 +377,7 @@ public class DwcaReader extends CsvReader {
     }
     // check for a minimal parsed name
     final Schema core = schema(DwcTerm.Taxon).get();
-    if ((core.hasTerm(DwcTerm.genus) || core.hasTerm(GbifTerm.genericName))
+    if ((core.hasTerm(DwcTerm.genus) || core.hasTerm(DwcTerm.genericName))
         && core.hasTerm(DwcTerm.specificEpithet)
         ) {
       mappingFlags.setParsedNameMapped(true);

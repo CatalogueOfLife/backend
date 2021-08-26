@@ -48,6 +48,15 @@ public class ColdpExporterTest extends ExporterTest {
   }
 
   @Test
+  public void bareName() {
+    req.setBareNames(true);
+    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+
+    assertTrue(exp.getArchive().exists());
+  }
+
+  @Test
   public void excel() {
     req.setExcel(true);
     ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());

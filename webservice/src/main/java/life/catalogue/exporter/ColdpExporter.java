@@ -54,30 +54,12 @@ public class ColdpExporter extends ArchiveExporter {
 
   @Override
   void write(NameUsageBase u) {
-    Name n = u.getName();
+    write(u.getName());
     writer.set(ColdpTerm.ID, u.getId());
     writer.set(ColdpTerm.sourceID, sector2datasetKey(u.getSectorKey()));
     writer.set(ColdpTerm.parentID, u.getParentId());
-    for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
-      writer.set(ColdpTerm.basionymID, rel.getRelatedNameId());
-    }
     writer.set(ColdpTerm.status, u.getStatus());
-    writer.set(ColdpTerm.scientificName, n.getScientificName());
-    writer.set(ColdpTerm.authorship, n.getAuthorship());
-    writer.set(ColdpTerm.rank, n.getRank());
-    writer.set(ColdpTerm.uninomial, n.getUninomial());
-    writer.set(ColdpTerm.genericName, n.getGenus());
-    writer.set(ColdpTerm.infragenericEpithet, n.getInfragenericEpithet());
-    writer.set(ColdpTerm.specificEpithet, n.getSpecificEpithet());
-    writer.set(ColdpTerm.infraspecificEpithet, n.getInfraspecificEpithet());
-    writer.set(ColdpTerm.cultivarEpithet, n.getCultivarEpithet());
     writer.set(ColdpTerm.namePhrase, u.getNamePhrase());
-    writer.set(ColdpTerm.nameReferenceID, n.getPublishedInId());
-    writer.set(ColdpTerm.publishedInYear, n.getPublishedInYear());
-    writer.set(ColdpTerm.publishedInPage, n.getPublishedInPage());
-    //writer.set(ColdpTerm.publishedInPageLink, null);
-    writer.set(ColdpTerm.code, n.getCode());
-    writer.set(ColdpTerm.nameStatus, n.getNomStatus());
     writer.set(ColdpTerm.accordingToID, u.getAccordingToId());
     writer.set(ColdpTerm.referenceID, u.getReferenceIds());
     // see taxon specifics below
@@ -95,6 +77,35 @@ public class ColdpExporter extends ArchiveExporter {
       writer.set(ColdpTerm.environment, t.getEnvironments());
       //writer.set(ColdpTerm.sequenceIndex, null);
     }
+  }
+
+  void write(BareName u) {
+    write(u.getName());
+    writer.set(ColdpTerm.ID, u.getName().getId()); // wrong, see https://github.com/CatalogueOfLife/backend/issues/1046
+    writer.set(ColdpTerm.status, TaxonomicStatus.BARE_NAME);
+    writer.set(ColdpTerm.remarks, u.getRemarks());
+  }
+
+  void write(Name n) {
+    writer.set(ColdpTerm.sourceID, sector2datasetKey(n.getSectorKey()));
+    for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
+      writer.set(ColdpTerm.basionymID, rel.getRelatedNameId());
+    }
+    writer.set(ColdpTerm.scientificName, n.getScientificName());
+    writer.set(ColdpTerm.authorship, n.getAuthorship());
+    writer.set(ColdpTerm.rank, n.getRank());
+    writer.set(ColdpTerm.uninomial, n.getUninomial());
+    writer.set(ColdpTerm.genericName, n.getGenus());
+    writer.set(ColdpTerm.infragenericEpithet, n.getInfragenericEpithet());
+    writer.set(ColdpTerm.specificEpithet, n.getSpecificEpithet());
+    writer.set(ColdpTerm.infraspecificEpithet, n.getInfraspecificEpithet());
+    writer.set(ColdpTerm.cultivarEpithet, n.getCultivarEpithet());
+    writer.set(ColdpTerm.nameReferenceID, n.getPublishedInId());
+    writer.set(ColdpTerm.publishedInYear, n.getPublishedInYear());
+    writer.set(ColdpTerm.publishedInPage, n.getPublishedInPage());
+    //writer.set(ColdpTerm.publishedInPageLink, null);
+    writer.set(ColdpTerm.code, n.getCode());
+    writer.set(ColdpTerm.nameStatus, n.getNomStatus());
   }
 
   @Override
