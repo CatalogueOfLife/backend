@@ -1,7 +1,6 @@
 package life.catalogue.concurrent;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +13,25 @@ public class ExecutorUtils {
   
   // milliseconds to wait during shutdown before forcing a shutdown
   public static final int MILLIS_TO_DIE = 12000;
-  
+
+
+  /**
+   * Creates a thread pool that creates new threads as needed up to the given maximum, but
+   * will reuse previously constructed threads when they are available, and uses the provided
+   * ThreadFactory to create new threads when needed.
+   *
+   * @param threadFactory the factory to use when creating new threads
+   * @param maximumPoolSize maximum number of thread to create in the pool
+   * @return the newly created thread pool
+   * @throws NullPointerException if threadFactory is null
+   */
+  public static ExecutorService newCachedThreadPool(int maximumPoolSize, ThreadFactory threadFactory) {
+    return new ThreadPoolExecutor(0, maximumPoolSize,
+      30L, TimeUnit.SECONDS,
+      new SynchronousQueue<Runnable>(),
+      threadFactory);
+  }
+
   /**
    * Shutdown executor and wait until all jobs are done no matter how long it takes.
    * (actually waits for one month at most).

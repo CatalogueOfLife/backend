@@ -1,5 +1,7 @@
 package life.catalogue;
 
+import com.google.common.eventbus.AsyncEventBus;
+
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DatasetExport;
@@ -10,7 +12,9 @@ import life.catalogue.cache.CacheFlush;
 import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.*;
 import life.catalogue.db.LookupTables;
 import life.catalogue.db.tree.DatasetDiffService;
@@ -58,6 +62,7 @@ import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.concurrent.Executors;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -98,7 +103,9 @@ public class WsServer extends Application<WsServerConfig> {
   private final MybatisBundle mybatis = new MybatisBundle();
   private final MailBundle mail = new MailBundle();
   private final AuthBundle auth = new AuthBundle();
-  private final EventBus bus = new EventBus("bus");
+  private final EventBus bus = new AsyncEventBus("server-bus",
+    ExecutorUtils.newCachedThreadPool(3, new NamedThreadFactory("bus"))
+  );
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;
   private NameIndex ni;
