@@ -155,17 +155,19 @@ public class DoiUpdater {
   }
 
   private void delete(DOI doi, URI url){
-    try {
-      // if the release was still private, it only had a draft DOI which gets removed completely
-      if (!doiService.delete(doi)) {
-        // DOI was hidden only - make sure the URL is correct and points to CLB
-        doiService.update(doi, url);
+    if (doi != null) {
+      try {
+        // if the release was still private, it only had a draft DOI which gets removed completely
+        if (!doiService.delete(doi)) {
+          // DOI was hidden only - make sure the URL is correct and points to CLB
+          doiService.update(doi, url);
+        }
+        deleted.add(doi);
+        // sources might also have a DOI which we need to remove or update depending on whether the DOI is shared between releases.
+        // This is managed by triggering a DoiUpdate event for each of the DOIs in the DatasetDAO
+      } catch (DoiException e) {
+        LOG.error("Error deleting COL DOI {}", doi, e);
       }
-      deleted.add(doi);
-      // sources might also have a DOI which we need to remove or update depending on whether the DOI is shared between releases.
-      // This is managed by triggering a DoiUpdate event for each of the DOIs in the DatasetDAO
-    } catch (DoiException e) {
-      LOG.error("Error deleting COL DOI {}", doi, e);
     }
   }
 

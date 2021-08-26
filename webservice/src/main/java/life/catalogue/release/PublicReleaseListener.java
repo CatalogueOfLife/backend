@@ -115,7 +115,9 @@ public class PublicReleaseListener {
         LOG.info("Change target URLs of DOIs from previous release {} to point to ChecklistBank", lastReleaseKey);
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         Dataset prev = dm.get(lastReleaseKey);
-        doiService.updateSilently(prev.getDoi(), converter.datasetURI(lastReleaseKey, false));
+        if (prev.getDoi() != null) {
+          doiService.updateSilently(prev.getDoi(), converter.datasetURI(lastReleaseKey, false));
+        }
 
         // sources
         DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
