@@ -216,6 +216,9 @@ public class Classification {
       case family:
         setFamily(name);
         return true;
+      case subfamily:
+        setSubfamily(name);
+        return true;
       case genus:
         setGenus(name);
         return true;

@@ -17,6 +17,8 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,8 +102,10 @@ public class DwcaExporter extends ArchiveExporter {
           DwcTerm.taxonRank,
           DwcTerm.scientificName,
           DwcTerm.genericName,
+          DwcTerm.infragenericEpithet,
           DwcTerm.specificEpithet,
           DwcTerm.infraspecificEpithet,
+          DwcTerm.cultivarEpithet,
           DwcTerm.nameAccordingTo,
           DwcTerm.namePublishedIn,
           DwcTerm.nomenclaturalCode,
@@ -180,10 +184,14 @@ public class DwcaExporter extends ArchiveExporter {
     if (n.getPublishedInId() != null) {
       writer.set(DwcTerm.namePublishedIn, refCache.getUnchecked(n.getPublishedInId()));
     }
-    if (n.isBinomial()) {
+    if (n.getGenus() != null) {
       writer.set(DwcTerm.genericName, n.getGenus());
+      writer.set(DwcTerm.infragenericEpithet, n.getInfragenericEpithet());
       writer.set(DwcTerm.specificEpithet, n.getSpecificEpithet());
       writer.set(DwcTerm.infraspecificEpithet, n.getInfraspecificEpithet());
+      writer.set(DwcTerm.cultivarEpithet, n.getCultivarEpithet());
+    } else if (n.getUninomial() != null && n.getRank() == Rank.GENUS) {
+      writer.set(DwcTerm.genericName, n.getUninomial());
     }
     writer.set(DwcTerm.nomenclaturalCode, n.getCode(), NomCode::getAcronym);
     writer.set(DwcTerm.nomenclaturalStatus, n.getNomStatus(), NomStatus::getBotanicalLabel);

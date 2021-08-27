@@ -76,7 +76,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   /**
    * The genus part of a bi- or trinomial name. Not used for genus names which are represented by
-   * the scientificName alone.
+   * the uninomial alone.
    */
   private String genus;
   

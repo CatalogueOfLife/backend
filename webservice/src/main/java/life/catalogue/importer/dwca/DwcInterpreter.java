@@ -161,8 +161,8 @@ public class DwcInterpreter extends InterpreterBase {
     Optional<ParsedNameUsage> opt = interpretName(false, v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
-        null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
-        v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), null,
+        null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.getFirst(DwcTerm.infragenericEpithet, DwcTerm.subgenus),
+        v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), v.get(DwcTerm.cultivarEpithet),
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
         v.getRaw(DcTerm.references), null, v);
     
