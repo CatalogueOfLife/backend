@@ -104,7 +104,7 @@ public class WsServer extends Application<WsServerConfig> {
   private final MailBundle mail = new MailBundle();
   private final AuthBundle auth = new AuthBundle();
   private final EventBus bus = new AsyncEventBus("server-bus",
-    ExecutorUtils.newCachedThreadPool(3, new NamedThreadFactory("bus"))
+    ExecutorUtils.newCachedThreadPool(3, 25, new NamedThreadFactory("bus"))
   );
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;

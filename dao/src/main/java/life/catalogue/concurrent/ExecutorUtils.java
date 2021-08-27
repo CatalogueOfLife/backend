@@ -15,21 +15,26 @@ public class ExecutorUtils {
   public static final int MILLIS_TO_DIE = 12000;
 
 
+  public static ExecutorService newCachedThreadPool(int maximumPoolSize, ThreadFactory threadFactory) {
+    return newCachedThreadPool(maximumPoolSize,2*maximumPoolSize, threadFactory);
+  }
+
   /**
    * Creates a thread pool that creates new threads as needed up to the given maximum, but
    * will reuse previously constructed threads when they are available, and uses the provided
-   * ThreadFactory to create new threads when needed.
+   * ThreadFactory to create new threads when needed. A blocking queue of given size is used, but otherwise
+   * additional tasks are executed in the caller thread and never discarded or rejected.
    *
    * @param threadFactory the factory to use when creating new threads
    * @param maximumPoolSize maximum number of thread to create in the pool
+   * @param queueSize size of the queue before the calling thread will run submitted tasks
    * @return the newly created thread pool
-   * @throws NullPointerException if threadFactory is null
    */
-  public static ExecutorService newCachedThreadPool(int maximumPoolSize, ThreadFactory threadFactory) {
+  public static ExecutorService newCachedThreadPool(int maximumPoolSize, int queueSize, ThreadFactory threadFactory) {
     return new ThreadPoolExecutor(0, maximumPoolSize,
       30L, TimeUnit.SECONDS,
-      new SynchronousQueue<Runnable>(),
-      threadFactory);
+      new LinkedBlockingQueue<>(queueSize),
+      threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
   /**
