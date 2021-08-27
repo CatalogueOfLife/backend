@@ -108,6 +108,12 @@ public class ExportCmd extends AbstractMybatisCmd {
     Dataset d;
     List<Dataset> datasets;
     try (SqlSession session = factory.openSession()){
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      d = dm.get(ns.getInt(ARG_KEY));
+      if (d == null) {
+        throw NotFoundException.notFound(Dataset.class, ns.getInt(ARG_KEY));
+      }
+
       EventBus bus = new EventBus();
       Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       mail.run(cfg, null);
@@ -120,11 +126,6 @@ public class ExportCmd extends AbstractMybatisCmd {
       DoiService doiService = new DataCiteService(cfg.doi, builder.build("datacite-client"));
       DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
       copy = new PublicReleaseListener(cfg, factory, exportDao, doiService, converter);
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      d = dm.get(ns.getInt(ARG_KEY));
-      if (d == null) {
-        throw NotFoundException.notFound(Dataset.class, ns.getInt(ARG_KEY));
-      }
 
       if (d.getOrigin() == DatasetOrigin.MANAGED) {
         boolean inclPrivate = ns.getBoolean(ARG_PRIVATE);
@@ -149,7 +150,7 @@ public class ExportCmd extends AbstractMybatisCmd {
         TimeUnit.SECONDS.sleep(10);
       }
       // give datacite API some time
-      TimeUnit.SECONDS.sleep(30);
+      TimeUnit.SECONDS.sleep(60);
       System.out.println("Shutting down executor");
       exec.close();
     }

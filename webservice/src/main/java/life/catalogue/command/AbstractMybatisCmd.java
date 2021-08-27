@@ -90,6 +90,7 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
           if (user == null) {
             throw new IllegalArgumentException("User " + username + " does not exist");
           }
+          System.out.printf("Act with user %s \n", user);
           userKey = user.getKey();
         }
       }
