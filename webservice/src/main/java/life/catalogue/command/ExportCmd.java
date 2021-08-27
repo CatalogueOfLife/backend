@@ -98,7 +98,7 @@ public class ExportCmd extends AbstractMybatisCmd {
     } else {
       formats = Arrays.stream(DataFormat.values()).filter(DataFormat::isExportable).collect(Collectors.toSet());
     }
-    System.out.printf("Export format(s): %s\n", formats.stream().map(DataFormat::getName).collect(Collectors.joining()));
+    System.out.printf("Export format(s): %s\n", formats.stream().map(DataFormat::getName).collect(Collectors.joining(", ")));
 
     force = ns.getBoolean(ARG_FORCE);
     if (force) {
