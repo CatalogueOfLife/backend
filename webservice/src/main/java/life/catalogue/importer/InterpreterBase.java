@@ -336,13 +336,15 @@ public class InterpreterBase {
     // parse rank & code as they improve name parsing
     final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
-    Rank rank;
-    try {
-      // use advanced rank parser that takes the code into account!
-      rank = RankParser.PARSER.parse(code, vrank).orElse(Rank.UNRANKED);
-    } catch (UnparsableException e) {
-      v.addIssue(Issue.RANK_INVALID);
-      rank = Rank.UNRANKED;
+    Rank rank = Rank.UNRANKED;
+    // we only parse ranks given with more than one char. c or g alone can be very ambiguous, see https://github.com/CatalogueOfLife/data/issues/302
+    if (vrank != null && (vrank.length()>1 || vrank.equals("f") || vrank.equals("v"))) {
+      try {
+        // use advanced rank parser that takes the code into account!
+        rank = RankParser.PARSER.parse(code, vrank).orElse(Rank.UNRANKED);
+      } catch (UnparsableException e) {
+        v.addIssue(Issue.RANK_INVALID);
+      }
     }
 
     // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given

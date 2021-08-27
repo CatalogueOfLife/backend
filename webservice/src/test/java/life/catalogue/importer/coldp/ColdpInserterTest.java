@@ -1,14 +1,14 @@
 package life.catalogue.importer.coldp;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.Reference;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
+import life.catalogue.importer.dwca.DwcaReaderTest;
+import life.catalogue.importer.neo.model.NeoName;
+import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
 
 import org.gbif.nameparser.api.NomCode;
@@ -17,7 +17,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 
 import static org.junit.Assert.*;
 
@@ -55,7 +58,33 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertEquals("Remarks, comments and usage notes about this dataset", d.getNotes());
     assertEquals("ColDP Example", d.getAlias());
   }
-  
+
+  @Test
+  public void fungi13() throws Exception {
+    NeoInserter ins = setup("/coldp/13");
+    ins.insertAll();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      Name n = store.names().objByID("139502").getName();
+      assertEquals("Agaricus candidus caerulescens", n.getScientificName());
+      assertEquals("Agaricus", n.getGenus());
+      assertEquals("candidus", n.getSpecificEpithet());
+      assertEquals("caerulescens", n.getInfraspecificEpithet());
+      assertNull(n.getInfragenericEpithet());
+      assertNull(n.getUninomial());
+      assertEquals(Rank.INFRASPECIFIC_NAME, n.getRank());
+
+      n = store.names().objByID("588900").getName();
+      assertEquals("Lecidea sabuletorum sabuletorum", n.getScientificName());
+      assertEquals("Lecidea", n.getGenus());
+      assertEquals("sabuletorum", n.getSpecificEpithet());
+      assertEquals("sabuletorum", n.getInfraspecificEpithet());
+      assertNull(n.getInfragenericEpithet());
+      assertNull(n.getUninomial());
+      assertEquals(Rank.INFRASPECIFIC_NAME, n.getRank());
+    }
+  }
+
   @Test
   public void bibtex() throws Exception {
     // warm up CSL formatter
