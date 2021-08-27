@@ -22,8 +22,8 @@ public class ReleaseConfig {
   @NotNull
   public File reportDir = new File("/tmp/col/release");
 
-  // the monthly COL download directory
-  public File colDownloadDir = new File("/tmp/col/monthly");
+  // the COL download directory with monthly and annual subfolder
+  public File colDownloadDir = new File("/tmp/col");
 
   public File reportDir(int datasetKey, int attempt) {
     return new File(reportDir, String.valueOf(datasetKey) + "/" + String.valueOf(attempt));

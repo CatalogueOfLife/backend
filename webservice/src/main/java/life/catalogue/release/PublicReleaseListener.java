@@ -12,6 +12,7 @@ import life.catalogue.api.vocab.Datasets;
 
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.io.PathUtils;
 import life.catalogue.dao.DatasetExportDao;
 
 import life.catalogue.dao.DatasetSourceDao;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
@@ -76,7 +78,7 @@ public class PublicReleaseListener {
       if (Datasets.COL == event.obj.getSourceKey()) {
         publishColSourceDois(event.obj);
         updateColDoiUrls(event.obj);
-        copyExportsToColDownload(event.obj);
+        copyExportsToColDownload(event.obj, true);
       }
     }
   }
@@ -137,11 +139,10 @@ public class PublicReleaseListener {
     }
   }
 
-  public void copyExportsToColDownload(Dataset dataset) {
+  public void copyExportsToColDownload(Dataset dataset, boolean symLinkLatest) {
     if (cfg.release.colDownloadDir != null) {
       final int datasetKey = dataset.getKey();
-      final FuzzyDate released = dataset.getIssued();
-      if (released == null) {
+      if (dataset.getIssued() == null) {
         LOG.error("Updated COL release {} is missing a release date", datasetKey);
         return;
       }
@@ -151,11 +152,15 @@ public class PublicReleaseListener {
         if (!done.contains(exp.getRequest().getFormat())) {
           DataFormat df = exp.getRequest().getFormat();
           done.add(df);
-          File target = colDownloadFile(cfg.release.colDownloadDir, released, df);
+          File target = colDownloadFile(cfg.release.colDownloadDir, dataset, df);
           File source = cfg.downloadFile(exp.getKey());
           if (source.exists()) {
             try {
               FileUtils.copyFile(source, target);
+              if (symLinkLatest) {
+                File symlink = colLatestFile(cfg.release.colDownloadDir, df);
+                PathUtils.symlink(symlink, target);
+              }
             } catch (IOException e) {
               LOG.error("Failed to copy COL {} export {} to {}", df, source, target, e);
             }
@@ -163,14 +168,27 @@ public class PublicReleaseListener {
             LOG.warn("COL {} export {} does not exist at expected location {}", df, exp.getKey(), source);
           }
         }
-
+      }
+      if (symLinkLatest && dataset.getAttempt() != null) {
+        try {
+          // set latest_logs -> /srv/releases/3/50
+          File logs = cfg.release.reportDir(datasetKey, dataset.getAttempt());
+          File symlink = new File(cfg.release.colDownloadDir, "latest_logs");
+          PathUtils.symlink(symlink, logs);
+        } catch (IOException e) {
+          LOG.error("Failed to symlink latest release logs", e);
+        }
       }
     }
   }
 
-  public static File colDownloadFile(File colDownloadDir, FuzzyDate released, DataFormat format) {
-    String iso = DateTimeFormatter.ISO_DATE.format(released.getDate());
-    return new File(colDownloadDir, iso + "_" + format.getName().toLowerCase() + ".zip");
+  public static File colDownloadFile(File colDownloadDir, Dataset dataset, DataFormat format) {
+    String iso = DateTimeFormatter.ISO_DATE.format(dataset.getIssued().getDate());
+    return new File(colDownloadDir, "monthly/" + iso + "_" + format.getName().toLowerCase() + ".zip");
+  }
+
+  public static File colLatestFile(File colDownloadDir, DataFormat format) {
+    return new File(colDownloadDir, "latest_" + format.getName().toLowerCase() + ".zip");
   }
 
 }
