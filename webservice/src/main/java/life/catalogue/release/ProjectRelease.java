@@ -121,6 +121,16 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setPrivat(true); // all releases are private candidate releases first
   }
 
+  @Override
+  protected boolean modifyDatasetWithKey(Dataset d) {
+    // point to release in CLB - this requires the datasetKey to exist already
+    d.setUrl(UriBuilder.fromUri(cfg.clbURI)
+                       .path("dataset")
+                       .path(d.getKey().toString())
+                       .build());
+    return true;
+  }
+
   private List<Agent> setSourceNote(Dataset d, List<Agent> agents) {
     agents.forEach(a -> a.setNote(d.getAliasOrTitle()));
     return agents;
