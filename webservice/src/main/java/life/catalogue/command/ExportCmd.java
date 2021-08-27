@@ -120,7 +120,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       exec = new JobExecutor(cfg.job, mail.getMailer());
       final ImageService imageService = new ImageServiceFS(cfg.img);
       final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, bus, validator);
-      manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao);
+      manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
       UserDao udao = new UserDao(factory, bus, validator);
       DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
       DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
@@ -157,7 +157,7 @@ public class ExportCmd extends AbstractMybatisCmd {
     // move exports to COL download dir?
     if (d.getKey() == Datasets.COL || Objects.equals(Datasets.COL, d.getSourceKey())) {
       for (Dataset de : datasets) {
-        copy.copyExportsToColDownload(de);
+        copy.copyExportsToColDownload(de, false);
       }
     }
   }

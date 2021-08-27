@@ -95,8 +95,14 @@ public class DatasetImportDao {
   }
   
   public DatasetImport getLast(int datasetKey) {
-    try (SqlSession session = factory.openSession(true)) {
-      return session.getMapper(DatasetImportMapper.class).last(datasetKey);
+    // a release? use mother project in that case
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (info.origin == DatasetOrigin.RELEASED) {
+      return getReleaseAttempt(datasetKey);
+    } else {
+      try (SqlSession session = factory.openSession(true)) {
+        return session.getMapper(DatasetImportMapper.class).last(datasetKey);
+      }
     }
   }
   

@@ -9,6 +9,7 @@ import life.catalogue.api.model.ExportRequest;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
+import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
@@ -30,8 +31,9 @@ public class ExportManager {
   private final JobExecutor executor;
   private final EmailNotification emailer;
   private final DatasetExportDao dao;
+  private final DatasetImportDao diDao;
 
-  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, Mailer mailer, DatasetExportDao exportDao) {
+  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, Mailer mailer, DatasetExportDao exportDao, DatasetImportDao diDao) {
     this.cfg = cfg;
     this.factory = factory;
     this.executor = executor;
@@ -39,6 +41,7 @@ public class ExportManager {
     // mailer
     this.emailer = new EmailNotification(mailer, factory, cfg);
     dao = exportDao;
+    this.diDao = diDao;
   }
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
@@ -77,12 +80,11 @@ public class ExportManager {
   }
 
   /**
-   * Makes sure taxonID exists if given
+   * Makes sure taxonID exists if given and check number of records for full excel downlaods
    */
   private void validate(ExportRequest req) throws IllegalArgumentException {
-    try (SqlSession session = factory.openSession()) {
-
-      if (req.getTaxonID() != null) {
+    if (req.getTaxonID() != null) {
+      try (SqlSession session = factory.openSession()) {
         var root = session.getMapper(NameUsageMapper.class).getSimple(DSID.of(req.getDatasetKey(), req.getTaxonID()));
         if (root == null) {
           throw new IllegalArgumentException("Root taxon " + req.getTaxonID() + " does not exist in dataset " + req.getDatasetKey());
@@ -90,29 +92,29 @@ public class ExportManager {
           throw new IllegalArgumentException("Root usage " + req.getTaxonID() + " is not an accepted taxon but " + root.getStatus());
         }
       }
+    }
 
-      if (req.isExcel() && req.getTaxonID() == null && req.getMinRank() == null) {
-        // check metrics avoiding truncation early
-        var imp = session.getMapper(DatasetImportMapper.class).last(req.getDatasetKey());
-        if (imp != null) {
-          if (req.isSynonyms()) {
-            // all usages
-            throwIfTooLarge(ColdpTerm.NameUsage, imp.getUsagesCount());
-            throwIfTooLarge(ColdpTerm.Reference, imp.getReferenceCount());
-            throwIfTooLarge(ColdpTerm.Name, imp.getNameCount());
-            throwIfTooLarge(ColdpTerm.TypeMaterial, imp.getTypeMaterialCount());
-            throwIfTooLarge(ColdpTerm.NameRelation, imp.getNameRelationsCount());
-          } else {
-            // only accepted taxa
-            throwIfTooLarge(ColdpTerm.NameUsage, imp.getTaxonCount());
-          }
-          // these are all attached to taxa so it doesn't matter
-          throwIfTooLarge(ColdpTerm.VernacularName, imp.getVernacularCount());
-          throwIfTooLarge(ColdpTerm.Distribution, imp.getDistributionCount());
-          throwIfTooLarge(ColdpTerm.TaxonConceptRelation, imp.getTaxonConceptRelationsCount());
-          throwIfTooLarge(ColdpTerm.SpeciesInteraction, imp.getSpeciesInteractionsCount());
-          throwIfTooLarge(ColdpTerm.Media, imp.getMediaCount());
+    if (req.isExcel() && req.getTaxonID() == null && req.getMinRank() == null) {
+      // check metrics avoiding truncation early
+      var imp = diDao.getLast(req.getDatasetKey());
+      if (imp != null) {
+        if (req.isSynonyms()) {
+          // all usages
+          throwIfTooLarge(ColdpTerm.NameUsage, imp.getUsagesCount());
+          throwIfTooLarge(ColdpTerm.Reference, imp.getReferenceCount());
+          throwIfTooLarge(ColdpTerm.Name, imp.getNameCount());
+          throwIfTooLarge(ColdpTerm.TypeMaterial, imp.getTypeMaterialCount());
+          throwIfTooLarge(ColdpTerm.NameRelation, imp.getNameRelationsCount());
+        } else {
+          // only accepted taxa
+          throwIfTooLarge(ColdpTerm.NameUsage, imp.getTaxonCount());
         }
+        // these are all attached to taxa so it doesn't matter
+        throwIfTooLarge(ColdpTerm.VernacularName, imp.getVernacularCount());
+        throwIfTooLarge(ColdpTerm.Distribution, imp.getDistributionCount());
+        throwIfTooLarge(ColdpTerm.TaxonConceptRelation, imp.getTaxonConceptRelationsCount());
+        throwIfTooLarge(ColdpTerm.SpeciesInteraction, imp.getSpeciesInteractionsCount());
+        throwIfTooLarge(ColdpTerm.Media, imp.getMediaCount());
       }
     }
   }
