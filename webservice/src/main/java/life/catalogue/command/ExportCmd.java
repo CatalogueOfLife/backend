@@ -59,7 +59,7 @@ public class ExportCmd extends AbstractMybatisCmd {
   private boolean force;
 
   public ExportCmd() {
-    super("export", false, "Export a single dataset or all its releases if it is a project.");
+    super("export", true, "Export a single dataset or all its releases if it is a project.");
   }
   
   @Override
@@ -121,9 +121,8 @@ public class ExportCmd extends AbstractMybatisCmd {
       final ImageService imageService = new ImageServiceFS(cfg.img);
       final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, bus, validator);
       manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao);
-      JerseyClientBuilder builder = new JerseyClientBuilder(new MetricRegistry()).using(cfg.client);
       UserDao udao = new UserDao(factory, bus, validator);
-      DoiService doiService = new DataCiteService(cfg.doi, builder.build("datacite-client"));
+      DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
       DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
       copy = new PublicReleaseListener(cfg, factory, exportDao, doiService, converter);
 

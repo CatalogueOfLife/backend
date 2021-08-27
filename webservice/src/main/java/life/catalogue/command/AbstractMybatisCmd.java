@@ -96,7 +96,7 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
       }
 
       if (jersey) {
-        final String userAgent = "COLcmd/" + ObjectUtils.coalesce(cfg.versionString(), "1.0");
+        final String userAgent = "ColCli/" + ObjectUtils.coalesce(cfg.versionString(), "1.0");
         bootstrap.addBundle(new ColJerseyBundle());
         var httpClient = new HttpClientBuilder(bootstrap.getMetricRegistry())
           .using(cfg.client)
