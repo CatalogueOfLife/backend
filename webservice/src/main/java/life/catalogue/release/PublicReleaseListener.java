@@ -132,6 +132,8 @@ public class PublicReleaseListener {
           }
         }
       }
+    } catch (RuntimeException e) {
+      LOG.error("Error updating previous DOIs", e);
     }
   }
 

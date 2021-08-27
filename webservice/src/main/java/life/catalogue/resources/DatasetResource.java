@@ -50,15 +50,13 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
   private final DatasetDao dao;
   private final DatasetSourceDao sourceDao;
-  private final ImageService imgService;
   private final AssemblyCoordinator assembly;
   private final ReleaseManager releaseManager;
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, ImageService imgService, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.sourceDao = sourceDao;
-    this.imgService = imgService;
     this.assembly = assembly;
     this.releaseManager = releaseManager;
   }
@@ -131,33 +129,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("{key}/assembly")
   public AssemblyState assemblyState(@PathParam("key") int key) {
     return assembly.getState(key);
-  }
-  
-  @GET
-  @Path("{key}/logo")
-  @Produces("image/png")
-  public BufferedImage logo(@PathParam("key") int key, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
-    return imgService.datasetLogo(key, scale);
-  }
-  
-  @POST
-  @Path("{key}/logo")
-  @Consumes({MediaType.APPLICATION_OCTET_STREAM,
-      MoreMediaTypes.IMG_BMP, MoreMediaTypes.IMG_PNG, MoreMediaTypes.IMG_GIF,
-      MoreMediaTypes.IMG_JPG, MoreMediaTypes.IMG_PSD, MoreMediaTypes.IMG_TIFF
-  })
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {
-    imgService.putDatasetLogo(key, ImageServiceFS.read(img));
-    return Response.ok().build();
-  }
-  
-  @DELETE
-  @Path("{key}/logo")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Response deleteLogo(@PathParam("key") int key) throws IOException {
-    imgService.putDatasetLogo(key, null);
-    return Response.ok().build();
   }
 
   @POST
@@ -266,19 +237,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
       throw NotFoundException.notFound(Dataset.class, DSID.of(datasetKey, id));
     }
     return ResourceUtils.streamFreemarker(d, "seo/dataset-seo.ftl", MediaType.TEXT_PLAIN_TYPE);
-  }
-
-  @GET
-  @Path("/{key}/source/{id}/logo")
-  @Produces("image/png")
-  public BufferedImage sourceLogo(@PathParam("key") int datasetKey, @PathParam("id") int id, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
-    DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
-    if (!origin.isManagedOrRelease()) {
-      throw new IllegalArgumentException("Dataset "+datasetKey+" is not a project");
-    } else if (origin == DatasetOrigin.RELEASED) {
-      return imgService.archiveDatasetLogo(id, datasetKey, scale);
-    }
-    return imgService.datasetLogo(id, scale);
   }
 
   @GET
