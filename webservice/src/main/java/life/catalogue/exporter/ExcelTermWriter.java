@@ -8,11 +8,16 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.gbif.dwc.terms.Term;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.List;
 
 public class ExcelTermWriter extends TermWriter {
   public static final int MAX_ROWS = 1048574; // IAE: Invalid row number (1048576) outside allowable range (0..1048575)
+  public static final int MAX_VALUE_CHARS = 32767; // IAE: The maximum length of cell contents (text) is 32767 characters
+  private static final Logger LOG = LoggerFactory.getLogger(ExcelTermWriter.class);
 
   public ExcelTermWriter(Workbook wb, Term rowType, Term idTerm, List<Term> cols) throws IOException {
     super(new ExcelRowWriter(wb, rowType), rowType, idTerm, cols);
@@ -48,6 +53,10 @@ public class ExcelTermWriter extends TermWriter {
       int col = 0;
       for (String val : row) {
         Cell cell = r.createCell(col++);
+        if (val != null && val.length() > MAX_VALUE_CHARS) {
+          LOG.warn("Value in row {} exceeds maximum cell content allowed in Excel", rownum);
+          val = val.substring(0, MAX_VALUE_CHARS-2);
+        }
         cell.setCellValue(val);
       }
     }

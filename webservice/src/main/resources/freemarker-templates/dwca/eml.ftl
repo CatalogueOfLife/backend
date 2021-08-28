@@ -15,7 +15,7 @@
 <#list 0..<indent as i> </#list><individualName>
     <@tag name="givenName" value=a.given! indent=indent+2 />
     <@tag name="surName" value=a.family! indent=indent+2 />
-    <@tag name="userId" value=a.orcid! indent=indent+2 />
+    <@tag name="userId" value=a.orcidAsUrl! indent=indent+2 />
 <#list 0..<indent as i> </#list></individualName>
 </#if>
 <#if a.organization?has_content>

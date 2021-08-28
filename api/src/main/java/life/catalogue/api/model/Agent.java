@@ -32,6 +32,7 @@ import javax.validation.constraints.Email;
 import static java.util.Comparator.*;
 
 public class Agent implements Comparable<Agent> {
+  private static final String ORCID_URL = "https://orcid.org/";
   static final Comparator<Agent> COMP = Comparator.comparing(Agent::getFamily, nullsLast(naturalOrder()))
                                                   .thenComparing(Agent::getGiven, nullsLast(naturalOrder()))
                                                   .thenComparing(Agent::getOrganisation, nullsLast(naturalOrder()));
@@ -315,6 +316,10 @@ public class Agent implements Comparable<Agent> {
 
   public String getOrcid() {
     return orcid;
+  }
+
+  public String getOrcidAsUrl() {
+    return orcid == null ? null : ORCID_URL + orcid;
   }
 
   public String getGiven() {
