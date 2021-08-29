@@ -126,9 +126,6 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   private boolean modifyDatasetWithKey(Dataset d) {
     // point to release in CLB - this requires the datasetKey to exist already
-    System.out.println(d);
-    System.out.println(d.getKey());
-    System.out.println(cfg.clbURI);
     d.setUrl(UriBuilder.fromUri(cfg.clbURI)
                        .path("dataset")
                        .path(d.getKey().toString())
