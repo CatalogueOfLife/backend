@@ -57,6 +57,9 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
+    if (modifyDatasetWithKey(newDataset)) {
+      dDao.update(newDataset, userKey);
+    }
   }
 
   @Override
@@ -121,9 +124,11 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setPrivat(true); // all releases are private candidate releases first
   }
 
-  @Override
-  protected boolean modifyDatasetWithKey(Dataset d) {
+  private boolean modifyDatasetWithKey(Dataset d) {
     // point to release in CLB - this requires the datasetKey to exist already
+    System.out.println(d);
+    System.out.println(d.getKey());
+    System.out.println(cfg.clbURI);
     d.setUrl(UriBuilder.fromUri(cfg.clbURI)
                        .path("dataset")
                        .path(d.getKey().toString())

@@ -61,9 +61,6 @@ public abstract class AbstractProjectCopy implements Runnable {
     metrics.setJob(getClass().getSimpleName());
     attempt = metrics.getAttempt();
     newDataset = dDao.copy(datasetKey, userKey, this::modifyDataset);
-    if (modifyDatasetWithKey(newDataset)) {
-      dDao.update(newDataset, userKey);
-    }
     newDatasetKey = newDataset.getKey();
     newDatasetOrigin = newDataset.getOrigin();
   }
@@ -75,14 +72,6 @@ public abstract class AbstractProjectCopy implements Runnable {
     d.setDoi(null);
     // use the current attempt which gets written into the dataset table only at the end of the (successful) job
     d.setAttempt(attempt);
-  }
-
-  /**
-   * Allows to modify a dataset AFTER it already had been created and thus carries a key.
-   * @return true if the dataset was modified and needs to be persisted.
-   */
-  protected boolean modifyDatasetWithKey(Dataset d) {
-    return false;
   }
 
   public int getDatasetKey() {

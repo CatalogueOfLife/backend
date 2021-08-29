@@ -49,7 +49,7 @@ public abstract class ProjectBaseIT {
   public void init() throws Exception {
     WsServerConfig cfg = new WsServerConfig();
     cfg.apiURI = URI.create("https://api.dev.catalogue.life");
-
+    cfg.clbURI = URI.create("https://data.dev.catalogue.life");
     EventBus bus = mock(EventBus.class);
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
