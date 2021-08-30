@@ -49,7 +49,7 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
   private TextTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, ranks, factory);
+    super(datasetKey, sectorKey, startID, ranks, null, null, factory);
     this.writer = writer;
   }
   

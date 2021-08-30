@@ -18,8 +18,8 @@ public abstract class SimpleUsageTreePrinter extends AbstractTreePrinter<SimpleN
    * @param ranks
    * @param factory
    */
-  protected SimpleUsageTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory) {
-    super(datasetKey, sectorKey, startID, ranks, factory);
+  protected SimpleUsageTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory) {
+    super(datasetKey, sectorKey, startID, ranks, countRank, taxonCounter, factory);
   }
 
   @Override

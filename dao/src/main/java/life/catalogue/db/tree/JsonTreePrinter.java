@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import javax.annotation.Nullable;
+
 /**
  * Print an entire dataset in a nested SimpleName json array.
  */
@@ -28,17 +30,21 @@ public class JsonTreePrinter extends SimpleUsageTreePrinter {
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  protected JsonTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, ranks, factory);
+  protected JsonTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(datasetKey, sectorKey, startID, ranks, countRank, taxonCounter, factory);
     this.writer = writer;
   }
-  
+
   public static JsonTreePrinter dataset(int datasetKey, SqlSessionFactory factory, Writer writer) {
-    return new JsonTreePrinter(datasetKey, null, null, null, factory, writer);
+    return new JsonTreePrinter(datasetKey, null, null, null, null, null, factory, writer);
   }
-  
-  public static JsonTreePrinter dataset(int datasetKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
-    return new JsonTreePrinter(datasetKey, null, startID, ranks, factory, writer);
+
+  public static JsonTreePrinter dataset(int datasetKey, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    return new JsonTreePrinter(datasetKey, null, null, null, countRank, taxonCounter, factory, writer);
+  }
+
+  public static JsonTreePrinter dataset(int datasetKey, String startID, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    return new JsonTreePrinter(datasetKey, null, startID, ranks, countRank, taxonCounter, factory, writer);
   }
 
   /**
@@ -47,7 +53,7 @@ public class JsonTreePrinter extends SimpleUsageTreePrinter {
   public static JsonTreePrinter sector(final DSID<Integer> sectorKey, SqlSessionFactory factory, Writer writer) {
     try (SqlSession session = factory.openSession(true)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      return new JsonTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), null, factory, writer);
+      return new JsonTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), null, null, null, factory, writer);
     }
   }
 
@@ -69,6 +75,9 @@ public class JsonTreePrinter extends SimpleUsageTreePrinter {
     writer.write(StringUtils.repeat(' ', level * indentation));
     String json = ApiModule.MAPPER.writeValueAsString(u);
     writer.write(json.substring(0, json.length()-1));
+    if (countRank != null) {
+      writer.write(",\"" + countRank.name().toLowerCase() + "\":" + taxonCount);
+    }
     writer.write(",\"children\":[");
     last = EVENT.START;
   }

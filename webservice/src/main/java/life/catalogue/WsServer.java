@@ -346,7 +346,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new ColSeoResource(tdao, dsdao, coljersey.getCache()));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
-    j.register(new DatasetExportResource(getSqlSessionFactory(), exportManager, diDao, cfg));
+    j.register(new DatasetExportResource(getSqlSessionFactory(), searchService, exportManager, diDao, cfg));
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetPatchResource());
     j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, assembly, releaseManager));

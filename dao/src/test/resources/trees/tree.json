@@ -1,33 +1,33 @@
 [
-  {"id":"t1","name":"Animalia","rank":"kingdom","status":"accepted","labelHtml":"Animalia","children":[
-    {"id":"t2","name":"Chordata","rank":"phylum","status":"accepted","labelHtml":"Chordata","children":[
-      {"id":"t3","name":"Mammalia","rank":"class","status":"accepted","labelHtml":"Mammalia","children":[
-        {"id":"t4","name":"Carnivora","rank":"order","status":"accepted","labelHtml":"Carnivora","children":[
-          {"id":"t5","name":"Canidae","rank":"family","status":"accepted","labelHtml":"Canidae","children":[
-            {"id":"t20","name":"Canis","rank":"genus","status":"accepted","labelHtml":"<i>Canis</i>","children":[
-              {"id":"s21","name":"Alopsis","rank":"genus","status":"synonym","labelHtml":"<i>Alopsis</i>","children":[]},
-              {"id":"s22","name":"Lupulus","rank":"genus","status":"synonym","labelHtml":"<i>Lupulus</i>","children":[]},
-              {"id":"t23","name":"Canis adustus","rank":"species","status":"accepted","labelHtml":"<i>Canis adustus</i>","children":[]},
-              {"id":"t24","name":"Canis argentinus","rank":"species","status":"accepted","labelHtml":"<i>Canis argentinus</i>","children":[]},
-              {"id":"t25","name":"Canis aureus","rank":"species","status":"accepted","labelHtml":"<i>Canis aureus</i>","children":[]}
+  {"id":"t1","name":"Animalia","rank":"kingdom","status":"accepted","labelHtml":"Animalia","species":999,"children":[
+    {"id":"t2","name":"Chordata","rank":"phylum","status":"accepted","labelHtml":"Chordata","species":999,"children":[
+      {"id":"t3","name":"Mammalia","rank":"class","status":"accepted","labelHtml":"Mammalia","species":999,"children":[
+        {"id":"t4","name":"Carnivora","rank":"order","status":"accepted","labelHtml":"Carnivora","species":999,"children":[
+          {"id":"t5","name":"Canidae","rank":"family","status":"accepted","labelHtml":"Canidae","species":999,"children":[
+            {"id":"t20","name":"Canis","rank":"genus","status":"accepted","labelHtml":"<i>Canis</i>","species":999,"children":[
+              {"id":"s21","name":"Alopsis","rank":"genus","status":"synonym","labelHtml":"<i>Alopsis</i>","species":999,"children":[]},
+              {"id":"s22","name":"Lupulus","rank":"genus","status":"synonym","labelHtml":"<i>Lupulus</i>","species":999,"children":[]},
+              {"id":"t23","name":"Canis adustus","rank":"species","status":"accepted","labelHtml":"<i>Canis adustus</i>","species":999,"children":[]},
+              {"id":"t24","name":"Canis argentinus","rank":"species","status":"accepted","labelHtml":"<i>Canis argentinus</i>","species":999,"children":[]},
+              {"id":"t25","name":"Canis aureus","rank":"species","status":"accepted","labelHtml":"<i>Canis aureus</i>","species":999,"children":[]}
             ]}
           ]},
-          {"id":"t6","name":"Felidae","rank":"family","status":"accepted","labelHtml":"Felidae","children":[
-            {"id":"t10","name":"Lynx","rank":"genus","status":"accepted","labelHtml":"<i>Lynx</i>","children":[
-              {"id":"s11","name":"Pardina","rank":"genus","status":"synonym","labelHtml":"<i>Pardina</i>","children":[]},
-              {"id":"t12","name":"Lynx lynx","rank":"species","status":"accepted","labelHtml":"<i>Lynx lynx</i>","children":[]},
-              {"id":"t13","name":"Lynx rufus","rank":"species","status":"accepted","labelHtml":"<i>Lynx rufus</i>","children":[
-                {"id":"s14","name":"Felis rufus","rank":"species","status":"synonym","labelHtml":"<i>Felis rufus</i>","children":[]},
-                {"id":"t15","name":"Lynx rufus baileyi","rank":"subspecies","status":"accepted","labelHtml":"<i>Lynx rufus baileyi</i>","children":[]},
-                {"id":"t16","name":"Lynx rufus gigas","rank":"subspecies","status":"accepted","labelHtml":"<i>Lynx rufus gigas</i>","children":[]}
+          {"id":"t6","name":"Felidae","rank":"family","status":"accepted","labelHtml":"Felidae","species":999,"children":[
+            {"id":"t10","name":"Lynx","rank":"genus","status":"accepted","labelHtml":"<i>Lynx</i>","species":999,"children":[
+              {"id":"s11","name":"Pardina","rank":"genus","status":"synonym","labelHtml":"<i>Pardina</i>","species":999,"children":[]},
+              {"id":"t12","name":"Lynx lynx","rank":"species","status":"accepted","labelHtml":"<i>Lynx lynx</i>","species":999,"children":[]},
+              {"id":"t13","name":"Lynx rufus","rank":"species","status":"accepted","labelHtml":"<i>Lynx rufus</i>","species":999,"children":[
+                {"id":"s14","name":"Felis rufus","rank":"species","status":"synonym","labelHtml":"<i>Felis rufus</i>","species":999,"children":[]},
+                {"id":"t15","name":"Lynx rufus baileyi","rank":"subspecies","status":"accepted","labelHtml":"<i>Lynx rufus baileyi</i>","species":999,"children":[]},
+                {"id":"t16","name":"Lynx rufus gigas","rank":"subspecies","status":"accepted","labelHtml":"<i>Lynx rufus gigas</i>","species":999,"children":[]}
               ]}
             ]}
           ]},
-          {"id":"t30","name":"Urocyon","rank":"genus","status":"accepted","labelHtml":"<i>Urocyon</i>","children":[
-            {"id":"t31","name":"Urocyon citrinus","rank":"species","status":"accepted","labelHtml":"<i>Urocyon citrinus</i>","children":[]},
-            {"id":"t32","name":"Urocyon littoralis","rank":"species","status":"accepted","labelHtml":"<i>Urocyon littoralis</i>","children":[]},
-            {"id":"t33","name":"Urocyon minicephalus","rank":"species","status":"accepted","labelHtml":"<i>Urocyon minicephalus</i>","children":[]},
-            {"id":"t34","name":"Urocyon webbi","rank":"species","status":"accepted","labelHtml":"<i>Urocyon webbi</i>","children":[]}
+          {"id":"t30","name":"Urocyon","rank":"genus","status":"accepted","labelHtml":"<i>Urocyon</i>","species":999,"children":[
+            {"id":"t31","name":"Urocyon citrinus","rank":"species","status":"accepted","labelHtml":"<i>Urocyon citrinus</i>","species":999,"children":[]},
+            {"id":"t32","name":"Urocyon littoralis","rank":"species","status":"accepted","labelHtml":"<i>Urocyon littoralis</i>","species":999,"children":[]},
+            {"id":"t33","name":"Urocyon minicephalus","rank":"species","status":"accepted","labelHtml":"<i>Urocyon minicephalus</i>","species":999,"children":[]},
+            {"id":"t34","name":"Urocyon webbi","rank":"species","status":"accepted","labelHtml":"<i>Urocyon webbi</i>","species":999,"children":[]}
           ]}
         ]}
       ]}

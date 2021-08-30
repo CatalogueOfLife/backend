@@ -1,5 +1,6 @@
 package life.catalogue.db.tree;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.RankedID;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.concurrent.UsageCounter;
@@ -26,16 +27,24 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
   protected final String startID;
   protected final Set<Rank> ranks;
   protected final Rank lowestRank;
+  protected final Rank countRank;
+  protected final TaxonCounter taxonCounter;
   protected final SqlSessionFactory factory;
   protected SqlSession session;
   private final LinkedList<T> parents = new LinkedList<>();
   protected int level = 0;
+  protected int taxonCount;
   protected boolean exhausted;
+
+  protected AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory) {
+    this(datasetKey, sectorKey, startID, ranks, null, null, factory);
+  }
 
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
+   * @param countRank the rank to be used when counting with the taxonCounter
    */
-  protected AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory) {
+  protected AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory) {
     this.datasetKey = datasetKey;
     this.startID = startID;
     this.sectorKey = sectorKey;
@@ -49,6 +58,8 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
     } else {
       lowestRank = null;
     }
+    this.countRank = countRank;
+    this.taxonCounter = taxonCounter;
   }
 
   abstract Cursor<T> iterate();
@@ -86,7 +97,7 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
   }
 
   @Override
-  public void accept(T u) {
+  public final void accept(T u) {
     try {
       // send end signals
       while (!parents.isEmpty() && !parents.peekLast().getId().equals(getParentId(u))) {
@@ -98,6 +109,9 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
       }
       if (ranks.isEmpty() || ranks.contains(u.getRank())) {
         counter.inc(u);
+        if (countRank != null) {
+          taxonCount = taxonCounter.count(DSID.of(datasetKey, u.getId()), countRank);
+        }
         start(u);
         level++;
       }

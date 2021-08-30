@@ -2,26 +2,20 @@ package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.io.Resources;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.tree.JsonTreePrinter;
+import life.catalogue.db.tree.TaxonCounter;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
+import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.exporter.ExportManager;
-import life.catalogue.exporter.HtmlExporter;
-import life.catalogue.exporter.HtmlExporterSimple;
 
-import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.*;
@@ -30,10 +24,9 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
+import java.util.stream.StreamSupport;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -79,6 +72,7 @@ import io.dropwizard.auth.Auth;
 public class DatasetExportResource {
   private final DatasetImportDao diDao;
   private final SqlSessionFactory factory;
+  private final NameUsageSearchService searchService;
   private final ExportManager exportManager;
   private final WsServerConfig cfg;
   private static final Object[][] EXPORT_HEADERS = new Object[1][];
@@ -89,8 +83,9 @@ public class DatasetExportResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExportResource.class);
 
-  public DatasetExportResource(SqlSessionFactory factory, ExportManager exportManager, DatasetImportDao diDao, WsServerConfig cfg) {
+  public DatasetExportResource(SqlSessionFactory factory, NameUsageSearchService searchService, ExportManager exportManager, DatasetImportDao diDao, WsServerConfig cfg) {
     this.factory = factory;
+    this.searchService = searchService;
     this.exportManager = exportManager;
     this.diDao = diDao;
     this.cfg = cfg;
@@ -149,41 +144,6 @@ public class DatasetExportResource {
 
   @GET
   @VaryAccept
-  @Path("{id}")
-  @Produces(MediaType.TEXT_HTML)
-  public Response html(@PathParam("key") int key,
-                       @PathParam("id") String taxonID,
-                       @QueryParam("rank") Set<Rank> ranks,
-                       @QueryParam("full") boolean full) {
-    StreamingOutput stream;
-    stream = os -> {
-      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      if (full) {
-        HtmlExporter exporter = HtmlExporter.subtree(key, taxonID, ranks, cfg, factory, writer);
-        exporter.print();
-      } else {
-        HtmlExporterSimple exporter = HtmlExporterSimple.subtree(key, taxonID, ranks, cfg, factory, writer);
-        exporter.print();
-      }
-      writer.flush();
-    };
-    return Response.ok(stream).build();
-  }
-
-  @GET
-  @Path("css")
-  @Produces(MoreMediaTypes.TEXT_CSS)
-  public Response htmlCss() {
-    StreamingOutput stream = os -> {
-      InputStream in = Resources.stream("freemarker-templates/html/catalogue.css");
-      IOUtils.copy(in, os);
-      os.flush();
-    };
-    return Response.ok(stream).build();
-  }
-
-  @GET
-  @VaryAccept
   @Produces(MediaType.APPLICATION_JSON)
   @Path("{id}")
   public Object simpleName(@PathParam("key") int key,
@@ -191,12 +151,27 @@ public class DatasetExportResource {
                            @QueryParam("rank") Set<Rank> ranks,
                            @QueryParam("synonyms") boolean includeSynonyms,
                            @QueryParam("nested") boolean nested,
+                           @QueryParam("countRank") Rank countRank,
                            @Context SqlSession session) {
+    final TaxonCounter counter = countRank == null ? null : new TaxonCounter() {
+      final Page page = new Page(0,0);
+      @Override
+      public int count(DSID<String> taxonID, Rank countRank) {
+        NameUsageSearchRequest req = new NameUsageSearchRequest();
+        req.addFilter(NameUsageSearchParameter.DATASET_KEY, key);
+        req.addFilter(NameUsageSearchParameter.TAXON_ID, taxonID);
+        req.addFilter(NameUsageSearchParameter.RANK, countRank);
+        req.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+        var resp = searchService.search(req, page);
+        return resp.getTotal();
+      }
+    };
+
     if (nested) {
       StreamingOutput stream;
       stream = os -> {
         Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-        JsonTreePrinter.dataset(key, taxonID, ranks, factory, writer).print();
+        JsonTreePrinter.dataset(key, taxonID, ranks, countRank, counter, factory, writer).print();
         writer.flush();
       };
       return Response.ok(stream).build();
@@ -209,7 +184,23 @@ public class DatasetExportResource {
         Collections.sort(rs);
         lowestRank = rs.getLast();
       }
-      return session.getMapper(NameUsageMapper.class).processTreeSimple(key, null, taxonID, null, lowestRank, includeSynonyms);
+      var cursor = session.getMapper(NameUsageMapper.class).processTreeSimple(key, null, taxonID, null, lowestRank, includeSynonyms);
+      // add counts?
+      if (countRank != null) {
+        final DSID<String> id = DSID.of(key, taxonID);
+        return StreamSupport.stream(cursor.spliterator(), false)
+                            .map(sn -> new SNC(sn, counter.count(id.id(sn.getId()), countRank)));
+      }
+      return cursor;
+    }
+  }
+
+  static class SNC extends SimpleName {
+    public final int count;
+
+    public SNC(SimpleName sn, int count) {
+      super(sn);
+      this.count = count;
     }
   }
 
