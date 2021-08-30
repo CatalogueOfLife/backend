@@ -29,17 +29,8 @@ public class CursorBodyWriter implements MessageBodyWriter<Cursor<?>> {
   
   @Override
   public void writeTo(Cursor<?> c, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
-    out.write('[');
-    boolean first = true;
-    for (Object sn : c) {
-      if (first) {
-        first = false;
-      } else {
-        out.write(',');
-        out.write('\n');
-      }
-      ApiModule.MAPPER.writeValue(out, sn);
+    try (StreamBodyWriter.JsonArrayConsumer consumer = new StreamBodyWriter.JsonArrayConsumer(out)){
+      c.forEach(consumer);
     }
-    out.write(']');
   }
 }
