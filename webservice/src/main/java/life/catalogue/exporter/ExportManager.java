@@ -44,10 +44,22 @@ public class ExportManager {
     this.diDao = diDao;
   }
 
-  public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
+  /**
+   * Checks whether an export for the given request already exists and returns the key of the latest export
+   * or null if there is no exiting export.
+   */
+  public DatasetExport exists(ExportRequest req) {
     DatasetExport prev = dao.current(req);
-    if (prev != null && !req.isForce()) {
+    if (prev != null) {
       LOG.info("Existing {} export {} found for request {}", prev.getRequest().getFormat(), prev.getKey(), req);
+      return prev;
+    }
+    return null;
+  }
+
+  public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
+    DatasetExport prev = exists(req);
+    if (prev != null && !req.isForce()) {
       return prev.getKey();
     }
     validate(req);

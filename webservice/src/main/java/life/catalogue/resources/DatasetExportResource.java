@@ -5,6 +5,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -12,6 +13,7 @@ import life.catalogue.db.tree.JsonTreePrinter;
 import life.catalogue.db.tree.TaxonCounter;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.exporter.ExportManager;
@@ -19,6 +21,7 @@ import life.catalogue.exporter.ExportManager;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.*;
+import java.net.URI;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Set;
@@ -106,20 +109,31 @@ public class DatasetExportResource {
     MediaType.APPLICATION_OCTET_STREAM,
     MoreMediaTypes.APP_ZIP, MoreMediaTypes.APP_ZIP_ALT1, MoreMediaTypes.APP_ZIP_ALT2, MoreMediaTypes.APP_ZIP_ALT3
   })
-  public Response original(@PathParam("key") int key) {
-    File source = cfg.normalizer.source(key);
-    if (source.exists()) {
-      StreamingOutput stream = os -> {
-        InputStream in = new FileInputStream(source);
-        IOUtils.copy(in, os);
-        os.flush();
-      };
+  public Response download(@PathParam("key") int key, @QueryParam("format") DataFormat format) {
+    if (format == null) {
+      // The original archive in whatever format!
+      File source = cfg.normalizer.source(key);
+      if (source.exists()) {
+        StreamingOutput stream = os -> {
+          InputStream in = new FileInputStream(source);
+          IOUtils.copy(in, os);
+          os.flush();
+        };
 
-      return Response.ok(stream)
-        .type(MoreMediaTypes.APP_ZIP)
-        .build();
+        return Response.ok(stream)
+          .type(MoreMediaTypes.APP_ZIP)
+          .build();
+      }
+    } else {
+      // an already existing export in the given format
+      ExportRequest req = new ExportRequest(key, format);
+      DatasetExport export = exportManager.exists(req);
+      if (export != null) {
+        return Redirect.temporary(export.getDownload());
+      }
     }
-    throw new NotFoundException(key, "original archive for dataset " + key + " not found");
+
+    throw new NotFoundException(key, format == null ? "original" : format.getName().toLowerCase() + " archive for dataset " + key + " not found");
   }
 
   @GET
