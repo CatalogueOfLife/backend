@@ -117,8 +117,9 @@
       </#if>
     </gbif>
    </#if>
-   <#if completeness?has_content || confidence?has_content>
+   <#if completeness?has_content || confidence?has_content || version?has_content>
     <col>
+      <@tag name="version" value=version! indent=6 />
       <@tag name="completeness" value=completeness! indent=6 />
       <@tag name="confidence" value=confidence! indent=6 />
     </col>
