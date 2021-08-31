@@ -44,7 +44,7 @@ public class SimpleTemplateTest {
     d.put("title", "Catalogue of Life");
     d.put("alias", "CoL");
     d.put("type", DatasetType.TAXONOMIC);
-    d.put("released", LocalDate.of(1999, 5, 15));
+    d.put("issued", LocalDate.of(1999, 5, 15));
 
     assertEquals("col", SimpleTemplate.render("col", d));
     assertEquals("Catalogue of Life (CoL)", SimpleTemplate.render("{title} ({alias})", d));

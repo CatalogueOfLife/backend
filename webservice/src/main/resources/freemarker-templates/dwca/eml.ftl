@@ -56,7 +56,7 @@
   </#if>
   <@party role="editor" agents=editor />
   <@party role="contributor" agents=contributor />
-  <@tag name="pubDate" value=released! indent=4 />
+  <@tag name="pubDate" value=issued! indent=4 />
   <language>english</language>
   <#if description??>
   <abstract>

@@ -64,7 +64,7 @@ public class ApiUtils {
         .queryParam("origin", array(search.getOrigin()))
         .queryParam("modified", search.getModified())
         .queryParam("created", search.getCreated())
-        .queryParam("released", search.getIssued())
+        .queryParam("issued", search.getIssued())
         .queryParam("sortBy", search.getSortBy())
         .queryParam("reverse", search.isReverse());
   }

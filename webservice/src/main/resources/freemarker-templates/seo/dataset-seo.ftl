@@ -58,7 +58,7 @@
   </#if>
   "inLanguage": "eng",
   "version": "${version!}",
-  "datePublished": "${released!}",
+  "datePublished": "${issued!}",
   "publisher": {
     "@type": "Organization",
     "name": "Catalogue of Life (COL)",
