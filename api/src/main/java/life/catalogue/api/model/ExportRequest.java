@@ -125,7 +125,8 @@ public class ExportRequest {
   public String toString() {
     StringBuilder sb = new StringBuilder(format + " export of " + datasetKey);
     sb.append(" [excel=").append(excel)
-      .append(", synonyms=").append(synonyms);
+      .append(", synonyms=").append(synonyms)
+      .append(", bareNames=").append(bareNames);
     if (minRank != null) {
       sb.append(", minRank=").append(minRank);
     }

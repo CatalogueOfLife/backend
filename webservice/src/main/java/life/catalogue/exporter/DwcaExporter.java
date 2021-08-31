@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DwcaExporter extends ArchiveExporter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaExporter.class);
@@ -36,6 +37,7 @@ public class DwcaExporter extends ArchiveExporter {
   private TermWriter writer2;
   private final Archive arch = new Archive();
   private final UriBuilder logoUriBuilder;
+  private final AtomicInteger bareNameID = new AtomicInteger(1);
 
   public DwcaExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(DataFormat.DWCA, userKey, req, factory, cfg, imageService);
@@ -172,6 +174,8 @@ public class DwcaExporter extends ArchiveExporter {
 
   void write(BareName u) {
     write((NameUsage)u);
+    // GBIF validator requires the existence of taxonID for all records - we need to create an artificial, but unique key
+    writer.set(DwcTerm.taxonID, "BareName-" + bareNameID.getAndIncrement());
     writer.set(DwcTerm.taxonomicStatus, "unresolved"); // maps to doubtful in GBIF
   }
 
