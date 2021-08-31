@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -22,10 +24,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.*;
 import java.net.URI;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -172,8 +171,8 @@ public class DatasetExportResource {
       @Override
       public int count(DSID<String> taxonID, Rank countRank) {
         NameUsageSearchRequest req = new NameUsageSearchRequest();
-        req.addFilter(NameUsageSearchParameter.DATASET_KEY, key);
-        req.addFilter(NameUsageSearchParameter.TAXON_ID, taxonID);
+        req.addFilter(NameUsageSearchParameter.DATASET_KEY, taxonID.getDatasetKey());
+        req.addFilter(NameUsageSearchParameter.TAXON_ID, taxonID.getId());
         req.addFilter(NameUsageSearchParameter.RANK, countRank);
         req.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
         var resp = searchService.search(req, page);
@@ -203,18 +202,25 @@ public class DatasetExportResource {
       if (countRank != null) {
         final DSID<String> id = DSID.of(key, taxonID);
         return StreamSupport.stream(cursor.spliterator(), false)
-                            .map(sn -> new SNC(sn, counter.count(id.id(sn.getId()), countRank)));
+                            .map(sn -> new SNC(sn, countRank, counter.count(id.id(sn.getId()), countRank)));
       }
       return cursor;
     }
   }
 
   static class SNC extends SimpleName {
-    public final int count;
+    private final Rank rank;
+    private final int count;
 
-    public SNC(SimpleName sn, int count) {
+    public SNC(SimpleName sn, Rank rank, int count) {
       super(sn);
+      this.rank = rank;
       this.count = count;
+    }
+
+    @JsonAnyGetter
+    public Map<String, Object> getAny() {
+      return Map.of(JsonTreePrinter.countRankPropertyName(rank), count);
     }
   }
 

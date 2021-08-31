@@ -106,7 +106,8 @@ public class ImportManagerTest {
     MetricRegistry metrics = new MetricRegistry();
     final WsServerConfig cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sDao, dDao, indexService, imgService, releaseManager);
+    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sDao, dDao,
+      indexService, imgService, releaseManager, validator);
     manager.start();
   }
 

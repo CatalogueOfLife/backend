@@ -66,6 +66,10 @@ public class JsonTreePrinter extends SimpleUsageTreePrinter {
     return count;
   }
 
+  public static String countRankPropertyName(Rank rank) {
+    return rank.name().toLowerCase();
+  }
+
   protected void start(SimpleName u) throws IOException {
     u.setParent(null);
     if (last == EVENT.END) {
@@ -76,7 +80,7 @@ public class JsonTreePrinter extends SimpleUsageTreePrinter {
     String json = ApiModule.MAPPER.writeValueAsString(u);
     writer.write(json.substring(0, json.length()-1));
     if (countRank != null) {
-      writer.write(",\"" + countRank.name().toLowerCase() + "\":" + taxonCount);
+      writer.write(",\"" + countRankPropertyName(countRank) + "\":" + taxonCount);
     }
     writer.write(",\"children\":[");
     last = EVENT.START;

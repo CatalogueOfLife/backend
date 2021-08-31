@@ -75,14 +75,16 @@ public class ImportManager implements Managed {
   private final DecisionDao decisionDao;
   private final DatasetImportDao dao;
   private final ImageService imgService;
+  private final Validator validator;
   private final Timer importTimer;
   private final Counter failed;
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
       SqlSessionFactory factory, NameIndex index, SectorDao sDao, DecisionDao decisionDao,
-      NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager) {
+      NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager, Validator validator) {
     this.cfg = cfg;
     this.factory = factory;
+    this.validator = validator;
     this.releaseManager = releaseManager;
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken, cfg.importer.githubTokenGeoff);
     this.index = index;
@@ -422,7 +424,7 @@ public class ImportManager implements Managed {
         ds.remove(Setting.DATA_ACCESS);
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
-      ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, indexService, imgService, sDao, decisionDao,
+      ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, indexService, imgService, sDao, decisionDao,
           new StartNotifier() {
             @Override
             public void started() {

@@ -49,7 +49,7 @@ public class NameUsageSearchResource {
 
   @GET
   public ResultPage<NameUsageBase> list(@QueryParam("nidx") Integer namesIndexID,
-                                        @Valid Page page,
+                                        @Valid @BeanParam Page page,
                                         @Context SqlSession session) {
     Page p = page == null ? new Page() : page;
     if (namesIndexID == null) {

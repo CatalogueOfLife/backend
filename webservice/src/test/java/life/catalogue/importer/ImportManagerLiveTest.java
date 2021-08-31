@@ -93,7 +93,7 @@ public class ImportManagerLiveTest {
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.passThru(), sDao, dDao, indexService, new ImageServiceFS(cfg.img), releaseManager);
+        NameIndexFactory.passThru(), sDao, dDao, indexService, new ImageServiceFS(cfg.img), releaseManager, validator);
     importManager.start();
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());

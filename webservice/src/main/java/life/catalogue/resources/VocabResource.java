@@ -44,6 +44,7 @@ public class VocabResource {
   private final List<String> vocabNames;
   
   public VocabResource() {
+    LOG.info("Scan for available vocabularies");
     Map<String, Class<Enum>> enums = Maps.newHashMap();
     try {
       for (Package p : Lists.newArrayList(DatasetOrigin.class.getPackage(), Rank.class.getPackage())) {

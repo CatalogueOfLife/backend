@@ -317,7 +317,8 @@ public class WsServer extends Application<WsServerConfig> {
       secdao, decdao,
       indexService,
       imgService,
-      releaseManager
+      releaseManager,
+      validator
     );
     env.lifecycle().manage(ManagedUtils.stopOnly(importManager));
     ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());

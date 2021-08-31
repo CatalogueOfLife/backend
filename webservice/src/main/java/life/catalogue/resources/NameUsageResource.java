@@ -50,7 +50,7 @@ public class NameUsageResource {
                                         @QueryParam("q") String q,
                                         @QueryParam("rank") Rank rank,
                                         @QueryParam("nidx") Integer namesIndexID,
-                                        @Valid Page page,
+                                        @Valid @BeanParam Page page,
                                         @Context SqlSession session) {
     Page p = page == null ? new Page() : page;
     NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);

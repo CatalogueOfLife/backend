@@ -68,6 +68,7 @@ public class ImportJob implements Runnable {
   private final NameIndex index;
   private final NameUsageIndexService indexService;
   private final ImageService imgService;
+  private final Validator validator;
   private final DistributedArchiveService distributedArchiveService;
   
   private final StartNotifier notifier;
@@ -76,12 +77,13 @@ public class ImportJob implements Runnable {
   
   ImportJob(ImportRequest req, DatasetWithSettings d,
             WsServerConfig cfg,
-            DownloadUtil downloader, SqlSessionFactory factory, NameIndex index,
+            DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, Validator validator,
             NameUsageIndexService indexService, ImageService imgService, SectorDao sDao, DecisionDao decisionDao,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
             BiConsumer<ImportRequest, Exception> errorCallback
     ) {
+    this.validator = validator;
     this.dataset = Preconditions.checkNotNull(d);
     this.datasetKey = d.getKey();
     this.req = req;
@@ -229,7 +231,6 @@ public class ImportJob implements Runnable {
     try {
       final boolean doImport = prepareSourceData(sourceDir);
       checkIfCancelled();
-      Validator validator = null;
       if (doImport) {
         LOG.info("Normalizing {}", datasetKey);
         updateState(ImportState.PROCESSING);
