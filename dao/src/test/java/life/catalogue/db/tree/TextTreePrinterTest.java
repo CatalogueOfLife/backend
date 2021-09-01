@@ -30,13 +30,13 @@ public class TextTreePrinterTest {
   
   @Rule
   public final TestDataRule testDataRule = TestDataRule.tree2();
-  
+
   @Test
   public void print() throws IOException {
     Writer writer = new StringWriter();
     int count = TextTreePrinter.dataset(TestDataRule.TREE.key, PgSetupRule.getSqlSessionFactory(), writer).print();
     assertEquals(25, count);
-    String expected = IOUtils.toString(Resources.stream("trees/tree.tree"), StandardCharsets.UTF_8);
+    String expected = IOUtils.toString(Resources.stream("trees/tree2.tree"), StandardCharsets.UTF_8);
     assertEquals(expected, writer.toString());
   }
 
