@@ -3,6 +3,7 @@ package life.catalogue.db.tree;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.db.mapper.SectorMapper;
 
 import org.gbif.nameparser.api.Rank;
@@ -100,11 +101,16 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
       writer.write(" ");
       writer.write(u.getAuthorship());
     }
+    writer.write(" [");
+    Rank r = ObjectUtils.coalesce(u.getRank(), Rank.UNRANKED);
+    writer.write(r.name().toLowerCase());
+    writer.write("]");
+
     var infos = infos(u);
     if (!infos.isEmpty()) {
-      writer.write(" [");
-      writer.write(String.join("; ", infos));
-      writer.write("]");
+      writer.write(" {");
+      writer.write(String.join("|", infos));
+      writer.write("}");
     }
 
     writer.write('\n');
@@ -120,9 +126,6 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
    */
   private List<String> infos(SimpleName u){
     List<String> infos = new ArrayList<>();
-    if (u.getRank() != null) {
-      infos.add(u.getRank().name().toLowerCase());
-    }
     if (countRank != null) {
       infos.add(JsonTreePrinter.countRankPropertyName(countRank) + "=" + taxonCount);
     }

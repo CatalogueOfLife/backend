@@ -73,13 +73,6 @@ public class DatasetExportResource {
     this.cfg = cfg;
   }
 
-  public static class ExportQueryParams {
-    @QueryParam("taxonID") String taxonID;
-    @QueryParam("rank") Set<Rank> ranks;
-    @QueryParam("synonyms") boolean synonyms;
-    @QueryParam("countBy") Rank countBy;
-  }
-
   @POST
   public UUID export(@PathParam("key") int key, @Valid ExportRequest req, @Auth User user) {
     if (req == null) req = new ExportRequest();
@@ -123,6 +116,13 @@ public class DatasetExportResource {
     }
 
     throw new NotFoundException(key, format == null ? "original" : format.getName().toLowerCase() + " archive for dataset " + key + " not found");
+  }
+
+  public static class ExportQueryParams {
+    @QueryParam("taxonID") String taxonID;
+    @QueryParam("rank") Set<Rank> ranks;
+    @QueryParam("synonyms") boolean synonyms;
+    @QueryParam("countBy") Rank countBy;
   }
 
   @GET
