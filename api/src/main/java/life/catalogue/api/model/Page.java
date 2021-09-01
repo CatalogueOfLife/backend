@@ -79,7 +79,7 @@ public class Page {
    * Shortcut returning the offset + limit
    */
   @JsonIgnore
-  public int getLimitWithOffest() {
+  public int getLimitWithOffset() {
     return offset + limit;
   }
   

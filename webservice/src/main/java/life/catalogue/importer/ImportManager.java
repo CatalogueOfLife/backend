@@ -134,13 +134,13 @@ public class ImportManager implements Managed {
 
     } else {
       // query historical ones at least to get the total
-      if (running.size() >= page.getLimitWithOffest()) {
+      if (running.size() >= page.getLimitWithOffset()) {
         // we can answer the request from the queue alone, so limit=0 to get the total count!
         historical = dao.list(datasetKey, historicalStates, new Page(0, 0));
 
       } else {
         int offset = Math.max(0, page.getOffset() - running.size());
-        int limit = Math.min(page.getLimit(), page.getLimitWithOffest() - running.size());
+        int limit = Math.min(page.getLimit(), page.getLimitWithOffset() - running.size());
         historical = dao.list(datasetKey, historicalStates, new Page(offset, limit));
       }
     }

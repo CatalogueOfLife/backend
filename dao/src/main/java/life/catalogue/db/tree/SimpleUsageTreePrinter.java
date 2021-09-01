@@ -11,6 +11,7 @@ import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 public abstract class SimpleUsageTreePrinter extends AbstractTreePrinter<SimpleName> {
+
   /**
    * @param datasetKey
    * @param sectorKey  optional sectorKey to restrict printed tree to
@@ -18,8 +19,8 @@ public abstract class SimpleUsageTreePrinter extends AbstractTreePrinter<SimpleN
    * @param ranks
    * @param factory
    */
-  protected SimpleUsageTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory) {
-    super(datasetKey, sectorKey, startID, ranks, countRank, taxonCounter, factory);
+  protected SimpleUsageTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory) {
+    super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory);
   }
 
   @Override
@@ -30,7 +31,7 @@ public abstract class SimpleUsageTreePrinter extends AbstractTreePrinter<SimpleN
   @Override
   Cursor<SimpleName> iterate() {
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    return num.processTreeSimple(datasetKey, sectorKey, startID, null, lowestRank, true);
+    return num.processTreeSimple(datasetKey, sectorKey, startID, null, lowestRank, synonyms);
   }
 
 }

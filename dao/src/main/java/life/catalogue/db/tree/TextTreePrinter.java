@@ -9,7 +9,9 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,25 +50,28 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  private TextTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, ranks, null, null, factory);
+  private TextTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory);
     this.writer = writer;
   }
-  
+
+  /**
+   * Prints the entire dataset
+   */
   public static TextTreePrinter dataset(int datasetKey, SqlSessionFactory factory, Writer writer) {
-    return new TextTreePrinter(datasetKey, null, null, null, factory, writer);
+    return new TextTreePrinter(datasetKey, null, null, true, null, null, null, factory, writer);
   }
   
-  public static TextTreePrinter dataset(int datasetKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
-    return new TextTreePrinter(datasetKey, null, startID, ranks, factory, writer);
+  public static TextTreePrinter dataset(int datasetKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    return new TextTreePrinter(datasetKey, null, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
   }
 
-  public static TextTreePrinter dataset(int datasetKey, String startID, Rank minRank, SqlSessionFactory factory, Writer writer) {
+  public static TextTreePrinter dataset(int datasetKey, String startID, boolean synonyms, Rank minRank, SqlSessionFactory factory, Writer writer) {
     Set<Rank> above = null;
     if (minRank != null) {
       above = Arrays.stream(Rank.values()).filter(r -> r.ordinal() <= minRank.ordinal() || r==Rank.UNRANKED).collect(Collectors.toSet());
     }
-    return new TextTreePrinter(datasetKey, null, startID, above, factory, writer);
+    return new TextTreePrinter(datasetKey, null, startID, synonyms, above, null, null, factory, writer);
   }
 
   /**
@@ -75,7 +80,7 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
   public static TextTreePrinter sector(final DSID<Integer> sectorKey, SqlSessionFactory factory, Writer writer) {
     try (SqlSession session = factory.openSession(true)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      return new TextTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), null, factory, writer);
+      return new TextTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), true, null, null, null, factory, writer);
     }
   }
 
@@ -95,9 +100,10 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
       writer.write(" ");
       writer.write(u.getAuthorship());
     }
-    if (u.getRank() != null) {
+    var infos = infos(u);
+    if (!infos.isEmpty()) {
       writer.write(" [");
-      writer.write(u.getRank().name().toLowerCase());
+      writer.write(String.join("; ", infos));
       writer.write("]");
     }
 
@@ -107,5 +113,20 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
   protected void end(SimpleName u) {
     //nothing
   }
-  
+
+  /**
+   * @return list of infos to be appended in brackets after the name
+   * @param u
+   */
+  private List<String> infos(SimpleName u){
+    List<String> infos = new ArrayList<>();
+    if (u.getRank() != null) {
+      infos.add(u.getRank().name().toLowerCase());
+    }
+    if (countRank != null) {
+      infos.add(JsonTreePrinter.countRankPropertyName(countRank) + "=" + taxonCount);
+    }
+    return infos;
+  }
+
 }

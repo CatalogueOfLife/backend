@@ -30,21 +30,20 @@ public class JsonTreePrinter extends SimpleUsageTreePrinter {
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  protected JsonTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, ranks, countRank, taxonCounter, factory);
+  protected JsonTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory);
     this.writer = writer;
   }
 
+  /**
+   * Prints the entire dataset
+   */
   public static JsonTreePrinter dataset(int datasetKey, SqlSessionFactory factory, Writer writer) {
-    return new JsonTreePrinter(datasetKey, null, null, null, null, null, factory, writer);
+    return new JsonTreePrinter(datasetKey, null, null, true, null, null, null, factory, writer);
   }
 
-  public static JsonTreePrinter dataset(int datasetKey, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    return new JsonTreePrinter(datasetKey, null, null, null, countRank, taxonCounter, factory, writer);
-  }
-
-  public static JsonTreePrinter dataset(int datasetKey, String startID, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    return new JsonTreePrinter(datasetKey, null, startID, ranks, countRank, taxonCounter, factory, writer);
+  public static JsonTreePrinter dataset(int datasetKey, @Nullable String startID, boolean synonyms, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    return new JsonTreePrinter(datasetKey, null, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
   }
 
   /**
@@ -53,7 +52,7 @@ public class JsonTreePrinter extends SimpleUsageTreePrinter {
   public static JsonTreePrinter sector(final DSID<Integer> sectorKey, SqlSessionFactory factory, Writer writer) {
     try (SqlSession session = factory.openSession(true)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      return new JsonTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), null, null, null, factory, writer);
+      return new JsonTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), true, null, null, null, factory, writer);
     }
   }
 

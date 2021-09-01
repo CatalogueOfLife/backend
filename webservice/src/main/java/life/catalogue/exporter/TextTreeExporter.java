@@ -32,7 +32,7 @@ public class TextTreeExporter extends DatasetExporter {
     // do we have a full dataset export request?
     f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".txt");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
-      TextTreePrinter printer = TextTreePrinter.dataset(req.getDatasetKey(), req.getTaxonID(), req.getMinRank(), factory, writer);
+      TextTreePrinter printer = TextTreePrinter.dataset(req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getMinRank(), factory, writer);
       int cnt = printer.print();
       LOG.info("Written {} taxa to text tree for dataset {}", cnt, req.getDatasetKey());
       counter.set(printer.getCounter());

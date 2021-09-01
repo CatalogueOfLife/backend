@@ -3,10 +3,7 @@ package life.catalogue.common.tax;
 import com.google.common.collect.Lists;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -71,4 +68,14 @@ public class RankUtils {
     }
     return null;
   }
+
+  public static Rank lowestRank(Collection<Rank> ranks) {
+    if (ranks != null) {
+      LinkedList<Rank> rs = new LinkedList<>(ranks);
+      Collections.sort(rs);
+      return rs.getLast();
+    }
+    return null;
+  }
+
 }

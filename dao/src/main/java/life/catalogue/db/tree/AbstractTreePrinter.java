@@ -3,6 +3,7 @@ package life.catalogue.db.tree;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.RankedID;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.common.tax.RankUtils;
 import life.catalogue.concurrent.UsageCounter;
 
 import org.gbif.nameparser.api.Rank;
@@ -25,6 +26,7 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
   protected final int datasetKey;
   protected final Integer sectorKey;
   protected final String startID;
+  protected final boolean synonyms; // whether synonyms should be included or not
   protected final Set<Rank> ranks;
   protected final Rank lowestRank;
   protected final Rank countRank;
@@ -36,28 +38,22 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
   protected int taxonCount;
   protected boolean exhausted;
 
-  protected AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory) {
-    this(datasetKey, sectorKey, startID, ranks, null, null, factory);
+  protected AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, SqlSessionFactory factory) {
+    this(datasetKey, sectorKey, startID, synonyms, ranks, null, null, factory);
   }
 
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    * @param countRank the rank to be used when counting with the taxonCounter
    */
-  protected AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory) {
+  protected AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory) {
     this.datasetKey = datasetKey;
     this.startID = startID;
     this.sectorKey = sectorKey;
     this.factory = factory;
+    this.synonyms = synonyms;
     this.ranks = ObjectUtils.coalesce(ranks, Collections.EMPTY_SET);
-    if (!this.ranks.isEmpty()) {
-      // spot lowest rank
-      LinkedList<Rank> rs = new LinkedList<>(this.ranks);
-      Collections.sort(rs);
-      lowestRank = rs.getLast();
-    } else {
-      lowestRank = null;
-    }
+    this.lowestRank = RankUtils.lowestRank(ranks);
     this.countRank = countRank;
     this.taxonCounter = taxonCounter;
   }
