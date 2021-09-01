@@ -76,6 +76,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final static TestData APPLE = new TestData("apple", 11, 3, 2, 3, 11, 12);
   public final static TestData FISH = new TestData("fish", 100, 2, 4, 3, 100, 101, 102);
   public final static TestData TREE = new TestData("tree", 11, 2, 2, 3, 11);
+  public final static TestData TREE2 = new TestData("tree2", 11, 2, 2, 3, 11);
   public final static TestData DRAFT = new TestData("draft", 3, 1, 2, 3);
   public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, 3);
 
@@ -136,6 +137,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public static TestDataRule tree() {
     return new TestDataRule(TREE);
+  }
+
+  public static TestDataRule tree2() {
+    return new TestDataRule(TREE2);
   }
 
   public static TestDataRule draft() {

@@ -10,6 +10,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
@@ -28,13 +29,13 @@ public class TextTreePrinterTest {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public final TestDataRule testDataRule = TestDataRule.tree();
+  public final TestDataRule testDataRule = TestDataRule.tree2();
   
   @Test
   public void print() throws IOException {
     Writer writer = new StringWriter();
     int count = TextTreePrinter.dataset(TestDataRule.TREE.key, PgSetupRule.getSqlSessionFactory(), writer).print();
-    assertEquals(24, count);
+    assertEquals(25, count);
     String expected = IOUtils.toString(Resources.stream("trees/tree.tree"), StandardCharsets.UTF_8);
     assertEquals(expected, writer.toString());
   }
@@ -49,10 +50,12 @@ public class TextTreePrinterTest {
         return cnt.getAndIncrement();
       }
     };
-    int count = TextTreePrinter.dataset(TestDataRule.TREE.key, null, false, null, Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer).print();
-    assertEquals(20, count);
-    System.out.println(writer.toString());
+    int count = TextTreePrinter.dataset(TestDataRule.TREE.key, null, false, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer)
+                               .print();
+    System.out.println(writer);
+    assertEquals(5, count);
     String expected = IOUtils.toString(Resources.stream("trees/treeWithCounts.tree"), StandardCharsets.UTF_8);
     assertEquals(expected, writer.toString());
   }
+
 }

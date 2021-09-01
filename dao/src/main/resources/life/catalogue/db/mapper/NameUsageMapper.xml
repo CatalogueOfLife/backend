@@ -446,7 +446,7 @@
     </choose>
     AND NOT u.is_synonym
     <if test="lowestRank">
-      AND n.rank &lt;= #{lowestRank}::rank
+      AND n.rank &lt;= #{lowestRank}::rank OR n.rank = 'UNRANKED'::rank
     </if>
   </sql>
 
@@ -463,7 +463,7 @@
         AND u.sector_key = #{sectorKey}
       </if>
       <if test="lowestRank">
-        AND n.rank &lt;= #{lowestRank}::rank
+        AND n.rank &lt;= #{lowestRank}::rank OR n.rank = 'UNRANKED'::rank
       </if>
     </where>
   </sql>
