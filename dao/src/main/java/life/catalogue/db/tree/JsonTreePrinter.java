@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 /**
  * Print an entire dataset in a nested SimpleName json array.
  */
-public class JsonTreePrinter extends SimpleUsageTreePrinter {
+public class JsonTreePrinter extends AbstractTreePrinter {
   private static final int indentation = 2;
   private final Writer writer;
   private EVENT last;

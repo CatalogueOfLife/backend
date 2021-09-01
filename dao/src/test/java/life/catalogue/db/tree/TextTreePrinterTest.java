@@ -50,7 +50,7 @@ public class TextTreePrinterTest {
         return cnt.getAndIncrement();
       }
     };
-    int count = TextTreePrinter.dataset(TestDataRule.TREE.key, null, false, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer)
+    int count = TextTreePrinter.dataset(TestDataRule.TREE.key, null, false, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, true, PgSetupRule.getSqlSessionFactory(), writer)
                                .print();
     System.out.println(writer);
     assertEquals(5, count);

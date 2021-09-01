@@ -130,10 +130,11 @@ public class DatasetExportResource {
   @Produces(MediaType.TEXT_PLAIN)
   public Response textTree(@PathParam("key") int key,
                            @BeanParam ExportQueryParams params,
+                           @QueryParam("showID") boolean showID,
                            @Context SqlSession session) {
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      TextTreePrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, buildCounter(params.countBy), factory, writer)
+      TextTreePrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, buildCounter(params.countBy), showID, factory, writer)
                      .print();
       writer.flush();
     };
@@ -197,20 +198,16 @@ public class DatasetExportResource {
     };
   }
 
-
-  private TaxonCounter buildCounter(Rank countRank) {
-    return countRank == null ? null : new TaxonCounter() {
+  private TaxonCounter buildCounter(Rank cr) {
+    return cr == null ? null : (taxonID, countRank) -> {
       final Page page = new Page(0,0);
-      @Override
-      public int count(DSID<String> taxonID, Rank countRank) {
-        NameUsageSearchRequest req = new NameUsageSearchRequest();
-        req.addFilter(NameUsageSearchParameter.DATASET_KEY, taxonID.getDatasetKey());
-        req.addFilter(NameUsageSearchParameter.TAXON_ID, taxonID.getId());
-        req.addFilter(NameUsageSearchParameter.RANK, countRank);
-        req.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-        var resp = searchService.search(req, page);
-        return resp.getTotal();
-      }
+      NameUsageSearchRequest req = new NameUsageSearchRequest();
+      req.addFilter(NameUsageSearchParameter.DATASET_KEY, taxonID.getDatasetKey());
+      req.addFilter(NameUsageSearchParameter.TAXON_ID, taxonID.getId());
+      req.addFilter(NameUsageSearchParameter.RANK, countRank);
+      req.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+      var resp = searchService.search(req, page);
+      return resp.getTotal();
     };
   }
 }

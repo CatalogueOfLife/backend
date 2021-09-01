@@ -41,30 +41,32 @@ import org.apache.ibatis.session.SqlSessionFactory;
  * Absinthium viridifolium var. rupestre (L.) Besser
  * </pre>
  */
-public class TextTreePrinter extends SimpleUsageTreePrinter {
+public class TextTreePrinter extends AbstractTreePrinter {
   public static final String SYNONYM_SYMBOL = "*";
   public static final String BASIONYM_SYMBOL = "$";
   
   private static final int indentation = 2;
+  private final boolean showIDs;
   private final Writer writer;
 
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  private TextTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+  private TextTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, boolean showIDs, SqlSessionFactory factory, Writer writer) {
     super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory);
     this.writer = writer;
+    this.showIDs=showIDs;
   }
 
   /**
    * Prints the entire dataset
    */
   public static TextTreePrinter dataset(int datasetKey, SqlSessionFactory factory, Writer writer) {
-    return new TextTreePrinter(datasetKey, null, null, true, null, null, null, factory, writer);
+    return new TextTreePrinter(datasetKey, null, null, true, null, null, null, false, factory, writer);
   }
   
-  public static TextTreePrinter dataset(int datasetKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    return new TextTreePrinter(datasetKey, null, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
+  public static TextTreePrinter dataset(int datasetKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, boolean showIDs, SqlSessionFactory factory, Writer writer) {
+    return new TextTreePrinter(datasetKey, null, startID, synonyms, ranks, countRank, taxonCounter, showIDs, factory, writer);
   }
 
   public static TextTreePrinter dataset(int datasetKey, String startID, boolean synonyms, Rank minRank, SqlSessionFactory factory, Writer writer) {
@@ -72,7 +74,7 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
     if (minRank != null) {
       above = Arrays.stream(Rank.values()).filter(r -> r.ordinal() <= minRank.ordinal() || r==Rank.UNRANKED).collect(Collectors.toSet());
     }
-    return new TextTreePrinter(datasetKey, null, startID, synonyms, above, null, null, factory, writer);
+    return new TextTreePrinter(datasetKey, null, startID, synonyms, above, null, null, false, factory, writer);
   }
 
   /**
@@ -81,7 +83,7 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
   public static TextTreePrinter sector(final DSID<Integer> sectorKey, SqlSessionFactory factory, Writer writer) {
     try (SqlSession session = factory.openSession(true)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      return new TextTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), true, null, null, null, factory, writer);
+      return new TextTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), true, null, null, null, false, factory, writer);
     }
   }
 
@@ -128,6 +130,9 @@ public class TextTreePrinter extends SimpleUsageTreePrinter {
     List<String> infos = new ArrayList<>();
     if (countRank != null) {
       infos.add(JsonTreePrinter.countRankPropertyName(countRank) + "=" + taxonCount);
+    }
+    if (showIDs) {
+      infos.add("ID=" + u.getId());
     }
     return infos;
   }

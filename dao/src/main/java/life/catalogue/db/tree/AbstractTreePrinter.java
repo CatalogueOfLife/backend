@@ -2,9 +2,12 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.RankedID;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.concurrent.UsageCounter;
+
+import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -21,7 +24,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 /**
  * Print an entire dataset in a nested way using start/end calls similar to SAX
  */
-public abstract class AbstractTreePrinter<T extends RankedID> implements Consumer<T> {
+public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
   private final UsageCounter counter = new UsageCounter();
   protected final int datasetKey;
   protected final Integer sectorKey;
@@ -33,7 +36,7 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
   protected final TaxonCounter taxonCounter;
   protected final SqlSessionFactory factory;
   protected SqlSession session;
-  private final LinkedList<T> parents = new LinkedList<>();
+  private final LinkedList<SimpleName> parents = new LinkedList<>();
   protected int level = 0;
   protected int taxonCount;
   protected boolean exhausted;
@@ -58,9 +61,10 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
     this.taxonCounter = taxonCounter;
   }
 
-  abstract Cursor<T> iterate();
-
-  abstract String getParentId(T usage);
+  Cursor<SimpleName> iterate() {
+    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+    return num.processTreeSimple(datasetKey, sectorKey, startID, null, lowestRank, synonyms);
+  }
 
   /**
    * @return number of written lines, i.e. name usages
@@ -74,7 +78,7 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
       exhausted = true;
       // send final end signals
       while (!parents.isEmpty()) {
-        T p = parents.removeLast();
+        SimpleName p = parents.removeLast();
         if (ranks.isEmpty() || ranks.contains(p.getRank())) {
           end(p);
           level--;
@@ -93,11 +97,11 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
   }
 
   @Override
-  public final void accept(T u) {
+  public final void accept(SimpleName u) {
     try {
       // send end signals
-      while (!parents.isEmpty() && !parents.peekLast().getId().equals(getParentId(u))) {
-        T p = parents.removeLast();
+      while (!parents.isEmpty() && !parents.peekLast().getId().equals(u.getParent())) {
+        SimpleName p = parents.removeLast();
         if (ranks.isEmpty() || ranks.contains(p.getRank())) {
           end(p);
           level--;
@@ -118,9 +122,9 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
     }
   }
 
-  protected abstract void start(T u) throws IOException;
+  protected abstract void start(SimpleName u) throws IOException;
 
-  protected abstract void end(T u) throws IOException;
+  protected abstract void end(SimpleName u) throws IOException;
 
   protected abstract void flush() throws IOException;
 

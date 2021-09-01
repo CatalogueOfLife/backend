@@ -70,7 +70,7 @@ public class RankUtils {
   }
 
   public static Rank lowestRank(Collection<Rank> ranks) {
-    if (ranks != null) {
+    if (ranks != null && !ranks.isEmpty()) {
       LinkedList<Rank> rs = new LinkedList<>(ranks);
       Collections.sort(rs);
       return rs.getLast();
