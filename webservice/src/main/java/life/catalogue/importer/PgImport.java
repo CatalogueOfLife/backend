@@ -180,7 +180,7 @@ public class PgImport implements Callable<Boolean> {
    * @param update
    */
   public static DatasetWithSettings updateMetadata(DatasetWithSettings d, DatasetWithSettings update, Validator validator) {
-    Set<String> nonNullProps = Set.of("title", "license");
+    Set<String> nonNullProps = Set.of("title", "alias", "license");
     try {
       for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
         Object val = prop.getReadMethod().invoke(update.getDataset());
