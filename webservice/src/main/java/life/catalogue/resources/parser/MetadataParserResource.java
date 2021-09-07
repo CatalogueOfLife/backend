@@ -22,7 +22,7 @@ import javax.ws.rs.core.MediaType;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path("/parser/metadata")
-@Produces(MediaType.APPLICATION_JSON)
+@Produces({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML, MediaType.APPLICATION_XML, MediaType.TEXT_XML})
 public class MetadataParserResource {
 
   private static Optional<Dataset> parseAny(InputStream stream, MetadataFormat format) throws Exception {
