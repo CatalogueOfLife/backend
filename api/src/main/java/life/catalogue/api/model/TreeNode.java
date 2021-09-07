@@ -21,7 +21,6 @@ public abstract class TreeNode implements DSID<String> {
   public static enum Type {
     CATALOGUE,
     SOURCE;
-
   }
 
   /**
@@ -39,6 +38,7 @@ public abstract class TreeNode implements DSID<String> {
   private String parentId;
   private Rank rank;
   private TaxonomicStatus status;
+  private Integer count;
   private int childCount;
   private List<SpeciesEstimate> estimates;
   private Integer sectorKey;
@@ -141,13 +141,21 @@ public abstract class TreeNode implements DSID<String> {
   public void setStatus(TaxonomicStatus status) {
     this.status = status;
   }
-  
+
   public int getChildCount() {
     return childCount;
   }
-  
+
   public void setChildCount(int childCount) {
     this.childCount = childCount;
+  }
+
+  public Integer getCount() {
+    return count;
+  }
+  
+  public void setCount(Integer count) {
+    this.count = count;
   }
   
   public List<SpeciesEstimate> getEstimates() {
@@ -224,22 +232,23 @@ public abstract class TreeNode implements DSID<String> {
     if (!(o instanceof TreeNode)) return false;
     TreeNode treeNode = (TreeNode) o;
     return childCount == treeNode.childCount &&
-      Objects.equals(datasetKey, treeNode.datasetKey) &&
-      Objects.equals(id, treeNode.id) &&
-      Objects.equals(parentId, treeNode.parentId) &&
-      rank == treeNode.rank &&
-      status == treeNode.status &&
-      Objects.equals(estimates, treeNode.estimates) &&
-      Objects.equals(sectorKey, treeNode.sectorKey) &&
-      Objects.equals(sectorDatasetKey, treeNode.sectorDatasetKey) &&
-      Objects.equals(sectorRoot, treeNode.sectorRoot) &&
-      Objects.equals(decision, treeNode.decision) &&
-      Objects.equals(datasetSectors, treeNode.datasetSectors);
+           Objects.equals(count, treeNode.count) &&
+           Objects.equals(datasetKey, treeNode.datasetKey) &&
+           Objects.equals(id, treeNode.id) &&
+           Objects.equals(parentId, treeNode.parentId) &&
+          rank == treeNode.rank &&
+          status == treeNode.status &&
+           Objects.equals(estimates, treeNode.estimates) &&
+           Objects.equals(sectorKey, treeNode.sectorKey) &&
+           Objects.equals(sectorDatasetKey, treeNode.sectorDatasetKey) &&
+           Objects.equals(sectorRoot, treeNode.sectorRoot) &&
+           Objects.equals(decision, treeNode.decision) &&
+           Objects.equals(datasetSectors, treeNode.datasetSectors);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, rank, status, childCount, estimates, sectorKey, sectorDatasetKey, sectorRoot, decision, datasetSectors);
+    return Objects.hash(datasetKey, id, parentId, rank, status, count, childCount, estimates, sectorKey, sectorDatasetKey, sectorRoot, decision, datasetSectors);
   }
 
   @Override

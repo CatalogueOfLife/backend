@@ -3,6 +3,7 @@ package life.catalogue.db.tree;
 import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.Resources;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.TestDataRule;
 
 import java.io.IOException;

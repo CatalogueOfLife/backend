@@ -2,16 +2,15 @@ package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.*;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.tree.JsonTreePrinter;
-import life.catalogue.db.tree.TaxonCounter;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.Redirect;
@@ -22,7 +21,8 @@ import life.catalogue.exporter.ExportManager;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.*;
-import java.util.*;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.validation.Valid;
@@ -134,7 +134,7 @@ public class DatasetExportResource {
                            @Context SqlSession session) {
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      TextTreePrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, buildCounter(params.countBy), showID, factory, writer)
+      TextTreePrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, showID, factory, writer)
                      .print();
       writer.flush();
     };
@@ -149,7 +149,7 @@ public class DatasetExportResource {
                            @Context SqlSession session) {
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      JsonTreePrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, buildCounter(params.countBy), factory, writer)
+      JsonTreePrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer)
                      .print();
       writer.flush();
     };
@@ -198,16 +198,4 @@ public class DatasetExportResource {
     };
   }
 
-  private TaxonCounter buildCounter(Rank cr) {
-    return cr == null ? null : (taxonID, countRank) -> {
-      final Page page = new Page(0,0);
-      NameUsageSearchRequest req = new NameUsageSearchRequest();
-      req.addFilter(NameUsageSearchParameter.DATASET_KEY, taxonID.getDatasetKey());
-      req.addFilter(NameUsageSearchParameter.TAXON_ID, taxonID.getId());
-      req.addFilter(NameUsageSearchParameter.RANK, countRank);
-      req.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-      var resp = searchService.search(req, page);
-      return resp.getTotal();
-    };
-  }
 }

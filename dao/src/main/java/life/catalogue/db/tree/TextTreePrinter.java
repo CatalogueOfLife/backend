@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.mapper.SectorMapper;
 
 import org.gbif.nameparser.api.Rank;

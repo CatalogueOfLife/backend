@@ -1,12 +1,12 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.RankedID;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.concurrent.UsageCounter;
 
+import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.gbif.nameparser.api.Rank;

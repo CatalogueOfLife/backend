@@ -288,7 +288,7 @@ public class WsServer extends Application<WsServerConfig> {
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), validator);
-    TreeDao trDao = new TreeDao(getSqlSessionFactory());
+    TreeDao trDao = new TreeDao(getSqlSessionFactory(), searchService);
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
     // exporter

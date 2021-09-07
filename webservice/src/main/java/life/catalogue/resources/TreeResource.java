@@ -13,6 +13,8 @@ import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,10 +48,11 @@ public class TreeResource {
   public ResultPage<TreeNode> root(@PathParam("key") int datasetKey,
                                    @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                    @QueryParam("type") TreeNode.Type type,
+                                   @QueryParam("countBy") Rank countBy,
                                    @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                    @QueryParam("limit") Integer limit,
                                    @QueryParam("offset") Integer offset) {
-    return tree.root(datasetKey, catalogueKey, inclExtinct, type, page(limit, offset));
+    return tree.root(datasetKey, catalogueKey, inclExtinct, countBy, type, page(limit, offset));
   }
   
   @GET
@@ -59,8 +62,9 @@ public class TreeResource {
                                 @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                 @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                 @QueryParam("insertPlaceholder") boolean placeholder,
+                                @QueryParam("countBy") Rank countBy,
                                 @QueryParam("type") TreeNode.Type type) {
-    return tree.classification(DSID.of(datasetKey, id), catalogueKey, inclExtinct, placeholder, type);
+    return tree.classification(DSID.of(datasetKey, id), catalogueKey, inclExtinct, countBy, placeholder, type);
   }
 
   @DELETE
@@ -79,9 +83,10 @@ public class TreeResource {
                                        @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                        @QueryParam("insertPlaceholder") boolean placeholder,
                                        @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
+                                       @QueryParam("countBy") Rank countBy,
                                        @QueryParam("type") TreeNode.Type type,
                                        @QueryParam("limit") Integer limit,
                                        @QueryParam("offset") Integer offset) {
-    return tree.children(DSID.of(datasetKey, id), catalogueKey, placeholder, inclExtinct, type, page(limit, offset));
+    return tree.children(DSID.of(datasetKey, id), catalogueKey, placeholder, countBy, inclExtinct, type, page(limit, offset));
   }
 }

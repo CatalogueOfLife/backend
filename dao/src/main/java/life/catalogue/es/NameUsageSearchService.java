@@ -1,15 +1,23 @@
 package life.catalogue.es;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 
 import java.util.Collections;
 
+import life.catalogue.api.vocab.TaxonomicStatus;
+
+import life.catalogue.dao.TaxonCounter;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public interface NameUsageSearchService {
+public interface NameUsageSearchService extends TaxonCounter {
 
   Logger LOG = LoggerFactory.getLogger(NameUsageSearchService.class);
 
@@ -21,6 +29,19 @@ public interface NameUsageSearchService {
    * @return
    */
   NameUsageSearchResponse search(NameUsageSearchRequest nameSearchRequest, Page page);
+
+
+  @Override
+  default int count(DSID<String> taxonID, Rank countRank) {
+    final Page page = new Page(0,0);
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(NameUsageSearchParameter.DATASET_KEY, taxonID.getDatasetKey());
+    req.addFilter(NameUsageSearchParameter.TAXON_ID, taxonID.getId());
+    req.addFilter(NameUsageSearchParameter.RANK, countRank);
+    req.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    var resp = search(req, page);
+    return resp.getTotal();
+  }
 
   /**
    * @return a pass through search service that never returns any results. Good for tests

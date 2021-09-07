@@ -21,14 +21,17 @@ import org.slf4j.LoggerFactory;
 public class TreeDao {
   private static final Logger LOG = LoggerFactory.getLogger(TreeDao.class);
   private final SqlSessionFactory factory;
+  private final TaxonCounter taxonCounter;
 
-  public TreeDao(SqlSessionFactory factory) {
+  public TreeDao(SqlSessionFactory factory, TaxonCounter taxonCounter) {
     this.factory = factory;
+    this.taxonCounter = taxonCounter;
   }
 
-  public ResultPage<TreeNode> root(int datasetKey, int catalogueKey, boolean extinct, TreeNode.Type type, Page page) {
+  public ResultPage<TreeNode> root(int datasetKey, int catalogueKey, boolean extinct, Rank countBy, TreeNode.Type type, Page page) {
     try (SqlSession session = factory.openSession()){
       List<TreeNode> result = session.getMapper(TreeMapper.class).root(catalogueKey, type, datasetKey, extinct, page);
+      addCounts(null, countBy, result, false);
       return new ResultPage<>(page, result, () -> session.getMapper(TaxonMapper.class).countRoot(datasetKey));
     }
   }
@@ -36,7 +39,7 @@ public class TreeDao {
   /**
    * @return classification starting with the given start id
    */
-  public List<TreeNode> classification(DSID<String> id, int projectKey, boolean inclExtinct, boolean placeholder, TreeNode.Type type) {
+  public List<TreeNode> classification(DSID<String> id, int projectKey, boolean inclExtinct, Rank countBy, boolean placeholder, TreeNode.Type type) {
     RankID key = RankID.parseID(id);
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
@@ -73,6 +76,7 @@ public class TreeDao {
       }
       addPlaceholderSectors(projectKey, classification, type, session);
       updateSectorRootFlags(classification);
+      addCounts(null, countBy, classification, false);
       return classification;
     }
   }
@@ -131,7 +135,7 @@ public class TreeDao {
     return nodes;
   }
 
-  public ResultPage<TreeNode> children(final DSID<String> id, final int projectKey, final boolean placeholder, boolean inclExtinct, final TreeNode.Type type, final Page page) {
+  public ResultPage<TreeNode> children(final DSID<String> id, final int projectKey, final boolean placeholder, Rank countBy, boolean inclExtinct, final TreeNode.Type type, final Page page) {
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
@@ -171,6 +175,7 @@ public class TreeDao {
       result.forEach(c -> c.setParentId(id.getId()));
       addPlaceholderSectors(projectKey, result, type, session);
       updateSectorRootFlags(tnParent.getSectorKey(), result);
+      addCounts(parent, countBy, result, true);
       return new ResultPage<>(page, result, countSupplier);
     }
   }
@@ -224,8 +229,30 @@ public class TreeDao {
     tn.setId(RankID.buildID(parentID, rank));
     tn.setParentId(parentPlaceholderRank == null ? parentID : RankID.buildID(parentID, parentPlaceholderRank));
     tn.setRank(rank);
-    tn.setChildCount(childCount);
+    tn.setCount(childCount);
     tn.setStatus(TaxonomicStatus.ACCEPTED);
     return tn;
+  }
+
+  private void addCounts(@Nullable RankID parent, @Nullable Rank countBy, List<TreeNode> nodes, boolean calcPlaceholders) {
+    if (countBy != null) {
+      final String pid = parent == null ? null : parent.getId();
+      int all = 0;
+      TreeNode placeholder = null;
+      for (TreeNode n : nodes) {
+        if (n.isPlaceholder() && !calcPlaceholders) {
+          placeholder = n;
+        } else if (!n.isPlaceholder()) {
+          n.setCount(taxonCounter.count(parent.id(n.getId()), countBy));
+          all =+ n.getCount();
+        } else {
+          //TODO: calculate placeholders for the classification which can be multiple placeholders...
+        }
+      }
+      if (placeholder != null) {
+        int parentCount = taxonCounter.count(parent.id(pid), countBy);
+        placeholder.setCount(parentCount - all);
+      }
+    }
   }
 }
