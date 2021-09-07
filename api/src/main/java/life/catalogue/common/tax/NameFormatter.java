@@ -47,6 +47,13 @@ public class NameFormatter {
    * The full concatenated authorship for parsed names including the sanctioning author.
    */
   public static String authorship(Name n) {
+    return authorship(n, true);
+  }
+
+  /**
+   * The full concatenated authorship for parsed names including the sanctioning author.
+   */
+  public static String authorship(Name n, boolean includeNotes) {
     StringBuilder sb = new StringBuilder();
     if (n.hasBasionymAuthorship()) {
       sb.append("(");
@@ -66,7 +73,7 @@ public class NameFormatter {
         sb.append(n.getSanctioningAuthor());
       }
     }
-    if (n.getNomenclaturalNote() != null) {
+    if (includeNotes && n.getNomenclaturalNote() != null) {
       if (n.hasAuthorship()) {
         sb.append(" ");
       }

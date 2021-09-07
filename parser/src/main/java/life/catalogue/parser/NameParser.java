@@ -118,7 +118,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
 
         // we might have already parsed an authorship from the scientificName string which does not match up?
         if (pnu.getName().hasAuthorship()) {
-          String prevAuthorship = NameFormatter.authorship(pnu.getName());
+          String prevAuthorship = NameFormatter.authorship(pnu.getName(), false);
           if (!prevAuthorship.equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
             v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
             LOG.info("Different authorship found in name {} than in parsed version: [{}] vs [{}]",

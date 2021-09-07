@@ -28,6 +28,21 @@ public class NameParserTest {
     assertAuthorship("DC.", null, "DC.");
   }
 
+
+  @Test
+  public void inconsistentAuthorship() throws Exception {
+    Name n = new Name();
+    n.setScientificName("Boyeria vinosa (Say, 1840)");
+    n.setAuthorship("(Say, 1840)");
+    n.setGenus("Boyeria");
+    n.setSpecificEpithet("vinosa");
+    n.setRank(Rank.SPECIES);
+    n.setId("957");
+    IssueContainer issues = new IssueContainer.Simple();
+    parser.parse(n, issues);
+    assertFalse(issues.hasIssues());
+  }
+
   @Test
   public void parseVirusConfig() throws Exception {
     // no configs yet
