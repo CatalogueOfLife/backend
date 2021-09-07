@@ -224,22 +224,6 @@ public class InterpreterBaseTest {
     assertNull(pnu.get().getTaxonomicNote());
     n = pnu.get().getName();
     assertFalse(v.hasIssues());
-
-    assertEquals("Cerastium ligusticum subsp. granulatum", n.getScientificName());
-    assertEquals("(Huter et al.) P. D. Sell & Whitehead", n.getAuthorship());
-    assertNull(n.getNomenclaturalNote());
-    assertEquals(Rank.SUBSPECIES, n.getRank());
-    assertNull(n.getUninomial());
-    assertEquals("Cerastium", n.getGenus());
-    assertNull(n.getInfragenericEpithet());
-    assertEquals("ligusticum", n.getSpecificEpithet());
-    assertEquals("granulatum", n.getInfraspecificEpithet());
-    assertEquals("(Huter et al.) P. D. Sell & Whitehead", n.getAuthorship());
-    assertNull(n.getBasionymAuthorship().getYear());
-    assertEquals("Huter", n.getBasionymAuthorship().getAuthors().get(0));
-    assertEquals("al.", n.getBasionymAuthorship().getAuthors().get(1));
-    assertEquals("P.D.Sell", n.getCombinationAuthorship().getAuthors().get(0));
-    assertEquals("Whitehead", n.getCombinationAuthorship().getAuthors().get(1));
   }
 
   @Test
