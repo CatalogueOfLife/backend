@@ -30,7 +30,9 @@ import static org.junit.Assert.*;
       assertNull(AuthorshipNormalizer.normalize(" "));
       assertNull(AuthorshipNormalizer.normalize("."));
       assertNull(AuthorshipNormalizer.normalize(" (-) "));
-      
+
+      assertEquals("qul", comp.normalize("Quél."));
+
       assertEquals("doring", AuthorshipNormalizer.normalize("Döring"));
       assertEquals("muller", AuthorshipNormalizer.normalize("Müller"));
       assertEquals("muller", AuthorshipNormalizer.normalize("Mueller"));

@@ -1,24 +1,17 @@
 package life.catalogue.parser;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
-import life.catalogue.common.tax.AuthorshipComparator;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
-import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.ParserConfigs;
 import org.gbif.nameparser.api.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Optional;
@@ -27,6 +20,15 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+
 /**
  * Wrapper around the GBIF Name parser to deal with the col Name class and API.
  */
@@ -34,7 +36,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
   public static final NameParser PARSER = new NameParser();
   private static final NameParserGBIF PARSER_INTERNAL = new NameParserGBIF();
-  private static final AuthorshipComparator authorshipComparator = new AuthorshipComparator();
   private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:])\\s*");
   private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[])\\s*");
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");

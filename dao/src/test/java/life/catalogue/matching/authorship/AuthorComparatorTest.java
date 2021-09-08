@@ -128,6 +128,8 @@ public class AuthorComparatorTest {
   
   @Test
   public void testCompare() throws Exception {
+    assertAuth("Quél.", null, Equality.EQUAL, "Quel.", null);
+
     assertAuth("Debreczy & I. Rácz", null, Equality.EQUAL, "Rácz", null);
     assertAuth("DC. ex Lam. et DC.", null, Equality.EQUAL, "DC.", null);
     

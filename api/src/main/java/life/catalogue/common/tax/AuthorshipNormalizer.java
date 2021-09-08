@@ -129,10 +129,10 @@ public class AuthorshipNormalizer {
     }
     // normalize filius
     x = FIL.matcher(x).replaceAll("$1 filius");
-    // simplify umlauts transliterated properly with additional e
-    x = TRANSLITERATIONS.matcher(x).replaceAll("$1");
     // fold to ascii
     x = foldToAscii(x);
+    // simplify umlauts transliterated properly with additional e
+    x = TRANSLITERATIONS.matcher(x).replaceAll("$1");
     // replace all punctuation but commas
     x = PUNCTUATION.matcher(x).replaceAll(" ");
     // norm space
