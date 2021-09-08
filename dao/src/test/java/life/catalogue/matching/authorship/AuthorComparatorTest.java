@@ -128,6 +128,7 @@ public class AuthorComparatorTest {
   
   @Test
   public void testCompare() throws Exception {
+    // https://github.com/gbif/checklistbank/issues/196
     assertAuth("Quél.", null, Equality.EQUAL, "Quel.", null);
 
     assertAuth("Debreczy & I. Rácz", null, Equality.EQUAL, "Rácz", null);
