@@ -617,7 +617,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   @JsonIgnore
   public boolean isIndetermined() {
     return isParsed() && (
-        rank.isInfragenericStrictly() && infragenericEpithet == null && specificEpithet == null
+        rank.isInfragenericStrictly() && infragenericEpithet == null && uninomial == null
         || rank.isSpeciesOrBelow() && specificEpithet == null
         || rank.isCultivarRank() && cultivarEpithet == null
         || rank.isInfraspecific() && !rank.isCultivarRank() && infraspecificEpithet == null

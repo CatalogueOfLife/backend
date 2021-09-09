@@ -52,14 +52,14 @@ public class SectorSyncIT {
   final static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   final static TestDataRule dataRule = TestDataRule.draft();
   final static PgImportRule importRule = PgImportRule.create(
-      NomCode.BOTANICAL,
-        DataFormat.ACEF,  1,
-        DataFormat.COLDP, 0,
-      NomCode.ZOOLOGICAL,
-        DataFormat.ACEF,  5, 6, 11,
-        DataFormat.COLDP, 2, 4,
-      NomCode.VIRUS,
-        DataFormat.ACEF,  14
+    NomCode.BOTANICAL,
+      DataFormat.ACEF,  1,
+      DataFormat.COLDP, 0,
+    NomCode.ZOOLOGICAL,
+      DataFormat.ACEF,  5, 6, 11,
+      DataFormat.COLDP, 2, 4, 14,
+    NomCode.VIRUS,
+      DataFormat.ACEF,  14
   );
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   static IndexName match;
@@ -243,6 +243,22 @@ public class SectorSyncIT {
     assertEquals(id.getDatasetKey(), v.getDatasetKey());
     assertNotNull(v.getSourceDatasetKey());
     assertEquals(expectedSourceId, v.getSourceId());
+  }
+
+  /**
+   * https://github.com/gbif/checklistbank/issues/187
+   */
+  @Test
+  public void culex() throws Exception {
+    print(Datasets.COL);
+    print(datasetKey(14, DataFormat.COLDP));
+
+    NameUsageBase src = getByName(datasetKey(14, DataFormat.COLDP), Rank.ORDER, "Diptera");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    createSector(Sector.Mode.ATTACH, src, trg);
+
+    syncAll();
+    assertTree("cat14b.txt");
   }
 
   @Test

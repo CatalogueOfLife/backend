@@ -1,0 +1,10 @@
+ID	basionymID	scientificName	authorship	rank	genus	infragenericEpithet	specificEpithet	infraspecificEpithet	cultivarEpithet	referenceID	pageReferenceID	publishedInPage	publishedInYear	code	status	link	remarks
+Culicidae-Culicinae-Culicini-Culex		Culex		species	Culex									zoological			remark
+Culicidae-Culicinae-Culicini-Culex-americanus-d0be074c0		Culex americanus	(Neveu-Lemaire, 1902)	species	Culex		americanus					23	1902	zoological			remark
+Culicidae-Culicinae-Culicini-Culex-Culex-abnormalis-7ccf8431f		Culex (Culex) abnormalis	Lane, 1936	species	Culex	Culex	abnormalis					189	1936	zoological	http://purl.obolibrary.org/obo/NOMEN_0000285		remark
+Culicidae-Culicinae-Culicini-Culex-Culex-tarsalis-d434e7ec4		Culex (Culex) tarsalis	Coquillett, 1896	species	Culex	Culex	tarsalis			7049		43	1896	zoological	http://purl.obolibrary.org/obo/NOMEN_0000224		remark
+Culicidae-Culicinae-Culicini-Culex-Culex-zombaensis-59922a358		Culex (Culex) zombaensis	Theobald, 1901	species	Culex	Culex	zombaensis			2623		143	1901	zoological	http://purl.obolibrary.org/obo/NOMEN_0000224		remark
+Culicidae-Culicinae-Culicini-Culex-Culiciomyia-azurini-31c010ed1		Culex (Culiciomyia) azurini	Toma, Miyagi & Cabrera, 1984	species	Culex	Culiciomyia	azurini					172	1984	zoological	http://purl.obolibrary.org/obo/NOMEN_0000224		remark
+Culicidae-Culicinae-Culicini-Culex-Culiciomyia-bahri-a9315f8bf		Culex (Culiciomyia) bahri	(Edwards, 1914)	species	Culex	Culiciomyia	bahri			18639		79	1914	zoological			remark
+Culicidae-Culicinae-Culicini-Culex-Tinolestes-latisquama-d434e7ec4		Culex (Tinolestes) latisquama	(Coquillett, 1906)	species	Culex	Tinolestes	latisquama			25630		185	1906	zoological			remark
+Lauxaniidae-Trigonometopus-Culex-canus-bc9e70284		Trigonometopus (Culex) canus	Meijere, 1916	species	Trigonometopus	Culex	canus					204	1916	zoological	http://purl.obolibrary.org/obo/NOMEN_0000224		remark

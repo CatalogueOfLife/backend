@@ -8,6 +8,8 @@ import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.NomStatus;
 import org.gbif.nameparser.api.*;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -104,6 +106,16 @@ public class NameParserTest {
           .nomNote("ined.")
           .status(NomStatus.MANUSCRIPT)
           .nothingElse();
+  }
+
+  @Test
+  @Ignore
+  public void parsePhrases() throws Exception {
+    assertName("Lepidoptera sp. JGP0404", "Lepidoptera sp.")
+      .monomial("Lepidoptera", Rank.SPECIES)
+      .type(NameType.INFORMAL)
+      .status(NomStatus.MANUSCRIPT)
+      .nothingElse();
   }
   
   @Test

@@ -46,7 +46,14 @@ public class NameTest extends SerdeTestBase<Name> {
     n2.setRank(null);
     assertEquals(n1, n2);
   }
-  
+
+  @Test
+  public void isIndetermined() throws Exception {
+    Name n = new Name();
+    assertFalse(n.isIndetermined());
+    //TODO: add more tests at various ranks incl infragenerics
+  }
+
   @Test
   public void testAuthorship() throws JsonProcessingException {
     Name n = TestEntityGenerator.newName();

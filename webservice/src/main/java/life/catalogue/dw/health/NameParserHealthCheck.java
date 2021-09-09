@@ -3,9 +3,13 @@ package life.catalogue.dw.health;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.Lists;
+
+import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.parser.NameParser;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.util.Optional;
 
@@ -20,7 +24,7 @@ public class NameParserHealthCheck extends HealthCheck {
   
   @Override
   protected Result check() throws Exception {
-    Optional<ParsedNameUsage> result = parser.parse("Abies alba (L.) Mill. sec Döring 1999");
+    Optional<ParsedNameUsage> result = parser.parse("Abies alba (L.) Mill. sec Döring 1999", Rank.SPECIES, null, IssueContainer.VOID);
     if (result.isPresent()) {
       Name name = result.get().getName();
       if (name.isBinomial() &&
