@@ -1,5 +1,6 @@
 package life.catalogue.db.tree;
 
+import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.io.UnixCmdUtils;
@@ -59,7 +60,7 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
       throw new IllegalArgumentException("Diffs need to be between different datasets");
     }
     if (userDiffs.contains(userKey)) {
-      throw new IllegalArgumentException("Diffs need to be between different datasets");
+      throw new TooManyRequestsException("Diffs need to be between different datasets");
     }
 
     try {
