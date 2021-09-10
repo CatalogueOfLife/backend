@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import javax.annotation.Nullable;
+
 public abstract class BaseDiffService<K> {
   private static final Logger LOG = LoggerFactory.getLogger(BaseDiffService.class);
 
@@ -126,8 +128,12 @@ public abstract class BaseDiffService<K> {
     return InputStreamUtils.readEntireStream(ps.getInputStream());
   }
 
-  private String label(K key, int attempt) {
-    return "dataset_" + key + "#" + attempt;
+  protected String label(K key) {
+    return label(key, null);
+  }
+
+  private String label(K key, @Nullable Integer attempt) {
+    return "dataset_" + key + (attempt == null ? "" : "#" + attempt);
   }
 
   /**
@@ -140,11 +146,19 @@ public abstract class BaseDiffService<K> {
   @VisibleForTesting
   protected BufferedReader udiff(K key, int[] atts, int context, Function<Integer, File> getFile) {
     File[] files = attemptToFiles(key, atts, getFile);
+    return udiff(files[0], label(key,atts[0]), files[1], label(key,atts[1]), context, true);
+  }
+
+  private String input(File f, boolean unzip) {
+    return unzip ? String.format("<(gunzip -c %s)", f.getAbsolutePath()) : f.getAbsolutePath();
+  }
+  protected BufferedReader udiff(File f1, String label1, File f2, String label2, int context, boolean unzip) {
     try {
-      String cmd = String.format("export LC_CTYPE=en_US.UTF-8; diff --label %s --label %s -B -d -U %s <(gunzip -c %s) <(gunzip -c %s)",
-        label(key,atts[0]), label(key,atts[1]), context, files[0].getAbsolutePath(), files[1].getAbsolutePath());
-      // we write the diff to a temp file as we get into problems with the process not returning when streaming the results directly. Especially when http connections are aborted.
-      File tmp = File.createTempFile("coldiff-"+key, ".diff");
+      String cmd = String.format("export LC_CTYPE=en_US.UTF-8; diff --label %s --label %s -B -d -U %s %s %s",
+        label1, label2, context, input(f1, unzip), input(f2, unzip));
+      // we write the diff to a temp file as we get into problems with the process not returning when streaming the results directly.
+      // Especially when http connections are aborted.
+      File tmp = File.createTempFile("coldiff-", ".diff");
       tmp.deleteOnExit();
       LOG.debug("Execute: {}", cmd);
       ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd + "; exit 0");
@@ -153,7 +167,7 @@ public abstract class BaseDiffService<K> {
       Process ps = pb.start();
       // limit to 10s, see https://stackoverflow.com/questions/37043114/how-to-stop-a-command-being-executed-after-4-5-seconds-through-process-builder/37065167#37065167
       if (!ps.waitFor(10, TimeUnit.SECONDS)) {
-        LOG.warn("Diff for {} attempts {} has timed out after 10s", key, atts);
+        LOG.warn("Diff between {} and {} has timed out after 10s", f1.getName(), f2.getName());
         ps.destroy(); // make sure we leave no process behind
       }
       int status = ps.waitFor();

@@ -90,6 +90,14 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     }
   }
 
+  public T getOr404(K key) {
+    T obj = get(key);
+    if (obj == null) {
+      throw NotFoundException.notFound(entityClass, key);
+    }
+    return obj;
+  }
+
   private void validate(T obj) throws ConstraintViolationException {
     var violations = validator.validate(obj);
     if (!violations.isEmpty()) {

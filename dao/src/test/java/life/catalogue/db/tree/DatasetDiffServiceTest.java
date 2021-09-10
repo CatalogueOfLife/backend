@@ -3,7 +3,11 @@ package life.catalogue.db.tree;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.FileMetricsDatasetDao;
 
+import java.awt.*;
 import java.io.File;
+import java.util.List;
+
+import life.catalogue.db.TestDataRule;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -12,9 +16,11 @@ import org.junit.Test;
 
 public class DatasetDiffServiceTest extends BaseDiffServiceTest<Integer> {
   static int attemptCnt;
+  final DatasetDiffService diffService;
 
   public DatasetDiffServiceTest() {
-    diff = new DatasetDiffService(factory(), new FileMetricsDatasetDao(factory(), treeRepoRule.getRepo()));
+    diffService = new DatasetDiffService(factory(), new FileMetricsDatasetDao(factory(), treeRepoRule.getRepo()));
+    diff = diffService;
   }
 
   @Override
@@ -42,5 +48,21 @@ public class DatasetDiffServiceTest extends BaseDiffServiceTest<Integer> {
 
     watch.stop();
     System.out.println(watch);
+  }
+
+  @Test
+  public void diffItisNamesWithOther() throws Exception {
+    var br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, null, 3, null, null, true);
+    String udiff = IOUtils.toString(br);
+    System.out.println(udiff);
+
+    Assert.assertTrue(udiff.startsWith("--- dataset_"));
+
+    // with root
+    br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, List.of("t10", "t30"), 3, null, null, true);
+    udiff = IOUtils.toString(br);
+    System.out.println(udiff);
+
+    Assert.assertTrue(udiff.startsWith("--- dataset_"));
   }
 }

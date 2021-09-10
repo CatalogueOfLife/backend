@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +58,7 @@ public abstract class FileMetricsDao<K> {
    */
   public void updateNames(K dataKey, K storeKey, int attempt) {
     try (SqlSession session = factory.openSession(true);
-         NamesWriter nHandler = new NamesWriter(namesFile(storeKey, attempt))
+         NamesWriter nHandler = new NamesWriter(namesFile(storeKey, attempt), true)
     ){
       NameMapper nm = session.getMapper(NameMapper.class);
 
@@ -85,15 +86,15 @@ public abstract class FileMetricsDao<K> {
     LOG.info("Deleted all file metrics for {} {}", type, key);
   }
 
-  static class NamesWriter implements Consumer<String>, AutoCloseable {
+  public static class NamesWriter implements Consumer<String>, AutoCloseable {
     public int counter = 0;
     private final File f;
     private final BufferedWriter w;
     
-    NamesWriter(File f) {
+    public NamesWriter(File f, boolean zip) {
       this.f=f;
       try {
-        w = UTF8IoUtils.writerFromGzipFile(f);
+        w = zip ? UTF8IoUtils.writerFromGzipFile(f) : UTF8IoUtils.writerFromFile(f);
         
       } catch (IOException e) {
         LOG.error("Failed to write to {}", f.getAbsolutePath());
