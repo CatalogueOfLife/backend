@@ -10,6 +10,8 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.tree.AbstractTreePrinter;
+import life.catalogue.db.tree.JsonFlatPrinter;
 import life.catalogue.db.tree.JsonTreePrinter;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.jersey.MoreMediaTypes;
@@ -145,12 +147,18 @@ public class DatasetExportResource {
   @VaryAccept
   @Produces(MediaType.APPLICATION_JSON)
   public Response simpleName(@PathParam("key") int key,
-                           @BeanParam ExportQueryParams params,
-                           @Context SqlSession session) {
+                             @QueryParam("flat") boolean flat,
+                             @BeanParam ExportQueryParams params,
+                             @Context SqlSession session) {
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      JsonTreePrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer)
-                     .print();
+      AbstractTreePrinter printer;
+      if (flat) {
+        printer = JsonFlatPrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
+      } else {
+        printer = JsonTreePrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
+      }
+      printer.print();
       writer.flush();
     };
     return Response.ok(stream).build();
@@ -163,10 +171,11 @@ public class DatasetExportResource {
   @Path("{id}")
   public Response simpleNameLegacy(@PathParam("key") int key,
                              @PathParam("id") String taxonID,
+                             @QueryParam("flat") boolean flat,
                              @BeanParam ExportQueryParams params,
                              @Context SqlSession session) {
     params.taxonID = taxonID;
-    return simpleName(key, params, session);
+    return simpleName(key, flat, params, session);
   }
 
   @GET
