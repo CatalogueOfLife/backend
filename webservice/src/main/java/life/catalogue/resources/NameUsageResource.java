@@ -116,7 +116,6 @@ public class NameUsageResource {
   }
 
   @GET
-  @Timed
   @Path("search")
   public ResultPage<NameUsageWrapper> searchDataset(@PathParam("key") int datasetKey,
                                                     @BeanParam NameUsageSearchRequest query,
@@ -135,7 +134,6 @@ public class NameUsageResource {
   }
 
   @GET
-  @Timed
   @Path("suggest")
   public NameUsageSuggestResponse suggestDataset(@PathParam("key") int datasetKey,
                                                  @BeanParam NameUsageSuggestRequest query,

@@ -62,7 +62,6 @@ public class NameUsageSearchResource {
   }
 
   @GET
-  @Timed
   @Path("search")
   public ResultPage<NameUsageWrapper> search(@BeanParam NameUsageSearchRequest query, @Valid @BeanParam Page page, @Context UriInfo uri) throws InvalidQueryException {
     if (uri != null) {

@@ -2,30 +2,22 @@ package life.catalogue.resources;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
-import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.codahale.metrics.annotation.Timed;
-
-import io.swagger.v3.oas.annotations.Hidden;
 
 @Path("/dataset/{key}/taxon")
 @Produces(MediaType.APPLICATION_JSON)
@@ -95,7 +87,6 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
 
   @GET
-  @Timed
   @Path("{id}/info")
   public TaxonInfo info(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     TaxonInfo info = dao.getTaxonInfo(DSID.of(datasetKey, id));
