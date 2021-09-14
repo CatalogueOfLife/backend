@@ -229,7 +229,7 @@ public class TreeDao {
     tn.setId(RankID.buildID(parentID, rank));
     tn.setParentId(parentPlaceholderRank == null ? parentID : RankID.buildID(parentID, parentPlaceholderRank));
     tn.setRank(rank);
-    tn.setCount(childCount);
+    tn.setChildCount(childCount);
     tn.setStatus(TaxonomicStatus.ACCEPTED);
     return tn;
   }
