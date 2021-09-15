@@ -34,7 +34,9 @@ import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -77,8 +79,8 @@ public class NormalizerTreeIT {
     //dwcaIds = IntStream.empty();
     //dwcaIds = IntStream.of(31, 32, 33, 34);
     //coldpIds = IntStream.empty();
-
     return Stream.concat(
+        //List.<Object[]>of(new Object[] {DataFormat.DWCA, 17}).stream(),
         acefIds.mapToObj(i -> new Object[] {DataFormat.ACEF, i}),
         Stream.concat(
             dwcaIds.mapToObj(i -> new Object[] {DataFormat.DWCA, i}),
