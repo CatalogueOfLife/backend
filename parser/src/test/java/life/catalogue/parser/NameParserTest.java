@@ -9,6 +9,8 @@ import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.NomStatus;
 import org.gbif.nameparser.api.*;
 
+import org.gbif.nameparser.util.NameFormatter;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -314,7 +316,14 @@ public class NameParserTest {
     // fix hybrids formulas
     assertName("Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", "Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", NameType.HYBRID_FORMULA)
         .nothingElse();
-    
+  }
+
+  @Test
+  public void phraseNames() throws Exception {
+    assertName("Acacia sp. Bigge Island (A.A. Mitchell 3436) WA Herbarium", "Acacia sp. Bigge Island (A.A. Mitchell 3436) WA Herbarium", NameType.INFORMAL)
+      .species("Acacia", null)
+      .unparsed("Bigge Island (A.A. Mitchell 3436) WA Herbarium")
+      .nothingElse();
   }
   
   
@@ -416,7 +425,7 @@ public class NameParserTest {
               assertNull(n.getUnparsed());
               break;
             case REMARKS:
-              assertNull(n.getUnparsed());
+              assertNull(n.getRemarks());
           }
         }
       }

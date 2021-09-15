@@ -341,12 +341,23 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Uses an existing name instance to populate from a ParsedName instance
    */
   private static ParsedNameUsage fromParsedName(Name n, ParsedName pn, IssueContainer issues) {
-    // if we parsed strains we do not keep them in the Name class
-    if (!StringUtils.isBlank(pn.getStrain())) {
-      if (pn.getUnparsed() == null) {
-        pn.setState(ParsedName.State.PARTIAL);
-        pn.setUnparsed(pn.getStrain());
+    // if we parsed phrases we do not keep them in the Name class
+    if (!StringUtils.isBlank(pn.getPhrase())) {
+      if (pn.getUnparsed() != null) {
+        LOG.warn("Partially parsed name >{}< contains a phrase >{}< and an unparsed portion >{}<", n.getScientificName(), pn.getPhrase(), pn.getUnparsed());
       }
+      pn.setState(ParsedName.State.PARTIAL);
+      StringBuilder sb = new StringBuilder();
+      sb.append(pn.getPhrase());
+      if (pn.getVoucher() != null) {
+        sb.append(" (")
+          .append(pn.getVoucher())
+          .append(")");
+      }
+      if (pn.getNominatingParty() != null) {
+        sb.append(" ").append(pn.getNominatingParty());
+      }
+      n.setUnparsed(sb.toString());
     }
 
     ParsedNameUsage pnu = new ParsedNameUsage();

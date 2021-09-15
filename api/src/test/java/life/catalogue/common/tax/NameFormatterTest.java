@@ -38,4 +38,16 @@ public class NameFormatterTest {
     assertEquals("(D.Reinhardt, 1923) Morrison & Hendrix, 1967", NameFormatter.authorship(n));
   }
 
+  @Test
+  public void unparsed() throws Exception {
+    // a phrase name
+    Name n = new Name();
+    n.setGenus("Acacia");
+    n.setRank(Rank.SPECIES);
+    n.setUnparsed("Bigge Island (A.A. Mitchell 3436) WA Herbarium");
+    assertNull(n.getAuthorship());
+    assertNull(NameFormatter.authorship(n));
+    assertEquals("Acacia sp. Bigge Island (A.A. Mitchell 3436) WA Herbarium", NameFormatter.scientificName(n));
+  }
+
 }

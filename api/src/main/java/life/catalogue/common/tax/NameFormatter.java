@@ -222,6 +222,12 @@ public class NameFormatter {
       }
     }
 
+    // unparsed
+    if (n.getUnparsed() != null) {
+      sb.append(" ")
+        .append(n.getUnparsed());
+    }
+
     // add nom status
     //if (n.getNomenclaturalNote() != null) {
     //  appendIfNotEmpty(sb, ", ")
