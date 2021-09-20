@@ -16,20 +16,20 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 public class Partitioner {
   private static final Logger LOG = LoggerFactory.getLogger(Partitioner.class);
   
-  public static String partition(int datasetKey) {
+  public static String partitionName(int datasetKey) {
     return datasetKey > 100000 ? "plazi" : String.valueOf(datasetKey);
   }
   
-  public static String partition(DatasetScoped key) {
-    return partition(key.getDatasetKey());
+  public static String partitionName(DatasetScoped key) {
+    return partitionName(key.getDatasetKey());
   }
   
   /**
    * partition by DatasetScoped like method that takes a hashmap which can be included as column parameters
    * in mybatis xml collection statements, e.g. NameUsageWrapperMapper.taxonGetClassificationResultMap
    */
-  public static String partition(Map<String, Object> key) {
-    return partition( (Integer) key.get("datasetKey"));
+  public static String partitionName(Map<String, Object> key) {
+    return partitionName( (Integer) key.get("datasetKey"));
   }
 
   public static synchronized void partition(SqlSessionFactory factory, int datasetKey, DatasetOrigin origin) {

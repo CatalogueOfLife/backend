@@ -10,19 +10,19 @@
       </if>
     </sql>
 
-    <!-- derive the partition index from a dataset key -->
+    <!-- derive the partition name from a dataset key -->
     <sql id="partitionByDatasetKey">
-        <bind name="partition" value="@life.catalogue.dao.Partitioner@partition(datasetKey)"/>
+        <bind name="partition" value="@life.catalogue.dao.Partitioner@partitionName(datasetKey)"/>
     </sql>
 
-    <!-- derive the partition index from a DatasetScopeable key value -->
+    <!-- derive the partition name from a DatasetScopeable key value -->
     <sql id="partitionByKey">
-        <bind name="partition" value="@life.catalogue.dao.Partitioner@partition(key)"/>
+        <bind name="partition" value="@life.catalogue.dao.Partitioner@partitionName(key)"/>
     </sql>
 
-    <!-- derive the partition index from a DatasetScopeable obj value -->
+    <!-- derive the partition name from a DatasetScopeable obj value -->
     <sql id="partitionByObj">
-        <bind name="partition" value="@life.catalogue.dao.Partitioner@partition(obj)"/>
+        <bind name="partition" value="@life.catalogue.dao.Partitioner@partitionName(obj)"/>
     </sql>
 
     <!-- selects the last successful import, i.e. the one that imported data -->
