@@ -52,10 +52,7 @@ import life.catalogue.parser.NameParser;
 import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
-import life.catalogue.resources.parser.IdEncoderResource;
-import life.catalogue.resources.parser.MetadataParserResource;
-import life.catalogue.resources.parser.NameParserResource;
-import life.catalogue.resources.parser.ParserResource;
+import life.catalogue.resources.parser.*;
 import life.catalogue.swagger.OpenApiFactory;
 
 import org.gbif.dwc.terms.TermFactory;
@@ -377,9 +374,11 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new VocabResource());
 
     // parsers
+    j.register(new HomotypicGroupingResource());
     j.register(new NameParserResource(getSqlSessionFactory()));
     j.register(new MetadataParserResource());
     j.register(new ParserResource<>());
+
     j.register(new IdEncoderResource());
 
     // attach listeners to event bus
