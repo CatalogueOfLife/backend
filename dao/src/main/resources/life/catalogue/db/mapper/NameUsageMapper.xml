@@ -111,14 +111,15 @@
   </sql>
 
   <sql id="FROM_SIMPLE">
-    name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
+    name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id
   </sql>
 
   <sql id="FROM">
-    name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
-    LEFT JOIN reference_${partition} r ON u.according_to_id=r.id
-    LEFT JOIN name_usage_${partition} a ON u.parent_id=a.id AND u.is_synonym LEFT JOIN name_${partition} an ON a.name_id=an.id
-    LEFT JOIN reference_${partition} ar ON a.according_to_id=ar.id
+    name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND u.name_id=n.id
+    LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND u.according_to_id=r.id
+    LEFT JOIN name_usage a ON a.dataset_key=u.dataset_key AND u.parent_id=a.id AND u.is_synonym
+    LEFT JOIN name an ON an.dataset_key=u.dataset_key AND a.name_id=an.id
+    LEFT JOIN reference ar ON ar.dataset_key=u.dataset_key AND a.according_to_id=ar.id
   </sql>
 
   <resultMap id="usageResultMap" type="NameUsageBase" autoMapping="true">
@@ -156,45 +157,42 @@
 
 
   <select id="count" resultType="integer">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT count(*) FROM name_usage_${partition}
+    SELECT count(*) FROM name_usage
+    WHERE dataset_key = #{datasetKey}
   </select>
 
   <select id="get" resultMap="usageResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.id = #{key.id}
+    WHERE u.dataset_key = #{datasetKey} AND u.id = #{key.id}
   </select>
 
   <select id="getSimple" resultMap="simpleResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
-    WHERE u.id = #{key.id}
+    WHERE u.dataset_key = #{datasetKey} AND u.id = #{key.id}
   </select>
 
   <select id="getSimpleByIdMap" resultMap="simpleResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, coalesce(idp.id2, u.parent_id) AS parent_id
     FROM <include refid="FROM_SIMPLE"/>
-      JOIN idmap_name_usage_${partition} idmap ON idmap.id=u.id
-      LEFT JOIN idmap_name_usage_${partition} idp ON idp.id=u.parent_id
+      JOIN idmap_name_usage_${key.datasetKey} idmap ON idmap.id=u.id
+      LEFT JOIN idmap_name_usage_${key.datasetKey} idp ON idp.id=u.parent_id
     WHERE idmap.id2 = #{key.id}
   </select>
 
   <select id="exists" resultType="boolean">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT exists(
-      SELECT id FROM name_usage_${partition} WHERE id = #{key.id}
+      SELECT id FROM name_usage
+      WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
     )
   </select>
 
   <select id="listByRegex" resultMap="simpleResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
-    WHERE n.scientific_name ~ '${regex}'
+    WHERE dataset_key = #{datasetKey}
+      AND n.scientific_name ~ '${regex}'
     <if test="rank != null">
       AND n.rank = #{rank}::RANK
     </if>
@@ -206,29 +204,27 @@
   </select>
 
   <select id="list" resultMap="usageResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
+    WHERE u.dataset_key = #{datasetKey}
     ORDER BY u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="listByNameID" resultMap="usageResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.name_id=#{nameId}
+    WHERE u.dataset_key = #{datasetKey} AND u.name_id=#{nameId}
     ORDER BY u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="listByNamesIndexID" resultMap="usageResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
       JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
       JOIN names_index ni ON ni.id=nm.index_id
-    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    WHERE u.dataset_key = #{datasetKey} AND ni.id=#{nidx} OR ni.canonical_id=#{nidx}
     ORDER BY u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -275,10 +271,10 @@
   </select>
 
   <select id="listByName" resultMap="usageResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE lower(n.scientific_name) = lower(#{name})
+    WHERE u.dataset_key = #{datasetKey}
+      AND lower(n.scientific_name) = lower(#{name})
     <if test="rank != null">
       AND n.rank=#{rank}::rank
     </if>
@@ -287,27 +283,24 @@
   </select>
 
   <select id="children" resultMap="usageResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.parent_id = #{key.id}
+    WHERE u.dataset_key = #{key.datasetKey} AND u.parent_id = #{key.id}
     <if test="rank != null">
       AND n.rank > #{rank}::rank
     </if>
   </select>
 
   <update id="updateParentIds" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    UPDATE name_usage_${partition}
+    UPDATE name_usage
     SET (parent_id, modified, modified_by) = (#{newParentId}, now(), #{userKey})
-    WHERE parent_id = #{parentId} <if test="sectorKey != null"> AND sector_key=#{sectorKey}</if>
+    WHERE dataset_key = #{datasetKey} AND parent_id = #{parentId} <if test="sectorKey != null"> AND sector_key=#{sectorKey}</if>
   </update>
 
   <update id="updateParentId" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE name_usage_${partition}
+    UPDATE name_usage
     SET (parent_id, modified, modified_by) = (#{parentId}, now(), #{userKey})
-    WHERE id = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 
   <insert id="copyDataset" parameterType="map">
@@ -325,12 +318,12 @@
   </insert>
 
   <select id="processDataset" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <where>
+      u.dataset_key = #{datasetKey}
       <if test="maxRank != null">
-        n.rank >= #{maxRank}::rank
+        AND n.rank >= #{maxRank}::rank
       </if>
       <if test="minRank != null">
         AND n.rank &lt;= #{minRank}::rank
@@ -339,16 +332,16 @@
   </select>
 
   <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
       <property name="alias" value="n"/>
       <property name="prefix" value="n_"/>
     </include>
-    FROM name_${partition} n
-    LEFT JOIN name_usage_${partition} u ON n.id = u.name_id
+    FROM name n
+    LEFT JOIN name_usage u ON u.dataset_key=n.dataset_key AND n.id = u.name_id
     <where>
-      u.id IS NULL
+      u.dataset_key
+      AND u.id IS NULL
       <if test="maxRank != null">
         AND n.rank >= #{maxRank}::rank
       </if>
@@ -359,21 +352,19 @@
   </select>
 
   <select id="processSector" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.sector_key = #{key.id}
+    WHERE u.dataset_key = #{key.datasetKey} AND u.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM name_usage_${partition} WHERE sector_key = #{key.id}
+    DELETE FROM name_usage
+    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE name_usage_${partition} SET sector_key = NULL
-    WHERE sector_key = #{key.id}
+    UPDATE name_usage SET sector_key = NULL
+    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
   <select id="ambiguousZooRankNameIds" parameterType="map" resultType="string">
@@ -384,26 +375,25 @@
       AND n.rank IN ()
       AND EXISTS (
         SELECT true
-        FROM name_usage_${partition} u2 JOIN name_${partition} n2 ON u2.name_id=n2.id
-        WHERE u2.sector_key = #{sectorKey}
+        FROM name_usage u2 JOIN name n2 ON n2.dataset_key=u2.dataset_key AND u2.name_id=n2.id
+        WHERE u2.dataset_key=#{datasetKey}
+          AND u2.sector_key = #{sectorKey}
           AND u2.parent_id
       )
 
-    DELETE FROM name_usage_${partition} u
-    USING name_${partition} n,
-      name_usage_${partition} p, name_${partition} pn,
-    WHERE u.name_id=n.id
-      AND p.id=u.parent_id AND p.name_id=pn.id
+    DELETE FROM name_usage u
+    USING name n, name_usage p, name pn
+    WHERE n.dataset_key=#{datasetKey} AND u.name_id=n.id
+      AND p.dataset_key=#{datasetKey} AND p.id=u.parent_id AND p.name_id=pn.id
       AND u.sector_key = #{key.id}
       AND n.rank IN ambiguousRank()
-      AND pn.rank &lt;= 'GENUS'::rank
+      AND pn.dataset_key=#{datasetKey} AND pn.rank &lt;= 'GENUS'::rank
   </select>
 
   <delete id="deleteBySectorAndRank" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM name_usage_${partition} u
-    USING name_${partition} n
-    WHERE u.name_id=n.id
+    DELETE FROM name_usage u
+    USING name n
+    WHERE u.dataset_key=#{key.datasetKey} AND u.name_id=n.id
       AND u.sector_key = #{key.id}
       AND n.rank >= #{rank}::rank
       <if test="nameIds != null and !nameIds.isEmpty()">
@@ -413,25 +403,24 @@
   </delete>
 
   <delete id="deleteSynonymsBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM name_usage_${partition} u
-    WHERE u.sector_key = #{key.id} AND u.is_synonym
+    DELETE FROM name_usage u
+    WHERE u.dataset_key=#{key.datasetKey} AND u.sector_key = #{key.id} AND u.is_synonym
   </delete>
 
   <select id="deleteSubtree" parameterType="map" resultType="String">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     WITH RECURSIVE tree AS (
       SELECT id, name_id AS nid
-      FROM name_usage_${partition}
-      WHERE id=#{key.id}
+      FROM name_usage
+      WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
     UNION
       SELECT c.id, c.name_id
-      FROM name_usage_${partition} c JOIN tree ON tree.id = c.parent_id
+      FROM name_usage c JOIN tree ON c.dataset_key=tree.dataset_key AND tree.id = c.parent_id
     )
     DELETE
-    FROM name_usage_${partition} u
+    FROM name_usage u
     USING tree t
-    WHERE u.id = t.id
+    WHERE u.dataset_key=#{key.datasetKey} AND u.id = t.id
     RETURNING t.nid;
   </select>
 
@@ -451,34 +440,30 @@
   </sql>
 
   <sql id="WHERE_UNION">
-    <where>
-      <if test="!includeSynonyms">
-        NOT u.is_synonym
-      </if>
-      <if test="exclusions != null and !exclusions.isEmpty()">
-        AND u.id NOT IN
-        <foreach item="id" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
-      </if>
-      <if test="sectorKey != null">
-        AND u.sector_key = #{sectorKey}
-      </if>
-      <if test="lowestRank">
-        AND (n.rank &lt;= #{lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
-      </if>
-    </where>
+    <if test="!includeSynonyms">
+      AND NOT u.is_synonym
+    </if>
+    <if test="exclusions != null and !exclusions.isEmpty()">
+      AND u.id NOT IN
+      <foreach item="id" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
+    </if>
+    <if test="sectorKey != null">
+      AND u.sector_key = #{sectorKey}
+    </if>
+    <if test="lowestRank">
+      AND (n.rank &lt;= #{lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
+    </if>
   </sql>
 
   <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     WITH RECURSIVE x AS(
     SELECT
     <include refid="SELECT"/>
     <if test="depthFirst">
       ,concat_ws('|', n.scientific_name, u.id) AS path
     </if>
-    FROM
-    <include refid="FROM"/>
-    WHERE
+    FROM <include refid="FROM"/>
+    WHERE u.dataset_key=#{datasetKey} AND
     <include refid="WHERE_START"/>
 
     UNION
@@ -490,8 +475,11 @@
     </if>
     FROM
     <include refid="FROM"/>
-    JOIN x ON x.id = u.parent_id
-    <include refid="WHERE_UNION"/>
+    JOIN x ON x.dataset_key=#{datasetKey} AND x.id = u.parent_id
+    <where>
+      u.dataset_key=#{datasetKey}
+      <include refid="WHERE_UNION"/>
+    </where>
     )
     SELECT * FROM x
     <if test="depthFirst">
@@ -500,18 +488,18 @@
   </select>
 
   <select id="foreignChildren" resultMap="simpleResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT_SIMPLE"/>
-    FROM <include refid="FROM_SIMPLE"/> JOIN name_usage_${partition} p ON p.id=u.parent_id
-    WHERE p.sector_key=#{key.id}
+    FROM <include refid="FROM_SIMPLE"/>
+      JOIN name_usage p ON p.dataset_key=#{key.datasetKey} AND p.id=u.parent_id
+    WHERE u.dataset_key=#{key.datasetKey} AND p.sector_key=#{key.id}
     AND (u.sector_key IS NULL OR u.sector_key!=#{key.id})
   </select>
 
   <select id="sectorRoot" resultMap="simpleResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT_SIMPLE"/>
-    FROM <include refid="FROM_SIMPLE"/> JOIN name_usage_${partition} p ON p.id=u.parent_id
-    WHERE u.sector_key=#{key.id}
+    FROM <include refid="FROM_SIMPLE"/>
+      JOIN name_usage p ON p.dataset_key=#{key.datasetKey} AND p.id=u.parent_id
+    WHERE u.dataset_key=#{key.datasetKey} AND u.sector_key=#{key.id}
     AND (p.sector_key IS NULL OR p.sector_key!=#{key.id})
   </select>
 
@@ -520,11 +508,15 @@
     WITH RECURSIVE x AS(
       SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', n.scientific_name, u.id) AS path
       FROM <include refid="FROM_SIMPLE"/>
-      WHERE <include refid="WHERE_START"/>
+      WHERE u.dataset_key=#{datasetKey} AND <include refid="WHERE_START"/>
     UNION
       SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)
-      FROM <include refid="FROM_SIMPLE"/> JOIN x ON x.id = u.parent_id
-      <include refid="WHERE_UNION"/>
+      FROM <include refid="FROM_SIMPLE"/>
+        JOIN x ON x.id = u.parent_id
+      <where>
+        u.dataset_key=#{datasetKey}
+        <include refid="WHERE_UNION"/>
+      </where>
     )
     SELECT id, scientific_name, authorship, rank, code, status, parent_id
     FROM x ORDER BY x.path

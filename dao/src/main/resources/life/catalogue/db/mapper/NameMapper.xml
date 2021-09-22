@@ -141,7 +141,7 @@
     #{modifiedBy}
   </sql>
 
-  <sql id="FROM">name_${partition} n</sql>
+  <sql id="FROM">name n</sql>
 
   <!-- A mapping to Name, mostly auto mapped -->
   <resultMap id="nameResultMap" type="Name" autoMapping="true">
@@ -161,95 +161,87 @@
   <resultMap id="nameIdxResultMap" type="NameWithNidx" autoMapping="true" extends="nameResultMap" />
 
   <select id="count" resultType="integer">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT count(*) FROM name_${partition}
+    SELECT count(*) FROM name WHERE dataset_key=#{datasetKey}
   </select>
 
   <select id="hasData" resultType="boolean">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT exists(
-      SELECT id FROM <include refid="FROM"/> LIMIT 1
+      SELECT id FROM <include refid="FROM"/>
+      WHERE dataset_key=#{datasetKey}
+      LIMIT 1
     )
   </select>
 
   <select id="list" resultMap="nameResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
+    WHERE dataset_key=#{datasetKey}
     ORDER BY id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="listByReference" resultMap="nameResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE n.published_in_id = #{refId}
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE dataset_key=#{datasetKey} AND n.published_in_id = #{refId}
     ORDER BY id
   </select>
 
   <select id="get" resultMap="nameResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE n.id = #{key.id}
+    WHERE dataset_key=#{key.datasetKey} AND n.id = #{key.id}
   </select>
 
   <select id="getByUsage" resultMap="nameResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    JOIN name_usage_${datasetKey} u ON u.name_id=n.id
-    WHERE u.id = #{usageId}
+      JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
+    WHERE u.dataset_key=#{datasetKey} AND u.id = #{usageId}
   </select>
 
   <select id="listByIds" resultMap="nameResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE n.id IN
+    WHERE dataset_key=#{datasetKey} AND n.id IN
     <foreach item="k" index="idx" collection="ids" open="(" separator="," close=")">#{k}</foreach>
   </select>
 
   <select id="ambiguousRankNameIds" resultType="string">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT id
     FROM <include refid="FROM"/>
-    WHERE rank = ANY(ambiguousRanks())
+    WHERE dataset_key=#{datasetKey} AND rank = ANY(ambiguousRanks())
     <if test="sectorKey">
       AND sector_key = #{sectorKey}
     </if>
   </select>
 
   <select id="processNameStrings" resultType="String">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT concat_ws(' ', scientific_name, authorship)
     FROM <include refid="FROM"/>
+    WHERE dataset_key=#{datasetKey}
     <if test="sectorKey != null">
-      WHERE sector_key = #{sectorKey}
+      AND sector_key = #{sectorKey}
     </if>
     ORDER BY scientific_name, authorship
   </select>
 
   <select id="homotypicGroup" resultMap="nameResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    JOIN name_${partition} ns ON n.homotypic_name_id=ns.homotypic_name_id AND n.dataset_key=ns.dataset_key
-    WHERE ns.id=#{id}
+    JOIN name ns ON n.homotypic_name_id=ns.homotypic_name_id AND n.dataset_key=ns.dataset_key
+    WHERE n.dataset_key=#{datasetKey} AND ns.id=#{id}
   </select>
 
   <select id="indexGroup" resultMap="nameResultMap">
     SELECT <include refid="SELECT"/>
-    FROM name_match nm JOIN name n ON n.id=nm.name_id AND n.dataset_key=nm.dataset_key
+    FROM name_match nm
+      JOIN name n ON n.id=nm.name_id AND n.dataset_key=nm.dataset_key
     WHERE nm.index_id = #{id}
   </select>
 
   <insert id="create" parameterType="Name" useGeneratedKeys="false" keyProperty="id">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    INSERT INTO name_${partition} (<include refid="COLS"/>, created, modified)
+    INSERT INTO name (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
 
@@ -263,23 +255,21 @@
   </insert>
 
   <update id="update" parameterType="Name" keyProperty="id">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    UPDATE name_${partition}
+    UPDATE name
     SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
-    WHERE id = #{id} AND dataset_key=#{datasetKey}
+    WHERE dataset_key=#{datasetKey} AND id = #{id}
   </update>
 
   <delete id="delete" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM name_${partition}
+    DELETE FROM name
     WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
   </delete>
 
   <sql id="orphanWhere">
     WHERE NOT EXISTS (
       SELECT NULL
-      FROM name_usage_${partition} u
-      WHERE n.id = u.name_id
+      FROM name_usage u
+      WHERE n.id = u.name_id AND n.dataset_key=u.dataset_key
     )
     <if test="before!=null">
       AND n.modified &lt; #{before}
@@ -297,71 +287,66 @@
   </delete>
 
   <delete id="deleteOrphans" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    DELETE FROM name_${partition} n
+    DELETE FROM name n
     <include refid="orphanWhere"/>
+    AND dataset_key=#{datasetKey}
   </delete>
 
   <select id="listOrphans" parameterType="map" resultMap="nameResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="orphanWhere"/>
+    AND dataset_key=#{datasetKey}
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="processSector" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE n.sector_key = #{key.id}
+    WHERE n.dataset_key = #{key.datasetKey} AND n.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM name_${partition}
-    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
+    DELETE FROM name
+    WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE name_${partition} SET sector_key = NULL
-    WHERE sector_key = #{key.id}
+    UPDATE name SET sector_key = NULL
+    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
   <delete id="deleteByDataset" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    TRUNCATE name_${partition} CASCADE
+    DELETE FROM name
+    WHERE dataset_key = #{datasetKey}
   </delete>
 
   <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
+    WHERE n.dataset_key = #{datasetKey}
     ORDER BY rank, scientific_name
   </select>
 
   <select id="processSince" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE modified &gt; #{since}
+    WHERE n.dataset_key = #{datasetKey}
+      AND modified &gt; #{since}
   </select>
 
   <select id="processDatasetWithNidx" parameterType="map" resultMap="nameIdxResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>, nm.index_id AS namesIndexId, nm.type AS namesIndexType
     FROM <include refid="FROM"/> LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
+    WHERE n.dataset_key = #{datasetKey}
     ORDER BY rank, scientific_name
   </select>
 
   <select id="getWithNidx" parameterType="map" resultMap="nameIdxResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>, nm.index_id AS namesIndexId, coalesce(nm.type,'NONE') AS namesIndexType
     FROM <include refid="FROM"/> LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{key.datasetKey}
-    WHERE n.id = #{key.id}
+    WHERE n.dataset_key = #{key.datasetKey} AND n.id = #{key.id}
   </select>
 
 </mapper>

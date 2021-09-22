@@ -45,13 +45,18 @@ public class Partitioner {
    * See https://github.com/Sp2000/colplus-backend/issues/127
    */
   public static synchronized void partition(SqlSession session, int datasetKey, DatasetOrigin origin) {
-    interruptIfCancelled();
-    LOG.info("Create empty partition for dataset {}", datasetKey);
-    DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
-    // first remove if existing
-    mapper.delete(datasetKey);
-    // then create
-    mapper.create(datasetKey, origin);
+    if (origin.isManagedOrRelease()) {
+      interruptIfCancelled();
+      LOG.info("Create empty partition for dataset {}", datasetKey);
+      DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+      // first remove if existing
+      mapper.delete(datasetKey);
+      // then create
+      mapper.create(datasetKey, origin);
+
+    } else {
+      //TODO: create count sequences and manually populate them after imports ???
+    }
   }
 
   /**

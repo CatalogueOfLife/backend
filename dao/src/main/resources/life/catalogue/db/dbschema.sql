@@ -1068,6 +1068,10 @@ CREATE INDEX ON verbatim USING GIN (doc);
 CREATE INDEX ON verbatim USING GIN (issues);
 CREATE INDEX ON verbatim USING GIN (terms jsonb_path_ops);
 
+CREATE TABLE verbatim_default PARTITION OF verbatim DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE verbatim_mod1 PARTITION OF verbatim_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE verbatim_mod2 PARTITION OF verbatim_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE verbatim_mod3 PARTITION OF verbatim_default FOR VALUES WITH (modulus 3, remainder 2);
 
 CREATE TABLE verbatim_source (
   id TEXT NOT NULL,
@@ -1078,6 +1082,11 @@ CREATE TABLE verbatim_source (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON verbatim_source USING GIN(issues);
+
+CREATE TABLE verbatim_source_default PARTITION OF verbatim_source DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE verbatim_source_mod1 PARTITION OF verbatim_source_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE verbatim_source_mod2 PARTITION OF verbatim_source_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE verbatim_source_mod3 PARTITION OF verbatim_source_default FOR VALUES WITH (modulus 3, remainder 2);
 
 
 CREATE TABLE reference (
@@ -1102,6 +1111,11 @@ CREATE TABLE reference (
 CREATE INDEX ON reference (verbatim_key);
 CREATE INDEX ON reference (sector_key);
 CREATE INDEX ON reference USING GIN (doc);
+
+CREATE TABLE reference_default PARTITION OF reference DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE reference_mod1 PARTITION OF reference_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE reference_mod2 PARTITION OF reference_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE reference_mod3 PARTITION OF reference_default FOR VALUES WITH (modulus 3, remainder 2);
 
 CREATE TABLE name (
   id TEXT NOT NULL,
@@ -1152,6 +1166,11 @@ CREATE INDEX ON name (published_in_id);
 CREATE INDEX ON name (lower(scientific_name));
 CREATE INDEX ON name (scientific_name_normalized);
 
+CREATE TABLE name_default PARTITION OF name DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE name_mod1 PARTITION OF name_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE name_mod2 PARTITION OF name_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE name_mod3 PARTITION OF name_default FOR VALUES WITH (modulus 3, remainder 2);
+
 CREATE OR REPLACE FUNCTION homotypic_name_id_default() RETURNS trigger AS $$
 BEGIN
     NEW.homotypic_name_id := NEW.id;
@@ -1159,6 +1178,14 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
+
+CREATE TRIGGER name_trigger_mod1 BEFORE INSERT OR UPDATE ON name_mod1 FOR EACH ROW
+  WHEN (NEW.homotypic_name_id IS NULL) EXECUTE PROCEDURE homotypic_name_id_default();
+CREATE TRIGGER name_trigger_mod2 BEFORE INSERT OR UPDATE ON name_mod2 FOR EACH ROW
+  WHEN (NEW.homotypic_name_id IS NULL) EXECUTE PROCEDURE homotypic_name_id_default();
+CREATE TRIGGER name_trigger_mod3 BEFORE INSERT OR UPDATE ON name_mod3 FOR EACH ROW
+  WHEN (NEW.homotypic_name_id IS NULL) EXECUTE PROCEDURE homotypic_name_id_default();
+
 
 CREATE TABLE name_match (
   dataset_key INTEGER NOT NULL,
@@ -1193,6 +1220,12 @@ CREATE INDEX ON name_rel (sector_key);
 CREATE INDEX ON name_rel (verbatim_key);
 CREATE INDEX ON name_rel (reference_id);
 
+CREATE TABLE name_rel_default PARTITION OF name_rel DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE name_rel_mod1 PARTITION OF name_rel_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE name_rel_mod2 PARTITION OF name_rel_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE name_rel_mod3 PARTITION OF name_rel_default FOR VALUES WITH (modulus 3, remainder 2);
+
+
 CREATE TABLE type_material (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
@@ -1222,6 +1255,12 @@ CREATE INDEX ON type_material (name_id);
 CREATE INDEX ON type_material (sector_key);
 CREATE INDEX ON type_material (verbatim_key);
 CREATE INDEX ON type_material (reference_id);
+
+CREATE TABLE type_material_default PARTITION OF type_material DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE type_material_mod1 PARTITION OF type_material_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE type_material_mod2 PARTITION OF type_material_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE type_material_mod3 PARTITION OF type_material_default FOR VALUES WITH (modulus 3, remainder 2);
+
 
 CREATE TABLE name_usage (
   id TEXT NOT NULL,
@@ -1257,6 +1296,12 @@ CREATE INDEX ON name_usage (verbatim_key);
 CREATE INDEX ON name_usage (sector_key);
 CREATE INDEX ON name_usage (according_to_id);
 
+CREATE TABLE name_usage_default PARTITION OF name_usage DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE name_usage_mod1 PARTITION OF name_usage_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE name_usage_mod2 PARTITION OF name_usage_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE name_usage_mod3 PARTITION OF name_usage_default FOR VALUES WITH (modulus 3, remainder 2);
+
+
 CREATE TABLE taxon_concept_rel (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
@@ -1277,6 +1322,12 @@ CREATE INDEX ON taxon_concept_rel (taxon_id, type);
 CREATE INDEX ON taxon_concept_rel (sector_key);
 CREATE INDEX ON taxon_concept_rel (verbatim_key);
 CREATE INDEX ON taxon_concept_rel (reference_id);
+
+CREATE TABLE taxon_concept_rel_default PARTITION OF taxon_concept_rel DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE taxon_concept_rel_mod1 PARTITION OF taxon_concept_rel_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE taxon_concept_rel_mod2 PARTITION OF taxon_concept_rel_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE taxon_concept_rel_mod3 PARTITION OF taxon_concept_rel_default FOR VALUES WITH (modulus 3, remainder 2);
+
 
 CREATE TABLE species_interaction (
   id INTEGER NOT NULL,
@@ -1299,6 +1350,12 @@ CREATE INDEX ON species_interaction (taxon_id, type);
 CREATE INDEX ON species_interaction (sector_key);
 CREATE INDEX ON species_interaction (verbatim_key);
 CREATE INDEX ON species_interaction (reference_id);
+
+CREATE TABLE species_interaction_default PARTITION OF species_interaction DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE species_interaction_mod1 PARTITION OF species_interaction_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE species_interaction_mod2 PARTITION OF species_interaction_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE species_interaction_mod3 PARTITION OF species_interaction_default FOR VALUES WITH (modulus 3, remainder 2);
+
 
 CREATE TABLE vernacular_name (
   id INTEGER NOT NULL,
@@ -1326,6 +1383,12 @@ CREATE INDEX ON vernacular_name (verbatim_key);
 CREATE INDEX ON vernacular_name (reference_id);
 CREATE INDEX ON vernacular_name USING GIN (doc);
 
+CREATE TABLE vernacular_name_default PARTITION OF vernacular_name DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE vernacular_name_mod1 PARTITION OF vernacular_name_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE vernacular_name_mod2 PARTITION OF vernacular_name_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE vernacular_name_mod3 PARTITION OF vernacular_name_default FOR VALUES WITH (modulus 3, remainder 2);
+
+
 CREATE TABLE distribution (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
@@ -1347,6 +1410,14 @@ CREATE INDEX ON distribution (sector_key);
 CREATE INDEX ON distribution (verbatim_key);
 CREATE INDEX ON distribution (reference_id);
 
+CREATE TABLE distribution_default PARTITION OF distribution DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE distribution_mod1 PARTITION OF distribution_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE distribution_mod2 PARTITION OF distribution_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE distribution_mod3 PARTITION OF distribution_default FOR VALUES WITH (modulus 3, remainder 2);
+
+CREATE SEQUENCE IF NOT EXISTS ${table}_${key}_id_seq START 1;
+ALTER TABLE ${table}_${key} ALTER COLUMN id SET DEFAULT nextval('${table}_${key}_id_seq');
+
 CREATE TABLE treatment (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
@@ -1362,6 +1433,12 @@ CREATE TABLE treatment (
 
 CREATE INDEX ON treatment (sector_key);
 CREATE INDEX ON treatment (verbatim_key);
+
+CREATE TABLE treatment_default PARTITION OF treatment DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE treatment_mod1 PARTITION OF treatment_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE treatment_mod2 PARTITION OF treatment_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE treatment_mod3 PARTITION OF treatment_default FOR VALUES WITH (modulus 3, remainder 2);
+
 
 CREATE TABLE media (
   id INTEGER NOT NULL,
@@ -1389,6 +1466,10 @@ CREATE INDEX ON media (sector_key);
 CREATE INDEX ON media (verbatim_key);
 CREATE INDEX ON media (reference_id);
 
+CREATE TABLE media_default PARTITION OF media DEFAULT PARTITION BY HASH(dataset_key);
+CREATE TABLE media_mod1 PARTITION OF media_default FOR VALUES WITH (modulus 3, remainder 0);
+CREATE TABLE media_mod2 PARTITION OF media_default FOR VALUES WITH (modulus 3, remainder 1);
+CREATE TABLE media_mod3 PARTITION OF media_default FOR VALUES WITH (modulus 3, remainder 2);
 
 
 CREATE TABLE parser_config (

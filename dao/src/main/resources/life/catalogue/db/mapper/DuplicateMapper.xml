@@ -26,7 +26,6 @@
   </resultMap>
 
   <select id="namesByIds" resultMap="nameDecisionResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
       <property name="alias" value="n"/>
@@ -34,10 +33,9 @@
     </include>
     ,
     coalesce(parseInt(n.combination_year), r.year) AS n_publishedInYear
-    FROM
-    name_${partition} n
-    LEFT JOIN reference_${partition} r ON n.published_in_id=r.id
-    WHERE n.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
+    FROM name n
+    LEFT JOIN reference r ON n.published_in_id=r.id AND n.dataset_key=r.dataset_key
+    WHERE n.dataset_key=#{datasetKey} AND n.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
   </select>
 
   <select id="usagesByIds" resultMap="usageDecisionResultMap">
@@ -69,13 +67,14 @@
       <property name="alias" value="ed."/>
       <property name="prefix" value="ed_"/>
     </include>
-    FROM name_usage_${partition} u
-      JOIN name_${partition} n ON u.name_id=n.id
-      LEFT JOIN name_usage_${partition} a ON u.parent_id=a.id AND u.is_synonym
-      LEFT JOIN name_${partition} an ON a.name_id=an.id
-      LEFT JOIN reference_${partition} r ON n.published_in_id=r.id
+    FROM name_usage u
+      JOIN name n ON n.dataset_key=#{datasetKey} AND u.name_id=n.id
+      LEFT JOIN name_usage a ON a.dataset_key=#{datasetKey} AND u.parent_id=a.id AND u.is_synonym
+      LEFT JOIN name an ON an.dataset_key=#{datasetKey} AND a.name_id=an.id
+      LEFT JOIN reference r ON r.dataset_key=#{datasetKey} AND n.published_in_id=r.id
       LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.subject_dataset_key=#{datasetKey} AND ed.dataset_key=#{projectKey}
-    WHERE u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
+    WHERE u.dataset_key=#{datasetKey}
+      AND u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
   </select>
 
   <sql id="keyCol">
@@ -132,12 +131,12 @@
   </sql>
 
   <select id="duplicateNames" parameterType="map" resultMap="duplicateResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT
     <include refid="keyCol"/>
     AS key, array_agg(n.id) AS ids
-    FROM name_${partition} n
+    FROM name n
     <where>
+      n.dataset_key=#{datasetKey}
       <include refid="commonWhereClause"/>
     </where>
     GROUP BY
@@ -150,12 +149,11 @@
   </select>
 
   <select id="duplicates" parameterType="map" resultMap="duplicateResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT
     <include refid="keyCol"/>
     AS key, array_agg(u.id) AS ids
-    FROM name_usage_${partition} u
-    JOIN name_${partition} n ON u.name_id=n.id
+    FROM name_usage u
+    JOIN name n ON n.dataset_key=#{datasetKey} AND u.name_id=n.id
     <if test="withDecision != null">
       LEFT JOIN decision ed ON ed.subject_id=u.id
       AND ed.subject_dataset_key=#{datasetKey}
@@ -165,6 +163,7 @@
       LEFT JOIN sector s ON s.id=u.sector_key AND s.dataset_key=#{projectKey}
     </if>
     <where>
+      u.dataset_key=#{datasetKey}
       <include refid="commonWhereClause"/>
       <if test="status != null and !status.isEmpty()">
         AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}::TAXONOMICSTATUS</foreach>)

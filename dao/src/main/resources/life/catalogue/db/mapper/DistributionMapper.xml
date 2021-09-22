@@ -49,7 +49,7 @@
     #{obj.modifiedBy}
   </sql>
 
-  <sql id="FROM">distribution_${partition} d</sql>
+  <sql id="FROM">distribution d</sql>
 
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="distributionResultMap" type="Distribution" autoMapping="true">
@@ -65,35 +65,26 @@
   </resultMap>
 
   <select id="listByTaxon" resultMap="distributionResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE d.taxon_id = #{key.id}
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE d.dataset_key=#{key.datasetKey} AND d.taxon_id = #{key.id}
     ORDER BY d.id
   </select>
 
   <select id="get" resultMap="distributionResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE d.id = #{key.id}
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE d.dataset_key=#{key.datasetKey} AND d.id = #{key.id}
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="distributionExtResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE d.dataset_key=#{datasetKey}
   </select>
 
   <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="obj.id">
-    <include refid="life.catalogue.db.Common.partitionByObj"/>
-    INSERT INTO distribution_${partition} (<include refid="COLS"/>, created, modified )
+    INSERT INTO distribution (<include refid="COLS"/>, created, modified )
     VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
 
@@ -108,21 +99,18 @@
 
 
   <select id="processSector" parameterType="map" resultMap="distributionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE d.sector_key = #{key.id}
+    WHERE d.dataset_key=#{key.datasetKey} AND d.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM distribution_${partition}
+    DELETE FROM distribution
     WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE distribution_${partition} SET sector_key = NULL
-    WHERE sector_key = #{key.id}
+    UPDATE distribution SET sector_key = NULL
+    WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 </mapper>

@@ -18,5 +18,4 @@ public interface DatasetProcessable<V> {
    * @param datasetKey dataset key
    */
   int deleteByDataset(@Param("datasetKey") int datasetKey);
-
 }

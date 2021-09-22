@@ -64,7 +64,7 @@
     #{obj.modifiedBy}
   </sql>
 
-  <sql id="FROM">media_${partition} m</sql>
+  <sql id="FROM">media m</sql>
 
   <resultMap id="mediaResultMap" type="Media" autoMapping="true">
     <id property="id" column="id"/>
@@ -79,35 +79,27 @@
   </resultMap>
 
   <select id="listByTaxon" resultMap="mediaResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE m.taxon_id = #{key.id}
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE dataset_key=#{key.datasetKey} AND m.taxon_id = #{key.id}
     ORDER BY m.id
   </select>
 
   <select id="get" resultMap="mediaResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE m.id = #{key.id}
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE dataset_key=#{key.datasetKey} AND m.id = #{key.id}
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="mediaExtResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE dataset_key=#{key.datasetKey}
   </select>
 
   <insert id="create" parameterType="Media" useGeneratedKeys="true" keyProperty="obj.id">
-    <include refid="life.catalogue.db.Common.partitionByObj"/>
-    INSERT INTO media_${partition} (<include refid="COLS"/>, created, modified )
+    INSERT INTO media (<include refid="COLS"/>, created, modified )
     VALUES (<include refid="PROPS"/>, now(), now() )
   </insert>
 
@@ -121,22 +113,19 @@
   </insert>
 
   <select id="processSector" parameterType="map" resultMap="mediaResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE m.sector_key = #{key.id}
+    WHERE dataset_key=#{key.datasetKey} AND m.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM media_${partition}
+    DELETE FROM media
     WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE media_${partition} SET sector_key = NULL
-    WHERE sector_key = #{key.id}
+    UPDATE media SET sector_key = NULL
+    WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
 </mapper>

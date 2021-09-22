@@ -52,8 +52,8 @@
     </if>
     AND NOT EXISTS (
       SELECT NULL
-      FROM name_${partition} n
-      WHERE n.id = nm.name_id
+      FROM name n
+      WHERE n.dataset_key=#{datasetKey} AND n.id = nm.name_id
     )
   </delete>
 

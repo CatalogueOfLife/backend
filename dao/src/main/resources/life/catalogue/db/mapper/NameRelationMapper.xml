@@ -50,7 +50,7 @@
   </sql>
 
   <sql id="FROM">
-    name_rel_${partition} nr
+    name_rel nr
   </sql>
 
   <resultMap id="nameRelResultMap" type="NameRelation" autoMapping="true">
@@ -61,38 +61,35 @@
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE nr.name_id = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND nr.name_id = #{key.id}
     ORDER BY nr.id
   </select>
 
   <select id="listByRelatedName" resultMap="nameRelResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE nr.related_name_id = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND nr.related_name_id = #{key.id}
     ORDER BY nr.id
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="nameRelResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
+    WHERE dataset_key = #{datasetKey}
   </select>
 
   <select id="listByType" resultMap="nameRelResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
-    FROM name_rel_${partition} nr
+    FROM name_rel nr
     WHERE nr.dataset_key = #{key.datasetKey}
-    AND nr.type=#{type}::NOMRELTYPE
-    AND nr.name_id = #{key.id}
+      AND nr.type=#{type}::NOMRELTYPE
+      AND nr.name_id = #{key.id}
     ORDER BY nr.id
   </select>
 
   <select id="listByTypeReverse" resultMap="nameRelResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
-    FROM name_rel_${partition} nr
+    FROM name_rel nr
     WHERE nr.dataset_key = #{key.datasetKey}
       AND nr.type=#{type}::NOMRELTYPE
       AND nr.related_name_id = #{key.id}
@@ -100,8 +97,7 @@
   </select>
 
   <insert id="create" parameterType="NameRelation" useGeneratedKeys="true" keyProperty="id">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    INSERT INTO name_rel_${partition} (<include refid="COLS"/>, created, modified )
+    INSERT INTO name_rel (<include refid="COLS"/>, created, modified )
     VALUES (<include refid="PROPS"/>, now(), now() )
   </insert>
 
@@ -116,22 +112,19 @@
   </insert>
 
   <select id="processSector" parameterType="map" resultMap="nameRelResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE nr.sector_key = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND nr.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM name_rel_${partition}
-    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
+    DELETE FROM name_rel
+    WHERE dataset_key=#{key.datasetKey} AND sector_key=#{key.id}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE name_rel_${partition} SET sector_key = NULL
-    WHERE sector_key = #{key.id}
+    UPDATE name_rel SET sector_key = NULL
+    WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
 </mapper>
