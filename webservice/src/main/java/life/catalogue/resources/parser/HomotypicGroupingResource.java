@@ -1,31 +1,16 @@
 package life.catalogue.resources.parser;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-
-import com.google.common.collect.Sets;
-
 import life.catalogue.api.model.Name;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.dao.ParserConfigDao;
-import life.catalogue.importer.neo.model.NeoProperties;
-import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.BasionymGroup;
 import life.catalogue.matching.authorship.BasionymSorter;
 import life.catalogue.parser.NameParser;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
 
-import org.gbif.api.vocabulary.NameUsageIssue;
-
-import org.gbif.nameparser.api.ParsedName;
-
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.traversal.Evaluators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,13 +37,28 @@ public class HomotypicGroupingResource {
     basSorter = new BasionymSorter(authorComparator);
   }
 
+  public static class VerbatimName {
+    public final String verbatim;
+    public final Name parsed;
+
+    public VerbatimName(String verbatim, Name parsed) {
+      this.verbatim = verbatim;
+      this.parsed = parsed;
+    }
+  }
+
+  public static class GroupingResult {
+    public final List<String> ignored = new ArrayList<>();
+    public final List<BasionymGroup<VerbatimName>> groups = new ArrayList<>();
+  }
+
   /**
    * Tries to homotypically group names by their terminal epithets
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   public GroupingResult group(List<String> names) {
-    Map<String, List<Name>> epithets = new HashMap<>();
+    Map<String, List<VerbatimName>> epithets = new HashMap<>();
     GroupingResult gr = new GroupingResult();
     for (String n : names) {
       if (StringUtils.isBlank(n)) continue;
@@ -69,23 +69,19 @@ public class HomotypicGroupingResource {
         if (!pn.isBinomial()) {
           gr.ignored.add(n);
         } else {
+          pn.setRemarks(n);
           String epithet = SciNameNormalizer.stemEpithet(pn.getTerminalEpithet());
-          epithets.computeIfAbsent(epithet, k -> new ArrayList<>()).add(pn);
+          epithets.computeIfAbsent(epithet, k -> new ArrayList<>()).add(new VerbatimName(n, pn));
         }
       } else {
         gr.ignored.add(n);
       }
     }
     // finally compare authorships for each epithet group
-    for (Map.Entry<String, List<Name>> epithetGroup : epithets.entrySet()) {
-      gr.groups.addAll(basSorter.groupBasionyms(epithetGroup.getValue(), a -> a));
+    for (Map.Entry<String, List<VerbatimName>> epithetGroup : epithets.entrySet()) {
+      gr.groups.addAll(basSorter.groupBasionyms(epithetGroup.getValue(), a -> a.parsed));
     }
     return gr;
-  }
-
-  public static class GroupingResult {
-    public final List<String> ignored = new ArrayList<>();
-    public final List<BasionymGroup<Name>> groups = new ArrayList<>();
   }
   
   /**
