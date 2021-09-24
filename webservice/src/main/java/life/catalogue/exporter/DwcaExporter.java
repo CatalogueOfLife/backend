@@ -86,7 +86,7 @@ public class DwcaExporter extends ArchiveExporter {
         return;
       }
       File f = new File(tmpDir, String.format("dataset/%s.xml", key));
-      EmlWriter.write(projectSourceMapper.getReleaseSource(key, datasetKey), f);
+      EmlWriter.write(src, f);
     }
   }
 
