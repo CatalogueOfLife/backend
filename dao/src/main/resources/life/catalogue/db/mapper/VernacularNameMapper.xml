@@ -58,7 +58,7 @@
     #{obj.modifiedBy}
   </sql>
 
-  <sql id="FROM">vernacular_name_${partition} vn</sql>
+  <sql id="FROM">vernacular_name vn</sql>
 
   <sql id="SEARCH_WHERE">
     <if test="req != null">
@@ -66,8 +66,9 @@
         JOIN sector s ON s.id=vn.sector_key
       </if>
       <where>
+        vn.dataset_key = #{datasetKey}
         <if test="req.q != null">
-          vn.doc @@ to_tsquery('${req.q}')
+          AND vn.doc @@ to_tsquery('${req.q}')
         </if>
         <if test="req.language != null">
           AND vn.language = #{req.language}
@@ -100,18 +101,16 @@
   </resultMap>
 
   <select id="listByTaxon" resultMap="vernacularNameResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE vn.taxon_id = #{key.id}
+    WHERE vn.dataset_key = #{key.datasetKey} AND vn.taxon_id = #{key.id}
     ORDER BY name
   </select>
 
   <select id="get" resultMap="vernacularNameResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE vn.id = #{key.id}
+    WHERE vn.dataset_key = #{key.datasetKey} AND vn.id = #{key.id}
   </select>
 
   <select id="searchAll" resultMap="vernacularNameUsageResultMap">
@@ -129,7 +128,6 @@
   </select>
 
   <select id="search" resultMap="vernacularNameUsageResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="SEARCH_WHERE"/>
@@ -138,21 +136,19 @@
   </select>
 
   <select id="count" resultType="integer">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT count(*)
     FROM <include refid="FROM"/>
     <include refid="SEARCH_WHERE"/>
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="vernacularExtNameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
+    WHERE vn.dataset_key = #{datasetKey}
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="obj.id">
-    <include refid="life.catalogue.db.Common.partitionByObj"/>
-    INSERT INTO vernacular_name_${partition} (<include refid="COLS"/>, created, modified)
+    INSERT INTO vernacular_name (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
 
@@ -166,22 +162,19 @@
   </insert>
 
   <select id="processSector" parameterType="map" resultMap="vernacularNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE vn.sector_key = #{key.id}
+    WHERE vn.dataset_key = #{key.datasetKey} AND vn.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM vernacular_name_${partition}
-    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
+    DELETE FROM vernacular_name
+    WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE vernacular_name_${partition} SET sector_key = NULL
-    WHERE sector_key = #{key.id}
+    UPDATE vernacular_name SET sector_key = NULL
+    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
 </mapper>

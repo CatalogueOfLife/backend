@@ -51,28 +51,35 @@
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
     JOIN dataset d ON d.key=u.dataset_key
     LEFT JOIN sector s ON s.id=u.sector_key
-    LEFT JOIN verbatim_${partition} vbt ON vbt.id=u.verbatim_key
-    LEFT JOIN verbatim_${partition} vbn ON vbn.id=n.verbatim_key
+    LEFT JOIN verbatim vbt ON vbt.id=u.verbatim_key AND vbt.dataset_key=#{datasetKey}
+    LEFT JOIN verbatim vbn ON vbn.id=n.verbatim_key AND vbn.dataset_key=#{datasetKey}
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM taxon_concept_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM taxon_concept_rel x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
     ) tcrel ON tcrel.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM species_interaction_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM species_interaction_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
     ) sirel ON sirel.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM distribution_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM distribution_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
     ) xdis ON xdis.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM media_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM media_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
     ) xmed ON xmed.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM vernacular_name_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM vernacular_name_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
     ) xver ON xver.taxon_id=u.id
     LEFT JOIN (
-      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM type_material_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.name_id
+      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM type_material_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} GROUP BY x.name_id
     ) xtyp ON xtyp.name_id=u.name_id
     LEFT JOIN (
-      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM name_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.name_id
+      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM name_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} GROUP BY x.name_id
     ) nrel ON nrel.name_id=u.name_id
     LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
   </sql>
@@ -83,44 +90,45 @@
       <property name="alias" value="n"/>
       <property name="prefix" value="n_"/>
     </include>
-    FROM name_${partition} n
-    LEFT JOIN name_usage_${partition} u ON n.id = u.name_id
-    LEFT JOIN verbatim_${partition} v ON v.id= n.verbatim_key
-    WHERE u.id IS NULL
+    FROM name n
+    LEFT JOIN name_usage u ON n.id = u.name_id AND u.dataset_key=#{datasetKey}
+    LEFT JOIN verbatim v ON v.id= n.verbatim_key AND v.dataset_key=#{datasetKey}
+    WHERE n.dataset_key=#{datasetKey}
+      AND u.id IS NULL
   </sql>
 
 
   <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     WITH RECURSIVE tree AS (
       SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
     UNION ALL
       SELECT u.id, array_append(tree.classification, (u.id,n.rank,n.scientific_name,n.authorship)::simple_name)
-      FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON u.name_id=n.id JOIN tree ON (tree.uid = u.parent_id)
-    <if test="sectorKey != null">
-      WHERE u.sector_key = #{sectorKey}
-    </if>
+      FROM name_usage u
+        JOIN name n ON u.name_id=n.id AND n.dataset_key=#{datasetKey}
+        JOIN tree ON (tree.uid = u.parent_id)
+      WHERE u.dataset_key=#{datasetKey}
+      <if test="sectorKey != null">
+        AND u.sector_key = #{sectorKey}
+      </if>
     )
     SELECT * FROM tree
     <if test="sectorKey != null">
-      WHERE uid != #{usageId} OR (SELECT sector_key=#{sectorKey} FROM name_usage_${datasetKey} WHERE id=#{usageId})
+      WHERE uid != #{usageId} OR (SELECT sector_key=#{sectorKey} FROM name_usage WHERE dataset_key=#{datasetKey} AND id=#{usageId})
     </if>
   </select>
 
   <select id="processDatasetUsageWithIssues" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT u.id AS uid, null AS ed_id, null AS v_id,
     <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
     vbn.issues || vbt.issues AS issues
-    FROM
-    <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
-    LEFT JOIN verbatim_${partition} vbt ON vbt.id=u.verbatim_key
-    LEFT JOIN verbatim_${partition} vbn ON vbn.id=n.verbatim_key
-    WHERE array_length(vbn.issues, 1) > 0 OR array_length(vbt.issues, 1) > 0
+    FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
+    LEFT JOIN verbatim vbt ON vbt.id=u.verbatim_key AND vbt.dataset_key=#{datasetKey}
+    LEFT JOIN verbatim vbn ON vbn.id=n.verbatim_key AND vbn.dataset_key=#{datasetKey}
+    WHERE u.dataset_key=#{datasetKey}
+      AND array_length(vbn.issues, 1) > 0 OR array_length(vbt.issues, 1) > 0
   </select>
 
   <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT
     <include refid="bareNameSelectFrom"/>
     <if test="sectorKey != null">
@@ -129,31 +137,30 @@
   </select>
 
   <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT u.id AS uid,
     <include refid="taxonSelectFrom"/>
-    WHERE u.id = #{id}
+    WHERE u.dataset_key=#{datasetKey}
+      AND u.id = #{id}
   </select>
 
   <select id="getBareName" parameterType="map" resultMap="bareNameResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT
     <include refid="bareNameSelectFrom"/>
     AND n.id = #{id}
   </select>
 
   <select id="getWithoutClassification" parameterType="map" resultMap="usageResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT u.id AS uid, NULL AS classification,
     <include refid="taxonSelectFrom"/>
-    WHERE u.id = #{id}
+    WHERE u.dataset_key=#{datasetKey}
+      AND u.id = #{id}
   </select>
 
   <select id="getSomeWithoutClassification" parameterType="map" resultMap="usageResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT u.id AS uid, NULL AS classification,
     <include refid="taxonSelectFrom"/>
-    WHERE u.id IN
+    WHERE u.dataset_key=#{datasetKey}
+      AND u.id IN
     <foreach item="id" collection="ids" open="(" separator="," close=")">#{id}</foreach>
   </select>
 

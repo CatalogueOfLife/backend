@@ -33,7 +33,7 @@
   </sql>
 
   <sql id="FROM">
-    verbatim_source_${partition} v
+    verbatim_source v
   </sql>
 
   <resultMap id="verbatimResultMap" type="VerbatimSource" autoMapping="true">
@@ -41,21 +41,19 @@
   </resultMap>
 
   <select id="get" resultMap="verbatimResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE id = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </select>
 
   <select id="getIssues" resultMap="verbatimResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT v.issues
     FROM <include refid="FROM"/>
-    WHERE id = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </select>
 
   <insert id="create" parameterType="VerbatimSource">
-    INSERT INTO verbatim_source_${datasetKey} (<include refid="COLS"/>)
+    INSERT INTO verbatim_source (<include refid="COLS"/>)
     VALUES (<include refid="PROPS"/>)
   </insert>
 
@@ -69,34 +67,31 @@
   </insert>
 
   <update id="update" parameterType="VerbatimSource">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE verbatim_source_${partition}
+    UPDATE verbatim_source
     SET issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
-    WHERE id = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 
   <select id="processDataset" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
+    WHERE dataset_key = #{datasetKey}
   </select>
 
   <delete id="delete" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM verbatim_source_${partition}
-    WHERE id = #{key.id}
+    DELETE FROM verbatim_source
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    DELETE FROM verbatim_source_${partition}
+    DELETE FROM verbatim_source
+    WHERE dataset_key = #{datasetKey}
   </delete>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     DELETE FROM verbatim_source_${partition} v
-    USING name_usage_${partition} u
-    WHERE u.id=v.id AND u.sector_key=#{key.id}
+    USING name_usage u
+    WHERE dataset_key = #{key.datasetKey} AND u.id=v.id AND u.sector_key=#{key.id}
   </delete>
 
 </mapper>

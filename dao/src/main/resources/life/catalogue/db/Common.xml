@@ -10,21 +10,6 @@
       </if>
     </sql>
 
-    <!-- derive the partition name from a dataset key -->
-    <sql id="partitionByDatasetKey">
-        <bind name="partition" value="@life.catalogue.dao.Partitioner@partitionName(datasetKey)"/>
-    </sql>
-
-    <!-- derive the partition name from a DatasetScopeable key value -->
-    <sql id="partitionByKey">
-        <bind name="partition" value="@life.catalogue.dao.Partitioner@partitionName(key)"/>
-    </sql>
-
-    <!-- derive the partition name from a DatasetScopeable obj value -->
-    <sql id="partitionByObj">
-        <bind name="partition" value="@life.catalogue.dao.Partitioner@partitionName(obj)"/>
-    </sql>
-
     <!-- selects the last successful import, i.e. the one that imported data -->
     <sql id="fromFinishedDatasetImport">
         FROM dataset_import

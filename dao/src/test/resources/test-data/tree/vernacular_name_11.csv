@@ -1,4 +1,4 @@
-taxon_id,name,language,reference_id
-t10,Apple,eng,r1
-t10,Apfel,deu,r1
-t10,Meeuw,nld,
+id,taxon_id,name,language,reference_id
+1,t10,Apple,eng,r1
+2,t10,Apfel,deu,r1
+3,t10,Meeuw,nld,

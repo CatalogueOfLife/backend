@@ -290,7 +290,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     LOG.info("Delete dataset import history for dataset {}", key);
     session.getMapper(DatasetImportMapper.class).deleteByDataset(key);
     // delete data partitions
-    Partitioner.delete(session, key);
+    if (old != null) {
+      Partitioner.delete(session, key, old.getOrigin());
+    }
     session.commit();
     // drop managed id sequences
     session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
@@ -362,7 +364,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // data partitions
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey(), obj.getOrigin());
-      Partitioner.createManagedObjects(factory, obj.getKey());
     }
     session.commit();
     session.close();

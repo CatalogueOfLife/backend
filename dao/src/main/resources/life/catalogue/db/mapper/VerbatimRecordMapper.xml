@@ -37,11 +37,12 @@
   </sql>
 
   <sql id="FROM">
-    verbatim_${partition} v
+    verbatim v
   </sql>
 
   <sql id="WHERE">
     <where>
+      v.dataset_key=#{datasetKey}
       <if test="types != null and !types.isEmpty()">
         AND v.type IN
         <foreach item="type" index="index" collection="types" open="(" separator="," close=")">#{type, typeHandler=life.catalogue.db.type.TermTypeHandler}
@@ -79,7 +80,6 @@
   </resultMap>
 
   <select id="count" resultType="integer">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT coalesce(
     (SELECT
     <choose>
@@ -98,36 +98,27 @@
   </select>
 
   <select id="list" resultMap="verbatimResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="get" resultMap="verbatimResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE id = #{key.id}
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE v.dataset_key=#{key.datasetKey} AND id = #{key.id}
   </select>
 
   <select id="getIssues" resultMap="verbatimResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT v.issues
-    FROM
-    <include refid="FROM"/>
-    WHERE id = #{key.id}
+    FROM <include refid="FROM"/>
+    WHERE v.dataset_key=#{key.datasetKey} AND id = #{key.id}
   </select>
 
   <insert id="create" parameterType="VerbatimRecord" useGeneratedKeys="true" keyProperty="id">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    INSERT INTO verbatim_${datasetKey} (<include refid="COLS"/>)
+    INSERT INTO verbatim (<include refid="COLS"/>)
     VALUES (<include refid="PROPS"/>)
   </insert>
 
@@ -138,21 +129,20 @@
   </insert>
 
   <update id="update" parameterType="VerbatimRecord" keyProperty="id">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE verbatim_${partition}
+    UPDATE verbatim
     SET issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
-    WHERE id = #{key.id}
+    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
   </update>
 
   <select id="processDataset" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
+    WHERE dataset_key=#{datasetKey}
   </select>
 
   <delete id="deleteByDataset" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    TRUNCATE verbatim_${partition} CASCADE
+    DELETE FROM verbatim
+    WHERE dataset_key=#{datasetKey}
   </delete>
 
 </mapper>

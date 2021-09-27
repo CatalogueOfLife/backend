@@ -190,9 +190,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     initSession();
     // remove potential old (global) data
     truncate(session);
+    // populate dataset table with origins before we partition
+    loadGlobalData();
     // create required partitions to load data
     partition();
-    loadData(false);
+    loadData();
     updateSequences();
     // finally create a test user to use in tests
     session.getMapper(UserMapper.class).create(TEST_USER);
@@ -274,43 +276,20 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   /**
-   * @param skipGlobalTable if true only loads tables partitioned by datasetKey
+   * Loads all data but the dataset table which is expected to been loaded before via loadDataset()
    */
-  public void loadData(final boolean skipGlobalTable) throws SQLException, IOException {
+  public void loadData() throws SQLException, IOException {
     session.getConnection().commit();
 
     ScriptRunner runner = new ScriptRunner(session.getConnection());
     runner.setSendFullScript(true);
-
-    if (!skipGlobalTable) {
-      // common data for all tests and even the empty one
-      runner.runScript(Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
-    }
 
     if (!testData.none) {
       System.out.format("Load %s test data\n\n", testData);
 
       try (Connection c = sqlSessionFactorySupplier.get().openSession(false).getConnection()) {
         PgConnection pgc = InitDbUtils.toPgConnection(c);
-        if (testData.datasets) {
-          // register known datasets
-          InitDbUtils.insertDatasets(pgc);
-
-        } else {
-
-            if (!skipGlobalTable) {
-              copyGlobalTable(pgc, "dataset");
-              copyGlobalTable(pgc, "dataset_import");
-              copyGlobalTable(pgc, "dataset_patch");
-              copyGlobalTable(pgc, "dataset_archive");
-              copyGlobalTable(pgc, "sector");
-              if (copyGlobalTable(pgc, "names_index")) {
-                // update names index keys if we added data
-                session.getMapper(NamesIndexMapper.class).updateSequence();
-              }
-              copyGlobalTable(pgc, "name_match");
-            }
-
+        if (!testData.datasets) {
             for (int key : testData.datasetKeys) {
               copyDataset(pgc, key);
               c.commit();
@@ -320,6 +299,40 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       }
     }
     session.commit();
+  }
+
+  /**
+   * Loads only global data including the dataset table.
+   * This is important to happen before other data is loaded,
+   * as the dataset table defines the immutable origin that defines how partitions are layed out!
+   */
+  public void loadGlobalData() throws SQLException, IOException {
+    try (Connection c = sqlSessionFactorySupplier.get().openSession(false).getConnection()) {
+      PgConnection pgc = InitDbUtils.toPgConnection(c);
+
+      // common data for all tests and even the empty one
+      ScriptRunner runner = new ScriptRunner(session.getConnection());
+      runner.setSendFullScript(true);
+      runner.runScript(Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
+
+      if (testData.datasets) {
+        // register known datasets
+        InitDbUtils.insertDatasets(pgc);
+      } else {
+        copyGlobalTable(pgc, "dataset");
+      }
+      copyGlobalTable(pgc, "dataset_import");
+      copyGlobalTable(pgc, "dataset_patch");
+      copyGlobalTable(pgc, "dataset_archive");
+      copyGlobalTable(pgc, "sector");
+      if (copyGlobalTable(pgc, "names_index")) {
+        // update names index keys if we added data
+        session.getMapper(NamesIndexMapper.class).updateSequence();
+      }
+      copyGlobalTable(pgc, "name_match");
+
+      c.commit();
+    }
   }
 
   private void copyDataset(PgConnection pgc, int key) throws IOException, SQLException {
@@ -364,15 +377,15 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   private boolean copyGlobalTable(PgConnection pgc, String table) throws IOException, SQLException {
-    return copyTable(pgc, table + ".csv", table, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
+    return copyTable(pgc, table + ".csv", table, new HashMap<>(), Collections.EMPTY_MAP);
   }
 
   private boolean copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults) throws IOException, SQLException {
-    return copyPartitionedTable(pgc, table, datasetKey, defaults, Collections.EMPTY_MAP);
+    return copyPartitionedTable(pgc, table, datasetKey, defaults, new HashMap<>());
   }
 
   private boolean copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
-    return copyTable(pgc, table + "_" + datasetKey + ".csv", table + "_" + datasetKey, defaults, funcs);
+    return copyTable(pgc, table + "_" + datasetKey + ".csv", table, defaults, funcs);
   }
 
   private boolean copyTable(PgConnection pgc, String filename, String table, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs)

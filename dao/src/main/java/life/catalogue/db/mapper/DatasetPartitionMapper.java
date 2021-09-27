@@ -9,6 +9,22 @@ import org.apache.ibatis.annotations.Param;
 
 import com.google.common.collect.Lists;
 
+/**
+ * Mapper with default methods to manage the lifetime of dataset based partitions
+ * and all their need sequences & indices.
+ *
+ * We deal with dataset partitioning depending on the immutable origin property of the dataset:
+ *
+ * EXTERNAL: HASH based partitioning on the datasetKey
+ * MANAGED: a dedicated partition which provides fast read/write speeds
+ * RELEASED: a dedicated partition which provides fast read/write speeds and allows for quick deletions of entire releases when they get old
+ *
+ * This assumes that the total number of managed and released datasets is well below 1000.
+ * If we ever exceed these numbers we should relocate partitions.
+ *
+ * For COL itself it is important to have speedy releases and quick responses when managing the project,
+ * so these should always live on their own partition.
+ */
 public interface DatasetPartitionMapper {
 
   List<String> IDMAP_TABLES = Lists.newArrayList(
@@ -115,6 +131,20 @@ public interface DatasetPartitionMapper {
     )
   );
 
+  default void createDefaultPartitions(int number) {
+    TABLES.forEach(this::createDefaultPartition);
+    for (int i=0; i<number; i++) {
+      int remainder = i;
+      String suffix = "mod"+remainder;
+      TABLES.forEach(t -> createDefaultSubPartition(t, number, remainder));
+      attachTriggers(suffix);
+    }
+  }
+
+  void createDefaultPartition(@Param("table") String table);
+
+  void createDefaultSubPartition(@Param("table") String table, @Param("modulus") int modulus, @Param("remainder") int remainder);
+
   /**
    * Creates a new dataset partition for all data tables if not already existing.
    * The tables are not attached to the main partitioned table yet, see attach().
@@ -122,17 +152,18 @@ public interface DatasetPartitionMapper {
    * Tables with integer id columns will have their own sequence.
    */
   default void create(int key, DatasetOrigin origin) {
-    TABLES.forEach(t -> createTable(t, key));
-    SERIAL_TABLES.forEach(t -> createSerial(t, key));
+    // create dataset specific sequences regardless which origin
+    SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
     // estimates can exist also in non managed datasets, so we need to have an id sequence for them in all datasets
     // but they are not a partitioned table, treat them special
     createIdSequence("estimate", key);
-    // things specific to managed datasets only
+    // sequences needed to generate keys in managed datasets
     if (origin == DatasetOrigin.MANAGED) {
       createManagedSequences(key);
     }
     // things specific to managed and released datasets only
     if (origin.isManagedOrRelease()) {
+      TABLES.forEach(t -> createTable(t, key));
       PROJECT_TABLES.forEach(t -> createTable(t, key));
     }
   }
@@ -190,11 +221,13 @@ public interface DatasetPartitionMapper {
    *
    * @param key
    */
-  default void delete(int key) {
+  default void delete(int key, DatasetOrigin origin) {
     deleteUsageCounter(key);
-    PROJECT_TABLES.forEach(t -> deleteTable(t, key));
-    Lists.reverse(TABLES).forEach(t -> deleteTable(t, key));
-    IDMAP_TABLES.forEach(t -> deleteTable(t, key));
+    if (origin.isManagedOrRelease()) {
+      PROJECT_TABLES.forEach(t -> deleteTable(t, key));
+      Lists.reverse(TABLES).forEach(t -> deleteTable(t, key));
+      IDMAP_TABLES.forEach(t -> deleteTable(t, key));
+    }
   }
  
   void deleteTable(@Param("table") String table, @Param("key") int key);
@@ -213,19 +246,21 @@ public interface DatasetPartitionMapper {
    * @param key
    */
   default void attach(int key, DatasetOrigin origin) {
-    // create PKs
-    TABLES.forEach(t -> createPk(t, key));
-    // this also creates the indices from the partitioned table
-    TABLES.forEach(t -> attachTable(t, key));
-    // create FKs
-    // we always have a verbatim_key on every table
-    TABLES.stream()
-      .filter(t -> !t.equalsIgnoreCase("verbatim"))
-      .forEach(t -> createFk(t, key, new FK("verbatim_key", "verbatim")));
-    // custom fks
-    FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, key, fk)));
-    // things specific to managed datasets only
     if (origin.isManagedOrRelease()) {
+      // create PKs
+      TABLES.forEach(t -> createPk(t, key));
+      // this also creates the indices from the partitioned table
+      TABLES.forEach(t -> attachTable(t, key));
+      // create FKs
+      // we always have a verbatim_key on every table
+      TABLES.stream()
+        .filter(t -> !t.equalsIgnoreCase("verbatim"))
+        .forEach(t -> createFk(t, key, new FK("verbatim_key", "verbatim")));
+      // custom fks
+      FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, key, fk)));
+      //
+      attachTriggers(String.valueOf(key));
+      // things specific to managed datasets only
       PROJECT_TABLES.forEach(t -> createPk(t, key));
       PROJECT_TABLES.forEach(t -> attachTable(t, key));
       createFk("verbatim_source", key, new FK("id", "name_usage", true, true));
@@ -244,12 +279,18 @@ public interface DatasetPartitionMapper {
   );
 
   /**
-   * Attaches a trigger to the name usage partition that tracks the total counts of usages.
+   * Attaches all required triggers for a given partition suffix.
+   * Currently these are 1 trigger on the name and 2 triggers on the name usage partition.
+   * Make sure to call this AFTER the partition table is attached.
+   * @param suffix partition suffix, e.g. datasetkey for external datasets
+   */
+  void attachTriggers(@Param("key") String suffix);
+
+  /**
+   * Updates the name usage counter record with the current count.
    * Make sure to call this AFTER the partition table is attached
    * @param key datasetkey
    */
-  void attachUsageCounter(@Param("key") int key);
-
   int updateUsageCounter(@Param("key") int key);
 
   /**

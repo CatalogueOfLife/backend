@@ -367,29 +367,6 @@
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
-  <select id="ambiguousZooRankNameIds" parameterType="map" resultType="string">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT DISTINCT n.id
-    FROM <include refid="FROM_SIMPLE"/>
-    WHERE u.sector_key = #{sectorKey}
-      AND n.rank IN ()
-      AND EXISTS (
-        SELECT true
-        FROM name_usage u2 JOIN name n2 ON n2.dataset_key=u2.dataset_key AND u2.name_id=n2.id
-        WHERE u2.dataset_key=#{datasetKey}
-          AND u2.sector_key = #{sectorKey}
-          AND u2.parent_id
-      )
-
-    DELETE FROM name_usage u
-    USING name n, name_usage p, name pn
-    WHERE n.dataset_key=#{datasetKey} AND u.name_id=n.id
-      AND p.dataset_key=#{datasetKey} AND p.id=u.parent_id AND p.name_id=pn.id
-      AND u.sector_key = #{key.id}
-      AND n.rank IN ambiguousRank()
-      AND pn.dataset_key=#{datasetKey} AND pn.rank &lt;= 'GENUS'::rank
-  </select>
-
   <delete id="deleteBySectorAndRank" parameterType="map">
     DELETE FROM name_usage u
     USING name n
@@ -408,7 +385,6 @@
   </delete>
 
   <select id="deleteSubtree" parameterType="map" resultType="String">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     WITH RECURSIVE tree AS (
       SELECT id, name_id AS nid
       FROM name_usage
@@ -504,7 +480,6 @@
   </select>
 
   <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     WITH RECURSIVE x AS(
       SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', n.scientific_name, u.id) AS path
       FROM <include refid="FROM_SIMPLE"/>
@@ -523,39 +498,36 @@
   </select>
 
   <select id="processTreeIds" parameterType="map" resultMap="idResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     WITH RECURSIVE tree AS (
-    SELECT id, name_id AS nid
-    FROM name_usage_${partition}
-    WHERE id=#{key.id}
+      SELECT id, name_id AS nid
+      FROM name_usage
+      WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
     UNION
-    SELECT c.id, c.name_id
-    FROM name_usage_${partition} c JOIN tree ON tree.id = c.parent_id
+      SELECT c.id, c.name_id
+      FROM name_usage c JOIN tree ON c.dataset_key=#{key.datasetKey} AND tree.id = c.parent_id
     )
     SELECT * FROM tree;
   </select>
 
   <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT u.id, nm.index_id, nm.type, n.rank, n.authorship, u.name_phrase, u.status, np.scientific_name AS parent, ni.canonical_id
-    FROM name_usage_${partition} u
-      JOIN name_${partition} n ON n.id=u.name_id
-      LEFT JOIN name_usage_${partition} up ON up.id=u.parent_id
-      LEFT JOIN name_${partition} np ON np.id=up.name_id
+    FROM name_usage u
+      JOIN name n ON n.dataset_key=#{datasetKey} AND n.id=u.name_id
+      LEFT JOIN name_usage up ON up.dataset_key=#{datasetKey} AND up.id=u.parent_id
+      LEFT JOIN name np ON np.dataset_key=#{datasetKey} AND np.id=up.name_id
       LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
       LEFT JOIN names_index ni ON ni.id=nm.index_id
+    WHERE u.dataset_key=#{datasetKey}
     ORDER BY ni.canonical_id, ni.id
   </select>
 
   <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT id FROM name_usage_${partition}
+    SELECT id FROM name_usage WHERE dataset_key=#{datasetKey}
   </select>
 
   <delete id="delete" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM name_usage_${partition}
-    WHERE id = #{key.id}
+    DELETE FROM name_usage
+    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
   </delete>
 
 </mapper>

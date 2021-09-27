@@ -123,15 +123,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("userKey") int userKey);
 
   /**
-   * Selects the name ids of all usages that have an ambiguous zoological rank above genus
-   * like section or series and which is placed at suprageneric level in the tree.
-   *
-   * Our rank enum places these ranks according to their frequent botanical use below genus level.
-   */
-  List<String> ambiguousZooRankNameIds(@Param("datasetKey") int datasetKey,
-                                      @Param("sectorKey") @Nullable Integer sectorKey);
-
-  /**
    * Deletes usages by sector key and a max rank to be included.
    * An optional set of name ids can be provided that will be excluded from the deletion.
    * This is useful to avoid deletion of ambiguous ranks like section or series which are placed differently in zoology and botany.

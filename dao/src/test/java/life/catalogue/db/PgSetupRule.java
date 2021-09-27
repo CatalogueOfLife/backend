@@ -7,8 +7,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import life.catalogue.dao.Partitioner;
+
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.postgresql.jdbc.PgConnection;
@@ -105,6 +108,7 @@ public class PgSetupRule extends ExternalResource {
       con.commit();
     }
     setupMybatis(cfg);
+    Partitioner.createDefaultPartitions(sqlSessionFactory, cfg.partitions);
   }
 
   @Override

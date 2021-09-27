@@ -28,7 +28,13 @@ public class PgConfig extends PgDbConfig {
   public String host = "localhost";
 
   public int port = 5432;
-  
+
+  /**
+   * Partitions used for the default HASH based partition of external datasets.
+   */
+  @Min(2)
+  public int partitions = 2;
+
   @Min(1)
   public int maximumPoolSize = 8;
   

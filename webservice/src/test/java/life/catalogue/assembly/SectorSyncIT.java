@@ -94,7 +94,7 @@ public class SectorSyncIT {
     eDao = new EstimateDao(PgSetupRule.getSqlSessionFactory(), validator);
     // reset draft
     dataRule.truncateDraft();
-    dataRule.loadData(true);
+    dataRule.loadData();
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
     sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);

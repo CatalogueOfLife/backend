@@ -1,8 +1,8 @@
-taxon_id,area,gazetteer,reference_id
-t10,DE,ISO,r1
-t10,NL,ISO,r1
-t10,UK,ISO,r1
-t10,DK,ISO,r1
-t10,ES,ISO,r1
-t20,Germany,TEXT,r2
-t20,Österreich,TEXT,r2
+id,taxon_id,area,gazetteer,reference_id
+1,t10,DE,ISO,r1
+2,t10,NL,ISO,r1
+3,t10,UK,ISO,r1
+4,t10,DK,ISO,r1
+5,t10,ES,ISO,r1
+6,t20,Germany,TEXT,r2
+7,t20,Österreich,TEXT,r2

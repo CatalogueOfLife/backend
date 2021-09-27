@@ -61,9 +61,19 @@ public class DaoUtils {
     }
   }
 
+  public static boolean isManagedOrRelease(int datasetKey) {
+    DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey, true).origin;
+    if (origin != null) {
+      return origin.isManagedOrRelease();
+    }
+    return false;
+  }
+
   public static void aquireTableLock(int datasetKey, SqlSession session) {
-    LOG.info("Try to aquire a table lock for dataset {}", datasetKey);
-    session.getMapper(DatasetPartitionMapper.class).lockTables(datasetKey);
+    if (isManagedOrRelease(datasetKey)) {
+      LOG.info("Try to aquire a table lock for managed/released dataset {}", datasetKey);
+      session.getMapper(DatasetPartitionMapper.class).lockTables(datasetKey);
+    }
   }
 
   /**

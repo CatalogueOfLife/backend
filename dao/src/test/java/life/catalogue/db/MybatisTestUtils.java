@@ -32,19 +32,9 @@ public class MybatisTestUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MybatisTestUtils.class);
 
   public static void partition(SqlSession session, int datasetKey) {
-    DatasetOrigin origin;
-    try {
-      origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
-    } catch (NotFoundException e) {
-      // happens in tests, just treat them as a managed one that needs a counter
-      origin = DatasetOrigin.MANAGED;
-    }
+    DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
     Partitioner.partition(session, datasetKey, origin);
     Partitioner.attach(session, datasetKey, origin);
-    if (origin == DatasetOrigin.MANAGED) {
-      LOG.info("Attach usage counter to dataset {}", datasetKey);
-      Partitioner.createManagedObjects(session, datasetKey);
-    }
   }
 
   /**
@@ -111,8 +101,11 @@ public class MybatisTestUtils {
     TestDataRule rule = new TestDataRule(data);
     rule.initSession();
     try {
+      if (!skipGlobalTables) {
+        rule.loadGlobalData();
+      }
       rule.partition();
-      rule.loadData(skipGlobalTables);
+      rule.loadData();
     } finally {
       rule.getSqlSession().close();
     }

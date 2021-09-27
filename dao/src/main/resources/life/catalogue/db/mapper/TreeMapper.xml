@@ -46,7 +46,7 @@
   </sql>
 
   <sql id="FROM_USAGE">
-    name_usage_${partition} t JOIN name_${partition} n ON t.name_id=n.id
+    name_usage t JOIN name n ON t.dataset_key=n.dataset_key AND t.name_id=n.id
   </sql>
 
   <sql id="FROM">
@@ -78,46 +78,36 @@
   </resultMap>
 
   <select id="get" resultMap="treeResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     <bind name="datasetKey" value="key.datasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE t.id = #{key.id}
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE t.dataset_key=#{key.datasetKey} AND t.id = #{key.id}
   </select>
 
   <select id="root" resultMap="treeResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE t.parent_id IS NULL AND NOT is_synonym <include refid="EXTINCT"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE t.dataset_key=#{datasetKey} AND t.parent_id IS NULL AND NOT is_synonym <include refid="EXTINCT"/>
     ORDER BY n.rank, n.scientific_name
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="children" resultMap="treeResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     <bind name="datasetKey" value="key.datasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE t.parent_id = #{key.id} AND NOT t.is_synonym <include refid="EXTINCT"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id} AND NOT t.is_synonym <include refid="EXTINCT"/>
     ORDER BY n.rank, n.scientific_name
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="childrenWithPlaceholder" resultMap="treeResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     <bind name="datasetKey" value="key.datasetKey"/>
     WITH first AS (
       SELECT n.rank
       FROM
       <include refid="FROM_USAGE"/>
-      WHERE t.parent_id = #{key.id} AND NOT is_synonym <include refid="EXTINCT"/>
+      WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id} AND NOT is_synonym <include refid="EXTINCT"/>
       <if test="rank!=null">
         AND n.rank > #{rank}::rank
       </if>
@@ -127,36 +117,31 @@
     SELECT
     <include refid="SELECT"/>
     FROM<include refid="FROM"/>, first
-    WHERE t.parent_id = #{key.id} AND NOT t.is_synonym AND first.rank=n.rank <include refid="EXTINCT"/>
+    WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id} AND NOT t.is_synonym AND first.rank=n.rank <include refid="EXTINCT"/>
     ORDER BY n.rank, n.scientific_name
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="classification" resultMap="treeResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     <bind name="datasetKey" value="key.datasetKey"/>
     WITH RECURSIVE x AS(
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE t.id = #{key.id}
+      SELECT <include refid="SELECT"/>
+      FROM <include refid="FROM"/>
+      WHERE t.dataset_key=#{key.datasetKey} AND t.id = #{key.id}
     UNION
-    SELECT
-    <include refid="SELECT"/>
-    FROM<include refid="FROM"/>, x
-    WHERE t.id = x.parent_id
+      SELECT
+      <include refid="SELECT"/>
+      FROM<include refid="FROM"/>, x
+      WHERE t.dataset_key=#{key.datasetKey} AND t.id = x.parent_id
     )
     SELECT *
     FROM x
   </select>
 
   <select id="childrenRanks" resultType="Rank">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT DISTINCT n.rank
-    FROM
-    <include refid="FROM_USAGE"/>
-    WHERE t.parent_id = #{key.id} AND NOT t.is_synonym
+    FROM <include refid="FROM_USAGE"/>
+    WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id} AND NOT t.is_synonym
     <if test="rank != null">
       AND n.rank &lt;= #{rank}::rank
     </if>
@@ -164,13 +149,12 @@
   </select>
 
   <select id="childrenSectors" resultType="Integer">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT DISTINCT t.sector_key
-    FROM name_usage_${partition} t
+    FROM name_usage t
     <if test="rank != null">
-      JOIN name_${partition} n ON t.name_id=n.id
+      JOIN name n ON WHERE t.dataset_key=n.dataset_key AND t.name_id=n.id
     </if>
-    WHERE t.parent_id = #{key.id}
+    WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id}
     <if test="rank != null">
       AND n.rank > #{rank}::rank
     </if>

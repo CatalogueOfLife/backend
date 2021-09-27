@@ -38,15 +38,15 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   @Test
   public void createDelete() {
     // we create the prov-cat partition in the InitMybatisRule
-    mapper().delete(Datasets.COL);
+    mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
     mapper().create(Datasets.COL, DatasetOrigin.MANAGED);
     mapper().attach(Datasets.COL, DatasetOrigin.MANAGED);
 
-    mapper().delete(Datasets.COL);
+    mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
     mapper().create(Datasets.COL, DatasetOrigin.MANAGED);
     mapper().attach(Datasets.COL, DatasetOrigin.MANAGED);
 
-    mapper().delete(Datasets.COL);
+    mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
   }
 
   @Test
@@ -94,10 +94,10 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   @Test
   public void concurrentAttach() throws Exception {
     
-    mapper().delete(Datasets.COL);
+    mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
     mapper().create(Datasets.COL, DatasetOrigin.MANAGED);
     mapper().attach(Datasets.COL, DatasetOrigin.MANAGED);
-    mapper().delete(Datasets.COL);
+    mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
   
     // run continuous ref and name imports
     ContinuousInserter<Reference> refIns = new ContinuousInserter<Reference>(PgSetupRule.getSqlSessionFactory(),
@@ -116,7 +116,7 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
       // now try to attach a different physical table to the same partition that we insert into
       final int datasetKey = TestDataRule.APPLE.key;
       System.out.println("Delete partition " + datasetKey);
-      mapper().delete(datasetKey);
+      mapper().delete(datasetKey, DatasetOrigin.EXTERNAL);
       mapper().create(datasetKey, DatasetOrigin.EXTERNAL);
       commit();
       System.out.println("Try to attach the partition " + datasetKey);

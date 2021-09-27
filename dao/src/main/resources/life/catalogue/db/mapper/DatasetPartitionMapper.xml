@@ -4,14 +4,16 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.DatasetPartitionMapper">
 
+  <update id="createDefaultPartition" parameterType="map">
+    CREATE TABLE ${table}_default PARTITION OF ${table} DEFAULT PARTITION BY HASH(dataset_key);
+  </update>
+
+  <update id="createDefaultSubPartition" parameterType="map">
+    CREATE TABLE ${table}_mod${remainder} PARTITION OF ${table}_default FOR VALUES WITH (modulus ${modulus}, remainder ${remainder});
+  </update>
+
   <update id="createTable" parameterType="map">
     CREATE TABLE ${table}_${key} (LIKE ${table} INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
-    <if test="table == 'name'">
-      CREATE TRIGGER name_trigger_${key} BEFORE INSERT OR UPDATE
-      ON name_${key} FOR EACH ROW
-      WHEN (NEW.homotypic_name_id IS NULL)
-      EXECUTE PROCEDURE homotypic_name_id_default();
-    </if>
   </update>
 
   <update id="createIdMapTable" parameterType="map">
@@ -62,28 +64,30 @@
 
   <select id="updateUsageCounter" parameterType="map" resultType="int">
     DELETE FROM usage_count WHERE dataset_key=#{key};
-    INSERT INTO usage_count (dataset_key, counter) VALUES (${key}, (SELECT count(*) from name_usage_${key}));
+    INSERT INTO usage_count (dataset_key, counter) VALUES (${key}, (SELECT count(*) FROM name_usage WHERE dataset_key = ${key}));
     SELECT counter FROM usage_count WHERE dataset_key=#{key};
   </select>
 
-  <update id="attachUsageCounter" parameterType="map">
-    INSERT INTO usage_count (dataset_key, counter) VALUES (${key}, (SELECT count(*) from name_usage_${key}));
+  <update id="attachTriggers" parameterType="map">
+    CREATE TRIGGER trg_name_${key} BEFORE INSERT OR UPDATE
+    ON name_${key} FOR EACH ROW
+    WHEN (NEW.homotypic_name_id IS NULL)
+    EXECUTE PROCEDURE homotypic_name_id_default();
 
     CREATE TRIGGER trg_name_usage_${key}_insert
     AFTER INSERT ON name_usage_${key}
     REFERENCING NEW TABLE AS inserted
     FOR EACH STATEMENT
-    EXECUTE FUNCTION count_usage_on_insert(${key});
+    EXECUTE FUNCTION track_usage_count();
 
     CREATE TRIGGER trg_name_usage_${key}_delete
     AFTER DELETE ON name_usage_${key}
     REFERENCING OLD TABLE AS deleted
     FOR EACH STATEMENT
-    EXECUTE FUNCTION count_usage_on_delete(${key});
+    EXECUTE FUNCTION track_usage_count();
   </update>
 
   <update id="lockTables" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT 1 FROM verbatim_${partition} LIMIT 1;
     LOCK TABLE verbatim_${partition} IN EXCLUSIVE mode;
     LOCK TABLE name_${partition} IN EXCLUSIVE mode;

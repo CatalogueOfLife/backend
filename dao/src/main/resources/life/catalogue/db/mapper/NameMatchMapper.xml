@@ -44,7 +44,6 @@
   </insert>
 
   <delete id="deleteOrphaned" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     DELETE FROM name_match nm
     WHERE dataset_key=#{datasetKey}
     <if test="sectorKey != null">

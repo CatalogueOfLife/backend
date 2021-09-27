@@ -82,7 +82,7 @@
   </sql>
 
   <sql id="FROM">
-    type_material_${partition}
+    type_material
   </sql>
 
   <resultMap id="typeResultMap" type="TypeMaterial" autoMapping="true">
@@ -90,23 +90,20 @@
   </resultMap>
 
   <select id="listByName" resultMap="typeResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE name_id = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND name_id = #{key.id}
     ORDER BY id
   </select>
 
   <select id="get" resultMap="typeResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE id = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </select>
 
   <insert id="create" parameterType="TypeMaterial" keyProperty="id">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    INSERT INTO type_material_${partition} (<include refid="COLS"/>, created, modified)
+    INSERT INTO type_material (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
 
@@ -121,41 +118,36 @@
   </insert>
 
   <update id="update" parameterType="TypeMaterial" keyProperty="id">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     UPDATE type_material_${partition}
     SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
-    WHERE id = #{id} AND dataset_key=#{datasetKey}
+    WHERE dataset_key=#{datasetKey} AND id = #{id}
   </update>
 
   <delete id="delete" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM type_material_${partition}
-    WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
+    DELETE FROM type_material
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </delete>
 
   <select id="processDataset" parameterType="map" resultMap="typeResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
+    WHERE dataset_key = #{datasetKey}
   </select>
 
   <select id="processSector" parameterType="map" resultMap="typeResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE sector_key = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM type_material_${partition}
-    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
+    DELETE FROM type_material
+    WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE type_material_${partition} SET sector_key = NULL
-    WHERE sector_key = #{key.id}
+    UPDATE type_material SET sector_key = NULL
+    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
 </mapper>

@@ -1,35 +1,41 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.DatasetScoped;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
-
-import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.DELETE;
+
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
+/**
+ * Utils class that wraps the main DatasetPartitionMapper.
+ * See DatasetPartitionMapper for the main documentation.
+ */
 public class Partitioner {
   private static final Logger LOG = LoggerFactory.getLogger(Partitioner.class);
-  
-  public static String partitionName(int datasetKey) {
-    return datasetKey > 100000 ? "plazi" : String.valueOf(datasetKey);
+
+  public static synchronized void createDefaultPartitions(SqlSessionFactory factory, int number) {
+    try (SqlSession session = factory.openSession(false)) {
+      createDefaultPartitions(session, number);
+      session.commit();
+    }
   }
-  
-  public static String partitionName(DatasetScoped key) {
-    return partitionName(key.getDatasetKey());
-  }
-  
+
   /**
-   * partition by DatasetScoped like method that takes a hashmap which can be included as column parameters
-   * in mybatis xml collection statements, e.g. NameUsageWrapperMapper.taxonGetClassificationResultMap
+   * Creates a given number of partitions for the default, hashed partition
+   * including all required sequences.
+   * @param number of partitions to create
    */
-  public static String partitionName(Map<String, Object> key) {
-    return partitionName( (Integer) key.get("datasetKey"));
+  public static synchronized void createDefaultPartitions(SqlSession session, int number) {
+    LOG.info("Create default partition with {} subpartitions for external datasets", number);
+    DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+    mapper.createDefaultPartitions(number);
+    session.commit();
   }
 
   public static synchronized void partition(SqlSessionFactory factory, int datasetKey, DatasetOrigin origin) {
@@ -45,50 +51,26 @@ public class Partitioner {
    * See https://github.com/Sp2000/colplus-backend/issues/127
    */
   public static synchronized void partition(SqlSession session, int datasetKey, DatasetOrigin origin) {
-    if (origin.isManagedOrRelease()) {
-      interruptIfCancelled();
-      LOG.info("Create empty partition for dataset {}", datasetKey);
-      DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
-      // first remove if existing
-      mapper.delete(datasetKey);
-      // then create
-      mapper.create(datasetKey, origin);
-
-    } else {
-      //TODO: create count sequences and manually populate them after imports ???
-    }
-  }
-
-  /**
-   * Creates dataset specific tables & objects that are needed for managed datasets only.
-   * E.g. usage count triggers or id mapping tables.
-   *
-   * This requires the partitions to be attached already!
-   */
-  public static void createManagedObjects(SqlSessionFactory factory, int datasetKey) {
-    try (SqlSession session = factory.openSession(true)) {
-      createManagedObjects(session, datasetKey);
-    }
-  }
-
-  public static void createManagedObjects(SqlSession session, int datasetKey) {
     interruptIfCancelled();
-    LOG.info("Create triggers for managed dataset {}", datasetKey);
-    DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-    dmp.attachUsageCounter(datasetKey);
+    LOG.info("Create empty partition for dataset {}", datasetKey);
+    DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+    // first remove if existing
+    mapper.delete(datasetKey, origin);
+    // then create
+    mapper.create(datasetKey, origin);
   }
   
-  public static synchronized void delete(SqlSessionFactory factory, int datasetKey) {
+  public static synchronized void delete(SqlSessionFactory factory, int datasetKey, DatasetOrigin origin) {
     try (SqlSession session = factory.openSession(false)) {
-      delete(session, datasetKey);
+      delete(session, datasetKey, origin);
       session.commit();
     }
   }
   
-  public static synchronized void delete(SqlSession session, int datasetKey) {
+  public static synchronized void delete(SqlSession session, int datasetKey, DatasetOrigin origin) {
     interruptIfCancelled();
     LOG.info("Delete partition for dataset {}", datasetKey);
-    session.getMapper(DatasetPartitionMapper.class).delete(datasetKey);
+    session.getMapper(DatasetPartitionMapper.class).delete(datasetKey, origin);
   }
 
   public static synchronized void attach(SqlSessionFactory factory, int datasetKey, DatasetOrigin origin) {

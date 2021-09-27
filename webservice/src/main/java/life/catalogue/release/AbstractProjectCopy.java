@@ -134,9 +134,6 @@ public abstract class AbstractProjectCopy implements Runnable {
 
       // build indices and attach partition
       Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
-      if (newDatasetOrigin == DatasetOrigin.MANAGED) {
-        Partitioner.createManagedObjects(factory, newDatasetKey);
-      }
 
       // subclass specifics
       finalWork();

@@ -50,7 +50,7 @@
   </sql>
 
   <sql id="FROM">
-    taxon_concept_rel_${partition} tc
+    taxon_concept_rel tc
   </sql>
 
   <resultMap id="tcRelResultMap" type="TaxonConceptRelation" autoMapping="true">
@@ -58,32 +58,28 @@
   </resultMap>
 
   <select id="listByTaxon" resultMap="tcRelResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE tc.taxon_id = #{key.id}
+    WHERE tc.dataset_key = #{key.datasetKey} AND tc.taxon_id = #{key.id}
     ORDER BY tc.id
   </select>
 
   <select id="listByRelatedTaxon" resultMap="tcRelResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE tc.related_taxon_id = #{key.id}
+    WHERE tc.dataset_key = #{key.datasetKey} AND tc.related_taxon_id = #{key.id}
     ORDER BY tc.id
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="tcRelResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
+    WHERE tc.dataset_key = #{datasetKey}
   </select>
 
   <select id="listByType" resultMap="tcRelResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM taxon_concept_rel_${partition} nr
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE tc.dataset_key = #{datasetKey}
       AND tc.type=#{type}::TAXONCONCEPTRELTYPE
       AND tc.taxon_id = #{taxonId}
@@ -91,8 +87,7 @@
   </select>
 
   <insert id="create" parameterType="TaxonConceptRelation" useGeneratedKeys="true" keyProperty="id">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    INSERT INTO taxon_concept_rel_${partition} (<include refid="COLS"/>, created, modified )
+    INSERT INTO taxon_concept_rel (<include refid="COLS"/>, created, modified )
     VALUES (<include refid="PROPS"/>, now(), now() )
   </insert>
 
@@ -107,22 +102,19 @@
   </insert>
 
   <select id="processSector" parameterType="map" resultMap="tcRelResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE tc.sector_key = #{key.id}
+    WHERE tc.dataset_key = #{key.datasetKey} AND tc.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM taxon_concept_rel_${partition}
-    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
+    DELETE FROM taxon_concept_rel
+    WHERE tc.dataset_key = #{key.datasetKey} AND sector_key=#{key.id}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE taxon_concept_rel_${partition} SET sector_key = NULL
-    WHERE sector_key = #{key.id}
+    UPDATE taxon_concept_rel SET sector_key = NULL
+    WHERE tc.dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
 </mapper>

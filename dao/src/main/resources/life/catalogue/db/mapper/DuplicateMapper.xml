@@ -39,7 +39,6 @@
   </select>
 
   <select id="usagesByIds" resultMap="usageDecisionResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT
     u.is_synonym,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
