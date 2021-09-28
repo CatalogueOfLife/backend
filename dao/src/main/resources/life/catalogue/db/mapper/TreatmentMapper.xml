@@ -53,8 +53,8 @@
   </select>
 
   <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="obj.id">
-    INSERT INTO treatment (<include refid="COLS"/>, created, modified )
-    VALUES (<include refid="PROPS"/>, now(), now() )
+    INSERT INTO treatment (<include refid="COLS"/>, created, modified)
+    VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
 
   <insert id="copyDataset" parameterType="map">

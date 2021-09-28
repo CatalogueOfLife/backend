@@ -90,13 +90,13 @@
   </select>
 
   <insert id="create" parameterType="SpeciesInteraction" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO species_interaction (<include refid="COLS"/>, created, modified )
-    VALUES (<include refid="PROPS"/>, now(), now() )
+    INSERT INTO species_interaction (<include refid="COLS"/>, created, modified, id )
+    VALUES (<include refid="PROPS"/>, now(), now(), nextval('species_interaction_${datasetKey}_id_seq'))
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO species_interaction_${newDatasetKey} (dataset_key,taxon_id,related_taxon_id,<include refid="COLS_COPY"/>, created, modified)
-    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m1.id2,</if>taxon_id),coalesce(<if test="mapIds">m2.id2,</if>related_taxon_id),<include refid="COLS_COPY"/>, created, modified
+    INSERT INTO species_interaction_${newDatasetKey} (dataset_key,taxon_id,related_taxon_id,id,<include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m1.id2,</if>taxon_id),coalesce(<if test="mapIds">m2.id2,</if>related_taxon_id),nextval('species_interaction_${newDatasetKey}_id_seq'),<include refid="COLS_COPY"/>, created, modified
     FROM species_interaction_${datasetKey} r
     <if test="mapIds">
       LEFT JOIN idmap_name_usage_${datasetKey} m1 ON m1.id=r.taxon_id

@@ -84,13 +84,13 @@
   </select>
 
   <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="obj.id">
-    INSERT INTO distribution (<include refid="COLS"/>, created, modified )
-    VALUES (<include refid="PROPS"/>, now(), now())
+    INSERT INTO distribution (<include refid="COLS"/>, created, modified, id)
+    VALUES (<include refid="PROPS"/>, now(), now(), nextval('distribution_${obj.datasetKey}_id_seq'))
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO distribution_${newDatasetKey} (dataset_key,taxon_id,<include refid="COLS_COPY"/>, created, modified)
-    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>taxon_id),<include refid="COLS_COPY"/>, created, modified
+    INSERT INTO distribution_${newDatasetKey} (dataset_key,taxon_id,id,<include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>taxon_id),nextval('distribution_${newDatasetKey}_id_seq'),<include refid="COLS_COPY"/>, created, modified
     FROM distribution_${datasetKey} d
     <if test="mapIds">
       LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=d.taxon_id
