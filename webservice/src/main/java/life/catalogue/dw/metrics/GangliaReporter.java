@@ -1,6 +1,8 @@
 package life.catalogue.dw.metrics;
 
 import com.codahale.metrics.*;
+import com.google.common.annotations.VisibleForTesting;
+
 import info.ganglia.gmetric4j.gmetric.GMetric;
 import info.ganglia.gmetric4j.gmetric.GMetricSlope;
 import info.ganglia.gmetric4j.gmetric.GMetricType;
@@ -28,7 +30,7 @@ import static com.codahale.metrics.MetricRegistry.name;
  */
 public class GangliaReporter extends ScheduledReporter {
 
-  private static final Pattern SLASHES = Pattern.compile("\\\\");
+  private static final Pattern SLASHES = Pattern.compile("[\\\\/]");
 
   /**
    * Returns a new {@link Builder} for {@link GangliaReporter}.
@@ -416,7 +418,8 @@ public class GangliaReporter extends ScheduledReporter {
   }
 
   // ganglia metric names can't contain slashes.
-  private String escapeSlashes(String name) {
+  @VisibleForTesting
+  protected static String escapeSlashes(String name) {
     return SLASHES.matcher(name).replaceAll("_");
   }
 }
