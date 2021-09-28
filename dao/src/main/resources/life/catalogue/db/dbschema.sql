@@ -1640,9 +1640,9 @@ $$
       -- making use of the special variable TG_OP to work out the operation.
       -- we assume we never mix records from several datasets in an insert or delete statement !!!
       IF (TG_OP = 'DELETE') THEN
-        EXECUTE 'UPDATE usage_count set counter=counter+(select count(*) from inserted) where dataset_key=(SELECT dataset_key FROM inserted LIMIT 1)';
+        EXECUTE 'UPDATE usage_count set counter=counter+(select count(*) from deleted) where dataset_key=(SELECT dataset_key FROM deleted LIMIT 1)';
       ELSIF (TG_OP = 'INSERT') THEN
-        EXECUTE 'UPDATE usage_count set counter=counter-(select count(*) from deleted) where dataset_key=(SELECT dataset_key FROM deleted LIMIT 1)';
+        EXECUTE 'UPDATE usage_count set counter=counter-(select count(*) from inserted) where dataset_key=(SELECT dataset_key FROM inserted LIMIT 1)';
       END IF;
 
     RETURN NULL;

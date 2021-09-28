@@ -164,13 +164,13 @@
   <select id="get" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key = #{datasetKey} AND u.id = #{key.id}
+    WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
   <select id="getSimple" resultMap="simpleResultMap">
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
-    WHERE u.dataset_key = #{datasetKey} AND u.id = #{key.id}
+    WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
   <select id="getSimpleByIdMap" resultMap="simpleResultMap">
@@ -191,7 +191,7 @@
   <select id="listByRegex" resultMap="simpleResultMap">
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
-    WHERE dataset_key = #{datasetKey}
+    WHERE u.dataset_key = #{datasetKey}
       AND n.scientific_name ~ '${regex}'
     <if test="rank != null">
       AND n.rank = #{rank}::RANK
@@ -338,9 +338,9 @@
       <property name="prefix" value="n_"/>
     </include>
     FROM name n
-    LEFT JOIN name_usage u ON u.dataset_key=n.dataset_key AND n.id = u.name_id
+    LEFT JOIN name_usage u ON u.dataset_key=#{datasetKey} AND n.id = u.name_id
     <where>
-      u.dataset_key
+      n.dataset_key=#{datasetKey}
       AND u.id IS NULL
       <if test="maxRank != null">
         AND n.rank >= #{maxRank}::rank

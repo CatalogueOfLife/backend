@@ -94,7 +94,7 @@
   <select id="processDataset" parameterType="map" resultMap="mediaExtResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{key.datasetKey}
+    WHERE dataset_key=#{datasetKey}
   </select>
 
   <insert id="create" parameterType="Media" useGeneratedKeys="true" keyProperty="obj.id">

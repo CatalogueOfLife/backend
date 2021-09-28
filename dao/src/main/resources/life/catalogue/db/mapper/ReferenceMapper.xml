@@ -56,7 +56,7 @@
   </sql>
 
   <sql id="SEARCH_WHERE">
-    <if test="req != null AND req.sectorDatasetKey != null">
+    <if test="req != null &amp;&amp; req.sectorDatasetKey != null">
       JOIN sector s ON s.id=r.sector_key
     </if>
     <where>
@@ -186,7 +186,7 @@
 
   <delete id="deleteByDataset" parameterType="map">
     DELETE FROM reference
-    WHERE dataset_key=#{key.datasetKey}
+    WHERE dataset_key=#{datasetKey}
   </delete>
 
   <select id="processSector" parameterType="map" resultMap="referenceResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
