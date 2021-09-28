@@ -82,7 +82,7 @@
 
   <select id="listByType" resultMap="speciesInteractionResultMap">
     SELECT <include refid="SELECT"/>
-    FROM species_interaction_${partition} nr
+    FROM species_interaction si
     WHERE si.dataset_key=#{datasetKey}
       AND si.type=#{type}::SPECIESINTERACTIONTYPE
       AND si.taxon_id = #{taxonId}

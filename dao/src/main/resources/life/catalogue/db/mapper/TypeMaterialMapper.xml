@@ -118,7 +118,7 @@
   </insert>
 
   <update id="update" parameterType="TypeMaterial" keyProperty="id">
-    UPDATE type_material_${partition}
+    UPDATE type_material
     SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
     WHERE dataset_key=#{datasetKey} AND id = #{id}
   </update>

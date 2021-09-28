@@ -40,22 +40,20 @@
     #{obj.modifiedBy}
   </sql>
 
-  <sql id="FROM">treatment_${partition} t</sql>
+  <sql id="FROM">treatment t</sql>
 
   <resultMap id="treatmentResultMap" type="Treatment" autoMapping="true">
     <id property="id" column="id"/>
   </resultMap>
 
   <select id="get" resultMap="treatmentResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE t.id = #{key.id}
+    WHERE t.dataset_key=#{key.datasetKey} AND t.id = #{key.id}
   </select>
 
   <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="obj.id">
-    <include refid="life.catalogue.db.Common.partitionByObj"/>
-    INSERT INTO treatment_${partition} (<include refid="COLS"/>, created, modified )
+    INSERT INTO treatment (<include refid="COLS"/>, created, modified )
     VALUES (<include refid="PROPS"/>, now(), now() )
   </insert>
 

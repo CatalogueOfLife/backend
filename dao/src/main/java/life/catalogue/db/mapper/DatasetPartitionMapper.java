@@ -296,6 +296,7 @@ public interface DatasetPartitionMapper {
   /**
    * Locks a dataset specific table in EXCLUSIVE mode, only allowing select statements by other transactions.
    * The lock is released when the transaction is ended. There is no other manual lock release possible.
+   * Warning: this should never be used for EXTERNAL datasets which share partitions!!!
    */
   void lockTables(@Param("datasetKey") int datasetKey);
 

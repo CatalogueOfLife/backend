@@ -86,7 +86,6 @@
   </select>
 
   <select id="get" resultMap="mediaResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key=#{key.datasetKey} AND m.id = #{key.id}

@@ -227,7 +227,7 @@
       UNION
     SELECT reference_id FROM estimate WHERE dataset_key = #{datasetKey} AND reference_id IS NOT NULL;
 
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_ref_fks_${datasetKey} ON ref_fks_${partition} (id);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_ref_fks_${datasetKey} ON ref_fks_${datasetKey} (id);
   </sql>
 
   <sql id="orphanWhere">

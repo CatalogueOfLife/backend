@@ -231,25 +231,23 @@
   </select>
 
   <select id="listChildSectors" resultMap="sectorResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    JOIN name_usage_${partition} t ON t.id=s.target_id
-    WHERE t.sector_key=#{key.id} AND s.dataset_key=#{key.datasetKey}
+    JOIN name_usage t ON t.id=s.target_id
+    WHERE t.dataset_key=#{key.datasetKey} AND t.sector_key=#{key.id} AND s.dataset_key=#{key.datasetKey}
     ORDER BY id
   </select>
 
   <select id="listDescendantSectorKeys" resultType="Integer">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     WITH RECURSIVE x AS (
-    SELECT t.id, s.id AS sid
-    FROM name_usage_${partition} t LEFT JOIN sector s ON t.id=s.target_id AND s.dataset_key=#{key.datasetKey}
-    WHERE t.id=#{key.id}
+      SELECT t.id, s.id AS sid
+      FROM name_usage t LEFT JOIN sector s ON t.id=s.target_id AND s.dataset_key=#{key.datasetKey}
+      WHERE t.dataset_key=#{key.datasetKey} AND t.id=#{key.id}
     UNION
-    SELECT t.id, s.id
-    FROM name_usage_${partition} t LEFT JOIN sector s ON t.id=s.target_id AND s.dataset_key=#{key.datasetKey}
-    JOIN x ON x.id = t.parent_id
-    WHERE NOT t.is_synonym
+      SELECT t.id, s.id
+      FROM name_usage t LEFT JOIN sector s ON t.id=s.target_id AND s.dataset_key=#{key.datasetKey}
+      JOIN x ON x.id = t.parent_id
+      WHERE t.dataset_key=#{key.datasetKey} AND NOT t.is_synonym
     )
     SELECT DISTINCT sid FROM x WHERE sid IS NOT NULL
   </select>

@@ -58,7 +58,6 @@
   </resultMap>
 
   <select id="listByName" resultMap="nameRelResultMap">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key = #{key.datasetKey} AND nr.name_id = #{key.id}

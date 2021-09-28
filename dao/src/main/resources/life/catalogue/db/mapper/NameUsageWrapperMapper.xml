@@ -58,27 +58,27 @@
       WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
     ) tcrel ON tcrel.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM species_interaction_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM species_interaction x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
       WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
     ) sirel ON sirel.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM distribution_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM distribution x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
       WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
     ) xdis ON xdis.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM media_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM media x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
       WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
     ) xmed ON xmed.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM vernacular_name_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM vernacular_name x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
       WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
     ) xver ON xver.taxon_id=u.id
     LEFT JOIN (
-      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM type_material_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM type_material x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
       WHERE x.dataset_key=#{datasetKey} GROUP BY x.name_id
     ) xtyp ON xtyp.name_id=u.name_id
     LEFT JOIN (
-      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM name_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM name_rel x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
       WHERE x.dataset_key=#{datasetKey} GROUP BY x.name_id
     ) nrel ON nrel.name_id=u.name_id
     LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id

@@ -89,9 +89,9 @@
   </delete>
 
   <delete id="deleteBySector" parameterType="map">
-    DELETE FROM verbatim_source_${partition} v
+    DELETE FROM verbatim_source v
     USING name_usage u
-    WHERE dataset_key = #{key.datasetKey} AND u.id=v.id AND u.sector_key=#{key.id}
+    WHERE v.dataset_key = #{key.datasetKey} AND u.dataset_key = #{key.datasetKey} AND u.id=v.id AND u.sector_key=#{key.id}
   </delete>
 
 </mapper>

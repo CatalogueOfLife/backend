@@ -277,9 +277,8 @@
   </sql>
 
   <delete id="deleteBySectorAndRank" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    DELETE FROM name_${partition}
-    WHERE sector_key = #{key.id} AND rank >= #{rank}::rank
+    DELETE FROM name
+    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id} AND rank >= #{rank}::rank
     <if test="nameIds != null and !nameIds.isEmpty()">
       AND id NOT IN
       <foreach item="id" collection="nameIds" open="(" separator="," close=")">#{id}</foreach>
@@ -312,7 +311,6 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
     UPDATE name SET sector_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>

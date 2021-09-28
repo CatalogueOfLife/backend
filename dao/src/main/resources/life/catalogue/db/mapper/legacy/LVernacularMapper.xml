@@ -24,35 +24,32 @@
   </sql>
 
   <sql id="WHERE">
-    WHERE lower(v.name) LIKE lower(escape_like(#{name})) <if test="prefix"> || '%'</if>
+    lower(v.name) LIKE lower(escape_like(#{name})) <if test="prefix"> || '%'</if>
   </sql>
 
   <select id="count" resultType="integer">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT count(*)
-    FROM vernacular_name_${partition} v
-    <include refid="WHERE"/>
+    FROM vernacular_name v
+    WHERE dataset_key=#{datasetKey} AND <include refid="WHERE"/>
   </select>
 
   <select id="search" resultMap="vernacularFullResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     <bind name="full" value="false"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="life.catalogue.db.mapper.legacy.LNameMapper.FROM"/>
-      JOIN vernacular_name_${partition} v ON v.taxon_id=u.id
+      JOIN vernacular_name v ON v.dataset_key=#{datasetKey} AND v.taxon_id=u.id
       LEFT JOIN __language l ON l.code = v.language
       LEFT JOIN __country c  ON c.code = v.country
-    <include refid="WHERE"/>
+    WHERE u.dataset_key=#{datasetKey} AND <include refid="WHERE"/>
     <include refid="life.catalogue.db.mapper.legacy.LNameMapper.LIMIT"/>
   </select>
 
   <select id="vernaculars" parameterType="map" resultMap="vernacularResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="VCORE"/>
-    FROM vernacular_name_${partition} v
+    FROM vernacular_name v
       LEFT JOIN __language l ON l.code = v.language
       LEFT JOIN __country c  ON c.code = v.country
-    WHERE v.taxon_id = #{id}
+    WHERE v.dataset_key=#{datasetKey} AND v.taxon_id = #{id}
   </select>
 
 </mapper>
