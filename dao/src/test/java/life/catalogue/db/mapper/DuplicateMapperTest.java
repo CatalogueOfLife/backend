@@ -56,13 +56,13 @@ public class DuplicateMapperTest {
       PgConnection pgc = (PgConnection) c;
       
       PgCopyUtils.copy(pgc, "dataset", "/duplicates/dataset.csv");
-      PgCopyUtils.copy(pgc, "verbatim_1000", "/duplicates/verbatim.csv");
-      PgCopyUtils.copy(pgc, "name_1000", "/duplicates/name.csv", null, ImmutableMap.<String, Function<String[], String>>of(
+      PgCopyUtils.copy(pgc, "verbatim", "/duplicates/verbatim.csv");
+      PgCopyUtils.copy(pgc, "name", "/duplicates/name.csv", null, ImmutableMap.<String, Function<String[], String>>of(
           "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[5]),
           "authorship_normalized", aFunc::normAuthorship
           )
       );
-      PgCopyUtils.copy(pgc, "name_usage_1000", "/duplicates/name_usage.csv");
+      PgCopyUtils.copy(pgc, "name_usage", "/duplicates/name_usage.csv");
       
       c.commit();
     }
@@ -103,6 +103,8 @@ public class DuplicateMapperTest {
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
     }
+
+    res = mapper.usagesByIds(datasetKey, Datasets.COL, Lists.immutableListOf("45"));
     EditorialDecision d = res.get(0).getDecision();
     assertNotNull(d);
     assertNotNull(d.getKey());

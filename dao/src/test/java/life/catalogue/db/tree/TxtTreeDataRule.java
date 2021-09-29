@@ -69,9 +69,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       final TreeData tree = x.getValue();
       final int datasetKey = x.getKey();
       LOG.info("Loading dataset {} from tree {}", datasetKey, tree);
+      createDataset(datasetKey);
       // create required partitions to load data
       MybatisTestUtils.partition(session, datasetKey);
-      createDataset(datasetKey);
       loadTree(datasetKey, tree);
       updateSequences(datasetKey);
     }
@@ -86,6 +86,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       d.applyUser(Users.TESTER);
       dm.createWithKey(d);
     }
+    session.commit();
   }
 
   private void loadTree(int datasetKey, TreeData td) throws IOException {

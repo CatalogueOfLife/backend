@@ -152,7 +152,7 @@
     SELECT DISTINCT t.sector_key
     FROM name_usage t
     <if test="rank != null">
-      JOIN name n ON WHERE t.dataset_key=n.dataset_key AND t.name_id=n.id
+      JOIN name n ON n.dataset_key=#{key.datasetKey} AND t.name_id=n.id
     </if>
     WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id}
     <if test="rank != null">

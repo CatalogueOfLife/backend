@@ -50,7 +50,7 @@ public class IdProviderTest {
     System.out.println("Remove id mapping tables for project " + projectKey);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-      DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.deleteTable(t, projectKey));
+      DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, projectKey));
     }
     org.apache.commons.io.FileUtils.deleteQuietly(cfg.reportDir);
   }

@@ -188,7 +188,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   protected void before() throws Throwable {
     LOG.info("Loading {} test data", testData);
     initSession();
-    // remove potential old (global) data
+    // remove potential old data
     truncate(session);
     // populate dataset table with origins before we partition
     loadGlobalData();
@@ -248,8 +248,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   private void truncate(SqlSession session) throws SQLException {
-    LOG.info("Truncate global tables");
+    LOG.info("Truncate tables, drop all data partitions");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
+      var dpm = session.getMapper(DatasetPartitionMapper.class);
+
       st.execute("TRUNCATE \"user\" CASCADE");
       session.getConnection().commit();
       st.execute("TRUNCATE dataset CASCADE");

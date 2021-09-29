@@ -115,7 +115,7 @@ public abstract class AbstractProjectCopy implements Runnable {
         try (SqlSession session = factory.openSession(true)) {
           DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
           DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> {
-            dmp.deleteTable(t, datasetKey);
+            dmp.dropTable(t, datasetKey);
             dmp.createIdMapTable(t, datasetKey);
           });
         }
@@ -171,7 +171,7 @@ public abstract class AbstractProjectCopy implements Runnable {
         LOG.info("Remove id mapping tables for project {}", datasetKey);
         try (SqlSession session = factory.openSession(true)) {
           DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.deleteTable(t, datasetKey));
+          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, datasetKey));
         } catch (Exception e) {
           // avoid any exceptions as it would bring down the finally block
           LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);

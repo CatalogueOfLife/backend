@@ -1567,11 +1567,11 @@ CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v
 	declare parents simple_name[];
 BEGIN
     seql := 'WITH RECURSIVE x AS ('
-        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage_' || v_dataset_key || ' t '
-        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = $1'
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage t '
+        || '  JOIN name n ON n.dataset_key=$1 AND n.id=t.name_id WHERE t.dataset_key=$1 AND t.id = $2'
         || ' UNION ALL '
-        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name FROM x, name_usage_' || v_dataset_key || ' t '
-        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = x.parent_id'
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name FROM x, name_usage t '
+        || '  JOIN name n ON n.dataset_key=$1 AND n.id=t.name_id WHERE t.dataset_key=$1 AND t.id = x.parent_id'
         || ') SELECT array_agg(sn) FROM x';
 
     IF NOT v_inc_self THEN
@@ -1580,7 +1580,7 @@ BEGIN
 
     EXECUTE seql
     INTO parents
-    USING v_id;
+    USING v_dataset_key, v_id;
     RETURN (array_reverse(parents));
 END;
 $$ LANGUAGE plpgsql;

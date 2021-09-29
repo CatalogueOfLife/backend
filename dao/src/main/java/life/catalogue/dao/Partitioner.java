@@ -66,7 +66,10 @@ public class Partitioner {
       session.commit();
     }
   }
-  
+
+  /**
+   * Deletes an entire partition if its dataset specific or deleted all data from shared partitions, e.g. for external datasets.
+   */
   public static synchronized void delete(SqlSession session, int datasetKey, DatasetOrigin origin) {
     interruptIfCancelled();
     LOG.info("Delete partition for dataset {}", datasetKey);

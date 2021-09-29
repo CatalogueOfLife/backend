@@ -202,14 +202,12 @@ public interface DatasetPartitionMapper {
     MANAGED_SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
   }
 
-  void updateManagedSequence(@Param("table") String table, @Param("key") int key);
-
   /**
    * Updates the managed sequences for a given datasetKey to the current max of existing keys.
    * @param key datasetKey
    */
   default void updateManagedSequences(int key) {
-    MANAGED_SERIAL_TABLES.forEach(t -> updateManagedSequence(t, key));
+    MANAGED_SERIAL_TABLES.forEach(t -> updateIdSequence(t, key));
   }
 
   default void deleteManagedSequences(@Param("key") int key) {
@@ -217,20 +215,29 @@ public interface DatasetPartitionMapper {
   }
 
   /**
-   * Deletes a dataset partition from all data tables if existing, but leaves the dataset itself untouched
+   * Deletes an entire partition if its dataset specific or deletes all data from shared partitions, e.g. for external datasets.
+   * Leaves the dataset record itself untouched.
    *
    * @param key
    */
   default void delete(int key, DatasetOrigin origin) {
     deleteUsageCounter(key);
     if (origin.isManagedOrRelease()) {
-      PROJECT_TABLES.forEach(t -> deleteTable(t, key));
-      Lists.reverse(TABLES).forEach(t -> deleteTable(t, key));
-      IDMAP_TABLES.forEach(t -> deleteTable(t, key));
+      PROJECT_TABLES.forEach(t -> dropTable(t, key));
+      Lists.reverse(TABLES).forEach(t -> dropTable(t, key));
+      IDMAP_TABLES.forEach(t -> dropTable(t, key));
+    } else {
+      Lists.reverse(TABLES).forEach(t -> deleteData(t, key));
     }
   }
- 
-  void deleteTable(@Param("table") String table, @Param("key") int key);
+
+  /**
+   * Deletes all data from a table for the given datasetKey.
+   * @param key datasetKey
+   */
+  void deleteData(@Param("table") String table, @Param("key") int key);
+
+  void dropTable(@Param("table") String table, @Param("key") int key);
 
   void deleteUsageCounter(@Param("key") int key);
   

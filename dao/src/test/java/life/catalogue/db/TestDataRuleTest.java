@@ -4,6 +4,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.NamesIndexMapperTest;
 
 import java.util.ArrayList;
@@ -16,8 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public class TestDataRuleTest {
@@ -64,6 +64,7 @@ public class TestDataRuleTest {
       List<Name> list = nm.list(data.key, new Page());
       assertTrue(list.size() > 0);
     }
+    assertUsageCount();
 
     System.out.println("rule has run fine");
   }
@@ -71,5 +72,31 @@ public class TestDataRuleTest {
   @Test
   public void insertDataAgain() {
     System.out.println("rule has run fine before the 2nd test");
+    assertUsageCount();
+  }
+
+  void assertUsageCount() {
+    int count = data.key == null ? 0 : dataRule.getSqlSession().getMapper(NameUsageMapper.class).count(data.key);
+
+    System.out.println("\n\n"+data.name);
+    System.out.println(count);
+
+    if(data.equals(TestDataRule.NONE)) {
+      assertEquals(0, count);
+    } else if(data.equals(TestDataRule.DATASETS)) {
+      assertEquals(0, count);
+    } else if(data.equals(TestDataRule.APPLE)) {
+      assertEquals(4, count);
+    } else if(data.equals(TestDataRule.FISH)) {
+      assertEquals(12, count);
+    } else if(data.equals(TestDataRule.TREE)) {
+      assertEquals(24, count);
+    } else if(data.equals(TestDataRule.DRAFT)) {
+      assertEquals(18, count);
+    } else if(data.equals(TestDataRule.DRAFT_WITH_SECTORS)) {
+      assertEquals(23, count);
+    } else if(data.equals(NamesIndexMapperTest.NIDX)) {
+      assertEquals(0, count);
+    }
   }
 }

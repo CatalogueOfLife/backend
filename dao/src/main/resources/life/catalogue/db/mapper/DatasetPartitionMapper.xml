@@ -33,16 +33,12 @@
   </update>
 
   <update id="updateIdSequence" parameterType="map">
-    SELECT setval('${table}_${key}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM ${table}_${key}))
+    SELECT setval('${table}_${key}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM ${table} WHERE dataset_key = #{key}))
   </update>
 
   <delete id="deleteIdSequence" parameterType="map">
     DROP SEQUENCE IF EXISTS ${table}_${key}_id_seq
   </delete>
-
-  <update id="updateManagedSequence" parameterType="map">
-    SELECT setval('${table}_${key}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM ${table} WHERE dataset_key = #{key}))
-  </update>
 
   <update id="attachTable" parameterType="map">
     ALTER TABLE ${table} ATTACH PARTITION ${table}_${key} FOR VALUES IN ( ${key} )
@@ -95,7 +91,11 @@
     LOCK TABLE reference_${datasetKey} IN EXCLUSIVE mode;
   </update>
 
-  <update id="deleteTable" parameterType="map">
+  <update id="deleteData">
+    DELETE FROM ${table} WHERE dataset_key=#{key};
+  </update>
+
+  <update id="dropTable" parameterType="map">
     DROP TABLE IF EXISTS ${table}_${key} CASCADE;
     DROP SEQUENCE IF EXISTS ${table}_${key}_id_seq;
   </update>

@@ -115,11 +115,11 @@
   </sql>
 
   <sql id="FROM">
-    name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND u.name_id=n.id
-    LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND u.according_to_id=r.id
-    LEFT JOIN name_usage a ON a.dataset_key=u.dataset_key AND u.parent_id=a.id AND u.is_synonym
-    LEFT JOIN name an ON an.dataset_key=u.dataset_key AND a.name_id=an.id
-    LEFT JOIN reference ar ON ar.dataset_key=u.dataset_key AND a.according_to_id=ar.id
+    name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+    LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
+    LEFT JOIN name_usage a ON a.dataset_key=u.dataset_key AND a.id=u.parent_id AND u.is_synonym
+    LEFT JOIN name an ON an.dataset_key=u.dataset_key AND an.id=a.name_id
+    LEFT JOIN reference ar ON ar.dataset_key=u.dataset_key AND ar.id=a.according_to_id
   </sql>
 
   <resultMap id="usageResultMap" type="NameUsageBase" autoMapping="true">
@@ -433,8 +433,7 @@
 
   <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     WITH RECURSIVE x AS(
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     <if test="depthFirst">
       ,concat_ws('|', n.scientific_name, u.id) AS path
     </if>
@@ -444,14 +443,12 @@
 
     UNION
 
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     <if test="depthFirst">
       ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id) AS path
     </if>
-    FROM
-    <include refid="FROM"/>
-    JOIN x ON x.dataset_key=#{datasetKey} AND x.id = u.parent_id
+    FROM <include refid="FROM"/>
+    JOIN x ON x.id = u.parent_id
     <where>
       u.dataset_key=#{datasetKey}
       <include refid="WHERE_UNION"/>
@@ -462,6 +459,8 @@
       ORDER BY x.path
     </if>
   </select>
+<!--
+-->
 
   <select id="foreignChildren" resultMap="simpleResultMap">
     SELECT <include refid="SELECT_SIMPLE"/>
