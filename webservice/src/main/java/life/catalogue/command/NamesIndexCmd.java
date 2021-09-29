@@ -97,7 +97,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
     IntSet keys;
     try (SqlSession session = factory.openSession()) {
-      keys = DaoUtils.listDatasetWithPartitions(session);
+      keys = DaoUtils.listDatasetWithNames(session);
     }
 
     final AtomicInteger counter = new AtomicInteger(0);

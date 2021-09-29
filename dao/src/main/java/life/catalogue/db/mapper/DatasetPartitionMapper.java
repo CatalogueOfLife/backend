@@ -248,7 +248,7 @@ public interface DatasetPartitionMapper {
    * Warning! This requires an AccessExclusiveLock on the main tables
    * which often leads to deadlocks, see https://github.com/Sp2000/colplus-backend/issues/387
    *
-   * Best to manually aqcuire and afterwards release a lock first, attaching doesn't take long.
+   * Best to manually acquire and afterwards release a lock first, attaching doesn't take long.
    *
    * @param key
    */
@@ -312,7 +312,18 @@ public interface DatasetPartitionMapper {
    * @param key datasetKey
    * @return true if partition tables exist
    */
-  boolean exists(@Param("key") int key);
+  default boolean exists(@Param("key") int key, DatasetOrigin origin) {
+    if (origin.isManagedOrRelease()) {
+      return existsDatasetSpecific(key);
+    } else {
+      return true;
+    }
+  }
+
+  /**
+   * @return if partitions exist specific only for the given dataset, i.e. managed or released.
+   */
+  boolean existsDatasetSpecific(@Param("key") int key);
 
   /**
    * Lists all dataset keys for which there is an existing name partition table

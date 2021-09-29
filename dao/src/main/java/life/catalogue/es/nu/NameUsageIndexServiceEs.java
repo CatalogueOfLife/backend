@@ -11,10 +11,7 @@ import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.NameUsageProcessor;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
-import life.catalogue.db.mapper.NameUsageWrapperMapper;
-import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.*;
 
 import java.io.IOException;
@@ -256,8 +253,8 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       keys = session.getMapper(DatasetMapper.class).keys();
       int allDatasets = keys.size();
       // first check if we have data partitions - otherwise all queries below throw
-      DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-      keys.removeIf(key -> !dpm.exists(key));
+      NameMapper nm = session.getMapper(NameMapper.class);
+      keys.removeIf(key -> !nm.hasData(key));
       LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
     }
 

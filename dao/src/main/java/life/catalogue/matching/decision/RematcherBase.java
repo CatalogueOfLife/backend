@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.dao.DaoUtils;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.BaseDecisionMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 
@@ -49,7 +50,8 @@ public abstract class RematcherBase<
     Preconditions.checkArgument(req.getDatasetKey() != null, "DatasetKey required for rematching");
     this.projectKey = req.getDatasetKey();
     try(SqlSession session = factory.openSession(true)) {
-      Preconditions.checkArgument(session.getMapper(DatasetPartitionMapper.class).exists(projectKey), "DatasetKey required for rematching");
+      var info = DatasetInfoCache.CACHE.info(projectKey);
+      Preconditions.checkArgument(session.getMapper(DatasetPartitionMapper.class).exists(projectKey, info.origin), "DatasetKey required for rematching");
     }
   }
 

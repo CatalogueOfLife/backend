@@ -104,7 +104,7 @@
     DELETE FROM usage_count WHERE dataset_key=#{key};
   </update>
 
-  <select id="exists" parameterType="map" resultType="boolean">
+  <select id="existsDatasetSpecific" parameterType="map" resultType="boolean">
     SELECT exists(
     SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'name_${key}'
     )

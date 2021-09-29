@@ -8,6 +8,8 @@ import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import java.util.function.IntPredicate;
 
+import life.catalogue.db.mapper.NameMapper;
+
 import org.apache.ibatis.session.SqlSession;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -97,12 +99,12 @@ public class DaoUtils {
   /**
    * List keys of all datasets that have data partitions.
    */
-  public static IntSet listDatasetWithPartitions(SqlSession session) {
+  public static IntSet listDatasetWithNames(SqlSession session) {
     DatasetMapper dm = session.getMapper(DatasetMapper.class);
-    DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
+    NameMapper nm = session.getMapper(NameMapper.class);
     IntSet keys = new IntOpenHashSet(dm.keys());
-    // only keep the dataset with data partitions
-    keys.removeIf((IntPredicate) key -> !dpm.exists(key));
+    // only keep the dataset with at least one name
+    keys.removeIf((IntPredicate) key -> !nm.hasData(key));
     return keys;
   }
 

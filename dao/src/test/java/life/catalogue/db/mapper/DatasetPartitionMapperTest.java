@@ -76,12 +76,6 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   }
 
   @Test
-  public void exists() {
-    Assert.assertTrue(mapper().exists(Datasets.COL));
-    Assert.assertFalse(mapper().exists(9999));
-  }
-
-  @Test
   public void updateCounter() {
     int x = mapper().updateUsageCounter(TestDataRule.APPLE.key);
     assertEquals(4, x);
@@ -97,12 +91,14 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
     mapper().create(Datasets.COL, DatasetOrigin.MANAGED);
     mapper().attach(Datasets.COL, DatasetOrigin.MANAGED);
-    mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
-  
+
+    commit();
+
     // run continuous ref and name imports
     ContinuousInserter<Reference> refIns = new ContinuousInserter<Reference>(PgSetupRule.getSqlSessionFactory(),
         Reference.class, ReferenceMapper.class, this::genRef);
     Thread tr = new Thread(refIns);
+
     ContinuousInserter<Name> nameIns = new ContinuousInserter<Name>(PgSetupRule.getSqlSessionFactory(),
         Name.class, NameMapper.class, this::genName);
     Thread tn = new Thread(nameIns);

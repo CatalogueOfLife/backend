@@ -27,7 +27,7 @@ public class RematchJob extends BackgroundJob {
     LOG.warn("Rematch all datasets with data using a names index of size {}", ni.size());
     // load dataset keys to rematch
     try (SqlSession session = factory.openSession(true)) {
-      IntSet keys = DaoUtils.listDatasetWithPartitions(session);
+      IntSet keys = DaoUtils.listDatasetWithNames(session);
       return new RematchJob(userKey, factory, ni, keys.toIntArray());
     }
   }

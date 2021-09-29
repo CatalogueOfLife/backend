@@ -414,7 +414,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     // data partitions
-    if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
+    if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey(), obj.getOrigin())) {
       // suspicious. Should there ever be a managed dataset without partitions?
       recreatePartition(obj.getKey(), obj.getOrigin());
     }
