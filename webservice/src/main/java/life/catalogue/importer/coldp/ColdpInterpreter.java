@@ -1,5 +1,6 @@
 package life.catalogue.importer.coldp;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
@@ -33,6 +34,7 @@ public class ColdpInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInterpreter.class);
   private static final EnumNote<TaxonomicStatus> SYN_NOTE = new EnumNote<>(TaxonomicStatus.SYNONYM, null);
   private static final EnumNote<TaxonomicStatus> ACC_NOTE = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
+  private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings(); // for multi value ID fields
 
   ColdpInterpreter(DatasetSettings settings, MappingFlags metadata, ReferenceFactory refFactory, NeoDb store) {
     super(settings, refFactory, store);
@@ -154,6 +156,7 @@ public class ColdpInterpreter extends InterpreterBase {
     u.setId(v.getRaw(ColdpTerm.ID));
     u.setVerbatimKey(v.getId());
     setReference(v, ColdpTerm.accordingToID, u.usage::setAccordingToId);
+    setReferences(v, ColdpTerm.referenceID, COMMA_SPLITTER, u.usage::setReferenceIds);
     u.usage.setOrigin(Origin.SOURCE);
     u.usage.setNamePhrase(ObjectUtils.coalesce(v.get(ColdpTerm.namePhrase), n.pnu.getTaxonomicNote()));
     u.usage.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));

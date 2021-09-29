@@ -532,7 +532,8 @@ public class PgImportIT extends PgImportITBase {
   public void testExternalManually() throws Exception {
     dataset.setType(DatasetType.TAXONOMIC);
 
-    normalizeAndImport(URI.create("https://github.com/jhnwllr/world-odonata-list-dwca/archive/refs/heads/main.zip"), DWCA);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/export.zip"), COLDP);
+    //normalizeAndImport(URI.create("https://github.com/jhnwllr/world-odonata-list-dwca/archive/refs/heads/main.zip"), DWCA);
     //normalizeAndImport(URI.create("https://github.com/Sp2000/coldp/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/162.tar.gz"), ACEF);

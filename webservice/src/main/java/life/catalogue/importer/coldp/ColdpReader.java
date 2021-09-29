@@ -1,5 +1,7 @@
 package life.catalogue.importer.coldp;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.datapackage.ColdpTerm;
@@ -7,6 +9,8 @@ import life.catalogue.common.io.PathUtils;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.Schema;
 import life.catalogue.importer.NormalizationFailedException;
+
+import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.Rank;
@@ -200,7 +204,7 @@ public class ColdpReader extends CsvReader {
         schemas.remove(t);
       }
     }
-    
+
     reportMissingSchemas(ColdpTerm.class);
   }
   

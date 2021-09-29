@@ -1,11 +1,14 @@
 package life.catalogue.importer;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.csv.Schema;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
@@ -84,6 +87,25 @@ public class InterpreterBase {
       }
     }
     return ref;
+  }
+
+  protected void setReferences(VerbatimRecord v, Term refIdTerm, Splitter splitter, Consumer<List<String>> refIdConsumer){
+    if (v.hasTerm(refIdTerm)) {
+      String rids = v.getRaw(refIdTerm);
+      if (rids != null) {
+        List<String> existingIds = new ArrayList<>();
+        for (String rid : splitter.split(rids)) {
+          Reference ref = refFactory.find(rid, null);
+          if (ref == null) {
+            LOG.debug("ReferenceID {} not existing but referred from {} in file {} line {}", rid, refIdTerm.prefixedName(), v.getFile(), v.fileLine());
+            v.addIssue(Issue.REFERENCE_ID_INVALID);
+          } else {
+            existingIds.add(ref.getId());
+          }
+        }
+        refIdConsumer.accept(existingIds);
+      }
+    }
   }
 
   /**
