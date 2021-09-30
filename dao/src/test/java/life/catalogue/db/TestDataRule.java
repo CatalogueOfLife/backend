@@ -190,6 +190,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     initSession();
     // remove potential old data
     truncate(session);
+    DatasetInfoCache.CACHE.clear();
     // populate dataset table with origins before we partition
     loadGlobalData();
     // create required partitions to load data

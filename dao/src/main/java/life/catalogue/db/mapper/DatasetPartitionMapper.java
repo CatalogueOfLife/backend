@@ -163,7 +163,10 @@ public interface DatasetPartitionMapper {
     }
     // things specific to managed and released datasets only
     if (origin.isManagedOrRelease()) {
-      TABLES.forEach(t -> createTable(t, key));
+      TABLES.forEach(t -> {
+        createTable(t, key);
+        createDatasetKeyCheck(t, key);
+      });
       PROJECT_TABLES.forEach(t -> createTable(t, key));
     }
   }
@@ -171,6 +174,8 @@ public interface DatasetPartitionMapper {
   void createTable(@Param("table") String table, @Param("key") int key);
 
   void createIdMapTable(@Param("table") String table, @Param("key") int key);
+
+  void createDatasetKeyCheck(@Param("table") String table, @Param("key") int key);
 
   /**
    * Creates a new id sequence and uses it as the default value (serial) for the given tables id column.

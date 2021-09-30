@@ -23,6 +23,10 @@
     )
   </update>
 
+  <update id="createDatasetKeyCheck" parameterType="map">
+    ALTER TABLE ${table}_${key} ADD CONSTRAINT ${table}_${key}_dataset_key_check CHECK (dataset_key = ${key});
+  </update>
+
   <update id="createSerial" parameterType="map">
     CREATE SEQUENCE IF NOT EXISTS ${table}_${key}_id_seq START 1;
     ALTER TABLE ${table}_${key} ALTER COLUMN id SET DEFAULT nextval('${table}_${key}_id_seq');

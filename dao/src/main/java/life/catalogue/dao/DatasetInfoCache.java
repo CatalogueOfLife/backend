@@ -112,6 +112,13 @@ public class DatasetInfoCache {
     get(datasetKey, false);
   }
 
+  /**
+   * Removes all entries from the cache.
+   */
+  public void clear() {
+    infos.clear();
+  }
+
   @Subscribe
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {

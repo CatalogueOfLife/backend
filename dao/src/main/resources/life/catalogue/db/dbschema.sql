@@ -3,6 +3,7 @@
 CREATE EXTENSION IF NOT EXISTS hstore;
 CREATE EXTENSION IF NOT EXISTS unaccent;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS btree_gin;
 
 -- use unaccent by default for all simple search
 CREATE TEXT SEARCH CONFIGURATION public.simple2 ( COPY = pg_catalog.simple );
@@ -1063,10 +1064,10 @@ CREATE TABLE verbatim (
   doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('simple2', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON verbatim (type);
-CREATE INDEX ON verbatim USING GIN (doc);
-CREATE INDEX ON verbatim USING GIN (issues);
-CREATE INDEX ON verbatim USING GIN (terms jsonb_path_ops);
+CREATE INDEX ON verbatim (dataset_key, type);
+CREATE INDEX ON verbatim USING GIN (dataset_key, doc);
+CREATE INDEX ON verbatim USING GIN (dataset_key, issues);
+CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_path_ops);
 
 CREATE TABLE verbatim_source (
   id TEXT NOT NULL,
@@ -1076,7 +1077,7 @@ CREATE TABLE verbatim_source (
   issues ISSUE[] DEFAULT '{}'
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON verbatim_source USING GIN(issues);
+CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
 
 
 CREATE TABLE reference (
@@ -1098,9 +1099,9 @@ CREATE TABLE reference (
   ) STORED
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON reference (verbatim_key);
-CREATE INDEX ON reference (sector_key);
-CREATE INDEX ON reference USING GIN (doc);
+CREATE INDEX ON reference (dataset_key, verbatim_key);
+CREATE INDEX ON reference (dataset_key, sector_key);
+CREATE INDEX ON reference USING GIN (dataset_key, doc);
 
 
 CREATE TABLE name (
@@ -1145,12 +1146,12 @@ CREATE TABLE name (
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON name (sector_key);
-CREATE INDEX ON name (verbatim_key);
-CREATE INDEX ON name (homotypic_name_id);
-CREATE INDEX ON name (published_in_id);
-CREATE INDEX ON name (lower(scientific_name));
-CREATE INDEX ON name (scientific_name_normalized);
+CREATE INDEX ON name (dataset_key, sector_key);
+CREATE INDEX ON name (dataset_key, verbatim_key);
+CREATE INDEX ON name (dataset_key, homotypic_name_id);
+CREATE INDEX ON name (dataset_key, published_in_id);
+CREATE INDEX ON name (dataset_key, lower(scientific_name));
+CREATE INDEX ON name (dataset_key, scientific_name_normalized);
 
 
 CREATE OR REPLACE FUNCTION homotypic_name_id_default() RETURNS trigger AS $$
@@ -1190,10 +1191,10 @@ CREATE TABLE name_rel (
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON name_rel (name_id, type);
-CREATE INDEX ON name_rel (sector_key);
-CREATE INDEX ON name_rel (verbatim_key);
-CREATE INDEX ON name_rel (reference_id);
+CREATE INDEX ON name_rel (dataset_key, name_id, type);
+CREATE INDEX ON name_rel (dataset_key, sector_key);
+CREATE INDEX ON name_rel (dataset_key, verbatim_key);
+CREATE INDEX ON name_rel (dataset_key, reference_id);
 
 
 CREATE TABLE type_material (
@@ -1221,10 +1222,10 @@ CREATE TABLE type_material (
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON type_material (name_id);
-CREATE INDEX ON type_material (sector_key);
-CREATE INDEX ON type_material (verbatim_key);
-CREATE INDEX ON type_material (reference_id);
+CREATE INDEX ON type_material (dataset_key, name_id);
+CREATE INDEX ON type_material (dataset_key, sector_key);
+CREATE INDEX ON type_material (dataset_key, verbatim_key);
+CREATE INDEX ON type_material (dataset_key, reference_id);
 
 
 CREATE TABLE name_usage (
@@ -1255,11 +1256,11 @@ CREATE TABLE name_usage (
   dataset_sectors JSONB
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON name_usage (name_id);
-CREATE INDEX ON name_usage (parent_id);
-CREATE INDEX ON name_usage (verbatim_key);
-CREATE INDEX ON name_usage (sector_key);
-CREATE INDEX ON name_usage (according_to_id);
+CREATE INDEX ON name_usage (dataset_key, name_id);
+CREATE INDEX ON name_usage (dataset_key, parent_id);
+CREATE INDEX ON name_usage (dataset_key, verbatim_key);
+CREATE INDEX ON name_usage (dataset_key, sector_key);
+CREATE INDEX ON name_usage (dataset_key, according_to_id);
 
 
 CREATE TABLE taxon_concept_rel (
@@ -1278,10 +1279,10 @@ CREATE TABLE taxon_concept_rel (
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON taxon_concept_rel (taxon_id, type);
-CREATE INDEX ON taxon_concept_rel (sector_key);
-CREATE INDEX ON taxon_concept_rel (verbatim_key);
-CREATE INDEX ON taxon_concept_rel (reference_id);
+CREATE INDEX ON taxon_concept_rel (dataset_key, taxon_id, type);
+CREATE INDEX ON taxon_concept_rel (dataset_key, sector_key);
+CREATE INDEX ON taxon_concept_rel (dataset_key, verbatim_key);
+CREATE INDEX ON taxon_concept_rel (dataset_key, reference_id);
 
 
 CREATE TABLE species_interaction (
@@ -1301,10 +1302,10 @@ CREATE TABLE species_interaction (
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON species_interaction (taxon_id, type);
-CREATE INDEX ON species_interaction (sector_key);
-CREATE INDEX ON species_interaction (verbatim_key);
-CREATE INDEX ON species_interaction (reference_id);
+CREATE INDEX ON species_interaction (dataset_key, taxon_id, type);
+CREATE INDEX ON species_interaction (dataset_key, sector_key);
+CREATE INDEX ON species_interaction (dataset_key, verbatim_key);
+CREATE INDEX ON species_interaction (dataset_key, reference_id);
 
 
 CREATE TABLE vernacular_name (
@@ -1327,11 +1328,11 @@ CREATE TABLE vernacular_name (
   doc tsvector GENERATED ALWAYS AS (to_tsvector('simple2', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON vernacular_name (taxon_id);
-CREATE INDEX ON vernacular_name (sector_key);
-CREATE INDEX ON vernacular_name (verbatim_key);
-CREATE INDEX ON vernacular_name (reference_id);
-CREATE INDEX ON vernacular_name USING GIN (doc);
+CREATE INDEX ON vernacular_name (dataset_key, taxon_id);
+CREATE INDEX ON vernacular_name (dataset_key, sector_key);
+CREATE INDEX ON vernacular_name (dataset_key, verbatim_key);
+CREATE INDEX ON vernacular_name (dataset_key, reference_id);
+CREATE INDEX ON vernacular_name USING GIN (dataset_key, doc);
 
 
 CREATE TABLE distribution (
@@ -1350,10 +1351,10 @@ CREATE TABLE distribution (
   reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON distribution (taxon_id);
-CREATE INDEX ON distribution (sector_key);
-CREATE INDEX ON distribution (verbatim_key);
-CREATE INDEX ON distribution (reference_id);
+CREATE INDEX ON distribution (dataset_key, taxon_id);
+CREATE INDEX ON distribution (dataset_key, sector_key);
+CREATE INDEX ON distribution (dataset_key, verbatim_key);
+CREATE INDEX ON distribution (dataset_key, reference_id);
 
 CREATE TABLE treatment (
   id TEXT NOT NULL,
@@ -1368,8 +1369,8 @@ CREATE TABLE treatment (
   document TEXT NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON treatment (sector_key);
-CREATE INDEX ON treatment (verbatim_key);
+CREATE INDEX ON treatment (dataset_key, sector_key);
+CREATE INDEX ON treatment (dataset_key, verbatim_key);
 
 
 CREATE TABLE media (
@@ -1393,10 +1394,10 @@ CREATE TABLE media (
   reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON media (taxon_id);
-CREATE INDEX ON media (sector_key);
-CREATE INDEX ON media (verbatim_key);
-CREATE INDEX ON media (reference_id);
+CREATE INDEX ON media (dataset_key, taxon_id);
+CREATE INDEX ON media (dataset_key, sector_key);
+CREATE INDEX ON media (dataset_key, verbatim_key);
+CREATE INDEX ON media (dataset_key, reference_id);
 
 
 CREATE TABLE parser_config (

@@ -64,7 +64,7 @@
 
   <select id="count" resultType="integer">
     SELECT count(*) FROM name_usage
-    WHERE u.dataset_key=#{datasetKey} AND is_synonym
+    WHERE dataset_key=#{datasetKey} AND is_synonym
   </select>
 
   <select id="list" resultMap="synonymResultMap">
@@ -95,17 +95,17 @@
   <update id="update" parameterType="Synonym" keyProperty="id">
     UPDATE name_usage
     SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
-    WHERE u.dataset_key=#{datasetKey} AND id = #{id} AND is_synonym
+    WHERE dataset_key=#{datasetKey} AND id = #{id} AND is_synonym
   </update>
 
   <delete id="delete" parameterType="map">
     DELETE FROM name_usage
-    WHERE u.dataset_key=#{key.datasetKey} AND id = #{key.id} AND is_synonym
+    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id} AND is_synonym
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">
     DELETE FROM name_usage
-    WHERE u.dataset_key=#{datasetKey} AND is_synonym
+    WHERE dataset_key=#{datasetKey} AND is_synonym
   </delete>
 
 </mapper>

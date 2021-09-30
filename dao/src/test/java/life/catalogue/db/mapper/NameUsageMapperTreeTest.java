@@ -55,10 +55,10 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
             .forEach(h);
     List<String> bfs = ImmutableList.of("t1","t2","t3","t4",
       "t5","t6","t30",
-      "t10","t20", "t31","t32","t33","t34",
-      "s11", "t12","t13", "s21", "s22","t23","t24","t25",
-      "s14", "t15", "t16"
-    );
+      "t31","t32","t33","t34", "t20","t10",
+      "t12","t13", "s11", "t23","t24","t25", "s21","s22",
+      "t15", "t16", "s14"
+      );
     assertEquals(bfs, h.list);
   
     h = new CollectIdHandler<>();
