@@ -109,12 +109,12 @@
 
   <delete id="deleteBySector" parameterType="map">
     DELETE FROM taxon_concept_rel
-    WHERE tc.dataset_key = #{key.datasetKey} AND sector_key=#{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
     UPDATE taxon_concept_rel SET sector_key = NULL
-    WHERE tc.dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
+    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
 </mapper>

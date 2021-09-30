@@ -118,8 +118,8 @@
   </select>
 
   <insert id="create" parameterType="VerbatimRecord" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO verbatim (<include refid="COLS"/>)
-    VALUES (<include refid="PROPS"/>)
+    INSERT INTO verbatim (<include refid="COLS"/>,id)
+    VALUES (<include refid="PROPS"/>,nextval('verbatim_${datasetKey}_id_seq'))
   </insert>
 
   <insert id="copyDataset" parameterType="map">
