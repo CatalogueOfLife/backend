@@ -11,8 +11,16 @@ public class AuthorshipNormFunc {
   public AuthorshipNormFunc(int startIdx) {
     this.startIdx = startIdx;
   }
-  
+
   public String normAuthorship (String[] row) {
+    return normAuthorship(startIdx, row);
+  }
+
+  /**
+   * @param startIdx column index of the name.csv that contains the basionym author
+   * @param row
+   */
+  public static String normAuthorship (int startIdx, String[] row) {
     Name n = new Name();
     n.getBasionymAuthorship().setAuthors(Lists.newArrayList(PgCopyUtils.splitPgArray(row[startIdx])));
     n.getBasionymAuthorship().setExAuthors(Lists.newArrayList(PgCopyUtils.splitPgArray(row[startIdx+1])));

@@ -11,6 +11,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.postgres.AuthorshipNormFunc;
 import life.catalogue.postgres.PgCopyUtils;
 
 import org.gbif.nameparser.api.NameType;
@@ -64,21 +65,22 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private SqlSession session;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
 
-  public final static TestData NONE = new TestData("none", null, null, null, true, false, Collections.emptyMap(),3);
+  public final static TestData NONE = new TestData("none", null, null, null, true, false, null, Collections.emptyMap(),3);
   /**
    * Inits the datasets table with real col data from colplus-repo
    * The dataset.csv file was generated as a dump from production with psql:
    *
    * \copy (SELECT key,type,gbif_key,gbif_publisher_key,license,issued,confidence,completeness,origin,title,alias,description,version,geographic_scope,taxonomic_scope,url,logo,notes,settings,source_key,contact,creator,editor,publisher,contributor FROM dataset WHERE not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
    */
-  public final static TestData DATASETS = new TestData("datasets", null, null, null, false, true, Collections.emptyMap());
-  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, false, Collections.emptyMap());
+  public final static TestData DATASETS = new TestData("datasets", null, null, null, false, true, null, Collections.emptyMap());
+  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, false, null, Collections.emptyMap());
   public final static TestData APPLE = new TestData("apple", 11, 3, 2, 3, 11, 12);
   public final static TestData FISH = new TestData("fish", 100, 2, 4, 3, 100, 101, 102);
   public final static TestData TREE = new TestData("tree", 11, 2, 2, 3, 11);
   public final static TestData TREE2 = new TestData("tree2", 11, 2, 2, 3, 11);
   public final static TestData DRAFT = new TestData("draft", 3, 1, 2, 3);
   public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, 3);
+  public final static TestData DUPLICATES = new TestData("duplicates", 1000, 4, 5, row -> AuthorshipNormFunc.normAuthorship(16, row), 3, 1000);
 
   public static class TestData {
     public final String name;
@@ -86,6 +88,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     public final Set<Integer> datasetKeys;
     final Integer sciNameColumn;
     final Integer taxStatusColumn;
+    final Function<String[], String> authorshipNormalizer;
     final Map<String, Map<String, Object>> defaultValues;
     private final boolean datasets;
     private final boolean none;
@@ -94,11 +97,15 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       this(name, key, sciNameColumn, taxStatusColumn, Collections.emptyMap(), datasetKeys);
     }
 
-    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
-      this(name, key, sciNameColumn, taxStatusColumn, false, false, defaultValues, datasetKeys);
+    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Function<String[], String> authorshipNormalizer, Integer... datasetKeys) {
+      this(name, key, sciNameColumn, taxStatusColumn, false, false, authorshipNormalizer, Collections.emptyMap(), datasetKeys);
     }
 
-    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, boolean initAllDatasets, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
+    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
+      this(name, key, sciNameColumn, taxStatusColumn, false, false, null, defaultValues, datasetKeys);
+    }
+
+    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, boolean initAllDatasets, Function<String[], String> authorshipNormalizer, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
       this.name = name;
       this.key = key;
       this.sciNameColumn = sciNameColumn;
@@ -111,6 +118,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       this.none = none;
       this.datasets = initAllDatasets;
       this.defaultValues = defaultValues;
+      if (authorshipNormalizer != null) {
+        this.authorshipNormalizer = authorshipNormalizer;
+      } else {
+        this.authorshipNormalizer = row -> null;
+      }
     }
 
     @Override
@@ -133,6 +145,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public static TestDataRule fish() {
     return new TestDataRule(FISH);
+  }
+
+  public static TestDataRule duplicates() {
+    return new TestDataRule(DUPLICATES);
   }
 
   public static TestDataRule tree() {
@@ -347,7 +363,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         "type", NameType.SCIENTIFIC
       )),
       ImmutableMap.<String, Function<String[], String>>of(
-        "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[testData.sciNameColumn])
+        "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[testData.sciNameColumn]),
+        "authorship_normalized", testData.authorshipNormalizer
       )
     );
     copyPartitionedTable(pgc, "name_rel", key, datasetEntityDefaults(key));

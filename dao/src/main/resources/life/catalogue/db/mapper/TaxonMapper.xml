@@ -87,7 +87,7 @@
 
   <select id="countChildrenBelowRank" resultType="integer">
     SELECT count(*)
-    FROM name_usage u JOIN name n ON WHERE n.dataset_key=u.dataset_key AND n.id=u.name_id
+    FROM name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
     WHERE u.dataset_key=#{key.datasetKey} AND u.parent_id=#{key.id} AND NOT u.is_synonym and n.rank > #{rank}::rank
   </select>
 
@@ -171,7 +171,7 @@
   <select id="getCounts" resultMap="taxonCountResultMap">
     SELECT id, dataset_sectors
     FROM name_usage
-    WHERE u.dataset_key=#{key.datasetKey} AND id = #{key.id} AND NOT is_synonym
+    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id} AND NOT is_synonym
   </select>
 
   <select id="classificationCounts" resultMap="taxonCountResultMap">

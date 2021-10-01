@@ -230,13 +230,19 @@ public class TreeDaoTest {
     assertEquals(3, children.size());
 
     assertNode(children.getResult().get(0), Rank.ORDER, "Carnivora");
-    assertNoSector(children.getResult().get(0));
-
-    assertNode(children.getResult().get(1), Rank.ORDER, "Carnivora");
-    assertSector(children.getResult().get(1), sectorRule.sectorKey(3));
-
-    assertPlaceholder(children.getResult().get(2), Rank.ORDER);
-    assertSector(children.getResult().get(2), sectorRule.sectorKey(3));
+    for (var c : children) {
+      if (c.getId().equals("19")) {
+        assertNoSector(c);
+        assertNode(c, Rank.ORDER, "Carnivora");
+      } else {
+        assertSector(c, sectorRule.sectorKey(3));
+        if (c.getId().equals("101:3")) {
+          assertNode(c, Rank.ORDER, "Carnivora");
+        } else {
+          assertPlaceholder(c, Rank.ORDER);
+        }
+      }
+    }
   }
 
   private static void assertPlaceholder(TreeNode n, Rank rank) {

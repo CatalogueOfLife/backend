@@ -28,6 +28,7 @@ public class TestDataRuleTest {
   @Parameterized.Parameters(name= "{index}: {0}")
   public static Iterable<Object[]> data() {
     List<TestDataRule.TestData> list = List.of(
+      TestDataRule.DUPLICATES,
       TestDataRule.NONE,
       TestDataRule.APPLE,
       TestDataRule.FISH,

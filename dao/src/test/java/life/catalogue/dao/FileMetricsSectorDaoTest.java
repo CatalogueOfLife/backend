@@ -32,8 +32,8 @@ public class FileMetricsSectorDaoTest extends FileMetricsDaoTestBase<DSID<Intege
       s.applyUser(TestDataRule.TEST_USER);
       sm.create(s);
 
-      st.execute("UPDATE name_11 SET sector_key = " + sectorKey);
-      st.execute("UPDATE name_usage_11 SET sector_key = " + sectorKey);
+      st.execute("UPDATE name SET sector_key = " + sectorKey + " WHERE dataset_key=" + key.getDatasetKey());
+      st.execute("UPDATE name_usage SET sector_key = " + sectorKey + " WHERE dataset_key=" + key.getDatasetKey());
     }
   }
 

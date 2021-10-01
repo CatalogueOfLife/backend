@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.postgres.AuthorshipNormFunc;
 import life.catalogue.postgres.PgCopyUtils;
@@ -25,6 +26,8 @@ import java.util.function.Function;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.postgresql.jdbc.PgConnection;
 
 import com.google.common.collect.ImmutableMap;
@@ -38,34 +41,16 @@ public class DuplicateDaoTest {
   SqlSession session;
   StopWatch watch = new StopWatch();
 
+  public static PgSetupRule pg = new PgSetupRule();
+  public static final TestDataRule dataRule = TestDataRule.duplicates();
+
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
+  public final static TestRule chain = RuleChain
+    .outerRule(pg)
+    .around(dataRule);
 
   @BeforeClass
   public static void setup() throws Exception {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      MybatisTestUtils.partition(session, datasetKey);
-      MybatisTestUtils.createManagedSequences(session, datasetKey);
-      MybatisTestUtils.createManagedSequences(session, Datasets.COL);
-    }
-
-    final AuthorshipNormFunc aFunc = new AuthorshipNormFunc(17);
-
-    try (Connection c = pgSetupRule.connect()) {
-      PgConnection pgc = (PgConnection) c;
-
-      PgCopyUtils.copy(pgc, "dataset", "/duplicates/dataset.csv");
-      PgCopyUtils.copy(pgc, "verbatim_1000", "/duplicates/verbatim.csv");
-      PgCopyUtils.copy(pgc, "name_1000", "/duplicates/name.csv", null, ImmutableMap.<String, Function<String[], String>>of(
-        "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[5]),
-        "authorship_normalized", aFunc::normAuthorship
-        )
-      );
-      PgCopyUtils.copy(pgc, "name_usage_1000", "/duplicates/name_usage.csv");
-
-      c.commit();
-    }
-
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       final DecisionMapper dm = session.getMapper(DecisionMapper.class);
       create(dm, "15", Rank.SPECIES);
@@ -98,7 +83,7 @@ public class DuplicateDaoTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void duplicatesIAE() {
-    // no catalouge/project given but filtering decisions
+    // no catalogue/project given but filtering decisions
     dao.findUsages(MatchingMode.STRICT, null, datasetKey, null, null, null, null, null, null, null, null, null, true, null, null);
   }
 
