@@ -132,7 +132,7 @@ public abstract class AbstractProjectCopy implements Runnable {
       // copy data
       copyData();
 
-      // build indices and attach partition
+      // build indices and attach partition - the actual copy commands use the concrete table names so we can load them without being attached yet
       Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
 
       // subclass specifics

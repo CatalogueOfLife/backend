@@ -202,142 +202,141 @@
 
   <select id="countBareName" resultType="integer">
     SELECT count(*)
-    FROM name_${key} n
-      LEFT JOIN name_usage_${key} u ON n.id = u.name_id
-    WHERE u.id IS NULL
+    FROM name n LEFT JOIN name_usage u ON n.dataset_key=u.dataset_key AND n.id = u.name_id
+    WHERE u.dataset_key = #{key} AND u.id IS NULL
   </select>
   <select id="countDistribution" resultType="integer">
-    SELECT count(*) FROM distribution_${key}
+    SELECT count(*) FROM distribution WHERE dataset_key = #{key}
   </select>
   <select id="countEstimate" resultType="integer">
     SELECT count(*) FROM estimate WHERE dataset_key = #{key}
   </select>
   <select id="countMedia" resultType="integer">
-    SELECT count(*) FROM media_${key}
+    SELECT count(*) FROM media WHERE dataset_key = #{key}
   </select>
   <select id="countName" resultType="integer">
-    SELECT count(*) FROM name_${key}
+    SELECT count(*) FROM name WHERE dataset_key = #{key}
   </select>
   <select id="countTypeMaterial" resultType="integer">
-    SELECT count(*) FROM type_material_${key}
+    SELECT count(*) FROM type_material WHERE dataset_key = #{key}
   </select>
   <select id="countReference" resultType="integer">
-    SELECT count(*) FROM reference_${key}
+    SELECT count(*) FROM reference WHERE dataset_key = #{key}
   </select>
   <select id="countTaxon" resultType="integer">
-    SELECT count(*) FROM name_usage_${key} WHERE NOT is_synonym
+    SELECT count(*) FROM name_usage WHERE dataset_key = #{key} AND NOT is_synonym
   </select>
   <select id="countSynonym" resultType="integer">
-    SELECT count(*) FROM name_usage_${key} WHERE is_synonym
+    SELECT count(*) FROM name_usage WHERE dataset_key = #{key} AND is_synonym
   </select>
   <select id="countTreatment" resultType="integer">
-    SELECT count(*) FROM treatment_${key}
+    SELECT count(*) FROM treatment WHERE dataset_key = #{key}
   </select>
   <select id="countVerbatim" resultType="integer">
-    SELECT count(*) FROM verbatim_${key}
+    SELECT count(*) FROM verbatim WHERE dataset_key = #{key}
   </select>
   <select id="countVernacular" resultType="integer">
-    SELECT count(*) FROM vernacular_name_${key}
+    SELECT count(*) FROM vernacular_name WHERE dataset_key = #{key}
   </select>
 
   <select id="countDistributionsByGazetteer" resultType="StringCount">
     SELECT gazetteer AS key, count(*) AS count
-    FROM distribution_${key}
+    FROM distribution WHERE dataset_key = #{key}
     GROUP BY gazetteer
   </select>
   <select id="countIssues" resultType="StringCount">
     SELECT iss AS key, count(*) AS count FROM (
-    SELECT unnest(issues) iss from verbatim_${key}
+    SELECT unnest(issues) iss FROM verbatim WHERE dataset_key = #{key}
     ) AS dis
     GROUP BY iss
   </select>
   <select id="countMediaByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
-    FROM media_${key}
+    FROM media WHERE dataset_key = #{key}
     GROUP BY type
   </select>
   <select id="countNamesByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
-    FROM name_${key}
+    FROM name WHERE dataset_key = #{key}
     GROUP BY type
   </select>
   <select id="countNameRelationsByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
-    FROM name_rel_${key}
+    FROM name_rel WHERE dataset_key = #{key}
     GROUP BY type
   </select>
   <select id="countNamesByStatus" resultType="StringCount">
     SELECT nom_status AS key, count(*) AS count
-    FROM name_${key}
+    FROM name WHERE dataset_key = #{key}
     GROUP BY nom_status
   </select>
   <select id="countNamesByCode" resultType="StringCount">
     SELECT code AS key, count(*) AS count
-    FROM name_${key}
+    FROM name WHERE dataset_key = #{key}
     GROUP BY code
   </select>
   <select id="countNamesByRank" resultType="StringCount">
     SELECT rank AS key, count(*) AS count
-    FROM name_${key}
+    FROM name WHERE dataset_key = #{key}
     GROUP BY rank
   </select>
   <select id="countTypeMaterialByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count
-    FROM type_material_${key}
+    FROM type_material WHERE dataset_key = #{key}
     GROUP BY status
   </select>
   <select id="countTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
-    FROM name_usage_${key} t JOIN name_${key} n ON t.name_id=n.id
-    WHERE NOT t.is_synonym
+    FROM name_usage t JOIN name n ON n.dataset_key=t.dataset_key AND t.name_id=n.id
+    WHERE t.dataset_key = #{key} AND NOT t.is_synonym
     GROUP BY n.rank
   </select>
   <select id="countExtinctTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
-    FROM name_usage_${key} t JOIN name_${key} n ON t.name_id=n.id
-    WHERE NOT t.is_synonym AND t.extinct
+    FROM name_usage t JOIN name n ON n.dataset_key=t.dataset_key AND  t.name_id=n.id
+    WHERE t.dataset_key = #{key} AND NOT t.is_synonym AND t.extinct
     GROUP BY n.rank
   </select>
   <select id="countSynonymsByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
-    FROM name_usage_${key} t JOIN name_${key} n ON t.name_id=n.id
-    WHERE t.is_synonym
+    FROM name_usage t JOIN name n ON n.dataset_key=t.dataset_key AND  t.name_id=n.id
+    WHERE t.dataset_key = #{key} AND t.is_synonym
     GROUP BY n.rank
   </select>
   <select id="countSpeciesInteractionsByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
-    FROM species_interaction_${key}
+    FROM species_interaction WHERE dataset_key = #{key}
     GROUP BY type
   </select>
   <select id="countTaxonConceptRelationsByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
-    FROM taxon_concept_rel_${key}
+    FROM taxon_concept_rel WHERE dataset_key = #{key}
     GROUP BY type
   </select>
   <select id="countUsagesByOrigin" resultType="StringCount">
     SELECT origin AS key, count(*) AS count
-    FROM name_usage_${key}
+    FROM name_usage WHERE dataset_key = #{key}
     GROUP BY origin
   </select>
   <select id="countUsagesByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count
-    FROM name_usage_${key}
+    FROM name_usage WHERE dataset_key = #{key}
     GROUP BY status
   </select>
   <select id="countVerbatimByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
-    FROM verbatim_${key}
+    FROM verbatim WHERE dataset_key = #{key}
     GROUP BY type
   </select>
   <select id="countVerbatimTerms" resultType="StringCount">
     SELECT t AS key, count(*) AS count
-    FROM verbatim_${key}, lateral jsonb_object_keys(terms) AS t
-    WHERE type = #{rowType, typeHandler=life.catalogue.db.type.TermTypeHandler}
+    FROM verbatim, lateral jsonb_object_keys(terms) AS t
+    WHERE dataset_key = #{key} AND type = #{rowType, typeHandler=life.catalogue.db.type.TermTypeHandler}
     GROUP BY t
   </select>
   <select id="countVernacularsByLanguage" resultType="StringCount">
     SELECT language AS key, count(*) AS count
-    FROM vernacular_name_${key}
+    FROM vernacular_name WHERE dataset_key = #{key}
     GROUP BY language
   </select>
 

@@ -112,7 +112,6 @@ public class IntegrityChecksIT {
   
   
   @Test
-  //@Ignore("depends on duplicate detection working")
   public void testA1() throws Exception {
     normalizeAndImport("A1");
 

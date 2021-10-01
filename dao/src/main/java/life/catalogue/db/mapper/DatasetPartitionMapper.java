@@ -137,6 +137,16 @@ public interface DatasetPartitionMapper {
       int remainder = i;
       String suffix = "mod"+remainder;
       TABLES.forEach(t -> createDefaultSubPartition(t, number, remainder));
+      // create FKs
+      // we always have a verbatim_key on every table
+      TABLES.stream()
+            .filter(t -> !t.equalsIgnoreCase("verbatim"))
+            .forEach(t -> createFk(t, suffix, new FK("dataset_key, verbatim_key", "verbatim")));
+      // custom fks
+      FKS.forEach( (t,fks) -> fks.forEach(fk -> {
+        FK fk2 = new FK("dataset_key, "+fk.column, fk.table, fk.defer, fk.cascade);
+        createFk(t, suffix, fk2);
+      }));
       attachTriggers(suffix);
     }
   }
@@ -157,12 +167,12 @@ public interface DatasetPartitionMapper {
     // estimates can exist also in non managed datasets, so we need to have an id sequence for them in all datasets
     // but they are not a partitioned table, treat them special
     createIdSequence("estimate", key);
-    // sequences needed to generate keys in managed datasets
-    if (origin == DatasetOrigin.MANAGED) {
-      createManagedSequences(key);
-    }
     // things specific to managed and released datasets only
     if (origin.isManagedOrRelease()) {
+      // sequences needed to generate keys in managed datasets
+      if (origin == DatasetOrigin.MANAGED) {
+        createManagedSequences(key);
+      }
       TABLES.forEach(t -> {
         createTable(t, key);
         createDatasetKeyCheck(t, key);
@@ -233,6 +243,7 @@ public interface DatasetPartitionMapper {
       IDMAP_TABLES.forEach(t -> dropTable(t, key));
     } else {
       Lists.reverse(TABLES).forEach(t -> deleteData(t, key));
+      SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
     }
   }
 
@@ -263,19 +274,21 @@ public interface DatasetPartitionMapper {
       TABLES.forEach(t -> createPk(t, key));
       // this also creates the indices from the partitioned table
       TABLES.forEach(t -> attachTable(t, key));
+
+      final String suffix = String.valueOf(key);
       // create FKs
       // we always have a verbatim_key on every table
       TABLES.stream()
         .filter(t -> !t.equalsIgnoreCase("verbatim"))
-        .forEach(t -> createFk(t, key, new FK("verbatim_key", "verbatim")));
+        .forEach(t -> createFk(t, suffix, new FK("verbatim_key", "verbatim")));
       // custom fks
-      FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, key, fk)));
+      FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, suffix, fk)));
       //
       attachTriggers(String.valueOf(key));
       // things specific to managed datasets only
       PROJECT_TABLES.forEach(t -> createPk(t, key));
       PROJECT_TABLES.forEach(t -> attachTable(t, key));
-      createFk("verbatim_source", key, new FK("id", "name_usage", true, true));
+      createFk("verbatim_source", suffix, new FK("id", "name_usage", true, true));
     }
   }
   
@@ -285,8 +298,11 @@ public interface DatasetPartitionMapper {
 
   void createPk(@Param("table") String table, @Param("key") int key);
 
+  /**
+   * @param suffix table suffix, e.g. _1001 or _mod1
+   */
   void createFk(@Param("table") String table,
-                @Param("key") int key,
+                @Param("suffix") String suffix,
                 @Param("fk") FK fk
   );
 

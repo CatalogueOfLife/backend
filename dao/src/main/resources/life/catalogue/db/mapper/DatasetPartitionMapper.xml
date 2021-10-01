@@ -10,6 +10,7 @@
 
   <update id="createDefaultSubPartition" parameterType="map">
     CREATE TABLE ${table}_mod${remainder} PARTITION OF ${table}_default FOR VALUES WITH (modulus ${modulus}, remainder ${remainder});
+    ALTER TABLE ${table}_mod${remainder} ADD PRIMARY KEY (dataset_key, id);
   </update>
 
   <update id="createTable" parameterType="map">
@@ -57,7 +58,7 @@
   </update>
 
   <update id="createFk" parameterType="map">
-    ALTER TABLE ${table}_${key} ADD FOREIGN KEY (${fk.column}) REFERENCES ${fk.table}_${key}
+    ALTER TABLE ${table}_${suffix} ADD FOREIGN KEY (${fk.column}) REFERENCES ${fk.table}_${suffix}
     <if test="fk.cascade">ON DELETE CASCADE</if>
     <if test="fk.defer">DEFERRABLE INITIALLY DEFERRED</if>
   </update>

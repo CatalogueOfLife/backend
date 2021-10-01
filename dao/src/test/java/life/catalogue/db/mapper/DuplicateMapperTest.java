@@ -7,6 +7,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.postgres.AuthorshipNormFunc;
 import life.catalogue.postgres.PgCopyUtils;
 
@@ -24,6 +25,8 @@ import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.*;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.postgresql.jdbc.PgConnection;
 
 import com.google.common.collect.ImmutableMap;
@@ -36,38 +39,15 @@ public class DuplicateMapperTest {
   final static int datasetKey = 1000;
   DuplicateMapper mapper;
   SqlSession session;
-  
+
+  public static PgSetupRule pg = new PgSetupRule();
+  public static final TestDataRule dataRule = TestDataRule.duplicates();
+
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
-  @BeforeClass
-  public static void setup() throws Exception {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      final DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-      pm.create(datasetKey, DatasetOrigin.EXTERNAL);
-      pm.attach(datasetKey, DatasetOrigin.EXTERNAL);
-      pm.createManagedSequences(datasetKey);
-      pm.createManagedSequences(Datasets.COL);
-      session.commit();
-    }
-  
-    final AuthorshipNormFunc aFunc = new AuthorshipNormFunc(17);
-    try (Connection c = pgSetupRule.connect()) {
-      PgConnection pgc = (PgConnection) c;
-      
-      PgCopyUtils.copy(pgc, "dataset", "/duplicates/dataset.csv");
-      PgCopyUtils.copy(pgc, "verbatim", "/duplicates/verbatim_1000.csv");
-      PgCopyUtils.copy(pgc, "name", "/duplicates/name_1000.csv", null, ImmutableMap.<String, Function<String[], String>>of(
-          "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[5]),
-          "authorship_normalized", aFunc::normAuthorship
-          )
-      );
-      PgCopyUtils.copy(pgc, "name_usage", "/duplicates/name_usage_1000.csv");
-      
-      c.commit();
-    }
-  }
-  
+  public final static TestRule chain = RuleChain
+    .outerRule(pg)
+    .around(dataRule);
+
   @Before
   public void init() {
     session = PgSetupRule.getSqlSessionFactory().openSession(true);
