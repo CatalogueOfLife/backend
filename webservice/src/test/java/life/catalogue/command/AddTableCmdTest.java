@@ -26,7 +26,7 @@ public class AddTableCmdTest {
     public void keys() throws Exception {
         try (Connection con = pgSetupRule.connect()) {
             Set<Integer> keys = AddTableCmd.datasetKeys(con, null);
-            Set<Integer> expected = TestDataRule.APPLE.datasetKeys;
+            Set<Integer> expected = Set.of(3,11); // 12 is external, so kept in default partition
             assertEquals(expected, keys);
         }
     }

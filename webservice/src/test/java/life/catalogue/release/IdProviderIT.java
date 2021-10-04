@@ -21,7 +21,7 @@ public class IdProviderIT {
 
   public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3, 2, 2,
     Map.of(
-    "distribution_3", Map.of("gazetteer", Gazetteer.ISO, "reference_id", "Flade2008"),
+    "distribution", Map.of("gazetteer", Gazetteer.ISO, "reference_id", "Flade2008"),
       "sector", Map.of("created_by", 100, "modified_by", 100)
     ),3,11,12,13);
   final int projectKey = PROJECT_DATA.key;

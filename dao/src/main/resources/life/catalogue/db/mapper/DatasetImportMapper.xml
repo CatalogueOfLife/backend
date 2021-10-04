@@ -202,8 +202,8 @@
 
   <select id="countBareName" resultType="integer">
     SELECT count(*)
-    FROM name n LEFT JOIN name_usage u ON n.dataset_key=u.dataset_key AND n.id = u.name_id
-    WHERE u.dataset_key = #{key} AND u.id IS NULL
+    FROM name n LEFT JOIN name_usage u ON u.dataset_key = #{key} AND n.id = u.name_id
+    WHERE n.dataset_key = #{key} AND u.id IS NULL
   </select>
   <select id="countDistribution" resultType="integer">
     SELECT count(*) FROM distribution WHERE dataset_key = #{key}
