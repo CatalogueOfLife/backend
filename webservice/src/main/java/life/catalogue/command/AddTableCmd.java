@@ -86,8 +86,8 @@ public class AddTableCmd extends AbstractPromptCmd {
     ) {
       List<ForeignKey> fks = analyze(st, table);
 
-      for (int key : datasetKeys(con, null)) {
-        final String pTable = table+"_"+key;
+      for (String suffix : partitionSuffices(con, null)) {
+        final String pTable = table+"_"+suffix;
         if (exists(pExists, pTable)) {
           LOG.info("{} already exists", pTable);
 
@@ -98,7 +98,7 @@ public class AddTableCmd extends AbstractPromptCmd {
             // index
             st.execute(String.format(pCreateIdx, pTable, fk.column));
             // foreign key with/without cascade
-            String sql = String.format(pCreateFk, pTable, pTable+"_"+fk.column+"_fk", fk.column, fk.table+"_"+key);
+            String sql = String.format(pCreateFk, pTable, pTable+"_"+fk.column+"_fk", fk.column, fk.table+"_"+suffix);
             if (fk.cascade) {
               sql = sql + " ON DELETE CASCADE";
             }
@@ -106,7 +106,7 @@ public class AddTableCmd extends AbstractPromptCmd {
           }
 
           // attach
-          st.execute(String.format(pAttach, table, pTable, key));
+          st.execute(String.format(pAttach, table, pTable, suffix));
         }
       }
     }
@@ -122,35 +122,41 @@ public class AddTableCmd extends AbstractPromptCmd {
   }
 
   /**
-   * @return list of all dataset keys for which a name data partition exists.
+   * @return list of all dataset suffices for which a name data partition exists.
    */
-  public static Set<Integer> datasetKeys(Connection con, @Nullable DatasetOrigin origin) throws SQLException {
+  public static Set<String> partitionSuffices(Connection con, @Nullable DatasetOrigin origin) throws SQLException {
     try (Statement st = con.createStatement();
          Statement originStmt = con.createStatement()
     ) {
-      Set<Integer> keys = new HashSet<>();
-      st.execute("select table_name from information_schema.tables where table_schema='public' and table_name ~* '^name_\\d+'");
+      Set<String> suffices = new HashSet<>();
+      st.execute("select table_name from information_schema.tables where table_schema='public' and (table_name ~* '^name_\\d+' OR table_name ~* '^name_mod\\d+')");
       ResultSet rs = st.getResultSet();
 
-      Pattern TABLE = Pattern.compile("name_(\\d+)$");
+      Pattern TABLE = Pattern.compile("name_(.+)$");
       while (rs.next()) {
         String tbl = rs.getString(1);
         Matcher m = TABLE.matcher(tbl);
         if (m.find()) {
-          int key = Integer.parseInt(m.group(1));
           if (origin != null) {
-            originStmt.execute("select origin from dataset where key = "+key + " AND origin='"+origin.name()+"'::datasetorigin");
-            if (!originStmt.getResultSet().next()) {
-              // no matching origin
-              continue;
+            try {
+              int key = Integer.parseInt(m.group(1));
+              originStmt.execute("select origin from dataset where key = "+key + " AND origin='"+origin.name()+"'::datasetorigin");
+              if (!originStmt.getResultSet().next()) {
+                // no matching origin
+                continue;
+              }
+            } catch (NumberFormatException e) {
+              if (origin != DatasetOrigin.EXTERNAL) {
+                continue;
+              }
             }
           }
-          keys.add( key );
+          suffices.add( m.group(1) );
         }
       }
       rs.close();
-      LOG.info("Found {} existing name partition tables", keys.size());
-      return keys;
+      LOG.info("Found {} existing name partition tables", suffices.size());
+      return suffices;
     }
   }
 

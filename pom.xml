@@ -7,7 +7,7 @@
 
   <groupId>org.catalogueoflife</groupId>
   <artifactId>motherpom</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0-PT-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>COL backend services</name>

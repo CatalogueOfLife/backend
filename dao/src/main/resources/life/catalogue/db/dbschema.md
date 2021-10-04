@@ -11,6 +11,188 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2021-10-04 dataset partitioning
+```
+CREATE EXTENSION IF NOT EXISTS btree_gin;
+
+CREATE INDEX ON verbatim (dataset_key, type);
+CREATE INDEX ON verbatim USING GIN (dataset_key, doc);
+CREATE INDEX ON verbatim USING GIN (dataset_key, issues);
+CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_path_ops);
+DROP INDEX 'verbatim_doc_idx';
+DROP INDEX 'verbatim_issues_idx';
+DROP INDEX 'verbatim_terms_idx';
+DROP INDEX 'verbatim_type_idx';
+CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
+DROP INDEX 'verbatim_source_issues_idx';
+CREATE INDEX ON reference (dataset_key, verbatim_key);
+CREATE INDEX ON reference (dataset_key, sector_key);
+CREATE INDEX ON reference USING GIN (dataset_key, doc);
+DROP INDEX 'reference_doc_idx';
+DROP INDEX 'reference_sector_key_idx';
+DROP INDEX 'reference_verbatim_key_idx';
+CREATE INDEX ON name (dataset_key, sector_key);
+CREATE INDEX ON name (dataset_key, verbatim_key);
+CREATE INDEX ON name (dataset_key, homotypic_name_id);
+CREATE INDEX ON name (dataset_key, published_in_id);
+CREATE INDEX ON name (dataset_key, lower(scientific_name));
+CREATE INDEX ON name (dataset_key, scientific_name_normalized);
+DROP INDEX 'name_homotypic_name_id_idx';
+DROP INDEX 'name_lower_idx';
+DROP INDEX 'name_published_in_id_idx';
+DROP INDEX 'name_scientific_name_normalized_idx';
+DROP INDEX 'name_sector_key_idx';
+DROP INDEX 'name_verbatim_key_idx';
+CREATE INDEX ON name_rel (dataset_key, name_id, type);
+CREATE INDEX ON name_rel (dataset_key, sector_key);
+CREATE INDEX ON name_rel (dataset_key, verbatim_key);
+CREATE INDEX ON name_rel (dataset_key, reference_id);
+DROP INDEX 'name_rel_name_id_type_idx';
+DROP INDEX 'name_rel_reference_id_idx';
+DROP INDEX 'name_rel_sector_key_idx';
+DROP INDEX 'name_rel_verbatim_key_idx';
+CREATE INDEX ON type_material (dataset_key, name_id);
+CREATE INDEX ON type_material (dataset_key, sector_key);
+CREATE INDEX ON type_material (dataset_key, verbatim_key);
+CREATE INDEX ON type_material (dataset_key, reference_id);
+DROP INDEX 'type_material_name_id_idx';
+DROP INDEX 'type_material_reference_id_idx';
+DROP INDEX 'type_material_sector_key_idx';
+DROP INDEX 'type_material_verbatim_key_idx';
+CREATE INDEX ON name_usage (dataset_key, name_id);
+CREATE INDEX ON name_usage (dataset_key, parent_id);
+CREATE INDEX ON name_usage (dataset_key, verbatim_key);
+CREATE INDEX ON name_usage (dataset_key, sector_key);
+CREATE INDEX ON name_usage (dataset_key, according_to_id);
+DROP INDEX 'name_usage_according_to_id_idx';
+DROP INDEX 'name_usage_name_id_idx';
+DROP INDEX 'name_usage_parent_id_idx';
+DROP INDEX 'name_usage_sector_key_idx';
+DROP INDEX 'name_usage_verbatim_key_idx';
+CREATE INDEX ON taxon_concept_rel (dataset_key, taxon_id, type);
+CREATE INDEX ON taxon_concept_rel (dataset_key, sector_key);
+CREATE INDEX ON taxon_concept_rel (dataset_key, verbatim_key);
+CREATE INDEX ON taxon_concept_rel (dataset_key, reference_id);
+DROP INDEX 'taxon_concept_rel_reference_id_idx';
+DROP INDEX 'taxon_concept_rel_sector_key_idx';
+DROP INDEX 'taxon_concept_rel_taxon_id_type_idx';
+DROP INDEX 'taxon_concept_rel_verbatim_key_idx';
+CREATE INDEX ON species_interaction (dataset_key, taxon_id, type);
+CREATE INDEX ON species_interaction (dataset_key, sector_key);
+CREATE INDEX ON species_interaction (dataset_key, verbatim_key);
+CREATE INDEX ON species_interaction (dataset_key, reference_id);
+DROP INDEX 'species_interaction_reference_id_idx';
+DROP INDEX 'species_interaction_sector_key_idx';
+DROP INDEX 'species_interaction_taxon_id_type_idx';
+DROP INDEX 'species_interaction_verbatim_key_idx';
+CREATE INDEX ON vernacular_name (dataset_key, taxon_id);
+CREATE INDEX ON vernacular_name (dataset_key, sector_key);
+CREATE INDEX ON vernacular_name (dataset_key, verbatim_key);
+CREATE INDEX ON vernacular_name (dataset_key, reference_id);
+CREATE INDEX ON vernacular_name USING GIN (dataset_key, doc);
+DROP INDEX 'vernacular_name_doc_idx';
+DROP INDEX 'vernacular_name_reference_id_idx';
+DROP INDEX 'vernacular_name_sector_key_idx';
+DROP INDEX 'vernacular_name_taxon_id_idx';
+DROP INDEX 'vernacular_name_verbatim_key_idx';
+CREATE INDEX ON distribution (dataset_key, taxon_id);
+CREATE INDEX ON distribution (dataset_key, sector_key);
+CREATE INDEX ON distribution (dataset_key, verbatim_key);
+CREATE INDEX ON distribution (dataset_key, reference_id);
+DROP INDEX 'distribution_reference_id_idx';
+DROP INDEX 'distribution_sector_key_idx';
+DROP INDEX 'distribution_taxon_id_idx';
+DROP INDEX 'distribution_verbatim_key_idx';
+CREATE INDEX ON treatment (dataset_key, sector_key);
+CREATE INDEX ON treatment (dataset_key, verbatim_key);
+DROP INDEX 'treatment_sector_key_idx';
+DROP INDEX 'treatment_verbatim_key_idx';
+CREATE INDEX ON media (dataset_key, taxon_id);
+CREATE INDEX ON media (dataset_key, sector_key);
+CREATE INDEX ON media (dataset_key, verbatim_key);
+CREATE INDEX ON media (dataset_key, reference_id);
+DROP INDEX 'media_reference_id_idx';
+DROP INDEX 'media_sector_key_idx';
+DROP INDEX 'media_taxon_id_idx';
+DROP INDEX 'media_verbatim_key_idx';
+
+CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS simple_name[] AS $$
+	declare seql TEXT;
+	declare parents simple_name[];
+BEGIN
+    seql := 'WITH RECURSIVE x AS ('
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage t '
+        || '  JOIN name n ON n.dataset_key=$1 AND n.id=t.name_id WHERE t.dataset_key=$1 AND t.id = $2'
+        || ' UNION ALL '
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name FROM x, name_usage t '
+        || '  JOIN name n ON n.dataset_key=$1 AND n.id=t.name_id WHERE t.dataset_key=$1 AND t.id = x.parent_id'
+        || ') SELECT array_agg(sn) FROM x';
+
+    IF NOT v_inc_self THEN
+        seql := seql || ' WHERE id != $1';
+    END IF;
+
+    EXECUTE seql
+    INTO parents
+    USING v_dataset_key, v_id;
+    RETURN (array_reverse(parents));
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION track_usage_count()
+RETURNS TRIGGER AS
+$$
+  DECLARE
+  BEGIN
+      -- making use of the special variable TG_OP to work out the operation.
+      -- we assume we never mix records from several datasets in an insert or delete statement !!!
+      IF (TG_OP = 'DELETE') THEN
+        EXECUTE 'UPDATE usage_count set counter=counter+(select count(*) from deleted) where dataset_key=(SELECT dataset_key FROM deleted LIMIT 1)';
+      ELSIF (TG_OP = 'INSERT') THEN
+        EXECUTE 'UPDATE usage_count set counter=counter-(select count(*) from inserted) where dataset_key=(SELECT dataset_key FROM inserted LIMIT 1)';
+      END IF;
+
+    RETURN NULL;
+  END;
+$$
+LANGUAGE 'plpgsql';
+
+```
+
+for all partition suffices execute
+```
+DROP TRIGGER name_trigger_{KEY};
+CREATE TRIGGER trg_name_{KEY} BEFORE INSERT OR UPDATE
+ON name_{KEY} FOR EACH ROW
+WHEN (NEW.homotypic_name_id IS NULL)
+EXECUTE PROCEDURE homotypic_name_id_default();
+
+DROP TRIGGER trg_name_usage_{KEY}_insert;
+CREATE TRIGGER trg_name_usage_{KEY}_insert
+AFTER INSERT ON name_usage_{KEY}
+REFERENCING NEW TABLE AS inserted
+FOR EACH STATEMENT
+EXECUTE FUNCTION track_usage_count();
+
+DROP TRIGGER trg_name_usage_{KEY}_delete;
+CREATE TRIGGER trg_name_usage_{KEY}_delete
+AFTER DELETE ON name_usage_{KEY}
+REFERENCING OLD TABLE AS deleted
+FOR EACH STATEMENT
+EXECUTE FUNCTION track_usage_count();
+```
+
+TODO: Create default partitions with given number of shards
+```
+
+```
+
+Finally Run:
+```
+DROP FUNCTION count_usage_on_insert;
+```
+
+
 ### 2021-06-14 dataset NG
 ```
 CREATE TYPE agent AS (orcid text, given text, family text,

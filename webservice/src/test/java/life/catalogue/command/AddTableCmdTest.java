@@ -1,5 +1,6 @@
 package life.catalogue.command;
 
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import org.junit.ClassRule;
@@ -25,9 +26,17 @@ public class AddTableCmdTest {
     @Test
     public void keys() throws Exception {
         try (Connection con = pgSetupRule.connect()) {
-            Set<Integer> keys = AddTableCmd.datasetKeys(con, null);
-            Set<Integer> expected = Set.of(3,11); // 12 is external, so kept in default partition
-            assertEquals(expected, keys);
+          Set<String> keys = AddTableCmd.partitionSuffices(con, null);
+          assertEquals(Set.of("3","11", "mod1", "mod0"), keys); // 12 is external, so kept in default partition
+
+          keys = AddTableCmd.partitionSuffices(con, DatasetOrigin.MANAGED);
+          assertEquals(Set.of("3","11"), keys);
+
+          keys = AddTableCmd.partitionSuffices(con, DatasetOrigin.EXTERNAL);
+          assertEquals(Set.of("mod1", "mod0"), keys);
+
+          keys = AddTableCmd.partitionSuffices(con, DatasetOrigin.RELEASED);
+          assertEquals(Set.of(), keys);
         }
     }
 
