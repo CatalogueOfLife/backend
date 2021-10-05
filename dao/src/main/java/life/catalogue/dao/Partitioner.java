@@ -8,7 +8,17 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.DELETE;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -18,6 +28,45 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
  */
 public class Partitioner {
   private static final Logger LOG = LoggerFactory.getLogger(Partitioner.class);
+
+  /**
+   * @return list of all dataset suffices for which a name data partition exists.
+   */
+  public static Set<String> partitionSuffices(Connection con, @Nullable DatasetOrigin origin) throws SQLException {
+    try (Statement st = con.createStatement();
+         Statement originStmt = con.createStatement()
+    ) {
+      Set<String> suffices = new HashSet<>();
+      st.execute("select table_name from information_schema.tables where table_schema='public' and (table_name ~* '^name_\\d+' OR table_name ~* '^name_mod\\d+')");
+      ResultSet rs = st.getResultSet();
+
+      Pattern TABLE = Pattern.compile("name_(.+)$");
+      while (rs.next()) {
+        String tbl = rs.getString(1);
+        Matcher m = TABLE.matcher(tbl);
+        if (m.find()) {
+          if (origin != null) {
+            try {
+              int key = Integer.parseInt(m.group(1));
+              originStmt.execute("select origin from dataset where key = "+key + " AND origin='"+origin.name()+"'::datasetorigin");
+              if (!originStmt.getResultSet().next()) {
+                // no matching origin
+                continue;
+              }
+            } catch (NumberFormatException e) {
+              if (origin != DatasetOrigin.EXTERNAL) {
+                continue;
+              }
+            }
+          }
+          suffices.add( m.group(1) );
+        }
+      }
+      rs.close();
+      LOG.info("Found {} existing name partition tables", suffices.size());
+      return suffices;
+    }
+  }
 
   public static synchronized void createDefaultPartitions(SqlSessionFactory factory, int number) {
     try (SqlSession session = factory.openSession(false)) {
@@ -34,7 +83,7 @@ public class Partitioner {
   public static synchronized void createDefaultPartitions(SqlSession session, int number) {
     LOG.info("Create default partition with {} subpartitions for external datasets", number);
     DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
-    mapper.createDefaultPartitions(number);
+    mapper.createDefaultPartitions(number, true);
     session.commit();
   }
 

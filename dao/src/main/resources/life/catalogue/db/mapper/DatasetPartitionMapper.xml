@@ -121,4 +121,10 @@
     WHERE i.inhparent = 'public.name'::regclass
     ORDER BY datasetkey
   </select>
+
+  <select id="columns" resultType="string">
+    SELECT column_name FROM information_schema.columns
+    WHERE table_name = #{t} AND column_name NOT IN('doc')
+  </select>
+
 </mapper>

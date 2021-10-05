@@ -4,6 +4,7 @@ import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgConfig;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
@@ -93,7 +94,7 @@ public class ExecSqlCmd extends AbstractPromptCmd {
   private void execute(final String template, @Nullable DatasetOrigin originOnly, boolean silent) throws Exception {
     try (Connection con = cfg.db.connect(cfg.db)) {
       ScriptRunner runner = PgConfig.scriptRunner(con);
-      for (String key : AddTableCmd.partitionSuffices(con, originOnly)) {
+      for (String key : Partitioner.partitionSuffices(con, originOnly)) {
         execute(runner, template, String.valueOf(key), silent);
         con.commit();
       }

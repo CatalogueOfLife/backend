@@ -131,8 +131,15 @@ public interface DatasetPartitionMapper {
     )
   );
 
-  default void createDefaultPartitions(int number) {
-    TABLES.forEach(this::createDefaultPartition);
+  /**
+   * Creates the default partition and its hashed subpartitions
+   * @param number of subpartitions
+   * @param createDefaultPartition if true also creates the single default parent partition
+   */
+  default void createDefaultPartitions(int number, boolean createDefaultPartition) {
+    if (createDefaultPartition) {
+      TABLES.forEach(this::createDefaultPartition);
+    }
     for (int i=0; i<number; i++) {
       int remainder = i;
       String suffix = "mod"+remainder;
@@ -350,4 +357,9 @@ public interface DatasetPartitionMapper {
    * Lists all dataset keys for which there is an existing name partition table
    */
   List<Integer> existingPartitions();
+
+  /**
+   * Return the list of columns for a given table igoring "doc" columns
+   */
+  List<String> columns(@Param("t") String table);
 }

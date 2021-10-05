@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.dao.Partitioner;
+
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.slf4j.Logger;
@@ -86,7 +88,7 @@ public class AddTableCmd extends AbstractPromptCmd {
     ) {
       List<ForeignKey> fks = analyze(st, table);
 
-      for (String suffix : partitionSuffices(con, null)) {
+      for (String suffix : Partitioner.partitionSuffices(con, null)) {
         final String pTable = table+"_"+suffix;
         if (exists(pExists, pTable)) {
           LOG.info("{} already exists", pTable);
@@ -119,45 +121,6 @@ public class AddTableCmd extends AbstractPromptCmd {
     boolean exists = rs.next();
     rs.close();
     return exists;
-  }
-
-  /**
-   * @return list of all dataset suffices for which a name data partition exists.
-   */
-  public static Set<String> partitionSuffices(Connection con, @Nullable DatasetOrigin origin) throws SQLException {
-    try (Statement st = con.createStatement();
-         Statement originStmt = con.createStatement()
-    ) {
-      Set<String> suffices = new HashSet<>();
-      st.execute("select table_name from information_schema.tables where table_schema='public' and (table_name ~* '^name_\\d+' OR table_name ~* '^name_mod\\d+')");
-      ResultSet rs = st.getResultSet();
-
-      Pattern TABLE = Pattern.compile("name_(.+)$");
-      while (rs.next()) {
-        String tbl = rs.getString(1);
-        Matcher m = TABLE.matcher(tbl);
-        if (m.find()) {
-          if (origin != null) {
-            try {
-              int key = Integer.parseInt(m.group(1));
-              originStmt.execute("select origin from dataset where key = "+key + " AND origin='"+origin.name()+"'::datasetorigin");
-              if (!originStmt.getResultSet().next()) {
-                // no matching origin
-                continue;
-              }
-            } catch (NumberFormatException e) {
-              if (origin != DatasetOrigin.EXTERNAL) {
-                continue;
-              }
-            }
-          }
-          suffices.add( m.group(1) );
-        }
-      }
-      rs.close();
-      LOG.info("Found {} existing name partition tables", suffices.size());
-      return suffices;
-    }
   }
 
   /**

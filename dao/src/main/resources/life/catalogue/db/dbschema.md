@@ -184,7 +184,8 @@ EXECUTE FUNCTION track_usage_count();
 
 TODO: Create default partitions with given number of shards
 ```
-
+5) for each external datasetKey copy data from original tables to new default partition
+6) delete old partitions 
 ```
 
 Finally Run:
