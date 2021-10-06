@@ -78,6 +78,7 @@ public class RepartitionCmd extends AbstractMybatisCmd {
     // current suffices for external datasets
     final Set<String> existing = new HashSet<>();
     final Map<String, String> tables = new HashMap<>();
+    final boolean createDefault = !defaultPartitionsExists();
 
     // detach existing default partitions
     try (SqlSession session = factory.openSession();
@@ -108,28 +109,46 @@ public class RepartitionCmd extends AbstractMybatisCmd {
           }
         }
       }
-
-      System.out.println("Create "+cfg.db.partitions+" new default partitions");
-      dpm.createDefaultPartitions(cfg.db.partitions, false);
+      if (createDefault) {
+        System.out.println("Create new default partitions");
+      }
+      System.out.println("Create "+cfg.db.partitions+" new default subpartitions");
+      dpm.createDefaultPartitions(cfg.db.partitions, createDefault);
       session.commit();
 
       System.out.println("Copy data to new partitions");
+      // disable triggers, e.g. usage counting
+      st.execute("SET session_replication_role = replica");
+
       for (String suffix : existing) {
-        System.out.println("  copy "+suffix);
+        System.out.println("  source partition "+suffix);
+        for (String t : DatasetPartitionMapper.TABLES) {
+          final String src = String.format("%s_%s", t, suffix);
+          System.out.println("    copy " + src);
+          String cols = tables.get(t);
+          st.execute(String.format("INSERT INTO %s (%s) SELECT %s FROM _%s", t, cols, cols, src));
+          con.commit();
+        }
         for (String t : Lists.reverse(DatasetPartitionMapper.TABLES)) {
-          try {
-            final String src = String.format("%s_%s", t, suffix);
-            System.out.println("    copy " + src);
-            String cols = tables.get(t);
-            st.execute(String.format("INSERT INTO %s (%s) SELECT %s FROM _%s", t, cols, cols, src));
-            st.execute(String.format("DROP TABLE _%s", src));
-            con.commit();
-          } catch (SQLException e) {
-            throw new RuntimeException(e);
-          }
+          final String src = String.format("%s_%s", t, suffix);
+          System.out.println("    delete " + src);
+          st.execute(String.format("DROP TABLE _%s", src));
+          con.commit();
         }
       }
       con.commit();
     }
+  }
+
+  private boolean defaultPartitionsExists(){
+    try (Connection c = cfg.db.connect();
+         Statement st = c.createStatement()
+    ){
+      // we do a simple test to check if the default partition already exists
+      st.execute("SELECT * FROM name_default LIMIT 1");
+      return true;
+    } catch (SQLException e) {
+    }
+    return false;
   }
 }

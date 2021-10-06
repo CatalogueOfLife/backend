@@ -145,7 +145,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new ExportCmd());
     bootstrap.addCommand(new ExportSourcesCmd());
     bootstrap.addCommand(new DoiUpdateCmd());
-
+    bootstrap.addCommand(new RepartitionCmd());
   }
 
   @Override
