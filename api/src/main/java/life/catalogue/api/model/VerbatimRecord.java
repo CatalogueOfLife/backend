@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import life.catalogue.api.datapackage.ColdpTerm;
+import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.api.vocab.Issue;
 import org.apache.commons.text.StringEscapeUtils;
 import org.gbif.dwc.terms.DwcTerm;
@@ -138,9 +139,10 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   /**
    * @return true if at least one term in the DwC namespace exists
    */
+  @JsonIgnore
   public boolean hasDwcTerms() {
     for (Term t : terms.keySet()) {
-      if (t instanceof DwcTerm) {
+      if (t instanceof DwcTerm || t instanceof DwcUnofficialTerm) {
         return true;
       }
     }
@@ -150,6 +152,7 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   /**
    * @return true if at least one term in the ColDP namespace exists
    */
+  @JsonIgnore
   public boolean hasColdpTerms() {
     for (Term t : terms.keySet()) {
       if (t instanceof ColdpTerm) {
@@ -354,6 +357,7 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   /**
    * @return true if the instance has been modified since the last time setHashCode was executed.
    */
+  @JsonIgnore
   public boolean hasChanged() {
     return _hashKeyOnLoad == -1 || _hashKeyOnLoad != hashCode();
   }

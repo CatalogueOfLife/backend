@@ -1,6 +1,10 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.datapackage.ColdpTerm;
+
+import life.catalogue.api.datapackage.DwcUnofficialTerm;
+
+import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
@@ -43,7 +47,26 @@ public class ClassificationTest {
     int hash = c.hashCode();
     for (ColdpTerm t : ColdpTerm.DENORMALIZED_RANKS) {
       assertTrue(c.setByTerm(t, "xyz"));
-      assertNotEquals(hash, c.hashCode());
+      assertNotEquals("unused term "+t, hash, c.hashCode());
+      hash = c.hashCode();
+    }
+
+    for (DwcTerm t : DwcTerm.HIGHER_RANKS) {
+      assertTrue("unused term "+t, c.setByTerm(t, "foo"));
+      assertNotEquals("unused term "+t, hash, c.hashCode());
+      hash = c.hashCode();
+    }
+
+    for (DwcUnofficialTerm t : DwcUnofficialTerm.HIGHER_RANKS) {
+      assertTrue("unused term "+t, c.setByTerm(t, "bar"));
+      assertNotEquals("unused term "+t, hash, c.hashCode());
+      hash = c.hashCode();
+    }
+
+    for (Rank r : Classification.RANKS) {
+      assertTrue("unused rank "+r, c.setByRank(r, "grrr"));
+      assertEquals("grrr", c.getByRank(r));
+      assertNotEquals("unused rank "+r, hash, c.hashCode());
       hash = c.hashCode();
     }
   }

@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
@@ -72,7 +73,7 @@ public class VocabResource {
     names.add("language");
     names.add("geotime");
     names.add("terms");
-    names.remove(binaryName(ColDwcTerm.class));
+    names.remove(binaryName(DwcUnofficialTerm.class));
     Collections.sort(names);
     vocabNames = ImmutableList.copyOf(names);
   }

@@ -1,7 +1,9 @@
 package life.catalogue.importer;
 
 import com.google.common.collect.Lists;
+
 import life.catalogue.api.datapackage.ColdpTerm;
+import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
@@ -501,7 +503,11 @@ public class InterpreterBase {
       for (DwcTerm t : DwcTerm.HIGHER_RANKS) {
         u.classification.setByTerm(t, v.get(t));
       }
+      for (DwcUnofficialTerm t : DwcUnofficialTerm.HIGHER_RANKS) {
+        u.classification.setByTerm(t, v.get(t));
+      }
     }
+
     if (v.hasColdpTerms()) {
       for (ColdpTerm t : ColdpTerm.DENORMALIZED_RANKS) {
         u.classification.setByTerm(t, v.get(t));

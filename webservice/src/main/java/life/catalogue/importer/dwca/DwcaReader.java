@@ -11,7 +11,7 @@ import com.univocity.parsers.csv.CsvParserSettings;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
-import life.catalogue.api.vocab.ColDwcTerm;
+import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.csv.CsvReader;
@@ -58,12 +58,12 @@ public class DwcaReader extends CsvReader {
       .put(DwcTerm.Event, DwcTerm.eventID)
       .put(DwcTerm.Taxon, DwcTerm.taxonID)
       .put(DwcTerm.MeasurementOrFact, DwcTerm.measurementID)
-      .put(ColDwcTerm.NameRelations, DwcTerm.taxonID)
+      .put(DwcUnofficialTerm.NameRelations, DwcTerm.taxonID)
       .build();
   
   static {
     // make sure we are aware of ColTerms
-    TermFactory.instance().registerTermEnum(ColDwcTerm.class);
+    TermFactory.instance().registerTermEnum(DwcUnofficialTerm.class);
     TermFactory.instance().registerTerm(DwcaTerm.ID);
   }
   

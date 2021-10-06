@@ -1,5 +1,6 @@
 package life.catalogue.db;
 
+import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
@@ -74,7 +75,7 @@ public class PgSetupRuleTest {
     enums.add(JobStatus.class);
     // not needed for persistency
     enums.remove(Country.class);
-    enums.remove(ColDwcTerm.class);
+    enums.remove(DwcUnofficialTerm.class);
     enums.remove(TxtTreeTerm.class);
     enums.remove(Frequency.class);
     enums.remove(GeoTimeType.class);

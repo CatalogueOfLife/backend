@@ -2,7 +2,7 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.vocab.ColDwcTerm;
+import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
@@ -55,11 +55,11 @@ public class DwcaInserter extends NeoCsvInserter {
     //    u -> store.createNameAndUsage(u) != null
     //);
 
-    insertRelations(reader, ColDwcTerm.NameRelations,
+    insertRelations(reader, DwcUnofficialTerm.NameRelations,
         inter::interpretNameRelations,
         store.names(),
         DwcaTerm.ID,
-        ColDwcTerm.relatedNameUsageID,
+        DwcUnofficialTerm.relatedNameUsageID,
         Issue.NAME_ID_INVALID,
       true
     );

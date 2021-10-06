@@ -3,6 +3,8 @@ package life.catalogue.api.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import life.catalogue.api.datapackage.ColdpTerm;
+import life.catalogue.api.datapackage.DwcUnofficialTerm;
+
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 
@@ -14,11 +16,16 @@ import java.util.Objects;
  */
 public class Classification {
   public static final List<Rank> RANKS = ImmutableList.of(
+      Rank.SUPERKINGDOM,
       Rank.KINGDOM,
+      Rank.SUBKINGDOM,
+      Rank.SUPERPHYLUM,
       Rank.PHYLUM,
       Rank.SUBPHYLUM,
+      Rank.SUPERCLASS,
       Rank.CLASS,
       Rank.SUBCLASS,
+      Rank.SUPERORDER,
       Rank.ORDER,
       Rank.SUBORDER,
       Rank.SUPERFAMILY,
@@ -32,12 +39,17 @@ public class Classification {
       Rank.SPECIES
   );
   private static final List<Rank> RANKS_REVERSED = ImmutableList.copyOf(Lists.reverse(RANKS));
-  
+
+  private String superkingdom;
   private String kingdom;
+  private String subkingdom;
+  private String superphylum;
   private String phylum;
   private String subphylum;
+  private String superclass;
   private String class_;
   private String subclass;
+  private String superorder;
   private String order;
   private String suborder;
   private String superfamily;
@@ -49,28 +61,42 @@ public class Classification {
   private String subgenus;
   private String section;
   private String species;
-  
-  public static Classification copy(Classification src) {
-    Classification cl = new Classification();
-    cl.setKingdom(src.kingdom);
-    cl.setPhylum(src.phylum);
-    cl.setSubphylum(src.subphylum);
-    cl.setClass_(src.class_);
-    cl.setSubclass(src.subclass);
-    cl.setOrder(src.order);
-    cl.setSuborder(src.suborder);
-    cl.setSuperfamily(src.superfamily);
-    cl.setFamily(src.family);
-    cl.setSubfamily(src.subfamily);
-    cl.setTribe(src.tribe);
-    cl.setSubtribe(src.subtribe);
-    cl.setGenus(src.genus);
-    cl.setSubgenus(src.subgenus);
-    cl.setSection(src.section);
-    cl.setSpecies(src.species);
-    return cl;
+
+  public Classification() {
   }
-  
+
+  public Classification(Classification other) {
+    this.superkingdom = other.superkingdom;
+    this.kingdom = other.kingdom;
+    this.subkingdom = other.subkingdom;
+    this.superphylum = other.superphylum;
+    this.phylum = other.phylum;
+    this.subphylum = other.subphylum;
+    this.superclass = other.superclass;
+    this.class_ = other.class_;
+    this.subclass = other.subclass;
+    this.superorder = other.superorder;
+    this.order = other.order;
+    this.suborder = other.suborder;
+    this.superfamily = other.superfamily;
+    this.family = other.family;
+    this.subfamily = other.subfamily;
+    this.tribe = other.tribe;
+    this.subtribe = other.subtribe;
+    this.genus = other.genus;
+    this.subgenus = other.subgenus;
+    this.section = other.section;
+    this.species = other.species;
+  }
+
+  public String getSuperkingdom() {
+    return superkingdom;
+  }
+
+  public void setSuperkingdom(String superkingdom) {
+    this.superkingdom = superkingdom;
+  }
+
   public String getKingdom() {
     return kingdom;
   }
@@ -78,7 +104,23 @@ public class Classification {
   public void setKingdom(String kingdom) {
     this.kingdom = kingdom;
   }
-  
+
+  public String getSubkingdom() {
+    return subkingdom;
+  }
+
+  public void setSubkingdom(String subkingdom) {
+    this.subkingdom = subkingdom;
+  }
+
+  public String getSuperphylum() {
+    return superphylum;
+  }
+
+  public void setSuperphylum(String superphylum) {
+    this.superphylum = superphylum;
+  }
+
   public String getPhylum() {
     return phylum;
   }
@@ -87,14 +129,30 @@ public class Classification {
     this.phylum = phylum;
   }
   
+  public String getSuperclass() {
+    return superclass;
+  }
+
+  public void setSuperclass(String superclass) {
+    this.superclass = superclass;
+  }
+
   public String getClass_() {
     return class_;
   }
-  
+
   public void setClass_(String class_) {
     this.class_ = class_;
   }
-  
+
+  public String getSuperorder() {
+    return superorder;
+  }
+
+  public void setSuperorder(String superorder) {
+    this.superorder = superorder;
+  }
+
   public String getOrder() {
     return order;
   }
@@ -228,7 +286,45 @@ public class Classification {
     }
     return false;
   }
-  
+
+  public boolean setByTerm(DwcUnofficialTerm rank, String name) {
+    switch (rank) {
+      case superkingdom:
+        setSuperkingdom(name);
+        return true;
+      case superphylum:
+        setSuperphylum(name);
+        return true;
+      case superclass:
+        setSuperclass(name);
+        return true;
+      case superorder:
+        setSuperorder(name);
+        return true;
+      case superfamily:
+        setSuperfamily(name);
+        return true;
+
+      case subkingdom:
+        setSubkingdom(name);
+        return true;
+      case subphylum:
+        setSubphylum(name);
+        return true;
+      case subclass:
+        setSubclass(name);
+        return true;
+      case suborder:
+        setSuborder(name);
+        return true;
+
+      case tribe:
+        setTribe(name);
+        return true;
+    }
+    return false;
+  }
+
   public boolean setByTerm(ColdpTerm rank, String name) {
     switch (rank) {
       case kingdom:
@@ -283,71 +379,97 @@ public class Classification {
     return false;
   }
 
-  public void setByRank(Rank rank, String name) {
+  public boolean setByRank(Rank rank, String name) {
     switch (rank) {
+      case SUPERKINGDOM:
+        setSuperkingdom(name);
+        return true;
       case KINGDOM:
         setKingdom(name);
-        break;
+        return true;
+      case SUBKINGDOM:
+        setSubkingdom(name);
+        return true;
+      case SUPERPHYLUM:
+        setSuperphylum(name);
+        return true;
       case PHYLUM:
         setPhylum(name);
-        break;
+        return true;
       case SUBPHYLUM:
         setSubphylum(name);
-        break;
+        return true;
+      case SUPERCLASS:
+        setSuperclass(name);
+        return true;
       case CLASS:
         setClass_(name);
-        break;
+        return true;
       case SUBCLASS:
         setSubclass(name);
-        break;
+        return true;
+      case SUPERORDER:
+        setSuperorder(name);
+        return true;
       case ORDER:
         setOrder(name);
-        break;
+        return true;
       case SUBORDER:
         setSuborder(name);
-        break;
+        return true;
       case SUPERFAMILY:
         setSuperfamily(name);
-        break;
+        return true;
       case FAMILY:
         setFamily(name);
-        break;
+        return true;
       case SUBFAMILY:
         setSubfamily(name);
-        break;
+        return true;
       case TRIBE:
         setTribe(name);
-        break;
+        return true;
       case SUBTRIBE:
         setSubtribe(name);
-        break;
+        return true;
       case GENUS:
         setGenus(name);
-        break;
+        return true;
       case SUBGENUS:
         setSubgenus(name);
-        break;
+        return true;
       case SECTION:
         setSection(name);
-        break;
+        return true;
       case SPECIES:
         setSpecies(name);
-        break;
+        return true;
     }
+    return false;
   }
   
   public String getByRank(Rank rank) {
     switch (rank) {
+      case SUPERKINGDOM:
+        return getSuperkingdom();
       case KINGDOM:
         return getKingdom();
+      case SUBKINGDOM:
+        return getSubkingdom();
+      case SUPERPHYLUM:
+        return getSuperphylum();
       case PHYLUM:
         return getPhylum();
       case SUBPHYLUM:
         return getSubphylum();
+      case SUPERCLASS:
+        return getSuperclass();
       case CLASS:
         return getClass_();
       case SUBCLASS:
         return getSubclass();
+      case SUPERORDER:
+        return getSuperorder();
       case ORDER:
         return getOrder();
       case SUBORDER:
@@ -400,36 +522,40 @@ public class Classification {
     }
     return true;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof Classification)) return false;
     Classification that = (Classification) o;
-    return Objects.equals(kingdom, that.kingdom) &&
-        Objects.equals(phylum, that.phylum) &&
-        Objects.equals(subphylum, that.subphylum) &&
-        Objects.equals(class_, that.class_) &&
-        Objects.equals(subclass, that.subclass) &&
-        Objects.equals(order, that.order) &&
-        Objects.equals(suborder, that.suborder) &&
-        Objects.equals(superfamily, that.superfamily) &&
-        Objects.equals(family, that.family) &&
-        Objects.equals(subfamily, that.subfamily) &&
-        Objects.equals(tribe, that.tribe) &&
-        Objects.equals(subtribe, that.subtribe) &&
-        Objects.equals(genus, that.genus) &&
-        Objects.equals(subgenus, that.subgenus) &&
-        Objects.equals(section, that.section) &&
-        Objects.equals(species, that.species);
+    return Objects.equals(superkingdom, that.superkingdom)
+           && Objects.equals(kingdom, that.kingdom)
+           && Objects.equals(subkingdom, that.subkingdom)
+           && Objects.equals(superphylum, that.superphylum)
+           && Objects.equals(phylum, that.phylum)
+           && Objects.equals(subphylum, that.subphylum)
+           && Objects.equals(superclass, that.superclass)
+           && Objects.equals(class_, that.class_)
+           && Objects.equals(subclass, that.subclass)
+           && Objects.equals(superorder, that.superorder)
+           && Objects.equals(order, that.order)
+           && Objects.equals(suborder, that.suborder)
+           && Objects.equals(superfamily, that.superfamily)
+           && Objects.equals(family, that.family)
+           && Objects.equals(subfamily, that.subfamily)
+           && Objects.equals(tribe, that.tribe)
+           && Objects.equals(subtribe, that.subtribe)
+           && Objects.equals(genus, that.genus)
+           && Objects.equals(subgenus, that.subgenus)
+           && Objects.equals(section, that.section)
+           && Objects.equals(species, that.species);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(kingdom, phylum, subphylum, class_, subclass, order, suborder, superfamily, family, subfamily, tribe, subtribe,
-        genus, subgenus, section, species);
+    return Objects.hash(superkingdom, kingdom, subkingdom, superphylum, phylum, subphylum, superclass, class_, subclass, superorder, order, suborder, superfamily, family, subfamily, tribe, subtribe, genus, subgenus, section, species);
   }
-  
+
   public boolean equalsAboveRank(Classification o, Rank lowest) {
     if (this == o) return true;
     if (o == null) return false;

@@ -989,7 +989,7 @@ public class NeoDb {
     // copyTaxon verbatim classification from source
     if (source != null) {
       if (source.classification != null) {
-        u.classification = Classification.copy(source.classification);
+        u.classification = new Classification(source.classification);
         // remove lower ranks
         u.classification.clearRankAndBelow(excludeRankAndBelow);
       }

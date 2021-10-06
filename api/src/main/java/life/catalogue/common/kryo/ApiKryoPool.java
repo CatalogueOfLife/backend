@@ -6,6 +6,7 @@ import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import de.undercouch.citeproc.csl.CSLType;
 
+import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
@@ -161,7 +162,7 @@ public class ApiKryoPool extends Pool<Kryo> {
 
     // term enums
     TermFactory.instance().registerTermEnum(ColdpTerm.class);
-    TermFactory.instance().registerTermEnum(ColDwcTerm.class);
+    TermFactory.instance().registerTermEnum(DwcUnofficialTerm.class);
     TermFactory.instance().registerTermEnum(TxtTreeTerm.class);
     for (Class cl : TermFactory.instance().listRegisteredTermEnums()) {
       kryo.register(cl);
