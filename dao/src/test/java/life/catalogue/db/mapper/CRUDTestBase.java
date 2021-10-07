@@ -14,7 +14,7 @@ import static org.junit.Assert.assertNull;
 
 abstract class CRUDTestBase<K, V extends DataEntity<K>, M extends CRUD<K, V>> extends MapperTestBase<M> {
   
-  protected final static int datasetKey = TestEntityGenerator.DATASET11.getKey();;
+  protected static int datasetKey = TestEntityGenerator.DATASET11.getKey();;
 
   CRUDTestBase(Class<M> mapperClazz) {
     super(mapperClazz);

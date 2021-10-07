@@ -40,6 +40,8 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
   
   @Before
   public void init() {
+    CRUDTestBase.datasetKey = Datasets.COL;
+
     // create a few draft taxa to attach sectors to
     MybatisTestUtils.populateDraftTree(session());
 
@@ -62,13 +64,19 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     Name n = TestEntityGenerator.newName(dkey);
     insertName(n);
     Taxon t = TestEntityGenerator.newTaxon(n);
-    // manually set the child count which is populated on read only
     t.setSectorKey(sector.getId());
     t.setDatasetKey(dkey);
     t.setNamePhrase("sensu lato");
     return t;
   }
-  
+
+  @Override
+  Taxon createTestEntityIncId(int datasetKey) {
+    var t = super.createTestEntityIncId(datasetKey);
+    t.setSectorKey(null); // causes constraint problems otherwise
+    return t;
+  }
+
   @Override
   Taxon removeDbCreatedProps(Taxon obj) {
     NameMapperTest.removeCreatedProps(obj.getName());
