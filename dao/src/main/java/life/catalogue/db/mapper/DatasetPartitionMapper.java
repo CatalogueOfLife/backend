@@ -204,11 +204,11 @@ public interface DatasetPartitionMapper {
    */
   default void attach(int key, DatasetOrigin origin) {
     if (origin.isManagedOrRelease()) {
+      // attach, this also creates indices, pks and fks
+      TABLES.forEach(t -> attachTable(t, key));
       // create triggers
       final String suffix = String.valueOf(key);
       attachTriggers(suffix);
-      // attach, this also creates indices, pks and fks
-      TABLES.forEach(t -> attachTable(t, key));
       // things specific to managed datasets only
       PROJECT_TABLES.forEach(t -> attachTable(t, key));
     }

@@ -109,8 +109,20 @@ LANGUAGE 'plpgsql';
 
 ```
 
-for all partition suffices execute the following to remove previous triggers, indices, primary and foreign keys:
+execute the following to clean project tables for managed and released datasets each:
 ```
+./exec-sql.sh partitioning1.sql --origin MANAGED
+./exec-sql.sh partitioning1.sql --origin RELEASED
+
+ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT IF EXISTS verbatim_source_{KEY}_id_fkey;
+ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT IF EXISTS verbatim_source_{KEY}_pkey;
+```
+
+
+Then for all partition suffices execute the following to remove previous triggers, indices, primary and foreign keys:
+```
+./exec-sql.sh partitioning2.sql
+
 --
 -- TRIGGER
 --
@@ -132,57 +144,56 @@ FOR EACH STATEMENT EXECUTE FUNCTION track_usage_count();
 --
 -- FOREIGN KEYS
 --
-ALTER TABLE name_{KEY} DROP CONSTRAINT name_{KEY}_verbatim_key_fkey;
-ALTER TABLE name_{KEY} DROP CONSTRAINT name_{KEY}_published_in_id_fkey;
-ALTER TABLE name_rel_{KEY} DROP CONSTRAINT name_rel_{KEY}_verbatim_key_fkey;
-ALTER TABLE name_rel_{KEY} DROP CONSTRAINT name_rel_{KEY}_reference_id_fkey;
-ALTER TABLE name_rel_{KEY} DROP CONSTRAINT name_rel_{KEY}_name_id_fkey;
-ALTER TABLE name_rel_{KEY} DROP CONSTRAINT name_rel_{KEY}_related_name_id_fkey;
-ALTER TABLE type_material_{KEY} DROP CONSTRAINT type_material_{KEY}_verbatim_key_fkey;
-ALTER TABLE type_material_{KEY} DROP CONSTRAINT type_material_{KEY}_reference_id_fkey;
-ALTER TABLE type_material_{KEY} DROP CONSTRAINT type_material_{KEY}_name_id_fkey;
-ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_verbatim_key_fkey;
-ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_according_to_id_fkey;
-ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_parent_id_fkey;
-ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_name_id_fkey;
-ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_verbatim_key_fkey;
-ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_reference_id_fkey;
-ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_taxon_id_fkey;
-ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_related_taxon_id_fkey;
-ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT species_interaction_{KEY}_verbatim_key_fkey;
-ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT species_interaction_{KEY}_reference_id_fkey;
-ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT species_interaction_{KEY}_taxon_id_fkey;
-ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT species_interaction_{KEY}_related_taxon_id_fkey;
-ALTER TABLE distribution_{KEY} DROP CONSTRAINT distribution_{KEY}_verbatim_key_fkey;
-ALTER TABLE distribution_{KEY} DROP CONSTRAINT distribution_{KEY}_reference_id_fkey;
-ALTER TABLE distribution_{KEY} DROP CONSTRAINT distribution_{KEY}_taxon_id_fkey;
-ALTER TABLE media_{KEY} DROP CONSTRAINT media_{KEY}_verbatim_key_fkey;
-ALTER TABLE media_{KEY} DROP CONSTRAINT media_{KEY}_reference_id_fkey;
-ALTER TABLE media_{KEY} DROP CONSTRAINT media_{KEY}_taxon_id_fkey;
-ALTER TABLE treatment_{KEY} DROP CONSTRAINT treatment_{KEY}_verbatim_key_fkey;
-ALTER TABLE treatment_{KEY} DROP CONSTRAINT treatment_{KEY}_id_fkey;
-ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT vernacular_name_{KEY}_verbatim_key_fkey;
-ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT vernacular_name_{KEY}_reference_id_fkey;
-ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT vernacular_name_{KEY}_taxon_id_fkey;
-ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT verbatim_source_{KEY}_id_fkey;
+ALTER TABLE reference_{KEY} DROP CONSTRAINT IF EXISTS reference_{KEY}_verbatim_key_fkey;
+ALTER TABLE name_{KEY} DROP CONSTRAINT IF EXISTS name_{KEY}_verbatim_key_fkey;
+ALTER TABLE name_{KEY} DROP CONSTRAINT IF EXISTS name_{KEY}_published_in_id_fkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_verbatim_key_fkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_reference_id_fkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_name_id_fkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_related_name_id_fkey;
+ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_verbatim_key_fkey;
+ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_reference_id_fkey;
+ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_name_id_fkey;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_verbatim_key_fkey;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_according_to_id_fkey;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_parent_id_fkey;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_name_id_fkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_concept_rel_{KEY}_verbatim_key_fkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_concept_rel_{KEY}_reference_id_fkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_concept_rel_{KEY}_taxon_id_fkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_concept_rel_{KEY}_related_taxon_id_fkey;
+ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT IF EXISTS species_interaction_{KEY}_verbatim_key_fkey;
+ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT IF EXISTS species_interaction_{KEY}_reference_id_fkey;
+ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT IF EXISTS species_interaction_{KEY}_taxon_id_fkey;
+ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT IF EXISTS species_interaction_{KEY}_related_taxon_id_fkey;
+ALTER TABLE distribution_{KEY} DROP CONSTRAINT IF EXISTS distribution_{KEY}_verbatim_key_fkey;
+ALTER TABLE distribution_{KEY} DROP CONSTRAINT IF EXISTS distribution_{KEY}_reference_id_fkey;
+ALTER TABLE distribution_{KEY} DROP CONSTRAINT IF EXISTS distribution_{KEY}_taxon_id_fkey;
+ALTER TABLE media_{KEY} DROP CONSTRAINT IF EXISTS media_{KEY}_verbatim_key_fkey;
+ALTER TABLE media_{KEY} DROP CONSTRAINT IF EXISTS media_{KEY}_reference_id_fkey;
+ALTER TABLE media_{KEY} DROP CONSTRAINT IF EXISTS media_{KEY}_taxon_id_fkey;
+ALTER TABLE treatment_{KEY} DROP CONSTRAINT IF EXISTS treatment_{KEY}_verbatim_key_fkey;
+ALTER TABLE treatment_{KEY} DROP CONSTRAINT IF EXISTS treatment_{KEY}_id_fkey;
+ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT IF EXISTS vernacular_name_{KEY}_verbatim_key_fkey;
+ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT IF EXISTS vernacular_name_{KEY}_reference_id_fkey;
+ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT IF EXISTS vernacular_name_{KEY}_taxon_id_fkey;
 
 --
 -- PRIMARY KEYS
 --
-ALTER TABLE verbatim_{KEY} DROP CONSTRAINT verbatim_{KEY}_pkey;
-ALTER TABLE reference_{KEY} DROP CONSTRAINT reference_{KEY}_pkey;
-ALTER TABLE name_{KEY} DROP CONSTRAINT name_{KEY}_pkey;
-ALTER TABLE name_rel_{KEY} DROP CONSTRAINT name_rel_{KEY}_pkey;
-ALTER TABLE type_material_{KEY} DROP CONSTRAINT type_material_{KEY}_pkey;
-ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_pkey;
-ALTER TABLE distribution_{KEY} DROP CONSTRAINT distribution_{KEY}_pkey;
-ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_pkey;
-ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT species_interaction_{KEY}_pkey;
-ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_pkey;
-ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT vernacular_name_{KEY}_pkey;
-ALTER TABLE media_{KEY} DROP CONSTRAINT media_{KEY}_pkey;
-ALTER TABLE treatment_{KEY} DROP CONSTRAINT treatment_{KEY}_pkey;
-ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT verbatim_source_{KEY}_pkey;
+ALTER TABLE verbatim_{KEY} DROP CONSTRAINT IF EXISTS verbatim_{KEY}_pkey;
+ALTER TABLE reference_{KEY} DROP CONSTRAINT IF EXISTS reference_{KEY}_pkey;
+ALTER TABLE name_{KEY} DROP CONSTRAINT IF EXISTS name_{KEY}_pkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_pkey;
+ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_pkey;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_pkey;
+ALTER TABLE distribution_{KEY} DROP CONSTRAINT IF EXISTS distribution_{KEY}_pkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_concept_rel_{KEY}_pkey;
+ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT IF EXISTS species_interaction_{KEY}_pkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_concept_rel_{KEY}_pkey;
+ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT IF EXISTS vernacular_name_{KEY}_pkey;
+ALTER TABLE media_{KEY} DROP CONSTRAINT IF EXISTS media_{KEY}_pkey;
+ALTER TABLE treatment_{KEY} DROP CONSTRAINT IF EXISTS treatment_{KEY}_pkey;
 ```
 
 Now we can create default subpartitions with a configurable number of shards using the repartition command.
@@ -206,7 +217,6 @@ ALTER TABLE name_usage ADD PRIMARY KEY (dataset_key, id);
 ALTER TABLE distribution ADD PRIMARY KEY (dataset_key, id);
 ALTER TABLE taxon_concept_rel ADD PRIMARY KEY (dataset_key, id);
 ALTER TABLE species_interaction ADD PRIMARY KEY (dataset_key, id);
-ALTER TABLE taxon_concept_rel ADD PRIMARY KEY (dataset_key, id);
 ALTER TABLE vernacular_name ADD PRIMARY KEY (dataset_key, id);
 ALTER TABLE media ADD PRIMARY KEY (dataset_key, id);
 ALTER TABLE treatment ADD PRIMARY KEY (dataset_key, id);
