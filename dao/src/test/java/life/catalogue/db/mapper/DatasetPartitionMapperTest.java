@@ -50,32 +50,6 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   }
 
   @Test
-  @Ignore("manually print sql for foreign keys")
-  public void exifdsfsfdssts() {
-    DatasetPartitionMapper.TABLES.stream()
-      .filter(t -> !t.equalsIgnoreCase("verbatim"))
-      .forEach(t -> createFk(t, new DatasetPartitionMapper.FK("verbatim_key", "verbatim")));
-    // custom fks
-    DatasetPartitionMapper.FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, fk)));
-  }
-
-  void createFk(String table, DatasetPartitionMapper.FK fk) {
-    System.out.println( String.format("ALTER TABLE %s_{KEY} DROP CONSTRAINT %s_{KEY}_%s_fkey;",
-      table, table, fk.column)
-    );
-    System.out.print( String.format("ALTER TABLE %s_{KEY} ADD FOREIGN KEY (%s) REFERENCES %s_{KEY}",
-      table, fk.column, fk.table)
-    );
-    if (fk.cascade) {
-      System.out.print(" ON DELETE CASCADE");
-    }
-    if (fk.defer) {
-      System.out.print(" DEFERRABLE INITIALLY DEFERRED");
-    }
-    System.out.println(";");
-  }
-
-  @Test
   public void updateCounter() {
     int x = mapper().updateUsageCounter(TestDataRule.APPLE.key);
     assertEquals(4, x);

@@ -15,102 +15,52 @@ and done it manually. So we can as well log changes here.
 ```
 CREATE EXTENSION IF NOT EXISTS btree_gin;
 
-CREATE INDEX ON verbatim (dataset_key, type);
-CREATE INDEX ON verbatim USING GIN (dataset_key, doc);
-CREATE INDEX ON verbatim USING GIN (dataset_key, issues);
-CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_path_ops);
 DROP INDEX verbatim_doc_idx;
 DROP INDEX verbatim_issues_idx;
 DROP INDEX verbatim_terms_idx;
 DROP INDEX verbatim_type_idx;
-CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
 DROP INDEX verbatim_source_issues_idx;
-CREATE INDEX ON reference (dataset_key, verbatim_key);
-CREATE INDEX ON reference (dataset_key, sector_key);
-CREATE INDEX ON reference USING GIN (dataset_key, doc);
 DROP INDEX reference_doc_idx;
 DROP INDEX reference_sector_key_idx;
 DROP INDEX reference_verbatim_key_idx;
-CREATE INDEX ON name (dataset_key, sector_key);
-CREATE INDEX ON name (dataset_key, verbatim_key);
-CREATE INDEX ON name (dataset_key, homotypic_name_id);
-CREATE INDEX ON name (dataset_key, published_in_id);
-CREATE INDEX ON name (dataset_key, lower(scientific_name));
-CREATE INDEX ON name (dataset_key, scientific_name_normalized);
 DROP INDEX name_homotypic_name_id_idx;
 DROP INDEX name_lower_idx;
 DROP INDEX name_published_in_id_idx;
 DROP INDEX name_scientific_name_normalized_idx;
 DROP INDEX name_sector_key_idx;
 DROP INDEX name_verbatim_key_idx;
-CREATE INDEX ON name_rel (dataset_key, name_id, type);
-CREATE INDEX ON name_rel (dataset_key, sector_key);
-CREATE INDEX ON name_rel (dataset_key, verbatim_key);
-CREATE INDEX ON name_rel (dataset_key, reference_id);
 DROP INDEX name_rel_name_id_type_idx;
 DROP INDEX name_rel_reference_id_idx;
 DROP INDEX name_rel_sector_key_idx;
 DROP INDEX name_rel_verbatim_key_idx;
-CREATE INDEX ON type_material (dataset_key, name_id);
-CREATE INDEX ON type_material (dataset_key, sector_key);
-CREATE INDEX ON type_material (dataset_key, verbatim_key);
-CREATE INDEX ON type_material (dataset_key, reference_id);
 DROP INDEX type_material_name_id_idx;
 DROP INDEX type_material_reference_id_idx;
 DROP INDEX type_material_sector_key_idx;
 DROP INDEX type_material_verbatim_key_idx;
-CREATE INDEX ON name_usage (dataset_key, name_id);
-CREATE INDEX ON name_usage (dataset_key, parent_id);
-CREATE INDEX ON name_usage (dataset_key, verbatim_key);
-CREATE INDEX ON name_usage (dataset_key, sector_key);
-CREATE INDEX ON name_usage (dataset_key, according_to_id);
 DROP INDEX name_usage_according_to_id_idx;
 DROP INDEX name_usage_name_id_idx;
 DROP INDEX name_usage_parent_id_idx;
 DROP INDEX name_usage_sector_key_idx;
 DROP INDEX name_usage_verbatim_key_idx;
-CREATE INDEX ON taxon_concept_rel (dataset_key, taxon_id, type);
-CREATE INDEX ON taxon_concept_rel (dataset_key, sector_key);
-CREATE INDEX ON taxon_concept_rel (dataset_key, verbatim_key);
-CREATE INDEX ON taxon_concept_rel (dataset_key, reference_id);
 DROP INDEX taxon_concept_rel_reference_id_idx;
 DROP INDEX taxon_concept_rel_sector_key_idx;
 DROP INDEX taxon_concept_rel_taxon_id_type_idx;
 DROP INDEX taxon_concept_rel_verbatim_key_idx;
-CREATE INDEX ON species_interaction (dataset_key, taxon_id, type);
-CREATE INDEX ON species_interaction (dataset_key, sector_key);
-CREATE INDEX ON species_interaction (dataset_key, verbatim_key);
-CREATE INDEX ON species_interaction (dataset_key, reference_id);
 DROP INDEX species_interaction_reference_id_idx;
 DROP INDEX species_interaction_sector_key_idx;
 DROP INDEX species_interaction_taxon_id_type_idx;
 DROP INDEX species_interaction_verbatim_key_idx;
-CREATE INDEX ON vernacular_name (dataset_key, taxon_id);
-CREATE INDEX ON vernacular_name (dataset_key, sector_key);
-CREATE INDEX ON vernacular_name (dataset_key, verbatim_key);
-CREATE INDEX ON vernacular_name (dataset_key, reference_id);
-CREATE INDEX ON vernacular_name USING GIN (dataset_key, doc);
 DROP INDEX vernacular_name_doc_idx;
 DROP INDEX vernacular_name_reference_id_idx;
 DROP INDEX vernacular_name_sector_key_idx;
 DROP INDEX vernacular_name_taxon_id_idx;
 DROP INDEX vernacular_name_verbatim_key_idx;
-CREATE INDEX ON distribution (dataset_key, taxon_id);
-CREATE INDEX ON distribution (dataset_key, sector_key);
-CREATE INDEX ON distribution (dataset_key, verbatim_key);
-CREATE INDEX ON distribution (dataset_key, reference_id);
 DROP INDEX distribution_reference_id_idx;
 DROP INDEX distribution_sector_key_idx;
 DROP INDEX distribution_taxon_id_idx;
 DROP INDEX distribution_verbatim_key_idx;
-CREATE INDEX ON treatment (dataset_key, sector_key);
-CREATE INDEX ON treatment (dataset_key, verbatim_key);
 DROP INDEX treatment_sector_key_idx;
 DROP INDEX treatment_verbatim_key_idx;
-CREATE INDEX ON media (dataset_key, taxon_id);
-CREATE INDEX ON media (dataset_key, sector_key);
-CREATE INDEX ON media (dataset_key, verbatim_key);
-CREATE INDEX ON media (dataset_key, reference_id);
 DROP INDEX media_reference_id_idx;
 DROP INDEX media_sector_key_idx;
 DROP INDEX media_taxon_id_idx;
@@ -159,27 +109,80 @@ LANGUAGE 'plpgsql';
 
 ```
 
-for all partition suffices execute
+for all partition suffices execute the following to remove previous triggers, indices, primary and foreign keys:
 ```
-DROP TRIGGER name_trigger_{KEY};
-CREATE TRIGGER trg_name_{KEY} BEFORE INSERT OR UPDATE
-ON name_{KEY} FOR EACH ROW
+--
+-- TRIGGER
+--
+DROP TRIGGER IF EXISTS name_trigger_{KEY} ON name_{KEY};
+CREATE TRIGGER trg_name_{KEY} BEFORE INSERT OR UPDATE ON name_{KEY} FOR EACH ROW
 WHEN (NEW.homotypic_name_id IS NULL)
 EXECUTE PROCEDURE homotypic_name_id_default();
 
-DROP TRIGGER trg_name_usage_{KEY}_insert;
-CREATE TRIGGER trg_name_usage_{KEY}_insert
-AFTER INSERT ON name_usage_{KEY}
+DROP TRIGGER IF EXISTS trg_name_usage_{KEY}_insert ON name_usage_{KEY};
+CREATE TRIGGER trg_name_usage_{KEY}_insert AFTER INSERT ON name_usage_{KEY}
 REFERENCING NEW TABLE AS inserted
-FOR EACH STATEMENT
-EXECUTE FUNCTION track_usage_count();
+FOR EACH STATEMENT EXECUTE FUNCTION track_usage_count();
 
-DROP TRIGGER trg_name_usage_{KEY}_delete;
-CREATE TRIGGER trg_name_usage_{KEY}_delete
-AFTER DELETE ON name_usage_{KEY}
+DROP TRIGGER IF EXISTS trg_name_usage_{KEY}_delete ON name_usage_{KEY};
+CREATE TRIGGER trg_name_usage_{KEY}_delete AFTER DELETE ON name_usage_{KEY}
 REFERENCING OLD TABLE AS deleted
-FOR EACH STATEMENT
-EXECUTE FUNCTION track_usage_count();
+FOR EACH STATEMENT EXECUTE FUNCTION track_usage_count();
+
+--
+-- FOREIGN KEYS
+--
+ALTER TABLE name_{KEY} DROP CONSTRAINT name_{KEY}_verbatim_key_fkey;
+ALTER TABLE name_{KEY} DROP CONSTRAINT name_{KEY}_published_in_id_fkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT name_rel_{KEY}_verbatim_key_fkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT name_rel_{KEY}_reference_id_fkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT name_rel_{KEY}_name_id_fkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT name_rel_{KEY}_related_name_id_fkey;
+ALTER TABLE type_material_{KEY} DROP CONSTRAINT type_material_{KEY}_verbatim_key_fkey;
+ALTER TABLE type_material_{KEY} DROP CONSTRAINT type_material_{KEY}_reference_id_fkey;
+ALTER TABLE type_material_{KEY} DROP CONSTRAINT type_material_{KEY}_name_id_fkey;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_verbatim_key_fkey;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_according_to_id_fkey;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_parent_id_fkey;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_name_id_fkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_verbatim_key_fkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_reference_id_fkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_taxon_id_fkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_related_taxon_id_fkey;
+ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT species_interaction_{KEY}_verbatim_key_fkey;
+ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT species_interaction_{KEY}_reference_id_fkey;
+ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT species_interaction_{KEY}_taxon_id_fkey;
+ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT species_interaction_{KEY}_related_taxon_id_fkey;
+ALTER TABLE distribution_{KEY} DROP CONSTRAINT distribution_{KEY}_verbatim_key_fkey;
+ALTER TABLE distribution_{KEY} DROP CONSTRAINT distribution_{KEY}_reference_id_fkey;
+ALTER TABLE distribution_{KEY} DROP CONSTRAINT distribution_{KEY}_taxon_id_fkey;
+ALTER TABLE media_{KEY} DROP CONSTRAINT media_{KEY}_verbatim_key_fkey;
+ALTER TABLE media_{KEY} DROP CONSTRAINT media_{KEY}_reference_id_fkey;
+ALTER TABLE media_{KEY} DROP CONSTRAINT media_{KEY}_taxon_id_fkey;
+ALTER TABLE treatment_{KEY} DROP CONSTRAINT treatment_{KEY}_verbatim_key_fkey;
+ALTER TABLE treatment_{KEY} DROP CONSTRAINT treatment_{KEY}_id_fkey;
+ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT vernacular_name_{KEY}_verbatim_key_fkey;
+ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT vernacular_name_{KEY}_reference_id_fkey;
+ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT vernacular_name_{KEY}_taxon_id_fkey;
+ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT verbatim_source_{KEY}_id_fkey;
+
+--
+-- PRIMARY KEYS
+--
+ALTER TABLE verbatim_{KEY} DROP CONSTRAINT verbatim_{KEY}_pkey;
+ALTER TABLE reference_{KEY} DROP CONSTRAINT reference_{KEY}_pkey;
+ALTER TABLE name_{KEY} DROP CONSTRAINT name_{KEY}_pkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT name_rel_{KEY}_pkey;
+ALTER TABLE type_material_{KEY} DROP CONSTRAINT type_material_{KEY}_pkey;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_pkey;
+ALTER TABLE distribution_{KEY} DROP CONSTRAINT distribution_{KEY}_pkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_pkey;
+ALTER TABLE species_interaction_{KEY} DROP CONSTRAINT species_interaction_{KEY}_pkey;
+ALTER TABLE taxon_concept_rel_{KEY} DROP CONSTRAINT taxon_concept_rel_{KEY}_pkey;
+ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT vernacular_name_{KEY}_pkey;
+ALTER TABLE media_{KEY} DROP CONSTRAINT media_{KEY}_pkey;
+ALTER TABLE treatment_{KEY} DROP CONSTRAINT treatment_{KEY}_pkey;
+ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT verbatim_source_{KEY}_pkey;
 ```
 
 Now we can create default subpartitions with a configurable number of shards using the repartition command.
@@ -190,6 +193,116 @@ Now we can create default subpartitions with a configurable number of shards usi
 Finally Run:
 ```
 DROP FUNCTION count_usage_on_insert;
+
+--
+-- PRIMARY KEYS
+--
+ALTER TABLE verbatim ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE reference ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE name ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE name_rel ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE type_material ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE name_usage ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE distribution ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE taxon_concept_rel ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE species_interaction ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE taxon_concept_rel ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE vernacular_name ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE media ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE treatment ADD PRIMARY KEY (dataset_key, id);
+ALTER TABLE verbatim_source ADD PRIMARY KEY (dataset_key, id);
+
+--
+-- FOREIGN KEYS
+--
+ALTER TABLE reference ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE name ADD FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference ON DELETE CASCADE;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name ON DELETE CASCADE;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, related_name_id) REFERENCES name ON DELETE CASCADE;
+ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
+ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name ON DELETE CASCADE;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference ON DELETE CASCADE;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name ON DELETE CASCADE;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage ON DELETE CASCADE;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage ON DELETE CASCADE;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE;
+ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage ON DELETE CASCADE;
+ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
+ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
+ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE;
+ALTER TABLE verbatim_source ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage ON DELETE CASCADE;
+
+--
+-- INDICES
+--
+CREATE INDEX ON verbatim (dataset_key, type);
+CREATE INDEX ON verbatim USING GIN (dataset_key, doc);
+CREATE INDEX ON verbatim USING GIN (dataset_key, issues);
+CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_path_ops);
+CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
+CREATE INDEX ON reference (dataset_key, verbatim_key);
+CREATE INDEX ON reference (dataset_key, sector_key);
+CREATE INDEX ON reference USING GIN (dataset_key, doc);
+CREATE INDEX ON name (dataset_key, sector_key);
+CREATE INDEX ON name (dataset_key, verbatim_key);
+CREATE INDEX ON name (dataset_key, homotypic_name_id);
+CREATE INDEX ON name (dataset_key, published_in_id);
+CREATE INDEX ON name (dataset_key, lower(scientific_name));
+CREATE INDEX ON name (dataset_key, scientific_name_normalized);
+CREATE INDEX ON name_rel (dataset_key, name_id, type);
+CREATE INDEX ON name_rel (dataset_key, sector_key);
+CREATE INDEX ON name_rel (dataset_key, verbatim_key);
+CREATE INDEX ON name_rel (dataset_key, reference_id);
+CREATE INDEX ON type_material (dataset_key, name_id);
+CREATE INDEX ON type_material (dataset_key, sector_key);
+CREATE INDEX ON type_material (dataset_key, verbatim_key);
+CREATE INDEX ON type_material (dataset_key, reference_id);
+CREATE INDEX ON name_usage (dataset_key, name_id);
+CREATE INDEX ON name_usage (dataset_key, parent_id);
+CREATE INDEX ON name_usage (dataset_key, verbatim_key);
+CREATE INDEX ON name_usage (dataset_key, sector_key);
+CREATE INDEX ON name_usage (dataset_key, according_to_id);
+CREATE INDEX ON taxon_concept_rel (dataset_key, taxon_id, type);
+CREATE INDEX ON taxon_concept_rel (dataset_key, sector_key);
+CREATE INDEX ON taxon_concept_rel (dataset_key, verbatim_key);
+CREATE INDEX ON taxon_concept_rel (dataset_key, reference_id);
+CREATE INDEX ON species_interaction (dataset_key, taxon_id, type);
+CREATE INDEX ON species_interaction (dataset_key, sector_key);
+CREATE INDEX ON species_interaction (dataset_key, verbatim_key);
+CREATE INDEX ON species_interaction (dataset_key, reference_id);
+CREATE INDEX ON vernacular_name (dataset_key, taxon_id);
+CREATE INDEX ON vernacular_name (dataset_key, sector_key);
+CREATE INDEX ON vernacular_name (dataset_key, verbatim_key);
+CREATE INDEX ON vernacular_name (dataset_key, reference_id);
+CREATE INDEX ON vernacular_name USING GIN (dataset_key, doc);
+CREATE INDEX ON distribution (dataset_key, taxon_id);
+CREATE INDEX ON distribution (dataset_key, sector_key);
+CREATE INDEX ON distribution (dataset_key, verbatim_key);
+CREATE INDEX ON distribution (dataset_key, reference_id);
+CREATE INDEX ON treatment (dataset_key, sector_key);
+CREATE INDEX ON treatment (dataset_key, verbatim_key);
+CREATE INDEX ON media (dataset_key, taxon_id);
+CREATE INDEX ON media (dataset_key, sector_key);
+CREATE INDEX ON media (dataset_key, verbatim_key);
+CREATE INDEX ON media (dataset_key, reference_id);
 ```
 
 

@@ -67,70 +67,6 @@ public interface DatasetPartitionMapper {
     "decision"
   );
 
-  static class FK {
-    public final String column;
-    public final String table;
-    public final boolean defer;
-    public final boolean cascade;
-
-    FK(String column, String table) {
-      this(column,table,false,true);
-    }
-    FK(String column, String table, boolean defer, boolean cascade) {
-      this.column = column;
-      this.table = table;
-      this.defer = defer;
-      this.cascade = cascade;
-    }
-  }
-
-  // table -> fk
-  // verbatim_key is done automatically for every table and does not need to be included here
-  Map<String, List<FK>> FKS = Map.of(
-    "name", List.of(
-      new FK("published_in_id", "reference")
-    ),
-    "name_rel", List.of(
-      new FK("reference_id", "reference"),
-      new FK("name_id", "name"),
-      new FK("related_name_id", "name")
-    ),
-    "type_material", List.of(
-      new FK("reference_id", "reference"),
-      new FK("name_id", "name")
-    ),
-    "name_usage", List.of(
-      new FK("according_to_id", "reference"),
-      new FK("parent_id", "name_usage", true, false),
-      new FK("name_id", "name")
-    ),
-    "taxon_concept_rel", List.of(
-      new FK("reference_id", "reference"),
-      new FK("taxon_id", "name_usage"),
-      new FK("related_taxon_id", "name_usage")
-    ),
-    "species_interaction", List.of(
-      new FK("reference_id", "reference"),
-      new FK("taxon_id", "name_usage"),
-      new FK("related_taxon_id", "name_usage")
-    ),
-    "distribution", List.of(
-      new FK("reference_id", "reference"),
-      new FK("taxon_id", "name_usage")
-    ),
-    "media", List.of(
-      new FK("reference_id", "reference"),
-      new FK("taxon_id", "name_usage")
-    ),
-    "treatment", List.of(
-      new FK("id", "name_usage")
-    ),
-    "vernacular_name", List.of(
-      new FK("reference_id", "reference"),
-      new FK("taxon_id", "name_usage")
-    )
-  );
-
   /**
    * Creates the default partition and its hashed subpartitions
    * @param number of subpartitions
@@ -144,16 +80,7 @@ public interface DatasetPartitionMapper {
       int remainder = i;
       String suffix = "mod"+remainder;
       TABLES.forEach(t -> createDefaultSubPartition(t, number, remainder));
-      // create FKs
-      // we always have a verbatim_key on every table
-      TABLES.stream()
-            .filter(t -> !t.equalsIgnoreCase("verbatim"))
-            .forEach(t -> createFk(t, suffix, new FK("dataset_key, verbatim_key", "verbatim")));
-      // custom fks
-      FKS.forEach( (t,fks) -> fks.forEach(fk -> {
-        FK fk2 = new FK("dataset_key, "+fk.column, fk.table, fk.defer, fk.cascade);
-        createFk(t, suffix, fk2);
-      }));
+      // create triggers
       attachTriggers(suffix);
     }
   }
@@ -277,41 +204,19 @@ public interface DatasetPartitionMapper {
    */
   default void attach(int key, DatasetOrigin origin) {
     if (origin.isManagedOrRelease()) {
-      // create PKs
-      TABLES.forEach(t -> createPk(t, key));
-      // this also creates the indices from the partitioned table
-      TABLES.forEach(t -> attachTable(t, key));
-
+      // create triggers
       final String suffix = String.valueOf(key);
-      // create FKs
-      // we always have a verbatim_key on every table
-      TABLES.stream()
-        .filter(t -> !t.equalsIgnoreCase("verbatim"))
-        .forEach(t -> createFk(t, suffix, new FK("verbatim_key", "verbatim")));
-      // custom fks
-      FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, suffix, fk)));
-      //
-      attachTriggers(String.valueOf(key));
+      attachTriggers(suffix);
+      // attach, this also creates indices, pks and fks
+      TABLES.forEach(t -> attachTable(t, key));
       // things specific to managed datasets only
-      PROJECT_TABLES.forEach(t -> createPk(t, key));
       PROJECT_TABLES.forEach(t -> attachTable(t, key));
-      createFk("verbatim_source", suffix, new FK("id", "name_usage", true, true));
     }
   }
   
   void attachTable(@Param("table") String table, @Param("key") int key);
 
   void detachTable(@Param("table") String table, @Param("key") int key);
-
-  void createPk(@Param("table") String table, @Param("key") int key);
-
-  /**
-   * @param suffix table suffix, e.g. _1001 or _mod1
-   */
-  void createFk(@Param("table") String table,
-                @Param("suffix") String suffix,
-                @Param("fk") FK fk
-  );
 
   /**
    * Attaches all required triggers for a given partition suffix.
