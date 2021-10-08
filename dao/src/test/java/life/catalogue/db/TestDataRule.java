@@ -65,7 +65,14 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private SqlSession session;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
 
+  /**
+   * NONE does wipe all data so every test starts with an empty db.
+   */
   public final static TestData NONE = new TestData("none", null, null, null, true, false, null, Collections.emptyMap(),3);
+  /**
+   * KEEP keeps existing data and does not wipe or create anything new. Can be used with class based data loading rules, e.g. TxtTreeDataRule
+   */
+  public final static TestData KEEP = new TestData("none", null, null, null, true, false, null, Collections.emptyMap(),3);
   /**
    * Inits the datasets table with real col data from colplus-repo
    * The dataset.csv file was generated as a dump from production with psql:
@@ -132,7 +139,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   public static TestDataRule empty() {
-    return new TestDataRule(NONE);
+    return new TestDataRule(KEEP);
+  }
+
+  public static TestDataRule keep() {
+    return new TestDataRule(KEEP);
   }
 
   public static TestDataRule apple() {
@@ -204,17 +215,18 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   protected void before() throws Throwable {
     LOG.info("Loading {} test data", testData);
     initSession();
-    // remove potential old data
-    truncate(session);
-    DatasetInfoCache.CACHE.clear();
-    // populate dataset table with origins before we partition
-    loadGlobalData();
-    // create required partitions to load data
-    partition();
-    loadData();
-    updateSequences();
-    // finally create a test user to use in tests
-    session.getMapper(UserMapper.class).create(TEST_USER);
+    if (testData != KEEP) {
+      // remove potential old data
+      truncate(session);
+      // populate dataset table with origins before we partition
+      loadGlobalData();
+      // create required partitions to load data
+      partition();
+      loadData();
+      updateSequences();
+      // finally create a test user to use in tests
+      session.getMapper(UserMapper.class).create(TEST_USER);
+    }
     session.commit();
   }
 
@@ -264,6 +276,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   private void truncate(SqlSession session) throws SQLException {
     LOG.info("Truncate tables, drop all data partitions");
+    DatasetInfoCache.CACHE.clear();
     try (java.sql.Statement st = session.getConnection().createStatement()) {
       var dpm = session.getMapper(DatasetPartitionMapper.class);
 

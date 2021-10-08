@@ -62,7 +62,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
 
   @Override
   protected void before() throws Throwable {
-    System.out.println("Load text trees");
+    LOG.info("Load text trees");
     super.before();
     initSession();
     for (Map.Entry<Integer, TreeData> x : datasets.entrySet()) {

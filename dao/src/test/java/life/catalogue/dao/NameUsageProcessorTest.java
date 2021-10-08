@@ -86,7 +86,8 @@ public class NameUsageProcessorTest extends DaoTestBase {
     s.setSubjectDatasetKey(COL);
     s.setTarget(SimpleNameLink.of("t2"));
     sm.create(s);
-    
+    commit();
+
     // we update the sector key of a few usages so we mock a sync
     try (Connection con = PgSetupRule.getSqlSessionFactory().openSession().getConnection();
         Statement st = con.createStatement();

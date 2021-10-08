@@ -30,7 +30,7 @@ public class TreeMapper2Test extends MapperTestBase<TreeMapper> {
   ));
 
   public TreeMapper2Test() {
-    super(TreeMapper.class, TestDataRule.empty());
+    super(TreeMapper.class, TestDataRule.keep());
   }
 
   @Test

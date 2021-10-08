@@ -223,20 +223,22 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void deleteUsages() throws Exception {
     // attach taxa with sector to
-    final DSID<Integer> sectorKey = DSID.of(datasetKey, 1);
+    final var s1 = SectorMapperTest.create(DSID.of(datasetKey, "aha"), DSID.of(datasetKey, "bha"));
+    mapper(SectorMapper.class).create(s1);
+    commit();
     for (int sp = 1; sp < 10; sp++) {
-      Taxon species = createTaxon(Rank.SPECIES, "root-1", sectorKey);
-      createTaxon(Rank.UNRANKED, species.getId(), sectorKey);
-      createTaxon(Rank.VARIETY, species.getId(), sectorKey);
+      Taxon species = createTaxon(Rank.SPECIES, "root-1", s1);
+      createTaxon(Rank.UNRANKED, species.getId(), s1);
+      createTaxon(Rank.VARIETY, species.getId(), s1);
       createSynonym(species, Rank.SPECIES_AGGREGATE);
       for (int ssp = 1; ssp < 5; ssp++) {
-        Taxon subspecies = createTaxon(Rank.SUBSPECIES, species.getId(), sectorKey);
-        createTaxon(Rank.UNRANKED, subspecies.getId(), sectorKey);
+        Taxon subspecies = createTaxon(Rank.SUBSPECIES, species.getId(), s1);
+        createTaxon(Rank.UNRANKED, subspecies.getId(), s1);
         for (int var = 1; var < 3; var++) {
-          Taxon variety = createTaxon(Rank.VARIETY, species.getId(), sectorKey);
-          createTaxon(Rank.CHEMOFORM, variety.getId(), sectorKey);
+          Taxon variety = createTaxon(Rank.VARIETY, species.getId(), s1);
+          createTaxon(Rank.CHEMOFORM, variety.getId(), s1);
         }
-        createTaxon(Rank.VARIETY, subspecies.getId(), sectorKey);
+        createTaxon(Rank.VARIETY, subspecies.getId(), s1);
         createSynonym(subspecies, Rank.UNRANKED);
         for (int syn = 1; syn < 5; syn++) {
           createSynonym(subspecies, Rank.VARIETY);
@@ -246,14 +248,14 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     commit();
 
     final AtomicInteger count = new AtomicInteger(0);
-    mapper().processSector(sectorKey).forEach(n -> count.incrementAndGet());
+    mapper().processSector(s1).forEach(n -> count.incrementAndGet());
     assertEquals(468, count.get());
 
     // delete
-    int dels = mapper().deleteBySectorAndRank(sectorKey, Rank.SUBSPECIES, Collections.emptySet());
+    int dels = mapper().deleteBySectorAndRank(s1, Rank.SUBSPECIES, Collections.emptySet());
     assertEquals(450, dels);
     count.set(0);
-    mapper().processSector(sectorKey).forEach(n -> count.incrementAndGet());
+    mapper().processSector(s1).forEach(n -> count.incrementAndGet());
     assertEquals(18, count.get());
   }
 

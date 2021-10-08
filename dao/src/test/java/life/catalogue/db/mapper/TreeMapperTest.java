@@ -104,9 +104,16 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
 
     addUsage(sp2, Rank.SUBSPECIES, null);
     addUsage(sp2, Rank.SUBSPECIES, null);
-    addUsage(sp2, Rank.VARIETY, 1);
-    addUsage(sp2, Rank.VARIETY, 1);
-    addUsage(sp2, Rank.FORM, 2);
+
+    var s1 = SectorMapperTest.create(sp2, DSID.of(dataset11, "12347654"));
+    mapper(SectorMapper.class).create(s1);
+
+    addUsage(sp2, Rank.VARIETY, s1.getId());
+    addUsage(sp2, Rank.VARIETY, s1.getId());
+
+    var s2 = SectorMapperTest.create(sp2, DSID.of(dataset11, "1234"));
+    mapper(SectorMapper.class).create(s2);
+    addUsage(sp2, Rank.FORM, s2.getId());
 
     assertEquals(List.of(Rank.SUBSPECIES), mapper().childrenRanks(sp1, null, true));
     assertEquals(List.of(Rank.SUBSPECIES), mapper().childrenRanks(sp1, Rank.SUBSPECIES, true));
@@ -120,8 +127,8 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals(List.of(), mapper().childrenRanks(sp2, Rank.GENUS, true));
 
     assertEquals(CollectionUtils.list((Integer)null), mapper().childrenSectors(sp1, null));
-    assertEquals(CollectionUtils.list(1, 2, null), mapper().childrenSectors(sp2, null));
-    assertEquals(CollectionUtils.list(1, 2, null), mapper().childrenSectors(sp2, Rank.ORDER));
+    assertEquals(CollectionUtils.list(s1.getId(), s2.getId(), null), mapper().childrenSectors(sp2, null));
+    assertEquals(CollectionUtils.list(s1.getId(), s2.getId(), null), mapper().childrenSectors(sp2, Rank.ORDER));
   }
 
   private void addUsage(DSID<String> parent, Rank rank, Integer sectorKey) {

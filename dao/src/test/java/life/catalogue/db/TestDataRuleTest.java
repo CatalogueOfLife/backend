@@ -7,7 +7,6 @@ import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.NamesIndexMapperTest;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +28,7 @@ public class TestDataRuleTest {
   public static Iterable<Object[]> data() {
     List<TestDataRule.TestData> list = List.of(
       TestDataRule.DUPLICATES,
-      TestDataRule.NONE,
+      TestDataRule.KEEP,
       TestDataRule.APPLE,
       TestDataRule.FISH,
       TestDataRule.TREE,
@@ -82,7 +81,7 @@ public class TestDataRuleTest {
     System.out.println("\n\n"+data.name);
     System.out.println(count);
 
-    if(data.equals(TestDataRule.NONE)) {
+    if(data.equals(TestDataRule.KEEP)) {
       assertEquals(0, count);
     } else if(data.equals(TestDataRule.DATASETS)) {
       assertEquals(0, count);

@@ -284,7 +284,12 @@ public class TaxonDaoTest extends DaoTestBase {
     MybatisTestUtils.populateDraftTree(session());
     Taxon t5 = tDao.get(DSID.colID("t5"));
     assertEquals("t3", t5.getParentId());
-    t5.setSectorKey(1);
+
+    var s1 = SectorMapperTest.create(t5, t5);
+    mapper(SectorMapper.class).create(s1);
+    commit();
+
+    t5.setSectorKey(s1.getId());
     tDao.update(t5, USER_EDITOR.getKey());
 
     t5.setParentId("t4");
