@@ -40,7 +40,7 @@ public class EmailNotificationTest {
 
     Dataset d = new Dataset();
     d.setKey(1000);
-    d.setTitle("My Big D");
+    d.setTitle("My Big Day");
 
     DatasetExporter job = new DatasetExporter(req, Users.TESTER, req.getFormat(), d, null, PgSetupRule.getSqlSessionFactory(), cfg, null) {
       @Override
@@ -62,6 +62,8 @@ public class EmailNotificationTest {
           mail = EmailNotification.downloadMail(exp, d, TestDataRule.TEST_USER, cfg);
           System.out.println(mail);
         }
+        // try also with version
+        d.setVersion("12.8");
       }
     }
   }

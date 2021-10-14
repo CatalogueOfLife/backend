@@ -31,6 +31,8 @@ public class StringUtils {
   private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
   private static final CharMatcher NON_DIGITLETTER = CharMatcher.javaLetterOrDigit().negate();
   private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+  private static final Pattern SPACE = Pattern.compile("[\\u00A0\\u2000-\\u200A\\u2028\\u2029\\u202F]"); // https://en.wikipedia.org/wiki/General_Punctuation
+  private static final Pattern INVISIBLE = Pattern.compile("[\\u200B-\\u200F\\u202A-\\u202C\\u202F\\u2060-\\u206F]");
 
   private StringUtils() {}
 
@@ -550,4 +552,13 @@ public class StringUtils {
     }
     return String.format("%.1f %cB", bytes / 1000.0, ci.current());
   }
+
+  public static String cleanInvisible(String value) {
+    if (value == null)
+      return value;
+    return INVISIBLE.matcher(
+      SPACE.matcher(value).replaceAll(" ")
+    ).replaceAll("");
+  }
+
 }

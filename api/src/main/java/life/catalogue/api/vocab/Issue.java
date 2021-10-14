@@ -23,7 +23,15 @@ public enum Issue {
       " 2) unicode entities U+0026 " +
       " 3) hexadecimal or octal java unicode entites " +
       " 4) CSS & ECMA Javascript entities"),
-  
+
+  INVISIBLE_CHARACTERS(ANY, Level.WARNING,
+    "Invisible characters such as control characters have been removed "
+    + "or exotic alternatives for spaces been replaced with their canonical form."),
+
+  HOMOGLYPH_CHARACTERS(ANY, Level.WARNING,
+    "Potential homoglyphs of the latin alphabet are encountered."
+    + "In vernacular names, authors or references this can be perfectly fine content if other scripts than latin, e.g. cyrillic or greek are used,"),
+
   REFERENCE_ID_INVALID(ANY, Level.ERROR,
       "Identifier for a reference could not be resolved. " +
       "This can be from any entity, e.g. name, distribution, vernaculars, etc"),

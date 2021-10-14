@@ -1,6 +1,10 @@
 Thanks,
 ${fromName}
 
+
+---
+${dataset.title}<#if dataset.version??>, version ${dataset.version}</#if>:
+https://data.catalogueoflife.org/dataset/${dataset.key?c}
 ---
 
 COL Portal : https://www.catalogueoflife.org/

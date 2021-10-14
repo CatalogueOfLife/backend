@@ -5,6 +5,10 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.common.text.StringUtils;
+
+import life.catalogue.common.text.UnicodeUtils;
+
 import org.apache.commons.text.StringEscapeUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
@@ -177,7 +181,31 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
       return x;
     }
   }
-  
+
+  /**
+   * This cleans the string from invisible characters and homoglyphs:
+   * - removes invisible control characters
+   * - normalises space characters
+   * - replaces various homoglyphs with their standard form
+   */
+  private String cleanInvisible(String x) {
+    if (Strings.isNullOrEmpty(x)) {
+      return null;
+    }
+    String cleaned = StringUtils.cleanInvisible(x);
+    if (!x.equals(cleaned)) {
+      issues.add(Issue.INVISIBLE_CHARACTERS);
+    }
+    return cleaned;
+  }
+
+  private String flagHomoglyphs(String x) {
+    if (UnicodeUtils.containsHomoglyphs(x)) {
+      issues.add(Issue.HOMOGLYPH_CHARACTERS);
+    }
+    return x;
+  }
+
   /**
    * @return true if a term exists and is not null or an empty string
    */
@@ -213,7 +241,7 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     checkNotNull(term, "term can't be null");
     String val = terms.get(term);
     if (val != null) {
-      return unescape(val);
+      return flagHomoglyphs(cleanInvisible(unescape(val)));
     }
     return null;
   }
