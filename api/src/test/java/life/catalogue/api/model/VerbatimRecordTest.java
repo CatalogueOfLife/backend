@@ -76,13 +76,16 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
   
     init();
     assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
-    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.scientificName));
+    assertFalse(v.hasIssue(Issue.INVISIBLE_CHARACTERS));
+    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.scientificName));
     assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
-  
+    assertTrue(v.hasIssue(Issue.INVISIBLE_CHARACTERS));
+
     init();
     assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
-    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.specificEpithet));
+    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.specificEpithet));
     assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.hasIssue(Issue.INVISIBLE_CHARACTERS));
   }
   
   @Test
