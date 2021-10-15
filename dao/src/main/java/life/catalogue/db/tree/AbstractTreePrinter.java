@@ -83,6 +83,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
         if (ranks.isEmpty() || ranks.contains(p.getRank())) {
           end(p);
           level--;
+          last = EVENT.END;
         }
       }
 
