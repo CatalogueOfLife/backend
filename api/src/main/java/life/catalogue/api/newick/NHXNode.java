@@ -60,10 +60,10 @@ public class NHXNode {
       w.append("(");
       boolean first = true;
       for (var c : children) {
-        c.print(w, extended);
         if (!first) {
           w.append(",");
         }
+        c.print(w, extended);
         first=false;
       }
       w.append(")");
