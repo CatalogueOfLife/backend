@@ -24,8 +24,6 @@ import javax.annotation.Nullable;
  */
 public class JsonTreePrinter extends AbstractTreePrinter {
   private static final int indentation = 2;
-  private EVENT last;
-  private enum EVENT {START, END}
 
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
@@ -60,7 +58,6 @@ public class JsonTreePrinter extends AbstractTreePrinter {
       writer.write(",\"" + countRankPropertyName(countRank) + "\":" + taxonCount);
     }
     writer.write(",\"children\":[");
-    last = EVENT.START;
   }
 
   protected void end(SimpleName u) throws IOException {
@@ -69,7 +66,6 @@ public class JsonTreePrinter extends AbstractTreePrinter {
       writer.write(StringUtils.repeat(' ', (level-1) * indentation));
     }
     writer.write("]}");
-    last = EVENT.END;
   }
 
 }

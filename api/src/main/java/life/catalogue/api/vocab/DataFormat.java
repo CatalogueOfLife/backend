@@ -37,11 +37,13 @@ public enum DataFormat {
   PROXY(false, "proxy", "Proxy"),
 
   /**
-   * The Newick tree format is a way of representing graph-theoretical trees with edge lengths using parentheses and commas.
+   * The Newick format is a way of representing graph-theoretical trees with edge lengths using parentheses and commas.
    * It is often used with phylogenetic data.
+   * The New Hampshire eXtended format (which we implement) uses Newick comments to encode additional key value pairs, e.g. the id, scientificName ond rank.
    * https://en.wikipedia.org/wiki/Newick_format
+   * http://www.phylosoft.org/NHX/
    */
-  NEWICK(true, "Newick", "Newick Tree Format"),
+  NEWICK(true, "Newick", "New Hampshire X"),
 
   /**
    * The Graphviz DOT format for representing graphs as nodes and edges.

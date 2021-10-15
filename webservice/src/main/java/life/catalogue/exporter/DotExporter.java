@@ -3,20 +3,16 @@ package life.catalogue.exporter;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.tree.DotPrinter;
-import life.catalogue.db.tree.NewickPrinter;
 import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.img.ImageService;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Writer;
 
 public class DotExporter extends DatasetExporter {

@@ -10,7 +10,6 @@ import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
@@ -19,7 +18,6 @@ import org.simplejavamail.api.mailer.Mailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class ExportManager {

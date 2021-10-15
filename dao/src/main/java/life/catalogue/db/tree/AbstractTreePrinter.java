@@ -42,6 +42,8 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
   protected int level = 0;
   protected int taxonCount;
   protected boolean exhausted;
+  protected EVENT last;
+  protected enum EVENT {START, END}
 
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
@@ -104,6 +106,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
         if (ranks.isEmpty() || ranks.contains(p.getRank())) {
           end(p);
           level--;
+          last = EVENT.END;
         }
       }
       if (ranks.isEmpty() || ranks.contains(u.getRank())) {
@@ -113,6 +116,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
         }
         start(u);
         level++;
+        last = EVENT.START;
       }
       parents.add(u);
       
