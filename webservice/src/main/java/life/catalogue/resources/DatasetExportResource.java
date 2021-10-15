@@ -10,10 +10,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.tree.AbstractTreePrinter;
-import life.catalogue.db.tree.JsonFlatPrinter;
-import life.catalogue.db.tree.JsonTreePrinter;
-import life.catalogue.db.tree.TextTreePrinter;
+import life.catalogue.db.tree.*;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
@@ -136,8 +133,8 @@ public class DatasetExportResource {
                            @Context SqlSession session) {
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      TextTreePrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, showID, factory, writer)
-                     .print();
+      TextTreePrinter p = PrinterFactory.dataset(TextTreePrinter.class, key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
+      if (showID) p.showIDs();
       writer.flush();
     };
     return Response.ok(stream).build();
@@ -154,9 +151,9 @@ public class DatasetExportResource {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
       AbstractTreePrinter printer;
       if (flat) {
-        printer = JsonFlatPrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
+        printer = PrinterFactory.dataset(JsonFlatPrinter.class, key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
       } else {
-        printer = JsonTreePrinter.dataset(key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
+        printer = PrinterFactory.dataset(JsonTreePrinter.class, key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
       }
       printer.print();
       writer.flush();

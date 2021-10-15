@@ -51,7 +51,7 @@ public class AcefExporter extends DatasetExporter {
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
 
   public AcefExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req, userKey, DataFormat.ACEF, factory, cfg, imageService);
+    super(req, userKey, DataFormat.ACEF, false, factory, cfg, imageService);
     if (req.hasFilter()) {
       throw new IllegalArgumentException("ACEF exports cannot have any filters");
     }

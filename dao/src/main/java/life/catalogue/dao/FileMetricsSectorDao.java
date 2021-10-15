@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
 
 import java.io.File;
@@ -20,7 +21,7 @@ public class FileMetricsSectorDao extends FileMetricsDao<DSID<Integer>> {
 
   @Override
   TextTreePrinter ttPrinter(DSID<Integer> key, SqlSessionFactory factory, Writer writer) {
-    return TextTreePrinter.sector(key, factory, writer);
+    return PrinterFactory.sector(TextTreePrinter.class, key, factory, writer);
   }
 
   @Override

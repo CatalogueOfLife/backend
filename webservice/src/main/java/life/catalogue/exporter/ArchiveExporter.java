@@ -52,7 +52,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
   private final SXSSFWorkbook wb;
 
   ArchiveExporter(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req, userKey, requiredFormat, factory, cfg, imageService);
+    super(req, userKey, requiredFormat, true, factory, cfg, imageService);
     final DSID<String> rKey = DSID.of(datasetKey, null);
     this.refCache = CacheBuilder.newBuilder()
       .maximumSize(1000)
@@ -370,8 +370,6 @@ public abstract class ArchiveExporter extends DatasetExporter {
       }
     }
   }
-
-  abstract void exportMetadata() throws IOException;
 
   private void closeWriter() throws IOException {
     if (writer != null) {

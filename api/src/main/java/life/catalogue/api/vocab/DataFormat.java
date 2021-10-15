@@ -34,8 +34,20 @@ public enum DataFormat {
    * and allows to semantically map columns and delimiter formats.
    * See https://github.com/Sp2000/colplus-backend/issues/518
    */
-  PROXY(false, "proxy", "Proxy");
+  PROXY(false, "proxy", "Proxy"),
 
+  /**
+   * The Newick tree format is a way of representing graph-theoretical trees with edge lengths using parentheses and commas.
+   * It is often used with phylogenetic data.
+   * https://en.wikipedia.org/wiki/Newick_format
+   */
+  NEWICK(true, "Newick", "Newick Tree Format"),
+
+  /**
+   * The Graphviz DOT format for representing graphs as nodes and edges.
+   * http://www.graphviz.org/doc/info/lang.html
+   */
+  DOT(true, "DOT", "Graphviz DOT");
 
   private final String name;
   private final String title;

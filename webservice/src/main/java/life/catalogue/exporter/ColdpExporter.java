@@ -251,7 +251,7 @@ public class ColdpExporter extends ArchiveExporter {
   }
 
   @Override
-  void exportMetadata() throws IOException {
+  protected void exportMetadata() throws IOException {
     Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
     // for releases and projects also include a source entry
     for (Integer key : sourceKeys) {

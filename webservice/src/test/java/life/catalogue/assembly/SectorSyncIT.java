@@ -11,6 +11,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
+import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.PgImportRule;
@@ -217,7 +218,7 @@ public class SectorSyncIT {
   void print(int datasetKey) throws Exception {
     StringWriter writer = new StringWriter();
     writer.append("\nDATASET "+datasetKey+"\n");
-    TextTreePrinter.dataset(datasetKey, PgSetupRule.getSqlSessionFactory(), writer).print();
+    PrinterFactory.dataset(TextTreePrinter.class, datasetKey, PgSetupRule.getSqlSessionFactory(), writer).print();
     System.out.println(writer.toString());
   }
   
@@ -226,7 +227,7 @@ public class SectorSyncIT {
     String expected = IOUtils.toString(resIn, Charsets.UTF_8).trim();
     
     Writer writer = new StringWriter();
-    TextTreePrinter.dataset(Datasets.COL, PgSetupRule.getSqlSessionFactory(), writer).print();
+    PrinterFactory.dataset(TextTreePrinter.class, Datasets.COL, PgSetupRule.getSqlSessionFactory(), writer).print();
     String tree = writer.toString().trim();
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
     

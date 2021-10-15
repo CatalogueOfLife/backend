@@ -62,7 +62,7 @@ public class DwcaExporter extends ArchiveExporter {
   }
 
   @Override
-  void exportMetadata() throws IOException {
+  protected void exportMetadata() throws IOException {
     // add CLB logo URL if missing
     if (dataset.getLogo() == null && imageService.datasetLogoExists(dataset.getKey())) {
       dataset.setLogo(logoUriBuilder.build(dataset.getKey()));

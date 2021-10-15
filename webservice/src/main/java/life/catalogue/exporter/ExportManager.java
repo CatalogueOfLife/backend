@@ -77,6 +77,12 @@ public class ExportManager {
       case TEXT_TREE:
         job = new TextTreeExporter(req, userKey, factory, cfg, imageService);
         break;
+      case NEWICK:
+        job = new NewickExporter(req, userKey, factory, cfg, imageService);
+        break;
+      case DOT:
+        job = new DotExporter(req, userKey, factory, cfg, imageService);
+        break;
 
       default:
         throw new IllegalArgumentException("Export format "+req.getFormat() + " is not supported yet");

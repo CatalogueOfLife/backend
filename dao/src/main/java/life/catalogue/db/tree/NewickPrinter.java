@@ -10,7 +10,6 @@ import life.catalogue.db.mapper.SectorMapper;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,36 +42,19 @@ import org.apache.ibatis.session.SqlSessionFactory;
  * Absinthium viridifolium var. rupestre (L.) Besser
  * </pre>
  */
-public class TextTreePrinter extends AbstractTreePrinter {
+public class NewickPrinter extends AbstractTreePrinter {
   public static final String SYNONYM_SYMBOL = "*";
-  public static final String BASIONYM_SYMBOL = "$";
-  
-  private static final int indentation = 2;
-  private boolean showIDs;
 
   /**
-   * @param datasetKey
-   * @param sectorKey    optional sectorKey to restrict printed tree to
-   * @param startID
-   * @param synonyms
-   * @param ranks
-   * @param countRank    the rank to be used when counting with the taxonCounter
-   * @param taxonCounter
-   * @param factory
-   * @param writer
+   * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  public TextTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+  public NewickPrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
     super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
   }
 
 
-  public void showIDs() {
-    this.showIDs = true;
-  }
-
-
   protected void start(SimpleName u) throws IOException {
-    writer.write(StringUtils.repeat(' ', level * indentation));
+    writer.write(StringUtils.repeat(' ', level * 2));
     if (u.getStatus() != null && u.getStatus().isSynonym()) {
       writer.write(SYNONYM_SYMBOL);
     }
@@ -109,9 +91,6 @@ public class TextTreePrinter extends AbstractTreePrinter {
     List<String> infos = new ArrayList<>();
     if (countRank != null) {
       infos.add(JsonTreePrinter.countRankPropertyName(countRank) + "=" + taxonCount);
-    }
-    if (showIDs) {
-      infos.add("ID=" + u.getId());
     }
     return infos;
   }
