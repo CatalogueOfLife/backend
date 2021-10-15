@@ -19,7 +19,6 @@ import java.io.Writer;
 
 public class TextTreeExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(TextTreeExporter.class);
-  private File f;
 
   public TextTreeExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(req, userKey, DataFormat.TEXT_TREE, false, factory, cfg, imageService);
@@ -27,7 +26,7 @@ public class TextTreeExporter extends DatasetExporter {
 
   @Override
   public void export() throws Exception {
-    f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".txt");
+    File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".txt");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
       TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getMinRank(), factory, writer);
       int cnt = printer.print();

@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 public class NewickExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(NewickExporter.class);
-  private File f;
 
   public NewickExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(req, userKey, DataFormat.NEWICK, false, factory, cfg, imageService);
@@ -28,7 +27,7 @@ public class NewickExporter extends DatasetExporter {
   @Override
   public void export() throws Exception {
     // do we have a full dataset export request?
-    f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".txt");
+    File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".nhx");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
       NHXPrinter printer = PrinterFactory.dataset(NHXPrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getMinRank(), factory, writer);
       int cnt = printer.print();
