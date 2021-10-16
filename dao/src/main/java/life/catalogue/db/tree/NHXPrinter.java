@@ -24,7 +24,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
  * </pre>
  */
 public class NHXPrinter extends AbstractTreePrinter {
-  private static final int MAX_NODES = 10000;
+  private static final int MAX_NODES = 100000;
   private final List<NHXNode> roots = new ArrayList<>();
   private final LinkedList<NHXNode> parents = new LinkedList<>();
   private boolean extended = false;
