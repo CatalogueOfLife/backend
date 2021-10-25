@@ -1,7 +1,8 @@
 # Catalogue of Life Backend
 
 For source code contributions please see our [developer guide](DEVELOPER-GUIDE.md).
-The CoL backend consists of 2 [Dropwizard](https://www.dropwizard.io/) applications, colplus-ws and colplus-admin, that drive different parts of the [colplus API](https://api.catalogueoflife.org/). colplus-ws is responsible for most lightweight REST services exposing the Clearinghouse and the CoL. colplus-admin does the more heavyweight indexing of datasets and assembly of catalogues.
+The COL backend is a [Dropwizard](https://www.dropwizard.io/) application, that drives the [COL ChecklistBank API](https://api.catalogueoflife.org/). 
+`webservice` is the maven module that builds the application.
 
 
 ## Prerequisites
@@ -9,7 +10,7 @@ The CoL backend consists of 2 [Dropwizard](https://www.dropwizard.io/) applicati
 1. Maven 3
 1. Postgres 12
 
-## Run the CoL WS application locally
+## Run the COL WS application locally
 1. cd into `webservice`
 1. Run `mvn clean install` to build your application
 1. create a local [config.yml](webservice/src/main/resources/config.yaml) file
@@ -35,6 +36,9 @@ The main API with model classes and shared common utilities classes.
 
 ### dao
 The postgres persistence layer.
+
+### doi
+Code dealing with (dataset) DOI registration and management in DataCite.
 
 ### parser
 Various parsers/interpreters used mostly for importing.
