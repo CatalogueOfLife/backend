@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 public class NHXNode {
   private static final float NULL = Float.MIN_VALUE;
-  private static final Pattern RESERVED = Pattern.compile("[\\[\\],:;\\s]");
+  private static final Pattern RESERVED = Pattern.compile("[()\\[\\],:;\\s]");
   private static final String REPLACEMENT = "_";
 
   private final String id;
@@ -76,7 +76,7 @@ public class NHXNode {
     if (extended) {
       w.append("[&&NHX:S=");
       w.append(repl(label));
-      w.append(":T=");
+      w.append(":ND=");
       w.append(repl(id));
       if (rank != null && rank.notOtherOrUnranked()) {
         w.append(":R=");

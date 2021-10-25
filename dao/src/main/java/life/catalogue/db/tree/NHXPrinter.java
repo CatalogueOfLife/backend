@@ -66,7 +66,7 @@ public class NHXPrinter extends AbstractTreePrinter {
     boolean first = true;
     for (var r : roots) {
       if (!first) {
-        writer.append(",\n");
+        writer.append(";\n\n");
       }
       if (extended) {
         r.printExtended(writer);

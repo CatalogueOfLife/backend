@@ -30,6 +30,7 @@ public class NewickExporter extends DatasetExporter {
     File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".nhx");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
       NHXPrinter printer = PrinterFactory.dataset(NHXPrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getMinRank(), factory, writer);
+      printer.useExtendedFormat();
       int cnt = printer.print();
       LOG.info("Written {} usages to Newick tree for dataset {}", cnt, req.getDatasetKey());
       counter.set(printer.getCounter());
