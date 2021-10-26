@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
  */
 public class UnicodeUtils {
   // loads homoglyphs from resources taken from https://raw.githubusercontent.com/codebox/homoglyph/master/raw_data/chars.txt
-  private final static Pattern HOMOGLYHPS_PATTERN;
   private final static char[] HOMOGLYHPS;
   private final static int HOMOGLYHPS_LENGTH;
   private final static int HOMOGLYHPS_LOWEST_CP;
@@ -60,12 +59,6 @@ public class UnicodeUtils {
     HOMOGLYHPS_LENGTH = HOMOGLYHPS.length;
     Arrays.sort(HOMOGLYHPS);
     HOMOGLYHPS_LOWEST_CP = HOMOGLYHPS[0];
-
-    String s = homoglyphs.stream()
-                         .map(Object::toString)
-                         .collect(Collectors.joining());
-    HOMOGLYHPS_PATTERN = Pattern.compile("["+s+"]");
-    System.out.println("Loaded " + HOMOGLYHPS_LENGTH + " homoglyphs starting with CodePoint " + HOMOGLYHPS_LOWEST_CP);
   }
 
   /**
