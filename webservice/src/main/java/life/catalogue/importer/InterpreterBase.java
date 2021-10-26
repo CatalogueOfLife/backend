@@ -366,7 +366,11 @@ public class InterpreterBase {
         rank = RankParser.PARSER.parse(code, vrank).orElse(Rank.UNRANKED);
       } catch (UnparsableException e) {
         v.addIssue(Issue.RANK_INVALID);
+        rank = Rank.OTHER;
       }
+    } else if (vrank != null) {
+      v.addIssue(Issue.RANK_INVALID);
+      rank = Rank.OTHER;
     }
 
     // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
@@ -409,7 +413,8 @@ public class InterpreterBase {
         atom.setGenus(null);
       }
 
-      if (rank.otherOrUnranked()) {
+      // infer the rank in case it was not given explicitly
+      if (rank.otherOrUnranked() && vrank == null) {
         atom.setRank(RankUtils.inferRank(atom));
       }
       atom.rebuildScientificName();
