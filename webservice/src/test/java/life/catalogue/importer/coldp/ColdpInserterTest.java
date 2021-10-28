@@ -72,7 +72,7 @@ public class ColdpInserterTest extends InserterBaseTest {
       assertEquals("caerulescens", n.getInfraspecificEpithet());
       assertNull(n.getInfragenericEpithet());
       assertNull(n.getUninomial());
-      assertEquals(Rank.INFRASPECIFIC_NAME, n.getRank());
+      assertEquals(Rank.OTHER, n.getRank());
 
       n = store.names().objByID("588900").getName();
       assertEquals("Lecidea sabuletorum sabuletorum", n.getScientificName());
@@ -81,7 +81,7 @@ public class ColdpInserterTest extends InserterBaseTest {
       assertEquals("sabuletorum", n.getInfraspecificEpithet());
       assertNull(n.getInfragenericEpithet());
       assertNull(n.getUninomial());
-      assertEquals(Rank.INFRASPECIFIC_NAME, n.getRank());
+      assertEquals(Rank.OTHER, n.getRank());
     }
   }
 
