@@ -1,6 +1,7 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.newick.SNode;
 import life.catalogue.dao.TaxonCounter;
 
 import org.catalogueoflife.newick.Node;
@@ -61,13 +62,14 @@ public class NewickPrinter extends AbstractTreePrinter {
   }
 
   private Node<?> build(SimpleName u) {
-    Node<?> n = extended ? new NHXNode() : new SimpleNode();
+    Node<?> n = extended ? new SNode() : new SimpleNode();
     n.setLabel(u.getLabel());
     n.setLength(null);
     if (extended) {
-      var xn = (NHXNode) n;
-      xn.setNodeIdentifier(u.getId());
-      xn.setSpeciesName(u.getLabel());
+      var xn = (SNode) n;
+      xn.setId(u.getId());
+      xn.setLabel(u.getLabel());
+      xn.setRank(u.getRank());
     }
     return n;
   }
