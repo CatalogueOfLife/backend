@@ -51,6 +51,10 @@
           <groupId>org.catalogueoflife</groupId>
           <artifactId>doi</artifactId>
         </dependency>
+        <dependency>
+          <groupId>org.catalogueoflife</groupId>
+          <artifactId>newick-io</artifactId>
+        </dependency>
 
 		<!-- mybatis / DB -->
 		<dependency>

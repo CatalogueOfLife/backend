@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
 
-public class NHXPrinterTest {
+public class NewickPrinterTest {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -39,14 +39,14 @@ public class NHXPrinterTest {
         return 999;
       }
     };
-    int count = PrinterFactory.dataset(NHXPrinter.class, TestDataRule.TREE.key, null, false, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(NewickPrinter.class, TestDataRule.TREE.key, null, false, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
     assertEquals(20, count);
     System.out.println(writer);
     String expected = IOUtils.toString(Resources.stream("trees/tree.newick"), StandardCharsets.UTF_8);
     assertEquals(expected, writer.toString());
 
     writer = new StringWriter();
-    var printer = PrinterFactory.dataset(NHXPrinter.class, TestDataRule.TREE.key, null, false, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer);
+    var printer = PrinterFactory.dataset(NewickPrinter.class, TestDataRule.TREE.key, null, false, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer);
     printer.useExtendedFormat();
     count = printer.print();
     assertEquals(20, count);

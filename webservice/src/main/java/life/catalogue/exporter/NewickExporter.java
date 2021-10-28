@@ -4,7 +4,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.db.tree.NHXPrinter;
+import life.catalogue.db.tree.NewickPrinter;
 import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.img.ImageService;
 
@@ -29,7 +29,7 @@ public class NewickExporter extends DatasetExporter {
     // do we have a full dataset export request?
     File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".nhx");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
-      NHXPrinter printer = PrinterFactory.dataset(NHXPrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getMinRank(), factory, writer);
+      NewickPrinter printer = PrinterFactory.dataset(NewickPrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getMinRank(), factory, writer);
       printer.useExtendedFormat();
       int cnt = printer.print();
       LOG.info("Written {} usages to Newick tree for dataset {}", cnt, req.getDatasetKey());

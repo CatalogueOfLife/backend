@@ -1,8 +1,11 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.newick.NHXNode;
 import life.catalogue.dao.TaxonCounter;
+
+import org.catalogueoflife.newick.Node;
+
+import org.catalogueoflife.newick.SimpleNode;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -14,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.catalogueoflife.newick.NHXNode;
 
 /**
  * Print an entire dataset in the extended Newick format, listing the name, rank and id in the extended properties.
@@ -23,17 +27,17 @@ import org.apache.ibatis.session.SqlSessionFactory;
  * (((ADH2:0.1[&&NHX:S=human:E=1.1.1.1], ADH1:0.11[&&NHX:S=human:E=1.1.1.1]):0.05[&&NHX:S=Primates:E=1.1.1.1:D=Y:B=100], ADHY:0.1[&&NHX:S=nematode:E=1.1.1.1],ADHX:0.12[&&NHX:S=insect:E=1.1.1.1]):0.1[&&NHX:S=Metazoa:E=1.1.1.1:D=N],
  * </pre>
  */
-public class NHXPrinter extends AbstractTreePrinter {
+public class NewickPrinter extends AbstractTreePrinter {
   private static final int MAX_NODES = 100000;
-  private final List<NHXNode> roots = new ArrayList<>();
-  private final LinkedList<NHXNode> parents = new LinkedList<>();
-  private boolean extended = false;
+  private final List<Node<?>> roots = new ArrayList<>();
+  private final LinkedList<Node> parents = new LinkedList<>();
+  private boolean extended;
+
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  public NHXPrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+  public NewickPrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
     super(datasetKey, sectorKey, startID, false, ranks, countRank, taxonCounter, factory, writer);
-
   }
 
   /**
@@ -47,14 +51,25 @@ public class NHXPrinter extends AbstractTreePrinter {
     if (taxonCount > MAX_NODES) {
       throw new IllegalArgumentException("Tree exceeds maximum of "+MAX_NODES+" nodes");
     }
-    NHXNode node;
+    Node<?> node = build(u);
     if (parents.isEmpty()) {
-      node = new NHXNode(u, null);
       roots.add(node);
     } else {
-      node = new NHXNode(u, parents.getLast());
+      parents.getLast().addChild(node);
     }
     parents.add(node);
+  }
+
+  private Node<?> build(SimpleName u) {
+    Node<?> n = extended ? new NHXNode() : new SimpleNode();
+    n.setLabel(u.getLabel());
+    n.setLength(null);
+    if (extended) {
+      var xn = (NHXNode) n;
+      xn.setNodeIdentifier(u.getId());
+      xn.setSpeciesName(u.getLabel());
+    }
+    return n;
   }
 
   protected void end(SimpleName u) {
@@ -66,13 +81,9 @@ public class NHXPrinter extends AbstractTreePrinter {
     boolean first = true;
     for (var r : roots) {
       if (!first) {
-        writer.append(";\n\n");
+        writer.append("\n\n");
       }
-      if (extended) {
-        r.printExtended(writer);
-      } else {
-        r.print(writer);
-      }
+      r.printTree(writer);
       first = false;
     }
     writer.append("\n");
