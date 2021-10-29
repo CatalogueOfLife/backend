@@ -39,6 +39,7 @@ public enum ResourceType implements EnumValue {
     value = v;
   }
 
+  @Override
   public String value() {
     return value;
   }

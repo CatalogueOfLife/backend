@@ -15,8 +15,6 @@ import java.util.regex.Pattern;
  *
  */
 public class NomStatusParser extends EnumParser<NomStatus> {
-  private static final Logger LOG = LoggerFactory.getLogger(NomStatusParser.class);
-  
   public static final NomStatusParser PARSER = new NomStatusParser();
   
   public NomStatusParser() {

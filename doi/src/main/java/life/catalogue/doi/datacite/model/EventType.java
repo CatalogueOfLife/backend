@@ -25,6 +25,7 @@ public enum EventType implements EnumValue {
     value = v;
   }
 
+  @Override
   public String value() {
     return value;
   }

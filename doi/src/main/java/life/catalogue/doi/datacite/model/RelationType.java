@@ -45,6 +45,7 @@ public enum RelationType implements EnumValue {
     value = v;
   }
 
+  @Override
   public String value() {
     return value;
   }

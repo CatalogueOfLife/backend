@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- *
+ * A parser for various license values.
  */
 public class LicenseParser extends EnumParser<License> {
   private static final Pattern CC0 = Pattern.compile("/publicdomain", Pattern.CASE_INSENSITIVE);

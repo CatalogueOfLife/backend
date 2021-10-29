@@ -17,6 +17,7 @@ public enum DescriptionType implements EnumValue {
     value = v;
   }
 
+  @Override
   public String value() {
     return value;
   }

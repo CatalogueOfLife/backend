@@ -22,6 +22,7 @@ public class BasicAuthenticator implements ClientRequestFilter {
     return "Basic " +  BaseEncoding.base64().encode(cred.getBytes(StandardCharsets.UTF_8));
   }
 
+  @Override
   public void filter(ClientRequestContext requestContext) throws IOException {
     MultivaluedMap<String, Object> headers = requestContext.getHeaders();
     headers.add("Authorization", auth);

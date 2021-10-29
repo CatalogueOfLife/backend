@@ -44,7 +44,7 @@ public class Identifier {
     if (this == o) return true;
     if (!(o instanceof Identifier)) return false;
     Identifier that = (Identifier) o;
-    return Objects.equals(identifier, that.identifier) && identifierType == that.identifierType;
+    return Objects.equals(identifier, that.identifier) && Objects.equals(identifierType, that.identifierType);
   }
 
   @Override

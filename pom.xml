@@ -11,7 +11,7 @@
   <packaging>pom</packaging>
 
   <name>COL backend services</name>
-  <url>http://github.org/Sp2000/${project.artifactId}</url>
+  <url>https://github.org/Sp2000/${project.artifactId}</url>
 
   <scm>
     <connection>scm:git:git@github.com:CatalogueOfLife/backend.git</connection>
@@ -153,8 +153,8 @@
   </licenses>
 
   <organization>
-    <name>Species 2000</name>
-    <url>http://www.sp2000.org/</url>
+    <name>Catalogue of Life</name>
+    <url>http://www.catalogueoflife.org/</url>
   </organization>
 
   <issueManagement>
@@ -165,14 +165,14 @@
   <repositories>
     <repository>
       <id>gbif-all</id>
-      <url>http://repository.gbif.org/repository/gbif</url>
+      <url>https://repository.gbif.org/repository/gbif</url>
       <snapshots>
         <updatePolicy>always</updatePolicy>
       </snapshots>
     </repository>
     <repository>
       <id>gbif-thirdparty</id>
-      <url>http://repository.gbif.org/repository/thirdparty</url>
+      <url>https://repository.gbif.org/repository/thirdparty</url>
     </repository>
     <repository>
       <id>sonatype-snapshots</id>
@@ -727,6 +727,17 @@
             <release>${jdkLevel}</release>
             <showDeprecation>true</showDeprecation>
             <showWarnings>true</showWarnings>
+            <compilerArgs>
+              <arg>-XDcompilePolicy=simple</arg>
+              <arg>-Xplugin:ErrorProne -XepAllErrorsAsWarnings</arg>
+            </compilerArgs>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_core</artifactId>
+                <version>2.9.0</version>
+              </path>
+            </annotationProcessorPaths>
           </configuration>
         </plugin>
         <plugin>
