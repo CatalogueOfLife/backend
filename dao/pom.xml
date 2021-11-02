@@ -39,6 +39,10 @@
 
 	<dependencies>
 		<!-- CoL & GBIF -->
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>coldp</artifactId>
+      </dependency>
 		<dependency>
 			<groupId>org.catalogueoflife</groupId>
 			<artifactId>api</artifactId>

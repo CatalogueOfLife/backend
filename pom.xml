@@ -188,12 +188,12 @@
   </repositories>
 
   <modules>
+    <module>coldp</module>
     <module>api</module>
     <module>dao</module>
     <module>doi</module>
     <module>parser</module>
     <module>webservice</module>
-    <module>coldp</module>
   </modules>
 
   <distributionManagement>

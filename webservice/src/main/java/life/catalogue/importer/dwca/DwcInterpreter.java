@@ -3,6 +3,7 @@ package life.catalogue.importer.dwca;
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColDwcTerm;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.neo.NeoDb;
@@ -16,7 +17,6 @@ import life.catalogue.parser.SafeParser;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.DwcaTerm;
-import org.gbif.dwc.terms.GbifTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

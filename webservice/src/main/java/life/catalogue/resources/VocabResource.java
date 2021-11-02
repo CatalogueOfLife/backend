@@ -8,6 +8,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColDwcTerm;
 import life.catalogue.img.ImgConfig;
 
 import org.gbif.dwc.terms.Term;

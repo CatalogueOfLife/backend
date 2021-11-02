@@ -1,6 +1,7 @@
 package life.catalogue.importer.coldp;
 
-import life.catalogue.api.datapackage.ColdpTerm;
+import life.catalogue.coldp.ColdpTerm;
+
 import org.gbif.utils.file.FileUtils;
 import org.junit.Ignore;
 import org.junit.Test;

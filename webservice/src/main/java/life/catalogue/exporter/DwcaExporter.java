@@ -1,7 +1,6 @@
 package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.TermWriter;
