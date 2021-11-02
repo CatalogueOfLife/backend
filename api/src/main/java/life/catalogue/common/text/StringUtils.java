@@ -1,10 +1,5 @@
 package life.catalogue.common.text;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import org.apache.commons.text.WordUtils;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -15,6 +10,12 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.apache.commons.text.WordUtils;
+
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 

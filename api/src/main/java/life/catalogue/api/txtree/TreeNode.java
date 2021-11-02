@@ -1,12 +1,14 @@
 package life.catalogue.api.txtree;
 
-import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.collect.Lists;
 
 /**
  * Simple bean for representing a node in a taxonomy trees.

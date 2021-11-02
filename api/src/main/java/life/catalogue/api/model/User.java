@@ -1,17 +1,19 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.annotations.VisibleForTesting;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.collection.CollectionUtils;
 
-import javax.annotation.Nonnull;
-import javax.security.auth.Subject;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import javax.annotation.Nonnull;
+import javax.security.auth.Subject;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class User implements Entity<Integer>, Principal {
 

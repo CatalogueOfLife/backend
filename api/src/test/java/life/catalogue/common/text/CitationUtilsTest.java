@@ -3,15 +3,14 @@ package life.catalogue.common.text;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Datasets;
-
-import java.time.LocalDate;
-import java.util.*;
-
 import life.catalogue.common.date.FuzzyDate;
 
-import org.junit.Test;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
-import com.google.common.collect.Lists;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

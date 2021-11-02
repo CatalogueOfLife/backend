@@ -1,9 +1,10 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.SpeciesInteractionType;
 
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A species interaction relation between two taxa.

@@ -1,9 +1,10 @@
 package life.catalogue.api.datapackage;
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
 import java.util.List;
 import java.util.Objects;
+
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.QueryParam;
 
 public class PackageDescriptor {
   

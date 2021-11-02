@@ -1,6 +1,6 @@
 package life.catalogue.api.vocab;
 
-import life.catalogue.api.datapackage.ColdpTerm;
+import life.catalogue.coldp.ColdpTerm;
 
 /**
  * Enumeration of major entities in the system.

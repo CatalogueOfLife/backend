@@ -1,10 +1,11 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Issue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface IssueContainer {
   

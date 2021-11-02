@@ -1,14 +1,12 @@
 package life.catalogue.common.datapackage;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.datapackage.PackageDescriptor;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.common.text.UnicodeUtils;
-import org.apache.commons.io.FilenameUtils;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -16,16 +14,21 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 public class DataPackageBuilder {
   private static final String MONOMIAL_PATTERN = "[A-ZÏËÖÜÄÉÈČÁÀÆŒ](?:\\.|[a-zïëöüäåéèčáàæœ]+)(?:-[A-ZÏËÖÜÄÉÈČÁÀÆŒ]?[a-zïëöüäåéèčáàæœ]+)?";
   
   // only non string data types here
   private static final Map<ColdpTerm, String> dataTypes = ImmutableMap.<ColdpTerm, String>builder()
-      .put(ColdpTerm.year, Field.TYPE_YEAR)
-      .put(ColdpTerm.scrutinizerDate, Field.TYPE_DATE)
-      .put(ColdpTerm.created, Field.TYPE_DATETIME)
-      .put(ColdpTerm.extinct, Field.TYPE_BOOLEAN)
-      .build();
+                                                                      .put(ColdpTerm.year, Field.TYPE_YEAR)
+                                                                      .put(ColdpTerm.scrutinizerDate, Field.TYPE_DATE)
+                                                                      .put(ColdpTerm.created, Field.TYPE_DATETIME)
+                                                                      .put(ColdpTerm.extinct, Field.TYPE_BOOLEAN)
+                                                                      .build();
   
   private static final Map<ColdpTerm, String> dataFormats = ImmutableMap.<ColdpTerm, String>builder()
       .put(ColdpTerm.link, Field.FORMAT_URI)

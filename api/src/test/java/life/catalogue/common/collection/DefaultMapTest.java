@@ -1,8 +1,8 @@
 package life.catalogue.common.collection;
 
-import org.junit.Test;
-
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

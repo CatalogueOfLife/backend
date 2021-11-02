@@ -1,11 +1,13 @@
 package life.catalogue.api.search;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.TaxonomicStatus;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Represents a single suggestion coming back from the NameSuggestionService.

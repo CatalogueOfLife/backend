@@ -1,9 +1,10 @@
 package life.catalogue.common.util;
 
 import life.catalogue.api.model.DSID;
-import org.slf4j.MDC;
 
 import java.util.UUID;
+
+import org.slf4j.MDC;
 
 public class LoggingUtils {
 

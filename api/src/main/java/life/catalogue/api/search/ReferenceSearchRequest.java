@@ -1,13 +1,16 @@
 package life.catalogue.api.search;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.Issue;
-import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.QueryParam;
 import java.util.List;
 import java.util.Objects;
+
+import javax.ws.rs.QueryParam;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 
 public class ReferenceSearchRequest {
   

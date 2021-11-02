@@ -1,9 +1,9 @@
 package life.catalogue.common.util;
 
+import java.util.regex.Matcher;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.regex.Matcher;
 
 public class RegexUtils {
   private static final Logger LOG = LoggerFactory.getLogger(RegexUtils.class);

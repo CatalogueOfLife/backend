@@ -1,9 +1,11 @@
 package life.catalogue.api.jackson;
 
-import life.catalogue.api.datapackage.ColdpTerm;
-import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.TxtTreeTerm;
+
+import life.catalogue.coldp.ColDwcTerm;
+
+import life.catalogue.coldp.ColdpTerm;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;

@@ -1,10 +1,10 @@
 package life.catalogue.common.func;
 
-import com.google.common.base.Preconditions;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Consumer that offers the accepted objects in batches. Make always sure to close the consumer to submit the last batch!

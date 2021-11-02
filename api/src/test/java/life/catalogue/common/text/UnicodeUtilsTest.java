@@ -3,8 +3,6 @@ package life.catalogue.common.text;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class UnicodeUtilsTest {
 
   @Test

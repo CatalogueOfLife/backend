@@ -1,10 +1,7 @@
 package life.catalogue.api;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import life.catalogue.api.model.Name;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.text.WordUtils;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
@@ -12,6 +9,12 @@ import java.net.URI;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.text.WordUtils;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 
 /**

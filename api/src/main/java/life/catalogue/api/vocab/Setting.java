@@ -1,11 +1,12 @@
 package life.catalogue.api.vocab;
 
-import com.google.common.base.Preconditions;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDate;
+
+import com.google.common.base.Preconditions;
 
 import static life.catalogue.api.vocab.DatasetOrigin.*;
 

@@ -1,11 +1,13 @@
 package life.catalogue.common.kryo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Reference;
 import life.catalogue.common.io.TempFile;
+
 import org.junit.Test;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -1,11 +1,9 @@
 package life.catalogue.api.model;
 
-import java.util.*;
-
-import org.jetbrains.annotations.NotNull;
-
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsFirst;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeSet;
 
 public class ProjectContribution extends TreeSet<ProjectContribution.Contributor> {
 

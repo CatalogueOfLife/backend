@@ -1,6 +1,5 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -8,6 +7,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A single, persisted editorial decision about a single name/taxon

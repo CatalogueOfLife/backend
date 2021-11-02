@@ -1,10 +1,10 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.type2.StringCount;
 

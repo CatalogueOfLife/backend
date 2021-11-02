@@ -4,17 +4,13 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.common.date.FuzzyDate;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import life.catalogue.common.date.FuzzyDate;
 
 public class CitationUtils {
 

@@ -1,4 +1,4 @@
-package life.catalogue.api.vocab;
+package life.catalogue.coldp;
 
 import org.gbif.dwc.terms.AlternativeNames;
 import org.gbif.dwc.terms.Term;

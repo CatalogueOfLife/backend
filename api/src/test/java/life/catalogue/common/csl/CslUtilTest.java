@@ -1,9 +1,5 @@
 package life.catalogue.common.csl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import de.undercouch.citeproc.csl.*;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Agent;
@@ -12,17 +8,21 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.io.Resources;
 
-import org.apache.commons.lang3.time.StopWatch;
-import org.checkerframework.checker.units.qual.A;
-import org.checkerframework.checker.units.qual.C;
-import org.junit.Test;
-
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import org.apache.commons.lang3.time.StopWatch;
+import org.junit.Test;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import de.undercouch.citeproc.csl.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class CslUtilTest {
 

@@ -1,10 +1,11 @@
 package life.catalogue.common.kryo.jdk;
+
+import java.util.List;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-
-import java.util.List;
 
 public final class JdkImmutableListSerializer extends Serializer<List<Object>> {
 

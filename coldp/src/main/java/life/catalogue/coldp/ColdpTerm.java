@@ -1,8 +1,5 @@
-package life.catalogue.api.datapackage;
+package life.catalogue.coldp;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import org.gbif.dwc.terms.AlternativeNames;
 import org.gbif.dwc.terms.Term;
 
@@ -10,6 +7,8 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * CoL terms covering all columns needed for the new CoL Data Package submission format:
@@ -195,7 +194,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //remarks
   ;
   
-  private static Map<String, ColdpTerm> LOOKUP = Maps.uniqueIndex(Arrays.asList(values()), ColdpTerm::normalize);
+  private final static Map<String, ColdpTerm> LOOKUP = Arrays.stream(values()).collect(Collectors.toMap(ColdpTerm::normalize, Function.identity()));
   
   /**
    * List of all higher rank terms, ordered by rank and starting with kingdom.
@@ -211,8 +210,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
       species
   };
 
-  public static Map<ColdpTerm, List<ColdpTerm>> RESOURCES = ImmutableMap.<ColdpTerm, List<ColdpTerm>>builder()
-      .put(Reference, ImmutableList.of(
+  public static Map<ColdpTerm, List<ColdpTerm>> RESOURCES = Map.ofEntries(
+    Map.entry(Reference, List.of(
         ID,
         sourceID,
         citation,
@@ -223,8 +222,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
         details,
         doi,
         link,
-        remarks)
-      ).put(Name, ImmutableList.of(
+        remarks
+      )), Map.entry(Name, List.of(
         ID,
         sourceID,
         basionymID,
@@ -244,15 +243,15 @@ public enum ColdpTerm implements Term, AlternativeNames {
         publishedInPage,
         publishedInPageLink,
         link,
-        remarks)
-      ).put(NameRelation, ImmutableList.of(
+        remarks
+    )),Map.entry(NameRelation, List.of(
         nameID,
         relatedNameID,
         sourceID,
         type,
         referenceID,
-        remarks)
-      ).put(TypeMaterial, ImmutableList.of(
+        remarks
+    )),Map.entry(TypeMaterial, List.of(
         ID,
         nameID,
         sourceID,
@@ -268,8 +267,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
         date,
         collector,
         link,
-        remarks)
-      ).put(Taxon, ImmutableList.of(
+        remarks
+    )),Map.entry(Taxon, List.of(
         ID,
         sourceID,
         parentID,
@@ -303,8 +302,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
         kingdom,
         sequenceIndex,
         link,
-        remarks)
-      ).put(Synonym, ImmutableList.of(
+        remarks
+    )),Map.entry(Synonym, List.of(
         ID,
         sourceID,
         taxonID,
@@ -314,8 +313,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
         status,
         referenceID,
         link,
-        remarks)
-      ).put(NameUsage, ImmutableList.of(
+        remarks
+    )),Map.entry(NameUsage, List.of(
         ID,
         sourceID,
         parentID,
@@ -364,28 +363,28 @@ public enum ColdpTerm implements Term, AlternativeNames {
         kingdom,
         sequenceIndex,
         link,
-        remarks)
-      ).put(SpeciesInteraction, ImmutableList.of(
+        remarks
+    )),Map.entry(SpeciesInteraction, List.of(
         taxonID,
         relatedTaxonID,
         sourceID,
         relatedTaxonScientificName,
         type,
         referenceID,
-        remarks)
-      ).put(TaxonConceptRelation, ImmutableList.of(
+        remarks
+    )),Map.entry(TaxonConceptRelation, List.of(
         taxonID,
         relatedTaxonID,
         sourceID,
         type,
         referenceID,
-        remarks)
-      ).put(Treatment, ImmutableList.of(
+        remarks
+    )),Map.entry(Treatment, List.of(
         taxonID,
         sourceID,
         document,
-        format)
-      ).put(Distribution, ImmutableList.of(
+        format
+    )),Map.entry(Distribution, List.of(
         taxonID,
         sourceID,
         areaID,
@@ -393,19 +392,19 @@ public enum ColdpTerm implements Term, AlternativeNames {
         gazetteer,
         status,
         referenceID,
-        remarks)
-      ).put(Media, ImmutableList.of(
+        remarks
+    )),Map.entry(Media, List.of(
         taxonID,
-        sourceID,
-        url,
-        type,
-        format,
-        title,
-        created,
-        creator,
-        license,
-        link)
-      ).put(VernacularName, ImmutableList.of(
+            sourceID,
+            url,
+            type,
+            format,
+            title,
+            created,
+            creator,
+            license,
+            link
+    )),Map.entry(VernacularName, List.of(
         taxonID,
         sourceID,
         name,
@@ -414,15 +413,15 @@ public enum ColdpTerm implements Term, AlternativeNames {
         country,
         area,
         sex,
-        referenceID)
-      ).put(SpeciesEstimate, ImmutableList.of(
+        referenceID
+    )),Map.entry(SpeciesEstimate, List.of(
         taxonID,
         sourceID,
         estimate,
         type,
         referenceID,
         remarks)
-      ).build();
+    ));
 
   private static final String PREFIX = "col";
   private static final String NS = "http://catalogueoflife.org/terms/";

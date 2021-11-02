@@ -2,9 +2,10 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Issue;
-import org.junit.Test;
 
 import java.util.Map;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

@@ -1,7 +1,5 @@
 package life.catalogue.api.jackson;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
@@ -11,8 +9,8 @@ import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
+
 import org.gbif.dwc.terms.TermFactory;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -20,6 +18,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.Test;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.*;
 

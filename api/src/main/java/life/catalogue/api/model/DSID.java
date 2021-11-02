@@ -1,9 +1,9 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.Objects;
 import java.util.function.Function;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import static life.catalogue.api.vocab.Datasets.COL;
 

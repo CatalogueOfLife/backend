@@ -1,6 +1,5 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimRecord;
@@ -8,6 +7,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -287,7 +287,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals(1, rels.size());
 
       for (VerbatimRecord vr : store.verbatimList()) {
-        if (vr.getType()== ColdpTerm.NameRelation) {
+        if (vr.getType() == ColdpTerm.NameRelation) {
           if (vr.getRaw(ColdpTerm.nameID).equals(key)) {
             assertTrue(vr.hasIssue(Issue.SELF_REFERENCED_RELATION));
           } else {

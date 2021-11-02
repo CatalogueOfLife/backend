@@ -1,9 +1,11 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+
 import org.gbif.nameparser.api.Rank;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  *

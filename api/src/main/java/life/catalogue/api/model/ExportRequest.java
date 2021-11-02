@@ -1,15 +1,12 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.JobStatus;
 
 import org.gbif.nameparser.api.Rank;
 
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class ExportRequest {
   private Integer datasetKey;

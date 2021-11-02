@@ -1,14 +1,14 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import javax.validation.constraints.NotNull;
 import java.util.Comparator;
 import java.util.Objects;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * A small class representing a name usage with an id. It can act as a reference to a scientific name in a dataset.

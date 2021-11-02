@@ -5,13 +5,15 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Frequency;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Setting;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

@@ -1,11 +1,11 @@
 package life.catalogue.api.model.newick;
 
-import org.catalogueoflife.newick.XNode;
-
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 import java.util.Objects;
+
+import org.catalogueoflife.newick.XNode;
 
 /**
  * ScientificName Node with S (scientific name),ND (node identifier) and R (rank) keys.

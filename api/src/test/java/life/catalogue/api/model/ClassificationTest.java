@@ -1,7 +1,9 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.datapackage.ColdpTerm;
+import life.catalogue.coldp.ColdpTerm;
+
 import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;

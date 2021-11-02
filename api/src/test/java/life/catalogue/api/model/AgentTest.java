@@ -1,9 +1,9 @@
 package life.catalogue.api.model;
 
-import org.junit.Test;
-
 import javax.validation.Validation;
 import javax.validation.Validator;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

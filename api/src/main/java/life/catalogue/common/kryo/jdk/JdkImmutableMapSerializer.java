@@ -1,11 +1,12 @@
 package life.catalogue.common.kryo.jdk;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public final class JdkImmutableMapSerializer extends Serializer<Map<Object, Object>> {
 

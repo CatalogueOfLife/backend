@@ -1,6 +1,9 @@
 package life.catalogue.common.io;
 
-import com.google.common.collect.Lists;
+import java.io.*;
+import java.util.*;
+import java.util.zip.*;
+
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
@@ -11,9 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import com.google.common.collect.Lists;
 
 public class CompressionUtil {
   

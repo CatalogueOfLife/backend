@@ -1,7 +1,5 @@
 package life.catalogue.common.text;
 
-import com.google.common.base.Preconditions;
-
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -17,6 +15,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Simple String formatting using property names in curly brackets.

@@ -8,10 +8,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
-import life.catalogue.api.vocab.ColDwcTerm;
+import life.catalogue.coldp.ColDwcTerm;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.csv.CsvReader;
@@ -73,14 +73,14 @@ public class DwcaReader extends CsvReader {
   private DwcaReader(Path folder) throws IOException {
     super(folder, "dwc", "dwca");
     detectMappedClassification(ColdpTerm.Taxon, ImmutableMap.<Term, Rank>builder()
-        .put(DwcTerm.kingdom, Rank.KINGDOM)
-        .put(DwcTerm.phylum, Rank.PHYLUM)
-        .put(DwcTerm.class_, Rank.CLASS)
-        .put(DwcTerm.order, Rank.ORDER)
-        .put(DwcTerm.family, Rank.FAMILY)
-        .put(DwcTerm.genus, Rank.GENUS)
-        .put(DwcTerm.subgenus, Rank.SUBGENUS)
-        .build()
+                                                            .put(DwcTerm.kingdom, Rank.KINGDOM)
+                                                            .put(DwcTerm.phylum, Rank.PHYLUM)
+                                                            .put(DwcTerm.class_, Rank.CLASS)
+                                                            .put(DwcTerm.order, Rank.ORDER)
+                                                            .put(DwcTerm.family, Rank.FAMILY)
+                                                            .put(DwcTerm.genus, Rank.GENUS)
+                                                            .put(DwcTerm.subgenus, Rank.SUBGENUS)
+                                                            .build()
     );
   }
   

@@ -4,9 +4,11 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.Issue;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
+
 import org.junit.Before;
 import org.junit.Test;
 

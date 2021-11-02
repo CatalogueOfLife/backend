@@ -1,11 +1,11 @@
 package life.catalogue.common.collection;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiConsumer;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * Collection related methods. In order to prevent and pre-empt subtle logical errors, all "Venn-diagram methods" (like

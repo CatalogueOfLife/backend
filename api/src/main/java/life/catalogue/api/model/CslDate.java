@@ -1,8 +1,8 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Arrays;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CslDate {
   

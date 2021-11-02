@@ -1,10 +1,11 @@
 package life.catalogue.api.search;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class SimpleDecision {
   private Integer id;

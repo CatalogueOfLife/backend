@@ -1,7 +1,7 @@
 package life.catalogue.common.io;
 
 import life.catalogue.api.jackson.PermissiveEnumSerde;
-import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.dwc.terms.Term;
 
 import java.io.File;
@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 
 public abstract class TermWriter implements AutoCloseable {
   protected final Term rowType;

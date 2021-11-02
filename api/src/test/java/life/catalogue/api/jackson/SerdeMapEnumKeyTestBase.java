@@ -1,11 +1,12 @@
 package life.catalogue.api.jackson;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.google.common.collect.Maps;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.Map;
+
+import org.junit.Test;
+
+import com.fasterxml.jackson.databind.JavaType;
+import com.google.common.collect.Maps;
 
 import static org.junit.Assert.assertEquals;
 

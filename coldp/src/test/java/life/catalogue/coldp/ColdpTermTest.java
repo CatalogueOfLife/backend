@@ -1,11 +1,37 @@
-package life.catalogue.api.datapackage;
+package life.catalogue.coldp;
 
 import org.junit.Test;
 
-import static life.catalogue.api.datapackage.ColdpTerm.*;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static life.catalogue.coldp.ColdpTerm.*;
 
 public class ColdpTermTest {
+  @Test
+  public void isClass() {
+    for (ColdpTerm t : ColdpTerm.values()) {
+      if (t.isClass()) {
+        assertTrue(ColdpTerm.RESOURCES.containsKey(t));
+      } else {
+        assertFalse(ColdpTerm.RESOURCES.containsKey(t));
+      }
+    }
+  }
+
+  @Test
+  public void find() {
+    assertEquals(Taxon, ColdpTerm.find("taxon ", true));
+    assertEquals(VernacularName, ColdpTerm.find("Vernacular-name", true));
+    assertEquals(Treatment, ColdpTerm.find("treatment ", true));
+    assertEquals(document, ColdpTerm.find("doc_ument ", false));
+  }
+
+  @Test
+  public void higherRanks() {
+    for (ColdpTerm t : DENORMALIZED_RANKS) {
+      assertFalse(t.isClass());
+      assertTrue(RESOURCES.get(ColdpTerm.Taxon).contains(t));
+    }
+  }
 
   @Test
   public void testNameUsage(){

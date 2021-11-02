@@ -1,16 +1,18 @@
 package life.catalogue.api.vocab;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import life.catalogue.api.jackson.GeoTimeSerde;
 import life.catalogue.common.text.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * A geochronological time span with a given scale.

@@ -1,12 +1,15 @@
 package life.catalogue.common.tax;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.model.Name;
+
 import org.gbif.nameparser.api.Authorship;
+
+import java.util.List;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.List;
+import com.google.common.collect.Lists;
 
 import static life.catalogue.common.tax.AuthorshipNormalizer.Author;
 import static org.junit.Assert.*;

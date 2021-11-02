@@ -1,9 +1,9 @@
 package life.catalogue.api.model;
 
-import org.junit.Test;
-
 import java.net.URI;
 import java.util.UUID;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

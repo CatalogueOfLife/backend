@@ -15,11 +15,13 @@ package life.catalogue.api.vocab;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.EnumSerdeTestBase;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class RankSerdeTest extends EnumSerdeTestBase<Rank> {
   

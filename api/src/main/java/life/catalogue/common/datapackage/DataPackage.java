@@ -1,9 +1,9 @@
 package life.catalogue.common.datapackage;
 
-import com.google.common.collect.Lists;
-
 import java.util.List;
 import java.util.Objects;
+
+import com.google.common.collect.Lists;
 
 public class DataPackage {
   

@@ -1,15 +1,17 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import life.catalogue.api.jackson.SettingsDeserializer;
 import life.catalogue.api.vocab.Setting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonDeserialize(using = SettingsDeserializer.class)
 public class DatasetSettings extends HashMap<Setting, Object> {

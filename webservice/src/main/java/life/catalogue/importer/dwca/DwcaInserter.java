@@ -2,8 +2,8 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.coldp.ColDwcTerm;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.coldp.MetadataParser;

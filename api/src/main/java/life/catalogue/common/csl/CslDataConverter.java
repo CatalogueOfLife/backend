@@ -1,7 +1,6 @@
 package life.catalogue.common.csl;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
 import life.catalogue.api.model.CslName;
@@ -9,7 +8,10 @@ import life.catalogue.api.model.CslName;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jbibtex.*;
+import org.jbibtex.BibTeXEntry;
+import org.jbibtex.DigitStringValue;
+import org.jbibtex.Key;
+import org.jbibtex.StringValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

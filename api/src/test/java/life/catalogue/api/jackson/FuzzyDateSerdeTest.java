@@ -1,11 +1,11 @@
 package life.catalogue.api.jackson;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import life.catalogue.common.date.FuzzyDate;
 
 import org.junit.Test;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

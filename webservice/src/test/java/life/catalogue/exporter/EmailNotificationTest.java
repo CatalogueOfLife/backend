@@ -1,13 +1,12 @@
 package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.dw.mail.MailConfig;

@@ -26,6 +26,10 @@
     </build>
 
     <dependencies>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>coldp</artifactId>
+      </dependency>
         <!-- GBIF -->
         <dependency>
             <groupId>org.gbif</groupId>

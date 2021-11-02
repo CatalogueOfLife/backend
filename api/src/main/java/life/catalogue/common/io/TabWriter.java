@@ -1,9 +1,9 @@
 package life.catalogue.common.io;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.*;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Basic TAB delimited file writer that escapes tab and newline characters.

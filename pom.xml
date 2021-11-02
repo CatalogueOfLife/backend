@@ -27,7 +27,7 @@
   <properties>
     <!-- build settings -->
     <minimumMavenVersion>3.3</minimumMavenVersion>
-    <jdkLevel>11</jdkLevel>
+    <java.version>11</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -193,6 +193,7 @@
     <module>doi</module>
     <module>parser</module>
     <module>webservice</module>
+    <module>coldp</module>
   </modules>
 
   <distributionManagement>
@@ -209,6 +210,11 @@
   <dependencyManagement>
     <dependencies>
       <!-- COL -->
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>coldp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>
         <artifactId>api</artifactId>
@@ -724,7 +730,7 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven-compiler-plugin.version}</version>
           <configuration>
-            <release>${jdkLevel}</release>
+            <release>${java.version}</release>
             <showDeprecation>true</showDeprecation>
             <showWarnings>true</showWarnings>
             <compilerArgs>
@@ -769,7 +775,7 @@
                     <version>[${minimumMavenVersion},)</version>
                   </requireMavenVersion>
                   <requireJavaVersion>
-                    <version>[${jdkLevel},)</version>
+                    <version>[${java.version},)</version>
                   </requireJavaVersion>
                 </rules>
               </configuration>
@@ -870,10 +876,8 @@
           <configuration>
             <archive>
               <manifest>
-                <addDefaultSpecificationEntries>true
-                </addDefaultSpecificationEntries>
-                <addDefaultImplementationEntries>true
-                </addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                 <addClasspath>true</addClasspath>
               </manifest>
             </archive>
@@ -1005,7 +1009,7 @@
                   <version>[${minimumMavenVersion},)</version>
                 </requireMavenVersion>
                 <requireJavaVersion>
-                  <version>[${jdkLevel},)</version>
+                  <version>[${java.version},)</version>
                 </requireJavaVersion>
                 <requirePluginVersions>
                   <message>Best Practice is to always define plugin versions!

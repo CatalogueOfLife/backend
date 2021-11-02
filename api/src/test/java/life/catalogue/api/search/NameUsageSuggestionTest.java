@@ -1,7 +1,9 @@
 package life.catalogue.api.search;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
+
 import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

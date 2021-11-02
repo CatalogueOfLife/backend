@@ -2,8 +2,9 @@ package life.catalogue.api.search;
 
 import life.catalogue.api.model.EditorialDecision;
 
-import javax.ws.rs.QueryParam;
 import java.util.Objects;
+
+import javax.ws.rs.QueryParam;
 
 public class DecisionSearchRequest extends BaseDecisionSearchRequest {
 

@@ -1,9 +1,5 @@
 package life.catalogue.common.kryo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
@@ -11,12 +7,17 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.dwc.terms.*;
-import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+
+import org.junit.Test;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertEquals;
 

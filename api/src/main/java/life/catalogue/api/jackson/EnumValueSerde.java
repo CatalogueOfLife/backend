@@ -1,15 +1,9 @@
 package life.catalogue.api.jackson;
 
 import life.catalogue.api.model.EnumValue;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.common.func.Predicates;
-import life.catalogue.common.text.StringUtils;
 
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import com.google.common.collect.ImmutableSet;
 
 /**
  * A module for (de)serializing enum values that implement the custom EnumValue interface.

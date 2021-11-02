@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

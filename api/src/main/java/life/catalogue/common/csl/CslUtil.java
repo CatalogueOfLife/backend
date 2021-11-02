@@ -1,20 +1,18 @@
 package life.catalogue.common.csl;
 
-import de.undercouch.citeproc.csl.CSLItemData;
 import life.catalogue.api.model.CslData;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Reference;
-
-import org.jbibtex.BibTeXEntry;
-import org.jbibtex.BibTeXFormatter;
-import org.jbibtex.Key;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.regex.Pattern;
+
+import org.jbibtex.BibTeXEntry;
+import org.jbibtex.BibTeXFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.undercouch.citeproc.csl.CSLItemData;
 
 public class CslUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CslUtil.class);

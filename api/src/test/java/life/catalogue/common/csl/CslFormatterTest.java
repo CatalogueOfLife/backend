@@ -1,9 +1,5 @@
 package life.catalogue.common.csl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import de.undercouch.citeproc.csl.*;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.Dataset;
@@ -20,9 +16,15 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import de.undercouch.citeproc.bibtex.NameParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
-import static org.junit.Assert.*;
+import de.undercouch.citeproc.bibtex.NameParser;
+import de.undercouch.citeproc.csl.CSLItemData;
+import de.undercouch.citeproc.csl.CSLItemDataBuilder;
+import de.undercouch.citeproc.csl.CSLNameBuilder;
+import de.undercouch.citeproc.csl.CSLType;
+
+import static org.junit.Assert.assertFalse;
 
 public class CslFormatterTest {
 

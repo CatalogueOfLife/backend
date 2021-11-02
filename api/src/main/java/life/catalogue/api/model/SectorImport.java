@@ -1,10 +1,10 @@
 package life.catalogue.api.model;
 
-import com.google.common.collect.EvictingQueue;
-
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Queue;
+
+import com.google.common.collect.EvictingQueue;
 
 public class SectorImport extends ImportMetrics implements SectorEntity {
 

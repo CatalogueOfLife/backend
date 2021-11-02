@@ -2,6 +2,7 @@ package life.catalogue.api.search;
 
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.vocab.*;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;

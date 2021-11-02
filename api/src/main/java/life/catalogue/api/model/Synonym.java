@@ -1,9 +1,10 @@
 package life.catalogue.api.model;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import java.util.Objects;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A taxonomic synonym, linking a name to potentially multiple taxa.

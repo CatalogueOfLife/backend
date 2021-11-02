@@ -1,12 +1,13 @@
 package life.catalogue.common.io;
 
-import com.google.common.io.Files;
-import org.apache.commons.io.IOUtils;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import org.apache.commons.io.IOUtils;
+
+import com.google.common.io.Files;
 
 public class UTF8IoUtils {
   

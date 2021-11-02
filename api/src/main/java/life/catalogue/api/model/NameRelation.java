@@ -1,9 +1,10 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.NomRelType;
 
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A nomenclatural name relation between two names pointing back in time from the nameId to the relatedNameId.

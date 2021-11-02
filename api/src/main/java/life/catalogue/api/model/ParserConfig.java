@@ -1,10 +1,10 @@
 package life.catalogue.api.model;
 
-import com.google.common.base.Strings;
-
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.base.Strings;
 
 public class ParserConfig extends Name {
   private static String[] EMPTY = new String[2];

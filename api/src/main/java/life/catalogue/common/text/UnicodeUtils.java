@@ -1,26 +1,16 @@
 package life.catalogue.common.text;
 
-import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
-import it.unimi.dsi.fastutil.chars.CharSet;
-import it.unimi.dsi.fastutil.ints.Int2BooleanArrayMap;
-
 import life.catalogue.common.io.LineReader;
 import life.catalogue.common.io.Resources;
-import life.catalogue.common.io.UTF8IoUtils;
-
 import life.catalogue.common.tax.NameFormatter;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharUtils;
+import java.text.Normalizer;
+import java.util.Arrays;
+
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.Normalizer;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
+import it.unimi.dsi.fastutil.chars.CharSet;
 
 /**
  * Utilities dealing with unicode strings

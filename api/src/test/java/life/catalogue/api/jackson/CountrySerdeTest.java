@@ -13,9 +13,11 @@
 package life.catalogue.api.jackson;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.vocab.Country;
+
 import org.junit.Test;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import static org.junit.Assert.assertEquals;
 

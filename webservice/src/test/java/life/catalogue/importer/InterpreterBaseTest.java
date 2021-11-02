@@ -1,11 +1,11 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.ReferenceStore;
 import life.catalogue.importer.neo.model.NeoUsage;

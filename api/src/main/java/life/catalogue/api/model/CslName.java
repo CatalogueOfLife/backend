@@ -1,10 +1,10 @@
 package life.catalogue.api.model;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.undercouch.citeproc.csl.CSLName;
-
-import java.util.Objects;
 
 public class CslName {
   

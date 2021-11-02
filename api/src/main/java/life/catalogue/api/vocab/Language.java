@@ -1,9 +1,6 @@
 package life.catalogue.api.vocab;
 
-import com.google.common.collect.ImmutableMap;
 import life.catalogue.common.io.Resources;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -12,6 +9,11 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Immutable ISO 639 3 letter language class to be used as singletons.

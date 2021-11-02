@@ -1,14 +1,17 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.jackson.IsEmptyFilter;
+import life.catalogue.common.text.StringUtils;
+
+import org.gbif.nameparser.api.*;
+
+import java.util.Objects;
+
+import javax.annotation.Nonnull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import life.catalogue.api.jackson.IsEmptyFilter;
-import life.catalogue.common.text.StringUtils;
-import org.gbif.nameparser.api.*;
-
-import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
  * A parsed or unparsed name that belongs to the names index.

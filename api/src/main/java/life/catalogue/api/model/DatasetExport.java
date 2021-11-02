@@ -1,18 +1,19 @@
 package life.catalogue.api.model;
 
-import com.google.common.collect.Maps;
-
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.text.StringUtils;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
 
 public class DatasetExport extends DataEntity<UUID> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExport.class);
