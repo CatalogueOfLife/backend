@@ -20,9 +20,6 @@ provisional,PROVISIONALLY_ACCEPTED
 provisionallyacceptedname,PROVISIONALLY_ACCEPTED
 temporary,PROVISIONALLY_ACCEPTED
 temporaryname,PROVISIONALLY_ACCEPTED
-todetermine,PROVISIONALLY_ACCEPTED
-unplaced,PROVISIONALLY_ACCEPTED
-unresolved,PROVISIONALLY_ACCEPTED
 provisional,PROVISIONALLY_ACCEPTED
 
 5,SYNONYM
@@ -81,3 +78,7 @@ ismisappliednamefor,MISAPPLIED
 misapplied,MISAPPLIED
 misappliedname,MISAPPLIED
 
+bare,BARE_NAME
+todetermine,BARE_NAME
+unplaced,BARE_NAME
+unresolved,BARE_NAME

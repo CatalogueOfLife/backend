@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.ReferenceStore;
+import life.catalogue.importer.neo.ReferenceMapStore;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
 import org.gbif.nameparser.api.Authorship;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 public class InterpreterBaseTest {
   
   @Mock
-  ReferenceStore refStore;
+  ReferenceMapStore refStore;
 
   @Mock
   NeoDb store;

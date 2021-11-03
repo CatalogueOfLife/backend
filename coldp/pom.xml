@@ -10,6 +10,9 @@
   </parent>
 
   <artifactId>coldp</artifactId>
+  <name>COL Data Packages</name>
+  <description>This module provides terms for the ColDP format with minimal dependencies</description>
+
   <dependencies>
     <!-- GBIF -->
     <dependency>

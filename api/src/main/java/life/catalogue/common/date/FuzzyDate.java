@@ -188,6 +188,24 @@ public final class FuzzyDate {
     return new CslDate(ta.get(YEAR));
   }
 
+  public String toISO() {
+    return toString();
+  }
+  /**
+   * Int representation of the fuzzy date. Can be reconstructed via the fromInt factory method.
+   * @return a single int representing the fuzzy date
+   */
+  public int toInt() {
+    int x = ta.get(YEAR) * DAY_PER_YEAR;
+    if (ta.isSupported(MONTH_OF_YEAR)) {
+      x += ta.get(MONTH_OF_YEAR) * DAY_PER_MONTH;
+      if (ta.isSupported(DAY_OF_MONTH)) {
+        x += ta.get(DAY_OF_MONTH);
+      }
+    }
+    return x;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -205,20 +223,5 @@ public final class FuzzyDate {
   @JsonValue
   public String toString() {
     return ta.toString();
-  }
-
-  /**
-   * Int representation of the fuzzy date. Can be reconstructed via the fromInt factory method.
-   * @return a single int representing the fuzzy date
-   */
-  public int toInt() {
-    int x = ta.get(YEAR) * DAY_PER_YEAR;
-    if (ta.isSupported(MONTH_OF_YEAR)) {
-      x += ta.get(MONTH_OF_YEAR) * DAY_PER_MONTH;
-      if (ta.isSupported(DAY_OF_MONTH)) {
-        x += ta.get(DAY_OF_MONTH);
-      }
-    }
-    return x;
   }
 }

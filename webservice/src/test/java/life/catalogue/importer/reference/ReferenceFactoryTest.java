@@ -4,7 +4,7 @@ import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.importer.neo.ReferenceStore;
+import life.catalogue.importer.neo.ReferenceMapStore;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -18,7 +18,7 @@ public class ReferenceFactoryTest {
   final String link = "http://dx.doi.org/10.1126/science.169.3946.635";
   
   @Mock
-  ReferenceStore refStore;
+  ReferenceMapStore refStore;
   ReferenceFactory rf;
   IssueContainer issues;
   
@@ -47,7 +47,28 @@ public class ReferenceFactoryTest {
   
   @Test
   public void fromColDP() {
-    Reference r = rf.fromColDP("referenceID", "my full citation to be ignored", "authors", "1920", "title", "source", "7:details", doi, link, "nonsense", issues);
+    Reference r = rf.fromColDP("referenceID",
+      "my full citation to be ignored",
+      null,
+      "authors",
+      null,
+      "title",
+      null,
+      "source",
+      "1920",
+      null,
+      null,
+      null,
+      "7",
+      "31",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      doi, link, "nonsense", issues);
     assertEquals("referenceID", r.getId());
     assertEquals(1920, (int) r.getYear());
     assertEquals("authors", r.getCsl().getAuthor()[0].getFamily());
@@ -56,7 +77,7 @@ public class ReferenceFactoryTest {
     assertEquals("nonsense", r.getRemarks());
     assertEquals(doi, r.getCsl().getDOI());
     assertEquals(link, r.getCsl().getURL());
-    assertEquals("authors. title. source. 7:details (1920).", r.getCitation());
+    assertEquals("authors. title. source. 7:31 (1920).", r.getCitation());
   }
   
   @Test

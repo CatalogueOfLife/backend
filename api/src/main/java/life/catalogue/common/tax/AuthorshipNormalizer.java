@@ -230,7 +230,7 @@ public class AuthorshipNormalizer {
             smaller = larger;
             larger = tmp;
           }
-          // remove all of the chars from the larger queue and see if any remain
+          // is the smaller included in the larger, possibly requiring multiple chars?
           if (org.apache.commons.collections4.CollectionUtils.isSubCollection(smaller, larger)) {
             // one is a subset of the other
             return false;

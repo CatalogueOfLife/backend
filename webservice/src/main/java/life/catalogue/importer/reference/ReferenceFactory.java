@@ -9,7 +9,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.ReferenceStore;
+import life.catalogue.importer.neo.ReferenceMapStore;
 import life.catalogue.parser.DateParser;
 import life.catalogue.parser.UnparsableException;
 import org.apache.commons.lang3.CharSet;
@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,6 +61,13 @@ public class ReferenceFactory {
     this(db.getDatasetKey(), db.references());
   }
 
+  /**
+   * A factory without any store, so that each created references becomes a new instance.
+   */
+  public ReferenceFactory(Integer datasetKey) {
+    this(datasetKey, ReferenceStore.passThru());
+  }
+
   public ReferenceFactory(Integer datasetKey, ReferenceStore store) {
     this.datasetKey = datasetKey;
     this.store = store;
@@ -94,64 +101,80 @@ public class ReferenceFactory {
    * @param title       of paper or book
    * @param details     title of periodicals, volume number, and other common bibliographic details
    * @return
+   *     Reference ref = fromAny(datasetKey, referenceID, null, authors, year, title, details, null, issues);
    */
   public static Reference fromACEF(int datasetKey, String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
-    Reference ref = fromAny(datasetKey, referenceID, null, authors, year, title, details, null, null, issues);
-    if (ref.getCsl() != null && !StringUtils.isBlank(details)) {
-      issues.addIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED);
+    CslData csl = new CslData();
+    csl.setAuthor(parseAuthors(authors, issues));
+    csl.setTitle(title);
+    csl.setIssued(ReferenceFactory.toCslDate(year));
+    csl.setContainerTitle(details);
+    if (!StringUtils.isBlank(details)) {
+      // details can include any of the following and probably more: volume, edition, series, page, publisher
+      // try to parse out volume and pages ???
+      csl.setPage(details);
+      issues.addIssue(Issue.CITATION_DETAILS_UNPARSED);
     }
-    return ref;
+    return fromCsl(datasetKey, csl);
   }
   
   public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
     return fromACEF(datasetKey, referenceID, authors, year, title, details, issues);
   }
   
-  public static Reference fromColDP(int datasetKey, String id, String citation, String authors, String year, String title, String source, String details,
-                             String doi, String link, String remarks, IssueContainer issues) {
-    Reference ref = fromAny(datasetKey, id, citation, authors, year, title, source, details, remarks, issues);
-    // add extra link & doi
-    if (doi != null || link != null) {
-      if (ref.getCsl() == null) {
-        ref.setCsl(new CslData());
-      }
-      //TODO: clean & verify DOI & link
-      ref.getCsl().setDOI(doi);
-      ref.getCsl().setURL(link);
-    }
-    return ref;
-  }
-  
-  public Reference fromColDP(String id, String citation, String authors, String year, String title, String source, String details,
-                             String doi, String link, String remarks, IssueContainer issues) {
-    return fromColDP(datasetKey, id, citation, authors, year, title, source, details, doi, link, remarks, issues);
-  }
-  
-  private static Reference fromAny(int datasetKey, String ID, String citation, String authors, String year, String title, String source,
-                                   String details, String remarks, IssueContainer issues) {
-    Reference ref = newReference(datasetKey, ID);
-    ref.setYear(parseYear(year));
+  public Reference fromColDP(String id,
+                             String citation,
+                             String type,
+                             String author,
+                             String editor,
+                             String title,
+                             String containerAuthor,
+                             String containerTitle,
+                             String issued,
+                             String accessed,
+                             String collectionTitle,
+                             String collectionEditor,
+                             String volume,
+                             String issue,
+                             String edition,
+                             String page,
+                             String publisher,
+                             String publisherPlace,
+                             String version,
+                             String isbn,
+                             String issn,
+                             String doi,
+                             String link,
+                             String remarks,
+                             IssueContainer issues) {
+
+    CslData csl = new CslData();
+    //TODO: citation & type
+    csl.setAuthor(parseAuthors(author, issues));
+    csl.setEditor(parseAuthors(editor, issues));
+    csl.setTitle(title);
+    csl.setContainerAuthor(parseAuthors(containerAuthor, issues));
+    csl.setContainerTitle(containerTitle);
+    csl.setIssued(ReferenceFactory.toCslDate(issued));
+    csl.setAccessed(ReferenceFactory.toCslDate(accessed));
+    csl.setCollectionTitle(collectionTitle);
+    csl.setCollectionEditor(parseAuthors(collectionEditor, issues));
+    csl.setVolume(volume);
+    csl.setIssue(issue);
+    csl.setEdition(edition);
+    csl.setPage(page);
+    csl.setPublisher(publisher);
+    csl.setPublisherPlace(publisherPlace);
+    csl.setVersion(version);
+    csl.setISBN(isbn);
+    csl.setISSN(issn);
+    csl.setDOI(doi);
+    csl.setURL(link);
+    var ref = fromCsl(datasetKey, csl);
     ref.setRemarks(remarks);
-    if (hasContent(authors, year, title, source)) {
-      CslData csl = new CslData();
-      ref.setCsl(csl);
-      csl.setAuthor(parseAuthors(authors, issues));
-      csl.setTitle(title);
-      csl.setIssued(yearToDate(ref.getYear(), year));
-      csl.setContainerTitle(source);
-      if (!StringUtils.isBlank(details)) {
-        // details can include any of the following and probably more: volume, edition, series, page, publisher
-        // try to parse out volume and pages ???
-        csl.setPage(details);
-        issues.addIssue(Issue.CITATION_DETAILS_UNPARSED);
-      }
-      ref.setCitation(buildCitation(authors, year, title, source, details));
-    } else {
-      ref.setCitation(citation);
-    }
     return ref;
   }
-  
+
   public static Reference fromCsl(int datasetKey, CslData csl) {
     Reference ref = newReference(datasetKey, csl.getId());
     ref.setCsl(csl);
@@ -295,14 +318,7 @@ public class ReferenceFactory {
       cslDate.setLiteral(dateString);
       return cslDate;
     }
-    if (fd.isPresent()) {
-      LocalDate ld = fd.get().toLocalDate();
-      int[][] dateParts = new int[][]{{ld.getYear(), ld.getMonthValue(), ld.getDayOfMonth()}};
-      CslDate cslDate = new CslDate();
-      cslDate.setDateParts(dateParts);
-      return cslDate;
-    }
-    return null;
+    return fd.map(FuzzyDate::toCslDate).orElse(null);
   }
   
   private static Integer parseYear(String yearString) {

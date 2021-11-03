@@ -24,7 +24,7 @@ public class DataPackageBuilder {
   
   // only non string data types here
   private static final Map<ColdpTerm, String> dataTypes = ImmutableMap.<ColdpTerm, String>builder()
-                                                                      .put(ColdpTerm.year, Field.TYPE_YEAR)
+                                                                      .put(ColdpTerm.publishedInYear, Field.TYPE_YEAR)
                                                                       .put(ColdpTerm.scrutinizerDate, Field.TYPE_DATE)
                                                                       .put(ColdpTerm.created, Field.TYPE_DATETIME)
                                                                       .put(ColdpTerm.extinct, Field.TYPE_BOOLEAN)

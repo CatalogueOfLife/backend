@@ -7,6 +7,8 @@ import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.text.StringUtils;
+import life.catalogue.importer.reference.ReferenceStore;
+
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;
@@ -15,13 +17,13 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class ReferenceStore extends MapStore<Reference> {
-    private static final Logger LOG = LoggerFactory.getLogger(ReferenceStore.class);
+public class ReferenceMapStore extends MapStore<Reference> implements ReferenceStore {
+    private static final Logger LOG = LoggerFactory.getLogger(ReferenceMapStore.class);
 
     // Citation -> refID
     private final Map<String, String> refIndexCitation;
 
-    public ReferenceStore(DB db, Pool<Kryo> pool, BiConsumer<VerbatimEntity, Issue> addIssue) {
+    public ReferenceMapStore(DB db, Pool<Kryo> pool, BiConsumer<VerbatimEntity, Issue> addIssue) {
         super(Reference.class, "r", db, pool, addIssue);
         refIndexCitation = db.hashMap("refIndexCitation")
                 .keySerializer(Serializer.STRING)

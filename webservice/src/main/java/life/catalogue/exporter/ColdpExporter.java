@@ -136,16 +136,29 @@ public class ColdpExporter extends ArchiveExporter {
     writer.set(ColdpTerm.citation, r.getCitation());
     if (r.getCsl() != null) {
       var csl = r.getCsl();
+      writer.set(ColdpTerm.type, csl.getType());
       writer.set(ColdpTerm.author, csl.getAuthor());
+      writer.set(ColdpTerm.editor, csl.getEditor());
       writer.set(ColdpTerm.title, csl.getTitle());
-      if (csl.getIssued() != null && csl.getIssued().getDateParts() != null) {
-        writer.set(ColdpTerm.year, csl.getIssued().getDateParts()[0]);
-      }
-      writer.set(ColdpTerm.source, ObjectUtils.coalesce(csl.getContainerTitle(), csl.getCollectionTitle()));
-      writer.set(ColdpTerm.details, StringUtils.concatWS(csl.getVolume(), csl.getIssue(), csl.getPage(), r.getPage()));
+      writer.set(ColdpTerm.containerAuthor, csl.getContainerAuthor());
+      writer.set(ColdpTerm.containerTitle, csl.getContainerTitle());
+      writer.set(ColdpTerm.issued, csl.getIssued());
+      writer.set(ColdpTerm.accessed, csl.getAccessed());
+      writer.set(ColdpTerm.collectionTitle, csl.getCollectionTitle());
+      writer.set(ColdpTerm.collectionEditor, csl.getCollectionEditor());
+      writer.set(ColdpTerm.volume, csl.getVolume());
+      writer.set(ColdpTerm.issue, csl.getIssue());
+      writer.set(ColdpTerm.edition, csl.getEdition());
+      writer.set(ColdpTerm.page, csl.getPage());
+      writer.set(ColdpTerm.publisher, csl.getPublisher());
+      writer.set(ColdpTerm.publisherPlace, csl.getPublisherPlace());
+      writer.set(ColdpTerm.version, csl.getVersion());
+      writer.set(ColdpTerm.isbn, csl.getISBN());
+      writer.set(ColdpTerm.issn, csl.getISSN());
       writer.set(ColdpTerm.doi, csl.getDOI());
       writer.set(ColdpTerm.link, r.getCsl().getURL());
       writer.set(ColdpTerm.remarks, ObjectUtils.coalesce(r.getRemarks(), csl.getNote()));
+
       // write also to CSL-JSON file
       if (cslFirst) {
         LOG.info("Export references also as CSL-JSON");

@@ -2,6 +2,15 @@ package life.catalogue.common.io;
 
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 
+import life.catalogue.api.model.CslDate;
+
+import life.catalogue.api.model.CslName;
+
+import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.common.csl.CslUtil;
+
+import life.catalogue.common.date.FuzzyDate;
+
 import org.gbif.dwc.terms.Term;
 
 import java.io.File;
@@ -17,14 +26,14 @@ import org.apache.commons.lang3.StringUtils;
 
 public abstract class TermWriter implements AutoCloseable {
   protected final Term rowType;
-  protected final Term idTerm;
   protected final Map<Term, Integer> cols;
   protected String[] row;
   private final RowWriter writer;
 
   public static class TSV extends TermWriter{
-    public TSV(File dir, Term rowType, Term idTerm, List<Term> cols) throws IOException {
-      super(setupWriter(dir, rowType), rowType, idTerm, cols);
+
+    public TSV(File dir, Term rowType, List<Term> cols) throws IOException {
+      super(setupWriter(dir, rowType), rowType, cols);
     }
 
     static RowWriter setupWriter(File dir, Term rowType) {
@@ -33,13 +42,11 @@ public abstract class TermWriter implements AutoCloseable {
     }
   }
 
-  public TermWriter(RowWriter writer, Term rowType, Term idTerm, List<Term> cols) throws IOException {
+  public TermWriter(RowWriter writer, Term rowType, List<Term> cols) throws IOException {
     this.writer = writer;
     this.rowType = rowType;
-    this.idTerm = idTerm;
     Map<Term, Integer> map = new HashMap<>();
     int idx = 0;
-    map.put(idTerm, idx++);
     for (Term t : cols) {
       map.put(t, idx++);
     }
@@ -47,7 +54,6 @@ public abstract class TermWriter implements AutoCloseable {
 
     // write header row
     row = new String[map.size()];
-    set(idTerm, idTerm.prefixedName());
     for (Term t : cols) {
       set(t, t.prefixedName());
     }
@@ -58,11 +64,9 @@ public abstract class TermWriter implements AutoCloseable {
     return rowType.simpleName() + ".tsv";
   }
 
-  public String next() throws IOException {
+  public void next() throws IOException {
     writer.write(row);
-    String id = get(idTerm);
     row = new String[cols.size()];
-    return id;
   }
 
   @Override
@@ -102,6 +106,24 @@ public abstract class TermWriter implements AutoCloseable {
         .filter(StringUtils::isNotBlank)
         .collect(Collectors.joining("|"))
       );
+    }
+  }
+
+  public void set(Term term, CslDate value) {
+    if (value != null) {
+      String date;
+      if (value.getDateParts() != null && value.getDateParts().length > 0 && value.getDateParts()[0].length > 0) {
+        date = FuzzyDate.of(value.getDateParts()[0]).toISO();
+      } else {
+        date = ObjectUtils.coalesce(value.getLiteral(), value.getRaw());
+      }
+      set(term, date);
+    }
+  }
+
+  public void set(Term term, CslName[] value) {
+    if (value != null) {
+      set(term, CslUtil.toColdpString(value));
     }
   }
 

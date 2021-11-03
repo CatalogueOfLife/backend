@@ -1,6 +1,7 @@
 package life.catalogue.common.csl;
 
 import life.catalogue.api.model.CslData;
+import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.Reference;
 
 import java.io.IOException;
@@ -70,5 +71,26 @@ public class CslUtil {
       LOG.error("Failed to write BibTeX from csl data", e);
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Produces semicolon delimited lists of the following form usable for ColDP CSV files:
+   * family1, given1; family2, given2; ...
+   */
+  public static String toColdpString(CslName[] data) {
+    if (data != null && data.length > 0) {
+      StringBuilder sb = new StringBuilder();
+      for (var n : data) {
+        if (sb.length()>0) {
+          sb.append("; ");
+          sb.append(n.getFamily());
+          if (n.getGiven() != null) {
+            sb.append(",");
+            sb.append(n.getGiven());
+          }
+        }
+      }
+    }
+    return null;
   }
 }

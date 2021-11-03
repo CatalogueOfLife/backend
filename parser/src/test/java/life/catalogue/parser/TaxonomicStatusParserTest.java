@@ -41,6 +41,10 @@ public class TaxonomicStatusParserTest extends EnumNoteParserTestBase<TaxonomicS
     assertParse(MISAPPLIED, "3");
     assertParse(PROVISIONALLY_ACCEPTED,"4");
     assertParse(SYNONYM, "5");
+
+    assertParse(BARE_NAME, "bare");
+    assertParse(BARE_NAME, "bare name");
+    assertParse(BARE_NAME, "unplaced");
   }
 
   private void assertNote() {

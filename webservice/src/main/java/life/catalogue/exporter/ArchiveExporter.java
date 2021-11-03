@@ -382,13 +382,12 @@ public abstract class ArchiveExporter extends DatasetExporter {
     closeWriter();
     if (terms != null && terms.length>2) {
       Term rowType = terms[0];
-      Term idTerm = terms[1];
-      var cols = List.of(Arrays.copyOfRange(terms, 2, terms.length));
+      var cols = List.of(Arrays.copyOfRange(terms, 1, terms.length));
       LOG.info("Export {} from dataset {}", rowType.simpleName(), datasetKey);
       if (req.isExcel()) {
-        writer = new ExcelTermWriter(wb, rowType, idTerm, cols);
+        writer = new ExcelTermWriter(wb, rowType, cols);
       } else {
-        writer = new TermWriter.TSV(tmpDir, rowType, idTerm, cols);
+        writer = new TermWriter.TSV(tmpDir, rowType, cols);
       }
       return true;
     }

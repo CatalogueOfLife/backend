@@ -46,18 +46,33 @@ public class ColdpInterpreter extends InterpreterBase {
     if (!v.hasTerm(ColdpTerm.ID)) {
       return Optional.empty();
     }
+
     return Optional.of(refFactory.fromColDP(
-        v.get(ColdpTerm.ID),
-        v.get(ColdpTerm.citation),
-        v.get(ColdpTerm.author),
-        v.get(ColdpTerm.year),
-        v.get(ColdpTerm.title),
-        v.get(ColdpTerm.source),
-        v.get(ColdpTerm.details),
-        v.get(ColdpTerm.doi),
-        v.get(ColdpTerm.link),
-        v.get(ColdpTerm.remarks),
-        v
+      v.get(ColdpTerm.ID),
+      v.get(ColdpTerm.citation),
+      v.get(ColdpTerm.type),
+      v.get(ColdpTerm.author),
+      v.get(ColdpTerm.editor),
+      v.get(ColdpTerm.title),
+      v.get(ColdpTerm.containerAuthor),
+      v.get(ColdpTerm.containerTitle),
+      v.get(ColdpTerm.issued),
+      v.get(ColdpTerm.accessed),
+      v.get(ColdpTerm.collectionTitle),
+      v.get(ColdpTerm.collectionEditor),
+      v.get(ColdpTerm.volume),
+      v.get(ColdpTerm.issue),
+      v.get(ColdpTerm.edition),
+      v.get(ColdpTerm.page),
+      v.get(ColdpTerm.publisher),
+      v.get(ColdpTerm.publisherPlace),
+      v.get(ColdpTerm.version),
+      v.get(ColdpTerm.isbn),
+      v.get(ColdpTerm.issn),
+      v.get(ColdpTerm.doi),
+      v.get(ColdpTerm.link),
+      v.get(ColdpTerm.remarks),
+      v
     ));
   }
 

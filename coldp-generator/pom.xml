@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>motherpom</artifactId>
+    <groupId>org.catalogueoflife</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>coldp-generator</artifactId>
+  <name>ColDP Archive Generator</name>
+  <description>Code to generate ColDP archives for various custom sources, e.g. WCVP</description>
+
+  <dependencies>
+    <!-- GBIF -->
+    <dependency>
+      <groupId>org.gbif</groupId>
+      <artifactId>dwc-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
+      <artifactId>coldp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
+      <artifactId>api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.gbif</groupId>
+      <artifactId>name-parser-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jbibtex</groupId>
+      <artifactId>jbibtex</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>de.undercouch</groupId>
+      <artifactId>citeproc-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.univocity</groupId>
+      <artifactId>univocity-parsers</artifactId>
+    </dependency>
+    <!-- templating -->
+    <dependency>
+      <groupId>org.freemarker</groupId>
+      <artifactId>freemarker</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+    </dependency>
+    <!-- logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
+    <!-- TEST SCOPE -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
