@@ -4,6 +4,7 @@ import com.google.common.io.MoreFiles;
 
 import com.google.common.io.RecursiveDeleteOption;
 
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.*;
 import life.catalogue.common.text.SimpleTemplate;
 
@@ -31,6 +32,7 @@ public abstract class AbstractGenerator implements Runnable {
   private final File dir; // working directory
   protected TermWriter writer;
   protected TermWriter refWriter;
+  private int refCounter = 1;
   private final CloseableHttpClient hc;
 
   public AbstractGenerator(GeneratorConfig cfg, boolean addMetadata) {
@@ -50,6 +52,9 @@ public abstract class AbstractGenerator implements Runnable {
       addData();
       if (writer != null) {
         writer.close();
+      }
+      if (refWriter != null) {
+        refWriter.close();
       }
       addMetadata();
 
@@ -72,14 +77,42 @@ public abstract class AbstractGenerator implements Runnable {
     }
   }
 
-  protected void newWriter(Term rowType, List<Term> columns) throws IOException {
+  /**
+   * Finalizes the current ref record and creates a new ref id if not yet set.
+   * @return the ID of the previous record.
+   */
+  protected String nextRef() throws IOException {
+    String id;
+    if (refWriter.has(ColdpTerm.ID)) {
+      id = refWriter.get(ColdpTerm.ID);
+    } else {
+      id = "R" + refCounter++;
+      refWriter.set(ColdpTerm.ID, id);
+    }
+    refWriter.next();
+    return id;
+  }
+
+  protected void newWriter(ColdpTerm rowType) throws IOException {
+    newWriter(rowType, ColdpTerm.RESOURCES.get(rowType));
+  }
+
+  protected void newWriter(Term rowType, List<? extends Term> columns) throws IOException {
     if (writer != null) {
       writer.close();
     }
     writer = additionalWriter(rowType, columns);
   }
 
-  protected TermWriter additionalWriter(Term rowType, List<Term> columns) throws IOException {
+  protected void initRefWriter(List<? extends Term> columns) throws IOException {
+    refWriter = additionalWriter(ColdpTerm.Reference, columns);
+  }
+
+  protected TermWriter additionalWriter(ColdpTerm rowType) throws IOException {
+    return new TermWriter.TSV(dir, rowType, ColdpTerm.RESOURCES.get(rowType));
+  }
+
+  protected TermWriter additionalWriter(Term rowType, List<? extends Term> columns) throws IOException {
     return new TermWriter.TSV(dir, rowType, columns);
   }
 

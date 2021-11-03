@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Test;
@@ -25,6 +26,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class CslUtilTest {
+
+  @Test
+  public void parseVolumeIssuePage() {
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(1,2,3)), CslUtil.parseVolumeIssuePage("1(2):3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): 3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): p.3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): pp 3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): page 3"));
+
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(13,null,137)), CslUtil.parseVolumeIssuePage("13 : p 137"));
+  }
 
   @Test
   public void makeBibliography() {

@@ -7,6 +7,7 @@ import life.catalogue.api.model.CslDate;
 import life.catalogue.api.model.CslName;
 
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 
 import life.catalogue.common.date.FuzzyDate;
@@ -23,16 +24,21 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class TermWriter implements AutoCloseable {
+  private static Logger LOG = LoggerFactory.getLogger(TermWriter.class);
   protected final Term rowType;
   protected final Map<Term, Integer> cols;
   protected String[] row;
   private final RowWriter writer;
+  private int counter = 0;
+
 
   public static class TSV extends TermWriter{
 
-    public TSV(File dir, Term rowType, List<Term> cols) throws IOException {
+    public TSV(File dir, Term rowType, List<? extends Term> cols) throws IOException {
       super(setupWriter(dir, rowType), rowType, cols);
     }
 
@@ -42,7 +48,7 @@ public abstract class TermWriter implements AutoCloseable {
     }
   }
 
-  public TermWriter(RowWriter writer, Term rowType, List<Term> cols) throws IOException {
+  public TermWriter(RowWriter writer, Term rowType, List<? extends Term> cols) throws IOException {
     this.writer = writer;
     this.rowType = rowType;
     Map<Term, Integer> map = new HashMap<>();
@@ -58,6 +64,7 @@ public abstract class TermWriter implements AutoCloseable {
       set(t, t.prefixedName());
     }
     next();
+    counter=0;
   }
 
   public static String filename(Term rowType) {
@@ -67,11 +74,19 @@ public abstract class TermWriter implements AutoCloseable {
   public void next() throws IOException {
     writer.write(row);
     row = new String[cols.size()];
+    if (counter++ % 100000 == 0) {
+      LOG.info("Written {} {}s", counter, rowType.simpleName());
+    }
+  }
+
+  public int getCounter() {
+    return counter;
   }
 
   @Override
   public void close() throws IOException {
     writer.close();
+    LOG.info("Written {} {}s in total", counter, rowType.simpleName());
   }
 
   public Term getRowType() {
@@ -82,6 +97,14 @@ public abstract class TermWriter implements AutoCloseable {
     int idx = cols.getOrDefault(term, -1);
     if (idx < 0) return null;
     return row[idx];
+  }
+
+  public boolean has(Term term) {
+    return cols.containsKey(term) && row[cols.get(term)] != null;
+  }
+
+  public void unset(Term term) {
+    set(term, (String) null);
   }
 
   public void set(Term term, String value) {

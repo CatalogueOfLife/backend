@@ -1,6 +1,9 @@
 package org.catalogueoflife.coldp.gen.wcvp;
 
+import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.CompressionUtil;
 
 import java.io.File;
@@ -9,9 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
-import life.catalogue.common.io.TermWriter;
-
+import org.apache.commons.lang3.StringUtils;
 import org.catalogueoflife.coldp.gen.AbstractGenerator;
 import org.catalogueoflife.coldp.gen.GeneratorConfig;
 import org.catalogueoflife.coldp.gen.TabReader;
@@ -40,7 +43,16 @@ public class Generator extends AbstractGenerator {
   private static final int AUTHOR = 22;
   private static final int ACCEPTED_ID = 23;
   private static final int ORIGINAL_ID = 24;
-  private static final int COL_MIN = ORIGINAL_ID;
+  private static final int USAGE_MIN = ORIGINAL_ID;
+
+  // plant_name_id|continent_code_l1|continent|region_code_l2|region|area_code_l3|area|introduced|extinct|location_doubtful
+  // 329042-az|7|NORTHERN AMERICA|79|Mexico|MXN|Mexico Northwest|0|0|0
+  private static final int TAXON_ID = 0;
+  private static final int AREA_ID = 5;
+  private static final int AREA = 6;
+  private static final int DIST_MIN = AREA;
+
+  private static final Pattern BRACKET_YEAR = Pattern.compile("\\(?([^()]+)\\)?");
 
   public Generator(GeneratorConfig cfg) {
     super(cfg, true);
@@ -66,11 +78,21 @@ public class Generator extends AbstractGenerator {
     CompressionUtil.unzipFile(srcDir, zip);
 
     // read & write core file
+    initRefWriter(List.of(
+      ColdpTerm.ID,
+      ColdpTerm.author,
+      ColdpTerm.containerTitle,
+      ColdpTerm.issued,
+      ColdpTerm.volume,
+      ColdpTerm.issue,
+      ColdpTerm.page
+    ));
     newWriter(ColdpTerm.NameUsage, List.of(
       ColdpTerm.ID,
       ColdpTerm.parentID,
       ColdpTerm.basionymID,
       ColdpTerm.status,
+      ColdpTerm.nameStatus,
       ColdpTerm.rank,
       ColdpTerm.scientificName,
       ColdpTerm.authorship,
@@ -83,41 +105,88 @@ public class Generator extends AbstractGenerator {
       ColdpTerm.referenceID
     ));
 
-    final var reader = TabReader.custom(
-      new File(srcDir, "checklist_names.txt"), StandardCharsets.UTF_8, '|', '"', 1, COL_MIN
+    var reader = TabReader.custom(
+      new File(srcDir, "checklist_names.txt"), StandardCharsets.UTF_8, '|', '"', 1, USAGE_MIN
     );
-    Set<String> all_status = new HashSet<>();
-    Set<String> all_ranks = new HashSet<>();
     for (var row : reader) {
-      writer.set(ColdpTerm.ID, row[ID]);
+      final String id = row[ID];
+      writer.set(ColdpTerm.ID, id);
       String status = row[STATUS];
-      boolean accepted = status.equalsIgnoreCase("Accepted");
-      writer.set(ColdpTerm.status, status);
-      all_status.add(status);
+      writer.set(ColdpTerm.status, status != null && status.equalsIgnoreCase("Unplaced") ? "bare name" : status);
       writer.set(ColdpTerm.rank, row[RANK]);
-      all_ranks.add(row[RANK]);
       writer.set(ColdpTerm.scientificName, row[NAME]);
       writer.set(ColdpTerm.authorship, row[AUTHOR]);
       writer.set(ColdpTerm.genericName, row[GENUS]);
       writer.set(ColdpTerm.specificEpithet, row[SPECIES]);
       writer.set(ColdpTerm.infraspecificEpithet, row[INFRASPECIES]);
-      writer.set(ColdpTerm.nameRemarks, row[NOM_REMARKS]);
+      writer.set(ColdpTerm.nameRemarks, stripLeadingComma(row[NOM_REMARKS]));
       writer.set(ColdpTerm.basionymID, row[ORIGINAL_ID]);
-      writer.set(ColdpTerm.family, row[FAMILY]);
-      if (accepted) {
-        writer.set(ColdpTerm.genus, row[GENUS]);
-      } else {
-        writer.set(ColdpTerm.parentID, row[ACCEPTED_ID]);
+      writer.set(ColdpTerm.parentID, row[ACCEPTED_ID]);
+      if (status != null) {
+        switch (status) {
+          case "Accepted":
+            writer.set(ColdpTerm.family, row[FAMILY]);
+            writer.set(ColdpTerm.genus, row[GENUS]);
+            writer.unset(ColdpTerm.parentID);
+            break;
+          case "Illegitimate":
+          case "Invalid":
+          case "Orthographic":
+            writer.set(ColdpTerm.status, TaxonomicStatus.SYNONYM);
+            writer.set(ColdpTerm.nameStatus, status);
+            break;
+          default:
+        }
       }
-      //TODO: write refs
-      //writer.set(ColdpTerm.referenceID, null);
+
+      // construct reference
+      if (row[PUBLISH_AUTHOR] != null || row[PUBLISH_PLACE] != null) {
+        refWriter.set(ColdpTerm.author, row[PUBLISH_AUTHOR]);
+        refWriter.set(ColdpTerm.containerTitle, row[PUBLISH_PLACE]);
+        String rawYear = row[PUBLISH_YEAR];
+        if (rawYear != null) {
+          var m = BRACKET_YEAR.matcher(rawYear);
+          if (m.find()) {
+            refWriter.set(ColdpTerm.issued, m.group(1));
+          } else {
+            LOG.warn("Failed to parse publishing year: {}", rawYear);
+          }
+        }
+        CslUtil.parseVolumeIssuePage(row[PUBLISH_VOLUME]).ifPresent(vip -> {
+          refWriter.set(ColdpTerm.volume, vip.volume);
+          refWriter.set(ColdpTerm.issue, vip.issue);
+          refWriter.set(ColdpTerm.page, vip.page);
+        });
+        String rid = nextRef();
+        writer.set(ColdpTerm.referenceID, rid);
+      }
+
       writer.next();
-      if (reader.getContext().currentLine()>100) break;
     }
 
-    System.out.println("\n\nDistinct ranks:");
-    all_ranks.forEach(System.out::println);
-    System.out.println("\n\nDistinct status:");
-    all_status.forEach(System.out::println);
+    // Distribution
+    reader = TabReader.custom(
+      new File(srcDir, "checklist_distribution.txt"), StandardCharsets.UTF_8, '|', '"', 1, DIST_MIN
+    );
+    newWriter(ColdpTerm.Distribution, List.of(
+      ColdpTerm.taxonID,
+      ColdpTerm.gazetteer,
+      ColdpTerm.areaID,
+      ColdpTerm.area
+    ));
+    for (var row : reader) {
+      writer.set(ColdpTerm.taxonID, row[TAXON_ID]);
+      writer.set(ColdpTerm.areaID, row[AREA_ID]);
+      writer.set(ColdpTerm.area, row[AREA]);
+      writer.set(ColdpTerm.gazetteer, Gazetteer.TDWG);
+      writer.next();
+    }
+  }
+
+  private String stripLeadingComma(String x) {
+    if (x != null) {
+      return StringUtils.stripStart(x.trim(), ",");
+    }
+    return null;
   }
 }
