@@ -86,7 +86,9 @@ public class ColdpInterpreter extends InterpreterBase {
       TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(ACC_NOTE, Issue.TAXONOMIC_STATUS_INVALID, v).val;
 
       NeoUsage u;
-      if (status.isSynonym()) {
+      if (status.isBareName()) {
+        u = NeoUsage.createBareName(Origin.SOURCE);
+      } else if (status.isSynonym()) {
         u = NeoUsage.createSynonym(Origin.SOURCE, status);
       } else {
         u = NeoUsage.createTaxon(Origin.SOURCE, status);
@@ -171,11 +173,14 @@ public class ColdpInterpreter extends InterpreterBase {
     u.setId(v.getRaw(ColdpTerm.ID));
     u.setVerbatimKey(v.getId());
     setReference(v, ColdpTerm.accordingToID, u.usage::setAccordingToId);
-    setReferences(v, ColdpTerm.referenceID, COMMA_SPLITTER, u.usage::setReferenceIds);
     u.usage.setOrigin(Origin.SOURCE);
     u.usage.setNamePhrase(ObjectUtils.coalesce(v.get(ColdpTerm.namePhrase), n.pnu.getTaxonomicNote()));
-    u.usage.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
     u.usage.setRemarks(v.get(ColdpTerm.remarks));
+    if (!u.usage.isBareName()) {
+      NameUsageBase nub = (NameUsageBase) u.usage;
+      setReferences(v, ColdpTerm.referenceID, COMMA_SPLITTER, nub::setReferenceIds);
+      nub.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
+    }
 
     u.usage.setName(n.getName());
   }

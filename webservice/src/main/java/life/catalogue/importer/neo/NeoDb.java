@@ -437,7 +437,7 @@ public class NeoDb {
     if (u.nameNode != null) {
       // remove name from usage & create it which results in a new node on the usage
       u.usage.setName(null);
-      if (u.usage.getStatus() != TaxonomicStatus.BARE_NAME) {
+      if (!u.usage.isBareName()) {
         usages.create(u);
       }
     } else {

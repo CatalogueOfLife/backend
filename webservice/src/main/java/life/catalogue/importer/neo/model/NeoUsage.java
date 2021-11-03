@@ -28,7 +28,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   // the neo4j name node, related via HAS_NAME
   public Node nameNode;
   // either a taxon or a synonym - this can change during normalisation!
-  public NameUsageBase usage;
+  public NameUsage usage;
   public boolean homotypic = false;
 
   // supplementary infos for a taxon
@@ -42,7 +42,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   public Classification classification;
   public List<String> remarks = Lists.newArrayList();
   
-  private static NeoUsage create(NameUsageBase nu, Origin origin, Name name, TaxonomicStatus status) {
+  private static NeoUsage create(NameUsage nu, Origin origin, Name name, TaxonomicStatus status) {
     NeoUsage u = new NeoUsage();
     u.usage = nu;
     u.usage.setStatus(status);
@@ -52,6 +52,14 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
       name.setOrigin(origin);
     }
     return u;
+  }
+
+  public static NeoUsage createBareName(Origin origin) {
+    return createBareName(origin, null);
+  }
+
+  public static NeoUsage createBareName(Origin origin, Name name) {
+    return create(new BareName(), origin, name, TaxonomicStatus.BARE_NAME);
   }
 
   public static NeoUsage createTaxon(Origin origin, TaxonomicStatus status) {
@@ -143,9 +151,9 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
    */
   public Synonym convertToTaxon(TaxonomicStatus status) {
     Preconditions.checkArgument(isSynonym(), "Usage needs to be a synonym");
-    Preconditions.checkArgument(!status.isSynonym(), "Status needs to be a taxon status");
+    Preconditions.checkArgument(status.isTaxon(), "Status needs to be a taxon status");
     final Synonym s = getSynonym();
-    usage = new Taxon(usage);
+    usage = new Taxon(s);
     usage.setStatus(status);
     return s;
   }
@@ -159,7 +167,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
     Preconditions.checkArgument(!isSynonym(), "Usage needs to be a taxon");
     Preconditions.checkArgument(status.isSynonym(), "Status needs to be a synonym status");
     final Taxon t = getTaxon();
-    usage = new Synonym(usage);
+    usage = new Synonym(t);
     usage.setStatus(status);
     return t;
   }
