@@ -89,6 +89,15 @@ public class CslUtil {
       for (var n : data) {
         if (sb.length()>0) {
           sb.append("; ");
+        }
+        if (n.isLiteralOnly()) {
+          sb.append(n.getLiteral());
+
+        } else {
+          if (n.getNonDroppingParticle() != null) {
+            sb.append(n.getNonDroppingParticle());
+            sb.append(" ");
+          }
           sb.append(n.getFamily());
           if (n.getGiven() != null) {
             sb.append(",");
@@ -96,6 +105,7 @@ public class CslUtil {
           }
         }
       }
+      return sb.toString();
     }
     return null;
   }

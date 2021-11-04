@@ -10,7 +10,11 @@ import org.slf4j.LoggerFactory;
 public interface IssueContainer {
   
   DevNull VOID = new DevNull();
-  
+
+  static IssueContainer simple() {
+    return new Simple();
+  }
+
   Set<Issue> getIssues();
   
   void setIssues(Set<Issue> issues);
@@ -38,7 +42,6 @@ public interface IssueContainer {
   default boolean hasIssues() {
     return !getIssues().isEmpty();
   }
-
 
   /**
    * Simple hash map based issue container.

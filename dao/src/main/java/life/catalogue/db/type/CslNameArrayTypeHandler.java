@@ -29,8 +29,9 @@ public class CslNameArrayTypeHandler extends CustomArrayAbstractTypeHandler<CslN
 
   @Override
   public CslName fromAttributes(List<String> cols) throws SQLException {
-    if (cols.size() == 3) {
-      return new CslName(cols.get(0), cols.get(1), cols.get(2));
+    if (cols.size() == 4) {
+      // we added the particle to the already existing type, hence the wrong ordering
+      return new CslName(cols.get(0), cols.get(1), cols.get(3), cols.get(2));
     } else {
       // how can that be ?
       throw new TypeException("Failed to parse " + String.join(",", cols) + " to CslName");

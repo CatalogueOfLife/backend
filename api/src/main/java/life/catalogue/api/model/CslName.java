@@ -37,6 +37,17 @@ public class CslName {
     this.literal = literal;
   }
 
+  public CslName(String given, String family, String nonDroppingParticle, String literal) {
+    this.family = family;
+    this.given = given;
+    this.nonDroppingParticle = nonDroppingParticle;
+    this.literal = literal;
+  }
+
+  public boolean isLiteralOnly() {
+    return literal != null && family == null && given == null;
+  }
+
   public String getFamily() {
     return family;
   }

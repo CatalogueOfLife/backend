@@ -5,13 +5,19 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.neo.ReferenceMapStore;
+
+import org.checkerframework.checker.units.qual.C;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 public class ReferenceFactoryTest {
   
@@ -162,7 +168,26 @@ public class ReferenceFactoryTest {
     assertNull(a.getNonDroppingParticle());
     assertEquals("Ingole", a.getFamily());
   }
-  
+
+  @Test
+  public void authorsRoundtrip() {
+    CslName[] names = new CslName[]{
+      new CslName(null, "Harry Mulisch the Greatest"),
+      new CslName("Sigmund", "Beck"),
+      new CslName("P.", "Acevedo-Rodríguez"),
+      new CslName("Maria Josef", "Belgrano", "de la", null)
+    };
+
+    String x = CslUtil.toColdpString(names);
+    System.out.println(x);
+
+    IssueContainer issues = IssueContainer.simple();
+    CslName[] names2 = ReferenceFactory.parseAuthors(x, issues);
+
+    assertFalse(issues.hasIssues());
+    assertEquals(names, names2);
+  }
+
   @Test
   public void fromDWC() {
     Reference r = rf.fromDWC("12345", "Dingle Doodle da", "1888", issues);
