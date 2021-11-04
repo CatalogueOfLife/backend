@@ -105,6 +105,9 @@ public class ObjectUtils {
     return false;
   }
 
+  /**
+   * Calls toString on the given object or returns null if it was null.
+   */
   public static String toString(Object obj) {
     return obj == null ? null : obj.toString();
   }

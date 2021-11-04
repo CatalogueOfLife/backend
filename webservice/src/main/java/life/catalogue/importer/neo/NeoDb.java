@@ -426,9 +426,9 @@ public class NeoDb {
     }
     if (nn.getName().getOrigin() == null) {
       if (u.isSynonym()) {
-        nn.getName().setOrigin(u.getSynonym().getOrigin());
+        nn.getName().setOrigin(u.asSynonym().getOrigin());
       } else {
-        nn.getName().setOrigin(u.getTaxon().getOrigin());
+        nn.getName().setOrigin(u.asTaxon().getOrigin());
       }
     }
     nn.homotypic = u.homotypic;
@@ -632,7 +632,7 @@ public class NeoDb {
           // parent
           Node p = getSingleRelated(u.node, RelType.PARENT_OF, Direction.INCOMING);
           NeoUsage pt = usages().objByNode(p);
-          u.getTaxon().setParentId(pt.getId());
+          u.asTaxon().setParentId(pt.getId());
         }
         // store the updated object
         usages().update(u);

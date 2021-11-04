@@ -2,7 +2,9 @@ package life.catalogue.parser;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import org.gbif.utils.file.csv.CSVReader;
+
+import life.catalogue.common.io.TabReader;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,21 +26,19 @@ public abstract class MapBasedParser<T> extends ParserBase<T> {
   
   public void addMappings(String mappingResourceFile) {
     // read mappings from resource file?
-    try {
+    try (TabReader reader = dictReader(mappingResourceFile)){
       LOG.info("Reading mappings from {}", mappingResourceFile);
-      CSVReader reader = dictReader(mappingResourceFile);
-      while (reader.hasNext()) {
-        String[] row = reader.next();
+      for (String[] row : reader) {
         if (row.length == 0) continue;
         if (row.length == 1) {
-          LOG.debug("Ignore unmapped value {} on line {}", row[0], reader.currLineNumber());
+          LOG.debug("Ignore unmapped value {} on line {}", row[0], reader.getContext().currentLine());
           continue;
         }
         if (row.length == 2 && Strings.isNullOrEmpty(row[1])) {
           continue;
         }
         if (row.length > 2) {
-          LOG.info("Ignore invalid mapping in {}, line {} with {} columns", mappingResourceFile, reader.currLineNumber(), row.length);
+          LOG.info("Ignore invalid mapping in {}, line {} with {} columns", mappingResourceFile, reader.getContext().currentLine(), row.length);
           continue;
         }
         T val = mapNormalisedValue(row[1]);
@@ -48,7 +48,6 @@ public abstract class MapBasedParser<T> extends ParserBase<T> {
           LOG.warn("Value {} cannot be mapped to {}. Ignore mapping to {}", row[1], valueClass.getSimpleName(), row[0]);
         }
       }
-      reader.close();
     } catch (IOException e) {
       LOG.error("Failed to load {} parser mappings from {}", valueClass.getSimpleName(), mappingResourceFile, e);
     }

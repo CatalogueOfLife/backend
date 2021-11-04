@@ -16,26 +16,30 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang3.time.StopWatch;
+import org.checkerframework.checker.units.qual.A;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import de.undercouch.citeproc.csl.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class CslUtilTest {
 
   @Test
   public void parseVolumeIssuePage() {
-    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(1,2,3)), CslUtil.parseVolumeIssuePage("1(2):3"));
-    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): 3"));
-    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): p.3"));
-    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): pp 3"));
-    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): page 3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null, 1,2,3)), CslUtil.parseVolumeIssuePage("1(2):3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null, 1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): 3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null, 1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): p.3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null, 1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): pp 3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null, 1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): page 3"));
 
-    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(13,null,137)), CslUtil.parseVolumeIssuePage("13 : p 137"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null,13,null,137)), CslUtil.parseVolumeIssuePage("13 : p 137"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage("My great Journal.",13,null,137)), CslUtil.parseVolumeIssuePage("My great Journal. 13 : p 137"));
+    assertEquals(Optional.empty(), CslUtil.parseVolumeIssuePage("My great Journal. (1848)"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage("anything allowed here!+#\"§$%", 1,2,3)), CslUtil.parseVolumeIssuePage("anything allowed here!+#\"§$% 1 (2): p.3"));
   }
 
   @Test
@@ -69,6 +73,11 @@ public class CslUtilTest {
 
     // APA defines 21 authors before et al. <bibliography et-al-min="21"
     assertEquals("Droege, G., Barker, K., Seberg, O., Coddington, J., Benson, E., Berendsohn, W. G., Bunk, B., Butler, C., Cawsey, E. M., Deck, J., Döring, M., Flemons, P., Gemeinholzer, B., Güntsch, A., Hollowell, T., Kelbert, P., Kostadinov, I., Kottmann, R., Lawlor, R. T., et al. (2016). The Global Genome Biodiversity Network (GGBN) Data Standard specification. Database, 2016, baw125. https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(refs.get(0)));
+
+    // no csl data but the id should not return anything
+    CslData data = new CslData();
+    data.setId("1234");
+    assertNull(CslUtil.buildCitation(data));
   }
   
   @Test

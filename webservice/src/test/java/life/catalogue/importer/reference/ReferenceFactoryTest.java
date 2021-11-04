@@ -4,6 +4,7 @@ import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.neo.ReferenceMapStore;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class ReferenceFactoryTest {
   
   @Test
   public void citation() {
-    assertEquals("M.Döring. Guess what? (2001).", rf.buildCitation("M.Döring", "2001", "Guess what?", null, null));
+    assertEquals("M.Döring. Guess what? (2001).", rf.buildCitation("M.Döring", "2001", "Guess what?", null));
   }
 
   @Test
@@ -39,7 +40,7 @@ public class ReferenceFactoryTest {
     Reference r = rf.fromACEF("referenceID", "authors", "1920", "title", "details", issues);
     assertEquals("referenceID", r.getId());
     assertEquals(1920, (int) r.getYear());
-    assertEquals("authors. title. details. (1920).", r.getCitation());
+    assertEquals("authors. (1920). title. Details.", r.getCitation());
     assertEquals("authors", r.getCsl().getAuthor()[0].getFamily());
     assertEquals("title", r.getCsl().getTitle());
     assertEquals("details", r.getCsl().getContainerTitle());
@@ -47,28 +48,20 @@ public class ReferenceFactoryTest {
   
   @Test
   public void fromColDP() {
-    Reference r = rf.fromColDP("referenceID",
-      "my full citation to be ignored",
-      null,
-      "authors",
-      null,
-      "title",
-      null,
-      "source",
-      "1920",
-      null,
-      null,
-      null,
-      "7",
-      "31",
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      doi, link, "nonsense", issues);
+    VerbatimRecord v = new VerbatimRecord();
+    v.getTerms().put(ColdpTerm.ID, "referenceID");
+    v.getTerms().put(ColdpTerm.citation, "my full citation to be ignored");
+    v.getTerms().put(ColdpTerm.author, "authors");
+    v.getTerms().put(ColdpTerm.title, "title");
+    v.getTerms().put(ColdpTerm.containerTitle, "source");
+    v.getTerms().put(ColdpTerm.issued, "1920");
+    v.getTerms().put(ColdpTerm.volume, "7");
+    v.getTerms().put(ColdpTerm.issue, "31");
+    v.getTerms().put(ColdpTerm.doi, doi);
+    v.getTerms().put(ColdpTerm.link, link);
+    v.getTerms().put(ColdpTerm.remarks, "nonsense");
+
+    Reference r = rf.fromColDP(v);
     assertEquals("referenceID", r.getId());
     assertEquals(1920, (int) r.getYear());
     assertEquals("authors", r.getCsl().getAuthor()[0].getFamily());
@@ -77,7 +70,7 @@ public class ReferenceFactoryTest {
     assertEquals("nonsense", r.getRemarks());
     assertEquals(doi, r.getCsl().getDOI());
     assertEquals(link, r.getCsl().getURL());
-    assertEquals("authors. title. source. 7:31 (1920).", r.getCitation());
+    assertEquals("authors. (1920). title. Source, 7(31). https://doi.org/10.1126/science.169.3946.635", r.getCitation());
   }
   
   @Test
@@ -174,7 +167,7 @@ public class ReferenceFactoryTest {
   public void fromDWC() {
     Reference r = rf.fromDWC("12345", "Dingle Doodle da", "1888", issues);
     assertEquals("12345", r.getId());
-    assertEquals("Dingle Doodle da. (1888).", r.getCitation());
+    assertEquals("Dingle Doodle da (1888)", r.getCitation());
     assertEquals(1888, (int) r.getYear());
     assertNull(r.getCsl());
   }

@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jbibtex.BibTeXEntry;
 import org.jbibtex.BibTeXFormatter;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ public class CslUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CslUtil.class);
   private final static CslFormatter apaHtml = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.HTML);
   private final static CslFormatter apaText = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT);
-  private final static Pattern VOLUME_ISSUE_PAGE = Pattern.compile("(\\d+)\\s*(?:\\(\\s*(\\d+)\\s*\\))?\\s*(?::\\s*(?:(?:p|pp|page)\\.?\\s*)?(\\d+))?");
+  private final static Pattern VOLUME_ISSUE_PAGE = Pattern.compile("^(.*?)\\s*(\\d+)\\s*(?:\\(\\s*(\\d+)\\s*\\))?\\s*(?::\\s*(?:(?:p|pp|page)\\.?\\s*)?(\\d+))?\\s*$");
 
   /**
    * WARNING!
@@ -103,7 +104,7 @@ public class CslUtil {
     if (volIssuePage != null) {
       Matcher m = VOLUME_ISSUE_PAGE.matcher(volIssuePage);
       if (m.find()) {
-        return Optional.of(new VolumeIssuePage(toInt(m, 1), toInt(m, 2), toInt(m, 3)));
+        return Optional.of(new VolumeIssuePage(m.group(1), toInt(m, 2), toInt(m, 3), toInt(m, 4)));
       }
     }
     return Optional.empty();
@@ -117,14 +118,20 @@ public class CslUtil {
   }
 
   public static class VolumeIssuePage {
+    public final String beginning;
     public final Integer volume;
     public final Integer issue;
     public final Integer page;
 
-    public VolumeIssuePage(Integer volume, Integer issue, Integer page) {
+    public VolumeIssuePage(String beginning, Integer volume, Integer issue, Integer page) {
+      this.beginning = StringUtils.trimToNull(beginning);
       this.volume = volume;
       this.issue = issue;
       this.page = page;
+    }
+
+    public boolean hasBeginning() {
+      return beginning != null;
     }
 
     @Override
@@ -132,12 +139,15 @@ public class CslUtil {
       if (this == o) return true;
       if (!(o instanceof VolumeIssuePage)) return false;
       VolumeIssuePage that = (VolumeIssuePage) o;
-      return Objects.equals(volume, that.volume) && Objects.equals(issue, that.issue) && Objects.equals(page, that.page);
+      return Objects.equals(beginning, that.beginning)
+             && Objects.equals(volume, that.volume)
+             && Objects.equals(issue, that.issue)
+             && Objects.equals(page, that.page);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(volume, issue, page);
+      return Objects.hash(beginning, volume, issue, page);
     }
   }
 }

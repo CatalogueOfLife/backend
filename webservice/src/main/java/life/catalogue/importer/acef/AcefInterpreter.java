@@ -98,14 +98,14 @@ public class AcefInterpreter extends InterpreterBase {
 
       if (!synonym) {
         // taxon
-        Taxon t = u.getTaxon();
+        Taxon t = u.asTaxon();
         t.setScrutinizer(v.get(AcefTerm.LTSSpecialist));
         t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, AcefTerm.LTSDate));
         t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, AcefTerm.IsExtinct));
         setEnvironment(t, v, AcefTerm.LifeZone);
       }
       // for both synonyms and taxa
-      u.usage.setLink(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
+      u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
       u.usage.setRemarks(v.get(AcefTerm.AdditionalData));
       // flat classification for any usage
       u.classification = interpretClassification(v, synonym);

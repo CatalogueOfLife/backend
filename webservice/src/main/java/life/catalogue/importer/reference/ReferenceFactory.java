@@ -6,6 +6,7 @@ import com.google.common.base.Splitter;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
@@ -105,15 +106,22 @@ public class ReferenceFactory {
    */
   public static Reference fromACEF(int datasetKey, String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
     CslData csl = new CslData();
+    csl.setId(referenceID);
     csl.setAuthor(parseAuthors(authors, issues));
     csl.setTitle(title);
     csl.setIssued(ReferenceFactory.toCslDate(year));
     csl.setContainerTitle(details);
     if (!StringUtils.isBlank(details)) {
       // details can include any of the following and probably more: volume, edition, series, page, publisher
-      // try to parse out volume and pages ???
-      csl.setPage(details);
-      issues.addIssue(Issue.CITATION_DETAILS_UNPARSED);
+      // try to parse out volume, issues and pages
+      CslUtil.parseVolumeIssuePage(details).ifPresentOrElse(vip -> {
+        csl.setContainerTitle(vip.beginning);
+        csl.setVolume(ObjectUtils.toString(vip.volume));
+        csl.setIssue(ObjectUtils.toString(vip.issue));
+        csl.setPage(ObjectUtils.toString(vip.page));
+      }, () -> {
+        issues.addIssue(Issue.CITATION_DETAILS_UNPARSED);
+      });
     }
     return fromCsl(datasetKey, csl);
   }
@@ -122,56 +130,35 @@ public class ReferenceFactory {
     return fromACEF(datasetKey, referenceID, authors, year, title, details, issues);
   }
   
-  public Reference fromColDP(String id,
-                             String citation,
-                             String type,
-                             String author,
-                             String editor,
-                             String title,
-                             String containerAuthor,
-                             String containerTitle,
-                             String issued,
-                             String accessed,
-                             String collectionTitle,
-                             String collectionEditor,
-                             String volume,
-                             String issue,
-                             String edition,
-                             String page,
-                             String publisher,
-                             String publisherPlace,
-                             String version,
-                             String isbn,
-                             String issn,
-                             String doi,
-                             String link,
-                             String remarks,
-                             IssueContainer issues) {
-
+  public Reference fromColDP(VerbatimRecord v) {
     CslData csl = new CslData();
-    //TODO: citation & type
-    csl.setAuthor(parseAuthors(author, issues));
-    csl.setEditor(parseAuthors(editor, issues));
-    csl.setTitle(title);
-    csl.setContainerAuthor(parseAuthors(containerAuthor, issues));
-    csl.setContainerTitle(containerTitle);
-    csl.setIssued(ReferenceFactory.toCslDate(issued));
-    csl.setAccessed(ReferenceFactory.toCslDate(accessed));
-    csl.setCollectionTitle(collectionTitle);
-    csl.setCollectionEditor(parseAuthors(collectionEditor, issues));
-    csl.setVolume(volume);
-    csl.setIssue(issue);
-    csl.setEdition(edition);
-    csl.setPage(page);
-    csl.setPublisher(publisher);
-    csl.setPublisherPlace(publisherPlace);
-    csl.setVersion(version);
-    csl.setISBN(isbn);
-    csl.setISSN(issn);
-    csl.setDOI(doi);
-    csl.setURL(link);
+    //TODO: type
+    csl.setId(v.get(ColdpTerm.ID));
+    csl.setAuthor(parseAuthors(v.get(ColdpTerm.author), v));
+    csl.setEditor(parseAuthors(v.get(ColdpTerm.editor), v));
+    csl.setTitle(v.get(ColdpTerm.title));
+    csl.setContainerAuthor(parseAuthors(v.get(ColdpTerm.containerAuthor), v));
+    csl.setContainerTitle(v.get(ColdpTerm.containerTitle));
+    csl.setIssued(ReferenceFactory.toCslDate(v.get(ColdpTerm.issued)));
+    csl.setAccessed(ReferenceFactory.toCslDate(v.get(ColdpTerm.accessed)));
+    csl.setCollectionTitle(v.get(ColdpTerm.collectionTitle));
+    csl.setCollectionEditor(parseAuthors(v.get(ColdpTerm.collectionEditor), v));
+    csl.setVolume(v.get(ColdpTerm.volume));
+    csl.setIssue(v.get(ColdpTerm.issue));
+    csl.setEdition(v.get(ColdpTerm.edition));
+    csl.setPage(v.get(ColdpTerm.page));
+    csl.setPublisher(v.get(ColdpTerm.publisher));
+    csl.setPublisherPlace(v.get(ColdpTerm.publisherPlace));
+    csl.setVersion(v.get(ColdpTerm.version));
+    csl.setISBN(v.get(ColdpTerm.isbn));
+    csl.setISSN(v.get(ColdpTerm.issn));
+    csl.setDOI(v.get(ColdpTerm.doi));
+    csl.setURL(v.get(ColdpTerm.link));
     var ref = fromCsl(datasetKey, csl);
-    ref.setRemarks(remarks);
+    ref.setRemarks(v.get(ColdpTerm.remarks));
+    if (v.hasTerm(ColdpTerm.citation) && ref.getCitation() == null) {
+      ref.setCitation(v.get(ColdpTerm.citation));
+    }
     return ref;
   }
 
@@ -221,7 +208,7 @@ public class ReferenceFactory {
       ref.setYear(parseYear(date));
       if (hasContent(creator, date, title, source)) {
         if (ref.getCitation() == null) {
-          ref.setCitation(buildCitation(creator, date, title, source, null));
+          ref.setCitation(buildCitation(creator, date, title, source));
         }
         CslData csl = new CslData();
         ref.setCsl(csl);
@@ -249,7 +236,7 @@ public class ReferenceFactory {
   public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear, IssueContainer issues) {
     String citation = publishedIn;
     if (publishedIn != null && publishedInYear != null && !publishedIn.contains(publishedInYear)) {
-      citation = buildCitation(null, publishedInYear, publishedIn, null, null);
+      citation = String.format("%s (%s)", publishedIn, publishedInYear);
     }
     Reference ref = find(publishedInID, citation);
     if (ref == null) {
@@ -432,8 +419,7 @@ public class ReferenceFactory {
   protected static String buildCitation(@Nullable String authors,
                                         @Nullable String year,
                                         @Nullable String title,
-                                        @Nullable String container,
-                                        @Nullable String details) {
+                                        @Nullable String container) {
     StringBuilder sb = new StringBuilder();
     if (!StringUtils.isEmpty(authors)) {
       sb.append(authors.trim());
@@ -450,11 +436,6 @@ public class ReferenceFactory {
       appendSpaceIfContent(sb);
       sb.append(container.trim());
       appendDotIfMissing(sb);
-    }
-  
-    if (!StringUtils.isEmpty(details)) {
-      appendSpaceIfContent(sb);
-      sb.append(details.trim());
     }
 
     if (!StringUtils.isEmpty(year)) {

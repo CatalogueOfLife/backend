@@ -46,34 +46,7 @@ public class ColdpInterpreter extends InterpreterBase {
     if (!v.hasTerm(ColdpTerm.ID)) {
       return Optional.empty();
     }
-
-    return Optional.of(refFactory.fromColDP(
-      v.get(ColdpTerm.ID),
-      v.get(ColdpTerm.citation),
-      v.get(ColdpTerm.type),
-      v.get(ColdpTerm.author),
-      v.get(ColdpTerm.editor),
-      v.get(ColdpTerm.title),
-      v.get(ColdpTerm.containerAuthor),
-      v.get(ColdpTerm.containerTitle),
-      v.get(ColdpTerm.issued),
-      v.get(ColdpTerm.accessed),
-      v.get(ColdpTerm.collectionTitle),
-      v.get(ColdpTerm.collectionEditor),
-      v.get(ColdpTerm.volume),
-      v.get(ColdpTerm.issue),
-      v.get(ColdpTerm.edition),
-      v.get(ColdpTerm.page),
-      v.get(ColdpTerm.publisher),
-      v.get(ColdpTerm.publisherPlace),
-      v.get(ColdpTerm.version),
-      v.get(ColdpTerm.isbn),
-      v.get(ColdpTerm.issn),
-      v.get(ColdpTerm.doi),
-      v.get(ColdpTerm.link),
-      v.get(ColdpTerm.remarks),
-      v
-    ));
+    return Optional.of(refFactory.fromColDP(v));
   }
 
   Optional<NeoUsage> interpretNameUsage(VerbatimRecord v) {
@@ -118,7 +91,7 @@ public class ColdpInterpreter extends InterpreterBase {
 
   private void interpretTaxonInfos(NeoUsage u, NeoName n, VerbatimRecord v){
     if (!u.isSynonym()) {
-      Taxon t = u.getTaxon();
+      Taxon t = u.asTaxon();
       t.setScrutinizer(v.get(ColdpTerm.scrutinizer));
       t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, ColdpTerm.scrutinizerDate));
       if (v.hasTerm(ColdpTerm.extinct)) {

@@ -168,7 +168,7 @@ abstract class NormalizerITBase {
     return store.getVerbatim(store.usages().objByID(id).getVerbatimKey());
   }
 
-  public Reference accordingTo(NameUsageBase nu) {
+  public Reference accordingTo(NameUsage nu) {
     if (nu.getAccordingToId() != null) {
       return store.references().get(nu.getAccordingToId());
     }

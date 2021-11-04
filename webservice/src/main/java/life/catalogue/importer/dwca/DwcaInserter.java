@@ -87,7 +87,9 @@ public class DwcaInserter extends NeoCsvInserter {
         DwcaTerm.ID,
         (t, r) -> {
           if (store.references().create(r)) {
-            t.usage.getReferenceIds().add(r.getId());
+            if (t.isNameUsageBase()) {
+              t.asNameUsageBase().getReferenceIds().add(r.getId());
+            }
           } else {
 
           }

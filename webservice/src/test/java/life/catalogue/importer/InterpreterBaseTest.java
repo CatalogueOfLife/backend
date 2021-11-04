@@ -242,7 +242,7 @@ public class InterpreterBaseTest {
     NeoUsage u = ib.interpretUsage(pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, ColdpTerm.ID);
 
     assertTrue(u.usage.isTaxon());
-    Taxon t = u.getTaxon();
+    Taxon t = u.asTaxon();
 
     assertTrue(t.isExtinct());
     assertNull(t.getNamePhrase());

@@ -1,16 +1,18 @@
 package life.catalogue.parser;
 
-import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.Language;
-import org.apache.commons.lang3.StringUtils;
-import org.gbif.utils.file.csv.CSVReader;
-import org.gbif.utils.file.csv.CSVReaderFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import life.catalogue.common.io.TabReader;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
 
 /**
  * Parser for languages that turns native or english names and iso 639 2 or 3 letter codes into 3 letter codes.
@@ -37,12 +39,11 @@ public class LanguageParser extends ParserBase<Language> {
   }
   
   private void addMapping(InputStream stream, int isoCol, Integer forceCol, int... valCols) throws IOException {
-    try (CSVReader reader = CSVReaderFactory.build(stream, "UTF8", "\t", null, 1)) {
-      while (reader.hasNext()) {
-        String[] row = reader.next();
+    try (TabReader reader = TabReader.tab(stream, StandardCharsets.UTF_8, 1, 2)) {
+      for (String[] row : reader) {
         if (row.length == 0) continue;
         if (row.length < isoCol) {
-          LOG.info("Ignore invalid language mapping, line {} with only {} columns", reader.currLineNumber(), row.length);
+          LOG.info("Ignore invalid language mapping, line {} with only {} columns", reader.getContext().currentLine(), row.length);
           continue;
         }
   
@@ -56,6 +57,8 @@ public class LanguageParser extends ParserBase<Language> {
           }
         }
       }
+    } catch (IOException e) {
+
     }
   }
   

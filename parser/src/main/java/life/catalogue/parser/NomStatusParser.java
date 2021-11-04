@@ -1,15 +1,14 @@
 package life.catalogue.parser;
 
-import com.google.common.base.Enums;
-import com.google.common.base.Optional;
 import life.catalogue.api.vocab.NomStatus;
-import org.gbif.utils.file.csv.CSVReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import life.catalogue.common.io.TabReader;
 
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.base.Enums;
+import com.google.common.base.Optional;
 
 /**
  *
@@ -19,11 +18,8 @@ public class NomStatusParser extends EnumParser<NomStatus> {
   
   public NomStatusParser() {
     super("nomstatus.csv", NomStatus.class);
-  
-    try {
-      CSVReader reader = dictReader("nomstatus-suffices.csv");
-      while (reader.hasNext()) {
-        String[] row = reader.next();
+    try (TabReader reader = dictReader("nomstatus-suffices.csv")) {
+      for (String[] row : reader) {
         if (row.length == 0) continue;
         if (row.length != 2) {
           throw new IllegalStateException("Bad nomstatus-suffices.csv file");
@@ -40,8 +36,6 @@ public class NomStatusParser extends EnumParser<NomStatus> {
           throw new IllegalStateException("Bad nomstatus-suffices.csv enum value " + row[0]);
         }
       }
-      reader.close();
-
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }

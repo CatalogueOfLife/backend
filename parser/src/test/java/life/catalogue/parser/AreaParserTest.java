@@ -6,9 +6,6 @@ import org.junit.Test;
 
 import java.util.List;
 
-/**
- *
- */
 public class AreaParserTest extends ParserTestBase<AreaParser.Area> {
   
   public AreaParserTest() {

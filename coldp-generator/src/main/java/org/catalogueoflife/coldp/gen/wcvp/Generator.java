@@ -9,15 +9,14 @@ import life.catalogue.common.io.CompressionUtil;
 import java.io.File;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
+
+import life.catalogue.common.io.TabReader;
 
 import org.apache.commons.lang3.StringUtils;
 import org.catalogueoflife.coldp.gen.AbstractGenerator;
 import org.catalogueoflife.coldp.gen.GeneratorConfig;
-import org.catalogueoflife.coldp.gen.TabReader;
 
 public class Generator extends AbstractGenerator {
   private static final URI DOWNLOAD = URI.create("https://storage.googleapis.com/kew-dev-backup/world_checklist_names_and_distribution_feb_21.zip");

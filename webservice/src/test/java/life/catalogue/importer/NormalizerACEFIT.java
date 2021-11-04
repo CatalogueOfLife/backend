@@ -60,14 +60,14 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertTrue(t.classification.isEmpty());
       assertEquals(0, t.vernacularNames.size());
       assertEquals(0, t.distributions.size());
-      assertEquals(1, t.usage.getReferenceIds().size());
+      assertEquals(1, t.asNameUsageBase().getReferenceIds().size());
       
       NeoUsage acc = accepted(t.node);
       assertEquals(1, acc.vernacularNames.size());
       assertEquals(2, acc.distributions.size());
       assertNull(acc.treatment);
       assertEquals(0, acc.media.size());
-      assertEquals(1, acc.usage.getReferenceIds().size());
+      assertEquals(1, acc.asNameUsageBase().getReferenceIds().size());
       
       VernacularName v = acc.vernacularNames.get(0);
       assertEquals("Beer bean", v.getName());
@@ -147,9 +147,9 @@ public class NormalizerACEFIT extends NormalizerITBase {
       int counter = 0;
       for (Node sn : Traversals.SYNONYMS.traverse(t.node).nodes()) {
         NeoUsage s = store.usageWithName(sn);
-        assertTrue(s.getSynonym().getStatus().isSynonym());
+        assertTrue(s.asSynonym().getStatus().isSynonym());
         if (nonMisappliedIds.remove(s.getId())) {
-          assertEquals(TaxonomicStatus.SYNONYM, s.getSynonym().getStatus());
+          assertEquals(TaxonomicStatus.SYNONYM, s.asSynonym().getStatus());
           assertFalse(hasIssues(s, Issue.DERIVED_TAXONOMIC_STATUS));
         } else {
           counter++;

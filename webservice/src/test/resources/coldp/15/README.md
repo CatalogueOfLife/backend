@@ -1,0 +1,1 @@
+Testing NameUsage imports with bare names

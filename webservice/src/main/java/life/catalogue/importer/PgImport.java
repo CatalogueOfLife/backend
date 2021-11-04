@@ -68,11 +68,11 @@ public class PgImport implements Callable<Boolean> {
   private final Validator validator;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private LoadingCache<Integer, Set<Issue>> verbatimIssueCache;
-  private LoadingCache<String, String> citationCache;
   private final Set<String> proParteIds = new HashSet<>();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
   private final AtomicInteger sCounter = new AtomicInteger(0);
+  private final AtomicInteger bnCounter = new AtomicInteger(0);
   private final AtomicInteger rCounter = new AtomicInteger(0);
   private final AtomicInteger diCounter = new AtomicInteger(0);
   private final AtomicInteger trCounter = new AtomicInteger(0);
@@ -95,12 +95,6 @@ public class PgImport implements Callable<Boolean> {
     verbatimIssueCache = Caffeine.newBuilder()
       .maximumSize(10000)
       .build(key -> store.getVerbatim(key).getIssues());
-    citationCache = Caffeine.newBuilder()
-      .maximumSize(10000)
-      .build(key -> {
-        Reference r = store.references().get(key);
-        return r == null ? null : r.getCitation();
-      });
   }
   
   @Override
@@ -302,7 +296,7 @@ public class PgImport implements Callable<Boolean> {
   
   
   /**
-   * Inserts all names, collecting all homotypic name keys for later updates if they havent been inserted already.
+   * Inserts all names, collecting all homotypic name keys for later updates if they haven't been inserted already.
    */
   private void insertNames() {
     try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
@@ -365,7 +359,7 @@ public class PgImport implements Callable<Boolean> {
   }
 
   /**
-   * insert taxa/synonyms with all the rest.
+   * insert taxa/synonyms with all the rest. Skips bare name usages.
    * This also indexes usages into the ES search index!
    */
   private void insertUsages() throws InterruptedException {
@@ -386,7 +380,7 @@ public class PgImport implements Callable<Boolean> {
       }
 
       try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
-        LOG.info("Inserting remaining names and all taxa");
+        LOG.info("Inserting all taxa & synonyms");
         TreatmentMapper treatmentMapper = session.getMapper(TreatmentMapper.class);
         DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
         EstimateMapper estimateMapper = session.getMapper(EstimateMapper.class);
@@ -398,7 +392,6 @@ public class PgImport implements Callable<Boolean> {
         // iterate over taxonomic tree in depth first order, keeping postgres parent keys
         // pro parte synonyms will be visited multiple times, remember their name ids!
         TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
-          int counter = 0;
           Stack<SimpleName> parents = new Stack<>();
           Stack<Node> parentsN = new Stack<>();
 
@@ -419,13 +412,13 @@ public class PgImport implements Callable<Boolean> {
                   proParteIds.add(u.getId());
                 }
               }
-              synMapper.create(u.getSynonym());
+              synMapper.create(u.asSynonym());
               sCounter.incrementAndGet();
 
-            } else {
-              taxonMapper.create(updateUser(u.getTaxon()));
+            } else if (u.isTaxon()){
+              taxonMapper.create(updateUser(u.asTaxon()));
               tCounter.incrementAndGet();
-              Taxon acc = u.getTaxon();
+              Taxon acc = u.asTaxon();
 
               // push new postgres key onto stack for this taxon as we traverse in depth first
               // ES indexes only id,rank & name
@@ -473,13 +466,16 @@ public class PgImport implements Callable<Boolean> {
                 eCounter.incrementAndGet();
               }
 
+            } else {
+              // a bare name - we only index them into ES
+              bnCounter.incrementAndGet();
             }
 
             // commit in batches
-            if (counter++ % batchSize == 0) {
+            if ((sCounter.get() + tCounter.get()) % batchSize == 0) {
               interruptIfCancelled();
               session.commit();
-              LOG.info("Inserted {} names and taxa", counter);
+              LOG.info("Inserted {} taxa, {} synonyms & {} bare names", tCounter.get(), sCounter.get(), bnCounter.get());
             }
 
             // index into ES
@@ -489,7 +485,7 @@ public class PgImport implements Callable<Boolean> {
             nuw.setIssues(mergeIssues(vKeys));
             if (u.usage.isSynonym()) {
               NeoUsage acc = fillNeoUsage(parentsN.peek(), parents.peek(), null);
-              ((Synonym)u.usage).setAccepted(acc.getTaxon());
+              ((Synonym)u.usage).setAccepted(acc.asTaxon());
               nuw.getClassification().add(new SimpleName(u.usage.getId(), u.usage.getName().getScientificName(), u.usage.getName().getRank()));
             }
             nuw.setDecisions(decisions.get(u.getId()));
@@ -550,22 +546,23 @@ public class PgImport implements Callable<Boolean> {
     NeoName nn = updateNeoName(store.getUsageNameNode(n), vKeys);
 
     updateVerbatimEntity(u, vKeys);
-    NameUsageBase nu = u.usage;
+    NameUsage nu = u.usage;
     nu.setName(nn.getName());
     nu.setDatasetKey(dataset.getKey());
     if (nu.getAccordingToId() != null) {
-      String sec = citationCache.get(nu.getAccordingToId());
-      nu.setAccordingTo(sec);
       updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
     }
-    updateReferenceKey(nu.getReferenceIds());
-    updateUser(nu);
-    if (parent != null) {
-      nu.setParentId(parent.getId());
-    } else if (u.isSynonym()) {
-      throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.getName().getScientificName());
-    } else if (!n.hasLabel(Labels.ROOT)) {
-      throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.getName().getScientificName());
+    if (nu instanceof NameUsageBase) {
+      NameUsageBase nub = (NameUsageBase)nu;
+      updateReferenceKey(nub.getReferenceIds());
+      updateUser(nub);
+      if (parent != null) {
+        nub.setParentId(parent.getId());
+      } else if (u.isSynonym()) {
+        throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.getName().getScientificName());
+      } else if (!n.hasLabel(Labels.ROOT)) {
+        throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.getName().getScientificName());
+      }
     }
     return u;
   }

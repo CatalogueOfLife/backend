@@ -41,7 +41,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       NeoUsage t = usageByID("1099-sp16");
       assertFalse(t.isSynonym());
       assertEquals("Pinus palustris Mill.", t.usage.getName().getLabel());
-      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.getTaxon().getLink());
+      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.asTaxon().getLink());
     }
   }
   
@@ -63,13 +63,13 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
       NeoUsage Polystictus_substipitatus = usageByID("140283");
       assertTrue(Polystictus_substipitatus.isSynonym());
-      assertTrue(Polystictus_substipitatus.getSynonym().getStatus().isSynonym());
+      assertTrue(Polystictus_substipitatus.asSynonym().getStatus().isSynonym());
       pubIn = store.references().get(Polystictus_substipitatus.usage.getName().getPublishedInId());
       assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCitation());
 
       NeoUsage Polyporus_modestus = usageByID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
-      assertTrue(Polyporus_modestus.getSynonym().getStatus().isSynonym());
+      assertTrue(Polyporus_modestus.asSynonym().getStatus().isSynonym());
       pubIn = store.references().get(Polyporus_modestus.usage.getName().getPublishedInId());
       assertEquals("Linnaea 5: 519 (1830)", pubIn.getCitation());
     }
@@ -211,7 +211,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertEquals(u2.usage.getName().getHomotypicNameId(), bas.usage.getName().getHomotypicNameId());
 
       NeoUsage syn = byName("Leontodon leysseri");
-      assertTrue(syn.getSynonym().getStatus().isSynonym());
+      assertTrue(syn.asSynonym().getStatus().isSynonym());
     }
   }
 
@@ -221,7 +221,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage syn = usageByID("1001");
-      assertNotNull(syn.getSynonym());
+      assertNotNull(syn.asSynonym());
 
       Map<String, String> expectedAccepted = Maps.newHashMap();
       expectedAccepted.put("1000", "Calendula arvensis");

@@ -1,14 +1,8 @@
 package life.catalogue.parser;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Enums;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Gazetteer;
-import org.gbif.utils.file.csv.CSVReader;
-import org.gbif.utils.file.csv.CSVReaderFactory;
+import life.catalogue.common.io.TabReader;
 
 import java.io.IOException;
 import java.util.Map;
@@ -17,11 +11,22 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Enums;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
 /**
  * A parser that tries to extract complex area information (actual area id with gazatteer its based on )
  * from a simple location string.
  */
-public class AreaParser implements Parser<AreaParser.Area> {
+public class AreaParser extends ParserBase<AreaParser.Area> {
+  private static final Logger LOG = LoggerFactory.getLogger(AreaParser.class);
+  private static final String RESOURCE = "gazetteer.csv";
   public static final AreaParser PARSER = new AreaParser();
   private final Map<String, Gazetteer> gazetteerLookup;
   // subregions can be of max 3 chars
@@ -30,12 +35,12 @@ public class AreaParser implements Parser<AreaParser.Area> {
   private final Pattern FISHING = Pattern.compile("^[0-9]{1,2}(\\.([1-9]{1,2}|[a-z])){0,4}$", Pattern.CASE_INSENSITIVE);
 
   public AreaParser() {
+    super(AreaParser.Area.class);
     Map<String, Gazetteer> gaz = Maps.newHashMap();
     // load resources
-    try {
-      CSVReader reader = CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/gazetteer.csv"), "UTF8", ",", null, 0);
-      while (reader.hasNext()) {
-        String[] row = reader.next();
+    LOG.info("Reading gazetteers from {}", RESOURCE);
+    try (TabReader reader = dictReader(RESOURCE)){
+      for (String[] row : reader) {
         if (row.length == 2 && !Strings.isNullOrEmpty(row[1])) {
           com.google.common.base.Optional<Gazetteer> g = Enums.getIfPresent(Gazetteer.class, row[1]);
           if (g.isPresent()) {
@@ -70,6 +75,11 @@ public class AreaParser implements Parser<AreaParser.Area> {
         throw new UnparsableException("Invalid area code missing a gazetteer prefix");
       }
     }
+  }
+
+  @Override
+  Area parseKnownValues(String upperCaseValue) throws UnparsableException {
+    throw new UnsupportedOperationException();
   }
 
   /**

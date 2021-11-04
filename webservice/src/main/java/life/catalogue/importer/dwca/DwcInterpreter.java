@@ -42,7 +42,9 @@ public class DwcInterpreter extends InterpreterBase {
     // name
     return interpretName(v).map(pnu -> {
       NeoUsage u = interpretUsage(pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcaTerm.ID);
-      u.usage.setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
+      if (u.isNameUsageBase()) {
+        u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
+      }
       u.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
       // explicit accordingTo & namePhrase - the authorship could already have set these properties!
       if (v.hasTerm(DwcTerm.nameAccordingTo)) {
@@ -151,7 +153,7 @@ public class DwcInterpreter extends InterpreterBase {
 
   private void interpretTaxon(NeoUsage u, VerbatimRecord v) {
     if (!u.isSynonym()) {
-      Taxon tax = u.getTaxon();
+      Taxon tax = u.asTaxon();
       tax.setExtinct(null);
       // TODO: lifezones come through the species profile extension.
     }

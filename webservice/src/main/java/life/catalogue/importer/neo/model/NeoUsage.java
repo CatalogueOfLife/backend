@@ -98,18 +98,34 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
     return new PropLabel(isSynonym() ? SYN_LABELS : TAX_LABELS);
   }
   
-  public Taxon getTaxon() {
+  public Taxon asTaxon() {
     return usage instanceof Taxon ? (Taxon) usage : null;
   }
   
-  public Synonym getSynonym() {
+  public Synonym asSynonym() {
     return usage instanceof Synonym ? (Synonym) usage : null;
   }
-  
+
+  public NameUsageBase asNameUsageBase() {
+    return usage instanceof NameUsageBase ? (NameUsageBase) usage : null;
+  }
+
+  public boolean isNameUsageBase() {
+    return usage instanceof NameUsageBase;
+  }
+
   public boolean isSynonym() {
     return usage instanceof Synonym;
   }
-  
+
+  public boolean isTaxon() {
+    return usage instanceof Taxon;
+  }
+
+  public boolean isBareName() {
+    return usage instanceof BareName;
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return usage.getVerbatimKey();
@@ -152,7 +168,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   public Synonym convertToTaxon(TaxonomicStatus status) {
     Preconditions.checkArgument(isSynonym(), "Usage needs to be a synonym");
     Preconditions.checkArgument(status.isTaxon(), "Status needs to be a taxon status");
-    final Synonym s = getSynonym();
+    final Synonym s = asSynonym();
     usage = new Taxon(s);
     usage.setStatus(status);
     return s;
@@ -166,7 +182,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   public Taxon convertToSynonym(TaxonomicStatus status) {
     Preconditions.checkArgument(!isSynonym(), "Usage needs to be a taxon");
     Preconditions.checkArgument(status.isSynonym(), "Status needs to be a synonym status");
-    final Taxon t = getTaxon();
+    final Taxon t = asTaxon();
     usage = new Synonym(t);
     usage.setStatus(status);
     return t;

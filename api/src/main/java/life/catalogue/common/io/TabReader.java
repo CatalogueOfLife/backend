@@ -1,4 +1,15 @@
-package org.catalogueoflife.coldp.gen;
+package life.catalogue.common.io;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+
+import com.google.common.io.Closeables;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
@@ -6,32 +17,38 @@ import com.univocity.parsers.common.ResultIterator;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.nio.charset.Charset;
-
-public class TabReader implements IterableResult<String[], ParsingContext> {
+public class TabReader implements IterableResult<String[], ParsingContext>, AutoCloseable {
   protected static Logger LOG = LoggerFactory.getLogger(TabReader.class);
 
-  public static TabReader csv(File file, Charset charset, int skip) {
+  public static TabReader csv(File file, Charset charset, int skip) throws IOException  {
     return csv(file, charset, skip, Integer.MAX_VALUE);
   }
 
-  public static TabReader csv(File file, Charset charset, int skip, int minColumns) {
+  public static TabReader csv(File file, Charset charset, int skip, int minColumns) throws IOException  {
     return custom(file, charset, ',', '"', skip, minColumns);
   }
 
-  public static TabReader tab(File file, Charset charset, int skip) {
+  public static TabReader csv(InputStream stream, Charset charset, int skip, int minColumns) throws IOException  {
+    return custom(stream, charset, ',', '"', skip, minColumns);
+  }
+
+  public static TabReader tab(File file, Charset charset, int skip) throws IOException  {
     return tab(file, charset, skip, Integer.MAX_VALUE);
   }
 
-  public static TabReader tab(File file, Charset charset, int skip, int minColumns) {
+  public static TabReader tab(File file, Charset charset, int skip, int minColumns) throws IOException {
     return custom(file, charset, '\t', '"', skip, minColumns);
   }
 
-  public static TabReader custom(File file, Charset charset, char delimiter, char quote, int skip, int minColumns) {
+  public static TabReader tab(InputStream stream, Charset charset, int skip, int minColumns) throws IOException {
+    return custom(stream, charset, '\t', '"', skip, minColumns);
+  }
+
+  public static TabReader custom(File file, Charset charset, char delimiter, char quote, int skip, int minColumns) throws IOException  {
+    return custom(new FileInputStream(file), charset, delimiter, quote, skip, minColumns);
+  }
+
+  public static TabReader custom(InputStream in, Charset charset, char delimiter, char quote, int skip, int minColumns) {
     CsvParserSettings cfg = new CsvParserSettings();
     cfg.getFormat().setDelimiter(delimiter);
     cfg.getFormat().setQuote(quote);
@@ -45,20 +62,20 @@ public class TabReader implements IterableResult<String[], ParsingContext> {
     cfg.setMaxColumns(64);
     cfg.setMaxCharsPerColumn(1024 * cfg.getMaxColumns());
 
-    return new TabReader(new CsvParser(cfg), file, charset, skip, minColumns);
+    return new TabReader(new CsvParser(cfg), in, charset, skip, minColumns);
   }
 
   private final CsvParser parser;
   private final int skip;
   private final int minColumns;
-  private final File file;
+  private final InputStream stream;
   private final Charset charset;
 
-  public TabReader(CsvParser parser, File file, Charset charset, int skip, int minColumns) {
+  public TabReader(CsvParser parser, InputStream stream, Charset charset, int skip, int minColumns) {
     this.parser = parser;
     this.skip = skip;
     this.minColumns = minColumns;
-    this.file = file;
+    this.stream = stream;
     this.charset = charset;
   }
 
@@ -72,11 +89,18 @@ public class TabReader implements IterableResult<String[], ParsingContext> {
     return new RowSkipper();
   }
 
+  @Override
+  public void close() {
+    if (stream != null) {
+      Closeables.closeQuietly(stream);
+    }
+  }
+
   class RowSkipper implements ResultIterator<String[], ParsingContext> {
     private final ResultIterator<String[], ParsingContext> it;
 
     RowSkipper() {
-      it = parser.iterate(file, charset).iterator();
+      it = parser.iterate(stream, charset).iterator();
       if (skip>0) {
         for (int x=0; x<skip; x++) {
           it.next();

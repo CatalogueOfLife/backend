@@ -113,7 +113,7 @@ public class InterpreterBase {
   /**
    * Sets a taxonomic note to usage namePhrase or a proper accordingTo reference if parsable
    */
-  protected void setTaxonomicNote(NameUsageBase u, String taxNote, VerbatimRecord v) {
+  protected void setTaxonomicNote(NameUsage u, String taxNote, VerbatimRecord v) {
     if (!StringUtils.isBlank(taxNote)) {
       v.addIssue(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
       Matcher m = SEC_REF.matcher(taxNote);
@@ -129,7 +129,7 @@ public class InterpreterBase {
     }
   }
 
-  protected void setAccordingTo(NameUsageBase u, String accordingTo, VerbatimRecord v) {
+  protected void setAccordingTo(NameUsage u, String accordingTo, VerbatimRecord v) {
     Reference ref = buildReference(accordingTo, v);
     if (ref != null) {
       if (u.getAccordingToId() != null) {

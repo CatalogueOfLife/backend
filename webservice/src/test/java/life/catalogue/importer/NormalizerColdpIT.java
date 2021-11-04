@@ -260,7 +260,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       t = usageByID("778");
       assertFalse(t.isSynonym());
       assertEquals(TaxonomicStatus.ACCEPTED, t.usage.getStatus());
-      Taxon tt = t.getTaxon();
+      Taxon tt = t.asTaxon();
       assertTrue(tt.isExtinct());
       assertNull(tt.getNamePhrase());
       assertEquals("†Anstenoptilia marmarodactyla Dyar, 1902", tt.getLabel());
@@ -344,9 +344,31 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(12);
 
     printTree();
+  }
 
-    //try (Transaction tx = store.getNeo().beginTx()) {
-    //}
+
+  @Test
+  public void bareNameUsages() throws Exception {
+    normalize(15);
+
+    printTree();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoName nn = nameByID("125");
+      assertEquals("Jupunba bara", nn.getName().getScientificName());
+      assertEquals("L.", nn.getName().getAuthorship());
+
+      var nu = usageByID("125");
+      assertNull(nu);
+
+
+      nn = nameByID("124");
+      assertEquals("Jupunba nuduta", nn.getName().getScientificName());
+      assertEquals("L.", nn.getName().getAuthorship());
+
+      nu = usageByID("124");
+      assertNull(nu);
+    }
   }
 
 }
