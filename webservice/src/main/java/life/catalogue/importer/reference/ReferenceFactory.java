@@ -3,6 +3,9 @@ package life.catalogue.importer.reference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
@@ -11,7 +14,9 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.ReferenceMapStore;
+import life.catalogue.parser.CSLTypeParser;
 import life.catalogue.parser.DateParser;
+import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.UnparsableException;
 import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;
@@ -132,8 +137,9 @@ public class ReferenceFactory {
   
   public Reference fromColDP(VerbatimRecord v) {
     CslData csl = new CslData();
-    //TODO: type
     csl.setId(v.get(ColdpTerm.ID));
+    CSLType type = SafeParser.parse(CSLTypeParser.PARSER, v.get(ColdpTerm.type)).orNull(Issue.UNPARSABLE_REFERENCE_TYPE, v);
+    csl.setType(type);
     csl.setAuthor(parseAuthors(v.get(ColdpTerm.author), v));
     csl.setEditor(parseAuthors(v.get(ColdpTerm.editor), v));
     csl.setTitle(v.get(ColdpTerm.title));
