@@ -297,7 +297,7 @@ public class SectorSyncIT {
     Reference r = ti.getReference(sp.getName().getPublishedInId());
     assertEquals(sp.getDatasetKey(), r.getDatasetKey());
     assertEquals(sp.getSectorKey(), r.getSectorKey());
-    assertEquals("Greuter,W. et al. (Eds.). Med-Checklist Vol.4 (published). (1989).", r.getCitation());
+    assertEquals("Greuter,W. et al. (1989). Med-Checklist Vol.4 (Published).", r.getCitation());
     assertEquals(2, ti.getReferences().size());
 
     final int s1dk = datasetKey(1, DataFormat.ACEF);

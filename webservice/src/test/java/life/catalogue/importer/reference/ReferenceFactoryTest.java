@@ -51,6 +51,15 @@ public class ReferenceFactoryTest {
     assertEquals("authors", r.getCsl().getAuthor()[0].getFamily());
     assertEquals("title", r.getCsl().getTitle());
     assertEquals("details", r.getCsl().getContainerTitle());
+
+    r = rf.fromACEF("1234", "Greuter,W. et al. (Eds.)", "1989", null, "Med-Checklist Vol.4 (published)", issues);
+    assertEquals("1234", r.getId());
+    assertEquals(1989, (int) r.getYear());
+    assertNull(r.getCsl().getAuthor());
+    assertEquals(1, r.getCsl().getEditor().length);
+    assertEquals(new CslName("Greuter,W. et al."), r.getCsl().getEditor()[0]);
+    assertEquals("Med-Checklist Vol.4 (published)", r.getCsl().getContainerTitle());
+    assertEquals("Greuter,W. et al. (1989). Med-Checklist Vol.4 (Published).", r.getCitation());
   }
   
   @Test

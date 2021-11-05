@@ -1,8 +1,14 @@
 package life.catalogue.importer.coldp;
 
+import de.undercouch.citeproc.bibtex.BibTeXConverter;
+
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
@@ -11,14 +17,20 @@ import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
 
+import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.nameparser.api.NomCode;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import org.gbif.nameparser.api.Rank;
 
+import org.jbibtex.BibTeXDatabase;
+import org.jbibtex.BibTeXEntry;
+import org.jbibtex.Key;
+import org.jbibtex.Value;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
@@ -83,6 +95,32 @@ public class ColdpInserterTest extends InserterBaseTest {
       assertNull(n.getUninomial());
       assertEquals(Rank.OTHER, n.getRank());
     }
+  }
+
+
+  @Test
+  public void bibtexConverter() throws Exception {
+    String bibtex = "@BOOK{test,\n"
+                    + "author = {Peter Lustig and others},\n"
+                    + "title = {Ueber das Schreiben von Blindtexten},\n"
+                    + "year = {2007},\n"
+                    + "address = {Berlin}\n"
+                    + "}";
+    InputStream is = new ByteArrayInputStream(bibtex.getBytes());
+    BibTeXConverter bc = new BibTeXConverter();
+    BibTeXDatabase db = bc.loadDatabase(is);
+    bc.toItemData(db).forEach((id, cslItem) -> {
+      CslData csl = CslDataConverter.toCslData(cslItem);
+      assertEquals("test", csl.getId());
+      assertEquals(CSLType.BOOK, csl.getType());
+      assertEquals("Ueber das Schreiben von Blindtexten", csl.getTitle());
+      assertEquals(new CslDate(2007), csl.getIssued());
+      assertEquals("Berlin", csl.getPublisherPlace());
+      assertEquals(2, csl.getAuthor().length);
+      assertEquals(new CslName("Peter", "Lustig"), csl.getAuthor()[0]);
+      assertEquals(new CslName("others"), csl.getAuthor()[1]);
+      System.out.println( CslUtil.buildCitation(csl) );
+    });
   }
 
   @Test

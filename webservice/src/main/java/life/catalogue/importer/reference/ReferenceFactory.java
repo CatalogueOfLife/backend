@@ -40,7 +40,7 @@ import static life.catalogue.common.text.StringUtils.hasContent;
 public class ReferenceFactory {
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceFactory.class);
 
-  private static final Pattern EDS = Pattern.compile("\\b\\(?Eds?\\.\\)?$");
+  private static final Pattern EDS = Pattern.compile("(?:\\b|\\()Eds?\\.\\)?$");
   private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)([12]\\d{3})($|\\D+)");
   private static final CharSet PUNCTUATIONS = CharSet.getInstance(".?!;:,");
   private static final Pattern NORM_WHITESPACE = Pattern.compile("\\s{2,}");
@@ -116,7 +116,7 @@ public class ReferenceFactory {
     if (authors != null) {
       var m = EDS.matcher(authors);
       if (m.find()) {
-        csl.setEditor(parseAuthors(m.replaceFirst(""), issues));
+        csl.setEditor(parseAuthors(m.replaceFirst("").trim(), issues));
       } else {
         csl.setAuthor(parseAuthors(authors, issues));
       }
