@@ -13,7 +13,6 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.ReferenceMapStore;
 import life.catalogue.parser.CSLTypeParser;
 import life.catalogue.parser.DateParser;
 import life.catalogue.parser.SafeParser;
@@ -39,9 +38,9 @@ import static life.catalogue.common.text.StringUtils.hasContent;
  * In the future we can expect dataset specific configuration hints to be added.
  */
 public class ReferenceFactory {
-  
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceFactory.class);
 
+  private static final Pattern EDS = Pattern.compile("\\b\\(?Eds?\\.\\)?$");
   private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)([12]\\d{3})($|\\D+)");
   private static final CharSet PUNCTUATIONS = CharSet.getInstance(".?!;:,");
   private static final Pattern NORM_WHITESPACE = Pattern.compile("\\s{2,}");
@@ -49,9 +48,10 @@ public class ReferenceFactory {
   private static final String initials = "(?:\\p{Lu}(?:\\. ?| ))*";
   // comma separated authors with (initials/firstname) surnames
   private static final Splitter AUTHOR_SPLITTER = Splitter.on(CharMatcher.anyOf(",&")).trimResults();
-  private static final Pattern AUTHOR_PATTERN = Pattern.compile("^("+initials+") *("+ name +")$");
+  private static final Pattern AUTHOR_PATTERN_FN_SN = Pattern.compile("^(" + initials + ") *(" + name + ")$");
+  private static final Pattern AUTHOR_PATTERN_SN_FN = Pattern.compile("^("+name+") +("+ initials +")$");
   // comma separated authors with surname, initials
-  private static final Pattern AUTHOR_PATTERN_SN_FN = Pattern.compile("^(" + name + "), *(" + initials + ")$");
+  private static final Pattern AUTHOR_PATTERN_SN_C_FN = Pattern.compile("^(" + name + "), *(" + initials + ")$");
   // semicolon separated authors with lastname, firstnames
   private static final Splitter AUTHOR_SPLITTER_SEMI = Splitter.on(';').trimResults();
   private static final Pattern AUTHORS_PATTERN_SEMI = Pattern.compile("^("+ name +")(?:, ?("+initials+"|"+name+"))?$");
@@ -112,7 +112,15 @@ public class ReferenceFactory {
   public static Reference fromACEF(int datasetKey, String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
     CslData csl = new CslData();
     csl.setId(referenceID);
-    csl.setAuthor(parseAuthors(authors, issues));
+    // ACEF keeps authors and editors in the same field - try to detect
+    if (authors != null) {
+      var m = EDS.matcher(authors);
+      if (m.find()) {
+        csl.setEditor(parseAuthors(m.replaceFirst(""), issues));
+      } else {
+        csl.setAuthor(parseAuthors(authors, issues));
+      }
+    }
     csl.setTitle(title);
     csl.setIssued(ReferenceFactory.toCslDate(year));
     csl.setContainerTitle(details);
@@ -341,59 +349,84 @@ public class ReferenceFactory {
     if (StringUtils.isBlank(authorString)) {
       return null;
     }
-    authorString = NORM_WHITESPACE.matcher(authorString).replaceAll(" ");
+    final String authorStringNormed = NORM_WHITESPACE.matcher(authorString).replaceAll(" ");
+    // try different formats and require all authors to adhere to the same structure
+    return parseAuthorsSemicolon(authorStringNormed, issues).orElseGet(() ->
+      parseAuthorsCommaInitialFirst(authorStringNormed, issues).orElseGet(() ->
+        parseAuthorsCommaInitialBehindWS(authorStringNormed, issues).orElseGet(() ->
+          parseAuthorsCommaInitialBehind(authorStringNormed, issues).orElseGet(() -> {
+            // nothing works, resort to single string in literal
+            CslName name = new CslName();
+            name.setFamily(authorStringNormed);
+            issues.addIssue(Issue.CITATION_AUTHORS_UNPARSED);
+            return List.of(name);
+          })
+        )
+      )
+    ).toArray(new CslName[0]);
+  }
+
+  private static Optional<List<CslName>> parseAuthorsCommaInitialFirst(String authorString, IssueContainer issues) {
     List<CslName> names = new ArrayList<>();
-    // comma with initials in front?
     for (String a : AUTHOR_SPLITTER.split(authorString)) {
-      Matcher m = AUTHOR_PATTERN.matcher(a);
+      Matcher m = AUTHOR_PATTERN_FN_SN.matcher(a);
       if (m.find()) {
         names.add(buildName(m.group(1), m.group(2)));
       } else {
-        names.clear();
-        break;
+        return Optional.empty();
       }
     }
-    if (names.isEmpty()) {
-      // comma with initials behind?
-      Iterator<String> iter = AUTHOR_SPLITTER.split(authorString).iterator();
-      try {
-        while (iter.hasNext()) {
-          String a = iter.next() + "," + iter.next();
-          Matcher m = AUTHOR_PATTERN_SN_FN.matcher(a);
-          if (m.find()) {
-            names.add(buildName(m.group(2), m.group(1)));
-          } else {
-            names.clear();
-            break;
-          }
-        }
-      } catch (NoSuchElementException e) {
-        names.clear();
-      }
-      // semicolons?
-      if (names.isEmpty() && authorString.contains(";")) {
-        for (String a : AUTHOR_SPLITTER_SEMI.split(authorString)) {
-          Matcher m = AUTHORS_PATTERN_SEMI.matcher(a);
-          if (m.find()) {
-            names.add(buildName(m.group(2), m.group(1)));
-          } else {
-            names.clear();
-            break;
-          }
-        }
-      }
-    }
-    // use entire string as literal
-    if (names.isEmpty()) {
-      CslName name = new CslName();
-      name.setLiteral(authorString);
-      issues.addIssue(Issue.CITATION_AUTHORS_UNPARSED);
-      return new CslName[]{name};
-    } else {
-      return names.toArray(new CslName[0]);
-    }
+    return Optional.of(names);
   }
-  
+
+  private static Optional<List<CslName>> parseAuthorsCommaInitialBehind(String authorString, IssueContainer issues) {
+    List<CslName> names = new ArrayList<>();
+    Iterator<String> iter = AUTHOR_SPLITTER.split(authorString).iterator();
+    try {
+      while (iter.hasNext()) {
+        String a = iter.next() + "," + iter.next();
+        Matcher m = AUTHOR_PATTERN_SN_C_FN.matcher(a);
+        if (m.find()) {
+          names.add(buildName(m.group(2), m.group(1)));
+        } else {
+          return Optional.empty();
+        }
+      }
+    } catch (NoSuchElementException e) {
+      return Optional.empty();
+    }
+    return Optional.of(names);
+  }
+
+  private static Optional<List<CslName>> parseAuthorsCommaInitialBehindWS(String authorString, IssueContainer issues) {
+    List<CslName> names = new ArrayList<>();
+    for (String a : AUTHOR_SPLITTER.split(authorString)) {
+      Matcher m = AUTHOR_PATTERN_SN_FN.matcher(a);
+      if (m.find()) {
+        names.add(buildName(m.group(2), m.group(1)));
+      } else {
+        return Optional.empty();
+      }
+    }
+    return Optional.of(names);
+  }
+
+  private static Optional<List<CslName>> parseAuthorsSemicolon(String authorString, IssueContainer issues) {
+    if (authorString.contains(";")) {
+      List<CslName> names = new ArrayList<>();
+      for (String a : AUTHOR_SPLITTER_SEMI.split(authorString)) {
+        Matcher m = AUTHORS_PATTERN_SEMI.matcher(a);
+        if (m.find()) {
+          names.add(buildName(m.group(2), m.group(1)));
+        } else {
+          return Optional.empty();
+        }
+      }
+      return Optional.of(names);
+    }
+    return Optional.empty();
+  }
+
   private static CslName buildName(String given, String family){
     CslName name = new CslName();
     if (given != null) {

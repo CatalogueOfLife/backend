@@ -2,9 +2,7 @@ package life.catalogue.common.csl;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.CslData;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.*;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.io.Resources;
 
@@ -78,6 +76,13 @@ public class CslUtilTest {
     CslData data = new CslData();
     data.setId("1234");
     assertNull(CslUtil.buildCitation(data));
+
+    // literal author example
+    CslName ed = new CslName("Greuter,W. et al.");
+    data.setEditor(new CslName[]{ed});
+    data.setContainerTitle("Med-Checklist Vol.4 (published)");
+    data.setIssued(new CslDate(1989));
+    assertEquals("Greuter,W. et al. (1989). Med-Checklist Vol.4 (Published).", CslUtil.buildCitation(data));
   }
   
   @Test

@@ -25,7 +25,7 @@ public abstract class FileMetricsDaoTestBase<K> extends DaoTestBase {
 
   @Test
   public void roundtripTree() throws Exception {
-    BufferedReader expected = UTF8IoUtils.readerFromStream(getClass().getResourceAsStream("trees/tree.tree"));
+    BufferedReader expected = UTF8IoUtils.readerFromStream(getClass().getResourceAsStream("/trees/tree.tree"));
 
     dao.updateTree(key, key, 1);
   

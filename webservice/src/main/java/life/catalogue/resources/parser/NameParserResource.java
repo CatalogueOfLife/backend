@@ -192,8 +192,8 @@ public class NameParserResource {
    */
   @POST
   @Consumes(MediaType.TEXT_PLAIN)
-  public List<PNIssue> parsePlainText(@QueryParam("code") NomCode code, InputStream names) throws UnsupportedEncodingException {
-    return parseFile(code, null, names);
+  public List<PNIssue> parsePlainText(@QueryParam("code") NomCode code, @QueryParam("rank") Rank rank, InputStream names) throws UnsupportedEncodingException {
+    return parseFile(code, rank, names);
   }
   
   private List<PNIssue> parse(final NomCode code, final Rank rank, Stream<String> names) {

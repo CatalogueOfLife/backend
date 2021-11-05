@@ -10,7 +10,6 @@ public class CslName {
   
   private String family;
   private String given;
-  private String literal;
   @JsonProperty("dropping-particle")
   private String droppingParticle;
   @JsonProperty("non-dropping-particle")
@@ -21,8 +20,8 @@ public class CslName {
   public CslName() {
   }
 
-  public CslName(String literal) {
-    this.literal = literal;
+  public CslName(String family) {
+    this.family = family;
   }
 
   public CslName(String given, String family) {
@@ -30,15 +29,10 @@ public class CslName {
     this.given = given;
   }
 
-  public CslName(String given, String family, String nonDroppingParticle, String literal) {
+  public CslName(String given, String family, String nonDroppingParticle) {
     this.family = family;
     this.given = given;
     this.nonDroppingParticle = nonDroppingParticle;
-    this.literal = literal;
-  }
-
-  public boolean isLiteralOnly() {
-    return literal != null && family == null && given == null;
   }
 
   public String getFamily() {
@@ -81,14 +75,6 @@ public class CslName {
     this.suffix = suffix;
   }
 
-  public String getLiteral() {
-    return literal;
-  }
-  
-  public void setLiteral(String literal) {
-    this.literal = literal;
-  }
-
   public Boolean getIsInstitution() {
     return isInstitution;
   }
@@ -100,7 +86,7 @@ public class CslName {
   public CSLName toCSL() {
     return new CSLName(getFamily(), getGiven(), getDroppingParticle(),
       getNonDroppingParticle(), getSuffix(), null, null,
-      null, null, getLiteral(), null,
+      null, null, null, null,
       getIsInstitution());
   }
 
@@ -111,7 +97,6 @@ public class CslName {
     CslName cslName = (CslName) o;
     return Objects.equals(family, cslName.family)
            && Objects.equals(given, cslName.given)
-           && Objects.equals(literal, cslName.literal)
            && Objects.equals(droppingParticle, cslName.droppingParticle)
            && Objects.equals(nonDroppingParticle, cslName.nonDroppingParticle)
            && Objects.equals(suffix, cslName.suffix)
@@ -120,6 +105,6 @@ public class CslName {
 
   @Override
   public int hashCode() {
-    return Objects.hash(family, given, literal, droppingParticle, nonDroppingParticle, suffix, isInstitution);
+    return Objects.hash(family, given, droppingParticle, nonDroppingParticle, suffix, isInstitution);
   }
 }

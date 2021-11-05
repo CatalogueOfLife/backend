@@ -8,6 +8,7 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.neo.ReferenceMapStore;
 
+import org.apache.poi.ss.formula.functions.T;
 import org.checkerframework.checker.units.qual.C;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,7 +82,7 @@ public class ReferenceFactoryTest {
   
   @Test
   public void authors() {
-    // comma
+    // comma, initials front
     CslName[] authors = ReferenceFactory.parseAuthors("C.Ulloa Ulloa, P.  Acevedo-Rodríguez, S. G. Beck,  M. J.  de Belgrano, R. Bernal, P. E. Berry, L. Brako, M. dé Celis, G. Davidse, S. R. Gradstein, O. Hokche, B. León, S. de la León-Yánez, R. E. Magill, D. A. Neill, M. H. Nee, P. H. Raven, Stimmel, M. T. Strong, J. L. Villaseñor Ríos, J. L. Zarucchi, F. O. Zuloaga & P. M. Jørgensen", issues);
     assertEquals(23, authors.length);
 
@@ -99,8 +100,17 @@ public class ReferenceFactoryTest {
     assertEquals("S.", a.getGiven());
     assertEquals("de la", a.getNonDroppingParticle());
     assertEquals("León-Yánez", a.getFamily());
-  
-  
+
+    // comma initials behind
+    authors = ReferenceFactory.parseAuthors("Bakis Y., Babac M.T. & Uslu E.", issues);
+    assertEquals(3, authors.length);
+    assertEquals("Bakis", authors[0].getFamily());
+    assertEquals("Y.", authors[0].getGiven());
+    assertEquals("Babac", authors[1].getFamily());
+    assertEquals("M.T.", authors[1].getGiven());
+    assertEquals("Uslu", authors[2].getFamily());
+    assertEquals("E.", authors[2].getGiven());
+
     // semicolon
     authors = ReferenceFactory.parseAuthors("Ulloa, C.; Acevedo-Rodríguez, P.; Beck, Sigmund; de la Belgrano, Maria Josef; Simmel", issues);
     assertEquals(5, authors.length);
@@ -129,8 +139,9 @@ public class ReferenceFactoryTest {
     assertNull(a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Simmel", a.getFamily());
-  
-  
+
+
+    // comma within authors and between
     authors = ReferenceFactory.parseAuthors("Sautya, S., Tabachnick, K.R., Ingole, B.", issues);
     assertEquals(3, authors.length);
   
@@ -172,10 +183,10 @@ public class ReferenceFactoryTest {
   @Test
   public void authorsRoundtrip() {
     CslName[] names = new CslName[]{
-      new CslName(null, "Harry Mulisch the Greatest"),
+      new CslName("Harry Mulisch the Greatest"),
       new CslName("Sigmund", "Beck"),
       new CslName("P.", "Acevedo-Rodríguez"),
-      new CslName("Maria Josef", "Belgrano", "de la", null)
+      new CslName("Maria Josef", "Belgrano", "de la")
     };
 
     String x = CslUtil.toColdpString(names);

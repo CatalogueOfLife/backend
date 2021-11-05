@@ -13,6 +13,7 @@ and done it manually. So we can as well log changes here.
 
 ### 2021-11-04 non dropping particle in cslname
 ```
+ALTER TYPE cslname DROP ATTRIBUTE literal;
 ALTER TYPE cslname ADD ATTRIBUTE particle text;
 ```
 

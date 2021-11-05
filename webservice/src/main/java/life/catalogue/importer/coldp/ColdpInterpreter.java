@@ -56,9 +56,8 @@ public class ColdpInterpreter extends InterpreterBase {
         return null;
       }
 
-      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(ACC_NOTE, Issue.TAXONOMIC_STATUS_INVALID, v).val;
-
       NeoUsage u;
+      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(ACC_NOTE, Issue.TAXONOMIC_STATUS_INVALID, v).val;
       if (status.isBareName()) {
         u = NeoUsage.createBareName(Origin.SOURCE);
       } else if (status.isSynonym()) {
@@ -264,9 +263,13 @@ public class ColdpInterpreter extends InterpreterBase {
   Optional<NeoName> interpretName(VerbatimRecord v) {
     Term nomStatusTerm = ColdpTerm.status;
     Term genusNameTerm = ColdpTerm.genus;
+    Term remarksTerm = ColdpTerm.remarks;
+    Term refIdTerm = ColdpTerm.referenceID;
     if (ColdpTerm.NameUsage.equals(v.getType())) {
       nomStatusTerm = ColdpTerm.nameStatus;
       genusNameTerm = ColdpTerm.genericName;
+      remarksTerm = ColdpTerm.nameRemarks;
+      refIdTerm = ColdpTerm.nameReferenceID;
     }
 
     Optional<ParsedNameUsage> opt = interpretName(true, v.get(ColdpTerm.ID),
@@ -274,11 +277,11 @@ public class ColdpInterpreter extends InterpreterBase {
         v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet),
         v.get(ColdpTerm.code), v.get(nomStatusTerm),
-        v.get(ColdpTerm.link), v.get(ColdpTerm.remarks), v);
+        v.get(ColdpTerm.link), v.get(remarksTerm), v);
     if (opt.isPresent()) {
       // publishedIn
       Name n = opt.get().getName();
-      setReference(v, ColdpTerm.referenceID, rid -> {
+      setReference(v, refIdTerm, rid -> {
           n.setPublishedInId(rid);
           n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));
           n.setPublishedInYear(parseYear(ColdpTerm.publishedInYear, v));
