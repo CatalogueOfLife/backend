@@ -190,13 +190,13 @@ public class InterpreterBase {
     return Collections.emptyList();
   }
   
-  protected List<Distribution> interpretDistribution(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
-                                                     Term tArea, Term tGazetteer, Term tStatus) {
+  protected List<Distribution> interpretDistributionByGazetteer(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
+                                                                Term tArea, Term tGazetteer, Term tStatus) {
     // require location
     if (rec.hasTerm(tArea)) {
       // which standard?
       Gazetteer gazetteer;
-      if (distributionStandard != null) {
+      if (!rec.hasTerm(tGazetteer) && distributionStandard != null) {
         gazetteer = distributionStandard;
       } else {
         gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))

@@ -222,10 +222,20 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
-    return super.interpretDistribution(rec, this::setReference,
-        ColdpTerm.area,
+    if (rec.hasTerm(ColdpTerm.areaID)) {
+      return super.interpretDistributionByGazetteer(rec, this::setReference,
+        ColdpTerm.areaID,
         ColdpTerm.gazetteer,
         ColdpTerm.status);
+
+    } else if (rec.hasTerm(ColdpTerm.area)) {
+      return createDistributions(Gazetteer.TEXT,
+        rec.get(ColdpTerm.area),
+        rec.get(ColdpTerm.status),
+        rec, this::setReference
+      );
+    }
+    return Collections.emptyList();
   }
   
   List<Media> interpretMedia(VerbatimRecord rec) {

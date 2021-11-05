@@ -481,13 +481,13 @@ public class PgImportIT extends PgImportITBase {
     assertEquals(5, (int) di.getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
     // 1 provisional status taxon
     assertEquals((int) metrics().getTaxonCount(), 1 + di.getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
-    assertEquals(1, (int) di.getMediaByTypeCount().get(MediaType.IMAGE));
-    assertEquals(2, (int) di.getNamesByRankCount().get(Rank.FAMILY));
-    assertEquals(4, (int) di.getNamesByRankCount().get(Rank.GENUS));
+    assertEquals(1,  (int) di.getMediaByTypeCount().get(MediaType.IMAGE));
+    assertEquals(2,  (int) di.getNamesByRankCount().get(Rank.FAMILY));
+    assertEquals(4,  (int) di.getNamesByRankCount().get(Rank.GENUS));
     assertEquals(12, (int) di.getNamesByRankCount().get(Rank.SPECIES));
-    assertEquals(3, (int) di.getNamesByRankCount().get(Rank.SUBSPECIES));
-    assertEquals(9, (int) di.getDistributionsByGazetteerCount().get(Gazetteer.ISO));
-    assertEquals(2, (int) di.getTypeMaterialByStatusCount().get(TypeStatus.HOLOTYPE));
+    assertEquals(3,  (int) di.getNamesByRankCount().get(Rank.SUBSPECIES));
+    assertEquals(9,  (int) di.getDistributionsByGazetteerCount().get(Gazetteer.ISO));
+    assertEquals(2,  (int) di.getTypeMaterialByStatusCount().get(TypeStatus.HOLOTYPE));
   }
   
   /**

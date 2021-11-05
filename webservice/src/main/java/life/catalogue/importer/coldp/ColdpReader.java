@@ -187,7 +187,7 @@ public class ColdpReader extends CsvReader {
         require(t, ColdpTerm.taxonID);
       }
   
-      require(ColdpTerm.Distribution, ColdpTerm.area);
+      requireOne(ColdpTerm.Distribution, ColdpTerm.area, ColdpTerm.areaID);
       require(ColdpTerm.VernacularName, ColdpTerm.name);
       require(ColdpTerm.Media, ColdpTerm.url);
   
