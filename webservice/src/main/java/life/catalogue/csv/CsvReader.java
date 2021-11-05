@@ -227,9 +227,9 @@ public class CsvReader {
           return;
         }
       }
+      Schema s = schemas.remove(rowType);
+      LOG.warn("One term required from {} but all missing. Ignore file {}!", concat(terms), s.file);
     }
-    Schema s = schemas.remove(rowType);
-    LOG.warn("One term required from {} but all missing. Ignore file {}!", concat(terms), s.file);
   }
 
   private static String concat(Term... terms){
