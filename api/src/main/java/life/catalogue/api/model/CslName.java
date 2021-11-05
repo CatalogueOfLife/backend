@@ -11,7 +11,6 @@ public class CslName {
   private String family;
   private String given;
   private String literal;
-
   @JsonProperty("dropping-particle")
   private String droppingParticle;
   @JsonProperty("non-dropping-particle")
@@ -29,12 +28,6 @@ public class CslName {
   public CslName(String given, String family) {
     this.family = family;
     this.given = given;
-  }
-
-  public CslName(String given, String family, String literal) {
-    this.family = family;
-    this.given = given;
-    this.literal = literal;
   }
 
   public CslName(String given, String family, String nonDroppingParticle, String literal) {

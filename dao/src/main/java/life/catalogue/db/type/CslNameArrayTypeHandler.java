@@ -1,8 +1,6 @@
 package life.catalogue.db.type;
 
-import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.CslName;
-import life.catalogue.api.vocab.Country;
 import life.catalogue.db.type2.CustomArrayAbstractTypeHandler;
 
 import java.sql.SQLException;
@@ -13,6 +11,10 @@ import org.apache.ibatis.type.MappedJdbcTypes;
 import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeException;
 
+/**
+ * A postgres type handler to persist arrays of CslName instances.
+ * Note that only the core given, family, nonDroppingParticle and literal properties are persisted!
+ */
 @MappedTypes(CslName.class)
 @MappedJdbcTypes(JdbcType.OTHER)
 public class CslNameArrayTypeHandler extends CustomArrayAbstractTypeHandler<CslName> {
@@ -24,7 +26,7 @@ public class CslNameArrayTypeHandler extends CustomArrayAbstractTypeHandler<CslN
 
   @Override
   public String[] toAttributes(CslName obj) throws SQLException {
-    return new String[]{obj.getGiven(), obj.getFamily(), obj.getLiteral()};
+    return new String[]{obj.getGiven(), obj.getFamily(), obj.getLiteral(), obj.getNonDroppingParticle()};
   }
 
   @Override
