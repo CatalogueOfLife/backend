@@ -144,7 +144,7 @@ public class ColdpInterpreter extends InterpreterBase {
     u.nameNode = n.node;
     u.setId(v.getRaw(ColdpTerm.ID));
     u.setVerbatimKey(v.getId());
-    setReference(v, ColdpTerm.accordingToID, u.usage::setAccordingToId);
+    setReference(v, ColdpTerm.accordingToID, u.usage::setAccordingToId, u.usage::setAccordingTo);
     u.usage.setOrigin(Origin.SOURCE);
     u.usage.setNamePhrase(ObjectUtils.coalesce(v.get(ColdpTerm.namePhrase), n.pnu.getTaxonomicNote()));
     u.usage.setRemarks(v.get(ColdpTerm.remarks));

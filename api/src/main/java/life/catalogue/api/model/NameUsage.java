@@ -31,7 +31,11 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, RankedID {
   Origin getOrigin();
   
   void setOrigin(Origin origin);
-  
+
+  String getAccordingTo();
+
+  void setAccordingTo(String accordingTo);
+
   String getAccordingToId();
   
   void setAccordingToId(String according);

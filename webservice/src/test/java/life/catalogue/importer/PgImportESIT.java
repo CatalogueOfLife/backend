@@ -150,11 +150,9 @@ public class PgImportESIT extends PgImportITBase {
     assertEquals("L.", nuw.getUsage().getName().getAuthorship());
     assertNull(nuw.getUsage().getNamePhrase());
     assertEquals("Jarvis2007", nuw.getUsage().getAccordingToId());
-    // we dont populate accordingTo in searches, just accordingToID
-    assertNull(((NameUsageBase) nuw.getUsage()).getAccordingTo());
+    assertEquals("Jarvis, & Charlie. (2007). Order out of Chaos. Linnaean Plant Types and their Types. Linnaean Society of London in association with the Natural History Museum. https://doi.org/10.5281/zenodo.291971", ((NameUsageBase) nuw.getUsage()).getAccordingTo());
     assertEquals("Gundelia tournefortii L. sensu Jarvis 2007", nuw.getUsage().getLabel());
   }
-
 
   void assertFacetValue(Set<FacetValue<?>> facets, Enum<?> value, int count) {
     for (FacetValue<?> fv : facets) {

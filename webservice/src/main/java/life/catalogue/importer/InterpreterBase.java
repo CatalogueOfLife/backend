@@ -75,8 +75,12 @@ public class InterpreterBase {
     }
     return true;
   }
-  
+
   protected Reference setReference(VerbatimRecord v, Term refIdTerm, Consumer<String> refIdConsumer){
+    return setReference(v, refIdTerm, refIdConsumer, null);
+  }
+
+  protected Reference setReference(VerbatimRecord v, Term refIdTerm, Consumer<String> refIdConsumer, @Nullable Consumer<String> refCitationConsumer){
     Reference ref = null;
     if (v.hasTerm(refIdTerm)) {
       String rid = v.getRaw(refIdTerm);
@@ -86,6 +90,9 @@ public class InterpreterBase {
         v.addIssue(Issue.REFERENCE_ID_INVALID);
       } else {
         refIdConsumer.accept(ref.getId());
+        if (refCitationConsumer != null) {
+          refCitationConsumer.accept(ref.getCitation());
+        }
       }
     }
     return ref;
@@ -130,12 +137,15 @@ public class InterpreterBase {
   }
 
   protected void setAccordingTo(NameUsage u, String accordingTo, VerbatimRecord v) {
-    Reference ref = buildReference(accordingTo, v);
-    if (ref != null) {
-      if (u.getAccordingToId() != null) {
-        v.addIssue(Issue.ACCORDING_TO_CONFLICT);
+    if (accordingTo != null) {
+      Reference ref = buildReference(accordingTo, v);
+      if (ref != null) {
+        if (u.getAccordingToId() != null) {
+          v.addIssue(Issue.ACCORDING_TO_CONFLICT);
+        }
+        u.setAccordingToId(ref.getId());
+        u.setAccordingTo(accordingTo);
       }
-      u.setAccordingToId(ref.getId());
     }
   }
 

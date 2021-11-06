@@ -213,10 +213,12 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     this.parentId = key;
   }
 
+  @Override
   public String getAccordingTo() {
     return accordingTo;
   }
 
+  @Override
   public void setAccordingTo(String accordingTo) {
     this.accordingTo = accordingTo;
   }
