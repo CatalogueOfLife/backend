@@ -15,6 +15,11 @@ and done it manually. So we can as well log changes here.
 ```
 ALTER TYPE cslname DROP ATTRIBUTE literal;
 ALTER TYPE cslname ADD ATTRIBUTE particle text;
+
+CREATE OR REPLACE FUNCTION text2cslname(text) RETURNS cslname AS
+$$
+SELECT ROW(null, $1, null)::cslname
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 ```
 
 ### 2021-10-15 new issue
