@@ -83,6 +83,18 @@ public class CslUtilTest {
     data.setContainerTitle("Med-Checklist Vol.4 (published)");
     data.setIssued(new CslDate(1989));
     assertEquals("Greuter,W. et al. (1989). Med-Checklist Vol.4 (Published).", CslUtil.buildCitation(data));
+
+    // volume issue pages
+    data = new CslData();
+    data.setAuthor(new CslName[]{new CslName("Werner", "Greuter")});
+    data.setContainerTitle("J. Linn. Soc., Bot.");
+    data.setIssued(new CslDate(1911));
+    data.setVolume("10");
+    data.setPage("141-156");
+    assertEquals("Greuter, W. (1911). J. Linn. Soc., Bot., 10, 141–156.", CslUtil.buildCitation(data));
+
+    data.setIssue("41");
+    assertEquals("Greuter, W. (1911). J. Linn. Soc., Bot., 10(41), 141–156.", CslUtil.buildCitation(data));
   }
   
   @Test

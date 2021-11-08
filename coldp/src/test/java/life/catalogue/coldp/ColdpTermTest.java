@@ -2,6 +2,8 @@ package life.catalogue.coldp;
 
 import org.junit.Test;
 
+import java.util.HashSet;
+
 import static org.junit.Assert.*;
 import static life.catalogue.coldp.ColdpTerm.*;
 
@@ -14,6 +16,13 @@ public class ColdpTermTest {
       } else {
         assertFalse(ColdpTerm.RESOURCES.containsKey(t));
       }
+    }
+  }
+
+  @Test
+  public void resourceTermsUnique() {
+    for (ColdpTerm rt : ColdpTerm.RESOURCES.keySet()) {
+      assertEquals("Duplicate terms in "+rt, new HashSet<>(ColdpTerm.RESOURCES.get(rt)).size(), ColdpTerm.RESOURCES.get(rt).size());
     }
   }
 

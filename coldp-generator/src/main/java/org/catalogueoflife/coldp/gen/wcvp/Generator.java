@@ -1,5 +1,6 @@
 package org.catalogueoflife.coldp.gen.wcvp;
 
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.coldp.ColdpTerm;
@@ -33,6 +34,7 @@ public class Generator extends AbstractGenerator {
   private static final int GENUS = 6;
   private static final int SPECIES = 8;
   private static final int INFRASPECIES = 10;
+  private static final int PRIMARY_AUTHOR = 12;
   private static final int PUBLISH_AUTHOR = 13;
   private static final int PUBLISH_PLACE = 14;
   private static final int PUBLISH_VOLUME = 15;
@@ -97,11 +99,11 @@ public class Generator extends AbstractGenerator {
       ColdpTerm.authorship,
       ColdpTerm.family,
       ColdpTerm.genus,
-      ColdpTerm.genericName,
-      ColdpTerm.specificEpithet,
-      ColdpTerm.infraspecificEpithet,
+      //ColdpTerm.genericName,
+      //ColdpTerm.specificEpithet,
+      //ColdpTerm.infraspecificEpithet,
       ColdpTerm.nameRemarks,
-      ColdpTerm.referenceID
+      ColdpTerm.nameReferenceID
     ));
 
     var reader = TabReader.custom(
@@ -115,9 +117,10 @@ public class Generator extends AbstractGenerator {
       writer.set(ColdpTerm.rank, row[RANK]);
       writer.set(ColdpTerm.scientificName, row[NAME]);
       writer.set(ColdpTerm.authorship, row[AUTHOR]);
-      writer.set(ColdpTerm.genericName, row[GENUS]);
-      writer.set(ColdpTerm.specificEpithet, row[SPECIES]);
-      writer.set(ColdpTerm.infraspecificEpithet, row[INFRASPECIES]);
+      // don't use these, as they lack hybrid markers and when supplied take precedence over the full scientificName
+      //writer.set(ColdpTerm.genericName, row[GENUS]);
+      //writer.set(ColdpTerm.specificEpithet, row[SPECIES]);
+      //writer.set(ColdpTerm.infraspecificEpithet, row[INFRASPECIES]);
       writer.set(ColdpTerm.nameRemarks, stripLeadingComma(row[NOM_REMARKS]));
       writer.set(ColdpTerm.basionymID, row[ORIGINAL_ID]);
       writer.set(ColdpTerm.parentID, row[ACCEPTED_ID]);
@@ -139,8 +142,9 @@ public class Generator extends AbstractGenerator {
       }
 
       // construct reference
-      if (row[PUBLISH_AUTHOR] != null || row[PUBLISH_PLACE] != null) {
-        refWriter.set(ColdpTerm.author, row[PUBLISH_AUTHOR]);
+      if (row[PUBLISH_PLACE] != null) {
+        // publication author is only given when it differs from the primary author
+        refWriter.set(ColdpTerm.author, ObjectUtils.coalesce(row[PUBLISH_AUTHOR], row[PRIMARY_AUTHOR]));
         refWriter.set(ColdpTerm.containerTitle, row[PUBLISH_PLACE]);
         String rawYear = row[PUBLISH_YEAR];
         if (rawYear != null) {
@@ -157,7 +161,7 @@ public class Generator extends AbstractGenerator {
           refWriter.set(ColdpTerm.page, vip.page);
         });
         String rid = nextRef();
-        writer.set(ColdpTerm.referenceID, rid);
+        writer.set(ColdpTerm.nameReferenceID, rid);
       }
 
       writer.next();

@@ -74,7 +74,7 @@ public abstract class TermWriter implements AutoCloseable {
   public void next() throws IOException {
     writer.write(row);
     row = new String[cols.size()];
-    if (counter++ % 100000 == 0) {
+    if (++counter % 100000 == 0) {
       LOG.info("Written {} {}s", counter, rowType.simpleName());
     }
   }
@@ -165,4 +165,5 @@ public abstract class TermWriter implements AutoCloseable {
       set(term, PermissiveEnumSerde.enumValueName(value));
     }
   }
+
 }
