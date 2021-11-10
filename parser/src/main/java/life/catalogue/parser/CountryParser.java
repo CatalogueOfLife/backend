@@ -11,7 +11,8 @@ import java.util.regex.Pattern;
  */
 public class CountryParser extends EnumParser<Country> {
   // subregions can be of max 3 chars
-  private static final Pattern ISO  = Pattern.compile("^([a-z]{2})(?:\\s*-\\s*([a-z0-9]{1,3}))?$", Pattern.CASE_INSENSITIVE);
+  static final String ISO  = "([a-z]{2})(?:\\s*-\\s*([a-z0-9]{1,3}))?";
+  private static final Pattern ISO_PATTERN = Pattern.compile("^"+ISO+"$", Pattern.CASE_INSENSITIVE);
   public static final CountryParser PARSER = new CountryParser();
 
   public CountryParser() {
@@ -45,7 +46,7 @@ public class CountryParser extends EnumParser<Country> {
   @Override
   String normalize(String x) {
     if (x != null) {
-      var m = ISO.matcher(x);
+      var m = ISO_PATTERN.matcher(x);
       if (m.find()) {
         x = m.group(1);
       }

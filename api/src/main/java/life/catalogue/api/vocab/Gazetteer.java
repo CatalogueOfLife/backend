@@ -96,4 +96,8 @@ public enum Gazetteer {
   public String locationID(String area) {
     return prefix() + ":" + area;
   }
+
+  public static Gazetteer of(String prefix) throws IllegalArgumentException {
+    return Gazetteer.valueOf(prefix.toUpperCase());
+  }
 }

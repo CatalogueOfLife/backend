@@ -197,7 +197,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   @Test
   public void counts() throws Exception {
     assertEquals((Integer) 1, mapper().countBareName(DATASET11.getKey()));
-    assertEquals((Integer) 3, mapper().countDistribution(DATASET11.getKey()));
+    assertEquals((Integer) 5, mapper().countDistribution(DATASET11.getKey()));
     assertEquals((Integer) 0, mapper().countMedia(DATASET11.getKey()));
     assertEquals((Integer) 5, mapper().countName(DATASET11.getKey()));
     assertEquals((Integer) 3, mapper().countReference(DATASET11.getKey()));
@@ -211,7 +211,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
 
   @Test
   public void countByMaps() throws Exception {
-    assertEquals(1, mapper().countDistributionsByGazetteer(DATASET11.getKey()).size());
+    assertEquals(3, mapper().countDistributionsByGazetteer(DATASET11.getKey()).size());
     assertEquals(1, mapper().countExtinctTaxaByRank(DATASET11.getKey()).size());
     assertEquals(6, mapper().countIssues(DATASET11.getKey()).size());
     assertEquals(0, mapper().countMediaByType(DATASET11.getKey()).size());
@@ -270,6 +270,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     
     expected.clear();
     expected.add(new StringCount(Gazetteer.TEXT, 3));
+    expected.add(new StringCount(Gazetteer.TDWG, 1));
+    expected.add(new StringCount(Gazetteer.ISO, 1));
     assertCounts(expected, mapper().countDistributionsByGazetteer(DATASET11.getKey()));
     
     expected.clear();

@@ -3,7 +3,7 @@ package life.catalogue.common.kryo;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.dwc.terms.*;
@@ -41,6 +41,24 @@ public class ApiKryoPoolTest {
     r.setDatasetKey(77);
     r.setCsl(TestEntityGenerator.createCsl());
     assertSerde(r);
+  }
+
+  @Test
+  public void testAreas() throws Exception {
+    var d = new Distribution();
+    d.setId(1234);
+    d.setReferenceId("1984");
+    d.setStatus(DistributionStatus.NATIVE);
+    d.setSectorKey(13);
+    d.setVerbatimKey(6789);
+    d.setArea(new AreaImpl("Berlin"));
+    assertSerde(d);
+
+    d.setArea(Country.ALBANIA);
+    assertSerde(d);
+
+    d.setArea(TdwgArea.of("BZN"));
+    assertSerde(d);
   }
 
   @Test

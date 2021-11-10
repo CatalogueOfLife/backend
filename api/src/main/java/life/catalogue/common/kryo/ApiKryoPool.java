@@ -128,6 +128,13 @@ public class ApiKryoPool extends Pool<Kryo> {
     // fastutils
     FastUtilsSerializer.registerSerializers(kryo, true);
 
+    // areas
+    var areaSerde = new AreaSerializer();
+    kryo.register(Area.class, areaSerde);
+    kryo.register(AreaImpl.class, areaSerde);
+    kryo.register(LonghurstArea.class, areaSerde);
+    kryo.register(TdwgArea.class, areaSerde);
+
     // enums
     kryo.register(Country.class);
     kryo.register(DataFormat.class);
@@ -140,6 +147,8 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(EstimateType.class);
     kryo.register(Frequency.class);
     kryo.register(Gazetteer.class);
+    kryo.register(GeoTime.class);
+    kryo.register(GeoTimeType.class);
     kryo.register(ImportState.class);
     kryo.register(Issue.class);
     kryo.register(JobStatus.class);

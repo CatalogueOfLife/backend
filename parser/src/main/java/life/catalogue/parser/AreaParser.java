@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import life.catalogue.common.kryo.AreaSerializer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +27,7 @@ import com.google.common.collect.Maps;
  */
 public class AreaParser extends ParserBase<Area> {
   public static final AreaParser PARSER = new AreaParser();
+  private static final Pattern EXTENDED_ISO  = Pattern.compile("^iso\\s*:\\s*(" + CountryParser.ISO + ")$", Pattern.CASE_INSENSITIVE);
 
   public AreaParser() {
     super(Area.class);
@@ -36,24 +39,16 @@ public class AreaParser extends ParserBase<Area> {
       return Optional.empty();
 
     } else {
-      // remove invisible
-      String[] parts = CharMatcher.invisible().removeFrom(area).split(":", 2);
-      if (parts.length > 1) {
-        final Gazetteer standard = GazetteerParser.PARSER.parse(parts[0]).get();
-        final String value = parts[1].trim();
-        switch (standard) {
-          case ISO:
-            return CountryParser.PARSER.parse(value);
-          case TDWG:
-            return Optional.of(TdwgArea.of(value));
-          case LONGHURST:
-            return Optional.of(LonghurstArea.of(value));
-          default:
-            // we have not implemented other area enumerations yet!
-            return Optional.of(new AreaImpl(standard, parts[1], null));
+      try {
+        // remove invisible
+        area = area.trim();
+        var m = EXTENDED_ISO.matcher(area);
+        if (m.find()) {
+          return CountryParser.PARSER.parse(m.group(1));
         }
-      } else {
-        return Optional.of(new AreaImpl(area));
+        return Optional.ofNullable(AreaSerializer.parse(area));
+      } catch (IllegalArgumentException e) {
+        throw new UnparsableException("Unparsable area " + area, e);
       }
     }
   }
