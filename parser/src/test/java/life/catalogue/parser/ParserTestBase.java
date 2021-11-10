@@ -19,14 +19,14 @@ abstract class ParserTestBase<T> {
   public ParserTestBase(Parser<T> parser) {
     this.parser = parser;
   }
-  
-  void assertParse(T expected, String input) throws UnparsableException {
+
+  <X extends T> void assertParse(X expected, String input) throws UnparsableException {
     assertEquals(Optional.ofNullable(expected), parser.parse(input));
   }
   
   void assertUnparsable(String x) throws UnparsableException {
     try {
-      Optional<T> val = parser.parse(x);
+      Optional<? extends T> val = parser.parse(x);
       // we should never reach here
       fail("Expected " + x + " to be unparsable but was " + (val.isPresent() ? val.get() : "EMPTY"));
     } catch (UnparsableException e) {

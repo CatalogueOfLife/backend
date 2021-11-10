@@ -100,11 +100,11 @@ public class CountryTest {
   @Test
   public void testgetTitle() throws Exception {
     for (Country l : Country.values()) {
-      assertNotNull(l.getTitle());
-      assertTrue(l.getTitle().length() > 2);
+      assertNotNull(l.getName());
+      assertTrue(l.getName().length() > 2);
     }
-    assertEquals("United Kingdom", Country.UNITED_KINGDOM.getTitle());
-    assertEquals("Germany", Country.GERMANY.getTitle());
+    assertEquals("United Kingdom", Country.UNITED_KINGDOM.getName());
+    assertEquals("Germany", Country.GERMANY.getName());
   }
   
   @Test
@@ -128,8 +128,8 @@ public class CountryTest {
   public void testTitleUniqueness() {
     Set<String> names = Sets.newHashSet();
     for (Country c : Country.values()) {
-      assertFalse(names.contains(c.getTitle()));
-      names.add(c.getTitle());
+      assertFalse(names.contains(c.getName()));
+      names.add(c.getName());
     }
   }
   

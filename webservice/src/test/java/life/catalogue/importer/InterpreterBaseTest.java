@@ -313,7 +313,7 @@ public class InterpreterBaseTest {
     assertDistributions(std, loc, exp);
   }
 
-  private void assertDistributions(Gazetteer std, String loc, String... expected) {
+  private void assertDistributions(Gazetteer std, String loc, String... expectedIDs) {
     List<Distribution> dis = InterpreterBase.createDistributions(std, loc, "present", new VerbatimRecord(), new BiConsumer<Distribution, VerbatimRecord>() {
       @Override
       public void accept(Distribution distribution, VerbatimRecord verbatimRecord) {
@@ -323,8 +323,8 @@ public class InterpreterBaseTest {
 
     int counter = 0;
     for (Distribution d : dis) {
-      assertEquals(std, d.getGazetteer());
-      assertEquals(expected[counter++], d.getArea());
+      assertEquals(std, d.getArea().getGazetteer());
+      assertEquals(expectedIDs[counter++], d.getArea().getId());
     }
   }
 }

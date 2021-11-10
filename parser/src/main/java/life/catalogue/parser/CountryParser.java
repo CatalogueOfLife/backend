@@ -4,11 +4,14 @@ import life.catalogue.api.vocab.Country;
 import life.catalogue.common.text.CSVUtils;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * CoL country parser wrapping the GBIF country parser
  */
 public class CountryParser extends EnumParser<Country> {
+  // subregions can be of max 3 chars
+  private static final Pattern ISO  = Pattern.compile("^([a-z]{2})(?:\\s*-\\s*([a-z0-9]{1,3}))?$", Pattern.CASE_INSENSITIVE);
   public static final CountryParser PARSER = new CountryParser();
 
   public CountryParser() {
@@ -32,16 +35,22 @@ public class CountryParser extends EnumParser<Country> {
   
     // also make sure we have all official iso countries mapped
     for (Country c : Country.values()) {
-      add(c.getTitle(), c);
+      add(c.getName(), c);
       add(c.getIso2LetterCode(), c);
       add(c.getIso3LetterCode(), c);
       add(c.getIsoNumericalCode(), c);
     }
   }
-  
+
   @Override
-  public Optional<Country> parse(String value) throws UnparsableException {
-    Optional<Country> x = super.parse(value);
-    return x;
+  String normalize(String x) {
+    if (x != null) {
+      var m = ISO.matcher(x);
+      if (m.find()) {
+        x = m.group(1);
+      }
+    }
+    return super.normalize(x);
   }
+
 }

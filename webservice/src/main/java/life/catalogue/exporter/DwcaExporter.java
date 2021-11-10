@@ -214,12 +214,11 @@ public class DwcaExporter extends ArchiveExporter {
   void write(String taxonID, Distribution d) {
     writer.set(DwcTerm.taxonID, taxonID);
     writer.set(DwcTerm.occurrenceStatus, d.getStatus());
-    if (d.getGazetteer() == Gazetteer.TEXT) {
-        writer.set(DwcTerm.locality, d.getArea());
-    } else if (d.getGazetteer() == Gazetteer.ISO) {
-        writer.set(DwcTerm.countryCode, d.getArea());
-    } else {
-        writer.set(DwcTerm.locationID, d.getGazetteer().locationID(d.getArea()));
+    writer.set(DwcTerm.locality, d.getArea().getName());
+    if (d.getArea().getGazetteer() == Gazetteer.ISO) {
+        writer.set(DwcTerm.countryCode, d.getArea().getId());
+    } else if (d.getArea().getGlobalId() != null) {
+        writer.set(DwcTerm.locationID, d.getArea().getGlobalId());
     }
     if (d.getReferenceId() != null) {
       writer.set(DcTerm.source, refCache.getUnchecked(d.getReferenceId()));

@@ -217,17 +217,6 @@ public class InterpreterBase {
     return Collections.emptyList();
   }
   
-  private static Distribution createDistribution(VerbatimRecord rec, Gazetteer standard, String area, DistributionStatus status,
-                                          BiConsumer<Distribution, VerbatimRecord> addReference) {
-    Distribution d = new Distribution();
-    d.setVerbatimKey(rec.getId());
-    d.setGazetteer(standard);
-    d.setArea(area);
-    d.setStatus(status);
-    addReference.accept(d, rec);
-    return d;
-  }
-  
   protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, String statusRaw, VerbatimRecord rec,
                                                    BiConsumer<Distribution, VerbatimRecord> addReference) {
     if (locRaw != null) {
@@ -236,23 +225,23 @@ public class InterpreterBase {
           .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec);
 
       if (standard == Gazetteer.TEXT) {
-        return Lists.newArrayList( createDistribution(rec, Gazetteer.TEXT, locRaw, status, addReference) );
+        return Lists.newArrayList( createDistribution(rec, new AreaImpl(locRaw), status, addReference) );
       
       } else {
         List<Distribution> distributions = new ArrayList<>();
         for (String loc : words(locRaw)) {
-          // add gazetteer prefix if not yet included
+          // add gazetteer prefix for the parser if not yet included
           if (standard != null && loc.indexOf(':') < 0) {
             loc = standard.locationID(loc);
           }
-          AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
+          var area = SafeParser.parse(AreaParser.PARSER, loc).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
           if (area != null) {
             // check if we have contradicting extracted a gazetteer
-            if (standard != null && area.standard != Gazetteer.TEXT && area.standard != standard) {
+            if (standard != null && area.getGazetteer() != Gazetteer.TEXT && area.getGazetteer() != standard) {
               LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
-                        area.standard, area.area, standard, rec);
+                        area.getGazetteer(), area.getGazetteer(), standard, rec);
             }
-            distributions.add(createDistribution(rec, area.standard, area.area, status, addReference));
+            distributions.add(createDistribution(rec, area, status, addReference));
           }
         }
         return distributions;
@@ -271,7 +260,16 @@ public class InterpreterBase {
     return words;
   }
 
-  
+  private static Distribution createDistribution(VerbatimRecord rec, Area area, DistributionStatus status, BiConsumer<Distribution, VerbatimRecord> addReference) {
+    Distribution d = new Distribution();
+    d.setVerbatimKey(rec.getId());
+    d.setArea(area);
+    d.setStatus(status);
+    addReference.accept(d, rec);
+    return d;
+  }
+
+
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
                  Term type, Term url, Term link, Term license, Term creator, Term created, Term title, Term format) {
     // require media or link url

@@ -24,7 +24,7 @@ public class LicenseParser extends EnumParser<License> {
   }
 
   @Override
-  public Optional<License> parse(String value) throws UnparsableException {
+  public Optional<? extends License> parse(String value) throws UnparsableException {
     if (value != null) {
       if (CC0.matcher(value).find()) {
         return Optional.of(License.CC0);

@@ -16,7 +16,8 @@
     d.created,
     d.created_by,
     d.modified,
-    d.modified_by
+    d.modified_by,
+    d.gazetteer = 'TEXT' as istext
   </sql>
 
   <sql id="COLS">
@@ -41,8 +42,8 @@
     #{obj.sectorKey},
     #{taxonId},
     #{obj.verbatimKey},
-    #{obj.area},
-    #{obj.gazetteer}::GAZETTEER,
+    coalesce(#{obj.area.id}, #{obj.area.name}),
+    #{obj.area.gazetteer}::GAZETTEER,
     #{obj.status}::DISTRIBUTIONSTATUS,
     #{obj.referenceId},
     #{obj.createdBy},
@@ -54,14 +55,23 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="distributionResultMap" type="Distribution" autoMapping="true">
     <id property="id" column="id"/>
+    <association property="area" javaType="life.catalogue.api.vocab.AreaImpl">
+      <result property="gazetteer" column="gazetteer" />
+      <discriminator javaType="boolean" column="istext">
+        <case value="true">
+          <result property="name" column="area" />
+        </case>
+        <case value="false">
+          <result property="id" column="area" />
+        </case>
+      </discriminator>
+    </association>
   </resultMap>
 
   <resultMap id="distributionExtResultMap" type="TaxonExtension" autoMapping="true">
     <id column="id"/>
     <result property="taxonID" column="taxon_id"/>
-    <association property="obj" autoMapping="true" javaType="Distribution">
-      <id property="id" column="id"/>
-    </association>
+    <association property="obj" autoMapping="true" javaType="Distribution" resultMap="distributionResultMap" />
   </resultMap>
 
   <select id="listByTaxon" resultMap="distributionResultMap">

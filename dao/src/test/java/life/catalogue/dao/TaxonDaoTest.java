@@ -3,10 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.Gazetteer;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -73,20 +70,38 @@ public class TaxonDaoTest extends DaoTestBase {
 
 		assertEquals(refKeys1, refKeys2);
 
-    assertEquals(2, info.getDistributions().size());
+    assertEquals(4, info.getDistributions().size());
     for (Distribution d : info.getDistributions()) {
       switch (d.getId()) {
         case 1:
-          assertEquals("Berlin", d.getArea());
-          assertEquals(Gazetteer.TEXT, d.getGazetteer());
+          assertEquals("Berlin", d.getArea().getName());
+          assertEquals(Gazetteer.TEXT, d.getArea().getGazetteer());
           assertNull(d.getStatus());
+          assertNull(d.getArea().getId());
           assertEquals("ref-1", d.getReferenceId());
           break;
         case 2:
-          assertEquals("Leiden", d.getArea());
-          assertEquals(Gazetteer.TEXT, d.getGazetteer());
+          assertEquals("Leiden", d.getArea().getName());
+          assertEquals(Gazetteer.TEXT, d.getArea().getGazetteer());
           assertNull(d.getStatus());
+          assertNull(d.getArea().getId());
           assertEquals("ref-1b" ,d.getReferenceId());
+          break;
+        case 4:
+          assertEquals(Country.GERMANY, d.getArea());
+          assertEquals(Gazetteer.ISO, d.getArea().getGazetteer());
+          assertNull(d.getStatus());
+          assertNotNull(d.getArea().getId());
+          assertNotNull(d.getArea().getName());
+          assertNull(d.getReferenceId());
+          break;
+        case 5:
+          assertEquals(TdwgArea.of("BZE"), d.getArea());
+          assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
+          assertNull(d.getStatus());
+          assertEquals("BZE", d.getArea().getId());
+          assertNotNull(d.getArea().getName());
+          assertNull(d.getReferenceId());
           break;
         default:
           fail("Unexpected distribution");

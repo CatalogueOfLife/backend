@@ -169,14 +169,6 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     }
   }
   
-  private Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
-    Distribution d = new Distribution();
-    d.setArea(area);
-    d.setGazetteer(standard);
-    d.setStatus(status);
-    return d;
-  }
-  
   @Test
   public void testNeoIndices() throws Exception {
     normalize(1);

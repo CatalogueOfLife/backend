@@ -186,7 +186,6 @@ public class Normalizer implements Callable<Boolean> {
 
           // distribution
           for (Distribution d : u.distributions) {
-            require(d, d.getGazetteer(), "area standard");
             require(d, d.getArea(), "area");
           }
 

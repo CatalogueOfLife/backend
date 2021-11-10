@@ -243,9 +243,12 @@ public class ColdpExporter extends ArchiveExporter {
   void write(String taxonID, Distribution d) {
     writer.set(ColdpTerm.taxonID, taxonID);
     writer.set(ColdpTerm.sourceID, sector2datasetKey(d.getSectorKey()));
-    writer.set(ColdpTerm.area, d.getArea());
-    //writer.set(ColdpTerm.areaID, d.get());
-    writer.set(ColdpTerm.gazetteer, d.getGazetteer());
+    var area = d.getArea();
+    if (area != null) {
+      writer.set(ColdpTerm.area, area.getName());
+      writer.set(ColdpTerm.areaID, area.getId());
+      writer.set(ColdpTerm.gazetteer, area.getGazetteer());
+    }
     writer.set(ColdpTerm.status, d.getStatus());
     writer.set(ColdpTerm.referenceID, d.getReferenceId());
     //writer.set(ColdpTerm.remarks, d.getRemarks());

@@ -90,8 +90,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals(3, u.distributions.size());
       Set<String> areas = Sets.newHashSet("AGE-BA", "BZC-MS", "BZC-MT");
       for (Distribution d : u.distributions) {
-        assertEquals(Gazetteer.TDWG, d.getGazetteer());
-        assertTrue(areas.remove(d.getArea()));
+        assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
+        assertTrue(areas.remove(d.getArea().getId()));
       }
       
       // vernacular

@@ -21,7 +21,7 @@ abstract class ParserBase<T> implements Parser<T> {
   }
   
   @Override
-  public Optional<T> parse(String value) throws UnparsableException {
+  public Optional<? extends T> parse(String value) throws UnparsableException {
     String x = normalize(value);
     if (x == null) {
       // check if we had any not invisible characters - throw Unparsable in such cases

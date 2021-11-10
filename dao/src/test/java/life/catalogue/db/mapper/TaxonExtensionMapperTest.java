@@ -22,7 +22,8 @@ import static org.junit.Assert.assertTrue;
 abstract class TaxonExtensionMapperTest<T extends SectorScopedEntity<Integer>, M extends TaxonExtensionMapper<T>> extends MapperTestBase<M> {
   
   Taxon tax;
-  
+  List<T> originals;
+
   public TaxonExtensionMapperTest(Class<M> mapperClazz) {
       super(mapperClazz, TestDataRule.empty());
   }
@@ -42,6 +43,9 @@ abstract class TaxonExtensionMapperTest<T extends SectorScopedEntity<Integer>, M
     SectorProcessableTestComponent.test(mapper(), DSID.of(Datasets.COL, 1));
   }
 
+  /**
+   * @return list of created entities
+   */
   @Test
   public void roundtrip() throws Exception {
     // prepare taxon to hook extensions to
@@ -50,7 +54,7 @@ abstract class TaxonExtensionMapperTest<T extends SectorScopedEntity<Integer>, M
     
     final List<T> entities = createTestEntities();
     assertTrue("At least 3 test entities are needed", entities.size() > 2);
-    List<T> originals = new ArrayList<>();
+    originals = new ArrayList<>();
     for (T obj : entities) {
       obj.setDatasetKey(tax.getDatasetKey());
       // test create
@@ -61,7 +65,7 @@ abstract class TaxonExtensionMapperTest<T extends SectorScopedEntity<Integer>, M
 
     // test get
     T obj = TestEntityGenerator.nullifyDate(mapper().get(originals.get(0)));
-    assertEquals(obj, originals.get(0));
+    assertEquals(originals.get(0), obj);
     
     // test listByTaxon
     List<T> created = TestEntityGenerator.nullifyDate(mapper().listByTaxon(tax));

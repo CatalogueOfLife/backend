@@ -84,7 +84,7 @@ public class DwcInterpreter extends InterpreterBase {
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     // try to figure out an area
     if (rec.hasTerm(DwcTerm.locationID)) {
-      return createDistributions(Gazetteer.ISO,
+      return createDistributions(null,
           rec.getRaw(DwcTerm.locationID),
           rec.get(DwcTerm.occurrenceStatus),
           rec, this::setReference);

@@ -391,7 +391,7 @@ public class Agent implements Comparable<Agent> {
 
   @JsonIgnore
   public String getCountryTitle() {
-    return country == null ? null : country.getTitle();
+    return country == null ? null : country.getName();
   }
 
   public void setCountry(Country country) {

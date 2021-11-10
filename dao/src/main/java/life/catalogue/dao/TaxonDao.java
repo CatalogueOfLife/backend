@@ -2,9 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
@@ -15,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -204,7 +203,24 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     // add all supplementary taxon infos
     if (loadDistributions) {
       DistributionMapper dim = session.getMapper(DistributionMapper.class);
-      info.setDistributions(dim.listByTaxon(taxon));
+      info.setDistributions(
+        dim.listByTaxon(taxon).stream()
+           // replace will enums so we also get titles and other props - this is too hard to do in mybatis
+           .map(d -> {
+             if (d.getArea().getGazetteer() == Gazetteer.ISO) {
+               d.setArea(Country.fromIsoCode(d.getArea().getId()).orElse(null));
+
+             } else if (d.getArea().getGazetteer() == Gazetteer.TDWG) {
+               d.setArea(TdwgArea.of(d.getArea().getId()));
+
+             } else if (d.getArea().getGazetteer() == Gazetteer.LONGHURST) {
+               d.setArea(LonghurstArea.of(d.getArea().getId()));
+             }
+             return d;
+           })
+           .filter(d -> d.getArea() != null)
+           .collect(Collectors.toList())
+      );
       info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
     }
 

@@ -12,14 +12,14 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("ALL")
 public class SafeParser<T> {
-  private final Optional<T> result;
+  private final Optional<? extends T> result;
 
   public static <T> SafeParser<T> parse(Parser<T> parser, String value) {
     return new SafeParser<T>(value, parser);
   }
 
   private SafeParser(String value, Parser<T> parser) {
-    Optional<T> result = null;
+    Optional<? extends T> result = null;
     try {
       result = parser.parse(value);
     } catch (UnparsableException e) {
@@ -105,13 +105,14 @@ public class SafeParser<T> {
   /**
    * Same as orElse but using the supplier syntax
    */
-  public T orElse(Supplier<T> other, Issue unparsableIssue, IssueContainer issueCollector) {
+  public T orElse(Supplier<? extends T> other, Issue unparsableIssue, IssueContainer issueCollector) {
     if (isParsable()) {
-      return result.orElse(other.get());
-
+      if (result.isPresent()) {
+        return result.get();
+      }
     } else {
       issueCollector.addIssue(unparsableIssue);
-      return other.get();
     }
+    return other.get();
   }
 }

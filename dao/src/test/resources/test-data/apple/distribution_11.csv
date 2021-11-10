@@ -2,3 +2,5 @@ id,taxon_id,area,gazetteer,reference_id
 1,root-1,Berlin,TEXT,ref-1
 2,root-1,Leiden,TEXT,ref-1b
 3,root-2,New York,TEXT,ref-1b
+4,root-1,DE,ISO,
+5,root-1,BZE,TDWG,

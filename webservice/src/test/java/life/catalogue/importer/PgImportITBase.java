@@ -206,8 +206,7 @@ public class PgImportITBase {
   
   static Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
     Distribution d = new Distribution();
-    d.setArea(area);
-    d.setGazetteer(standard);
+    d.setArea(new AreaImpl(standard, area));
     d.setStatus(status);
     return d;
   }
