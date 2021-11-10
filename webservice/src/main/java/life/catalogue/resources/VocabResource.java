@@ -11,6 +11,10 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColDwcTerm;
 import life.catalogue.img.ImgConfig;
 
+import life.catalogue.parser.AreaParser;
+
+import life.catalogue.parser.UnparsableException;
+
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
@@ -188,6 +192,32 @@ public class VocabResource {
   }
 
   @GET
+  @Path("area")
+  public Collection<?> areas(@QueryParam("gazetteer") Gazetteer gazetteer) throws IllegalAccessException {
+    if (gazetteer == null) {
+      throw new IllegalArgumentException("gazetteer parameter required");
+    }
+    // we only support a few gazetteers now
+    switch (gazetteer) {
+      case ISO:
+        return enumList(Country.class);
+      case TDWG:
+        return TdwgArea.AREAS;
+      case LONGHURST:
+        return LonghurstArea.AREAS;
+      default:
+        throw new NotFoundException(gazetteer + " enumeration not available");
+    }
+  }
+
+  @GET
+  @Path("area/{id}")
+  public Optional<? extends Area> area(@PathParam("id") String id) throws UnparsableException {
+    return AreaParser.PARSER.parse(id);
+  }
+
+
+  @GET
   @Path("{vocab}")
   public List<Map<String, Object>> values(@PathParam("vocab") String vocab) throws IllegalAccessException {
     if (vocab != null && vocabs.containsKey(vocab.toLowerCase())) {
@@ -236,7 +266,7 @@ public class VocabResource {
     return map;
   }
 
-  private static List<Map<String, Object>> enumList(Class<Enum> clazz) throws IllegalAccessException {
+  private static List<Map<String, Object>> enumList(Class<? extends Enum> clazz) throws IllegalAccessException {
     List<Map<String, Object>> values = new ArrayList<>();
     for (Enum entry : clazz.getEnumConstants()) {
       Map<String, Object> map = enumFields(entry);
