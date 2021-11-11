@@ -136,7 +136,7 @@ public class PgImportIT extends PgImportITBase {
       assertTrue(expV.isEmpty());
       
       // check distributions
-      Set<Distribution> expD = expectedDwca24Distributions();
+      List<Distribution> expD = expectedDwca24Distributions();
       assertEquals(expD.size(), info.getDistributions().size());
       // remove dist keys before we check equality
       info.getDistributions().forEach(d -> {
@@ -147,12 +147,13 @@ public class PgImportIT extends PgImportITBase {
         setUserDate(d, null, null);
       });
       Set<Distribution> imported = Sets.newHashSet(info.getDistributions());
-      
-      Sets.SetView<Distribution> diff = Sets.difference(expD, imported);
+      Set<Distribution> expected = Sets.newHashSet(expD);
+
+      Sets.SetView<Distribution> diff = Sets.difference(expected, imported);
       for (Distribution d : diff) {
         System.out.println(d);
       }
-      assertEquals(expD, imported);
+      assertEquals(expected, imported);
     }
   }
   

@@ -96,7 +96,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertTrue(expV.isEmpty());
       
       // check distributions
-      Set<Distribution> expD = PgImportIT.expectedDwca24Distributions();
+      List<Distribution> expD = PgImportIT.expectedDwca24Distributions();
       
       assertEquals(expD.size(), t.distributions.size());
       // remove keys before we check equality
@@ -105,12 +105,13 @@ public class NormalizerDwcaIT extends NormalizerITBase {
         d.setVerbatimKey(null);
       });
       Set<Distribution> imported = Sets.newHashSet(t.distributions);
-      
-      Sets.SetView<Distribution> diff = Sets.difference(expD, imported);
+      Set<Distribution> expected = Sets.newHashSet(expD);
+
+      Sets.SetView<Distribution> diff = Sets.difference(expected, imported);
       for (Distribution d : diff) {
         System.out.println(d);
       }
-      assertEquals(expD, imported);
+      assertEquals(expected, imported);
     }
   }
   

@@ -36,9 +36,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -177,36 +175,38 @@ public class PgImportITBase {
     assertFalse(v.hasIssue(issue));
   }
   
-  public static Set<Distribution> expectedDwca24Distributions() {
-    Set<Distribution> expD = Sets.newHashSet();
-    expD.add(dist(Gazetteer.TEXT, "All of Austria and the alps", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.ISO, "DE", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.ISO, "FR", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.ISO, "DK", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.ISO, "GB", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.ISO, "NG", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.ISO, "KE", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.TDWG, "AGS", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.FAO, "37.4.1", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.TDWG, "MOR-MO", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.TDWG, "MOR-CE", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.TDWG, "MOR-ME", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.TDWG, "CPP", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.TDWG, "NAM", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.ISO, "IT-82", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.ISO, "ES-CN", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.ISO, "FR-H", DistributionStatus.NATIVE));
-    expD.add(dist(Gazetteer.ISO, "FM-PNI", DistributionStatus.NATIVE));
+  public static List<Distribution> expectedDwca24Distributions() {
+    // TDWG:MOR-CE & TDWG:MOR-ME do not exist - will be removed
+    List<Distribution> expD = new ArrayList<>();
+    expD.add(dist(new AreaImpl("All of Austria and the alps"), DistributionStatus.NATIVE));
+    expD.add(dist(Country.fromIsoCode("DE"), DistributionStatus.NATIVE));
+    expD.add(dist(Country.fromIsoCode("FR"), DistributionStatus.NATIVE));
+    expD.add(dist(Country.fromIsoCode("DK"), DistributionStatus.NATIVE));
+    expD.add(dist(Country.fromIsoCode("GB"), DistributionStatus.NATIVE));
+    expD.add(dist(Country.fromIsoCode("NG"), DistributionStatus.NATIVE));
+    expD.add(dist(Country.fromIsoCode("KE"), DistributionStatus.NATIVE));
+    expD.add(dist(TdwgArea.of("AGS"), DistributionStatus.NATIVE));
+    expD.add(dist(new AreaImpl(Gazetteer.FAO, "37.4.1"), DistributionStatus.NATIVE));
+    expD.add(dist(TdwgArea.of("MOR-MO"), DistributionStatus.NATIVE));
+    expD.add(dist(TdwgArea.of("CPP"), DistributionStatus.NATIVE));
+    expD.add(dist(TdwgArea.of("NAM"), DistributionStatus.NATIVE));
+    expD.add(dist(Country.fromIsoCode("IT"), DistributionStatus.NATIVE));
+    expD.add(dist(Country.fromIsoCode("ES"), DistributionStatus.NATIVE));
+    expD.add(dist(Country.fromIsoCode("FR"), DistributionStatus.NATIVE));
+    expD.add(dist(Country.fromIsoCode("FM"), DistributionStatus.NATIVE));
     return expD;
   }
   
   static RankedName rn(Rank rank, String name) {
     return new RankedName(null, name, null, rank);
   }
-  
-  static Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
+
+  static Distribution dist(Optional<? extends Area> area, DistributionStatus status) {
+    return dist(area.get(), status);
+  }
+  static Distribution dist(Area area, DistributionStatus status) {
     Distribution d = new Distribution();
-    d.setArea(new AreaImpl(standard, area));
+    d.setArea(area);
     d.setStatus(status);
     return d;
   }

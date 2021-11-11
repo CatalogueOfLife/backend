@@ -35,6 +35,7 @@ public class AreaParserTest extends ParserTestBase<Area> {
     assertParse(new AreaImpl(Gazetteer.FAO,"27.12.a.4"), "fao:27.12.a.4");
     assertParse(new AreaImpl(Gazetteer.FAO,"27.12.C"), "fao:27.12.C");
     assertParse(new AreaImpl(Gazetteer.FAO,"27.3.d.28.2"), "fao:27.3.d.28.2");
+    assertParse(new AreaImpl(Gazetteer.FAO,"37.4.1"), "FAO:37.4.1");
     assertParse(Country.AZERBAIJAN, "iso:AZ-tar");
 
     assertEquals(Optional.empty(), parser.parse("iso: "));
