@@ -137,6 +137,11 @@ public class PgImportIT extends PgImportITBase {
       
       // check distributions
       List<Distribution> expD = expectedDwca24Distributions();
+      expD.stream().forEach(d -> {
+        if (d.getArea() instanceof Country) {
+          d.setArea(new AreaImpl(Gazetteer.ISO, d.getArea().getId(), d.getArea().getName()));
+        }
+      });
       assertEquals(expD.size(), info.getDistributions().size());
       // remove dist keys before we check equality
       info.getDistributions().forEach(d -> {

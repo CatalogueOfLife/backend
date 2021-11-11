@@ -30,6 +30,12 @@ public class AreaImpl implements Area {
 
   }
 
+  public AreaImpl(Area other) {
+    this.gazetteer = other.getGazetteer();
+    this.id = other.getId();
+    this.name = other.getName();
+  }
+
   @Override
   public Gazetteer getGazetteer() {
     return gazetteer;

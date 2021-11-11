@@ -88,7 +88,7 @@ public class TaxonDaoTest extends DaoTestBase {
           assertEquals("ref-1b" ,d.getReferenceId());
           break;
         case 4:
-          assertEquals(Country.GERMANY, d.getArea());
+          assertEquals(new AreaImpl(Country.GERMANY), d.getArea());
           assertEquals(Gazetteer.ISO, d.getArea().getGazetteer());
           assertNull(d.getStatus());
           assertNotNull(d.getArea().getId());

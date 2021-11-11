@@ -209,7 +209,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
            .map(d -> {
              if (d.getArea().getGazetteer() == Gazetteer.ISO) {
                Country.fromIsoCode(d.getArea().getId()).ifPresent(c ->
-                 d.setArea(new AreaImpl(Gazetteer.ISO, c.getId(), c.getName()))
+                 d.setArea(new AreaImpl(c))
                );
 
              } else if (d.getArea().getGazetteer() == Gazetteer.TDWG) {
