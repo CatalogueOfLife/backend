@@ -255,7 +255,7 @@ public class InterpreterBase {
     Matcher m = AREA_VALUE_PATTERN.matcher(x);
     List<String> words = new ArrayList<>();
     while (m.find()) {
-      words.add(m.group(0));
+      words.add(m.group(0).trim());
     }
     return words;
   }

@@ -60,7 +60,7 @@ public class DatasetImportDaoTest extends DaoTestBase {
     assertEquals(1, d.getNamesByTypeCount().size());
     assertEquals((Integer) 5, d.getNamesByTypeCount().get(NameType.SCIENTIFIC));
     
-    assertEquals(1, d.getDistributionsByGazetteerCount().size());
+    assertEquals(3, d.getDistributionsByGazetteerCount().size());
     assertEquals((Integer) 3, d.getDistributionsByGazetteerCount().get(Gazetteer.TEXT));
     
     assertEquals(3, d.getVernacularsByLanguageCount().size());

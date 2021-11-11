@@ -12,7 +12,7 @@ import com.esotericsoftware.kryo.io.Output;
 import java.util.regex.Pattern;
 
 public class AreaSerializer extends Serializer<Area> {
-  private static final Pattern PREFIX  = Pattern.compile("^([a-z]+)\\s*:\\s*(.+)$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern PREFIX  = Pattern.compile("^([a-z]+)\\s*:\\s*(.+)$");
 
   public AreaSerializer() {
     // dont accept null values

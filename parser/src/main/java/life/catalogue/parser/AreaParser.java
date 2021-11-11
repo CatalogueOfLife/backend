@@ -1,25 +1,15 @@
 package life.catalogue.parser;
 
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.io.TabReader;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import life.catalogue.common.kryo.AreaSerializer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Enums;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A parser that tries to extract complex area information (actual area id with gazetteer its based on )
@@ -27,7 +17,8 @@ import com.google.common.collect.Maps;
  */
 public class AreaParser extends ParserBase<Area> {
   public static final AreaParser PARSER = new AreaParser();
-  private static final Pattern EXTENDED_ISO  = Pattern.compile("^iso\\s*:\\s*(" + CountryParser.ISO + ")$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern PREFIX = Pattern.compile("^([a-z]+)\\s*:\\s*(.+)?\\s*$", Pattern.CASE_INSENSITIVE);
+  private static final String ISO = "iso";
 
   public AreaParser() {
     super(Area.class);
@@ -42,11 +33,20 @@ public class AreaParser extends ParserBase<Area> {
       try {
         // remove invisible
         area = area.trim();
-        var m = EXTENDED_ISO.matcher(area);
+        var m = PREFIX.matcher(area);
         if (m.find()) {
-          return CountryParser.PARSER.parse(m.group(1));
+          String scheme = m.group(1).toLowerCase();
+          String value = m.group(2);
+          if (StringUtils.isBlank(value)) {
+            return Optional.empty();
+          } else if (scheme.equalsIgnoreCase(ISO)) {
+            return CountryParser.PARSER.parse(value.trim());
+          } else {
+            return Optional.ofNullable(AreaSerializer.parse(scheme + ":" + value.trim()));
+          }
+        } else {
+          return Optional.of(new AreaImpl(area));
         }
-        return Optional.ofNullable(AreaSerializer.parse(area));
       } catch (IllegalArgumentException e) {
         throw new UnparsableException("Unparsable area " + area, e);
       }
