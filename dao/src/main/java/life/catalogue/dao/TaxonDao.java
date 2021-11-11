@@ -208,7 +208,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
            // replace will enums so we also get titles and other props - this is too hard to do in mybatis
            .map(d -> {
              if (d.getArea().getGazetteer() == Gazetteer.ISO) {
-               d.setArea(Country.fromIsoCode(d.getArea().getId()).orElse(null));
+               Country.fromIsoCode(d.getArea().getId()).ifPresent(c ->
+                 d.setArea(new AreaImpl(Gazetteer.ISO, c.getId(), c.getName()))
+               );
 
              } else if (d.getArea().getGazetteer() == Gazetteer.TDWG) {
                d.setArea(TdwgArea.of(d.getArea().getId()));

@@ -2,7 +2,6 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Area;
 import life.catalogue.api.vocab.DistributionStatus;
-import life.catalogue.api.vocab.Gazetteer;
 
 import java.util.Objects;
 
