@@ -9,6 +9,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.common.func.ThrowingBiConsumer;
 import life.catalogue.common.func.ThrowingConsumer;
@@ -26,6 +27,8 @@ import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.UriBuilder;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,6 +39,7 @@ import java.util.Set;
 
 public abstract class ArchiveExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(ArchiveExporter.class);
+  private static final String LOGO_FILENAME = "logo.png";
 
   protected boolean fullDataset;
   protected final Set<String> nameIDs = new HashSet<>();
@@ -43,8 +47,8 @@ public abstract class ArchiveExporter extends DatasetExporter {
   protected final Set<String> refIDs = new HashSet<>();
   protected final LoadingCache<String, String> refCache;
   protected final Int2IntMap sector2datasetKeys = new Int2IntOpenHashMap();
+  private final UriBuilder logoUriBuilder;
   protected SectorMapper sectorMapper;
-  protected DatasetSourceMapper projectSourceMapper;
   protected NameRelationMapper nameRelMapper;
   protected SqlSession session;
   protected TermWriter writer;
@@ -54,6 +58,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
   ArchiveExporter(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(req, userKey, requiredFormat, true, factory, cfg, imageService);
     final DSID<String> rKey = DSID.of(datasetKey, null);
+    logoUriBuilder = UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
     this.refCache = CacheBuilder.newBuilder()
       .maximumSize(1000)
       .build(new CacheLoader<>() {
@@ -98,9 +103,50 @@ public abstract class ArchiveExporter extends DatasetExporter {
       exportTaxonRels();
       exportReferences();
       closeWriter();
-      exportMetadata();
     }
   }
+
+
+  @Override
+  protected void exportMetadata() throws IOException {
+    // add CLB logo URL if missing
+    if (dataset.getLogo() == null && imageService.datasetLogoExists(dataset.getKey())) {
+      dataset.setLogo(logoUriBuilder.build(dataset.getKey()));
+    }
+
+    // include logo image file
+    imageService.copyDatasetLogo(datasetKey, new File(tmpDir, LOGO_FILENAME));
+
+    try (SqlSession session = factory.openSession(false)) {
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+
+      // extract unique source datasets if sectors were given
+      Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
+      // for releases and projects also include an EML for each source dataset as defined by all sectors
+      for (Integer key : sourceKeys) {
+        Dataset src = null;
+        if (DatasetOrigin.MANAGED == dataset.getOrigin()) {
+          src = psm.getProjectSource(key, datasetKey);
+        } else if (DatasetOrigin.RELEASED == dataset.getOrigin()) {
+          src = psm.getReleaseSource(key, datasetKey);
+        }
+        if (src == null) {
+          LOG.warn("Skip missing dataset {} for archive metadata", key);
+          return;
+        }
+        // create source entry in dataset
+        dataset.addSource(src.toCitation());
+        writeSourceMetadata(src);
+      }
+    }
+
+    // main dataset metadata
+    writeMetadata(dataset);
+  }
+
+  abstract void writeMetadata(Dataset dataset) throws IOException;
+
+  abstract void writeSourceMetadata(Dataset source) throws IOException;
 
   @Override
   protected void bundle() throws IOException {
@@ -119,7 +165,6 @@ public abstract class ArchiveExporter extends DatasetExporter {
 
   protected void init(SqlSession session) throws Exception {
     sectorMapper = session.getMapper(SectorMapper.class);
-    projectSourceMapper = session.getMapper(DatasetSourceMapper.class);
     nameRelMapper = session.getMapper(NameRelationMapper.class);
   }
 

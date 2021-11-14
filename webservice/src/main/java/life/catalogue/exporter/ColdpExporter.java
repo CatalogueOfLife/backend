@@ -267,31 +267,13 @@ public class ColdpExporter extends ArchiveExporter {
   }
 
   @Override
-  protected void exportMetadata() throws IOException {
-    Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
-    // for releases and projects also include a source entry
-    for (Integer key : sourceKeys) {
-      Dataset src = null;
-      if (DatasetOrigin.MANAGED == dataset.getOrigin()) {
-        src = projectSourceMapper.getProjectSource(key, datasetKey);
-      } else if (DatasetOrigin.RELEASED == dataset.getOrigin()) {
-        src = projectSourceMapper.getReleaseSource(key, datasetKey);
-      }
-      if (src == null) {
-        LOG.warn("Skip missing dataset {} for archive metadata", key);
-        return;
-      }
-      // create source entry in dataset and separate file
-      dataset.addSource(src.toCitation());
-      File f = new File(tmpDir, String.format("source/%s.yaml", key));
-      DatasetYamlWriter.write(src, f);
-    }
-
-    // write to YAML
+  void writeMetadata(Dataset dataset) throws IOException {
     DatasetYamlWriter.write(dataset, new File(tmpDir, METADATA_FILENAME));
-
-    // add logo image
-    imageService.copyDatasetLogo(datasetKey, new File(tmpDir, LOGO_FILENAME));
   }
 
+  @Override
+  void writeSourceMetadata(Dataset src) throws IOException {
+    File f = new File(tmpDir, String.format("source/%s.yaml", src.getKey()));
+    DatasetYamlWriter.write(src, f);
+  }
 }
