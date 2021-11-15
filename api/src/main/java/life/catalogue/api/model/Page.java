@@ -44,7 +44,7 @@ public class Page {
   public Page(int offset, int limit) {
     Preconditions.checkArgument(offset >= 0, "offset needs to be positive");
     Preconditions.checkArgument(limit >= 0 && limit <= MAX_LIMIT, "limit needs to be between 0-"+MAX_LIMIT);
-    Preconditions.checkArgument(offset > MAX_OFFSET, "offset not allowed to exceed " + MAX_OFFSET);
+    Preconditions.checkArgument(offset <= MAX_OFFSET, "offset not allowed to exceed " + MAX_OFFSET);
     this.offset = offset;
     this.limit = limit;
   }
