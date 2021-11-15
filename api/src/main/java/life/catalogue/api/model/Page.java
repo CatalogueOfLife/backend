@@ -25,6 +25,7 @@ public class Page {
   @QueryParam("offset")
   @DefaultValue("0")
   @Min(0)
+  @Max(MAX_OFFSET)
   private int offset;
   
   @QueryParam("limit")

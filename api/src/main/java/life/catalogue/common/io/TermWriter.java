@@ -44,9 +44,6 @@ public abstract class TermWriter implements AutoCloseable {
 
     static RowWriter setupWriter(File dir, Term rowType) {
       File f = new File(dir, filename(rowType));
-      if (!dir.exists()) {
-        dir.mkdirs();
-      }
       return TabWriter.fromFile(f);
     }
   }
