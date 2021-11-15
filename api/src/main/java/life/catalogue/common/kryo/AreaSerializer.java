@@ -9,9 +9,13 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.regex.Pattern;
 
 public class AreaSerializer extends Serializer<Area> {
+  private static final Logger LOG = LoggerFactory.getLogger(AreaSerializer.class);
   private static final Pattern PREFIX  = Pattern.compile("^([a-z]+)\\s*:\\s*(.+)$");
 
   public AreaSerializer() {
@@ -30,7 +34,13 @@ public class AreaSerializer extends Serializer<Area> {
 
   @Override
   public Area read(Kryo kryo, Input input, Class<? extends Area> aClass) {
-    return parse(input.readString());
+    String value = input.readString();
+    try {
+      return parse(value);
+    } catch (IllegalArgumentException e) {
+      LOG.warn("Unknown area scheme or bad enumeration: {}", value, e);
+      return new AreaImpl(value);
+    }
   }
 
   @Override
