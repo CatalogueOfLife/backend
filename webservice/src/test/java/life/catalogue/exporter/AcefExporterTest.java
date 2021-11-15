@@ -88,10 +88,10 @@ public class AcefExporterTest extends ExporterTest {
     String content = FileUtils.readFileToString(cnf, StandardCharsets.UTF_8);
     System.out.println(content);
     assertEquals("record_id\tname_code\tcommon_name\ttransliteration\tlanguage\tcountry\tarea\treference_id\tdatabase_id\tis_infraspecies\treference_code\n" +
-            "1047\t1\tTännø\t\\N\tdeu\t\\N\t\\N\t1\t500\t\\N\tr1\n" +
-            "1048\t1\tFír\t\\N\teng\t\\N\t\\N\t2\t500\t\\N\tr2\n" +
-            "1049\t2\tWeiß-Tanne\t\\N\tdeu\t\\N\t\\N\t3\t500\t\\N\tr3\n" +
-            "1050\t2\tEuropean silver fir\t\\N\teng\t\\N\t\\N\t\\N\t500\t\\N\t\\N", content.trim());
+            "1047\t1\tTännø\t\\N\tdeu\t\\N\t\\N\t1\t100\t\\N\tr1\n" +
+            "1048\t1\tFír\t\\N\teng\t\\N\t\\N\t2\t100\t\\N\tr2\n" +
+            "1049\t2\tWeiß-Tanne\t\\N\tdeu\t\\N\t\\N\t3\t100\t\\N\tr3\n" +
+            "1050\t2\tEuropean silver fir\t\\N\teng\t\\N\t\\N\t\\N\t100\t\\N\t\\N", content.trim());
   }
 
   @Test

@@ -25,7 +25,7 @@ CREATE INDEX ON __coverage2 (dataset_key);
 COPY (
 (
 SELECT DISTINCT ON (d.key)
- d.key - 1000 AS record_id,
+ d.key AS record_id,
  CASE WHEN d.alias IS NOT NULL AND d.alias != d.title THEN d.alias || ': ' || d.title ELSE d.title END AS database_name_displayed,
  coalesce(d.alias, d.title) AS database_name,
  d.title AS database_full_name,
@@ -63,7 +63,7 @@ ORDER BY d.key ASC, i.attempt DESC
 UNION ALL
 
 SELECT
- 500 AS record_id,
+ {{datasetKey}} AS record_id,
  'CoL Management Classification' AS database_name_displayed,
  'CoL Management Classification' AS database_name,
  'CoL Management Classification' AS database_full_name,
@@ -110,7 +110,7 @@ COPY (
     ) AS year,
     csl->>'title' AS title,
     csl->>'container-title' AS source,
-    coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id,
+    coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id,
     r.id AS reference_code
   FROM reference_{{datasetKey}} r
     JOIN __ref_keys rk ON rk.id=r.id
@@ -147,7 +147,7 @@ INSERT INTO __scrutinizer (name, dataset_key)
             LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
         WHERE t.scrutinizer IS NOT NULL;
 COPY (
-    SELECT key AS record_id, name AS specialist_name, null AS specialist_code, coalesce(dataset_key, 1500) - 1000 AS database_id FROM __scrutinizer
+    SELECT key AS record_id, name AS specialist_name, null AS specialist_code, coalesce(dataset_key, {{datasetKey}}) AS database_id FROM __scrutinizer
 ) TO 'specialists.csv';
 
 
@@ -158,7 +158,7 @@ COPY (
         nextval('__record_id_seq') AS record_id,
         t.id AS name_code,
         unnest(t.environments) AS lifezone,
-        coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
+        coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id
     FROM name_usage_{{datasetKey}} t
         JOIN __tax_keys tk ON t.id=tk.id
         LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
@@ -253,7 +253,7 @@ SELECT key AS record_id,
       coalesce("order", 'Not assigned') AS "order",
       coalesce(family, 'Not assigned') AS family,
       superfamily,
-      coalesce(dataset_key, 1500) - 1000 AS database_id,
+      coalesce(dataset_key, {{datasetKey}}) AS database_id,
       id AS family_code,
       1 AS is_accepted_name
     FROM __classification
@@ -298,7 +298,7 @@ SELECT
        WHEN t.status='MISAPPLIED' THEN 3
   END AS sp2000_status_id, -- 1=ACCEPTED, 2=AMBIGUOUS_SYNONYM, 3=MISAPPLIED, 4=PROVISIONALLY_ACCEPTED, 5=SYNONYM
                            -- Java: ACCEPTED,PROVISIONALLY_ACCEPTED,SYNONYM,AMBIGUOUS_SYNONYM,MISAPPLIED
-  CASE WHEN t.is_synonym THEN coalesce(cs.dataset_key, 1500) - 1000 ELSE coalesce(c.dataset_key, 1500) - 1000 END AS database_id,
+  CASE WHEN t.is_synonym THEN coalesce(cs.dataset_key, {{datasetKey}}) ELSE coalesce(c.dataset_key, {{datasetKey}}) END AS database_id,
   sc.key AS specialist_id,
   cf.key AS family_id,
   NULL AS specialist_code,
@@ -336,7 +336,7 @@ SELECT
   t.remarks AS comment,
   t.scrutinizer_date AS scrutiny_date,
   1 AS sp2000_status_id, -- 1=ACCEPTED
-  coalesce(c.dataset_key, 1500) - 1000 AS database_id,
+  coalesce(c.dataset_key, {{datasetKey}}) AS database_id,
   sc.key AS specialist_id,
   cf.key AS family_id,
   NULL AS specialist_code,
@@ -372,7 +372,7 @@ COPY (
     trim(v.country) AS country,
     trim(v.area) AS area,
     rk.key as reference_id,
-    coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id,
+    coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id,
     NULL AS is_infraspecies,
     r.id as reference_code
   FROM vernacular_name_{{datasetKey}} v
@@ -390,7 +390,7 @@ COPY (
     CASE WHEN d.gazetteer = 'ISO'::GAZETTEER THEN c.title ELSE d.area END AS distribution,
     d.gazetteer::text AS StandardInUse,
     initcap(d.status::text) AS DistributionStatus,
-    coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
+    coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id
   FROM distribution_{{datasetKey}} d
       JOIN name_usage_{{datasetKey}} t ON t.id=d.taxon_id
       LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
@@ -405,7 +405,7 @@ COPY (
     'NomRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
     r.id AS reference_code,
-    coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
+    coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id
   FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON t.name_id=n.id
     JOIN reference_{{datasetKey}} r ON r.id=n.published_in_id
@@ -419,7 +419,7 @@ COPY (
     'TaxAccRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
     r.id AS reference_code,
-    coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
+    coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id
   FROM
     (SELECT id, UNNEST(reference_ids) AS rid FROM name_usage_{{datasetKey}}) u
     JOIN reference_{{datasetKey}} r ON r.id=u.rid
