@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
  * A page used for requesting or responding to a pageable service.
  */
 public class Page {
+  public static final int MAX_OFFSET = 100000; // disallow deep paging!
   public static final int MAX_LIMIT = 1000;
   public static final int DEFAULT_LIMIT = 10;
   public static final int DEFAULT_OFFSET = 0;
@@ -42,7 +43,8 @@ public class Page {
   
   public Page(int offset, int limit) {
     Preconditions.checkArgument(offset >= 0, "offset needs to be positive");
-    Preconditions.checkArgument(limit >= 0 && limit <= MAX_LIMIT, "limit needs to be between 0-1000");
+    Preconditions.checkArgument(limit >= 0 && limit <= MAX_LIMIT, "limit needs to be between 0-"+MAX_LIMIT);
+    Preconditions.checkArgument(offset > MAX_OFFSET, "offset not allowed to exceed " + MAX_OFFSET);
     this.offset = offset;
     this.limit = limit;
   }
