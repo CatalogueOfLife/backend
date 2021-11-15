@@ -17,6 +17,7 @@ import org.gbif.nameparser.api.Rank;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import org.apache.ibatis.session.ExecutorType;
@@ -97,6 +98,9 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     } finally {
       refIns.stop();
       nameIns.stop();
+      tr.join();
+      tn.join();
+      System.out.println("All threads finished");
     }
   }
   
@@ -132,7 +136,7 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     private final Supplier<T> generator;
     private final Class<T> objClass;
     private long counter;
-    boolean stop = false;
+    AtomicBoolean stop = new AtomicBoolean(false);
     
     ContinuousInserter(SqlSessionFactory factory, Class<T> objClass, Class<? extends CRUD<DSID<String>, T>> mapperClass, Supplier<T> generator) {
       this.factory = factory;
@@ -142,7 +146,7 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     }
   
     public void stop() {
-      stop = true;
+      stop.set(true);
     }
     
     @Override
@@ -150,14 +154,14 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
       try (SqlSession session = factory.openSession(ExecutorType.BATCH, false)) {
         CRUD<DSID<String>, T> mapper = session.getMapper(mapperClass);
         
-        while (!stop) {
+        while (!stop.get()) {
           T obj = generator.get();
           mapper.create(obj);
           if (counter++ % 1000 == 0) {
             session.commit();
             System.out.println("Inserted "+counter + " " + objClass.getSimpleName());
           } else if (counter > 10000) {
-            stop = true;
+            stop.set(true);
             System.out.println("Stop as we inserted all "+counter + " " + objClass.getSimpleName());
           }
         }

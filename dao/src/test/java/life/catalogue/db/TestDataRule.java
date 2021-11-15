@@ -68,11 +68,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   /**
    * NONE does wipe all data so every test starts with an empty db.
    */
-  public final static TestData NONE = new TestData("none", null, null, null, true, false, null, Collections.emptyMap(),3);
+  public final static TestData EMPTY = new TestData("empty", null, null, null, true, false, null, Collections.emptyMap(),3);
   /**
    * KEEP keeps existing data and does not wipe or create anything new. Can be used with class based data loading rules, e.g. TxtTreeDataRule
    */
-  public final static TestData KEEP = new TestData("none", null, null, null, true, false, null, Collections.emptyMap(),3);
+  public final static TestData KEEP = new TestData("keep", null, null, null, true, false, null, Collections.emptyMap(),3);
   /**
    * Inits the datasets table with real col data from colplus-repo
    * The dataset.csv file was generated as a dump from production with psql:
@@ -139,7 +139,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   public static TestDataRule empty() {
-    return new TestDataRule(KEEP);
+    return new TestDataRule(EMPTY);
   }
 
   public static TestDataRule keep() {
