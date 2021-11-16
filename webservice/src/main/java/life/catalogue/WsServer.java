@@ -1,7 +1,5 @@
 package life.catalogue;
 
-import com.google.common.eventbus.AsyncEventBus;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.util.ObjectUtils;
@@ -32,6 +30,7 @@ import life.catalogue.dw.health.*;
 import life.catalogue.dw.jersey.ColJerseyBundle;
 import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.metrics.GangliaBundle;
+import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
@@ -59,7 +58,6 @@ import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.util.concurrent.Executors;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -80,11 +78,11 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 
 import io.dropwizard.Application;
 import io.dropwizard.client.DropwizardApacheConnector;
-import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.forms.MultiPartBundle;
@@ -193,7 +191,10 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetExport.setDownloadBaseURI(cfg.downloadURI);
 
     // http client pool is managed via DW lifecycle already
-    httpClient = new HttpClientBuilder(env).using(cfg.client).build(getUserAgent(cfg));
+    // use a custom metrics naming strategy that does not involve the user agent name with a version
+    httpClient = new HttpClientBuilder(env)
+      .using(cfg.client)
+      .build(getUserAgent(cfg));
 
     // reuse the same http client pool also for jersey clients!
     JerseyClientBuilder builder = new JerseyClientBuilder(env)

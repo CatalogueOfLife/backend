@@ -192,7 +192,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public String versionString() {
     if (version != null) {
       String datetime = version.getProperty("git.commit.time").substring(0, 10);
-      return version.getProperty("git.commit.id.abbrev") + "_" + datetime;
+      return version.getProperty("git.commit.id.abbrev") + " " + datetime;
     }
     return null;
   }
