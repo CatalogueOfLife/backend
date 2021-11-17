@@ -63,13 +63,6 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
                     @Param("since") LocalDateTime since);
 
   /**
-   * Lists all homotypic names based on the same homotypic name key
-   *
-   * @param nameId name id of the homotypic group
-   */
-  List<Name> homotypicGroup(@Param("datasetKey") int datasetKey, @Param("id") String nameId);
-  
-  /**
    * Returns the list of names published in the same reference.
    */
   List<Name> listByReference(@Param("datasetKey") int datasetKey, @Param("refId") String publishedInId);

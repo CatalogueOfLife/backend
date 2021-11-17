@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.*;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -26,4 +27,10 @@ public interface NameRelationMapper extends Create<NameRelation>,
    * Returns the list of related names of a given type for a single name on the relatedNameId side of the relation only.
    */
   List<NameRelation> listByTypeReverse(@Param("key") DSID<String> key, @Param("type") NomRelType type);
+
+  /**
+   * Returns the unique list of ids from all related names within the same dataset that are (transitively) connected by relations of the given types.
+   * @param key the name id to start our from
+   */
+  List<String> listRelatedNameIDs(@Param("key") DSID<String> key, @Param("types") Set<NomRelType> types);
 }

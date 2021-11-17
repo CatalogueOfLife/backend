@@ -58,8 +58,7 @@ public class PgImportIT extends PgImportITBase {
     
     Name bas = ndao.getBasionym(key(dataset.getKey(), n1006.getId()));
     assertEquals("Leonida taraxacoida", bas.getScientificName());
-    assertEquals(n1006.getHomotypicNameId(), bas.getHomotypicNameId());
-    
+
     // check taxon parents
     assertParents(tdao, "1006", "102", "30", "20", "10", "1");
   }
@@ -90,9 +89,6 @@ public class PgImportIT extends PgImportITBase {
       Name n1 = ndao.get(key(dataset.getKey(), "1"));
       Name n2 = ndao.get(key(dataset.getKey(), "2"));
       
-      assertEquals(n2.getHomotypicNameId(), n1.getHomotypicNameId());
-      assertTrue(n1.getId().equals(n2.getHomotypicNameId())
-          || n2.getId().equals(n2.getHomotypicNameId()));
       assertIssue(n1, Issue.CHAINED_BASIONYM);
       assertIssue(n2, Issue.CHAINED_BASIONYM);
       
@@ -100,11 +96,6 @@ public class PgImportIT extends PgImportITBase {
       Name n11 = ndao.get(key(dataset.getKey(), "11"));
       Name n12 = ndao.get(key(dataset.getKey(), "12"));
       Name n13 = ndao.get(key(dataset.getKey(), "13"));
-      
-      assertEquals(n10.getId(), n10.getHomotypicNameId());
-      assertEquals(n10.getId(), n11.getHomotypicNameId());
-      assertEquals(n10.getId(), n13.getHomotypicNameId());
-      assertEquals(n12.getId(), n12.getHomotypicNameId());
       
       assertIssue(n10, Issue.CHAINED_BASIONYM);
       assertIssue(n11, Issue.CHAINED_BASIONYM);
@@ -343,18 +334,7 @@ public class PgImportIT extends PgImportITBase {
       assertEquals(0, syn.getMisapplied().size());
       assertEquals(2, syn.getHeterotypic().size());
       assertEquals(1, syn.getHomotypic().size());
-      
-      for (Name n : syn.getHomotypic()) {
-        assertEquals(annua.getName().getHomotypicNameId(), n.getHomotypicNameId());
-      }
-      for (List<Name> group : syn.getHeterotypic()) {
-        String homoKey = group.get(0).getHomotypicNameId();
-        assertNotEquals(homoKey, annua.getName().getHomotypicNameId());
-        for (Name n : group) {
-          assertEquals(homoKey, n.getHomotypicNameId());
-        }
-      }
-      
+
       NameRelationMapper relMapper = session.getMapper(NameRelationMapper.class);
       // Poa annua has not explicitly declared a basionym
       assertTrue(relMapper.listByName(annua.getName()).isEmpty());

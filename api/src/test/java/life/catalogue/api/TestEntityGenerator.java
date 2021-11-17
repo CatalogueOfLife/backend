@@ -134,7 +134,6 @@ public class TestEntityGenerator {
     REF2.setModifiedBy(Users.DB_INIT);
 
     NAME1.setId("name-1");
-    NAME1.setHomotypicNameId(NAME1.getId());
     NAME1.setDatasetKey(DATASET11.getKey());
     NAME1.setVerbatimKey(VERBATIM_KEY5);
     NAME1.setGenus("Malus");
@@ -150,7 +149,6 @@ public class TestEntityGenerator {
     NAME1.setModifiedBy(Users.DB_INIT);
 
     NAME2.setId("name-2");
-    NAME2.setHomotypicNameId(NAME2.getId());
     NAME2.setDatasetKey(DATASET11.getKey());
     NAME2.setGenus("Larus");
     NAME2.setSpecificEpithet("fuscus");
@@ -165,7 +163,6 @@ public class TestEntityGenerator {
     NAME2.setModifiedBy(Users.DB_INIT);
 
     NAME3.setId("name-3");
-    NAME3.setHomotypicNameId(NAME2.getId());
     NAME3.setDatasetKey(DATASET11.getKey());
     NAME3.setGenus("Larus");
     NAME3.setSpecificEpithet("fusca");
@@ -180,7 +177,6 @@ public class TestEntityGenerator {
     NAME3.setModifiedBy(Users.DB_INIT);
 
     NAME4.setId("name-4");
-    NAME4.setHomotypicNameId(NAME4.getId());
     NAME4.setDatasetKey(DATASET11.getKey());
     NAME4.setGenus("Larus");
     NAME4.setSpecificEpithet("erfundus");
@@ -378,7 +374,6 @@ public class TestEntityGenerator {
   public static Name newName(int datasetKey, String id, String scientificName, Rank rank) {
     Name n = setUserDate(new Name());
     n.setId(id);
-    n.setHomotypicNameId(id);
     n.setDatasetKey(datasetKey);
     n.setCombinationAuthorship(createAuthorship());
     if (RND.nextBoolean()) {

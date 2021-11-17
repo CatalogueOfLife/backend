@@ -41,7 +41,6 @@ public class ParserConfigMapperTest extends MapperTestBase<ParserConfigMapper> {
   }
 
   private static ParserConfig removeDbCreatedProps(ParserConfig pc) {
-    NameMapperTest.removeCreatedProps(pc);
     TestEntityGenerator.nullifyDate(pc);
     return pc;
   }

@@ -115,11 +115,11 @@ public class TaxonDaoTest extends DaoTestBase {
       nDao.create(syn2bas, user);
       
       Name syn21 = TestEntityGenerator.newName("syn2.1");
-      syn21.setHomotypicNameId(syn2bas.getId());
+//      syn21.setHomotypicNameId(syn2bas.getId());
       nDao.create(syn21, user);
       
       Name syn22 = TestEntityGenerator.newName("syn2.2");
-      syn22.setHomotypicNameId(syn2bas.getId());
+//      syn22.setHomotypicNameId(syn2bas.getId());
       nDao.create(syn22, user);
       
       // homotypic 3
@@ -127,7 +127,7 @@ public class TaxonDaoTest extends DaoTestBase {
       nDao.create(syn3bas, user);
       
       Name syn31 = TestEntityGenerator.newName("syn3.1");
-      syn31.setHomotypicNameId(syn3bas.getId());
+//      syn31.setHomotypicNameId(syn3bas.getId());
       nDao.create(syn31, user);
       
       session.commit();
@@ -227,7 +227,6 @@ public class TaxonDaoTest extends DaoTestBase {
     assertTrue(t2.getName().getBasionymAuthorship().isEmpty());
     assertNull(t2.getName().getGenus());
     assertNull(t2.getName().getSpecificEpithet());
-    assertEquals(t2.getName().getId(), t2.getName().getHomotypicNameId());
     assertNotNull(t2.getName().getId());
     assertEquals(NameType.SCIENTIFIC, t2.getName().getType());
 
@@ -259,7 +258,6 @@ public class TaxonDaoTest extends DaoTestBase {
     assertEquals("Abies", t2.getName().getGenus());
     assertEquals("alba", t2.getName().getSpecificEpithet());
     assertNull(t2.getName().getInfraspecificEpithet());
-    assertEquals(t2.getName().getId(), t2.getName().getHomotypicNameId());
     assertNotNull(t2.getName().getId());
     assertEquals(NameType.SCIENTIFIC, t2.getName().getType());
   }

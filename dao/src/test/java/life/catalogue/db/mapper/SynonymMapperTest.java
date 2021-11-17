@@ -66,7 +66,6 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
   Synonym removeDbCreatedProps(Synonym obj) {
     TestEntityGenerator.nullifyUserDate(obj);
     obj.setAccepted(null);
-    NameMapperTest.removeCreatedProps(obj.getName());
     return obj;
   }
   
@@ -119,11 +118,11 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     nameDao.create(syn2bas, user);
   
     Name syn21 = TestEntityGenerator.newName("syn2.1");
-    syn21.setHomotypicNameId(syn2bas.getId());
+//    syn21.setHomotypicNameId(syn2bas.getId());
     nameDao.create(syn21, user);
   
     Name syn22 = TestEntityGenerator.newName("syn2.2");
-    syn22.setHomotypicNameId(syn2bas.getId());
+//    syn22.setHomotypicNameId(syn2bas.getId());
     nameDao.create(syn22, user);
   
     // homotypic 3
@@ -131,7 +130,7 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     nameDao.create(syn3bas, user);
   
     Name syn31 = TestEntityGenerator.newName("syn3.1");
-    syn31.setHomotypicNameId(syn3bas.getId());
+//    syn31.setHomotypicNameId(syn3bas.getId());
     nameDao.create(syn31, user);
     commit();
     

@@ -59,11 +59,6 @@
   </select>
 
   <update id="attachTriggers" parameterType="map">
-    CREATE TRIGGER trg_name_${key} BEFORE INSERT OR UPDATE
-    ON name_${key} FOR EACH ROW
-    WHEN (NEW.homotypic_name_id IS NULL)
-    EXECUTE PROCEDURE homotypic_name_id_default();
-
     CREATE TRIGGER trg_name_usage_${key}_insert
     AFTER INSERT ON name_usage_${key}
     REFERENCING NEW TABLE AS inserted

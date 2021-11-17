@@ -62,7 +62,6 @@ public class TaxonResourceTest extends ResourceTestBase {
 
   private void prepareEquals(Taxon t) {
     t.getName().setOrigin(Origin.USER);
-    NameMapperTest.removeCreatedProps(t.getName());
     t.setOrigin(Origin.USER);
     TestEntityGenerator.nullifyUserDate(t);
   }

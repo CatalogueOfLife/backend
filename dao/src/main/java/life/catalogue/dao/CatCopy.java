@@ -126,8 +126,6 @@ public class CatCopy {
     n.setDatasetKey(datasetKey);
     n.setSectorKey(sectorKey);
     newKey(n);
-    //TODO: should we update homotypic name based on the original ids if they are also in the sector???
-    n.setHomotypicNameId(n.getId());
     return n;
   }
   

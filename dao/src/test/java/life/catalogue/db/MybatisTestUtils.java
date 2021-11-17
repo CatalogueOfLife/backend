@@ -115,7 +115,6 @@ public class MybatisTestUtils {
     Name n = new Name();
     n.applyUser(TestDataRule.TEST_USER);
     n.setId(id);
-    n.setHomotypicNameId(id);
     n.setDatasetKey(datasetKey);
     n.setUninomial(name);
     n.setRank(rank);

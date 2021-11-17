@@ -95,6 +95,27 @@
     ORDER BY nr.id
   </select>
 
+  <select id="listRelatedNameIDs" resultType="string">
+    WITH RECURSIVE graph (id, rid, ids) AS (
+
+    SELECT name_id, related_name_id, ARRAY[id]
+      FROM name_rel
+      WHERE dataset_key = #{key.datasetKey}
+        AND type IN <foreach item="t" collection="types" open="(" separator="," close=")">'${t.name()}'::NOMRELTYPE</foreach>
+        AND (related_name_id = #{key.id} OR name_id = #{key.id})
+
+    UNION
+
+    SELECT name_id, related_name_id, array_append(graph.ids, nr.id)
+    FROM name_rel nr
+      INNER JOIN graph ON (graph.rid = nr.name_id OR graph.rid = nr.related_name_id OR graph.id = nr.name_id OR graph.id = nr.related_name_id)
+      WHERE nr.dataset_key = #{key.datasetKey}
+        AND nr.type IN <foreach item="t" collection="types" open="(" separator="," close=")">'${t.name()}'::NOMRELTYPE</foreach>
+        AND nr.id != ALL(graph.ids)
+    )
+    SELECT DISTINCT unnest(array[id,rid]) FROM graph
+  </select>
+
   <insert id="create" parameterType="NameRelation" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO name_rel (<include refid="COLS"/>, created, modified, id)
     VALUES (<include refid="PROPS"/>, now(), now(), nextval('name_rel_${datasetKey}_id_seq'))

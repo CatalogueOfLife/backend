@@ -79,7 +79,6 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
 
   @Override
   Taxon removeDbCreatedProps(Taxon obj) {
-    NameMapperTest.removeCreatedProps(obj.getName());
     return TestEntityGenerator.nullifyUserDate(obj);
   }
   

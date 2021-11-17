@@ -109,13 +109,11 @@ public class NeoDbTest {
     Name n1;
     try (Transaction tx = db.getNeo().beginTx()) {
       u1 = taxon("12");
-      assertNull(u1.usage.getName().getHomotypicNameId());
       n1 = u1.usage.getName();
       db.createNameAndUsage(u1);
       assertNull(u1.usage.getName());
 
       u2 = taxon("13");
-      assertNull(u2.usage.getName().getHomotypicNameId());
       db.createNameAndUsage(u2);
       assertNull(u2.usage.getName());
 
@@ -130,12 +128,6 @@ public class NeoDbTest {
     try (Transaction tx = db.getNeo().beginTx()) {
       NeoName n1b = db.names().objByID("12");
       NeoName n2b = db.names().objByID("13");
-      assertNotNull(n1b.getName().getHomotypicNameId());
-      assertNotNull(n2b.getName().getHomotypicNameId());
-
-      assertEquals(n1b.getName().getHomotypicNameId(), n2b.getName().getHomotypicNameId());
-      
-      n1b.getName().setHomotypicNameId(null);
       assertEquals(n1, n1b.getName());
 
       NeoUsage u1b = db.usages().objByID("12");

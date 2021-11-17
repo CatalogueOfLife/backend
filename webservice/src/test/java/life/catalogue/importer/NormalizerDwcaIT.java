@@ -129,9 +129,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertEquals(1, t2.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(t2.node,
           t1.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getEndNode());
-      assertNotNull(t1.getName().getHomotypicNameId());
-      assertEquals(t2.getName().getHomotypicNameId(), t1.getName().getHomotypicNameId());
-      
+
       // 10->11->12->10, 13->11
       // should be: 10,13->11 12
       NeoName t10 = nameByID("10");
@@ -147,10 +145,6 @@ public class NormalizerDwcaIT extends NormalizerITBase {
           .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t10.node));
       assertEquals(t11.node, t13.node
           .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t13.node));
-      assertNull(t12.getName().getHomotypicNameId());
-      assertEquals(t10.getName().getId(), t11.getName().getHomotypicNameId());
-      assertEquals(t10.getName().getId(), t10.getName().getHomotypicNameId());
-      assertEquals(t10.getName().getId(), t13.getName().getHomotypicNameId());
     }
   }
   
@@ -208,7 +202,6 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertEquals(u1, u2);
 
       NeoUsage bas = byName("Leonida taraxacoida");
-      assertEquals(u2.usage.getName().getHomotypicNameId(), bas.usage.getName().getHomotypicNameId());
 
       NeoUsage syn = byName("Leontodon leysseri");
       assertTrue(syn.getSynonym().getStatus().isSynonym());
@@ -242,18 +235,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage annua1 = usageByID("4");
       NeoUsage annua2 = usageByID("5");
-      assertEquals(annua1.usage.getName().getHomotypicNameId(), annua2.usage.getName().getHomotypicNameId());
       NeoUsage reptans1 = usageByID("7");
       NeoUsage reptans2 = usageByID("8");
-      assertEquals(reptans1.usage.getName().getHomotypicNameId(), reptans2.usage.getName().getHomotypicNameId());
-      assertNotEquals(annua1.usage.getName().getHomotypicNameId(), reptans1.usage.getName().getHomotypicNameId());
-
-      List<String> homos = Lists.newArrayList("4", "5", "7", "8");
-      store.names().all().forEach(nn -> {
-        if (!homos.contains(nn.getName().getId())) {
-          assertNull(nn.getName().getHomotypicNameId());
-        }
-      });
     }
   }
   
@@ -264,8 +247,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t10 = usageByID("10");
       NeoUsage t11 = usageByID("11");
-      assertEquals(t10.usage.getName().getHomotypicNameId(), t11.usage.getName().getHomotypicNameId());
-      
+
       NeoName nn = nameByID("10");
       List<NameRelation> rels = store.nameRelations(nn.node);
       assertEquals(1, rels.size());

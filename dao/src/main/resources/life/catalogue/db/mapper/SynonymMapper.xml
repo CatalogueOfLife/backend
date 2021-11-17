@@ -53,7 +53,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE u.dataset_key=#{datasetKey} AND u.parent_id = #{taxonId} AND u.is_synonym
-    ORDER BY u.status, n.homotypic_name_id, n.scientific_name
+    ORDER BY u.status, n.scientific_name
   </select>
 
   <select id="listByNameID" resultMap="synonymResultMap">

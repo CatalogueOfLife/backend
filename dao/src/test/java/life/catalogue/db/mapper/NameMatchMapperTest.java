@@ -30,12 +30,6 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
     nameMapper = testDataRule.getMapper(NameMatchMapper.class);
     datasetKey = testDataRule.testData.key;
   }
-  
-  static Name create(final String id, final Name basionym) throws Exception {
-    Name n = TestEntityGenerator.newName(id);
-    n.setHomotypicNameId(basionym.getId());
-    return n;
-  }
 
   @Test
   public void get() throws Exception {

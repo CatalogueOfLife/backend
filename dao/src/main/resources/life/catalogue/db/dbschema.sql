@@ -1124,7 +1124,6 @@ CREATE TABLE name (
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  homotypic_name_id TEXT NOT NULL,
   scientific_name TEXT NOT NULL,
   scientific_name_normalized TEXT NOT NULL,
   authorship TEXT,
@@ -1151,25 +1150,15 @@ CREATE TABLE name (
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, homotypic_name_id) REFERENCES name ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference ON DELETE CASCADE
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON name (dataset_key, sector_key);
 CREATE INDEX ON name (dataset_key, verbatim_key);
-CREATE INDEX ON name (dataset_key, homotypic_name_id);
 CREATE INDEX ON name (dataset_key, published_in_id);
 CREATE INDEX ON name (dataset_key, lower(scientific_name));
 CREATE INDEX ON name (dataset_key, scientific_name_normalized);
 
-
-CREATE OR REPLACE FUNCTION homotypic_name_id_default() RETURNS trigger AS $$
-BEGIN
-    NEW.homotypic_name_id := NEW.id;
-    RETURN NEW;
-END
-$$
-LANGUAGE plpgsql;
 
 
 CREATE TABLE name_match (

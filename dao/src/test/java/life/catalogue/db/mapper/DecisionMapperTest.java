@@ -109,10 +109,6 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
   public static EditorialDecision removeCreatedProps(EditorialDecision d) {
     d.setOriginalSubjectId(null);
     d.getSubject().setBroken(false);
-    if (d.getName() != null) {
-      // we store the name as JSON and thereby lose its name index id
-      NameMapperTest.removeCreatedProps(d.getName());
-    }
     return d;
   }
 

@@ -9,7 +9,9 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndex;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
@@ -90,12 +92,18 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   }
 
   /**
-   * Lists all homotypic synonyms based on the same homotypic group key
+   * Lists all homotypic names based on name relations for a given name
    */
-  public List<Name> homotypicGroup(int datasetKey, String id) {
+  public List<Name> homotypicGroup(DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
-      NameMapper nm = session.getMapper(NameMapper.class);
-      return nm.homotypicGroup(datasetKey, id);
+      NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
+      var ids = nrm.listRelatedNameIDs(key, NomRelType.HOMOTYPIC_RELATIONS);
+      ids.remove(key.getId());
+      if (!ids.isEmpty()) {
+        NameMapper nm = session.getMapper(NameMapper.class);
+        return nm.listByIds(key.getDatasetKey(), Set.copyOf(ids));
+      }
+      return Collections.emptyList();
     }
   }
   

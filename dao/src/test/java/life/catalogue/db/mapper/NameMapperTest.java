@@ -36,7 +36,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   
   static Name create(final String id, final Name basionym) throws Exception {
     Name n = TestEntityGenerator.newName(id);
-    n.setHomotypicNameId(basionym.getId());
     return n;
   }
 
@@ -74,16 +73,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   }
   
   @Override
-  Name removeDbCreatedProps(Name n) {
-    return removeCreatedProps(n);
-  }
-
-  public static Name removeCreatedProps(Name n) {
-    n.setHomotypicNameId(null);
-    return n;
-  }
-
-  @Override
   void updateTestObj(Name n) {
     n.setAuthorship("Berta & Tomate");
   }
@@ -102,7 +91,7 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     
     // with explicit homotypic group
     Name n2 = TestEntityGenerator.newName("sk2");
-    n2.setHomotypicNameId(n1.getId());
+//    n2.setHomotypicNameId(n1.getId());
     nameMapper.create(n2);
     
     commit();
@@ -183,54 +172,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   public void hasData() throws Exception {
     assertTrue(nameMapper.hasData(DATASET11.getKey()));
     assertFalse(nameMapper.hasData(3));
-  }
-  
-  @Test
-  public void basionymGroup() throws Exception {
-    Name n2bas = TestEntityGenerator.newName("n2");
-    nameMapper.create(n2bas);
-    
-    Name n1 = create("n1", n2bas);
-    nameMapper.create(n1);
-    
-    Name n3 = create("n3", n2bas);
-    nameMapper.create(n3);
-    
-    Name n4 = create("n4", n2bas);
-    nameMapper.create(n4);
-    
-    commit();
-    
-    List<Name> s1 = mapper().homotypicGroup(n1.getDatasetKey(), n1.getId());
-    assertEquals(4, s1.size());
-    
-    List<Name> s2 = mapper().homotypicGroup(n2bas.getDatasetKey(), n2bas.getId());
-    assertEquals(4, s2.size());
-    assertEquals(s1, s2);
-    
-    List<Name> s3 = mapper().homotypicGroup(n3.getDatasetKey(), n3.getId());
-    assertEquals(4, s3.size());
-    assertEquals(s1, s3);
-    
-    List<Name> s4 = mapper().homotypicGroup(n4.getDatasetKey(), n4.getId());
-    assertEquals(4, s4.size());
-    assertEquals(s1, s4);
-  }
-  
-  /*
-   * Checks difference in behaviour between providing non-existing key
-   * and providing existing key but without synonyms.
-   * yields null (issue #55)
-   */
-  @Test
-  public void basionymGroup2() throws Exception {
-    Name n = TestEntityGenerator.newName("nxx");
-    mapper().create(n);
-    List<Name> s = mapper().homotypicGroup(n.getDatasetKey(), n.getId());
-    assertNotNull(s);
-    s = mapper().homotypicGroup(11, "-1");
-    assertNotNull(s);
-    assertEquals(0, s.size());
   }
   
   @Test

@@ -131,7 +131,6 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
     n.setVerbatimKey(null);
     n.setSectorKey(sector.getId());
     n.setId(scopedSubjectID(n.getId()));
-    n.setHomotypicNameId(null);
     n.setPublishedInId(null);
     n.applyUser(Users.TESTER);
     nm.create(n);

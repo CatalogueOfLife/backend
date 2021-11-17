@@ -650,85 +650,6 @@ public class NeoDb {
     }
   }
   
-  /**
-   * Sets the same name id for a given cluster of homotypic names derived from name relations and synonym[homotpic=true] relations.
-   * We first go thru all synonyms with the homotypic flag to determine the keys and then add all missing basionym nodes.
-   */
-  private void updateHomotypicNameKeys() {
-    int counter = 0;
-    LOG.debug("Setting shared homotypic name keys");
-    try (Transaction tx = neo.beginTx()) {
-      // first homotypic synonym rels
-      for (Node syn : Iterators.loop(getNeo().findNodes(Labels.SYNONYM))) {
-        NeoName tsyn = nameByUsage(syn);
-        if (tsyn.homotypic) {
-          Relationship r = syn.getSingleRelationship(RelType.SYNONYM_OF, Direction.OUTGOING);
-          if (r == null) {
-            addIssues(tsyn, Issue.ACCEPTED_NAME_MISSING);
-            continue;
-          }
-          NeoName acc = nameByUsage(r.getEndNode());
-          String homoId;
-          if (acc.getName().getHomotypicNameId() == null) {
-            homoId = acc.getName().getId();
-            acc.getName().setHomotypicNameId(homoId);
-            names().update(acc);
-            counter++;
-          } else {
-            homoId = acc.getName().getHomotypicNameId();
-          }
-          tsyn.getName().setHomotypicNameId(homoId);
-          names().update(tsyn);
-        }
-      }
-      LOG.info("{} homotypic groups found via homotypic synonym relations", counter);
-      
-      // now name relations, reuse keys if existing
-      counter = 0;
-      for (Node n : Iterators.loop(getNeo().findNodes(Labels.NAME))) {
-        // check if this node has a homotypic group already in which case we can skip it
-        NeoName start = names().objByNode(n);
-        if (start.getName().getHomotypicNameId() != null) {
-          continue;
-        }
-        // query homotypic group excluding start node
-        List<NeoName> group = Traversals.HOMOTYPIC_GROUP
-            .traverse(n)
-            .nodes()
-            .stream()
-            .map(names()::objByNode)
-            .collect(Collectors.toList());
-        if (!group.isEmpty()) {
-          // we have more than the starting node so we do process, add starting node too
-          group.add(start);
-          // determine existing or new key to be shared
-          String homoId = null;
-          for (NeoName t : group) {
-            if (t.getName().getHomotypicNameId() != null) {
-              if (homoId == null) {
-                homoId = t.getName().getHomotypicNameId();
-              } else if (!homoId.equals(t.getName().getHomotypicNameId())) {
-                LOG.warn("Several homotypic name keys found in the same homotypic name group for {}", NeoProperties.getScientificNameWithAuthor(n));
-              }
-            }
-          }
-          if (homoId == null) {
-            homoId = start.getName().getId();
-            counter++;
-          }
-          // update entire group with key
-          for (NeoName t : group) {
-            if (t.getName().getHomotypicNameId() == null) {
-              t.getName().setHomotypicNameId(homoId);
-              names().update(t);
-            }
-          }
-        }
-      }
-      LOG.info("{} additional homotypic groups found via name relations", counter);
-    }
-  }
-
   private Node getSingleRelated(Node n, RelType type, Direction dir) {
     try {
       Relationship rel = n.getSingleRelationship(type, dir);
@@ -757,7 +678,6 @@ public class NeoDb {
   public void sync() {
     updateLabels();
     updateTaxonStoreWithRelations();
-    updateHomotypicNameKeys();
   }
   
   /**

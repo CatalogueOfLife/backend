@@ -81,13 +81,13 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
    */
   public final static TestData DATASETS = new TestData("datasets", null, null, null, false, true, null, Collections.emptyMap());
   public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, false, null, Collections.emptyMap());
-  public final static TestData APPLE = new TestData("apple", 11, 3, 2, 3, 11, 12);
+  public final static TestData APPLE = new TestData("apple", 11, 2, 2, 3, 11, 12);
   public final static TestData FISH = new TestData("fish", 100, 2, 4, 3, 100, 101, 102);
-  public final static TestData TREE = new TestData("tree", 11, 2, 2, 3, 11);
-  public final static TestData TREE2 = new TestData("tree2", 11, 2, 2, 3, 11);
+  public final static TestData TREE = new TestData("tree", 11, 1, 2, 3, 11);
+  public final static TestData TREE2 = new TestData("tree2", 11, 1, 2, 3, 11);
   public final static TestData DRAFT = new TestData("draft", 3, 1, 2, 3);
   public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, 3);
-  public final static TestData DUPLICATES = new TestData("duplicates", 1000, 4, 5, row -> AuthorshipNormFunc.normAuthorship(16, row), 3, 1000);
+  public final static TestData DUPLICATES = new TestData("duplicates", 1000, 3, 5, row -> AuthorshipNormFunc.normAuthorship(16, row), 3, 1000);
 
   public static class TestData {
     public final String name;

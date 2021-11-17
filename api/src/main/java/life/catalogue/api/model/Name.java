@@ -47,13 +47,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private Integer verbatimKey;
   
   /**
-   * Groups all homotypic names by referring to a single representative name of that group.
-   * This representative name is not necessarily the basionym, but often will be.
-   * For basionyms this should link to the basionym name itself, this id=homotypicNameId
-   */
-  private String homotypicNameId;
-  
-  /**
    * Entire canonical name string with a rank marker for infragenerics and infraspecfics, but
    * excluding the authorship.
    * For uninomials, e.g. families or names at higher ranks, this is just the uninomial.
@@ -187,7 +180,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public Name(Name n) {
     this.setKey(n);
     this.sectorKey = n.sectorKey;
-    this.homotypicNameId = n.homotypicNameId;
     this.scientificName = n.scientificName;
     this.authorship = n.authorship;
     this.rank = n.rank;
@@ -356,15 +348,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setOrigin(Origin origin) {
     this.origin = origin;
   }
-  
-  public String getHomotypicNameId() {
-    return homotypicNameId;
-  }
-  
-  public void setHomotypicNameId(String homotypicNameId) {
-    this.homotypicNameId = homotypicNameId;
-  }
-  
+
   public NomStatus getNomStatus() {
     return nomStatus;
   }
@@ -740,7 +724,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     return candidatus == name.candidatus &&
         Objects.equals(sectorKey, name.sectorKey) &&
         Objects.equals(verbatimKey, name.verbatimKey) &&
-        Objects.equals(homotypicNameId, name.homotypicNameId) &&
         Objects.equals(scientificName, name.scientificName) &&
         Objects.equals(authorship, name.authorship) &&
         rank == name.rank &&
@@ -768,7 +751,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, scientificName, authorship, rank,
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, scientificName, authorship, rank,
       uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho,
       combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link,
       nomenclaturalNote, remarks);

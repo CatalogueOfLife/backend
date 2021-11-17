@@ -34,7 +34,6 @@
     ${alias}.dataset_key AS ${prefix}dataset_key,
     ${alias}.sector_key AS ${prefix}sector_key,
     ${alias}.verbatim_key AS ${prefix}verbatim_key,
-    ${alias}.homotypic_name_id AS ${prefix}homotypic_name_id,
     ${alias}.published_in_id AS ${prefix}published_in_id,
     ${alias}.published_in_page AS ${prefix}published_in_page,
     ${alias}.nom_status AS ${prefix}nom_status,
@@ -66,7 +65,6 @@
 
   <sql id="COLS_COPY">
     ${alias}verbatim_key,
-    ${alias}homotypic_name_id,
     ${alias}scientific_name,
     ${alias}scientific_name_normalized,
     ${alias}authorship,
@@ -106,7 +104,6 @@
     #{sectorKey},
     #{id},
     #{verbatimKey},
-    #{homotypicNameId},
     #{scientificName},
     #{scientificNameNormalized},
     #{authorship},
@@ -204,7 +201,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key=#{datasetKey} AND n.id IN
-    <foreach item="k" index="idx" collection="ids" open="(" separator="," close=")">#{k}</foreach>
+    <foreach item="k" collection="ids" open="(" separator="," close=")">#{k}</foreach>
   </select>
 
   <select id="ambiguousRankNameIds" resultType="string">
@@ -224,13 +221,6 @@
       AND sector_key = #{sectorKey}
     </if>
     ORDER BY scientific_name, authorship
-  </select>
-
-  <select id="homotypicGroup" resultMap="nameResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    JOIN name ns ON n.homotypic_name_id=ns.homotypic_name_id AND n.dataset_key=ns.dataset_key
-    WHERE n.dataset_key=#{datasetKey} AND ns.id=#{id}
   </select>
 
   <select id="indexGroup" resultMap="nameResultMap">

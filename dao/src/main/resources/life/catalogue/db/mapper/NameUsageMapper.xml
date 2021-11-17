@@ -459,8 +459,6 @@
       ORDER BY x.path
     </if>
   </select>
-<!--
--->
 
   <select id="foreignChildren" resultMap="simpleResultMap">
     SELECT <include refid="SELECT_SIMPLE"/>

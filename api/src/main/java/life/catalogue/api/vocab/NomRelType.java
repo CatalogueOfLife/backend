@@ -15,11 +15,14 @@
  */
 package life.catalogue.api.vocab;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * Vocabulary classifying the kind of name relation.
  */
 public enum NomRelType {
-  
   SPELLING_CORRECTION(true, null, null,
     "The name is a spelling correction, called emendation in zoology, of the related name having the same type. " +
     "Intentional changes in the original spelling of an available name, whether justified or unjustified. " +
@@ -105,6 +108,10 @@ public enum NomRelType {
     "This name is the type name (species/genus) for the related higher ranked name. " +
       "The name should be the original combination, i.e. basionym, if subsequent recombinations exist.");
 
+
+  public static final Set<NomRelType> HOMOTYPIC_RELATIONS = Arrays.stream(values())
+                                                  .filter(NomRelType::isHomotypic)
+                                                  .collect(Collectors.toSet());
 
   private final Boolean homotypic;
   private final NomStatus from;

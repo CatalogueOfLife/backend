@@ -64,7 +64,7 @@ public class SectorSyncTest {
       n.setScientificName(n.getUninomial());
       n.setRank(Rank.ORDER);
       n.setId("cole");
-      n.setHomotypicNameId("cole");
+//      n.setHomotypicNameId("cole");
       n.setType(NameType.SCIENTIFIC);
       n.setOrigin(Origin.USER);
       n.applyUser(TestEntityGenerator.USER_EDITOR);
