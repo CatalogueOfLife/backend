@@ -2,10 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
@@ -93,37 +90,29 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    */
   public Synonymy getSynonymy(int datasetKey, String taxonId) {
     try (SqlSession session = factory.openSession(false)) {
+      NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
       SynonymMapper sm = session.getMapper(SynonymMapper.class);
+
       Name accName = nm.getByUsage(datasetKey, taxonId);
       Synonymy syn = new Synonymy();
-      // get all synonyms and misapplied name
-      // they come ordered by status, then homotypic group so its easy to arrange them
-      List<Name> group = new ArrayList<>();
+      Set<String> visited = new HashSet<>();
+      // add all homotypic names
+      syn.getHomotypic().addAll(nameDao.homotypicGroup(accName));
+      syn.getHomotypic().stream().map(Name::getId).forEach(visited::add);
+
+      // now go through synonym usages and add to misapplied, heterotypic or skip if seen before
       for (Synonym s : sm.listByTaxon(datasetKey, taxonId)) {
         if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
           syn.addMisapplied(s);
-        } else {
-          //TODO: group names by transitive homotypic name relations
-          //if (accName.getHomotypicNameId().equals(s.getName().getHomotypicNameId())) {
-          //  syn.getHomotypic().add(s.getName());
-          //} else {
-          //  if (!group.isEmpty()
-          //      && !group.get(0).getHomotypicNameId().equals(s.getName().getHomotypicNameId())) {
-          //    // new heterotypic group
-          //    syn.addHeterotypicGroup(group);
-          //    group = new ArrayList<>();
-          //  }
-          //  // add to group
-          //  group.add(s.getName());
-          //}
+        } else if (!visited.contains(s.getName().getId())) {
+          List<Name> group = new ArrayList<>();
           group.add(s.getName());
+          group.addAll(nameDao.homotypicGroup(s.getName()));
+          syn.addHeterotypicGroup(group);
+          group.stream().map(Name::getId).forEach(visited::add);
         }
       }
-      if (!group.isEmpty()) {
-        syn.addHeterotypicGroup(group);
-      }
-      
       return syn;
     }
   }

@@ -3,10 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.Gazetteer;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -109,35 +106,38 @@ public class TaxonDaoTest extends DaoTestBase {
       // homotypic 1
       Name syn1 = TestEntityGenerator.newName("syn1");
       nDao.create(syn1, user);
-      
+
       // homotypic 2
       Name syn2bas = TestEntityGenerator.newName("syn2bas");
       nDao.create(syn2bas, user);
-      
+      // test cycles
+      nDao.createRelation(syn2bas, NomRelType.HOMOTYPIC, syn2bas, user);
+      nDao.createRelation(syn2bas, NomRelType.BASIONYM, syn2bas, user);
+
       Name syn21 = TestEntityGenerator.newName("syn2.1");
-//      syn21.setHomotypicNameId(syn2bas.getId());
       nDao.create(syn21, user);
-      
+      nDao.createRelation(syn2bas, NomRelType.BASIONYM, syn21, user);
+
       Name syn22 = TestEntityGenerator.newName("syn2.2");
-//      syn22.setHomotypicNameId(syn2bas.getId());
       nDao.create(syn22, user);
-      
+      nDao.createRelation(syn2bas, NomRelType.BASIONYM, syn22, user);
+
       // homotypic 3
       Name syn3bas = TestEntityGenerator.newName("syn3bas");
       nDao.create(syn3bas, user);
       
       Name syn31 = TestEntityGenerator.newName("syn3.1");
-//      syn31.setHomotypicNameId(syn3bas.getId());
       nDao.create(syn31, user);
-      
+      nDao.createRelation(syn3bas, NomRelType.BASIONYM, syn31, user);
+
       session.commit();
       
-      // no synonym links added yet, expect empty synonymy as no homotypic synnym exists
+      // no synonym links added yet, expect empty synonymy as no homotypic synonym exists
       synonymy = tDao.getSynonymy(acc);
       assertTrue(synonymy.isEmpty());
       assertEquals(0, synonymy.size());
       
-      // now add a single synonym relation
+      // now add a single synonym relation to lone group syn1
       Synonym syn = setUserDate(new Synonym());
       syn.setDatasetKey(datasetKey);
       syn.setId(UUID.randomUUID().toString());
@@ -154,20 +154,30 @@ public class TaxonDaoTest extends DaoTestBase {
       assertEquals(0, synonymy.getMisapplied().size());
       assertEquals(0, synonymy.getHomotypic().size());
   
+      // now also add synonyms for the other 2 groups
       sm.create(updSyn(syn, syn2bas));
       sm.create(updSyn(syn, syn3bas));
+      session.commit();
+
+      // at this stage we have 3 explicit synonym relations linking to 3 more names in their homotypic group by name relations alone
+      synonymy = tDao.getSynonymy(acc);
+      assertEquals(6, synonymy.size());
+      assertEquals(0, synonymy.getHomotypic().size());
+      assertEquals(3, synonymy.getHeterotypic().size());
+      assertEquals(0, synonymy.getMisapplied().size());
+
+      // now add 1 misapplied name
       syn.setStatus(TaxonomicStatus.MISAPPLIED);
       sm.create(updSyn(syn, syn21));
       session.commit();
-      
-      // at this stage we have 4 explicit synonym relations
+
       synonymy = tDao.getSynonymy(acc);
-      assertEquals(4, synonymy.size());
+      assertEquals(7, synonymy.size());
       assertEquals(0, synonymy.getHomotypic().size());
       assertEquals(3, synonymy.getHeterotypic().size());
       assertEquals(1, synonymy.getMisapplied().size());
-      
-      // add the remaining homotypic names as synonyms
+
+      // add the remaining homotypic names also as synonyms to make sure this doesnt matter
       syn.setStatus(TaxonomicStatus.SYNONYM);
       sm.create(newSyn(syn, syn21));
       sm.create(newSyn(syn, syn22));

@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.NameMapper;
@@ -32,6 +34,25 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
     super(false, factory, Name.class, NameMapper.class, validator);
     this.indexService = indexService;
     this.nameIndex = nameIndex;
+  }
+
+  public void createRelation(Name from, NomRelType type, Name to, int user) {
+    Preconditions.checkArgument(from.getDatasetKey().equals(to.getDatasetKey()));
+    createRelation(from.getDatasetKey(), from.getId(), type, to.getId(), user);
+  }
+
+  public void createRelation(int datasetKey, String nameID, NomRelType type, String relatedNameID, int user) {
+    try (SqlSession session = factory.openSession(true)) {
+      NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
+
+      NameRelation rel = new NameRelation();
+      rel.setDatasetKey(datasetKey);
+      rel.applyUser(user);
+      rel.setNameId(nameID);
+      rel.setRelatedNameId(relatedNameID);
+      rel.setType(type);
+      nrm.create(rel);
+    }
   }
 
   @Override
@@ -92,7 +113,8 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   }
 
   /**
-   * Lists all homotypic names based on name relations for a given name
+   * Lists all homotypic names based on name relations for a given name.
+   * The given "start" name is included from the result.
    */
   public List<Name> homotypicGroup(DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
