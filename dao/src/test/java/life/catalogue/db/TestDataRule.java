@@ -1,5 +1,7 @@
 package life.catalogue.db;
 
+import com.google.common.collect.Lists;
+
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Datasets;
@@ -297,10 +299,13 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public void truncateDraft() throws SQLException {
     LOG.info("Truncate draft partition tables");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
-      st.execute("TRUNCATE sector CASCADE");
-      for (String table : new String[]{"name", "name_usage"}) {
-        st.execute("TRUNCATE " + table + "_" + Datasets.COL + " CASCADE");
-      }
+      for (String t : Lists.reverse(DatasetPartitionMapper.TABLES)){
+        st.execute("DELETE FROM " + t + " WHERE dataset_key=" + Datasets.COL);
+      };
+      session.getConnection().commit();
+      for (String t : new String[]{"sector_import", "sector"}){
+        st.execute("DELETE FROM " + t);
+      };
       session.getConnection().commit();
     }
   }

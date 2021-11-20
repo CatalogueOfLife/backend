@@ -56,7 +56,8 @@ public class PgImportRule extends ExternalResource {
   private DatasetWithSettings dataset;
   private final TestResource[] datasets;
   private final Map<TestResource, Integer> datasetKeyMap = new HashMap<>();
-  
+  private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
   public static PgImportRule create(Object... params) {
     List<TestResource> resources = new ArrayList<>();
     DataFormat format = null;
@@ -161,7 +162,6 @@ public class PgImportRule extends ExternalResource {
       
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
-      Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       Normalizer norm = new Normalizer(dataset, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator);
       norm.call();
       
