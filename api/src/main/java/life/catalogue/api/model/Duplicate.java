@@ -85,6 +85,11 @@ public class Duplicate {
     public int hashCode() {
       return Objects.hash(usage, classification, decision);
     }
+
+    @Override
+    public String toString() {
+      return usage == null ? "null" : usage.toString();
+    }
   }
   
   public String getKey() {

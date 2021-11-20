@@ -80,7 +80,15 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     if (meta.isAcceptedNameMapped()) {
       accepted = usagesByIdOrName(v, u, true, DwcTerm.acceptedNameUsageID, Issue.ACCEPTED_ID_INVALID, DwcTerm.acceptedNameUsage, Origin.VERBATIM_ACCEPTED);
       for (RankedUsage acc : accepted) {
-        if (!store.createSynonymRel(u.node, acc.usageNode)) {
+        if (store.createSynonymRel(u.node, acc.usageNode)) {
+          // for homotypic synonyms also create a homotypic name relation
+          if (u.homotypic) {
+            NeoRel rel = new NeoRel();
+            rel.setType(RelType.HOMOTYPIC);
+            rel.setVerbatimKey(v.getId());
+            store.createNeoRel(u.nameNode, acc.nameNode, rel);
+          }
+        } else {
           v.addIssue(Issue.ACCEPTED_ID_INVALID);
         }
       }

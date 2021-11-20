@@ -89,7 +89,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final static TestData TREE2 = new TestData("tree2", 11, 1, 2, 3, 11);
   public final static TestData DRAFT = new TestData("draft", 3, 1, 2, 3);
   public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, 3);
-  public final static TestData DUPLICATES = new TestData("duplicates", 1000, 3, 5, row -> AuthorshipNormFunc.normAuthorship(16, row), 3, 1000);
+  public final static TestData DUPLICATES = new TestData("duplicates", 1000, 3, 5, row -> AuthorshipNormFunc.normAuthorship(15, row), 3, 1000);
 
   public static class TestData {
     public final String name;
