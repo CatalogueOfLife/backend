@@ -101,7 +101,7 @@ public class PgSetupRule extends ExternalResource {
   
   public static void initDb(PgConfig cfg) throws Exception {
     try (Connection con = cfg.connect()) {
-      LOG.info("Init empty database schema");
+      LOG.info("Init empty database schema on {}", cfg.location());
       wipeDB(con);
       ScriptRunner runner = PgConfig.scriptRunner(con);
       runner.runScript(Resources.getResourceAsReader(InitDbUtils.SCHEMA_FILE));

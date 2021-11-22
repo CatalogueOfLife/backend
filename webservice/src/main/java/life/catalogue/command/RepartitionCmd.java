@@ -102,7 +102,11 @@ public class RepartitionCmd extends AbstractMybatisCmd {
           try {
             final String src = String.format("%s_%s", t, key);
             String parentTable = t + (isDefault ? "_default" : "");
-            st.execute(String.format("ALTER TABLE %s DETACH PARTITION %s", parentTable, src));
+            if (Partitioner.isAttached(con, src)) {
+              st.execute(String.format("ALTER TABLE %s DETACH PARTITION %s", parentTable, src));
+            } else {
+              System.out.println("  table " +src+ " was not attached");
+            }
             st.execute(String.format("ALTER TABLE %s RENAME TO _%s", src, src));
           } catch (SQLException e) {
             throw new RuntimeException(e);

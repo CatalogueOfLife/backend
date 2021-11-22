@@ -128,16 +128,17 @@ public class PgConfig extends PgDbConfig {
     }
     return c;
   }
-  
-  private String jdbcUrl(PgDbConfig db) {
-    return "jdbc:postgresql://" + host + ":" + port + "/" + db.database;
+
+  public String location() {
+    return location(database);
   }
-  
-  /**
-   * @return connection URL for the alternative pgjdbc-ng driver
-   */
-  public String jdbcNgUrl() {
-    return "jdbc:pgsql://" + host + ":" + port + "/" + database;
+
+  private String location(String database) {
+    return host + ":" + port + "/" + database;
+  }
+
+  private String jdbcUrl(PgDbConfig db) {
+    return "jdbc:postgresql://" + location(db.database);
   }
 
   /**

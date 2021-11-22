@@ -24,6 +24,6 @@ public class RepartitionCmdTest extends CmdTestBase {
 
   @Test
   public void testRebuildAll() throws Exception {
-    assertTrue(run("repartition", "--prompt", "0", "--num", "10").isEmpty());
+    assertTrue(run("repartition", "--prompt", "0", "--num", "3").isEmpty());
   }
 }

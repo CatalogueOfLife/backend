@@ -30,7 +30,7 @@ public class Partitioner {
   private static final Logger LOG = LoggerFactory.getLogger(Partitioner.class);
 
   /**
-   * @return list of all dataset suffices for which a name data partition exists.
+   * @return list of all dataset suffices for which a name data partition exists - no matter if attached or not.
    */
   public static Set<String> partitionSuffices(Connection con, @Nullable DatasetOrigin origin) throws SQLException {
     try (Statement st = con.createStatement();
@@ -66,6 +66,30 @@ public class Partitioner {
       LOG.info("Found {} existing name partition tables", suffices.size());
       return suffices;
     }
+  }
+
+  /**
+   * @return true if a given table is an attached partition table.
+   */
+  public static boolean isAttached(Connection con, String table) throws SQLException {
+    boolean exists = false;
+    ResultSet rs = null;
+    try (Statement st = con.createStatement()) {
+      Set<String> suffices = new HashSet<>();
+      st.execute("SELECT EXISTS (SELECT child.relname"
+                 + "  FROM pg_inherits JOIN pg_class parent ON pg_inherits.inhparent = parent.oid"
+                 + "  JOIN pg_class child ON pg_inherits.inhrelid   = child.oid"
+                 + "  WHERE child.relname='" + table + "')");
+      rs = st.getResultSet();
+      if (rs.next()) {
+        exists = rs.getBoolean(1);
+      }
+    } finally {
+      if (rs != null) {
+        rs.close();
+      }
+    }
+    return exists;
   }
 
   public static synchronized void createDefaultPartitions(SqlSessionFactory factory, int number) {
