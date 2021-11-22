@@ -13,6 +13,10 @@ and done it manually. So we can as well log changes here.
 
 ### 2021-10-04 dataset partitioning
 ```
+-- general table changes first
+ALTER TABLE name DROP COLUMN homotypic_name_id;
+DROP FUNCTION homotypic_name_id_default;
+
 CREATE EXTENSION IF NOT EXISTS btree_gin;
 
 DROP INDEX verbatim_doc_idx;
@@ -23,7 +27,6 @@ DROP INDEX verbatim_source_issues_idx;
 DROP INDEX reference_doc_idx;
 DROP INDEX reference_sector_key_idx;
 DROP INDEX reference_verbatim_key_idx;
-DROP INDEX name_homotypic_name_id_idx;
 DROP INDEX name_lower_idx;
 DROP INDEX name_published_in_id_idx;
 DROP INDEX name_scientific_name_normalized_idx;
@@ -111,8 +114,8 @@ LANGUAGE 'plpgsql';
 
 execute the following to clean project tables for managed and released datasets each:
 ```
-./exec-sql.sh partitioning1.sql --origin MANAGED
-./exec-sql.sh partitioning1.sql --origin RELEASED
+./exec-sql.sh sql/partitioning1.sql --origin MANAGED
+./exec-sql.sh sql/partitioning1.sql --origin RELEASED
 
 ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT IF EXISTS verbatim_source_{KEY}_id_fkey;
 ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT IF EXISTS verbatim_source_{KEY}_pkey;
@@ -121,15 +124,12 @@ ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT IF EXISTS verbatim_source_{KEY
 
 Then for all partition suffices execute the following to remove previous triggers, indices, primary and foreign keys:
 ```
-./exec-sql.sh partitioning2.sql
+./exec-sql.sh sql/partitioning2.sql
 
 --
 -- TRIGGER
 --
 DROP TRIGGER IF EXISTS name_trigger_{KEY} ON name_{KEY};
-CREATE TRIGGER trg_name_{KEY} BEFORE INSERT OR UPDATE ON name_{KEY} FOR EACH ROW
-WHEN (NEW.homotypic_name_id IS NULL)
-EXECUTE PROCEDURE homotypic_name_id_default();
 
 DROP TRIGGER IF EXISTS trg_name_usage_{KEY}_insert ON name_usage_{KEY};
 CREATE TRIGGER trg_name_usage_{KEY}_insert AFTER INSERT ON name_usage_{KEY}
@@ -197,8 +197,10 @@ ALTER TABLE treatment_{KEY} DROP CONSTRAINT IF EXISTS treatment_{KEY}_pkey;
 ```
 
 Now we can create default subpartitions with a configurable number of shards using the repartition command.
+Note that the postgres user that runs this must have (temporary) SUPERUSER rights to change the session_replication_role environment setting!
 ```
-./repartition.sh --num 4
+ALTER USER col WITH SUPERUSER;
+./repartition.sh --num 3
 ```
 
 Finally Run:
@@ -273,7 +275,6 @@ CREATE INDEX ON reference (dataset_key, sector_key);
 CREATE INDEX ON reference USING GIN (dataset_key, doc);
 CREATE INDEX ON name (dataset_key, sector_key);
 CREATE INDEX ON name (dataset_key, verbatim_key);
-CREATE INDEX ON name (dataset_key, homotypic_name_id);
 CREATE INDEX ON name (dataset_key, published_in_id);
 CREATE INDEX ON name (dataset_key, lower(scientific_name));
 CREATE INDEX ON name (dataset_key, scientific_name_normalized);
@@ -313,6 +314,7 @@ CREATE INDEX ON media (dataset_key, taxon_id);
 CREATE INDEX ON media (dataset_key, sector_key);
 CREATE INDEX ON media (dataset_key, verbatim_key);
 CREATE INDEX ON media (dataset_key, reference_id);
+
 ```
 
 

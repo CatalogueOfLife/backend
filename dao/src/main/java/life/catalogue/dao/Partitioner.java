@@ -75,7 +75,6 @@ public class Partitioner {
     boolean exists = false;
     ResultSet rs = null;
     try (Statement st = con.createStatement()) {
-      Set<String> suffices = new HashSet<>();
       st.execute("SELECT EXISTS (SELECT child.relname"
                  + "  FROM pg_inherits JOIN pg_class parent ON pg_inherits.inhparent = parent.oid"
                  + "  JOIN pg_class child ON pg_inherits.inhrelid   = child.oid"
