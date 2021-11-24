@@ -67,7 +67,7 @@ public class PgSetupRule extends ExternalResource {
       }
     } catch (Exception e) {
       LOG.error("Pg setup error: {}", e.getMessage(), e);
-      shutdown();
+      after();
       throw new RuntimeException(e);
     }
   }
@@ -113,14 +113,11 @@ public class PgSetupRule extends ExternalResource {
 
   @Override
   public void after() {
-    shutdown();
-  }
-  
-  private void shutdown() {
     if (dataSource != null) {
       LOG.info("Shutdown dbpool");
       dataSource.close();
+      DatasetInfoCache.CACHE.setFactory(null);
     }
   }
-  
+
 }

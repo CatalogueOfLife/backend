@@ -1,27 +1,29 @@
 package life.catalogue.importer;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.importer.neo.model.RankedName;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Ignore;
-import org.junit.Test;
 
-import java.io.File;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.ibatis.session.SqlSession;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import static life.catalogue.api.TestEntityGenerator.setUserDate;
 import static life.catalogue.api.vocab.DataFormat.*;
