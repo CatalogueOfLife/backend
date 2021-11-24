@@ -2,21 +2,27 @@ package life.catalogue.doi.service;
 
 import life.catalogue.api.model.DOI;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * DataCite DOI configuration.
  */
 public class DoiConfig {
 
+  @NotNull
   public String api = "https://api.test.datacite.org";
 
+  @NotNull
   public String username;
 
+  @NotNull
   public String password;
 
   /**
    * DOI prefix to be used for COL DOIs.
    * Defaults to the test system.
    */
+  @NotNull
   public String prefix = "10.80631";
 
 

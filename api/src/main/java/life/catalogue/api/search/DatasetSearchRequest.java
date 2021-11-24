@@ -243,6 +243,13 @@ public class DatasetSearchRequest {
     this.reverse = reverse;
   }
 
+  /**
+   * Chronological order, first created comes first
+   */
+  public void setSortByReverseCreated() {
+    sortBy = SortBy.CREATED;
+    reverse = true;
+  }
 
   @Override
   public boolean equals(Object o) {
