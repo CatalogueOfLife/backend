@@ -3,10 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.search.NameUsageRequest;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.*;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.InvalidQueryException;
@@ -63,7 +60,7 @@ public class NameUsageSearchResource {
 
   @GET
   @Path("search")
-  public ResultPage<NameUsageWrapper> search(@BeanParam NameUsageSearchRequest query, @Valid @BeanParam Page page, @Context UriInfo uri) throws InvalidQueryException {
+  public NameUsageSearchResponse search(@BeanParam NameUsageSearchRequest query, @Valid @BeanParam Page page, @Context UriInfo uri) throws InvalidQueryException {
     if (uri != null) {
       query.addFilters(uri.getQueryParameters());
     }
@@ -72,7 +69,7 @@ public class NameUsageSearchResource {
 
   @POST
   @Path("search")
-  public ResultPage<NameUsageWrapper> searchPOST(@Valid SearchRequestBody req, @Context UriInfo uri) throws InvalidQueryException {
+  public NameUsageSearchResponse searchPOST(@Valid SearchRequestBody req, @Context UriInfo uri) throws InvalidQueryException {
     return search(req.request, req.page, uri);
   }
 

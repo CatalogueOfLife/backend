@@ -4,7 +4,11 @@ import com.google.common.base.Preconditions;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.Issue;
 
+import javax.annotation.Nullable;
+
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValue<T>> {
 
@@ -13,11 +17,21 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   }
 
   public static FacetValue<Integer> forInteger(Object val, int count) {
+    return forInteger(val, count, null);
+  }
+
+  public static FacetValue<Integer> forInteger(Object val, int count, @Nullable Function<Integer, String> labelFunc) {
     // For performance reasons, integer fields may be stored as strings (keyword datatype) in Elasticsearch!
+    Integer intVal;
     if (val.getClass() == Integer.class) {
-      return new FacetValue<>((Integer) val, count);
+      intVal = (Integer) val;
+    } else {
+      intVal = Integer.valueOf(val.toString());
     }
-    return new FacetValue<>(Integer.valueOf(val.toString()), count);
+    if (labelFunc != null) {
+      return new FacetValue<>(intVal, labelFunc.apply(intVal), count);
+    }
+    return new FacetValue<>(intVal, count);
   }
 
   public static FacetValue<UUID> forUuid(Object val, int count) {
@@ -52,12 +66,18 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   }
 
   private final T value;
+  private final String label;
   private final int count;
 
-  public FacetValue(T value, int count) {
+  public FacetValue(T value, String label, int count) {
     Preconditions.checkNotNull(value);
     this.value = value;
+    this.label = label;
     this.count = count;
+  }
+
+  public FacetValue(T value, int count) {
+    this(value, null, count);
   }
 
   public T getValue() {
@@ -68,21 +88,21 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
     return count;
   }
 
+  public String getLabel() {
+    return label;
+  }
+
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    FacetValue<?> other = (FacetValue<?>) obj;
-    return value.equals(other.value) && count == other.count;
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof FacetValue)) return false;
+    FacetValue<?> that = (FacetValue<?>) o;
+    return count == that.count && Objects.equals(value, that.value) && Objects.equals(label, that.label);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(value, count);
+    return Objects.hash(value, label, count);
   }
 
   @Override

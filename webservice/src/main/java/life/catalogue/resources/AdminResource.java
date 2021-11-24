@@ -10,6 +10,7 @@ import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.gbifsync.GbifSync;
@@ -237,6 +238,14 @@ public class AdminResource {
   public int createEmptyIndex(@Auth User user) {
     LOG.warn("Drop and recreate empty search index by {}", user);
     return indexService.createEmptyIndex();
+  }
+
+  @DELETE
+  @Path("/cache")
+  public boolean clearCaches(@Auth User user) {
+    LOG.info("Clear dataset info cache with {} entries by {}", DatasetInfoCache.CACHE.size(), user);
+    DatasetInfoCache.CACHE.clear();
+    return true;
   }
 
   @POST

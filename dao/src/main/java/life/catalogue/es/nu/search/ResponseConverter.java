@@ -5,13 +5,17 @@ import life.catalogue.api.search.FacetValue;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 import life.catalogue.es.response.*;
 
+import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
@@ -89,7 +93,9 @@ class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, Name
   }
 
   private static Set<FacetValue<?>> convert(NameUsageSearchParameter param, EsFacet esFacet) {
-    if (param.type() == Integer.class) {
+    if (param == NameUsageSearchParameter.DATASET_KEY) {
+      return createIntBuckets(esFacet, DatasetInfoCache.CACHE.titles::get);
+    } else if (param.type() == Integer.class) {
       return createIntBuckets(esFacet);
     } else if (param.type() == UUID.class) {
       return createUuidBuckets(esFacet);
@@ -111,10 +117,14 @@ class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, Name
   }
 
   private static Set<FacetValue<?>> createIntBuckets(EsFacet esFacet) {
+    return createIntBuckets(esFacet, null);
+  }
+
+  private static Set<FacetValue<?>> createIntBuckets(EsFacet esFacet, @Nullable Function<Integer, String> labelFunc) {
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
     if (esFacet.getFacetValues() != null && esFacet.getFacetValues().getBuckets() != null) {
       for (Bucket b : esFacet.getFacetValues().getBuckets()) {
-        facet.add(FacetValue.forInteger(b.getKey(), b.getDocCount()));
+        facet.add(FacetValue.forInteger(b.getKey(), b.getDocCount(), labelFunc));
       }
     }
     return facet;

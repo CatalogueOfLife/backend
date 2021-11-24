@@ -1,5 +1,8 @@
 package life.catalogue.dao;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
@@ -9,6 +12,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -27,6 +31,10 @@ import com.google.common.eventbus.Subscribe;
 public class DatasetInfoCache {
   private SqlSessionFactory factory;
   private final Map<Integer, DatasetInfo> infos = new ConcurrentHashMap<>();
+  public final LoadingCache<Integer, String> titles = Caffeine.newBuilder()
+                                                              .maximumSize(10000)
+                                                              .expireAfterWrite(24, TimeUnit.HOURS)
+                                                              .build(this::lookupTitle);
 
   public final static DatasetInfoCache CACHE = new DatasetInfoCache();
 
@@ -34,6 +42,16 @@ public class DatasetInfoCache {
 
   public void setFactory(SqlSessionFactory factory) {
     this.factory = factory;
+  }
+
+  private String lookupTitle(int key) {
+    try (SqlSession session = factory.openSession()) {
+      var d = session.getMapper(DatasetMapper.class).get(key);
+      if (d != null) {
+        return d.getTitle();
+      }
+      return null;
+    }
   }
 
   public static class DatasetInfo {
@@ -117,6 +135,10 @@ public class DatasetInfoCache {
    */
   public void clear() {
     infos.clear();
+  }
+
+  public int size() {
+    return infos.size();
   }
 
   @Subscribe
