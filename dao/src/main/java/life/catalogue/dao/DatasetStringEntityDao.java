@@ -16,8 +16,6 @@ import javax.validation.Validator;
 public class DatasetStringEntityDao<T extends DatasetScopedEntity<String>, M extends CRUD<DSID<String>, T> & DatasetPageable<T>>
   extends DatasetEntityDao<String, T, M> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DatasetStringEntityDao.class);
-
   public DatasetStringEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass, Validator validator) {
     super(offerChangedHook, factory, entityClass, mapperClass, validator);
   }

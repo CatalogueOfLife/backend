@@ -93,12 +93,14 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         throw NotFoundException.notFound(Dataset.class, key);
 
       } else if (d.getOrigin() == RELEASED) {
-        updateRelease(d);
+        var latestRelease = dm.latestRelease(d.getSourceKey(), true);
+        updateRelease(d, latestRelease);
 
       } else if (d.getOrigin() == MANAGED) {
+        var latestRelease = dm.latestRelease(d.getKey(), true);
         var req = new DatasetSearchRequest();
         for (Dataset release : dm.search(req, userKey, new Page(1000))) {
-          updateRelease(release);
+          updateRelease(release, latestRelease);
         }
 
       } else {
@@ -107,33 +109,52 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     }
   }
 
-  private void updateRelease(Dataset release) {
+  private void updateRelease(Dataset release, Integer latestRelease) {
     try (SqlSession session = factory.openSession()) {
-      var dm = session.getMapper(DatasetMapper.class);
-      var latestRelease = dm.latestRelease(release.getSourceKey(), true);
-      final boolean isLatest = Objects.equals(latestRelease, release.getKey());
-      LOG.info("Updating DOIs for {}release {} {}", isLatest ? "latest " : "", release.getKey(), release.getAlias());
-      AtomicInteger updated = new AtomicInteger(0);
-      var dsm = session.getMapper(DatasetSourceMapper.class);
+      if (release.getDoi() != null && release.getDoi().isCOL()) {
+        final boolean isLatest = Objects.equals(latestRelease, release.getKey());
 
-      for (Dataset source : dsm.listReleaseSources(release.getKey())) {
-        final DOI doi = source.getDoi();
-        if (doi != null && doi.isCOL()) {
-          try {
-            var data = doiService.resolve(doi);
-            var attr = converter.source(source, null, release, isLatest);
-            LOG.info("Update DOI {} for source {} {}", doi, source.getKey(), source.getAlias());
-            doiService.update(attr);
-            updated.incrementAndGet();
-            if (!release.isPrivat() && data.getState() != DoiState.FINDABLE) {
-              LOG.info("Publish DOI {} for source {} {} of public release {}", doi, source.getKey(), source.getAlias(), release.getKey());
-              doiService.publish(doi);
+        final DOI doi = release.getDoi();
+        try {
+          var data = doiService.resolve(doi);
+          var attr = converter.release(release, isLatest, null, isLatest);
+          LOG.info("Update DOI {} for source {} {}", doi, source.getKey(), source.getAlias());
+          doiService.update(attr);
+          updated.incrementAndGet();
+          if (!release.isPrivat() && data.getState() != DoiState.FINDABLE) {
+            LOG.info("Publish DOI {} for source {} {} of public release {}", doi, source.getKey(), source.getAlias(), release.getKey());
+            doiService.publish(doi);
+          }
+
+        } catch (DoiException e) {
+          LOG.error("Error updating DOI {} for source {} in release {}", doi, source.getKey(), release.getKey(), e);
+        }
+
+        LOG.info("Updating DOIs for {}release {} {}", isLatest ? "latest " : "", release.getKey(), release.getAlias());
+        AtomicInteger updated = new AtomicInteger(0);
+        var dsm = session.getMapper(DatasetSourceMapper.class);
+        for (Dataset source : dsm.listReleaseSources(release.getKey())) {
+          final DOI doi = source.getDoi();
+          if (doi != null && doi.isCOL()) {
+            try {
+              var data = doiService.resolve(doi);
+              var attr = converter.source(source, null, release, isLatest);
+              LOG.info("Update DOI {} for source {} {}", doi, source.getKey(), source.getAlias());
+              doiService.update(attr);
+              updated.incrementAndGet();
+              if (!release.isPrivat() && data.getState() != DoiState.FINDABLE) {
+                LOG.info("Publish DOI {} for source {} {} of public release {}", doi, source.getKey(), source.getAlias(), release.getKey());
+                doiService.publish(doi);
+              }
+
+            } catch (DoiException e) {
+              LOG.error("Error updating DOI {} for source {} in release {}", doi, source.getKey(), release.getKey(), e);
             }
-
-          } catch (DoiException e) {
-            LOG.error("Error updating DOI {} for source {} in release {}", doi, source.getKey(), release.getKey(), e);
           }
         }
+
+      } else {
+        LOG.info("Release {} {} has no DOI", release.getKey(), release.getAlias());
       }
     }
   }

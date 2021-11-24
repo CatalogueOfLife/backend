@@ -20,6 +20,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.eventbus.Subscribe;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Cache for Immutable dataset infos that is loaded on demand and never release as the data is immutable
  * and we do not have large amounts of datasets that do not fit into memory.
@@ -29,6 +32,8 @@ import com.google.common.eventbus.Subscribe;
  * We use the GuavaBus to listen to newly deleted datasets.
  */
 public class DatasetInfoCache {
+  private static final Logger LOG = LoggerFactory.getLogger(DatasetInfoCache.class);
+
   private SqlSessionFactory factory;
   private final Map<Integer, DatasetInfo> infos = new ConcurrentHashMap<>();
   public final LoadingCache<Integer, String> titles = Caffeine.newBuilder()
@@ -45,13 +50,18 @@ public class DatasetInfoCache {
   }
 
   private String lookupTitle(int key) {
-    try (SqlSession session = factory.openSession()) {
-      var d = session.getMapper(DatasetMapper.class).get(key);
-      if (d != null) {
-        return d.getTitle();
+    if (factory == null) {
+      LOG.warn("No session factory created, cannot lookup dataset title for key {}", key);
+
+    } else {
+      try (SqlSession session = factory.openSession()) {
+        var d = session.getMapper(DatasetMapper.class).get(key);
+        if (d != null) {
+          return d.getTitle();
+        }
       }
-      return null;
     }
+    return null;
   }
 
   public static class DatasetInfo {
