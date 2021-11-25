@@ -13,7 +13,9 @@ import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
+import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.TreatmentFormatParser;
@@ -22,6 +24,9 @@ import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.jbibtex.*;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.helpers.collection.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -147,6 +153,37 @@ public class ColdpInserter extends NeoCsvInserter {
     insertTreatments();
   }
 
+  @Override
+  protected void postBatchInsert() throws NormalizationFailedException {
+    // lookup species interaction related names - this requires neo4j so cant be done during batch inserts
+    for (RelType rt : RelType.values()) {
+      if (rt.isSpeciesInteraction()) {
+        int counter = 0;
+        try (Transaction tx = store.getNeo().beginTx();
+             var iter = store.iterRelations(rt)
+        ) {
+          while (iter.hasNext()) {
+            var rel = iter.next();
+            if (!rel.hasProperty(NeoProperties.SCINAME)) {
+              String name = NeoProperties.getScientificNameWithAuthorFromUsage(rel.getEndNode());
+              if (name.equals(NeoProperties.NULL_NAME)) {
+                String vkey = (String) rel.getProperty(NeoProperties.VERBATIM_KEY, null);
+                LOG.warn("Missing related names for {} interaction, verbatimKey={}", rt.specInterType, vkey);
+              } else {
+                rel.setProperty(NeoProperties.SCINAME, name);
+                counter++;
+              }
+            }
+          }
+          tx.success();
+        }
+        if (counter > 0) {
+          LOG.info("Added related names for {} {} interactions", counter, rt.specInterType);
+        }
+      }
+    }
+  }
+  
   private void insertTreatments(){
     ColdpReader coldp = (ColdpReader) reader;
     if (coldp.hasTreatments()) {

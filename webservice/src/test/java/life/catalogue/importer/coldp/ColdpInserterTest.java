@@ -15,7 +15,10 @@ import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.dwca.DwcaReaderTest;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
+
+import org.apache.poi.ss.formula.functions.T;
 
 import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.nameparser.api.NomCode;
@@ -34,6 +37,7 @@ import org.jbibtex.Value;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
+import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 import static org.junit.Assert.*;
 
 public class ColdpInserterTest extends InserterBaseTest {
@@ -69,6 +73,25 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertEquals((Integer)95, d.getCompleteness());
     assertEquals("Remarks, comments and usage notes about this dataset", d.getNotes());
     assertEquals("ColDP Example", d.getAlias());
+  }
+
+  @Test
+  public void relatedName() throws Exception {
+    NeoInserter ins = setup("/coldp/16");
+    ins.insertAll();
+
+    for (RelType rt : RelType.values()) {
+      if (rt.isSpeciesInteraction()) {
+        try (Transaction tx = store.getNeo().beginTx()) {
+          store.iterRelations(rt).stream().forEach(rel -> {
+            var si = store.toSpeciesInteraction(rel);
+            assertNotNull(si.getTaxonId());
+            assertNotNull(si.getRelatedTaxonScientificName());
+            assertEquals(rt.specInterType, si.getType());
+          });
+        }
+      }
+    }
   }
 
   @Test

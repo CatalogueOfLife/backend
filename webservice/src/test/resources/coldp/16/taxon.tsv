@@ -1,0 +1,6 @@
+ID	parentID	nameID	provisional	accordingToID	scrutinizer	scrutinizerDate	extinct	lifezone	link	remarks
+1000	100	1000	false		M.Döring	2019-07-21	false	terrestrial		
+1001	101	1001	false		M.Döring	2019-07-21	false	terrestrial	https://en.wikipedia.org/wiki/Crepis_bakeri	
+1002	101	1002	false		M.Döring	2019-07-21	false	terrestrial		
+1005	102	1005	false		M.Döring	2019-07-21	false	terrestrial		
+1006	102	1006	false		M.Döring	2019-07-21	false	terrestrial		

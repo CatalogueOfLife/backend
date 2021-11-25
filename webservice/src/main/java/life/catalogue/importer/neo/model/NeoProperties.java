@@ -3,7 +3,9 @@ package life.catalogue.importer.neo.model;
 import com.google.common.base.Strings;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Entity;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -35,11 +37,15 @@ public class NeoProperties {
     return defaultValue;
   }
 
+  public static String getScientificName(Relationship rel) {
+    return getScientificName(rel, null);
+  }
+
   public static String getScientificName(Node n) {
     return getScientificName(n, NULL_NAME);
   }
   
-  public static String getScientificName(Node n, String defaultName) {
+  public static String getScientificName(Entity n, String defaultName) {
     return (String) n.getProperty(NeoProperties.SCIENTIFIC_NAME, defaultName);
   }
   
