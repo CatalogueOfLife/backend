@@ -1,5 +1,6 @@
 package life.catalogue.api.util;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -103,6 +104,13 @@ public class ObjectUtils {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Returns true if two objects are the same and not null.
+   */
+  public static boolean equalsNonNull(Object a, Object b) {
+    return a != null && Objects.equals(a, b);
   }
 
   /**

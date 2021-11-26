@@ -171,8 +171,8 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   public ProjectContribution projectContribution(@PathParam("key") int datasetKey, @Context SqlSession session) {
     ProjectContribution contrib = new ProjectContribution();
     DatasetMapper dm = session.getMapper(DatasetMapper.class);
-    contrib.add(dm.get(datasetKey));
-    sourceDao.list(datasetKey,null, false).forEach(contrib::add);
+    contrib.add(dm.get(datasetKey), false);
+    sourceDao.list(datasetKey,null, false).forEach(src -> contrib.add(src, true));
 
     return contrib;
   }

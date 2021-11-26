@@ -65,6 +65,10 @@ public class Agent implements Comparable<Agent> {
   private String url;
   private String note;
 
+  public static Agent person(String orcid) {
+    return new Agent(orcid, null, null, null, null, null, null, null, null, null, null, null);
+  }
+
   public static Agent person(String given, String family) {
     return new Agent(null, given, family, null, null, null, null, null, null, null, null, null);
   }
