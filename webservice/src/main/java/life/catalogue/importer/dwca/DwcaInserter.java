@@ -48,7 +48,15 @@ public class DwcaInserter extends NeoCsvInserter {
         u -> store.createNameAndUsage(u) != null
     );
 
-    // TODO: read type specimen extension and update name usage!
+    // https://github.com/CatalogueOfLife/backend/issues/1071
+    // TODO: read type specimen extension and create type material & update name usage!
+    // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
+    //updateEntities(reader, DwcTerm.Taxon,
+    //    inter::interpret,
+    //    u -> store.createNameAndUsage(u) != null
+    //);
+
+    // TODO: read occurrence extension and create type material
     // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
     //updateEntities(reader, DwcTerm.Taxon,
     //    inter::interpret,

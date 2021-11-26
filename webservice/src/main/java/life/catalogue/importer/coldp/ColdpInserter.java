@@ -183,7 +183,7 @@ public class ColdpInserter extends NeoCsvInserter {
       }
     }
   }
-  
+
   private void insertTreatments(){
     ColdpReader coldp = (ColdpReader) reader;
     if (coldp.hasTreatments()) {

@@ -513,8 +513,15 @@ public class InterpreterBase {
     // a synonym by status?
     EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
       .orElse(()->new EnumNote<>(defaultStatus, null), Issue.TAXONOMIC_STATUS_INVALID, v);
-    if (status.val.isSynonym()) {
+
+    if (status.val.isBareName()) {
+      u = NeoUsage.createBareName(Origin.SOURCE, pnu.getName());
+    } else if (status.val.isSynonym()) {
       u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
+      if (pnu.isExtinct()) {
+        // flag this as synonyms cannot have the extinct flag
+        v.addIssue(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
+      }
     } else {
       u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
       if (pnu.isExtinct()) {
@@ -527,10 +534,6 @@ public class InterpreterBase {
     u.setVerbatimKey(v.getId());
     setTaxonomicNote(u.usage, pnu.getTaxonomicNote(), v);
     u.homotypic = TaxonomicStatusParser.isHomotypic(status);
-    if (pnu.isExtinct()) {
-      // flag this also for synonyms which cannot have the extinct flag
-      v.addIssue(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
-    }
 
     // flat classification via dwc or coldp
     u.classification = new Classification();

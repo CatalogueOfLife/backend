@@ -44,13 +44,17 @@ public class DwcInterpreter extends InterpreterBase {
       NeoUsage u = interpretUsage(pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcaTerm.ID);
       if (u.isNameUsageBase()) {
         u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
+        if (!u.isSynonym()) {
+          Taxon tax = u.asTaxon();
+          tax.setExtinct(null);
+          // TODO: lifezones come through the species profile extension.
+        }
+        // explicit accordingTo & namePhrase - the authorship could already have set these properties!
+        if (v.hasTerm(DwcTerm.nameAccordingTo)) {
+          setAccordingTo(u.usage, v.get(DwcTerm.nameAccordingTo), v);
+        }
       }
       u.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
-      // explicit accordingTo & namePhrase - the authorship could already have set these properties!
-      if (v.hasTerm(DwcTerm.nameAccordingTo)) {
-        setAccordingTo(u.usage, v.get(DwcTerm.nameAccordingTo), v);
-      }
-      interpretTaxon(u, v);
       return u;
     });
   }
@@ -151,14 +155,6 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private void interpretTaxon(NeoUsage u, VerbatimRecord v) {
-    if (!u.isSynonym()) {
-      Taxon tax = u.asTaxon();
-      tax.setExtinct(null);
-      // TODO: lifezones come through the species profile extension.
-    }
-  }
-  
   private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
     Optional<ParsedNameUsage> opt = interpretName(false, v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),

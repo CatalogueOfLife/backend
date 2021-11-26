@@ -332,8 +332,11 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   @Test
   @Ignore
   public void testExternal() throws Exception {
+
+    //normalize(URI.create("https://svampe.databasen.org/dwc/dwcchecklistarchive.zip"));
+    normalize(URI.create("http://sftp.kew.org/pub/data_collaborations/Fabaceae/DwCA/wcvp_fabaceae_DwCA.zip"));
     //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
-    normalize(Paths.get("/Users/markus/code/col+/data-world-plants/dwca"));
+    //normalize(Paths.get("/Users/markus/code/col+/data-world-plants/dwca"));
     //normalize(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"));
     // print("Diversity", GraphFormat.TEXT, false);
   }
