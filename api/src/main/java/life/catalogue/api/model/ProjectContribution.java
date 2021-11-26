@@ -52,6 +52,10 @@ public class ProjectContribution extends TreeSet<ProjectContribution.Contributor
     }
   }
 
+  public void add(final Dataset d) {
+    add(d, true);
+  }
+
   /**
    * @param addSource if true declares the given dataset as a source for each added contributor
    */
