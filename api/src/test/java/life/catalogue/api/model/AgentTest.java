@@ -6,6 +6,7 @@ import javax.validation.Validator;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static life.catalogue.api.model.Agent.person;
 
 public class AgentTest {
 
@@ -124,5 +125,16 @@ public class AgentTest {
     assertEquals("M.", Agent.abbreviate("M."));
     assertEquals("DC", Agent.abbreviate("DC"));
     assertEquals("S.", Agent.abbreviate("Sergey (Zoological Institute RAS)"));
+  }
+
+  @Test
+  public void sameAs() {
+    assertTrue(person("Markus" ,"Döring").sameAs(person("Markus", "Döring")));
+    assertTrue(person("Markus" ,"Döring").sameAs(person("M.", "Döring")));
+    assertTrue(person("Markus" ,"Döring").sameAs(person("M", "Döring")));
+    assertTrue(person("M." ,"Döring").sameAs(person("M", "Döring")));
+    assertFalse(person("Markus" ,"Döring").sameAs(person("M.A.", "Döring")));
+
+    assertTrue(person("Peter" ,"Pan", null, "1234").sameAs(person("M", "Döring", null, "1234")));
   }
 }

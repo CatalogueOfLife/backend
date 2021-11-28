@@ -131,16 +131,6 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
 
     // now try to list sources
     mapper().listReleaseSources(Datasets.COL);
-
-    // limit container authors to just 2 and verify
-    DatasetSettings ds = dm.getSettings(Datasets.COL);
-    ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, 2);
-    dm.updateSettings(Datasets.COL, ds, 1);
-    commit();
-
-    rs2 = removeDbCreatedProps(mapper().getReleaseSource(rs.getKey(), Datasets.COL));
-    rs.setContainerCreator(col.getCreator().subList(0,2));
-    assertEquals(rs2, rs);
   }
 
   Dataset removeDbCreatedProps(Dataset obj) {

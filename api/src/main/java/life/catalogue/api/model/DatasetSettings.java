@@ -120,4 +120,12 @@ public class DatasetSettings extends HashMap<Setting, Object> {
   public boolean isDisabled(Setting key) {
     return !containsKey(key) || !getBool(key);
   }
+
+  public void enable(Setting key) {
+    put(key, true);
+  }
+
+  public void disable(Setting key) {
+    put(key, false);
+  }
 }

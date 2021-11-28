@@ -222,7 +222,16 @@ public class UpdateReleaseTool implements AutoCloseable {
   }
 
   /**
-   * Rebuilds the source metadata from latest patches and templates
+   * Rebuilds the author (=creator) list of the release metadata from the current project and sources
+   * as it is done at release time.
+   */
+  public void rebuildReleaseAuthors(){
+
+  }
+
+  /**
+   * Rebuilds the source metadata from latest patches and templates.
+   * Does not modify the actual release or project metadata.
    */
   public void rebuildSourceMetadata(boolean addMissingDOIs){
     System.out.printf("Rebuilt all source metadata for  %s: %s\n\n", release.getKey(), release.getTitle());
@@ -278,10 +287,10 @@ public class UpdateReleaseTool implements AutoCloseable {
     doiCfg.username = "";
     doiCfg.password = "";
     try (UpdateReleaseTool reg = new UpdateReleaseTool(2328,cfg, doiCfg, 101)) { // 101=markus
-      //reg.rebuildSourceMetadata(true);
+      reg.rebuildSourceMetadata(true);
       //reg.updateNotCurrentSourceMetadataFromLatest();
       //reg.updateSourceDOIs();
-      reg.addMissingSourceDOIs();
+      //reg.addMissingSourceDOIs();
     }
   }
 }

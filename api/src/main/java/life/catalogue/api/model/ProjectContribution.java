@@ -1,7 +1,5 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.util.ObjectUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -27,14 +25,6 @@ public class ProjectContribution extends TreeSet<ProjectContribution.Contributor
 
     private void addSources(final Contributor other) {
       sources.putAll(other.sources);
-    }
-
-    public boolean isSameAs(Contributor other) {
-      if (other != null) {
-        return ObjectUtils.equalsNonNull(getOrcid(), other.getOrcid())
-          || ObjectUtils.equalsNonNull(getName(), other.getName());
-      }
-      return false;
     }
 
     @Override
@@ -88,7 +78,7 @@ public class ProjectContribution extends TreeSet<ProjectContribution.Contributor
     if (c != null) {
       // prefer to reuse existing one and add the source
       for (Contributor old : this) {
-        if (old.isSameAs(c)) {
+        if (old.sameAs(c)) {
           old.addSources(c);
           // merge agent infos
           old.merge(c);

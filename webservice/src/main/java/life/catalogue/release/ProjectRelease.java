@@ -57,14 +57,21 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
-    if (modifyDatasetWithKey(newDataset)) {
-      dDao.update(newDataset, userKey);
-    }
+    // point to release in CLB - this requires the datasetKey to exist already
+    newDataset.setUrl(UriBuilder.fromUri(cfg.clbURI)
+                       .path("dataset")
+                       .path(newDataset.getKey().toString())
+                       .build());
+    dDao.update(newDataset, userKey);
   }
 
   @Override
   protected void modifyDataset(Dataset d, DatasetSettings ds) {
     super.modifyDataset(d, ds);
+    modifyDataset(datasetKey, d, ds, srcDao, new AuthorlistGenerator(validator));
+  }
+
+  public static void modifyDataset(int datasetKey, Dataset d, DatasetSettings ds, DatasetSourceDao srcDao, AuthorlistGenerator authGen) {
     d.setOrigin(DatasetOrigin.RELEASED);
 
     final FuzzyDate today = FuzzyDate.now();
@@ -75,67 +82,10 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setAlias(alias);
 
     // append authors for release?
-    final List<Agent> authors = new ArrayList<>();
-    if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {
-      srcDao.list(datasetKey, null, false).forEach(src -> {
-        if (src.getCreator() != null) {
-          authors.addAll(setSourceNote(src, src.getCreator()));
-        }
-        if (src.getEditor() != null) {
-          authors.addAll(setSourceNote(src, src.getEditor()));
-        }
-      });
-    }
-    if (ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS) && d.getContributor() != null) {
-      authors.addAll(setSourceNote(d, d.getContributor()));
-    }
-    // remove authors without a family name and distinct them based in the generated name alone!
-    Map<String, Agent> uniq = new HashMap<>();
-    for (Agent a : authors) {
-      if (a != null) {
-        String name = a.getName();
-        if (name != null) {
-          String key = name.replaceAll("\\.", " ").replaceAll("  +", " ").toLowerCase();
-          if (uniq.containsKey(key)) {
-            uniq.get(key).merge(a);
-          } else {
-            uniq.put(key, a);
-          }
-        }
-      }
-    }
-    // sort them alphabetically
-    if (!uniq.isEmpty()) {
-      authors.clear();
-      authors.addAll(uniq.values());
-      Collections.sort(authors);
-      // now append them to already existing creators
-      if (d.getCreator() == null) {
-        d.setCreator(new ArrayList<>());
-        ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, 0);
-      } else {
-        ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, d.getCreator().size());
-      }
-      // verify emails as they can break validation on insert
-      authors.forEach(a -> a.validateAndNullify(validator));
-      d.getCreator().addAll(authors);
-    }
+    authGen.appendSourceAuthors(d, srcDao.list(datasetKey, null, false), ds);
 
-    d.setPrivat(true); // all releases are private candidate releases first
-  }
-
-  private boolean modifyDatasetWithKey(Dataset d) {
-    // point to release in CLB - this requires the datasetKey to exist already
-    d.setUrl(UriBuilder.fromUri(cfg.clbURI)
-                       .path("dataset")
-                       .path(d.getKey().toString())
-                       .build());
-    return true;
-  }
-
-  private List<Agent> setSourceNote(Dataset d, List<Agent> agents) {
-    agents.forEach(a -> a.setNote(d.getAliasOrTitle()));
-    return agents;
+    // all releases are private candidate releases first
+    d.setPrivat(true);
   }
 
   @Override

@@ -17,6 +17,8 @@ import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ImgConfig;
+import life.catalogue.release.AuthorlistGenerator;
+import life.catalogue.release.ProjectRelease;
 import life.catalogue.release.ReleaseManager;
 
 import java.awt.image.BufferedImage;
@@ -52,6 +54,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final DatasetSourceDao sourceDao;
   private final AssemblyCoordinator assembly;
   private final ReleaseManager releaseManager;
+  private final AuthorlistGenerator authGen = new AuthorlistGenerator();
 
   public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
     super(Dataset.class, dao, factory);
@@ -113,6 +116,25 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
+  @Path("{key}/preview")
+  @VaryAccept
+  @Produces({MediaType.APPLICATION_JSON,
+    MediaType.APPLICATION_XML, MediaType.TEXT_XML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML,
+    MoreMediaTypes.APP_JSON_CSL,
+    MoreMediaTypes.APP_BIBTEX
+  })
+  public Dataset preview(@PathParam("key") Integer key) {
+    Dataset d = super.get(key);
+    if (d.getOrigin() != DatasetOrigin.MANAGED) {
+      throw new IllegalArgumentException("Release metadata preview required a managed project");
+    }
+
+    ProjectRelease.modifyDataset(key, d, dao.getSettings(key), sourceDao, authGen);
+    return d;
+  }
+
+  @GET
   @Path("{key}/settings")
   public DatasetSettings getSettings(@PathParam("key") int key) {
     return dao.getSettings(key);
@@ -164,17 +186,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void removeEditor(@PathParam("key") int key, @PathParam("id") int editorKey, @Auth User user) {
     dao.removeEditor(key, editorKey, user);
-  }
-
-  @GET
-  @Path("/{key}/contribution")
-  public ProjectContribution projectContribution(@PathParam("key") int datasetKey, @Context SqlSession session) {
-    ProjectContribution contrib = new ProjectContribution();
-    DatasetMapper dm = session.getMapper(DatasetMapper.class);
-    contrib.add(dm.get(datasetKey), false);
-    sourceDao.list(datasetKey,null, false).forEach(src -> contrib.add(src, true));
-
-    return contrib;
   }
 
   @GET

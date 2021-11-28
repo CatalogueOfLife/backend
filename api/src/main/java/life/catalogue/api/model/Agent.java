@@ -550,4 +550,20 @@ public class Agent implements Comparable<Agent> {
     return COMP.compare(this, o);
   }
 
+  private String key() {
+    String name = getName();
+    return name == null ? null : name.replaceAll("\\.+", " ")
+                                     .replaceAll("  +", " ")
+                                     .trim()
+                                     .toLowerCase();
+  }
+
+  public boolean sameAs(Agent other) {
+    if (other != null) {
+      return ObjectUtils.equalsNonNull(getOrcid(), other.getOrcid())
+             || ObjectUtils.equalsNonNull(key(), other.key());
+    }
+    return false;
+  }
+
 }
