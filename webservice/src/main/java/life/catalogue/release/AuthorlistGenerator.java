@@ -43,7 +43,7 @@ public class AuthorlistGenerator {
       });
     }
     if (ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS) && d.getContributor() != null) {
-      authors.addAll(addSourceNote(d, d.getContributor()));
+      authors.addAll(d.getContributor());
     }
     // remove same authors and merge information
     LinkedList<Agent> uniq = new LinkedList<>();
@@ -69,6 +69,18 @@ public class AuthorlistGenerator {
       uniq.forEach(a -> a.validateAndNullify(validator));
       // now append them to already existing creators
       if (d.getCreator() != null) {
+        // merge notes from existing agents before appending
+        for (Agent c : d.getCreator()) {
+          var iter = uniq.iterator();
+          while (iter.hasNext()) {
+            Agent a = iter.next();
+            if (c.sameAs(a)) {
+              c.addNote(a.getNote());
+              iter.remove(); // remove duplicate
+              break;
+            }
+          }
+        }
         uniq.addAll(0, d.getCreator());
       }
       d.setCreator(uniq);
@@ -76,7 +88,7 @@ public class AuthorlistGenerator {
   }
 
   private static List<Agent> addSourceNote(Dataset d, List<Agent> agents) {
-    agents.forEach(a -> a.setNote(d.getAliasOrTitle()));
+    agents.forEach(a -> a.addNote(d.getAliasOrTitle()));
     return agents;
   }
 

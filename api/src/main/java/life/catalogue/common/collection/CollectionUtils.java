@@ -43,6 +43,13 @@ public class CollectionUtils {
   }
 
   /**
+   * Nullsafe size method. Returns the size of a collection or 0 if its null.
+   */
+  public static int size(Collection<?> c) {
+    return c == null ? 0 : c.size();
+  }
+
+  /**
    * Iterate over 2 collections in parallel
    */
   public static <T, U> void zip(Collection<T> ct, Collection<U> cu, BiConsumer<T, U> each) {

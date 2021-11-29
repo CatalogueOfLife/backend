@@ -67,7 +67,7 @@ public class PublicReleaseListener {
       && event.old.isPrivat() // that was private before
       && !event.obj.isPrivat() // but now is public
     ) {
-
+      LOG.info("Publish release {} {} by user {}", event.obj.getKey(), event.obj.getAliasOrTitle(), event.obj.getModifiedBy());
       // publish DOI if exists
       if (event.obj.getDoi() != null) {
         LOG.info("Publish DOI {}", event.obj.getDoi());

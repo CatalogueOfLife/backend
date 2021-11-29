@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -396,6 +398,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     ObjectUtils.setIfNull(obj.getType(), obj::setType, old.getType());
     ObjectUtils.setIfNull(obj.getTitle(), obj::setTitle, old.getTitle());
     sanitize(obj);
+    // if list of creators for a project changes, adjust the max container author settings
+    if (obj.getOrigin() == DatasetOrigin.MANAGED && CollectionUtils.size(obj.getCreator()) != CollectionUtils.size(old.getCreator())) {
+      var ds = getSettings(obj.getKey());
+      ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, CollectionUtils.size(obj.getCreator()));
+      putSettings(obj.getKey(), ds, user);
+    }
     super.updateBefore(obj, old, user, mapper, session);
   }
 

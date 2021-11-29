@@ -426,6 +426,15 @@ public class Agent implements Comparable<Agent> {
     this.note = note;
   }
 
+  public void addNote(String note) {
+    // merge notes if both exist
+    if (this.note != null && note != null) {
+      setNote(this.note + "; " + note);
+    } else if (note != null){
+      setNote(note);
+    }
+  }
+
   public void setOrcid(String orcid) {
     this.orcid = removeUrlPrefix(orcid, "orcid.org");
   }
@@ -464,12 +473,7 @@ public class Agent implements Comparable<Agent> {
     ObjectUtils.setIfNull(getCountry(), this::setCountry, addition.getCountry());
     ObjectUtils.setIfNull(getEmail(), this::setEmail, addition.getEmail());
     ObjectUtils.setIfNull(getUrl(), this::setUrl, addition.getUrl());
-    if (note != null && addition.getNote() != null) {
-      // merge notes
-      setNote(note + "; " + addition.getNote());
-    } else if (addition.getNote() != null){
-      setNote(addition.getNote());
-    }
+    addNote(addition.getNote());
   }
 
   /**

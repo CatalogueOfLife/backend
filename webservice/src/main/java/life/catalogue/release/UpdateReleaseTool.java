@@ -5,6 +5,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.eventbus.EventBus;
 
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
@@ -27,6 +28,7 @@ import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
 
 import java.net.URI;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
@@ -57,12 +59,14 @@ public class UpdateReleaseTool implements AutoCloseable {
   final DoiConfig doiCfg;
   final DoiService doiService;
   final DoiUpdater doiUpdater;
+  final DatasetSourceDao srcDao;
 
   public UpdateReleaseTool(int releaseKey, PgConfig pgCfg, DoiConfig doiCfg, int userKey) {
     dataSource = pgCfg.pool();
     this.userKey = userKey;
     factory = MybatisFactory.configure(dataSource, "tools");
     DatasetInfoCache.CACHE.setFactory(factory);
+    srcDao = new DatasetSourceDao(factory);
 
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
@@ -73,6 +77,8 @@ public class UpdateReleaseTool implements AutoCloseable {
       project = dm.get(release.getSourceKey());
       settings = dm.getSettings(project.getKey());
     }
+    System.out.printf("Loaded release %s: %s\n", release.getKey(), release.getTitle());
+
     // DOI
     this.doiCfg = doiCfg;
     final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider(ApiModule.MAPPER, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
@@ -123,9 +129,8 @@ public class UpdateReleaseTool implements AutoCloseable {
    */
   public void updateNotCurrentSourceMetadataFromLatest(){
     System.out.printf("Update all non current source metadata for %s: %s\n\n", release.getKey(), release.getTitle());
-    DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger counter = new AtomicInteger(0);
-    dao.list(release.getKey(), release, false).forEach(d -> {
+    srcDao.list(release.getKey(), release, false).forEach(d -> {
       try (SqlSession session = factory.openSession()) {
         var dm = session.getMapper(DatasetMapper.class);
         var dsm = session.getMapper(DatasetSourceMapper.class);
@@ -149,10 +154,9 @@ public class UpdateReleaseTool implements AutoCloseable {
    */
   public void updateSourceDOIs(){
     System.out.printf("Publish all source DOIs for %s: %s\n\n", release.getKey(), release.getTitle());
-    DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger updated = new AtomicInteger(0);
     AtomicInteger published = new AtomicInteger(0);
-    dao.list(release.getKey(), release, false).forEach(d -> {
+    srcDao.list(release.getKey(), release, false).forEach(d -> {
       if (d.getDoi() != null) {
         final DOI doi = d.getDoi();
         try {
@@ -182,12 +186,11 @@ public class UpdateReleaseTool implements AutoCloseable {
    */
   public void addMissingSourceDOIs(){
     System.out.printf("Issue missing source DOIs for %s: %s\n\n", release.getKey(), release.getTitle());
-    DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger created = new AtomicInteger(0);
     final boolean publish = !release.isPrivat();
     try (SqlSession session = factory.openSession(true)) {
       DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
-        dao.list(release.getKey(), release, false).forEach(d -> {
+        srcDao.list(release.getKey(), release, false).forEach(d -> {
         if (d.getDoi() == null) {
           final DOI doi = doiCfg.datasetSourceDOI(release.getKey(), d.getKey());
           System.out.printf("Creating new DOI %s for source %s %s\n", doi, d.getKey(), d.getCitation());
@@ -226,7 +229,19 @@ public class UpdateReleaseTool implements AutoCloseable {
    * as it is done at release time.
    */
   public void rebuildReleaseAuthors(){
+    System.out.println("\n\nRELEASE WAS:");
+    showAgents(release.getCreator());
+    AuthorlistGenerator authGen = new AuthorlistGenerator(validator);
+    // reset to project creator and then append sources & contributors
+    release.setCreator(List.copyOf(project.getCreator()));
+    authGen.appendSourceAuthors(release, srcDao.list(release.getKey(), null, false), settings);
+    System.out.println("\n\nUPDATED RELEASE:");
+    showAgents(release.getCreator());
+    //TODO: store changes
+  }
 
+  private static void showAgents(List<Agent> agents) {
+    agents.forEach(a -> System.out.println(String.format("%s: %s [%s]", a.getName(), a.getNote(), a.getOrcid())));
   }
 
   /**
@@ -235,7 +250,6 @@ public class UpdateReleaseTool implements AutoCloseable {
    */
   public void rebuildSourceMetadata(boolean addMissingDOIs){
     System.out.printf("Rebuilt all source metadata for  %s: %s\n\n", release.getKey(), release.getTitle());
-    DatasetSourceDao dao = new DatasetSourceDao(factory);
 
     try (SqlSession session = factory.openSession(false)) {
       DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
@@ -245,7 +259,7 @@ public class UpdateReleaseTool implements AutoCloseable {
       System.out.printf("Deleted %s old source metadata records\n", cnt);
 
       AtomicInteger counter = new AtomicInteger(0);
-      dao.list(release.getKey(), release, true).forEach(d -> {
+      srcDao.list(release.getKey(), release, true).forEach(d -> {
         counter.incrementAndGet();
         if (addMissingDOIs && d.getDoi() == null) {
           DOI doi = doiCfg.datasetSourceDOI(release.getKey(), d.getKey());
@@ -280,14 +294,14 @@ public class UpdateReleaseTool implements AutoCloseable {
     cfg.host = "pg1.catalogueoflife.org";
     cfg.database = "col";
     cfg.user = "col";
-    cfg.password = "";
+    cfg.password = "jeK7V19i";
     DoiConfig doiCfg = new DoiConfig();
     doiCfg.api = "https://api.datacite.org";
     doiCfg.prefix = "10.48580";
     doiCfg.username = "";
     doiCfg.password = "";
-    try (UpdateReleaseTool reg = new UpdateReleaseTool(2328,cfg, doiCfg, 101)) { // 101=markus
-      reg.rebuildSourceMetadata(true);
+    try (UpdateReleaseTool reg = new UpdateReleaseTool(2351,cfg, doiCfg, 101)) { // 101=markus
+      reg.rebuildReleaseAuthors();
       //reg.updateNotCurrentSourceMetadataFromLatest();
       //reg.updateSourceDOIs();
       //reg.addMissingSourceDOIs();

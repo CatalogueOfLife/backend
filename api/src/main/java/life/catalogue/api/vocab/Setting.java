@@ -75,6 +75,12 @@ public enum Setting {
    */
   RELEASE_ADD_CONTRIBUTORS(Boolean.class, MANAGED),
 
+  /**
+   * Number of first authors from a project/release to use for the container authors of a source chapter-in-a-book citation.
+   * If not given all authors are used.
+   */
+  SOURCE_MAX_CONTAINER_AUTHORS(Integer.class, MANAGED, RELEASED),
+
   DATA_FORMAT(DataFormat.class, EXTERNAL, MANAGED),
 
   /**
