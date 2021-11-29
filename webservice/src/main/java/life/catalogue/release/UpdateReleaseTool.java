@@ -229,15 +229,18 @@ public class UpdateReleaseTool implements AutoCloseable {
    * as it is done at release time.
    */
   public void rebuildReleaseAuthors(){
-    System.out.println("\n\nRELEASE WAS:");
-    showAgents(release.getCreator());
     AuthorlistGenerator authGen = new AuthorlistGenerator(validator);
     // reset to project creator and then append sources & contributors
     release.setCreator(List.copyOf(project.getCreator()));
+    release.setContributor(List.copyOf(project.getContributor()));
     authGen.appendSourceAuthors(release, srcDao.list(release.getKey(), null, false), settings);
     System.out.println("\n\nUPDATED RELEASE:");
     showAgents(release.getCreator());
-    //TODO: store changes
+    // store changes to release metadata
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      dm.update(release);
+    }
   }
 
   private static void showAgents(List<Agent> agents) {
@@ -294,7 +297,7 @@ public class UpdateReleaseTool implements AutoCloseable {
     cfg.host = "pg1.catalogueoflife.org";
     cfg.database = "col";
     cfg.user = "col";
-    cfg.password = "jeK7V19i";
+    cfg.password = "";
     DoiConfig doiCfg = new DoiConfig();
     doiCfg.api = "https://api.datacite.org";
     doiCfg.prefix = "10.48580";

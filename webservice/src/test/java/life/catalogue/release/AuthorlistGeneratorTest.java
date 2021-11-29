@@ -44,11 +44,13 @@ public class AuthorlistGeneratorTest {
     gen.appendSourceAuthors(d, sources, ds);
     assertEquals(7, d.getCreator().size());
     assertEquals(markus, d.getCreator().get(0));
+    assertEquals(0, d.getContributor().size());
 
     d = new Dataset(proj);
     ds.disable(Setting.RELEASE_ADD_CONTRIBUTORS);
     gen.appendSourceAuthors(d, sources, ds);
     assertEquals(6, d.getCreator().size());
+    assertEquals(proj.getContributor().size(), d.getContributor().size());
 
     var s3 = new Dataset();
     s3.setCreator(List.of(person("Markus", "Döring", "markus@vegan.pork", null, "Vegan")));

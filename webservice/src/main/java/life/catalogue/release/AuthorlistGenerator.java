@@ -44,6 +44,8 @@ public class AuthorlistGenerator {
     }
     if (ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS) && d.getContributor() != null) {
       authors.addAll(d.getContributor());
+      // remove contributors from release now that they are part of the creators
+      d.setContributor(Collections.EMPTY_LIST);
     }
     // remove same authors and merge information
     LinkedList<Agent> uniq = new LinkedList<>();
