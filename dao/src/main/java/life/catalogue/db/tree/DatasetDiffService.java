@@ -35,8 +35,8 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
 
   private final Set<Integer> userDiffs = ConcurrentHashMap.newKeySet();
 
-  public DatasetDiffService(SqlSessionFactory factory, FileMetricsDatasetDao dao) {
-    super(dao, factory);
+  public DatasetDiffService(SqlSessionFactory factory, FileMetricsDatasetDao dao, int timeoutInSeconds) {
+    super(dao, factory, timeoutInSeconds);
   }
 
   @Override

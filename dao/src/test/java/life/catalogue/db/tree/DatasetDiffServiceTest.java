@@ -19,7 +19,7 @@ public class DatasetDiffServiceTest extends BaseDiffServiceTest<Integer> {
   final DatasetDiffService diffService;
 
   public DatasetDiffServiceTest() {
-    diffService = new DatasetDiffService(factory(), new FileMetricsDatasetDao(factory(), treeRepoRule.getRepo()));
+    diffService = new DatasetDiffService(factory(), new FileMetricsDatasetDao(factory(), treeRepoRule.getRepo()), 10);
     diff = diffService;
   }
 

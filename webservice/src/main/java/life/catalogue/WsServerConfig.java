@@ -106,6 +106,12 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public JobConfig job = new JobConfig();
 
   /**
+   * The maximum allowed time in seconds for a unix diff to take before throwing a time out.
+   */
+  @Min(1)
+  public int diffTimeout = 30;
+
+  /**
    * Names index kvp file to persist map on disk. If empty will use a volatile memory index.
    */
   public File namesIndexFile;

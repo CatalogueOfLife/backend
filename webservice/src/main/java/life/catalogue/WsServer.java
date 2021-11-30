@@ -261,8 +261,8 @@ public class WsServer extends Application<WsServerConfig> {
     final FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(getSqlSessionFactory(), cfg.metricsRepo);
 
     // diff
-    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);
-    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao);
+    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao, cfg.diffTimeout);
+    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao, cfg.diffTimeout);
     env.healthChecks().register("dataset-diff", new DiffHealthCheck(dDiff));
     env.healthChecks().register("sector-diff", new DiffHealthCheck(sDiff));
 
