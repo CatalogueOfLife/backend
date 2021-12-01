@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
@@ -505,6 +506,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
       // remember sector count map so we can update parents at the end
       TaxonSectorCountMap delta = tm.getCounts(id);
+      if (delta == null) {
+        throw NotFoundException.notFound(Taxon.class, id);
+      }
       LOG.info("Recursively delete taxon {} and its {} nested sectors from dataset {} by user {}", id, delta.size(), id.getDatasetKey(), user);
 
       List<Integer> sectorKeys = sm.listDescendantSectorKeys(id);
@@ -515,7 +519,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
       // we remove usages, names, verbatim sources and associated infos.
       // but NOT name_rels or refs
-      int counter = 0;
       DSID<String> key = DSID.copy(id);
       for (UsageNameID unid : num.processTreeIds(id)) {
         // cascading delete removes vernacular, distributions, descriptions, media

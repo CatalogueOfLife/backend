@@ -23,8 +23,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -86,7 +85,21 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     assertEquals(5, mapper().count(DATASET11.getKey()));
     assertEquals(3, mapper().countChildrenWithRank(DSID.of(DATASET11.getKey(), "root-1"), Rank.SPECIES, true));
   }
-  
+
+
+  @Test
+  public void getCounts() throws Exception {
+    // 2 Taxa pre-inserted through InitMybatisRule.apple()
+    mapper().create(TestEntityGenerator.newTaxon("t2"));
+    generateDatasetImport(DATASET11.getKey());
+
+    var cnt = mapper().getCounts(DSID.of(DATASET11.getKey(), "root-1"));
+    assertNotNull(cnt);
+
+    cnt = mapper().getCounts(DSID.of(DATASET11.getKey(), "notExisting"));
+    assertNull(cnt);
+  }
+
   @Test
   public void list() throws Exception {
     List<Taxon> taxa = new ArrayList<>();
