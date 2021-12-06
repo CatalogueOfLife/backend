@@ -48,6 +48,7 @@ import life.catalogue.legacy.IdMap;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
+import life.catalogue.portal.PortalPageRenderer;
 import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
@@ -342,7 +343,6 @@ public class WsServer extends Application<WsServerConfig> {
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
       importManager, gbifSync, ni, executor, idMap, validator));
-    j.register(new ColSeoResource(tdao, dsdao, coljersey.getCache()));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetExportResource(getSqlSessionFactory(), searchService, exportManager, diDao, cfg));
@@ -362,6 +362,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService));
     j.register(new NameUsageSearchResource(searchService));
+    j.register(new PortalResource(new PortalPageRenderer(dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir)));
     j.register(new ReferenceResource(rdao));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, tdao, fmsDao, assembly));

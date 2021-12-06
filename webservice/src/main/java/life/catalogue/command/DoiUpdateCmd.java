@@ -1,41 +1,21 @@
 package life.catalogue.command;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.eventbus.EventBus;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.cache.LatestDatasetKeyCache;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.SectorImportDao;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
-import life.catalogue.db.mapper.SectorImportMapper;
-import life.catalogue.db.mapper.SectorMapper;
 
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 
-import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.datacite.model.DoiState;
 import life.catalogue.doi.service.*;
 
 import org.apache.ibatis.session.SqlSession;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.logging.LoggingFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,8 +25,6 @@ import net.sourceforge.argparse4j.inf.Subparser;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 
 import static life.catalogue.api.vocab.DatasetOrigin.*;
 

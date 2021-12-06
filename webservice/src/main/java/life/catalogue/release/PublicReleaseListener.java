@@ -10,15 +10,12 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 
-import life.catalogue.cache.LatestDatasetKeyCache;
-import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.dao.DatasetExportDao;
 
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
-import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiException;
 import life.catalogue.doi.service.DoiService;
@@ -31,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
@@ -108,7 +104,7 @@ public class PublicReleaseListener {
   }
 
   /**
-   * Change DOI metadata for last release to point to CLB, not portal
+   * Change DOI metadata for last release to point to CLB, not life.catalogue.portal
    */
   void updateColDoiUrls(Dataset release) {
     try (SqlSession session = factory.openSession()) {

@@ -2,6 +2,7 @@ package life.catalogue.dw.jersey.filter;
 
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.dao.DatasetInfoCache;
@@ -26,7 +27,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static life.catalogue.cache.LatestDatasetKeyCache.ReleaseAttempt;
+import static life.catalogue.cache.LatestDatasetKeyCacheImpl.ReleaseAttempt;
 
 /**
  * Filter that parses dataset keys given as path or query parameters

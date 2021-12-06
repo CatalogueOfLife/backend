@@ -247,7 +247,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     if (d == null) {
       throw NotFoundException.notFound(Dataset.class, DSID.of(datasetKey, id));
     }
-    return ResourceUtils.streamFreemarker(d, "seo/dataset-seo.ftl", MediaType.TEXT_PLAIN_TYPE);
+    return ResourceUtils.streamFreemarker(d, "seo/DATASET.ftl", MediaType.TEXT_PLAIN_TYPE);
   }
 
   @GET

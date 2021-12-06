@@ -4,11 +4,13 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
 import life.catalogue.dw.jersey.filter.CacheControlResponseFilter;
 import life.catalogue.dw.jersey.filter.CreatedResponseFilter;
 import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
+import life.catalogue.dw.jersey.filter.DeprecatedWarningResponseFilter;
 import life.catalogue.dw.jersey.provider.EnumParamConverterProvider;
 import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
 
@@ -28,7 +30,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
   DatasetKeyRewriteFilter lrFilter;
   CacheControlResponseFilter ccFilter;
-  LatestDatasetKeyCache cache = new LatestDatasetKeyCache(null); // we add the factory later - it is not available when we run the bundle!
+  LatestDatasetKeyCache cache = new LatestDatasetKeyCacheImpl(null); // we add the factory later - it is not available when we run the bundle!
 
   @Override
   public void initialize(Bootstrap<?> bootstrap) {
@@ -36,7 +38,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
   }
 
   @Override
-  public void run(WsServerConfig configuration, Environment env) throws Exception {
+  public void run(WsServerConfig cfg, Environment env) throws Exception {
     // param converters
     env.jersey().packages(EnumParamConverterProvider.class.getPackage().getName());
     
@@ -46,6 +48,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
     env.jersey().register(lrFilter);
     ccFilter = new CacheControlResponseFilter();
     env.jersey().register(ccFilter);
+    env.jersey().register(new DeprecatedWarningResponseFilter(cfg.support, cfg.sunset));
 
     // exception mappers
     env.jersey().packages(IllegalArgumentExceptionMapper.class.getPackage().getName());

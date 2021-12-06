@@ -10,7 +10,7 @@ import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dao.*;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
@@ -93,7 +93,7 @@ public class UpdateReleaseTool implements AutoCloseable {
       URI.create("https://data.catalogueoflife.org"),
       udao::get
     );
-    LatestDatasetKeyCache cache = new LatestDatasetKeyCache(factory);
+    LatestDatasetKeyCacheImpl cache = new LatestDatasetKeyCacheImpl(factory);
     doiUpdater = new DoiUpdater(factory, doiService, cache, converter);
   }
 

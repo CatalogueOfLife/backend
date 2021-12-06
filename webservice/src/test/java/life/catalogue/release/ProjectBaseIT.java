@@ -2,7 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.HttpClientUtils;
 import life.catalogue.WsServerConfig;
-import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.doi.DoiUpdater;
@@ -56,7 +56,7 @@ public abstract class ProjectBaseIT {
     UserDao udao = mock(UserDao.class);
     DoiService doiService = mock(DoiService.class);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    LatestDatasetKeyCache lrCache = mock(LatestDatasetKeyCache.class);
+    LatestDatasetKeyCacheImpl lrCache = mock(LatestDatasetKeyCacheImpl.class);
     DoiUpdater doiUpdater = new DoiUpdater(PgSetupRule.getSqlSessionFactory(), doiService, lrCache, converter);
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
