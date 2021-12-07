@@ -18,6 +18,8 @@ import life.catalogue.portal.PortalPageRenderer;
 @Path("/portal")
 @Hidden
 @SuppressWarnings("static-method")
+@Consumes(MediaType.TEXT_HTML)
+@Produces(MediaType.TEXT_HTML)
 public class PortalResource {
   private final PortalPageRenderer renderer;
 
@@ -28,14 +30,12 @@ public class PortalResource {
   @PUT
   @Path("dataset")
   @RolesAllowed({Roles.ADMIN})
-  @Consumes({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN})
   public boolean setDatasource(String template) throws IOException {
     return renderer.store(PortalPageRenderer.PortalPage.DATASET, template);
   }
 
   @GET
   @Path("dataset/{id}")
-  @Produces({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN})
   public String datasource(@PathParam("id") int id, @QueryParam("preview") boolean preview) throws Exception {
     return renderer.renderDatasource(id, preview);
   }
@@ -43,14 +43,12 @@ public class PortalResource {
   @PUT
   @Path("taxon")
   @RolesAllowed({Roles.ADMIN})
-  @Consumes({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN})
   public boolean setTaxon(String template) throws IOException {
     return renderer.store(PortalPageRenderer.PortalPage.TAXON, template);
   }
 
   @GET
   @Path("taxon/{id}")
-  @Produces({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN})
   public String taxon(@PathParam("id") String id, @QueryParam("preview") boolean preview) throws Exception {
     return renderer.renderTaxon(id, preview);
   }

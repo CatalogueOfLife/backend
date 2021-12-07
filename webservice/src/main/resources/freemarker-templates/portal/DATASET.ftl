@@ -101,7 +101,7 @@ Freemarker template with the source dataset object as available variables
   -->
   <link rel="stylesheet" href="/css/custom.css">
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/CatalogueOfLife/life.catalogue.portal-components@v1.1.0/umd/main.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@v1.1.0/umd/main.css">
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script src="/javascripts/libs.js" type="text/javascript"></script>
   <script>
@@ -128,7 +128,7 @@ Freemarker template with the source dataset object as available variables
   <link rel="alternate" type="application/rss+xml" title="COL" href="http://localhost:4000/feed.xml" />
   <script src="https://unpkg.com/react@16/umd/react.production.min.js" ></script>
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" ></script>
-  <script src="https://cdn.jsdelivr.net/gh/CatalogueOfLife/life.catalogue.portal-components@v1.1.0/umd/col-browser.min.js" ></script>
+  <script src="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@v1.1.0/umd/col-browser.min.js" ></script>
   <script src="https://kit.fontawesome.com/9660302c12.js" crossorigin="anonymous"></script>
 </head>
 
