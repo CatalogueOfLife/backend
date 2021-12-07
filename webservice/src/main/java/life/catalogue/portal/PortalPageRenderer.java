@@ -151,6 +151,8 @@ public class PortalPageRenderer {
     try (Writer w = UTF8IoUtils.writerFromFile(template(pp))) {
       // enforce xhtml freemarker setting which we cannot keep in Jekyll
       w.write("<#ftl output_format=\"XHTML\">");
+      // replace specific catalogue keys with a template
+      template = template.replaceAll("catalogueKey: *'\\d+'", "catalogueKey: '\\${releaseKey?c}'");
       IOUtils.write(template, w);
     }
     loadTemplate(pp);

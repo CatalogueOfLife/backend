@@ -84,4 +84,19 @@ public class PortalPageRendererTest {
   public void render404() throws Exception {
     System.out.println(renderer.render404());
   }
+
+  @Test
+  public void storeReplace() throws Exception {
+    renderer.store(PortalPageRenderer.PortalPage.DATASET, "Hergott Sackra nochamol.");
+    Assert.assertEquals("Hergott Sackra nochamol.", renderer.renderDatasource(dataRule.testData.key, false));
+
+    renderer.store(PortalPageRenderer.PortalPage.DATASET, "Hergott Sackra nochamol. ${freemarker!\"no\"} works");
+    Assert.assertEquals("Hergott Sackra nochamol. no works", renderer.renderDatasource(dataRule.testData.key, false));
+
+    renderer.store(PortalPageRenderer.PortalPage.DATASET, "Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'");
+    Assert.assertEquals("Hergott catalogueKey: '11' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'", renderer.renderDatasource(dataRule.testData.key, false));
+
+    renderer.store(PortalPageRenderer.PortalPage.DATASET, "Hergott catalogueKey: 'xyz' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'");
+    Assert.assertEquals("Hergott catalogueKey: 'xyz' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'", renderer.renderDatasource(dataRule.testData.key, false));
+  }
 }
