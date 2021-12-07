@@ -30,8 +30,8 @@ public class PortalResource {
   @PUT
   @Path("dataset")
   @RolesAllowed({Roles.ADMIN})
-  public boolean setDatasource(String template) throws IOException {
-    return renderer.store(PortalPageRenderer.PortalPage.DATASET, template);
+  public void setDatasource(String template) throws IOException {
+    renderer.store(PortalPageRenderer.PortalPage.DATASET, template);
   }
 
   @GET
@@ -43,13 +43,20 @@ public class PortalResource {
   @PUT
   @Path("taxon")
   @RolesAllowed({Roles.ADMIN})
-  public boolean setTaxon(String template) throws IOException {
-    return renderer.store(PortalPageRenderer.PortalPage.TAXON, template);
+  public void setTaxon(String template) throws IOException {
+    renderer.store(PortalPageRenderer.PortalPage.TAXON, template);
   }
 
   @GET
   @Path("taxon/{id}")
   public String taxon(@PathParam("id") String id, @QueryParam("preview") boolean preview) throws Exception {
     return renderer.renderTaxon(id, preview);
+  }
+
+  @PUT
+  @Path("404")
+  @RolesAllowed({Roles.ADMIN})
+  public void setNotFound(String template) throws IOException {
+    renderer.store(PortalPageRenderer.PortalPage.NOT_FOUND, template);
   }
 }

@@ -7,12 +7,15 @@ import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
+import life.catalogue.dw.jersey.exception.NotFoundExceptionMapper;
 import life.catalogue.dw.jersey.filter.CacheControlResponseFilter;
 import life.catalogue.dw.jersey.filter.CreatedResponseFilter;
 import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 import life.catalogue.dw.jersey.filter.DeprecatedWarningResponseFilter;
 import life.catalogue.dw.jersey.provider.EnumParamConverterProvider;
 import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
+
+import life.catalogue.portal.PortalPageRenderer;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -28,9 +31,10 @@ import io.dropwizard.setup.Environment;
  */
 public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
-  DatasetKeyRewriteFilter lrFilter;
-  CacheControlResponseFilter ccFilter;
-  LatestDatasetKeyCache cache = new LatestDatasetKeyCacheImpl(null); // we add the factory later - it is not available when we run the bundle!
+  private DatasetKeyRewriteFilter lrFilter;
+  private CacheControlResponseFilter ccFilter;
+  private final NotFoundExceptionMapper notFoundMapper = new NotFoundExceptionMapper();
+  private final LatestDatasetKeyCache cache = new LatestDatasetKeyCacheImpl(null); // we add the factory later - it is not available when we run the bundle!
 
   @Override
   public void initialize(Bootstrap<?> bootstrap) {
@@ -50,8 +54,10 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
     env.jersey().register(ccFilter);
     env.jersey().register(new DeprecatedWarningResponseFilter(cfg.support, cfg.sunset));
 
-    // exception mappers
+    // exception mappers via @Provides
     env.jersey().packages(IllegalArgumentExceptionMapper.class.getPackage().getName());
+    //
+    env.jersey().register(notFoundMapper);
     
     // message writers
     env.jersey().packages(BufferedImageBodyWriter.class.getPackage().getName());
@@ -63,6 +69,10 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
     try (SqlSession session = factory.openSession()){
       ccFilter.addAll(session.getMapper(DatasetMapper.class).keys(DatasetOrigin.RELEASED));
     }
+  }
+
+  public void setRenderer(PortalPageRenderer renderer) {
+    notFoundMapper.setRenderer(renderer);
   }
 
   public LatestDatasetKeyCache getCache() {

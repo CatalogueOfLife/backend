@@ -32,7 +32,7 @@ import static life.catalogue.api.util.ObjectUtils.checkFound;
 public class PortalPageRenderer {
   private static final Logger LOG = LoggerFactory.getLogger(PortalPageRenderer.class);
 
-  public enum PortalPage {TAXON, DATASET};
+  public enum PortalPage {NOT_FOUND, TAXON, DATASET};
 
   private final DatasetSourceDao sourceDao;
   private final TaxonDao tdao;
@@ -97,6 +97,10 @@ public class PortalPageRenderer {
     );
     data.put("d", d);
     return render(PortalPage.DATASET, data);
+  }
+
+  public String render404() throws TemplateException, IOException {
+    return render(PortalPage.NOT_FOUND, new HashMap<>());
   }
 
   private Map<String, Object> buildData(int datasetKey) {

@@ -290,6 +290,10 @@ public class WsServer extends Application<WsServerConfig> {
     TreeDao trDao = new TreeDao(getSqlSessionFactory(), searchService);
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
+    // portal html page renderer
+    PortalPageRenderer renderer = new PortalPageRenderer(dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir);
+    coljersey.setRenderer(renderer);
+
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao);
 
@@ -362,7 +366,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService));
     j.register(new NameUsageSearchResource(searchService));
-    j.register(new PortalResource(new PortalPageRenderer(dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir)));
+    j.register(new PortalResource(renderer));
     j.register(new ReferenceResource(rdao));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, tdao, fmsDao, assembly));

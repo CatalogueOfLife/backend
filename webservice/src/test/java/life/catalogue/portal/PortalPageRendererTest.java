@@ -79,4 +79,9 @@ public class PortalPageRendererTest {
     System.out.println(renderer.renderDatasource(dataRule.testData.key, false));
     System.out.println(renderer.renderDatasource(dataRule.testData.key, true));
   }
+
+  @Test
+  public void render404() throws Exception {
+    System.out.println(renderer.render404());
+  }
 }
