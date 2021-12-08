@@ -13,22 +13,22 @@
 Freemarker template with the source dataset object as available variables
 -->
 
-<#assign _title>${d.title!} | COL</#assign>
-<#assign _description>${d.description!title!}</#assign>
+<#assign _title>${source.title!} | COL</#assign>
+<#assign _description>${source.description!title!}</#assign>
 <#--
   try out with GOOGLE TEST TOOL https://search.google.com/test/rich-results?utm_campaign=sdtt&utm_medium=url&url=https://www.catalogueoflife.org/data/dataset/1010
 -->
 <meta name="title" content="${_title}" />
 <meta name="description" content="${_description}" />
 <meta property="og:title" content="${_title}" />
-<meta property="og:url" content="https://www.catalogueoflife.org/data/dataset/${d.key?c}" />
-<meta property="og:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${d.key?c}/logo?size=LARGE" />
+<meta property="og:url" content="https://www.catalogueoflife.org/data/dataset/${source.key?c}" />
+<meta property="og:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${source.key?c}/logo?size=LARGE" />
 <meta property="og:description" content="${_description}" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:site" content="@catalogueoflife"/>
 <meta name="twitter:title" content="${_title}" />
 <meta name="twitter:description" content="${_description}" />
-<meta name="twitter:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${d.key?c}/logo?size=LARGE" />
+<meta name="twitter:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${source.key?c}/logo?size=LARGE" />
 
 <#macro person p>
   {
@@ -47,9 +47,9 @@ Freemarker template with the source dataset object as available variables
 {
   "@context": "https://schema.org/",
   "@type": "Dataset",
-  "@id": "${d.key?c}",
-  "url": "https://www.catalogueoflife.org/data/dataset/${d.key?c}",
-  "name": "${d.title!d.alias!}",
+  "@id": "${source.key?c}",
+  "url": "https://www.catalogueoflife.org/data/dataset/${source.key?c}",
+  "name": "${source.title!source.alias!}",
   <#if authors?has_content>
   "author": [
    <#list authors as p>
@@ -64,15 +64,15 @@ Freemarker template with the source dataset object as available variables
    </#list>
   ],
   </#if>
-  "description": "${d.description!}",
-  "temporalCoverage": "${d.temporalCoverage!}",
-  "spatialCoverage": "${d.spatialCoverage!}",
+  "description": "${source.description!}",
+  "temporalCoverage": "${source.temporalCoverage!}",
+  "spatialCoverage": "${source.spatialCoverage!}",
   <#if license??>
-  "license": "${d.license.url!'unknown'}",
+  "license": "${source.license.url!'unknown'}",
   </#if>
   "inLanguage": "eng",
-  "version": "${d.version!}",
-  "datePublished": "${d.issued!}",
+  "version": "${source.version!}",
+  "datePublished": "${source.issued!}",
   "publisher": {
     "@type": "Organization",
     "name": "Catalogue of Life (COL)",

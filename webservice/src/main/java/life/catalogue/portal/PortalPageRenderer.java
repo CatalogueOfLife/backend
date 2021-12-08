@@ -113,7 +113,7 @@ public class PortalPageRenderer {
         sourceDao.get(datasetKey, id, false),
         String.format("Datasource %s not found in release %s", id, datasetKey)
       );
-      data.put("d", d);
+      data.put("source", d);
       return render(env, PortalPage.DATASET, data);
 
     } catch (NotFoundException e) {
