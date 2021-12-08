@@ -8,10 +8,7 @@ import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
 import life.catalogue.dw.jersey.exception.NotFoundExceptionMapper;
-import life.catalogue.dw.jersey.filter.CacheControlResponseFilter;
-import life.catalogue.dw.jersey.filter.CreatedResponseFilter;
-import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
-import life.catalogue.dw.jersey.filter.DeprecatedWarningResponseFilter;
+import life.catalogue.dw.jersey.filter.*;
 import life.catalogue.dw.jersey.provider.EnumParamConverterProvider;
 import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
 
@@ -52,6 +49,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
     ccFilter = new CacheControlResponseFilter();
     env.jersey().register(ccFilter);
     env.jersey().register(new DeprecatedWarningResponseFilter(cfg.support, cfg.sunset));
+    env.jersey().register(new DelayRequestFilter(cfg.legacyDelay));
 
     // exception mappers via @Provides
     env.jersey().packages(IllegalArgumentExceptionMapper.class.getPackage().getName());

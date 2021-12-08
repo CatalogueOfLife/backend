@@ -11,7 +11,7 @@ import life.catalogue.db.mapper.legacy.LVernacularMapper;
 import life.catalogue.db.mapper.legacy.model.LError;
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.mapper.legacy.model.LResponse;
-import life.catalogue.dw.jersey.filter.DeprecatedWarning;
+import life.catalogue.dw.jersey.filter.LegacyAPI;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.legacy.IdMap;
 
@@ -38,7 +38,7 @@ import static life.catalogue.api.util.ObjectUtils.coalesce;
  * http://webservice.catalogueoflife.org/col/webservice
  */
 @Hidden
-@DeprecatedWarning
+@LegacyAPI
 @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 @Path("/dataset/{key}/legacy")
 public class LegacyWebserviceResource {

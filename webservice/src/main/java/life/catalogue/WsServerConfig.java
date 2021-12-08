@@ -172,6 +172,12 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    */
   public LocalDate sunset;
 
+  /**
+   * Delay in milliseconds to all requests to the legacy API.
+   */
+  @Min(0)
+  public int legacyDelay = 0;
+
   @Override
   @JsonIgnore
   public CorsConfiguration getCorsConfiguration() {

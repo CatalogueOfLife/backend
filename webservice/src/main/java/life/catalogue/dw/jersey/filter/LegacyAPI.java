@@ -12,5 +12,5 @@ import static java.lang.annotation.ElementType.TYPE;
 @NameBinding
 @Target({TYPE, METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DeprecatedWarning {
+public @interface LegacyAPI {
 }

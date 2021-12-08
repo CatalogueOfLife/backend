@@ -1,21 +1,18 @@
 package life.catalogue.dw.jersey.filter;
 
-import scala.deprecated;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Locale;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 
-@DeprecatedWarning
+@LegacyAPI
 public class DeprecatedWarningResponseFilter implements ContainerResponseFilter {
 
   private final String message;
