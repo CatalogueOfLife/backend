@@ -33,7 +33,6 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
   private DatasetKeyRewriteFilter lrFilter;
   private CacheControlResponseFilter ccFilter;
-  private final NotFoundExceptionMapper notFoundMapper = new NotFoundExceptionMapper();
   private final LatestDatasetKeyCache cache = new LatestDatasetKeyCacheImpl(null); // we add the factory later - it is not available when we run the bundle!
 
   @Override
@@ -56,9 +55,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
     // exception mappers via @Provides
     env.jersey().packages(IllegalArgumentExceptionMapper.class.getPackage().getName());
-    //
-    env.jersey().register(notFoundMapper);
-    
+
     // message writers
     env.jersey().packages(BufferedImageBodyWriter.class.getPackage().getName());
   }
@@ -69,10 +66,6 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
     try (SqlSession session = factory.openSession()){
       ccFilter.addAll(session.getMapper(DatasetMapper.class).keys(DatasetOrigin.RELEASED));
     }
-  }
-
-  public void setRenderer(PortalPageRenderer renderer) {
-    notFoundMapper.setRenderer(renderer);
   }
 
   public LatestDatasetKeyCache getCache() {

@@ -291,8 +291,7 @@ public class WsServer extends Application<WsServerConfig> {
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
     // portal html page renderer
-    PortalPageRenderer renderer = new PortalPageRenderer(dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir);
-    coljersey.setRenderer(renderer);
+    PortalPageRenderer renderer = new PortalPageRenderer(dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
 
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao);
