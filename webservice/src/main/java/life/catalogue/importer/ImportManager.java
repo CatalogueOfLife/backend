@@ -457,7 +457,7 @@ public class ImportManager implements Managed {
    */
   private void cancelAndReschedule() {
     List<ImportRequest> requests = new ArrayList<>();
-    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, ImportState.runningStates(), p));
+    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, ImportState.runningAndWaitingStates(), p));
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
       // only reschedule import jobs, no releases
