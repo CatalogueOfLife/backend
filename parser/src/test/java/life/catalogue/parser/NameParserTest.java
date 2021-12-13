@@ -1,5 +1,6 @@
 package life.catalogue.parser;
 
+import com.esotericsoftware.minlog.Log;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import life.catalogue.api.model.IssueContainer;
@@ -7,15 +8,27 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.NomStatus;
+
+import org.checkerframework.checker.units.qual.A;
+
+import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.api.*;
 
-import org.gbif.nameparser.util.NameFormatter;
+import org.gbif.nameparser.utils.NamedThreadFactory;
 
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 
@@ -24,14 +37,21 @@ import static org.junit.Assert.*;
  * Some name parsing tests kept in this project.
  */
 public class NameParserTest {
-  static final NameParser parser = new NameParser();
-  
+  static Logger LOG = LoggerFactory.getLogger(NameParserTest.class);
+  static AtomicInteger COUNTER = new AtomicInteger(0);
+
+  NameParser parser = NameParser.PARSER;
+
+  @After
+  public void teardown() throws Exception {
+    parser.close();
+  }
+
   @Test
   public void parseAuthorship() throws Exception {
     assertAuthorship("L.f", null, "L.f");
     assertAuthorship("DC.", null, "DC.");
   }
-
 
   @Test
   public void inconsistentAuthorship() throws Exception {
@@ -43,7 +63,7 @@ public class NameParserTest {
     n.setRank(Rank.SPECIES);
     n.setId("957");
     IssueContainer issues = new IssueContainer.Simple();
-    parser.parse(n, issues);
+    NameParser.PARSER.parse(n, issues);
     assertFalse(issues.hasIssues());
   }
 
@@ -73,7 +93,7 @@ public class NameParserTest {
   private static void addToParser(ParserConfig obj){
     ParsedName pn = Name.toParsedName(obj);
     pn.setTaxonomicNote(obj.getTaxonomicNote());
-    NameParser.configs().setName(obj.getScientificName() + " " + obj.getAuthorship(), pn);
+    NameParser.PARSER.configs().setName(obj.getScientificName() + " " + obj.getAuthorship(), pn);
   }
 
   @Test
@@ -253,12 +273,12 @@ public class NameParserTest {
    */
   @Test
   public void testEmpty() throws Exception {
-    assertEquals(Optional.empty(), parser.parse(null));
-    assertEquals(Optional.empty(), parser.parse(""));
-    assertEquals(Optional.empty(), parser.parse(" "));
-    assertEquals(Optional.empty(), parser.parse("\t"));
-    assertEquals(Optional.empty(), parser.parse("\n"));
-    assertEquals(Optional.empty(), parser.parse("\t\n"));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse(null));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse(""));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse(" "));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("\t"));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("\n"));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("\t\n"));
   }
   
   /**
@@ -325,10 +345,94 @@ public class NameParserTest {
       .unparsed("Bigge Island (A.A. Mitchell 3436) WA Herbarium")
       .nothingElse();
   }
-  
-  
+
+
+  <T> void assertThreadPoolEmpty(List<? extends Callable<T>> jobs) throws Exception {
+    ExecutorService exec = Executors.newFixedThreadPool(10, new NamedThreadFactory("test-executor"));
+
+    // this blocks until all jobs are done
+    System.out.println("Wait for job completion");
+    var res = exec.invokeAll(jobs);
+    res.forEach(r -> System.out.println(r.toString()));
+
+    // now sleep >3s (the default idleTime) to let idle threads be cleaned up
+    TimeUnit.SECONDS.sleep(4);
+
+    int counter = 0;
+    long wsize = 1;
+    while (wsize > 0) {
+      wsize = Thread.getAllStackTraces().keySet().stream()
+                          .filter(t -> t.getName().startsWith(NameParserGBIF.THREAD_NAME))
+                          .count();
+      System.out.println(wsize + " worker threads still existing");
+      if (counter++ == 20) {
+        break;
+      }
+      TimeUnit.SECONDS.sleep(1);
+    }
+
+    assertEquals(0, wsize);
+  }
+
+  @Test
+  public void threadPoolNameParsing() throws Exception {
+    parser = new NameParser(new NameParserGBIF(100, 0, 4));
+    List<ParseNameJob> jobs = Lists.newArrayList();
+    IntStream.range(1, 10).forEach(i -> {
+      jobs.add(new ParseNameJob("Desmarestia ligulata subsp. muelleri (M.E.Ramirez, A.F.Peters, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang & F.C.Küpper & van Reine, 2014) S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, F.C.Küpper, van Reine, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, A.F.Peters, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang & F.C.Küpper & van Reine, 2014) S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, F.C.Küpper, van Reine, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, F.C.Küpper & van Reine, 2014"));
+    });
+    assertThreadPoolEmpty(jobs);
+  }
+
+  @Test
+  public void threadPoolAuthorParsingTimeout() throws Exception {
+    parser = new NameParser(new NameParserGBIF(100, 0, 4));
+    List<ParseAuthorshipJob> jobs = Lists.newArrayList();
+    IntStream.range(1, 10).forEach(i -> {
+      jobs.add(new ParseAuthorshipJob("Coloma, Carvajal-Endara, Dueñas, Paredes-Recalde, Morales-Mite, Almeida-Reinoso et al., 2012)"));
+    });
+    assertThreadPoolEmpty(jobs);
+  }
+
+  class ParseNameJob implements Callable<ParsedNameUsage> {
+    public final int key = COUNTER.incrementAndGet();
+    private final String name;
+
+    ParseNameJob(int year) {
+      this.name = "Abies alba Miller, " + year;
+    }
+
+    ParseNameJob(String name) {
+      this.name = name;
+    }
+
+    @Override
+    public ParsedNameUsage call() throws Exception {
+      try {
+        LOG.info("Start {}", key);
+        return parser.parse(name).orElse(null);
+      } catch (Exception e) {
+        LOG.info("Failed {}", key, e);
+        throw e;
+      }
+    }
+  }
+
+  class ParseAuthorshipJob implements Callable<ParsedAuthorship> {
+    private final String authorship;
+
+    ParseAuthorshipJob(String name) {
+      this.authorship = name;
+    }
+
+    @Override
+    public ParsedAuthorship call() throws Exception {
+      return parser.parseAuthorship(authorship).orElse(null);
+    }
+  }
+
   static void assertAuthorship(String authorship, String year, String... authors) throws UnparsableException {
-    ParsedAuthorship pa = parser.parseAuthorship(authorship).get();
+    ParsedAuthorship pa = NameParser.PARSER.parseAuthorship(authorship).get();
     Authorship a = new Authorship();
     a.setYear(year);
     for (String x : authors) {
@@ -350,7 +454,7 @@ public class NameParserTest {
   }
   
   static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname, NameType type) throws UnparsableException {
-    ParsedNameUsage n = parser.parse(rawName, rank, code, IssueContainer.VOID).get();
+    ParsedNameUsage n = NameParser.PARSER.parse(rawName, rank, code, IssueContainer.VOID).get();
     assertEquals(sciname, n.getName().getScientificName());
     return new NameAssertion(n.getName()).type(type);
   }

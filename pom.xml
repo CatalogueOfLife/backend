@@ -50,7 +50,7 @@
     <antlr.version>4.7.2</antlr.version>
     <asm.version></asm.version>
     <assertj.version>3.11.1</assertj.version>
-    <citeproc.version>3.0.0-alpha.2</citeproc.version>
+    <citeproc.version>3.0.0-alpha.3</citeproc.version>
     <citeproc-styles.version>2.0.0</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.19</commons-compress.version>
@@ -83,7 +83,7 @@
     <mapdb.version>3.0.5</mapdb.version>
     <mockito.version>3.1.0</mockito.version>
     <mybatis.version>3.5.2</mybatis.version>
-    <name-parser.version>3.6.4-SNAPSHOT</name-parser.version>
+    <name-parser.version>3.7.0-SNAPSHOT</name-parser.version>
     <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
     <neo4j.version>3.4.17</neo4j.version>
     <newick-io.version>1.0-SNAPSHOT</newick-io.version>

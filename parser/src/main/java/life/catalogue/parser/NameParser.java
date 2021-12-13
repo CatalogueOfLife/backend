@@ -34,8 +34,7 @@ import com.google.common.collect.ImmutableMap;
  */
 public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
-  public static final NameParser PARSER = new NameParser();
-  private static final NameParserGBIF PARSER_INTERNAL = new NameParserGBIF();
+  public static final NameParser PARSER = new NameParser(1000);
   private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:])\\s*");
   private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[])\\s*");
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
@@ -62,12 +61,21 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       .put(Warnings.NOMENCLATURAL_REFERENCE, Issue.CONTAINS_REFERENCE)
       .build();
 
-  public static ParserConfigs configs() {
-    return PARSER_INTERNAL.getConfigs();
+  private Timer timer;
+  private final NameParserGBIF parserInternal;
+
+  NameParser(int timeout) {
+    this(new NameParserGBIF(timeout, 0, 100));
   }
 
-  private Timer timer;
-  
+  NameParser(NameParserGBIF parser) {
+    parserInternal = parser;
+  }
+
+  public ParserConfigs configs() {
+    return parserInternal.getConfigs();
+  }
+
   /**
    * Optionally register timer metrics for name parsing events
    *
@@ -91,7 +99,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   public Optional<ParsedAuthorship> parseAuthorship(String authorship) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedAuthorship());
     try {
-      ParsedAuthorship pa = PARSER_INTERNAL.parseAuthorship(authorship);
+      ParsedAuthorship pa = parserInternal.parseAuthorship(authorship);
       if (pa.getState() == ParsedName.State.COMPLETE) {
         return Optional.of(pa);
       }
@@ -301,7 +309,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
       final String authorship = n.getAuthorship();
-      pnu = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
+      pnu = fromParsedName(n, parserInternal.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
       // try to add an authorship if not yet there
       parseAuthorshipIntoName(pnu, authorship, issues);
 
@@ -329,7 +337,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       return Optional.of(NameType.NO_NAME);
     }
     try {
-      ParsedName pn = PARSER_INTERNAL.parse(sciname, name.getRank(), name.getCode());
+      ParsedName pn = parserInternal.parse(sciname, name.getRank(), name.getCode());
       return Optional.of(ObjectUtils.coalesce(pn.getType(), NameType.SCIENTIFIC));
     
     } catch (UnparsableNameException e) {
@@ -388,9 +396,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    if (PARSER_INTERNAL != null) {
-      PARSER_INTERNAL.close();
-    }
+    parserInternal.close();
   }
 
 }
