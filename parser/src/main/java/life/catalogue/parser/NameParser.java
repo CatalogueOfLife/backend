@@ -1,5 +1,7 @@
 package life.catalogue.parser;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
@@ -68,6 +70,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     this(new NameParserGBIF(timeout, 0, 100));
   }
 
+  @VisibleForTesting
   NameParser(NameParserGBIF parser) {
     parserInternal = parser;
   }
