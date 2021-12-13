@@ -88,6 +88,9 @@ public class CslFormatter {
   }
 
   private String cite(String key){
+    if (CslUtil.isEmpty(provider.data)) {
+      return null;
+    }
     csl.registerCitationItems(key);
     try {
       String[] entries = csl.makeBibliography().getEntries();

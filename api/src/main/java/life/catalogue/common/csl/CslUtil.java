@@ -1,7 +1,12 @@
 package life.catalogue.common.csl;
 
+import de.undercouch.citeproc.csl.CSLDate;
+import de.undercouch.citeproc.csl.CSLName;
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslName;
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Reference;
 
 import java.io.IOException;
@@ -54,6 +59,82 @@ public class CslUtil {
       return apaHtml.cite(data);
     }
     return null;
+  }
+
+  public static boolean isEmpty(CSLItemData data) {
+    return
+      data.getJournalAbbreviation() == null &&
+      data.getShortTitle() == null &&
+      data.getAuthor() == null &&
+      data.getCollectionEditor() == null &&
+      data.getComposer() == null &&
+      data.getContainerAuthor() == null &&
+      data.getDirector() == null &&
+      data.getEditor() == null &&
+      data.getEditorialDirector() == null &&
+      data.getInterviewer() == null &&
+      data.getIllustrator() == null &&
+      data.getOriginalAuthor() == null &&
+      data.getRecipient() == null &&
+      data.getReviewedAuthor() == null &&
+      data.getTranslator() == null &&
+      data.getAccessed() == null &&
+      data.getContainer() == null &&
+      data.getEventDate() == null &&
+      data.getIssued() == null &&
+      data.getOriginalDate() == null &&
+      data.getSubmitted() == null &&
+      data.getAbstrct() == null &&
+      data.getAnnote() == null &&
+      data.getArchive() == null &&
+      data.getArchiveLocation() == null &&
+      data.getArchivePlace() == null &&
+      data.getAuthority() == null &&
+      data.getCallNumber() == null &&
+      data.getChapterNumber() == null &&
+      data.getCitationNumber() == null &&
+      data.getCitationLabel() == null &&
+      data.getCollectionNumber() == null &&
+      data.getCollectionTitle() == null &&
+      data.getCollectionTitleShort() == null &&
+      data.getContainerTitle() == null &&
+      data.getContainerTitleShort() == null &&
+      data.getDimensions() == null &&
+      data.getDOI() == null &&
+      data.getEdition() == null &&
+      data.getEvent() == null &&
+      data.getEventPlace() == null &&
+      data.getFirstReferenceNoteNumber() == null &&
+      data.getISBN() == null &&
+      data.getISSN() == null &&
+      data.getIssue() == null &&
+      data.getLocator() == null &&
+      data.getMedium() == null &&
+      data.getNote() == null &&
+      data.getNumber() == null &&
+      data.getNumberOfPages() == null &&
+      data.getNumberOfVolumes() == null &&
+      data.getOriginalPublisher() == null &&
+      data.getOriginalPublisherPlace() == null &&
+      data.getOriginalTitle() == null &&
+      data.getPage() == null &&
+      data.getPageFirst() == null &&
+      data.getPMCID() == null &&
+      data.getPMID() == null &&
+      data.getPublisher() == null &&
+      data.getPublisherPlace() == null &&
+      data.getReferences() == null &&
+      data.getReviewedTitle() == null &&
+      data.getScale() == null &&
+      data.getSection() == null &&
+      data.getSource() == null &&
+      data.getStatus() == null &&
+      data.getTitle() == null &&
+      data.getTitleShort() == null &&
+      data.getURL() == null &&
+      data.getVersion() == null &&
+      data.getVolume() == null &&
+      data.getYearSuffix() == null;
   }
 
   /**

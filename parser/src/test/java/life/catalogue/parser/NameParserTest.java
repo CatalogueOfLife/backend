@@ -42,11 +42,6 @@ public class NameParserTest {
 
   NameParser parser = NameParser.PARSER;
 
-  @After
-  public void teardown() throws Exception {
-    parser.close();
-  }
-
   @Test
   public void parseAuthorship() throws Exception {
     assertAuthorship("L.f", null, "L.f");
@@ -371,12 +366,13 @@ public class NameParserTest {
       TimeUnit.SECONDS.sleep(1);
     }
 
+    parser.close();
     assertEquals(0, wsize);
   }
 
   @Test
   public void threadPoolNameParsing() throws Exception {
-    parser = new NameParser(new NameParserGBIF(100, 0, 4));
+    parser = new NameParser(new NameParserGBIF(50, 0, 4));
     List<ParseNameJob> jobs = Lists.newArrayList();
     IntStream.range(1, 10).forEach(i -> {
       jobs.add(new ParseNameJob("Desmarestia ligulata subsp. muelleri (M.E.Ramirez, A.F.Peters, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang & F.C.Küpper & van Reine, 2014) S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, F.C.Küpper, van Reine, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, A.F.Peters, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang & F.C.Küpper & van Reine, 2014) S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, F.C.Küpper, van Reine, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, F.C.Küpper & van Reine, 2014"));
@@ -386,7 +382,7 @@ public class NameParserTest {
 
   @Test
   public void threadPoolAuthorParsingTimeout() throws Exception {
-    parser = new NameParser(new NameParserGBIF(100, 0, 4));
+    parser = new NameParser(new NameParserGBIF(50, 0, 4));
     List<ParseAuthorshipJob> jobs = Lists.newArrayList();
     IntStream.range(1, 10).forEach(i -> {
       jobs.add(new ParseAuthorshipJob("Coloma, Carvajal-Endara, Dueñas, Paredes-Recalde, Morales-Mite, Almeida-Reinoso et al., 2012)"));
