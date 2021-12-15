@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2021-12-15 new issue
+```
+ALTER TYPE ISSUE ADD VALUE 'RELATED_NAME_MISSING';
+```
+
 ### 2021-11-04 non dropping particle in cslname
 ```
 ALTER TYPE cslname DROP ATTRIBUTE literal;

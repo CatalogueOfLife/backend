@@ -532,13 +532,34 @@ public class PgImportIT extends PgImportITBase {
   public void acefSuperfam() throws Exception {
     normalizeAndImport(ACEF, 21);
   }
+
+  @Test
+  public void coldpMissingName() throws Exception {
+    normalizeAndImport(COLDP, 17);
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      Name n = ndao.get(key(dataset.getKey(), "1"));
+      assertEquals("Platycarpha glomerata", n.getScientificName());
+      assertEquals("(Thunberg) A. P. de Candolle", n.getAuthorship());
+      assertEquals("1", n.getId());
+      assertEquals(Rank.SPECIES, n.getRank());
+
+      // one root
+      assertEquals(1, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
+
+      // test taxa & synonyms
+      assertEquals(n, tdao.get(key(dataset.getKey(), "1")).getName());
+      assertNull(tdao.get(key(dataset.getKey(), "2")));
+      assertNull(tdao.get(key(dataset.getKey(), "3")));
+      assertNull(sdao.get(key(dataset.getKey(), "3")));
+    }
+  }
   
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
     dataset.setType(DatasetType.TAXONOMIC);
 
-    normalizeAndImportArchive(new File("/Users/markus/Downloads/export.zip"), COLDP);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/Gelechiidae.zip"), COLDP);
     //normalizeAndImport(URI.create("https://github.com/jhnwllr/world-odonata-list-dwca/archive/refs/heads/main.zip"), DWCA);
     //normalizeAndImport(URI.create("https://github.com/Sp2000/coldp/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);

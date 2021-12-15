@@ -23,7 +23,7 @@ public class NeoProperties {
   public static final String NOTE = "note";
   public static final String SCINAME = "sciname";
   public static final String REF_ID = "refid";
-  public static final String VERBATIM_KEY = "vkey";
+  public static final String VERBATIM_KEY = "vkey"; // integer key
   
   public static final String NULL_NAME = "???";
   

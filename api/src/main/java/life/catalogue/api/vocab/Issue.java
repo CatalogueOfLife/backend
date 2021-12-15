@@ -378,8 +378,11 @@ public enum Issue {
 
   HOMOGLYPH_CHARACTERS(ANY, Level.WARNING,
     "Potential homoglyphs of the latin alphabet are encountered."
-    + "In vernacular names, authors or references this can be perfectly fine content if other scripts than latin, e.g. cyrillic or greek are used,"),
+    + "In vernacular names, authors or references this can be perfectly fine content if other scripts than latin, e.g. cyrillic or greek are used."),
 
+  RELATED_NAME_MISSING(SPECIES_INTERACTION, Level.WARNING,
+    "Species interaction without a related name."
+    + "Neither relatedTaxonID nor relatedScientificName is given with a valid value."),
   ;
 
   /**

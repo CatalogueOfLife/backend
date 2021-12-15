@@ -165,14 +165,21 @@ public class ColdpInserter extends NeoCsvInserter {
           while (iter.hasNext()) {
             var rel = iter.next();
             if (!rel.hasProperty(NeoProperties.SCINAME)) {
-              String name = NeoProperties.getScientificNameWithAuthorFromUsage(rel.getEndNode());
-              if (name.equals(NeoProperties.NULL_NAME)) {
-                String vkey = (String) rel.getProperty(NeoProperties.VERBATIM_KEY, null);
-                LOG.warn("Missing related names for {} interaction, verbatimKey={}", rt.specInterType, vkey);
-              } else {
-                rel.setProperty(NeoProperties.SCINAME, name);
-                counter++;
+              Node relatedUsageNode = rel.getEndNode();
+              if (store.getDevNullNode().getId() != relatedUsageNode.getId()) {
+                // there is a real related usage node existing, use its name
+                String name = NeoProperties.getScientificNameWithAuthorFromUsage(relatedUsageNode);
+                if (!name.equals(NeoProperties.NULL_NAME)) {
+                  rel.setProperty(NeoProperties.SCINAME, name);
+                  counter++;
+                }
               }
+            }
+            // still no name? flag issue
+            if (!rel.hasProperty(NeoProperties.SCINAME) && rel.hasProperty(NeoProperties.VERBATIM_KEY)) {
+              Integer vkey = (Integer) rel.getProperty(NeoProperties.VERBATIM_KEY, null);
+              LOG.debug("Missing related names for {} interaction, verbatimKey={}", rt.specInterType, vkey);
+              store.addIssues(vkey, Issue.RELATED_NAME_MISSING);
             }
           }
           tx.success();
