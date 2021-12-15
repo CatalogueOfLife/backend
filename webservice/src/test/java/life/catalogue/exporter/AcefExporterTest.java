@@ -1,10 +1,5 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.MetricRegistry;
-
-import com.codahale.metrics.Timer;
-
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
@@ -34,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 
 public class AcefExporterTest extends ExporterTest {
   
-  WsServerConfig cfg;
   File arch;
 
   @ClassRule
@@ -44,8 +38,9 @@ public class AcefExporterTest extends ExporterTest {
   public TestDataRule testDataRule = TestDataRule.draftWithSectors();
 
   @Before
+  @Override
   public void initCfg()  {
-    cfg = new WsServerConfig();
+    super.initCfg();
     cfg.db = PgSetupRule.getCfg();
     cfg.exportDir = Files.createTempDir();
     cfg.normalizer.scratchDir  = Files.createTempDir();
