@@ -1,5 +1,8 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+
 import life.catalogue.ApiUtils;
 import life.catalogue.WsServerConfig;
 import life.catalogue.db.PgSetupRule;
@@ -13,6 +16,7 @@ import org.junit.Rule;
 public class ExporterTest {
 
   WsServerConfig cfg;
+  Timer timer;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -32,6 +36,8 @@ public class ExporterTest {
   public void initCfg()  {
     cfg = new WsServerConfig();
     cfg.apiURI= ApiUtils.API;
+    MetricRegistry registry = new MetricRegistry();
+    timer = registry.timer("test.timer");
   }
 
   @After

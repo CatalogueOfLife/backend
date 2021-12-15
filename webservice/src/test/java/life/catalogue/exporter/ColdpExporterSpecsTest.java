@@ -1,5 +1,7 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.MetricRegistry;
+
 import life.catalogue.ApiUtils;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.CslData;
@@ -52,8 +54,9 @@ public class ColdpExporterSpecsTest {
 
   @Test
   public void coldpSpecsExport() {
+    MetricRegistry registry = new MetricRegistry();
     ExportRequest req = new ExportRequest(importRule.datasetKey(0, DataFormat.COLDP), DataFormat.COLDP);
-    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), registry.timer("test.timer"));
     exp.run();
     System.out.println(exp.getArchive());
     assertTrue(exp.getArchive().exists());

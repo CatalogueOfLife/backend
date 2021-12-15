@@ -120,7 +120,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       exec = new JobExecutor(cfg.job, mail.getMailer());
       final ImageService imageService = new ImageServiceFS(cfg.img);
       final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, bus, validator);
-      manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
+      manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao, new DatasetImportDao(factory, cfg.metricsRepo), metrics);
       UserDao udao = new UserDao(factory, bus, validator);
       DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
       DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);

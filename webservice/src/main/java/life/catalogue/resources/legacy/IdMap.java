@@ -1,4 +1,4 @@
-package life.catalogue.legacy;
+package life.catalogue.resources.legacy;
 
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.exception.UnavailableException;

@@ -1,5 +1,7 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.Timer;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
@@ -38,8 +40,8 @@ public class DwcaExporter extends ArchiveExporter {
   private final UriBuilder logoUriBuilder;
   private final AtomicInteger bareNameID = new AtomicInteger(1);
 
-  public DwcaExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(DataFormat.DWCA, userKey, req, factory, cfg, imageService);
+  public DwcaExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+    super(DataFormat.DWCA, userKey, req, factory, cfg, imageService, timer);
     logoUriBuilder = UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
   }
 

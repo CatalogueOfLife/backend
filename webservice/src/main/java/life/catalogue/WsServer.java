@@ -44,7 +44,7 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
-import life.catalogue.legacy.IdMap;
+import life.catalogue.resources.legacy.IdMap;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
@@ -52,6 +52,7 @@ import life.catalogue.portal.PortalPageRenderer;
 import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
+import life.catalogue.resources.legacy.LegacyWebserviceResource;
 import life.catalogue.resources.parser.*;
 import life.catalogue.swagger.OpenApiFactory;
 
@@ -294,7 +295,7 @@ public class WsServer extends Application<WsServerConfig> {
     PortalPageRenderer renderer = new PortalPageRenderer(dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
 
     // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao);
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao, env.metrics());
 
     // DOI
     DoiService doiService;
@@ -359,7 +360,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new ExportResource(exdao, cfg));
     j.register(new ImageResource(imgService));
     j.register(new ImporterResource(importManager, diDao));
-    j.register(new LegacyWebserviceResource(cfg, idMap));
+    j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new MatchingResource(ni));
     j.register(new NamesIndexResource(ni));
     j.register(new NameResource(ndao));

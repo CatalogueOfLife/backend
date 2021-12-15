@@ -1,5 +1,6 @@
 package life.catalogue.command;
 
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.dropwizard.cli.ConfiguredCommand;
@@ -27,6 +28,7 @@ public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig
   private static final String ARG_PROMPT = "prompt";
 
   protected WsServerConfig cfg;
+  protected MetricRegistry metrics;
 
   public AbstractPromptCmd(String name, String description) {
     super(name, description);
@@ -69,6 +71,7 @@ public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig
     // we dont deal with shortlived requests in commands and rather want to minimize connection usage
     // if we reuse the ws configs we will use too many idle connections doe to the high mimimum setting
     cfg.db.minimumIdle = 0;
+    metrics = bootstrap.getMetricRegistry();
     execute(bootstrap, namespace, cfg);
     LOG.info("{} command completed successfully", getClass().getSimpleName());
     System.out.println("Done !!!");

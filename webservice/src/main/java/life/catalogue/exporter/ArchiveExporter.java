@@ -1,5 +1,6 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.Timer;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -55,8 +56,8 @@ public abstract class ArchiveExporter extends DatasetExporter {
   protected final DSID<String> key = DSID.of(datasetKey, "");
   private final SXSSFWorkbook wb;
 
-  ArchiveExporter(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req, userKey, requiredFormat, true, factory, cfg, imageService);
+  ArchiveExporter(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+    super(req, userKey, requiredFormat, true, factory, cfg, imageService, timer);
     final DSID<String> rKey = DSID.of(datasetKey, null);
     logoUriBuilder = UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
     this.refCache = CacheBuilder.newBuilder()

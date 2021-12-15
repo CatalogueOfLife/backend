@@ -1,4 +1,4 @@
-package life.catalogue.resources;
+package life.catalogue.resources.legacy;
 
 import org.junit.Test;
 

@@ -1,5 +1,7 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.Timer;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
@@ -20,8 +22,8 @@ import java.io.Writer;
 public class TextTreeExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(TextTreeExporter.class);
 
-  public TextTreeExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req, userKey, DataFormat.TEXT_TREE, false, factory, cfg, imageService);
+  public TextTreeExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+    super(req, userKey, DataFormat.TEXT_TREE, false, factory, cfg, imageService, timer);
   }
 
   @Override

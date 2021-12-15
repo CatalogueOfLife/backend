@@ -1,4 +1,7 @@
-package life.catalogue.resources;
+package life.catalogue.resources.legacy;
+
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
@@ -13,7 +16,6 @@ import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.mapper.legacy.model.LResponse;
 import life.catalogue.dw.jersey.filter.LegacyAPI;
 import life.catalogue.dw.jersey.filter.VaryAccept;
-import life.catalogue.legacy.IdMap;
 
 import java.net.URI;
 import java.util.List;
@@ -21,11 +23,11 @@ import java.util.List;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,11 +55,17 @@ public class LegacyWebserviceResource {
   private final String version;
   private final IdMap idMap;
   private final URI portalURI;
+  private final Timer searchTimer;
+  private final Timer getTimer;
+  private final SqlSessionFactory factory;
 
-  public LegacyWebserviceResource(WsServerConfig cfg, IdMap idMap) {
+  public LegacyWebserviceResource(WsServerConfig cfg, IdMap idMap, MetricRegistry registry, SqlSessionFactory factory) {
     version = cfg.versionString();
     portalURI = cfg.portalURI;
     this.idMap = idMap;
+    searchTimer = registry.timer("life.catalogue.resources.legacy.search");
+    getTimer = registry.timer("life.catalogue.resources.legacy.get");
+    this.factory = factory;
   }
 
   static int calcLimit(boolean full, Integer limitRequested){
@@ -73,16 +81,15 @@ public class LegacyWebserviceResource {
                       @QueryParam("name") String name,
                       @QueryParam("response") @DefaultValue("terse") String response,
                       @QueryParam("start") @DefaultValue("0") @Min(0) int start,
-                      @QueryParam("limit") @Max(1000) Integer limit,
-                      @Context SqlSession session) {
+                      @QueryParam("limit") @Max(1000) Integer limit) {
     try {
       boolean full = response.equalsIgnoreCase("full");
       LResponse resp;
       if (StringUtils.hasContent(id)) {
-        resp = get(datasetKey, id, full, session);
+        resp = get(datasetKey, id, full);
 
       } else if (StringUtils.hasContent(name)) {
-        resp = search(datasetKey, name, full, start, limit, session);
+        resp = search(datasetKey, name, full, start, limit);
 
       } else {
         resp = new LError(null, null, "No name or ID given", version);
@@ -128,59 +135,64 @@ public class LegacyWebserviceResource {
    * Searches on both scientific and vernacular names.
    * First list scientific hits, then vernaculars.
    * Matches are only exact or prefix if an asterisk is used.
-   *
-   * @param name
-   * @param full
-   * @param start
-   * @param session
-   * @return
    */
-  private LResponse search (int datasetKey, final String name, boolean full, int start, Integer limitRequested, SqlSession session) {
-    LNameMapper sMapper = session.getMapper(LNameMapper.class);
-    LVernacularMapper vMapper = session.getMapper(LVernacularMapper.class);
-    boolean prefix = false;
-    String q = name;
-    if (name.endsWith("*")) {
-      q = org.apache.commons.lang3.StringUtils.chop(name);
-      prefix = true;
-    }
-    if (q.length() < 3) {
-      return invalidName(name);
-    }
-
-    int cntSN = sMapper.count(datasetKey, prefix, q);
-    int cntVN = vMapper.count(datasetKey, prefix, q);
-    if (cntSN + cntVN < start) {
-      return nameNotFound(name, start);
-    }
-    int limit = calcLimit(full, limitRequested);
-    List<LName> results;
-    if (cntSN - start > 0) {
-      // scientific and maybe vernaculars
-      results = full ?
-        sMapper.searchFull(datasetKey, prefix, q, start, limit) :
-        sMapper.search(datasetKey, prefix, q, start, limit);
-      int vLimit = limit - results.size();
-      if (cntVN > 0 && vLimit > 0) {
-        results.addAll(vMapper.search(datasetKey, prefix, q, start, vLimit));
+  private LResponse search (int datasetKey, final String name, boolean full, int start, Integer limitRequested) {
+    final Timer.Context ctxt = searchTimer.time();
+    try (SqlSession session = factory.openSession()){
+      LNameMapper sMapper = session.getMapper(LNameMapper.class);
+      LVernacularMapper vMapper = session.getMapper(LVernacularMapper.class);
+      boolean prefix = false;
+      String q = name;
+      if (name.endsWith("*")) {
+        q = org.apache.commons.lang3.StringUtils.chop(name);
+        prefix = true;
       }
-    } else {
-      // only vernaculars
-      results = vMapper.search(datasetKey, prefix, q, start, limit);
+      if (q.length() < 3) {
+        return invalidName(name);
+      }
+
+      int cntSN = sMapper.count(datasetKey, prefix, q);
+      int cntVN = vMapper.count(datasetKey, prefix, q);
+      if (cntSN + cntVN < start) {
+        return nameNotFound(name, start);
+      }
+      int limit = calcLimit(full, limitRequested);
+      List<LName> results;
+      if (cntSN - start > 0) {
+        // scientific and maybe vernaculars
+        results = full ?
+          sMapper.searchFull(datasetKey, prefix, q, start, limit) :
+          sMapper.search(datasetKey, prefix, q, start, limit);
+        int vLimit = limit - results.size();
+        if (cntVN > 0 && vLimit > 0) {
+          results.addAll(vMapper.search(datasetKey, prefix, q, start, vLimit));
+        }
+      } else {
+        // only vernaculars
+        results = vMapper.search(datasetKey, prefix, q, start, limit);
+      }
+      return new LResponse(name, cntSN + cntVN, start, results, version);
+
+    } finally {
+      ctxt.stop();
     }
-    return new LResponse(name, cntSN + cntVN, start, results, version);
   }
 
-  private LResponse get (int datasetKey, String id, boolean full, SqlSession session) {
-    LNameMapper mapper = session.getMapper(LNameMapper.class);
-    LName obj = full ?
-      mapper.getFull(datasetKey, id) :
-      mapper.get(datasetKey, id);
-    if (obj == null) {
-      return idNotFound(id);
+  private LResponse get (int datasetKey, String id, boolean full) {
+    final Timer.Context ctxt = getTimer.time();
+    try (SqlSession session = factory.openSession()){
+      LNameMapper mapper = session.getMapper(LNameMapper.class);
+      LName obj = full ?
+        mapper.getFull(datasetKey, id) :
+        mapper.get(datasetKey, id);
+      if (obj == null) {
+        return idNotFound(id);
+      }
+      LResponse resp = new LResponse(id, obj, version);
+      return resp;
+    } finally {
+      ctxt.stop();
     }
-    LResponse resp = new LResponse(id, obj, version);
-    return resp;
   }
 
 

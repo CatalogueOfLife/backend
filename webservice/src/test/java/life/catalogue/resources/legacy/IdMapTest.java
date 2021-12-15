@@ -1,6 +1,7 @@
-package life.catalogue.legacy;
+package life.catalogue.resources.legacy;
 
 import life.catalogue.common.io.Resources;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
