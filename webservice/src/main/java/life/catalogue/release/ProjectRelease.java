@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class ProjectRelease extends AbstractProjectCopy {
+  public static Set<DataFormat> EXPORT_FORMATS = Set.of(DataFormat.TEXT_TREE, DataFormat.COLDP, DataFormat.DWCA, DataFormat.ACEF);
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
 
   private final ImageService imageService;
@@ -204,13 +205,12 @@ public class ProjectRelease extends AbstractProjectCopy {
       VarnishUtils.ban(client, colseo); // flush also /colseo which also points to latest releases
     }
     // kick off exports
-    for (DataFormat df : DataFormat.values()) {
-      if (df.isExportable()) {
-        ExportRequest req = new ExportRequest();
-        req.setDatasetKey(newDatasetKey);
-        req.setFormat(df);
-        exportManager.submit(req, user);
-      }
+    for (DataFormat df : EXPORT_FORMATS) {
+      ExportRequest req = new ExportRequest();
+      req.setDatasetKey(newDatasetKey);
+      req.setFormat(df);
+      req.setExcel(false);
+      exportManager.submit(req, user);
     }
   }
 

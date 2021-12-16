@@ -137,8 +137,9 @@ public class ImportManagerDebugging {
   @Test
   public void debugUpload() throws Exception {
     DatasetWithSettings d = create(DataFormat.DWCA, null,"Upload test");
-    InputStream data = new FileInputStream(new File("/Users/markus/Desktop/testUnassigned.txt"));
-    importManager.upload(d.getKey(), data, true, "tsv", TestEntityGenerator.USER_ADMIN);
+    File f = new File("/Users/markus/Desktop/testUnassigned.txt");
+    InputStream data = new FileInputStream(f);
+    importManager.upload(d.getKey(), data, true, f.getName(), "tsv", TestEntityGenerator.USER_ADMIN);
 
     Thread.sleep(1000);
     while (importManager.hasRunning()) {

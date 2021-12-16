@@ -123,12 +123,12 @@ public class ImportManagerTest {
     InputStream data = Resources.stream("dwca/1/taxa.txt");
     assertFalse(manager.hasRunning());
     try {
-      manager.upload(Datasets.COL, data, true, "taxa.txt", TestEntityGenerator.USER_ADMIN);
+      manager.upload(Datasets.COL, data, true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN);
       fail("Cannot upload to col draft");
     } catch (IllegalArgumentException e) {
       // expected, its the draft
     }
-    manager.upload(datasetKey, data, true, "taxa.txt", TestEntityGenerator.USER_ADMIN);
+    manager.upload(datasetKey, data, true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN);
     TimeUnit.SECONDS.sleep(2);
     assertTrue(manager.hasRunning());
   }

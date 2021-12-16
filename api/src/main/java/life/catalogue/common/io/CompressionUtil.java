@@ -182,9 +182,7 @@ public class CompressionUtil {
   }
   
   public static void zipFile(File file, File zipFile) throws IOException {
-    Set<File> files = new HashSet<File>();
-    files.add(file);
-    zipFiles(files, file.getParentFile(), zipFile);
+    zipFiles(Set.of(file), file.getParentFile(), zipFile);
   }
   
   /**

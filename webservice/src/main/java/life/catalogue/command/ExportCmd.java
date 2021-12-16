@@ -32,6 +32,7 @@ import life.catalogue.img.ImageService;
 
 import life.catalogue.img.ImageServiceFS;
 
+import life.catalogue.release.ProjectRelease;
 import life.catalogue.release.PublicReleaseListener;
 
 import org.apache.ibatis.session.SqlSession;
@@ -96,7 +97,9 @@ public class ExportCmd extends AbstractMybatisCmd {
     if (df != null) {
       formats = Set.of(df);
     } else {
-      formats = Arrays.stream(DataFormat.values()).filter(DataFormat::isExportable).collect(Collectors.toSet());
+      formats = Arrays.stream(DataFormat.values())
+                      .filter(ProjectRelease.EXPORT_FORMATS::contains)
+                      .collect(Collectors.toSet());
     }
     System.out.printf("Export format(s): %s\n", formats.stream().map(DataFormat::getName).collect(Collectors.joining(", ")));
 
