@@ -2,10 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.MatchingMode;
-import life.catalogue.api.vocab.NameCategory;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
@@ -99,7 +96,8 @@ public class DuplicateDaoTest {
   @Test(expected = IllegalArgumentException.class)
   public void duplicatesIAE() {
     // no catalouge/project given but filtering decisions
-    dao.findUsages(MatchingMode.STRICT, null, datasetKey, null, null, null, null, null, null, null, null, null, true, null, null);
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, MatchingMode.STRICT, null, datasetKey, null, null, null, null, null, null, null, null, null, true, null);
+    dao.find(req, null);
   }
 
   @Test
@@ -242,7 +240,9 @@ public class DuplicateDaoTest {
     } else {
       watch.resume();
     }
-    List<Duplicate> result = dao.findUsages(mode, minSize, datasetKey, sourceDatasetKey, null, category, ranks, status, authorshipDifferent, acceptedDifferent, null, null, withDecision, Datasets.COL, page);
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, mode, minSize, datasetKey, sourceDatasetKey, null, category, ranks, status,
+      authorshipDifferent, acceptedDifferent, null, null, withDecision, Datasets.COL);
+    List<Duplicate> result = dao.find(req, page);
     watch.suspend();
     return result;
   }
@@ -253,7 +253,10 @@ public class DuplicateDaoTest {
     } else {
       watch.resume();
     }
-    List<Duplicate> result = dao.findNames(mode, minSize, datasetKey, category, ranks, null, null, authorshipDifferent, page);
+
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME, mode, minSize, datasetKey, null, null, category, ranks,
+      null, authorshipDifferent, null, null, null, null, Datasets.COL);
+    List<Duplicate> result = dao.find(req, page);
     watch.suspend();
     return result;
   }
