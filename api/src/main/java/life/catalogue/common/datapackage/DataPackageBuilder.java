@@ -12,6 +12,9 @@ import life.catalogue.common.text.UnicodeUtils;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,16 +28,21 @@ public class DataPackageBuilder {
   private static final String MONOMIAL_PATTERN = "^[A-Z\\p{Lu}]\\p{L}+$";
   
   // only non string data types here
-  private static final Map<ColdpTerm, String> dataTypes = ImmutableMap.<ColdpTerm, String>builder()
-                                                                      .put(ColdpTerm.publishedInYear, Field.TYPE_YEAR)
-                                                                      .put(ColdpTerm.scrutinizerDate, Field.TYPE_DATE)
-                                                                      .put(ColdpTerm.created, Field.TYPE_DATETIME)
-                                                                      .put(ColdpTerm.extinct, Field.TYPE_BOOLEAN)
-                                                                      .build();
+  private static final Map<Class, String> dataTypes = Map.of(
+    String.class, Field.TYPE_STRING,
+    Integer.class, Field.TYPE_INTEGER,
+    Double.class, Field.TYPE_NUMBER,
+    Year.class, Field.TYPE_YEAR,
+    Date.class, Field.TYPE_DATE,
+    LocalDateTime.class, Field.TYPE_DATETIME,
+    Boolean.class, Field.TYPE_BOOLEAN,
+    URI.class, Field.TYPE_STRING,
+    Enum.class, Field.TYPE_STRING
+  );
   
-  private static final Map<ColdpTerm, String> dataFormats = ImmutableMap.<ColdpTerm, String>builder()
-      .put(ColdpTerm.link, Field.FORMAT_URI)
-      .build();
+  private static final Map<Class, String> dataFormats = Map.of(
+      URI.class, Field.FORMAT_URI
+  );
   
   private static final Set<ColdpTerm> monomials = ImmutableSet.copyOf(
     Arrays.stream(ColdpTerm.DENORMALIZED_RANKS)
@@ -135,8 +143,8 @@ public class DataPackageBuilder {
     s.setRowType(rowType);
     
     for (ColdpTerm t : ColdpTerm.RESOURCES.get(rowType)) {
-      String type = dataTypes.getOrDefault(t, Field.TYPE_STRING);
-      String format = dataFormats.getOrDefault(t, Field.FORMAT_DEFAULT);
+      String type = dataTypes.get(t.getType());
+      String format = dataFormats.getOrDefault(t.getType(), Field.FORMAT_DEFAULT);
       Map<String, Object> constraints = new HashMap<>();
       if (enums.containsKey(t)) {
         constraints.put(Field.CONSTRAINT_KEY_ENUM, enumValues(rowType, t));

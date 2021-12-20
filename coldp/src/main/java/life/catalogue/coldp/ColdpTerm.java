@@ -1,10 +1,13 @@
 package life.catalogue.coldp;
 
 import org.gbif.dwc.terms.AlternativeNames;
+import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.Term;
 
 import java.net.URI;
+import java.time.Year;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -17,56 +20,56 @@ import java.util.stream.Collectors;
  * To avoid dependency and clashes with DwC no terms are reused.
  */
 public enum ColdpTerm implements Term, AlternativeNames {
-  Reference(true),
+  Reference((Class)null),
   ID,
   sourceID,
   citation,
-  type,
+  type(Enum.class),
   author,
   editor,
   title,
   containerAuthor,
-  containerTitle(false, "source"),
-  issued(false, "year"),
-  accessed,
+  containerTitle("source"),
+  issued(Date.class, "year"),
+  accessed(Date.class),
   collectionTitle,
   collectionEditor,
   volume,
   issue,
   edition,
-  page(false, "details"),
+  page("details"),
   publisher,
   publisherPlace,
   version,
   isbn,
   issn,
   doi,
-  link,
+  link(URI.class),
   remarks,
 
-  Name(true),
+  Name((Class) null),
   //ID,
   //sourceID,
-  basionymID(false, "originalNameID"),
+  basionymID("originalNameID"),
   scientificName,
   authorship,
-  rank,
+  rank(Enum.class),
   uninomial,
   genus,
   specificEpithet,
   infragenericEpithet,
   infraspecificEpithet,
   cultivarEpithet,
-  code,
-  referenceID(false, "publishedInID", "namePublishedInID"),
-  publishedInYear(false, "namePublishedInYear"),
-  publishedInPage(false, "namePublishedInPage"),
-  publishedInPageLink(false, "namePublishedInPageLink"),
-  status,
+  code(Enum.class),
+  referenceID("publishedInID", "namePublishedInID"),
+  publishedInYear(Year.class, "namePublishedInYear"),
+  publishedInPage("namePublishedInPage"),
+  publishedInPageLink("namePublishedInPageLink"),
+  status(Enum.class),
   //link,
   //remarks,
 
-  NameRelation(true, "NameRel"),
+  NameRelation((Class) null, "NameRel"),
   nameID,
   relatedNameID,
   //sourceID,
@@ -74,17 +77,17 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //referenceID,
   //remarks,
 
-  TypeMaterial(true),
+  TypeMaterial((Class) null),
   //ID,
   //nameID,
   //sourceID,
   //citation,
   //status,
   locality,
-  country,
-  latitude,
-  longitude,
-  altitude,
+  country(Enum.class),
+  latitude(Double.class),
+  longitude(Double.class),
+  altitude(Integer.class),
   host,
   date,
   collector,
@@ -92,22 +95,23 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //link,
   //remarks,
 
-  Taxon(true),
+  Taxon((Class) null),
   // ID,
   //sourceID,
   parentID,
+  sequenceIndex(Integer.class),
   //nameID,
   namePhrase,
   accordingToID,
-  provisional,
+  provisional(Boolean.class),
   //referenceID,
   scrutinizer,
   scrutinizerID,
-  scrutinizerDate,
-  extinct,
+  scrutinizerDate(Date.class),
+  extinct(Boolean.class),
   temporalRangeStart,
   temporalRangeEnd,
-  environment(false, "lifezone"),
+  environment(Enum.class, "lifezone"),
   species,
   section,
   subgenus,
@@ -124,11 +128,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
   subphylum,
   phylum,
   kingdom,
-  sequenceIndex,
   //link
   //remarks
 
-  Synonym(true),
+  Synonym((Class) null),
   //ID
   //sourceID,
   taxonID,
@@ -140,13 +143,13 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //link
   //remarks
 
-  NameUsage(true),
-  nameStatus, // alternative term to Name.status
+  NameUsage((Class) null),
+  nameStatus(Enum.class), // alternative term to Name.status
   nameReferenceID, // alternative term to Name.referenceID
   genericName, // alternative term to Name.genus
   nameRemarks, // alternative term to Name.remarks
 
-  TaxonConceptRelation(true, "TaxonRelation"),
+  TaxonConceptRelation((Class) null, "TaxonRelation"),
   //taxonID,
   relatedTaxonID,
   //sourceID,
@@ -154,7 +157,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //referenceID,
   //remarks,
 
-  SpeciesInteraction(true),
+  SpeciesInteraction((Class) null),
   //taxonID,
   //relatedTaxonID,
   //sourceID,
@@ -163,47 +166,47 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //referenceID,
   //remarks,
 
-  Treatment(true),
+  Treatment((Class) null),
   //taxonID,
   //sourceID,
   document,
   format,
 
-  Distribution(true),
+  Distribution((Class) null),
   //taxonID,
   //sourceID,
   areaID,
   area,
-  gazetteer,
+  gazetteer(Enum.class),
   //status,
   //referenceID,
   
-  Media(true),
+  Media((Class) null),
   //taxonID,
   //sourceID,
-  url,
+  url(URI.class),
   //type,
   //format,
   //title,
-  created,
+  created(Date.class),
   creator,
-  license,
+  license(Enum.class),
   //link,
   
-  VernacularName(true),
+  VernacularName((Class) null),
   //taxonID,
   //sourceID,
   name,
   transliteration,
-  language,
+  language(Enum.class),
   //country,
-  sex,
+  sex(Enum.class),
   //referenceID
 
-  SpeciesEstimate(true),
+  SpeciesEstimate((Class) null),
   //taxonID,
   //sourceID,
-  estimate,
+  estimate(Integer.class),
   //type,
   //referenceID
   //remarks
@@ -456,18 +459,27 @@ public enum ColdpTerm implements Term, AlternativeNames {
   private static final String PREFIX = "col";
   private static final String NS = "http://catalogueoflife.org/terms/";
   private static final URI NS_URI = URI.create(NS);
-  
-  private final boolean isClass;
+
+  private final Class<?> dataType;
   private final String[] alternatives;
   
   ColdpTerm() {
-    this.alternatives = new String[0];
-    this.isClass = false;
+    this(String.class);
   }
-  
-  ColdpTerm(boolean isClass, String... alternatives) {
+
+  ColdpTerm(String... alternatives) {
+    this.dataType = String.class;
     this.alternatives = alternatives;
-    this.isClass = isClass;
+  }
+
+  ColdpTerm(Class<?> type) {
+    this.dataType = type;
+    this.alternatives = new String[0];
+  }
+
+  ColdpTerm(Class<?> type, String... alternatives) {
+    this.dataType = type;
+    this.alternatives = alternatives;
   }
   
   
@@ -501,17 +513,20 @@ public enum ColdpTerm implements Term, AlternativeNames {
   
   @Override
   public boolean isClass() {
-    return isClass;
+    return dataType == null;
   }
-  
-  
+
+  public Class<?> getType() {
+    return dataType;
+  }
+
   private static String normalize(String x, boolean isClass) {
     x = x.replaceAll("[-_ ]+", "").toLowerCase();
     return isClass ? Character.toUpperCase(x.charAt(0)) + x.substring(1) : x;
   }
   
   private static String normalize(ColdpTerm t) {
-    return normalize(t.name(), t.isClass);
+    return normalize(t.name(), t.isClass());
   }
   
   public static ColdpTerm find(String name, boolean isClass) {
