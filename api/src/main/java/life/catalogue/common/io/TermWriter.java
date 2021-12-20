@@ -75,7 +75,7 @@ public abstract class TermWriter implements AutoCloseable {
     writer.write(row);
     row = new String[cols.size()];
     if (++counter % 100000 == 0) {
-      LOG.info("Written {} {}s", counter, rowType.simpleName());
+      LOG.debug("Written {} {}s", counter, rowType.simpleName());
     }
   }
 

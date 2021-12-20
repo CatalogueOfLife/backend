@@ -1,5 +1,7 @@
 package life.catalogue.common.datapackage;
 
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.datapackage.PackageDescriptor;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.*;
@@ -20,7 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 public class DataPackageBuilder {
-  private static final String MONOMIAL_PATTERN = "[A-ZÏËÖÜÄÉÈČÁÀÆŒ](?:\\.|[a-zïëöüäåéèčáàæœ]+)(?:-[A-ZÏËÖÜÄÉÈČÁÀÆŒ]?[a-zïëöüäåéèčáàæœ]+)?";
+  private static final String MONOMIAL_PATTERN = "^[A-Z\\p{Lu}]\\p{L}+$";
   
   // only non string data types here
   private static final Map<ColdpTerm, String> dataTypes = ImmutableMap.<ColdpTerm, String>builder()
@@ -40,16 +42,37 @@ public class DataPackageBuilder {
       .collect(Collectors.toSet())
   );
 
-  private static final Map<ColdpTerm, Class<? extends Enum>> enums = ImmutableMap.<ColdpTerm, Class<? extends Enum>>builder()
-      .put(ColdpTerm.status, TaxonomicStatus.class)
-      .put(ColdpTerm.type, NomRelType.class)
-      .put(ColdpTerm.code, NomCode.class)
-      .put(ColdpTerm.country, Country.class)
-      .put(ColdpTerm.format, DataFormat.class)
-      .put(ColdpTerm.gazetteer, Gazetteer.class)
-      .put(ColdpTerm.rank, Rank.class)
-      .put(ColdpTerm.environment, Environment.class)
-      .build();
+  /**
+   * Vocabulary enums by term, then rowType.
+   * If ColdpTerm.ID is given for the only rowType then it is assumed it applies to any rowType and is always the same enum.
+   */
+  private static final Map<ColdpTerm, Map<ColdpTerm, Class<? extends Enum>>> enums = Map.of(
+    ColdpTerm.code, Map.of(ColdpTerm.ID, NomCode.class),
+    ColdpTerm.country, Map.of(ColdpTerm.ID, Country.class),
+    ColdpTerm.environment, Map.of(ColdpTerm.ID, Environment.class),
+    ColdpTerm.format, Map.of(ColdpTerm.ID, TreatmentFormat.class),
+    ColdpTerm.gazetteer, Map.of(ColdpTerm.ID, Gazetteer.class),
+    ColdpTerm.nameStatus, Map.of(ColdpTerm.ID, NomStatus.class),
+    ColdpTerm.rank, Map.of(ColdpTerm.ID, Rank.class),
+    ColdpTerm.sex, Map.of(ColdpTerm.ID, Sex.class),
+
+    ColdpTerm.type, Map.of(
+      ColdpTerm.Reference, CSLType.class,
+      ColdpTerm.NameRelation, NomRelType.class,
+      ColdpTerm.TaxonConceptRelation, TaxonConceptRelType.class,
+      ColdpTerm.SpeciesInteraction, SpeciesInteractionType.class,
+      ColdpTerm.Media, MediaType.class,
+      ColdpTerm.SpeciesEstimate, EstimateType.class
+    ),
+    ColdpTerm.status, Map.of(
+      ColdpTerm.Name, NomStatus.class,
+      ColdpTerm.TypeMaterial, TypeStatus.class,
+      ColdpTerm.Synonym, TaxonomicStatus.class,
+      ColdpTerm.Taxon, TaxonomicStatus.class,
+      ColdpTerm.NameUsage, TaxonomicStatus.class,
+      ColdpTerm.Distribution, DistributionStatus.class
+    )
+  );
   
   private static final Map<ColdpTerm, ForeignKey> foreignKeys = ImmutableMap.<ColdpTerm, ForeignKey>builder()
       .put(ColdpTerm.referenceID, new ForeignKey(ColdpTerm.referenceID, ColdpTerm.Reference, ColdpTerm.ID))
@@ -84,7 +107,9 @@ public class DataPackageBuilder {
     for (String res : pd.getResources()) {
       Resource r = new Resource();
       r.setPath(resourceUrl(pd.getBase(), res));
-      if (!res.toLowerCase().endsWith("csv")) {
+      if (res.toLowerCase().endsWith("csv")) {
+        r.setDialect(Dialect.CSV);
+      } else {
         r.setDialect(Dialect.TSV);
       }
       r.setSchema(buildSchema(res));
@@ -142,14 +167,11 @@ public class DataPackageBuilder {
     }
     
     Class<? extends Enum> enumClass;
-    if (t == ColdpTerm.status && rowType == ColdpTerm.Name) {
-      enumClass = NomStatus.class;
-      
-    } else if (t == ColdpTerm.type && rowType == ColdpTerm.Media) {
-      enumClass = MediaType.class;
-
+    var resources = enums.get(t);
+    if (resources.size() == 1 && resources.containsKey(ColdpTerm.ID)) {
+      enumClass = resources.get(ColdpTerm.ID);
     } else {
-      enumClass = enums.get(t);
+      enumClass = resources.get(rowType);
     }
 
     return enumValues(enumClass, PermissiveEnumSerde::enumValueName);

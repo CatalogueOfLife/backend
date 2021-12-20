@@ -102,6 +102,7 @@ public class IdProvider {
     LOG.info("Reused {} stable IDs for project release {}-{} ({}), resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, releaseDatasetKey, resurrected.size(), created.size(), deleted.size());
     return getReport();
   }
+
   public static class InstableName implements DSID<String> {
     public final boolean del;
     public final int datasetKey;
@@ -232,7 +233,7 @@ public class IdProvider {
     ) {
       num = session.getMapper(NameUsageMapper.class);
       LOG.info("Writing ID report for project release {}-{} of {} IDs to {}", projectKey, attempt, ids.size(), f);
-      ids.stream()
+      ids.intStream()
         .sorted()
         .forEach(id -> reportId(id, previousReleases, tsv, deletion));
     }
