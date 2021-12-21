@@ -138,6 +138,7 @@ public class PublicReleaseListener {
   public void copyExportsToColDownload(Dataset dataset, boolean symLinkLatest) {
     if (cfg.release.colDownloadDir != null) {
       final int datasetKey = dataset.getKey();
+      final int projectKey = dataset.getSourceKey();
       if (dataset.getIssued() == null) {
         LOG.error("Updated COL release {} is missing a release date", datasetKey);
         return;
@@ -168,7 +169,7 @@ public class PublicReleaseListener {
       if (symLinkLatest && dataset.getAttempt() != null) {
         try {
           // set latest_logs -> /srv/releases/3/50
-          File logs = cfg.release.reportDir(datasetKey, dataset.getAttempt());
+          File logs = cfg.release.reportDir(projectKey, dataset.getAttempt());
           File symlink = new File(cfg.release.colDownloadDir, "latest_logs");
           PathUtils.symlink(symlink, logs);
         } catch (IOException e) {
