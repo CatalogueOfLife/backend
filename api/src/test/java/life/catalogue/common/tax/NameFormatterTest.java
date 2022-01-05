@@ -1,9 +1,11 @@
 package life.catalogue.common.tax;
 
 import life.catalogue.api.model.Name;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -34,7 +34,9 @@ CREATE TYPE DATAFORMAT AS ENUM (
   'ACEF',
   'TEXT_TREE',
   'COLDP',
-  'PROXY'
+  'PROXY',
+  'NEWICK',
+  'DOT'
 );
 
 CREATE TYPE DATASETORIGIN AS ENUM (
@@ -226,7 +228,10 @@ CREATE TYPE ISSUE AS ENUM (
   'UNPARSABLE_TREATMENT',
   'UNPARSABLE_TREAMENT_FORMAT',
   'ESTIMATE_INVALID',
-  'ESTIMATE_TYPE_INVALID'
+  'ESTIMATE_TYPE_INVALID',
+  'INVISIBLE_CHARACTERS',
+  'HOMOGLYPH_CHARACTERS',
+  'RELATED_NAME_MISSING'
 );
 
 CREATE TYPE JOBSTATUS AS ENUM (
@@ -611,7 +616,7 @@ CREATE TYPE agent AS (orcid text, given text, family text,
 );
 
 -- CSLName type for citations and references to avoid extra tables
-CREATE TYPE cslname AS (given text, family text, literal text);
+CREATE TYPE cslname AS (given text, family text, particle text);
 
 -- immutable agent casts to text function to be used in indexes
 CREATE OR REPLACE FUNCTION agent_str(agent) RETURNS text AS
@@ -649,7 +654,7 @@ CREATE CAST (text AS agent) WITH FUNCTION text2agent;
 
 CREATE OR REPLACE FUNCTION text2cslname(text) RETURNS cslname AS
 $$
-SELECT ROW(null, null, $1)::cslname
+SELECT ROW(null, $1, null)::cslname
 $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 CREATE CAST (text AS cslname) WITH FUNCTION text2cslname;

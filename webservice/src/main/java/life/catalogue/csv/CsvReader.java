@@ -227,9 +227,9 @@ public class CsvReader {
           return;
         }
       }
+      Schema s = schemas.remove(rowType);
+      LOG.warn("One term required from {} but all missing. Ignore file {}!", concat(terms), s.file);
     }
-    Schema s = schemas.remove(rowType);
-    LOG.warn("One term required from {} but all missing. Ignore file {}!", concat(terms), s.file);
   }
 
   private static String concat(Term... terms){
@@ -256,7 +256,7 @@ public class CsvReader {
   protected <T extends Enum & Term> void reportMissingSchemas(Class<T> enumClass) {
     for (T t : enumClass.getEnumConstants()) {
       if (t.isClass() && !hasData(t)) {
-        LOG.info("{} schema not existing in {}", t.prefixedName(), enumClass.getSimpleName(), folder);
+        LOG.debug("{} schema not existing in {}", t.prefixedName(), enumClass.getSimpleName(), folder);
       }
     }
   }

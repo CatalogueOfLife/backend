@@ -1,11 +1,12 @@
 package life.catalogue.api.model;
 
-import org.junit.Test;
-
 import java.net.URI;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class DOITest {
 

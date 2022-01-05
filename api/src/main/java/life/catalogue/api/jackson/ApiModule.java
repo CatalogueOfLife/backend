@@ -1,9 +1,10 @@
 package life.catalogue.api.jackson;
 
-import life.catalogue.api.datapackage.ColdpTerm;
-import life.catalogue.api.datapackage.DwcUnofficialTerm;
+import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.TxtTreeTerm;
+
+import life.catalogue.coldp.ColdpTerm;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
@@ -38,7 +39,7 @@ public class ApiModule extends SimpleModule {
 
   static {
     // register new term enums
-    TermFactory.instance().registerTermEnum(DwcUnofficialTerm.class);
+    TermFactory.instance().registerTermEnum(DwcUnofficialTerm .class);
     TermFactory.instance().registerTermEnum(ColdpTerm.class);
     TermFactory.instance().registerTermEnum(TxtTreeTerm.class);
   }

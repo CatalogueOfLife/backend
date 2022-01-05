@@ -1,5 +1,6 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.Timer;
 import com.google.common.io.Files;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -50,8 +51,8 @@ public class AcefExporter extends DatasetExporter {
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
 
-  public AcefExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req, userKey, DataFormat.ACEF, factory, cfg, imageService);
+  public AcefExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+    super(req, userKey, DataFormat.ACEF, false, factory, cfg, imageService, timer);
     if (req.hasFilter()) {
       throw new IllegalArgumentException("ACEF exports cannot have any filters");
     }

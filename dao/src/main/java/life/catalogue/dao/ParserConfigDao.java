@@ -117,17 +117,17 @@ public class ParserConfigDao {
     pn.setState(ParsedName.State.COMPLETE); // if we leave state None we get unparsed issues when parsing this name
     pn.setTaxonomicNote(obj.getTaxonomicNote());
     pn.setExtinct(obj.getExtinct());
-    NameParser.configs().setName(concat(obj.getScientificName(), obj.getAuthorship()), pn);
+    NameParser.PARSER.configs().setName(concat(obj.getScientificName(), obj.getAuthorship()), pn);
     // configure name without authorship and authorship standalone if we have that
     if (obj.getAuthorship() != null && obj.hasAuthorship()) {
-      NameParser.configs().setAuthorship(obj.getAuthorship(), pn);
+      NameParser.PARSER.configs().setAuthorship(obj.getAuthorship(), pn);
 
       ParsedName pnNoAuthor = new ParsedName();
       pnNoAuthor.copy(pn);
       pnNoAuthor.setCombinationAuthorship(null);
       pnNoAuthor.setBasionymAuthorship(null);
       pnNoAuthor.setSanctioningAuthor(null);
-      NameParser.configs().setName(obj.getScientificName(), pnNoAuthor);
+      NameParser.PARSER.configs().setName(obj.getScientificName(), pnNoAuthor);
     }
   }
 
@@ -143,11 +143,11 @@ public class ParserConfigDao {
     // update parser
     ParserConfig cfg = new ParserConfig();
     cfg.setId(id);
-    NameParser.configs().deleteName(concat(cfg.getScientificName(), cfg.getAuthorship()));
+    NameParser.PARSER.configs().deleteName(concat(cfg.getScientificName(), cfg.getAuthorship()));
     // also remove the authorship and canonical name if it exists!
     if (cfg.getAuthorship() != null) {
-      NameParser.configs().deleteName(cfg.getScientificName());
-      NameParser.configs().deleteAuthorship(cfg.getAuthorship());
+      NameParser.PARSER.configs().deleteName(cfg.getScientificName());
+      NameParser.PARSER.configs().deleteAuthorship(cfg.getAuthorship());
     }
   }
 

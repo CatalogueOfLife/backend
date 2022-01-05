@@ -2,6 +2,7 @@ package life.catalogue.api.jackson;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
+
 import org.junit.Test;
 
 /**

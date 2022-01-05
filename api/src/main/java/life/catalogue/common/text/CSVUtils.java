@@ -84,8 +84,26 @@ public class CSVUtils {
    * Reads an UTF8 CSV stream separated by commas and generates a stream or rows, each being a list of columns.
    */
   public static Stream<List<String>> parse(InputStream in) {
+    return parse(in, 0);
+  }
+
+  /**
+   * Reads an UTF8 CSV stream separated by commas and generates a stream or rows, each being a list of columns.
+   * @param skip number of lines to skip at the beginning
+   */
+  public static Stream<List<String>> parse(InputStream in, long skip) {
     BufferedReader br = UTF8IoUtils.readerFromStream(in);
-    return br.lines().map(CSVUtils::parseLine);
+    return br.lines().skip(skip).map(CSVUtils::parseLine);
+  }
+
+  /**
+   * Reads an UTF8 column delimited stream separated by a given delimiter and generates a stream or rows, each being a list of columns.
+   * @param skip number of lines to skip at the beginning
+   * @param delimiter separating columns
+   */
+  public static Stream<List<String>> parse(InputStream in, long skip, char delimiter) {
+    BufferedReader br = UTF8IoUtils.readerFromStream(in);
+    return br.lines().skip(skip).map(line -> CSVUtils.parseLine(line, delimiter));
   }
   
   private static void add(List<String> row, StringBuffer col){

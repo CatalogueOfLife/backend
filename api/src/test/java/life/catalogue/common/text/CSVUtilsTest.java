@@ -1,9 +1,10 @@
 package life.catalogue.common.text;
 
-import com.google.common.base.Joiner;
+import java.util.List;
+
 import org.junit.Test;
 
-import java.util.List;
+import com.google.common.base.Joiner;
 
 import static org.junit.Assert.assertEquals;
 

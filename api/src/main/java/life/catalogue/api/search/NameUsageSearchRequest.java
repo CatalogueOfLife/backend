@@ -1,18 +1,20 @@
 
 package life.catalogue.api.search;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
 import org.gbif.nameparser.api.Rank;
 
-import javax.validation.constraints.Size;
-import javax.ws.rs.QueryParam;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import javax.validation.constraints.Size;
+import javax.ws.rs.QueryParam;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 
 public class NameUsageSearchRequest extends NameUsageRequest {
 

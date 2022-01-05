@@ -1,18 +1,19 @@
 package life.catalogue.parser;
 
-import com.google.common.collect.Maps;
 import life.catalogue.api.util.JsonLdReader;
 import life.catalogue.api.vocab.GeoTime;
 import life.catalogue.api.vocab.GeoTimeFactory;
-import org.gbif.utils.file.csv.CSVReader;
-import org.gbif.utils.file.csv.CSVReaderFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import life.catalogue.common.io.TabReader;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
 
 /**
  * Parser for geochronological time spans.
@@ -46,12 +47,11 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
   
   private void addMapping(String resFile, int nameCol, int... valCols) {
     LOG.info("Reading custom geotime mapping {}", resFile);
-    try (CSVReader reader = dictReader(resFile)) {
-      while (reader.hasNext()) {
-        String[] row = reader.next();
+    try (TabReader reader = dictReader(resFile)){
+      for (String[] row : reader) {
         if (row.length == 0) continue;
         if (row.length < nameCol) {
-          LOG.info("Ignore invalid geotime mapping, {} line {} with only {} columns", resFile, reader.currLineNumber(), row.length);
+          LOG.info("Ignore invalid geotime mapping, {} line {} with only {} columns", resFile, reader.getContext().currentLine(), row.length);
           continue;
         }
   
@@ -59,7 +59,7 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
         if (name != null) {
           GeoTime time = GeoTime.byName(name);
           if (time == null) {
-            LOG.info("Ignore invalid geotime mapping for non existing geotime {} on line {}", name, reader.currLineNumber());
+            LOG.info("Ignore invalid geotime mapping for non existing geotime {} on line {}", name, reader.getContext().currentLine());
           } else {
             for (int col : valCols) {
               add(row[col], time, false);
@@ -155,11 +155,6 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
     }
     return x;
   }
-  
-  protected CSVReader dictReader(String resourceFilename) throws IOException {
-    return CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/iso639/" + resourceFilename), "UTF8", "\t", null, 1);
-  }
-  
   
   @Override
   GeoTime parseKnownValues(String upperCaseValue) throws UnparsableException {

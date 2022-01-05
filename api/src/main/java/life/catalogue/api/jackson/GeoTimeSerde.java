@@ -1,15 +1,17 @@
 package life.catalogue.api.jackson;
 
+import life.catalogue.api.vocab.GeoTime;
+
+import org.gbif.dwc.terms.Term;
+
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import life.catalogue.api.vocab.GeoTime;
-import org.gbif.dwc.terms.Term;
-
-import java.io.IOException;
 
 /**
  * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for {@link GeoTime}

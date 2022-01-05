@@ -163,7 +163,7 @@ public class Normalizer implements Callable<Boolean> {
       try {
         // taxon or synonym
         if (u.isSynonym()) {
-          Synonym s = u.getSynonym();
+          Synonym s = u.asSynonym();
           require(s, s.getId(), "id");
           require(s, s.getOrigin(), "origin");
 
@@ -174,7 +174,7 @@ public class Normalizer implements Callable<Boolean> {
           check(s, u.vernacularNames.isEmpty(), "no vernacular names");
 
         } else {
-          Taxon t = u.getTaxon();
+          Taxon t = u.asTaxon();
           require(t, t.getId(), "id");
           require(t, t.getOrigin(), "origin");
           require(t, t.getStatus(), "status");
@@ -186,7 +186,6 @@ public class Normalizer implements Callable<Boolean> {
 
           // distribution
           for (Distribution d : u.distributions) {
-            require(d, d.getGazetteer(), "area standard");
             require(d, d.getArea(), "area");
           }
 
@@ -411,7 +410,7 @@ public class Normalizer implements Callable<Boolean> {
     try (Transaction tx = store.getNeo().beginTx()) {
       store.usages().all().forEach(u -> {
         if (u.isSynonym()) {
-          Synonym syn = u.getSynonym();
+          Synonym syn = u.asSynonym();
           // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
           Node n = store.getNeo().getNodeById(u.node.getId());
           Name name = store.names().objByNode(NeoProperties.getNameNode(n)).getName();

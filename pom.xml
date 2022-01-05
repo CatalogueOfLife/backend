@@ -11,7 +11,7 @@
   <packaging>pom</packaging>
 
   <name>COL backend services</name>
-  <url>http://github.org/Sp2000/${project.artifactId}</url>
+  <url>https://github.org/Sp2000/${project.artifactId}</url>
 
   <scm>
     <connection>scm:git:git@github.com:CatalogueOfLife/backend.git</connection>
@@ -27,7 +27,7 @@
   <properties>
     <!-- build settings -->
     <minimumMavenVersion>3.3</minimumMavenVersion>
-    <jdkLevel>11</jdkLevel>
+    <java.version>11</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -50,19 +50,19 @@
     <antlr.version>4.7.2</antlr.version>
     <asm.version></asm.version>
     <assertj.version>3.11.1</assertj.version>
-    <citeproc.version>3.0.0-SNAPSHOT</citeproc.version>
+    <citeproc.version>3.0.0-alpha.3</citeproc.version>
     <citeproc-styles.version>2.0.0</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.19</commons-compress.version>
-    <commons-io.version>2.6</commons-io.version>
-    <dropwizard.version>2.0.21</dropwizard.version>
+    <commons-io.version>2.11.0</commons-io.version>
+    <dropwizard.version>2.0.25</dropwizard.version>
     <dwc-api.version>1.34</dwc-api.version>
-    <dwca-io.version>2.9</dwca-io.version>
+    <dwca-io.version>2.11</dwca-io.version>
     <elasticsearch.version>7.4.2</elasticsearch.version>
-    <fastutil.version>8.3.0</fastutil.version>
+    <fastutil.version>8.5.6</fastutil.version>
     <ganglia.version>1.0.7</ganglia.version>
-    <gbif-api.version>0.99</gbif-api.version>
-    <hikaricp.version>3.3.1</hikaricp.version>
+    <gbif-api.version>0.156</gbif-api.version>
+    <hikaricp.version>5.0.0</hikaricp.version>
     <hk2.version>2.5.0-b32</hk2.version>
     <!-- even though managed in DW BOM, it conflicts with ES BOM and we gotta manage this manually -->
     <httpcore.version>4.4.12</httpcore.version>
@@ -71,9 +71,10 @@
     <java-diff-utils.version>4.0</java-diff-utils.version>
     <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
     <javers.version>5.6.3</javers.version>
-    <jbibtex.version>1.0.18</jbibtex.version>
+    <jbibtex.version>1.0.19</jbibtex.version>
+    <jcommander.version>1.81</jcommander.version>
     <jjwt.version>0.10.7</jjwt.version>
-    <jsoup.version>1.14.1</jsoup.version>
+    <jsoup.version>1.14.3</jsoup.version>
     <junit.version>4.12</junit.version>
     <kryo-serializers.version>0.45</kryo-serializers.version>
     <kryo.version>5.0.0-RC5</kryo.version>
@@ -82,23 +83,25 @@
     <mapdb.version>3.0.5</mapdb.version>
     <mockito.version>3.1.0</mockito.version>
     <mybatis.version>3.5.2</mybatis.version>
-    <name-parser.version>3.6.4-SNAPSHOT</name-parser.version>
+    <name-parser.version>3.7.0-SNAPSHOT</name-parser.version>
     <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
     <neo4j.version>3.4.17</neo4j.version>
-    <poi.version>5.0.0</poi.version>
-    <postgresql.version>42.2.16</postgresql.version>
+    <newick-io.version>1.0-SNAPSHOT</newick-io.version>
+    <poi.version>5.1.0</poi.version>
+    <postgresql.version>42.3.1</postgresql.version>
     <pgjdbc-ng.version>0.8.4</pgjdbc-ng.version>
-    <simple-java-.version>6.5.2</simple-java-.version>
+    <simple-mail.version>6.6.1</simple-mail.version>
     <stax2.version>4.2</stax2.version>
     <text-tree.version>1.0.0</text-tree.version>
     <tika.version>1.22</tika.version>
-    <twelvemonkeys.version>3.4.2</twelvemonkeys.version>
+    <twelvemonkeys.version>3.7.0</twelvemonkeys.version>
     <validation-api.version>2.0.0.Final</validation-api.version>
     <woodstox.version>4.4.1</woodstox.version>
     <imgscalr.version>4.2</imgscalr.version>
-    <univocity-parsers.version>2.8.3</univocity-parsers.version>
+    <univocity-parsers.version>2.9.1</univocity-parsers.version>
 
     <!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
+    <depgraph-maven-plugin>3.3.0</depgraph-maven-plugin>
     <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
     <jaxb2_commons.version>0.12.0</jaxb2_commons.version>
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
@@ -137,6 +140,10 @@
     <datacite.username>col</datacite.username>
     <datacite.password>xyz</datacite.password>
     <datacite.prefix>10.80631</datacite.prefix>
+
+    <!-- Sonar -->
+    <sonar.language>java</sonar.language>
+    <sonar.projectName>COL ChecklistBank API</sonar.projectName>
   </properties>
 
   <licenses>
@@ -148,8 +155,8 @@
   </licenses>
 
   <organization>
-    <name>Species 2000</name>
-    <url>http://www.sp2000.org/</url>
+    <name>Catalogue of Life</name>
+    <url>http://www.catalogueoflife.org/</url>
   </organization>
 
   <issueManagement>
@@ -160,14 +167,14 @@
   <repositories>
     <repository>
       <id>gbif-all</id>
-      <url>http://repository.gbif.org/repository/gbif</url>
+      <url>https://repository.gbif.org/repository/gbif</url>
       <snapshots>
         <updatePolicy>always</updatePolicy>
       </snapshots>
     </repository>
     <repository>
       <id>gbif-thirdparty</id>
-      <url>http://repository.gbif.org/repository/thirdparty</url>
+      <url>https://repository.gbif.org/repository/thirdparty</url>
     </repository>
     <repository>
       <id>sonatype-snapshots</id>
@@ -183,11 +190,13 @@
   </repositories>
 
   <modules>
+    <module>coldp</module>
     <module>api</module>
     <module>dao</module>
     <module>doi</module>
     <module>parser</module>
     <module>webservice</module>
+    <module>coldp-generator</module>
   </modules>
 
   <distributionManagement>
@@ -204,6 +213,11 @@
   <dependencyManagement>
     <dependencies>
       <!-- COL -->
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>coldp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>
         <artifactId>api</artifactId>
@@ -238,7 +252,11 @@
         <artifactId>parser</artifactId>
         <version>${project.version}</version>
       </dependency>
-
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>newick-io</artifactId>
+        <version>${newick-io.version}</version>
+      </dependency>
       <!-- Dropwizard -->
       <dependency>
         <groupId>io.dropwizard</groupId>
@@ -586,6 +604,11 @@
 
       <!-- other -->
       <dependency>
+        <groupId>com.beust</groupId>
+        <artifactId>jcommander</artifactId>
+        <version>${jcommander.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.jsoup</groupId>
         <artifactId>jsoup</artifactId>
         <version>${jsoup.version}</version>
@@ -593,7 +616,7 @@
       <dependency>
         <groupId>org.simplejavamail</groupId>
         <artifactId>simple-java-mail</artifactId>
-        <version>${simple-java-.version}</version>
+        <version>${simple-mail.version}</version>
       </dependency>
       <dependency>
         <groupId>io.github.java-diff-utils</groupId>
@@ -701,6 +724,11 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>com.github.ferstl</groupId>
+          <artifactId>depgraph-maven-plugin</artifactId>
+          <version>${depgraph-maven-plugin}</version>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-clean-plugin</artifactId>
           <version>${maven-clean-plugin.version}</version>
@@ -715,9 +743,20 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven-compiler-plugin.version}</version>
           <configuration>
-            <release>${jdkLevel}</release>
+            <release>${java.version}</release>
             <showDeprecation>true</showDeprecation>
             <showWarnings>true</showWarnings>
+            <compilerArgs>
+              <arg>-XDcompilePolicy=simple</arg>
+              <arg>-Xplugin:ErrorProne -XepAllErrorsAsWarnings</arg>
+            </compilerArgs>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_core</artifactId>
+                <version>2.9.0</version>
+              </path>
+            </annotationProcessorPaths>
           </configuration>
         </plugin>
         <plugin>
@@ -749,7 +788,7 @@
                     <version>[${minimumMavenVersion},)</version>
                   </requireMavenVersion>
                   <requireJavaVersion>
-                    <version>[${jdkLevel},)</version>
+                    <version>[${java.version},)</version>
                   </requireJavaVersion>
                 </rules>
               </configuration>
@@ -850,10 +889,8 @@
           <configuration>
             <archive>
               <manifest>
-                <addDefaultSpecificationEntries>true
-                </addDefaultSpecificationEntries>
-                <addDefaultImplementationEntries>true
-                </addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                 <addClasspath>true</addClasspath>
               </manifest>
             </archive>
@@ -985,7 +1022,7 @@
                   <version>[${minimumMavenVersion},)</version>
                 </requireMavenVersion>
                 <requireJavaVersion>
-                  <version>[${jdkLevel},)</version>
+                  <version>[${java.version},)</version>
                 </requireJavaVersion>
                 <requirePluginVersions>
                   <message>Best Practice is to always define plugin versions!
@@ -1008,6 +1045,47 @@
                 </goals>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!--
+      shows module dependencies as dot and png file in target folder. Use with just
+      mvn -P modgraph
+      -->
+      <id>modgraph</id>
+      <build>
+        <defaultGoal>depgraph:aggregate</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>com.github.ferstl</groupId>
+            <artifactId>depgraph-maven-plugin</artifactId>
+            <configuration>
+              <includes>org.catalogueoflife</includes>
+              <showConflicts>true</showConflicts>
+              <createImage>true</createImage>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!--
+      shows all aggregated dependencies as dot and png file in target folder
+      mvn -P graph
+      -->
+      <id>graph</id>
+      <build>
+        <defaultGoal>depgraph:aggregate</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>com.github.ferstl</groupId>
+            <artifactId>depgraph-maven-plugin</artifactId>
+            <configuration>
+              <showConflicts>true</showConflicts>
+              <createImage>true</createImage>
+            </configuration>
           </plugin>
         </plugins>
       </build>

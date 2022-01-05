@@ -1,6 +1,7 @@
 package life.catalogue.common.text;
 
 import life.catalogue.api.search.NameUsageSearchParameter;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;

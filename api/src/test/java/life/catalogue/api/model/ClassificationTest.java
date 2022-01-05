@@ -1,11 +1,12 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.datapackage.ColdpTerm;
 
-import life.catalogue.api.datapackage.DwcUnofficialTerm;
+import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.coldp.DwcUnofficialTerm;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;

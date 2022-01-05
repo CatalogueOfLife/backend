@@ -15,6 +15,7 @@ public enum TitleType implements EnumValue {
     value = v;
   }
 
+  @Override
   public String value() {
     return value;
   }

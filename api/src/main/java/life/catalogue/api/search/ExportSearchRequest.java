@@ -6,10 +6,10 @@ import life.catalogue.api.vocab.JobStatus;
 
 import org.gbif.nameparser.api.Rank;
 
-import javax.ws.rs.QueryParam;
-
 import java.util.Objects;
 import java.util.Set;
+
+import javax.ws.rs.QueryParam;
 
 public class ExportSearchRequest {
   @QueryParam("datasetKey")

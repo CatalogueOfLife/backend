@@ -1,5 +1,7 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.MetricRegistry;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
@@ -42,8 +44,9 @@ public class EmailNotificationIT {
     bundle.run(cfg, null);
     EmailNotification emailer = new EmailNotification(bundle.getMailer(), PgSetupRule.getSqlSessionFactory(), cfg);
 
+    MetricRegistry registry = new MetricRegistry();
     ExportRequest req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
-    ColdpExporter job = new ColdpExporter(req, TestDataRule.TEST_USER.getKey(), PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExporter job = new ColdpExporter(req, TestDataRule.TEST_USER.getKey(), PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), registry.timer("test.timer"));
 
     for (JobStatus status : JobStatus.values()) {
       job.getExport().setStatus(status);

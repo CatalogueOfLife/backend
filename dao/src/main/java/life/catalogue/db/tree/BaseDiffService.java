@@ -32,10 +32,12 @@ public abstract class BaseDiffService<K> {
   private final static Pattern ATTEMPTS = Pattern.compile("^(\\d+)\\.\\.(\\d+)$");
   protected final SqlSessionFactory factory;
   protected final FileMetricsDao<K> dao;
+  private final int timeoutInSeconds;
 
-  public BaseDiffService(FileMetricsDao<K> dao, SqlSessionFactory factory) {
+  public BaseDiffService(FileMetricsDao<K> dao, SqlSessionFactory factory, int timeoutInSeconds) {
     this.factory = factory;
     this.dao = dao;
+    this.timeoutInSeconds = timeoutInSeconds;
   }
 
   public Reader treeDiff(K key, String attempts) {
@@ -166,8 +168,8 @@ public abstract class BaseDiffService<K> {
 
       Process ps = pb.start();
       // limit to 10s, see https://stackoverflow.com/questions/37043114/how-to-stop-a-command-being-executed-after-4-5-seconds-through-process-builder/37065167#37065167
-      if (!ps.waitFor(10, TimeUnit.SECONDS)) {
-        LOG.warn("Diff between {} and {} has timed out after 10s", f1.getName(), f2.getName());
+      if (!ps.waitFor(timeoutInSeconds, TimeUnit.SECONDS)) {
+        LOG.warn("Diff between {} and {} has timed out after {}s", f1.getName(), f2.getName(), timeoutInSeconds);
         ps.destroy(); // make sure we leave no process behind
       }
       int status = ps.waitFor();

@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
@@ -281,7 +282,26 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     // add all supplementary taxon infos
     if (loadDistributions) {
       DistributionMapper dim = session.getMapper(DistributionMapper.class);
-      info.setDistributions(dim.listByTaxon(taxon));
+      info.setDistributions(
+        dim.listByTaxon(taxon).stream()
+           // replace will enums so we also get titles and other props - this is too hard to do in mybatis
+           .map(d -> {
+             if (d.getArea().getGazetteer() == Gazetteer.ISO) {
+               Country.fromIsoCode(d.getArea().getId()).ifPresent(c ->
+                 d.setArea(new AreaImpl(c))
+               );
+
+             } else if (d.getArea().getGazetteer() == Gazetteer.TDWG) {
+               d.setArea(TdwgArea.of(d.getArea().getId()));
+
+             } else if (d.getArea().getGazetteer() == Gazetteer.LONGHURST) {
+               d.setArea(LonghurstArea.of(d.getArea().getId()));
+             }
+             return d;
+           })
+           .filter(d -> d.getArea() != null)
+           .collect(Collectors.toList())
+      );
       info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
     }
 
@@ -564,6 +584,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
       // remember sector count map so we can update parents at the end
       TaxonSectorCountMap delta = tm.getCounts(id);
+      if (delta == null) {
+        throw NotFoundException.notFound(Taxon.class, id);
+      }
       LOG.info("Recursively delete taxon {} and its {} nested sectors from dataset {} by user {}", id, delta.size(), id.getDatasetKey(), user);
 
       List<Integer> sectorKeys = sm.listDescendantSectorKeys(id);
@@ -574,7 +597,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
       // we remove usages, names, verbatim sources and associated infos.
       // but NOT name_rels or refs
-      int counter = 0;
       DSID<String> key = DSID.copy(id);
       for (UsageNameID unid : num.processTreeIds(id)) {
         // cascading delete removes vernacular, distributions, descriptions, media

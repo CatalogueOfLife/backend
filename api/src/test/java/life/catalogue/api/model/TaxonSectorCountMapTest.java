@@ -1,7 +1,8 @@
 package life.catalogue.api.model;
 
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.jackson.SerdeTestBase;
+
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 public class TaxonSectorCountMapTest extends SerdeTestBase<TaxonSectorCountMap> {
   

@@ -1,15 +1,17 @@
 package life.catalogue.parser;
 
+import life.catalogue.common.io.TabReader;
+
+import java.io.IOException;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Enums;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import org.gbif.utils.file.csv.CSVReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Map;
 
 /**
  *
@@ -23,18 +25,16 @@ abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote<T>> {
     super(EnumNote.class);
     this.enumClass = enumClass;
     // read mappings from resource file
-    try {
-      LOG.info("Reading mappings from {}", mappingResourceFile);
-      CSVReader reader = dictReader(mappingResourceFile);
-      while (reader.hasNext()) {
-        String[] row = reader.next();
+    LOG.info("Reading mappings from {}", mappingResourceFile);
+    try (TabReader reader = dictReader(mappingResourceFile)){
+      for (String[] row : reader) {
         if (row.length == 0) continue;
         if (row.length == 1) {
-          LOG.debug("Ignore unmapped value {} on line {}", row[0], reader.currLineNumber());
+          LOG.debug("Ignore unmapped value {} on line {}", row[0], reader.getContext().currentLine());
           continue;
         }
         if (row.length > 3 || Strings.isNullOrEmpty(row[1])) {
-          LOG.debug("Ignore invalid mapping in {}, line {} with {} columns", mappingResourceFile, reader.currLineNumber(), row.length);
+          LOG.debug("Ignore invalid mapping in {}, line {} with {} columns", mappingResourceFile, reader.getContext().currentLine(), row.length);
           continue;
         }
         Optional<T> val = Enums.getIfPresent(enumClass, row[1]);
@@ -44,8 +44,7 @@ abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote<T>> {
         } else {
           LOG.info("Value {} not present in {} enumeration. Ignore mapping to {}", row[1], enumClass.getSimpleName(), row[0]);
         }
-      }
-      reader.close();
+      };
     } catch (IOException e) {
       LOG.error("Failed to load {} parser mappings from {}", enumClass.getSimpleName(), mappingResourceFile, e);
     }

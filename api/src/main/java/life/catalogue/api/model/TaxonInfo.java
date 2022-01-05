@@ -1,8 +1,8 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Aggregated taxon information

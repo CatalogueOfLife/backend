@@ -7,6 +7,7 @@ import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.NameDao;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
@@ -35,6 +36,7 @@ public class ReleaseManager {
   private final ExportManager exportManager;
   private final DatasetImportDao diDao;
   private final DatasetDao dDao;
+  private final NameDao nDao;
   private final NameUsageIndexService indexService;
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
@@ -45,12 +47,13 @@ public class ReleaseManager {
   private final WsServerConfig cfg;
   private AbstractProjectCopy job;
 
-  public ReleaseManager(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, ExportManager exportManager, NameUsageIndexService indexService,
+  public ReleaseManager(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, ExportManager exportManager, NameUsageIndexService indexService,
                         ImageService imageService, DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator, WsServerConfig cfg) {
     this.client = client;
     this.exportManager = exportManager;
     this.diDao = diDao;
     this.dDao = dDao;
+    this.nDao = nDao;
     this.indexService = indexService;
     this.imageService = imageService;
     this.doiService = doiService;
@@ -111,7 +114,7 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
-    return new ProjectRelease(factory, indexService, diDao, dDao, imageService, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    return new ProjectRelease(factory, indexService, diDao, dDao, nDao, imageService, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**

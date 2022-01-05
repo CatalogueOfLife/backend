@@ -1,10 +1,11 @@
 package life.catalogue.api.jackson;
 
-import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.common.text.StringUtils;
 
 import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A module for (de)serializing enum values that uses lower camel case, e.g. datasetKey.

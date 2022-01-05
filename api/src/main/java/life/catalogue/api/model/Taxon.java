@@ -1,7 +1,5 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.GeoTime;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -10,6 +8,9 @@ import life.catalogue.common.date.FuzzyDate;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 
 /**
  *

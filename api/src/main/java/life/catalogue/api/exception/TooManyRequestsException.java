@@ -1,8 +1,5 @@
 package life.catalogue.api.exception;
 
-import life.catalogue.api.model.DOI;
-import life.catalogue.api.model.DSID;
-
 /**
  * HTTP 429 TOO MANY REQUESTS
  */

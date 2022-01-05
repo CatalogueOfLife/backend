@@ -2,6 +2,7 @@ package life.catalogue.es;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.ddl.IndexDefinition;
 import life.catalogue.es.ddl.MappingsFactory;
@@ -175,7 +176,8 @@ public class EsUtil {
     String statusField = NameUsageFieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.STATUS);
     BoolQuery query = BoolQuery.withFilters(
         new TermQuery("datasetKey", datasetKey),
-        new IsNullQuery(statusField));
+        new TermQuery(statusField, TaxonomicStatus.BARE_NAME)
+    );
     return deleteByQuery(client, index, query);
   }
 
@@ -483,7 +485,19 @@ public class EsUtil {
       return "No reason provided";
     }
     Map<String, Object> error = readFromResponse(response, "error");
-    return error.get("reason").toString();
+    StringBuilder sb = new StringBuilder();
+    appendReason(sb, error);
+    return sb.toString();
+  }
+
+  private static void appendReason(StringBuilder sb, Map<String, Object> error) {
+    sb.append(error.get("reason"));
+    if (error.containsKey("root_cause")) {
+      sb.append(". Caused by: ");
+      for (Map<String, Object> cause : (List<Map<String, Object>>) error.get("root_cause")) {
+        appendReason(sb, cause);
+      }
+    }
   }
 
   @SuppressWarnings("unchecked")

@@ -7,6 +7,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
@@ -94,7 +95,7 @@ public class ImporterResource {
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
-    return importManager.upload(datasetKey, archive, false, null, user);
+    return importManager.upload(datasetKey, archive, false, filenameFromHeaders(headers), null, user);
   }
 
   @POST
@@ -104,14 +105,14 @@ public class ImporterResource {
       MoreMediaTypes.TEXT_WILDCARD})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
-    return importManager.upload(datasetKey, archive, true, contentType2Suffix(headers), user);
+    return importManager.upload(datasetKey, archive, true, filenameFromHeaders(headers), contentType2Suffix(headers), user);
   }
 
   @POST
   @Path("{key}")
   @Consumes({MoreMediaTypes.APP_XLS, MoreMediaTypes.APP_XLSX})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest uploadXls(@PathParam("key") int datasetKey, @Auth User user, InputStream spreadsheet) throws IOException {
+  public ImportRequest uploadXls(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream spreadsheet) throws IOException {
     return importManager.uploadXls(datasetKey, spreadsheet ,user);
   }
   
@@ -120,6 +121,13 @@ public class ImporterResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void cancel(@PathParam("key") int datasetKey, @Auth User user) {
     importManager.cancel(datasetKey, user.getKey());
+  }
+
+  private static String filenameFromHeaders(HttpHeaders h) {
+    if (h != null && h.getRequestHeaders() != null) {
+      return h.getRequestHeaders().getFirst(MoreHttpHeaders.FILENAME);
+    }
+    return null;
   }
 
   private static String contentType2Suffix(HttpHeaders h) {

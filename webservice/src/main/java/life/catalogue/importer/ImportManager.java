@@ -17,6 +17,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.AssemblyCoordinator;
+import life.catalogue.common.io.PathUtils;
 import life.catalogue.concurrent.PBQThreadPoolExecutor;
 import life.catalogue.concurrent.StartNotifier;
 import life.catalogue.common.io.CompressionUtil;
@@ -36,6 +37,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.utils.NamedThreadFactory;
+import org.gbif.utils.file.FileUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -272,9 +275,9 @@ public class ImportManager implements Managed {
    * 
    *         dataset does not exist or is not of matching origin
    */
-  public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String suffix, User user) throws IOException {
+  public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String filename, @Nullable String suffix, User user) throws IOException {
     Dataset d = validDataset(datasetKey);
-    uploadArchive(d, content, zip, suffix);
+    uploadArchive(d, content, zip, filename, suffix);
     return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey()));
   }
 
@@ -382,9 +385,15 @@ public class ImportManager implements Managed {
   /**
    * Uploads an input stream to a tmp file and if no errors moves it to the archive source path.
    */
-  private void uploadArchive(Dataset d, InputStream content, boolean zip, String suffix) throws NotFoundException, IOException {
-    cfg.normalizer.scratchDir.mkdirs();
-    Path tmp = Files.createTempFile(cfg.normalizer.scratchDir.toPath(), "upload-", Strings.nullToEmpty("."+suffix));
+  private void uploadArchive(Dataset d, InputStream content, boolean zip, @Nullable String filename, @Nullable String suffix) throws NotFoundException, IOException {
+    Path tmp;
+    Path tmpDir = cfg.normalizer.scratchDir.toPath().resolve(d.getKey().toString());
+    Files.createDirectories(tmpDir);
+    if (filename == null) {
+      tmp = Files.createTempFile(tmpDir, "upload-", Strings.nullToEmpty("."+suffix));
+    } else {
+      tmp = tmpDir.resolve(filename);
+    }
     LOG.info("Upload data for dataset {} to tmp file {}", d.getKey(), tmp);
     Files.copy(content, tmp, StandardCopyOption.REPLACE_EXISTING);
 
@@ -400,6 +409,8 @@ public class ImportManager implements Managed {
       LOG.debug("Move uploaded data for dataset {} to source repo at {}", d.getKey(), source);
       Files.move(tmp, source, StandardCopyOption.REPLACE_EXISTING);
     }
+    // remove tmp folder
+    PathUtils.deleteRecursively(tmpDir);
   }
 
   /**
@@ -457,7 +468,7 @@ public class ImportManager implements Managed {
    */
   private void cancelAndReschedule() {
     List<ImportRequest> requests = new ArrayList<>();
-    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, ImportState.runningStates(), p));
+    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, ImportState.runningAndWaitingStates(), p));
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
       // only reschedule import jobs, no releases

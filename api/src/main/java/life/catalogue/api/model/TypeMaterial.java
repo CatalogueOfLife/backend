@@ -1,11 +1,12 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.TypeStatus;
 
 import java.net.URI;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Type material should only be associated with the original name, not with a recombination.

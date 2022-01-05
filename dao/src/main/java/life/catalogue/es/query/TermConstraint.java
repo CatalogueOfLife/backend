@@ -6,7 +6,11 @@ class TermConstraint extends Constraint {
   private final Object value;
 
   TermConstraint(Object value) {
-    this.value = value;
+    if (value.getClass().isEnum()) {
+      this.value = ((Enum) value).ordinal();
+    } else {
+      this.value = value;
+    }
   }
 
 }

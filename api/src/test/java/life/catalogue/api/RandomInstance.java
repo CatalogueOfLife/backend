@@ -1,13 +1,13 @@
 package life.catalogue.api;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class RandomInstance {
   

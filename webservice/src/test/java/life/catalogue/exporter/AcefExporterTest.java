@@ -1,6 +1,5 @@
 package life.catalogue.exporter;
 
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
@@ -30,9 +29,8 @@ import static org.junit.Assert.assertEquals;
 
 public class AcefExporterTest extends ExporterTest {
   
-  WsServerConfig cfg;
   File arch;
-  
+
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
@@ -40,8 +38,9 @@ public class AcefExporterTest extends ExporterTest {
   public TestDataRule testDataRule = TestDataRule.draftWithSectors();
 
   @Before
+  @Override
   public void initCfg()  {
-    cfg = new WsServerConfig();
+    super.initCfg();
     cfg.db = PgSetupRule.getCfg();
     cfg.exportDir = Files.createTempDir();
     cfg.normalizer.scratchDir  = Files.createTempDir();
@@ -60,7 +59,7 @@ public class AcefExporterTest extends ExporterTest {
   
   @Test
   public void export() throws Exception {
-    AcefExporter exp = new AcefExporter(new ExportRequest(Datasets.COL, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    AcefExporter exp = new AcefExporter(new ExportRequest(Datasets.COL, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
 
@@ -111,7 +110,7 @@ public class AcefExporterTest extends ExporterTest {
       dm.update(d);
     }
 
-    AcefExporter exp = new AcefExporter(new ExportRequest(key, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    AcefExporter exp = new AcefExporter(new ExportRequest(key, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
     exp.run();
     arch = exp.getArchive();
     System.out.println("LOGS:\n");

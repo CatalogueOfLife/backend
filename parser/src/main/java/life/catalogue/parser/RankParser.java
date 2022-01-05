@@ -36,14 +36,15 @@ public class RankParser extends EnumParser<Rank> {
    * @param value
    */
   public Optional<Rank> parse(@Nullable NomCode code, String value) throws UnparsableException {
-    Optional<Rank> rank = super.parse(value);
+    var rank = super.parse(value);
     if (code != NomCode.ZOOLOGICAL) {
       Optional<Rank> mapped = rank.map(BOTANY_MAP::get);
       if (mapped.isPresent()) {
         return mapped;
       }
     }
-    return rank;
+    Rank r = rank.orElse(null);
+    return Optional.ofNullable(r);
   }
 
 }

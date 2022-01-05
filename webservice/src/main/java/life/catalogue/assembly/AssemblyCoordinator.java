@@ -85,12 +85,10 @@ public class AssemblyCoordinator implements Managed {
     try (SqlSession session = factory.openSession(true)) {
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       // list all imports with running states & waiting
-      Set<ImportState> states = new HashSet<>(ImportState.runningStates());
-      states.add(ImportState.WAITING);
       Page page = new Page(0, Page.MAX_LIMIT);
       List<SectorImport> sims = null;
-      while (sims == null || sims.size() == page.getLimit()) {
-        sims = sim.list(null, null, null, ImportState.runningStates(), null, page);
+      while (page.getOffset() == 0 || (sims != null && sims.size() == page.getLimit())) {
+        sims = sim.list(null, null, null, ImportState.runningAndWaitingStates(), null, page);
         for (SectorImport si : sims) {
           si.setState(ImportState.CANCELED);
           si.setFinished(LocalDateTime.now());
@@ -103,7 +101,7 @@ public class AssemblyCoordinator implements Managed {
 
   @Override
   public void stop() throws Exception {
-    // orderly shutdown running imports
+    // orderly shutdown running syncs
     for (SectorFuture df : syncs.values()) {
       df.future.cancel(true);
     }

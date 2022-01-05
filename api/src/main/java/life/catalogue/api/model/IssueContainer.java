@@ -1,15 +1,20 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Issue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface IssueContainer {
   
   DevNull VOID = new DevNull();
-  
+
+  static IssueContainer simple() {
+    return new Simple();
+  }
+
   Set<Issue> getIssues();
   
   void setIssues(Set<Issue> issues);
@@ -37,7 +42,6 @@ public interface IssueContainer {
   default boolean hasIssues() {
     return !getIssues().isEmpty();
   }
-
 
   /**
    * Simple hash map based issue container.

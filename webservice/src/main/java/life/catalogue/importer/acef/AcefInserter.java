@@ -212,7 +212,8 @@ public class AcefInserter extends NeoCsvInserter {
           store.names().update(nn);
           break;
         case TaxAccRef:
-          u.usage.getReferenceIds().add(ref.getId());
+          // we dont ever have bare ACEF names - inserter only creates synonyms & taxa
+          ((NameUsageBase)u.usage).getReferenceIds().add(ref.getId());
           store.usages().update(u);
           break;
         case ComNameRef:

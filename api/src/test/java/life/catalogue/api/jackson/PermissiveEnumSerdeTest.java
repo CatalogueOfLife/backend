@@ -2,6 +2,7 @@ package life.catalogue.api.jackson;
 
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.vocab.NomStatus;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

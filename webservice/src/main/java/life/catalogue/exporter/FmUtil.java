@@ -21,10 +21,11 @@ public class FmUtil {
     FMK.setObjectWrapper(new LocalDateObjectWrapper(FREEMARKER_VERSION));
   }
 
-  public static String render(Object data, String template) throws IOException, TemplateException {
+  public static String render(Object data, String templateName) throws IOException, TemplateException {
     Writer out = new StringWriter();
-    Template temp = FmUtil.FMK.getTemplate(template);
+    Template temp = FmUtil.FMK.getTemplate(templateName);
     temp.process(data, out);
     return out.toString();
   }
+
 }

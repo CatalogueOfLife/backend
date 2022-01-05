@@ -1,11 +1,12 @@
 package life.catalogue.api.model;
 
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RankID extends DSIDValue<String> {
   private static final Logger LOG = LoggerFactory.getLogger(RankID.class);

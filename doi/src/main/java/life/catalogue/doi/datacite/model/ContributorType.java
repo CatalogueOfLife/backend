@@ -35,6 +35,7 @@ public enum ContributorType implements EnumValue {
     value = v;
   }
 
+  @Override
   public String value() {
     return value;
   }

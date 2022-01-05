@@ -1,7 +1,6 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.model.coldp.ColdpReference;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.dw.auth.Roles;
@@ -40,19 +39,6 @@ public class ReferenceResource extends AbstractDatasetScopedResource<String, Ref
   @Override
   ResultPage<Reference> searchImpl(int datasetKey, ReferenceSearchRequest request, Page page) {
     return dao.search(datasetKey, request, page);
-  }
-
-  /**
-   * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
-   */
-  @POST
-  @Consumes(MoreMediaTypes.APP_JSON_COLDP)
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String createColdp(@PathParam("key") int datasetKey, @Valid ColdpReference obj, @Auth User user) {
-    final String id = UUID.randomUUID().toString();
-    Reference ref = ReferenceFactory.fromColDP(datasetKey, id, obj.getCitation(), obj.getAuthor(), obj.getYear(), obj.getTitle(),
-        obj.getSource(), obj.getDetails(), obj.getDoi(), obj.getLink(), obj.getRemarks(), IssueContainer.DevNullLogging.dataset(datasetKey));
-    return dao.create(ref, user.getKey()).getId();
   }
   
   /**

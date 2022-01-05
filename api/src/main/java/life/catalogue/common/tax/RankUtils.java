@@ -1,10 +1,11 @@
 package life.catalogue.common.tax;
 
-import com.google.common.collect.Lists;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.Lists;
 
 /**
  *

@@ -1,16 +1,18 @@
 package life.catalogue.common.csl;
 
-import de.undercouch.citeproc.CSL;
-import de.undercouch.citeproc.ItemDataProvider;
-import de.undercouch.citeproc.csl.CSLItemData;
-import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import life.catalogue.api.model.CslData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.undercouch.citeproc.CSL;
+import de.undercouch.citeproc.ItemDataProvider;
+import de.undercouch.citeproc.csl.CSLItemData;
+import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 
 /**
  * A formatter for single CSL items according to a specific citation style.
@@ -86,6 +88,9 @@ public class CslFormatter {
   }
 
   private String cite(String key){
+    if (CslUtil.isEmpty(provider.data)) {
+      return null;
+    }
     csl.registerCitationItems(key);
     try {
       String[] entries = csl.makeBibliography().getEntries();

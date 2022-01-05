@@ -7,7 +7,7 @@ public class SectorDiffServiceTest extends BaseDiffServiceTest<DSID<Integer>> {
   static int attemptCnt;
 
   public SectorDiffServiceTest() {
-    diff = new SectorDiffService(factory(), new FileMetricsSectorDao(factory(), treeRepoRule.getRepo()));
+    diff = new SectorDiffService(factory(), new FileMetricsSectorDao(factory(), treeRepoRule.getRepo()), 10);
   }
 
   @Override

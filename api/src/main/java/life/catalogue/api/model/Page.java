@@ -1,20 +1,22 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
+import java.util.Objects;
+import java.util.Set;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
-import java.util.Objects;
-import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A page used for requesting or responding to a pageable service.
  */
 public class Page {
+  public static final int MAX_OFFSET = 100000; // disallow deep paging!
   public static final int MAX_LIMIT = 1000;
   public static final int DEFAULT_LIMIT = 10;
   public static final int DEFAULT_OFFSET = 0;
@@ -23,6 +25,7 @@ public class Page {
   @QueryParam("offset")
   @DefaultValue("0")
   @Min(0)
+  @Max(MAX_OFFSET)
   private int offset;
   
   @QueryParam("limit")
@@ -41,7 +44,8 @@ public class Page {
   
   public Page(int offset, int limit) {
     Preconditions.checkArgument(offset >= 0, "offset needs to be positive");
-    Preconditions.checkArgument(limit >= 0 && limit <= MAX_LIMIT, "limit needs to be between 0-1000");
+    Preconditions.checkArgument(limit >= 0 && limit <= MAX_LIMIT, "limit needs to be between 0-"+MAX_LIMIT);
+    Preconditions.checkArgument(offset <= MAX_OFFSET, "offset not allowed to exceed " + MAX_OFFSET);
     this.offset = offset;
     this.limit = limit;
   }

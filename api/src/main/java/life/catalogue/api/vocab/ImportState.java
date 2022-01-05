@@ -115,7 +115,13 @@ public enum ImportState {
         .filter(ImportState::isRunning)
         .collect(Collectors.toList());
   }
-  
+
+  public static List<ImportState> runningAndWaitingStates() {
+    return Arrays.stream(values())
+                 .filter(s -> s.isRunning() || s == WAITING)
+                 .collect(Collectors.toList());
+  }
+
   public static List<ImportState> finishedStates() {
     return Arrays.stream(values())
         .filter(ImportState::isFinished)

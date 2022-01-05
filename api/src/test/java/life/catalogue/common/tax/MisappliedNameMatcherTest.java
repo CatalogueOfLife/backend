@@ -2,7 +2,9 @@ package life.catalogue.common.tax;
 
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
+
 import org.gbif.nameparser.api.Rank;
+
 import org.junit.Before;
 import org.junit.Test;
 

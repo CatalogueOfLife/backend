@@ -1,11 +1,9 @@
 package life.catalogue.api.model;
 
-import java.util.*;
-
-import org.jetbrains.annotations.NotNull;
-
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsFirst;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeSet;
 
 public class ProjectContribution extends TreeSet<ProjectContribution.Contributor> {
 
@@ -13,9 +11,8 @@ public class ProjectContribution extends TreeSet<ProjectContribution.Contributor
 
     private final Map<Integer, String> sources = new HashMap<>();
 
-    public Contributor(Agent p, Dataset d) {
+    public Contributor(Agent p) {
       super(p);
-      addSource(d);
     }
 
     public Map<Integer, String> getSources() {
@@ -26,46 +23,72 @@ public class ProjectContribution extends TreeSet<ProjectContribution.Contributor
       sources.put(d.getKey(), d.getAlias());
     }
 
+    private void addSources(final Contributor other) {
+      sources.putAll(other.sources);
+    }
+
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      Agent that = (Agent) o;
-      return Objects.equals(getName(), that.getName());
+      if (!(o instanceof Contributor)) return false;
+      if (!super.equals(o)) return false;
+      Contributor that = (Contributor) o;
+      return Objects.equals(sources, that.sources);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(getName());
+      return Objects.hash(super.hashCode(), sources);
     }
-
   }
 
   public void add(final Dataset d) {
-    // we do not include the contact - its not a contributor and often void of a name
-    if (d.getCreator() != null) {
-      d.getCreator().forEach(a -> this.add(d, a));
-    }
-    if (d.getEditor() != null) {
-      d.getEditor().forEach(a -> this.add(d, a));
-    }
-    if (d.getContributor() != null) {
-      d.getContributor().forEach(a -> this.add(d, a));
-    }
-    add(d, d.getPublisher());
+    add(d, true);
   }
 
-  public void add(Dataset d, Agent p) {
+  /**
+   * @param addSource if true declares the given dataset as a source for each added contributor
+   */
+  public void add(final Dataset d, boolean addSource) {
+    // we do not include the contact - its not a contributor and often void of a name
+    if (d.getCreator() != null) {
+      d.getCreator().forEach(a -> this.add(d, a, addSource));
+    }
+    if (d.getEditor() != null) {
+      d.getEditor().forEach(a -> this.add(d, a, addSource));
+    }
+    if (d.getContributor() != null) {
+      d.getContributor().forEach(a -> this.add(d, a, addSource));
+    }
+    add(d, d.getPublisher(), addSource);
+  }
+
+  private void add(Dataset d, Agent p, boolean addSource) {
     if (p != null && p.getName() != null) {
-      Contributor c = new Contributor(p, d);
-      // prefer to reuse existing one and add the source
-      for (Contributor old : this) {
-        if (old.equals(c)) {
-          old.addSource(d);
-          return;
-        }
+      var c = new Contributor(p);
+      if (addSource) {
+        c.addSource(d);
       }
       add(c);
     }
+  }
+
+  @Override
+  public boolean add(Contributor c) {
+    if (c != null) {
+      // prefer to reuse existing one and add the source
+      for (Contributor old : this) {
+        if (old.sameAs(c)) {
+          old.addSources(c);
+          // merge agent infos
+          old.merge(c);
+          return false;
+        }
+      }
+      // we only reach here if no old instance existed
+      super.add(c);
+      return true;
+    }
+    return false;
   }
 }

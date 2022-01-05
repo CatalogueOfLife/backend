@@ -51,7 +51,7 @@ public class EnumParserSerde<T extends Enum<T>> {
       if (jp.getCurrentToken() == JsonToken.VALUE_STRING) {
         String txt = jp.getText();
         try {
-          Optional<T> res = parser.parse(txt);
+          var res = parser.parse(txt);
           return res.orElse(null);
         
         } catch (UnparsableException e) {

@@ -1,10 +1,11 @@
 package life.catalogue.api.model;
 
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Test;
 
 public class SimpleNameTest {
   

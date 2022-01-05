@@ -1,5 +1,6 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import life.catalogue.WsServerConfig;
@@ -33,7 +34,7 @@ import java.util.List;
  */
 abstract class DatasetExporter extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExporter.class);
-
+  private static final String METADATA_FILENAME = "metadata.yaml";
   protected final SqlSessionFactory factory;
   protected final ExportRequest req;
   protected final Dataset dataset;
@@ -44,9 +45,11 @@ abstract class DatasetExporter extends DatasetBlockingJob {
   protected final UsageCounter counter = new UsageCounter();
   private final DatasetExport export;
   private EmailNotification emailer;
+  private final Timer timer;
 
   @VisibleForTesting
-  DatasetExporter(ExportRequest req, int userKey, DataFormat requiredFormat, Dataset d, List<SimpleName> classification, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+  DatasetExporter(ExportRequest req, int userKey, DataFormat requiredFormat, Dataset d, List<SimpleName> classification, SqlSessionFactory factory,
+                  WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
     if (req.getFormat() == null) {
       req.setFormat(requiredFormat);
@@ -63,6 +66,7 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     if (dataset == null || dataset.getDeleted() != null) {
       throw new NotFoundException("Dataset "+datasetKey+" does not exist");
     }
+    this.timer = timer;
     export = DatasetExport.createWaiting(getKey(), userKey, req, dataset);
     export.setClassification(classification);
     // create waiting export in db
@@ -72,8 +76,12 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     LOG.info("Created {} job {} by user {} for dataset {} to {}", getClass().getSimpleName(), getUserKey(), getKey(), datasetKey, archive);
   }
 
-  DatasetExporter(ExportRequest req, int userKey, DataFormat requiredFormat, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    this(req, userKey, requiredFormat, loadDataset(factory, req.getDatasetKey()), loadClassification(factory, req), factory, cfg, imageService);
+  DatasetExporter(ExportRequest req, int userKey, DataFormat requiredFormat, boolean allowExcel, SqlSessionFactory factory,
+                  WsServerConfig cfg, ImageService imageService, Timer timer) {
+    this(req, userKey, requiredFormat, loadDataset(factory, req.getDatasetKey()), loadClassification(factory, req), factory, cfg, imageService, timer);
+    if (req.isExcel() && !allowExcel) {
+      throw new IllegalArgumentException(requiredFormat.getName() + " cannot be exported in Excel");
+    }
   }
 
   private static Dataset loadDataset(SqlSessionFactory factory, int datasetKey){
@@ -126,14 +134,17 @@ abstract class DatasetExporter extends DatasetBlockingJob {
   @Override
   public final void runWithLock() throws Exception {
     FileUtils.forceMkdir(tmpDir);
+    final Timer.Context ctxt = timer.time();
     try {
       export.setStarted(LocalDateTime.now());
       updateExport(JobStatus.RUNNING);
       // actual export work
       export();
+      exportMetadata();
       bundle();
       LOG.info("Export {} of dataset {} completed", getKey(), datasetKey);
     } finally {
+      ctxt.stop();
       LOG.info("Remove temporary export directory {}", tmpDir.getAbsolutePath());
       try {
         FileUtils.deleteDirectory(tmpDir);
@@ -177,6 +188,12 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     CompressionUtil.zipDir(tmpDir, archive, true);
   }
 
+  protected void exportMetadata() throws IOException {
+    LOG.info("Adding metadata.yaml");
+    DatasetYamlWriter.write(dataset, new File(tmpDir, METADATA_FILENAME));
+  }
+
   protected abstract void export() throws Exception;
+
 
 }

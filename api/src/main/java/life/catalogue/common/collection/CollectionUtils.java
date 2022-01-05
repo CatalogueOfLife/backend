@@ -1,11 +1,11 @@
 package life.catalogue.common.collection;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiConsumer;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * Collection related methods. In order to prevent and pre-empt subtle logical errors, all "Venn-diagram methods" (like
@@ -40,6 +40,13 @@ public class CollectionUtils {
    */
   public static boolean notEmpty(Map<?, ?> m) {
     return m != null && !m.isEmpty();
+  }
+
+  /**
+   * Nullsafe size method. Returns the size of a collection or 0 if its null.
+   */
+  public static int size(Collection<?> c) {
+    return c == null ? 0 : c.size();
   }
 
   /**

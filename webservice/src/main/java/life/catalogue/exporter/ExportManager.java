@@ -1,16 +1,17 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
@@ -19,7 +20,6 @@ import org.simplejavamail.api.mailer.Mailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class ExportManager {
@@ -32,8 +32,10 @@ public class ExportManager {
   private final EmailNotification emailer;
   private final DatasetExportDao dao;
   private final DatasetImportDao diDao;
+  private final Timer timer;
 
-  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService, Mailer mailer, DatasetExportDao exportDao, DatasetImportDao diDao) {
+  public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService,
+                       Mailer mailer, DatasetExportDao exportDao, DatasetImportDao diDao, MetricRegistry registry) {
     this.cfg = cfg;
     this.factory = factory;
     this.executor = executor;
@@ -42,6 +44,7 @@ public class ExportManager {
     this.emailer = new EmailNotification(mailer, factory, cfg);
     dao = exportDao;
     this.diDao = diDao;
+    this.timer = registry.timer("life.catalogue.exports");
   }
 
   /**
@@ -66,16 +69,22 @@ public class ExportManager {
     DatasetExporter job;
     switch (req.getFormat()) {
       case COLDP:
-        job = new ColdpExporter(req, userKey, factory, cfg, imageService);
+        job = new ColdpExporter(req, userKey, factory, cfg, imageService, timer);
         break;
       case DWCA:
-        job = new DwcaExporter(req, userKey, factory, cfg, imageService);
+        job = new DwcaExporter(req, userKey, factory, cfg, imageService, timer);
         break;
       case ACEF:
-        job = new AcefExporter(req, userKey, factory, cfg, imageService);
+        job = new AcefExporter(req, userKey, factory, cfg, imageService, timer);
         break;
       case TEXT_TREE:
-        job = new TextTreeExporter(req, userKey, factory, cfg, imageService);
+        job = new TextTreeExporter(req, userKey, factory, cfg, imageService, timer);
+        break;
+      case NEWICK:
+        job = new NewickExporter(req, userKey, factory, cfg, imageService, timer);
+        break;
+      case DOT:
+        job = new DotExporter(req, userKey, factory, cfg, imageService, timer);
         break;
 
       default:

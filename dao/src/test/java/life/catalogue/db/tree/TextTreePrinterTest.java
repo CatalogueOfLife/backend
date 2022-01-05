@@ -34,7 +34,7 @@ public class TextTreePrinterTest {
   @Test
   public void print() throws IOException {
     Writer writer = new StringWriter();
-    int count = TextTreePrinter.dataset(TestDataRule.TREE.key, PgSetupRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(TextTreePrinter.class, TestDataRule.TREE.key, PgSetupRule.getSqlSessionFactory(), writer).print();
     assertEquals(25, count);
     String expected = IOUtils.toString(Resources.stream("trees/tree2.tree"), StandardCharsets.UTF_8);
     assertEquals(expected, writer.toString());
@@ -50,8 +50,9 @@ public class TextTreePrinterTest {
         return cnt.getAndIncrement();
       }
     };
-    int count = TextTreePrinter.dataset(TestDataRule.TREE.key, null, false, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, true, PgSetupRule.getSqlSessionFactory(), writer)
-                               .print();
+    var p = PrinterFactory.dataset(TextTreePrinter.class, TestDataRule.TREE.key, null, false, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer);
+    p.showIDs();
+    int count = p.print();
     System.out.println(writer);
     assertEquals(5, count);
     String expected = IOUtils.toString(Resources.stream("trees/treeWithCounts.tree"), StandardCharsets.UTF_8);

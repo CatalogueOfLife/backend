@@ -1,12 +1,13 @@
 package life.catalogue.parser;
 
-import com.google.common.base.CharMatcher;
+import life.catalogue.common.io.TabReader;
 import life.catalogue.common.text.StringUtils;
-import org.gbif.utils.file.csv.CSVReader;
-import org.gbif.utils.file.csv.CSVReaderFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+
+import com.google.common.base.CharMatcher;
 
 /**
  * A base parser implementation dealing with empty, invisible and punctuation values as empty results.
@@ -20,7 +21,7 @@ abstract class ParserBase<T> implements Parser<T> {
   }
   
   @Override
-  public Optional<T> parse(String value) throws UnparsableException {
+  public Optional<? extends T> parse(String value) throws UnparsableException {
     String x = normalize(value);
     if (x == null) {
       // check if we had any not invisible characters - throw Unparsable in such cases
@@ -46,8 +47,8 @@ abstract class ParserBase<T> implements Parser<T> {
     return SafeParser.parse(this, value).orNull();
   }
 
-  protected CSVReader dictReader(String resourceFilename) throws IOException {
-    return CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/" + resourceFilename), "UTF8", ",", null, 0);
+  protected TabReader dictReader(String resourceFilename) throws IOException {
+    return TabReader.csv(getClass().getResourceAsStream("/parser/dicts/" + resourceFilename), StandardCharsets.UTF_8, 0, 2);
   }
   
   /**

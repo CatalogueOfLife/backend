@@ -133,8 +133,9 @@ public class EsReadTestBase {
     return nameUsages.stream().map(this::toDocument).collect(Collectors.toList());
   }
 
-  protected void index(NameUsageWrapper nameUsage) {
+  protected NameUsageWrapper index(NameUsageWrapper nameUsage) {
     indexRaw(toDocument(nameUsage));
+    return nameUsage;
   }
 
   protected void index(NameUsageWrapper... nameUsages) {
@@ -187,6 +188,18 @@ public class EsReadTestBase {
    */
   protected List<NameUsageWrapper> createNameUsages(int howmany) {
     return IntStream.rangeClosed(1, howmany).mapToObj(i -> minimalTaxon()).collect(toList());
+  }
+
+  protected NameUsageWrapper minimalTaxon(Rank rank, String scientificName, String authorship) {
+    var n = new Name();
+    n.setScientificName(scientificName);
+    n.setAuthorship(authorship);
+    n.setRank(rank);
+    Taxon t = new Taxon();
+    t.setName(n);
+    NameUsageWrapper nuw = new NameUsageWrapper();
+    nuw.setUsage(t);
+    return nuw;
   }
 
   /**

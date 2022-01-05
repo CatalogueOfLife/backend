@@ -1,9 +1,11 @@
 package life.catalogue.api.search;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeMapEnumKeyTestBase;
+
 import org.junit.Test;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

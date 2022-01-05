@@ -1,9 +1,11 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+
 import org.gbif.nameparser.api.Rank;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  *
@@ -29,7 +31,11 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, RankedID {
   Origin getOrigin();
   
   void setOrigin(Origin origin);
-  
+
+  String getAccordingTo();
+
+  void setAccordingTo(String accordingTo);
+
   String getAccordingToId();
   
   void setAccordingToId(String according);

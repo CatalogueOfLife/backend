@@ -10,7 +10,7 @@ import net.logstash.logback.layout.LogstashAccessLayout;
 
 /**
  * A console appender that logs the same MDC fields as the UDP logger,
- * but alos logs the basic http access fields using a LogstashAccessEncoder extended with the following header fields:
+ * but also logs the basic http access fields using a LogstashAccessEncoder extended with the following header fields:
  *
  *  - User-Agent
  *  - Access
@@ -21,7 +21,6 @@ public class LogstashAccessUdpAppenderFactory extends LogstashAppenderFactory<IA
 
   private int port;
   private String host;
-
 
   @JsonProperty
   public int getPort() {

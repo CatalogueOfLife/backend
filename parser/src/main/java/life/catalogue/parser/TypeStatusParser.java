@@ -10,8 +10,6 @@ import java.util.regex.Pattern;
  *
  */
 public class TypeStatusParser extends EnumParser<TypeStatus> {
-  private static final Logger LOG = LoggerFactory.getLogger(TypeStatusParser.class);
-  
   public static final TypeStatusParser PARSER = new TypeStatusParser();
   private static final Pattern EX_TYPES = Pattern.compile("^EX.+TYP(E|O|US)$");
   private static final Pattern PARA_TYPES = Pattern.compile("^PARA.+TYP(E|O|US)$");

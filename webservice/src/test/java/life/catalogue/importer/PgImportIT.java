@@ -129,7 +129,12 @@ public class PgImportIT extends PgImportITBase {
       assertTrue(expV.isEmpty());
       
       // check distributions
-      Set<Distribution> expD = expectedDwca24Distributions();
+      List<Distribution> expD = expectedDwca24Distributions();
+      expD.stream().forEach(d -> {
+        if (d.getArea() instanceof Country) {
+          d.setArea(new AreaImpl(Gazetteer.ISO, d.getArea().getId(), d.getArea().getName()));
+        }
+      });
       assertEquals(expD.size(), info.getDistributions().size());
       // remove dist keys before we check equality
       info.getDistributions().forEach(d -> {
@@ -140,12 +145,13 @@ public class PgImportIT extends PgImportITBase {
         setUserDate(d, null, null);
       });
       Set<Distribution> imported = Sets.newHashSet(info.getDistributions());
-      
-      Sets.SetView<Distribution> diff = Sets.difference(expD, imported);
+      Set<Distribution> expected = Sets.newHashSet(expD);
+
+      Sets.SetView<Distribution> diff = Sets.difference(expected, imported);
       for (Distribution d : diff) {
         System.out.println(d);
       }
-      assertEquals(expD, imported);
+      assertEquals(expected, imported);
     }
   }
   
@@ -212,8 +218,8 @@ public class PgImportIT extends PgImportITBase {
       assertEquals(3, info.getDistributions().size());
       Set<String> areas = Sets.newHashSet("AGE-BA", "BZC-MS", "BZC-MT");
       for (Distribution d : info.getDistributions()) {
-        assertEquals(Gazetteer.TDWG, d.getGazetteer());
-        assertTrue(areas.remove(d.getArea()));
+        assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
+        assertTrue(areas.remove(d.getArea().getId()));
       }
       
       // vernacular
@@ -463,13 +469,13 @@ public class PgImportIT extends PgImportITBase {
     assertEquals(5, (int) di.getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
     // 1 provisional status taxon
     assertEquals((int) metrics().getTaxonCount(), 1 + di.getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
-    assertEquals(1, (int) di.getMediaByTypeCount().get(MediaType.IMAGE));
-    assertEquals(2, (int) di.getNamesByRankCount().get(Rank.FAMILY));
-    assertEquals(4, (int) di.getNamesByRankCount().get(Rank.GENUS));
+    assertEquals(1,  (int) di.getMediaByTypeCount().get(MediaType.IMAGE));
+    assertEquals(2,  (int) di.getNamesByRankCount().get(Rank.FAMILY));
+    assertEquals(4,  (int) di.getNamesByRankCount().get(Rank.GENUS));
     assertEquals(12, (int) di.getNamesByRankCount().get(Rank.SPECIES));
-    assertEquals(3, (int) di.getNamesByRankCount().get(Rank.SUBSPECIES));
-    assertEquals(9, (int) di.getDistributionsByGazetteerCount().get(Gazetteer.ISO));
-    assertEquals(2, (int) di.getTypeMaterialByStatusCount().get(TypeStatus.HOLOTYPE));
+    assertEquals(3,  (int) di.getNamesByRankCount().get(Rank.SUBSPECIES));
+    assertEquals(9,  (int) di.getDistributionsByGazetteerCount().get(Gazetteer.ISO));
+    assertEquals(2,  (int) di.getTypeMaterialByStatusCount().get(TypeStatus.HOLOTYPE));
   }
   
   /**
@@ -508,13 +514,35 @@ public class PgImportIT extends PgImportITBase {
   public void acefSuperfam() throws Exception {
     normalizeAndImport(ACEF, 21);
   }
+
+  @Test
+  public void coldpMissingName() throws Exception {
+    normalizeAndImport(COLDP, 17);
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      Name n = ndao.get(key(dataset.getKey(), "1"));
+      assertEquals("Platycarpha glomerata", n.getScientificName());
+      assertEquals("(Thunberg) A. P. de Candolle", n.getAuthorship());
+      assertEquals("1", n.getId());
+      assertEquals(Rank.SPECIES, n.getRank());
+
+      // one root
+      assertEquals(1, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
+
+      // test taxa & synonyms
+      assertEquals(n, tdao.get(key(dataset.getKey(), "1")).getName());
+      assertNull(tdao.get(key(dataset.getKey(), "2")));
+      assertNull(tdao.get(key(dataset.getKey(), "3")));
+      assertNull(sdao.get(key(dataset.getKey(), "3")));
+    }
+  }
   
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
     dataset.setType(DatasetType.TAXONOMIC);
 
-    normalizeAndImport(URI.create("https://github.com/jhnwllr/world-odonata-list-dwca/archive/refs/heads/main.zip"), DWCA);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/Gelechiidae.zip"), COLDP);
+    //normalizeAndImport(URI.create("https://github.com/jhnwllr/world-odonata-list-dwca/archive/refs/heads/main.zip"), DWCA);
     //normalizeAndImport(URI.create("https://github.com/Sp2000/coldp/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/162.tar.gz"), ACEF);

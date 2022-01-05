@@ -1,12 +1,13 @@
 package life.catalogue.api.model;
 
-import de.undercouch.citeproc.csl.*;
-
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.csl.CslUtil;
+import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.util.YamlUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -31,9 +32,10 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import life.catalogue.common.csl.CslUtil;
-import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.util.YamlUtils;
+import de.undercouch.citeproc.csl.CSLItemData;
+import de.undercouch.citeproc.csl.CSLItemDataBuilder;
+import de.undercouch.citeproc.csl.CSLName;
+import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * Metadata about a dataset which can be archived

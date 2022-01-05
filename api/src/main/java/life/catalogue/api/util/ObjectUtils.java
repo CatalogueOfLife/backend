@@ -1,10 +1,15 @@
 package life.catalogue.api.util;
 
-import org.apache.commons.lang3.StringUtils;
-
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import life.catalogue.api.exception.NotFoundException;
+
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Nullable;
 
 /**
  *
@@ -58,7 +63,7 @@ public class ObjectUtils {
   /**
    * Similar to Guavas Preconditions.checkNotNull() but raising IllegalArgumentException instead.
    */
-  public static <T> T checkNotNull(T obj) {
+  public static <T> T checkNotNull(@Nullable T obj) {
     if (obj == null) {
       throw new IllegalArgumentException();
     }
@@ -68,9 +73,19 @@ public class ObjectUtils {
   /**
    * Similar to Guavas Preconditions.checkNotNull() but raising IllegalArgumentException instead.
    */
-  public static <T> T checkNotNull(T obj, String message) {
+  public static <T> T checkNotNull(@Nullable T obj, String message) {
     if (obj == null) {
       throw new IllegalArgumentException(message);
+    }
+    return obj;
+  }
+
+  /**
+   * Similar to Guavas Preconditions.checkNotNull() but raising NotFoundException instead.
+   */
+  public static <T> T checkFound(@Nullable T obj, String message) {
+    if (obj == null) {
+      throw new NotFoundException(message);
     }
     return obj;
   }
@@ -105,6 +120,16 @@ public class ObjectUtils {
     return false;
   }
 
+  /**
+   * Returns true if two objects are the same and not null.
+   */
+  public static boolean equalsNonNull(Object a, Object b) {
+    return a != null && Objects.equals(a, b);
+  }
+
+  /**
+   * Calls toString on the given object or returns null if it was null.
+   */
   public static String toString(Object obj) {
     return obj == null ? null : obj.toString();
   }

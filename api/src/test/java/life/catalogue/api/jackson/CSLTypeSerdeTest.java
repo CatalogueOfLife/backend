@@ -15,7 +15,6 @@ package life.catalogue.api.jackson;
 
 import java.io.IOException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import de.undercouch.citeproc.csl.CSLType;

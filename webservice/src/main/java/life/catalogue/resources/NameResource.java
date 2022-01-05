@@ -74,6 +74,6 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Pa
   public int delete(@PathParam("key") int datasetKey,
                     @QueryParam("before") LocalDateTimeParam before,
                     @Auth User user) {
-    return dao.deleteOrphans(datasetKey, before==null ? null : before.get(), user);
+    return dao.deleteOrphans(datasetKey, before==null ? null : before.get(), user.getKey());
   }
 }

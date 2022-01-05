@@ -7,6 +7,8 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.ApiKryoPool;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 
@@ -484,7 +486,12 @@ public class TestEntityGenerator {
   }
 
   public static Reference newReference() {
-    return newReference(RandomUtils.randomLatinString(25));
+    var ref = newReference(RandomUtils.randomLatinString(25));
+    CslName author = new CslName("Harry Mulisch the Greatest");
+    ref.getCsl().setAuthor(
+      ArrayUtils.add(ref.getCsl().getAuthor(), author)
+    );
+    return ref;
   }
 
   public static Reference newReference(String title) {
@@ -507,6 +514,7 @@ public class TestEntityGenerator {
       CslName author = new CslName();
       author.setGiven(authorParts[idx]);
       author.setFamily(authorParts[idx + 1]);
+      author.setNonDroppingParticle("de");
       authors.add(author);
     }
     csl.setAuthor(authors.toArray(new CslName[0]));

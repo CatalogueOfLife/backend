@@ -1,17 +1,14 @@
 package life.catalogue.importer.coldp;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import life.catalogue.api.datapackage.ColdpTerm;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.Schema;
 import life.catalogue.importer.NormalizationFailedException;
+
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +17,12 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  *
@@ -184,7 +187,7 @@ public class ColdpReader extends CsvReader {
         require(t, ColdpTerm.taxonID);
       }
   
-      require(ColdpTerm.Distribution, ColdpTerm.area);
+      requireOne(ColdpTerm.Distribution, ColdpTerm.area, ColdpTerm.areaID);
       require(ColdpTerm.VernacularName, ColdpTerm.name);
       require(ColdpTerm.Media, ColdpTerm.url);
   
@@ -200,7 +203,7 @@ public class ColdpReader extends CsvReader {
         schemas.remove(t);
       }
     }
-    
+
     reportMissingSchemas(ColdpTerm.class);
   }
   

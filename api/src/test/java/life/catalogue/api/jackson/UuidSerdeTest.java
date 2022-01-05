@@ -1,8 +1,8 @@
 package life.catalogue.api.jackson;
 
-import org.junit.Test;
-
 import java.util.UUID;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

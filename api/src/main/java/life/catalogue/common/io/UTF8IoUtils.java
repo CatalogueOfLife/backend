@@ -1,12 +1,15 @@
 package life.catalogue.common.io;
 
-import com.google.common.io.Files;
-import org.apache.commons.io.IOUtils;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import org.apache.commons.io.IOUtils;
+
+import com.google.common.io.Files;
 
 public class UTF8IoUtils {
   
@@ -18,6 +21,11 @@ public class UTF8IoUtils {
   public static BufferedWriter writerFromFile(File f) throws IOException {
     Files.createParentDirs(f);
     return writerFromStream(new FileOutputStream(f));
+  }
+
+  public static BufferedWriter writerFromPath(Path p) throws IOException {
+    java.nio.file.Files.createDirectories(p.getParent());
+    return writerFromStream(java.nio.file.Files.newOutputStream(p));
   }
   
   public static BufferedWriter writerFromStream(OutputStream stream) {

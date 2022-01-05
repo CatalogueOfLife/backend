@@ -1,9 +1,9 @@
 package life.catalogue.common.collection;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

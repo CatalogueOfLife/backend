@@ -1,10 +1,11 @@
 package life.catalogue.importer.coldp;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.neo.NeoDb;
@@ -33,6 +34,7 @@ public class ColdpInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInterpreter.class);
   private static final EnumNote<TaxonomicStatus> SYN_NOTE = new EnumNote<>(TaxonomicStatus.SYNONYM, null);
   private static final EnumNote<TaxonomicStatus> ACC_NOTE = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
+  private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings(); // for multi value ID fields
 
   ColdpInterpreter(DatasetSettings settings, MappingFlags metadata, ReferenceFactory refFactory, NeoDb store) {
     super(settings, refFactory, store);
@@ -44,19 +46,7 @@ public class ColdpInterpreter extends InterpreterBase {
     if (!v.hasTerm(ColdpTerm.ID)) {
       return Optional.empty();
     }
-    return Optional.of(refFactory.fromColDP(
-        v.get(ColdpTerm.ID),
-        v.get(ColdpTerm.citation),
-        v.get(ColdpTerm.author),
-        v.get(ColdpTerm.year),
-        v.get(ColdpTerm.title),
-        v.get(ColdpTerm.source),
-        v.get(ColdpTerm.details),
-        v.get(ColdpTerm.doi),
-        v.get(ColdpTerm.link),
-        v.get(ColdpTerm.remarks),
-        v
-    ));
+    return Optional.of(refFactory.fromColDP(v));
   }
 
   Optional<NeoUsage> interpretNameUsage(VerbatimRecord v) {
@@ -66,10 +56,11 @@ public class ColdpInterpreter extends InterpreterBase {
         return null;
       }
 
-      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(ACC_NOTE, Issue.TAXONOMIC_STATUS_INVALID, v).val;
-
       NeoUsage u;
-      if (status.isSynonym()) {
+      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(ACC_NOTE, Issue.TAXONOMIC_STATUS_INVALID, v).val;
+      if (status.isBareName()) {
+        u = NeoUsage.createBareName(Origin.SOURCE);
+      } else if (status.isSynonym()) {
         u = NeoUsage.createSynonym(Origin.SOURCE, status);
       } else {
         u = NeoUsage.createTaxon(Origin.SOURCE, status);
@@ -99,7 +90,7 @@ public class ColdpInterpreter extends InterpreterBase {
 
   private void interpretTaxonInfos(NeoUsage u, NeoName n, VerbatimRecord v){
     if (!u.isSynonym()) {
-      Taxon t = u.getTaxon();
+      Taxon t = u.asTaxon();
       t.setScrutinizer(v.get(ColdpTerm.scrutinizer));
       t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, ColdpTerm.scrutinizerDate));
       if (v.hasTerm(ColdpTerm.extinct)) {
@@ -153,11 +144,15 @@ public class ColdpInterpreter extends InterpreterBase {
     u.nameNode = n.node;
     u.setId(v.getRaw(ColdpTerm.ID));
     u.setVerbatimKey(v.getId());
-    setReference(v, ColdpTerm.accordingToID, u.usage::setAccordingToId);
+    setReference(v, ColdpTerm.accordingToID, u.usage::setAccordingToId, u.usage::setAccordingTo);
     u.usage.setOrigin(Origin.SOURCE);
     u.usage.setNamePhrase(ObjectUtils.coalesce(v.get(ColdpTerm.namePhrase), n.pnu.getTaxonomicNote()));
-    u.usage.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
     u.usage.setRemarks(v.get(ColdpTerm.remarks));
+    if (!u.usage.isBareName()) {
+      NameUsageBase nub = (NameUsageBase) u.usage;
+      setReferences(v, ColdpTerm.referenceID, COMMA_SPLITTER, nub::setReferenceIds);
+      nub.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
+    }
 
     u.usage.setName(n.getName());
   }
@@ -227,10 +222,20 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
-    return super.interpretDistribution(rec, this::setReference,
-        ColdpTerm.area,
+    if (rec.hasTerm(ColdpTerm.areaID)) {
+      return super.interpretDistributionByGazetteer(rec, this::setReference,
+        ColdpTerm.areaID,
         ColdpTerm.gazetteer,
         ColdpTerm.status);
+
+    } else if (rec.hasTerm(ColdpTerm.area)) {
+      return createDistributions(Gazetteer.TEXT,
+        rec.get(ColdpTerm.area),
+        rec.get(ColdpTerm.status),
+        rec, this::setReference
+      );
+    }
+    return Collections.emptyList();
   }
   
   List<Media> interpretMedia(VerbatimRecord rec) {
@@ -268,9 +273,13 @@ public class ColdpInterpreter extends InterpreterBase {
   Optional<NeoName> interpretName(VerbatimRecord v) {
     Term nomStatusTerm = ColdpTerm.status;
     Term genusNameTerm = ColdpTerm.genus;
+    Term remarksTerm = ColdpTerm.remarks;
+    Term refIdTerm = ColdpTerm.referenceID;
     if (ColdpTerm.NameUsage.equals(v.getType())) {
       nomStatusTerm = ColdpTerm.nameStatus;
       genusNameTerm = ColdpTerm.genericName;
+      remarksTerm = ColdpTerm.nameRemarks;
+      refIdTerm = ColdpTerm.nameReferenceID;
     }
 
     Optional<ParsedNameUsage> opt = interpretName(true, v.get(ColdpTerm.ID),
@@ -278,11 +287,11 @@ public class ColdpInterpreter extends InterpreterBase {
         v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet),
         v.get(ColdpTerm.code), v.get(nomStatusTerm),
-        v.get(ColdpTerm.link), v.get(ColdpTerm.remarks), v);
+        v.get(ColdpTerm.link), v.get(remarksTerm), v);
     if (opt.isPresent()) {
       // publishedIn
       Name n = opt.get().getName();
-      setReference(v, ColdpTerm.referenceID, rid -> {
+      setReference(v, refIdTerm, rid -> {
           n.setPublishedInId(rid);
           n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));
           n.setPublishedInYear(parseYear(ColdpTerm.publishedInYear, v));

@@ -1,11 +1,12 @@
 package life.catalogue.common.kryo;
 
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.TermFactory;
 
 public class TermSerializer extends Serializer<Term> {
   private final TermFactory TF = TermFactory.instance();

@@ -1,11 +1,14 @@
 package life.catalogue.importer;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.importer.neo.model.*;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Direction;
@@ -14,11 +17,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.helpers.collection.Iterators;
 
-import java.net.URI;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import static org.junit.Assert.*;
 
@@ -41,7 +41,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       NeoUsage t = usageByID("1099-sp16");
       assertFalse(t.isSynonym());
       assertEquals("Pinus palustris Mill.", t.usage.getName().getLabel());
-      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.getTaxon().getLink());
+      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.asTaxon().getLink());
     }
   }
   
@@ -63,13 +63,13 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
       NeoUsage Polystictus_substipitatus = usageByID("140283");
       assertTrue(Polystictus_substipitatus.isSynonym());
-      assertTrue(Polystictus_substipitatus.getSynonym().getStatus().isSynonym());
+      assertTrue(Polystictus_substipitatus.asSynonym().getStatus().isSynonym());
       pubIn = store.references().get(Polystictus_substipitatus.usage.getName().getPublishedInId());
       assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCitation());
 
       NeoUsage Polyporus_modestus = usageByID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
-      assertTrue(Polyporus_modestus.getSynonym().getStatus().isSynonym());
+      assertTrue(Polyporus_modestus.asSynonym().getStatus().isSynonym());
       pubIn = store.references().get(Polyporus_modestus.usage.getName().getPublishedInId());
       assertEquals("Linnaea 5: 519 (1830)", pubIn.getCitation());
     }
@@ -96,7 +96,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertTrue(expV.isEmpty());
       
       // check distributions
-      Set<Distribution> expD = PgImportIT.expectedDwca24Distributions();
+      List<Distribution> expD = PgImportIT.expectedDwca24Distributions();
       
       assertEquals(expD.size(), t.distributions.size());
       // remove keys before we check equality
@@ -105,12 +105,13 @@ public class NormalizerDwcaIT extends NormalizerITBase {
         d.setVerbatimKey(null);
       });
       Set<Distribution> imported = Sets.newHashSet(t.distributions);
-      
-      Sets.SetView<Distribution> diff = Sets.difference(expD, imported);
+      Set<Distribution> expected = Sets.newHashSet(expD);
+
+      Sets.SetView<Distribution> diff = Sets.difference(expected, imported);
       for (Distribution d : diff) {
         System.out.println(d);
       }
-      assertEquals(expD, imported);
+      assertEquals(expected, imported);
     }
   }
   
@@ -163,14 +164,6 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     }
   }
   
-  private Distribution dist(Gazetteer standard, String area, DistributionStatus status) {
-    Distribution d = new Distribution();
-    d.setArea(area);
-    d.setGazetteer(standard);
-    d.setStatus(status);
-    return d;
-  }
-  
   @Test
   public void testNeoIndices() throws Exception {
     normalize(1);
@@ -204,7 +197,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       NeoUsage bas = byName("Leonida taraxacoida");
 
       NeoUsage syn = byName("Leontodon leysseri");
-      assertTrue(syn.getSynonym().getStatus().isSynonym());
+      assertTrue(syn.asSynonym().getStatus().isSynonym());
     }
   }
 
@@ -214,7 +207,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage syn = usageByID("1001");
-      assertNotNull(syn.getSynonym());
+      assertNotNull(syn.asSynonym());
 
       Map<String, String> expectedAccepted = Maps.newHashMap();
       expectedAccepted.put("1000", "Calendula arvensis");
@@ -321,9 +314,10 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   @Test
   @Ignore
   public void testExternal() throws Exception {
-    //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
-    normalize(URI.create("http://sftp.kew.org/pub/data_collaborations/Fabaceae/DwCA/wcvp_fabaceae_DwCA.zip"));
 
+    //normalize(URI.create("https://svampe.databasen.org/dwc/dwcchecklistarchive.zip"));
+    normalize(URI.create("http://sftp.kew.org/pub/data_collaborations/Fabaceae/DwCA/wcvp_fabaceae_DwCA.zip"));
+    //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
     //normalize(Paths.get("/Users/markus/code/col+/data-world-plants/dwca"));
     //normalize(URI.create("https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv"));
     // print("Diversity", GraphFormat.TEXT, false);

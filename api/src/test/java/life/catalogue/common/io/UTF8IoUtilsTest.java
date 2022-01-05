@@ -1,12 +1,12 @@
 package life.catalogue.common.io;
 
-import org.junit.Test;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.stream.Collectors;
+
+import org.junit.Test;
 
 public class UTF8IoUtilsTest {
   

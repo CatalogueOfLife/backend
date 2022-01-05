@@ -37,7 +37,7 @@ public class JsonFlatPrinterTest {
         return 999;
       }
     };
-    int count = JsonFlatPrinter.dataset(TestDataRule.TREE.key, null, true, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(JsonFlatPrinter.class, TestDataRule.TREE.key, null, true, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
     assertEquals(24, count);
     System.out.println(writer);
     String expected = IOUtils.toString(Resources.stream("trees/flat.json"), StandardCharsets.UTF_8);

@@ -92,7 +92,7 @@ abstract class NormalizerITBase {
         if (meta.isPresent()) {
           NomCode code = meta.get().getCode();
           System.out.println("Use code " + code);
-          return Optional.of(code);
+          return Optional.ofNullable(code);
         }
       } catch (Exception e) {
         e.printStackTrace();
@@ -168,7 +168,7 @@ abstract class NormalizerITBase {
     return store.getVerbatim(store.usages().objByID(id).getVerbatimKey());
   }
 
-  public Reference accordingTo(NameUsageBase nu) {
+  public Reference accordingTo(NameUsage nu) {
     if (nu.getAccordingToId() != null) {
       return store.references().get(nu.getAccordingToId());
     }
@@ -277,6 +277,10 @@ abstract class NormalizerITBase {
 
   public NeoName nameByID(String id) {
     return store.names().objByID(id);
+  }
+
+  public Reference refByID(String id) {
+    return store.references().get(id);
   }
 
   public void debug() throws Exception {

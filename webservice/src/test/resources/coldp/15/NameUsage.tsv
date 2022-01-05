@@ -1,0 +1,6 @@
+ID,parentID,rank,status,nameStatus,scientificName,authorship,nameReferenceID,namePublishedInYear,referenceID,nameRemarks,remarks
+609287,,Species,Accepted,valid,Abarema abbottii,(Rose & Leonard) Barneby & J.W.Grimes,R1,1996,R1,,
+331502,609287,Species,Synonym,,Jupunba abbottii,(Rose & Leonard) Britton & Rose,R2,1928,R2,nom.illeg.,
+123,609287,Species,,,Jupunba abbottii,Bricklwoods,,,,nom.nud.,
+124,,Species,unplaced,unavailable,Jupunba nuduta,L.,,,,nom.nud.,
+125,,Species,bare name,,Jupunba bara,L.,,,,,

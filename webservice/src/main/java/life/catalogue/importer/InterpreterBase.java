@@ -1,28 +1,23 @@
 package life.catalogue.importer;
 
-import com.google.common.collect.Lists;
-
-import life.catalogue.api.datapackage.ColdpTerm;
-import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.*;
-import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.Year;
@@ -31,6 +26,15 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 import static life.catalogue.parser.SafeParser.parse;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
@@ -72,8 +76,12 @@ public class InterpreterBase {
     }
     return true;
   }
-  
+
   protected Reference setReference(VerbatimRecord v, Term refIdTerm, Consumer<String> refIdConsumer){
+    return setReference(v, refIdTerm, refIdConsumer, null);
+  }
+
+  protected Reference setReference(VerbatimRecord v, Term refIdTerm, Consumer<String> refIdConsumer, @Nullable Consumer<String> refCitationConsumer){
     Reference ref = null;
     if (v.hasTerm(refIdTerm)) {
       String rid = v.getRaw(refIdTerm);
@@ -83,15 +91,37 @@ public class InterpreterBase {
         v.addIssue(Issue.REFERENCE_ID_INVALID);
       } else {
         refIdConsumer.accept(ref.getId());
+        if (refCitationConsumer != null) {
+          refCitationConsumer.accept(ref.getCitation());
+        }
       }
     }
     return ref;
   }
 
+  protected void setReferences(VerbatimRecord v, Term refIdTerm, Splitter splitter, Consumer<List<String>> refIdConsumer){
+    if (v.hasTerm(refIdTerm)) {
+      String rids = v.getRaw(refIdTerm);
+      if (rids != null) {
+        List<String> existingIds = new ArrayList<>();
+        for (String rid : splitter.split(rids)) {
+          Reference ref = refFactory.find(rid, null);
+          if (ref == null) {
+            LOG.debug("ReferenceID {} not existing but referred from {} in file {} line {}", rid, refIdTerm.prefixedName(), v.getFile(), v.fileLine());
+            v.addIssue(Issue.REFERENCE_ID_INVALID);
+          } else {
+            existingIds.add(ref.getId());
+          }
+        }
+        refIdConsumer.accept(existingIds);
+      }
+    }
+  }
+
   /**
    * Sets a taxonomic note to usage namePhrase or a proper accordingTo reference if parsable
    */
-  protected void setTaxonomicNote(NameUsageBase u, String taxNote, VerbatimRecord v) {
+  protected void setTaxonomicNote(NameUsage u, String taxNote, VerbatimRecord v) {
     if (!StringUtils.isBlank(taxNote)) {
       v.addIssue(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
       Matcher m = SEC_REF.matcher(taxNote);
@@ -107,13 +137,16 @@ public class InterpreterBase {
     }
   }
 
-  protected void setAccordingTo(NameUsageBase u, String accordingTo, VerbatimRecord v) {
-    Reference ref = buildReference(accordingTo, v);
-    if (ref != null) {
-      if (u.getAccordingToId() != null) {
-        v.addIssue(Issue.ACCORDING_TO_CONFLICT);
+  protected void setAccordingTo(NameUsage u, String accordingTo, VerbatimRecord v) {
+    if (accordingTo != null) {
+      Reference ref = buildReference(accordingTo, v);
+      if (ref != null) {
+        if (u.getAccordingToId() != null) {
+          v.addIssue(Issue.ACCORDING_TO_CONFLICT);
+        }
+        u.setAccordingToId(ref.getId());
+        u.setAccordingTo(accordingTo);
       }
-      u.setAccordingToId(ref.getId());
     }
   }
 
@@ -168,13 +201,13 @@ public class InterpreterBase {
     return Collections.emptyList();
   }
   
-  protected List<Distribution> interpretDistribution(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
-                                                     Term tArea, Term tGazetteer, Term tStatus) {
+  protected List<Distribution> interpretDistributionByGazetteer(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
+                                                                Term tArea, Term tGazetteer, Term tStatus) {
     // require location
     if (rec.hasTerm(tArea)) {
       // which standard?
       Gazetteer gazetteer;
-      if (distributionStandard != null) {
+      if (!rec.hasTerm(tGazetteer) && distributionStandard != null) {
         gazetteer = distributionStandard;
       } else {
         gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
@@ -185,17 +218,6 @@ public class InterpreterBase {
     return Collections.emptyList();
   }
   
-  private static Distribution createDistribution(VerbatimRecord rec, Gazetteer standard, String area, DistributionStatus status,
-                                          BiConsumer<Distribution, VerbatimRecord> addReference) {
-    Distribution d = new Distribution();
-    d.setVerbatimKey(rec.getId());
-    d.setGazetteer(standard);
-    d.setArea(area);
-    d.setStatus(status);
-    addReference.accept(d, rec);
-    return d;
-  }
-  
   protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, String statusRaw, VerbatimRecord rec,
                                                    BiConsumer<Distribution, VerbatimRecord> addReference) {
     if (locRaw != null) {
@@ -204,23 +226,23 @@ public class InterpreterBase {
           .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec);
 
       if (standard == Gazetteer.TEXT) {
-        return Lists.newArrayList( createDistribution(rec, Gazetteer.TEXT, locRaw, status, addReference) );
+        return Lists.newArrayList( createDistribution(rec, new AreaImpl(locRaw), status, addReference) );
       
       } else {
         List<Distribution> distributions = new ArrayList<>();
         for (String loc : words(locRaw)) {
-          // add gazetteer prefix if not yet included
+          // add gazetteer prefix for the parser if not yet included
           if (standard != null && loc.indexOf(':') < 0) {
             loc = standard.locationID(loc);
           }
-          AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
+          var area = SafeParser.parse(AreaParser.PARSER, loc).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
           if (area != null) {
             // check if we have contradicting extracted a gazetteer
-            if (standard != null && area.standard != Gazetteer.TEXT && area.standard != standard) {
+            if (standard != null && area.getGazetteer() != Gazetteer.TEXT && area.getGazetteer() != standard) {
               LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
-                        area.standard, area.area, standard, rec);
+                        area.getGazetteer(), area.getGazetteer(), standard, rec);
             }
-            distributions.add(createDistribution(rec, area.standard, area.area, status, addReference));
+            distributions.add(createDistribution(rec, area, status, addReference));
           }
         }
         return distributions;
@@ -234,12 +256,21 @@ public class InterpreterBase {
     Matcher m = AREA_VALUE_PATTERN.matcher(x);
     List<String> words = new ArrayList<>();
     while (m.find()) {
-      words.add(m.group(0));
+      words.add(m.group(0).trim());
     }
     return words;
   }
 
-  
+  private static Distribution createDistribution(VerbatimRecord rec, Area area, DistributionStatus status, BiConsumer<Distribution, VerbatimRecord> addReference) {
+    Distribution d = new Distribution();
+    d.setVerbatimKey(rec.getId());
+    d.setArea(area);
+    d.setStatus(status);
+    addReference.accept(d, rec);
+    return d;
+  }
+
+
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
                  Term type, Term url, Term link, Term license, Term creator, Term created, Term title, Term format) {
     // require media or link url
@@ -346,7 +377,11 @@ public class InterpreterBase {
         rank = RankParser.PARSER.parse(code, vrank).orElse(Rank.UNRANKED);
       } catch (UnparsableException e) {
         v.addIssue(Issue.RANK_INVALID);
+        rank = Rank.OTHER;
       }
+    } else if (vrank != null) {
+      v.addIssue(Issue.RANK_INVALID);
+      rank = Rank.OTHER;
     }
 
     // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
@@ -389,7 +424,8 @@ public class InterpreterBase {
         atom.setGenus(null);
       }
 
-      if (rank.otherOrUnranked()) {
+      // infer the rank in case it was not given explicitly
+      if (rank.otherOrUnranked() && vrank == null) {
         atom.setRank(RankUtils.inferRank(atom));
       }
       atom.rebuildScientificName();
@@ -478,8 +514,15 @@ public class InterpreterBase {
     // a synonym by status?
     EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
       .orElse(()->new EnumNote<>(defaultStatus, null), Issue.TAXONOMIC_STATUS_INVALID, v);
-    if (status.val.isSynonym()) {
+
+    if (status.val.isBareName()) {
+      u = NeoUsage.createBareName(Origin.SOURCE, pnu.getName());
+    } else if (status.val.isSynonym()) {
       u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
+      if (pnu.isExtinct()) {
+        // flag this as synonyms cannot have the extinct flag
+        v.addIssue(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
+      }
     } else {
       u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
       if (pnu.isExtinct()) {
@@ -492,10 +535,6 @@ public class InterpreterBase {
     u.setVerbatimKey(v.getId());
     setTaxonomicNote(u.usage, pnu.getTaxonomicNote(), v);
     u.homotypic = TaxonomicStatusParser.isHomotypic(status);
-    if (pnu.isExtinct()) {
-      // flag this also for synonyms which cannot have the extinct flag
-      v.addIssue(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
-    }
 
     // flat classification via dwc or coldp
     u.classification = new Classification();

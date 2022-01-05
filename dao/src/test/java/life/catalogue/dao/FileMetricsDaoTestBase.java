@@ -1,13 +1,13 @@
 package life.catalogue.dao;
 
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.TestDataRule;
-
-import org.gbif.utils.file.FileUtils;
 
 import java.io.BufferedReader;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,7 +25,7 @@ public abstract class FileMetricsDaoTestBase<K> extends DaoTestBase {
 
   @Test
   public void roundtripTree() throws Exception {
-    BufferedReader expected = FileUtils.getInputStreamReader(FileUtils.classpathStream("trees/tree.tree"), "UTF8");
+    BufferedReader expected = UTF8IoUtils.readerFromStream(getClass().getResourceAsStream("/trees/tree.tree"));
 
     dao.updateTree(key, key, 1);
   

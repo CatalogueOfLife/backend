@@ -1,8 +1,10 @@
 package life.catalogue.api.vocab;
 
 import life.catalogue.api.util.VocabularyUtils;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

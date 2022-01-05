@@ -2,8 +2,6 @@ package life.catalogue.api.event;
 
 import life.catalogue.api.model.Dataset;
 
-import javax.ws.rs.DELETE;
-
 public class DatasetChanged extends EntityChanged<Integer, Dataset> {
 
   public DatasetChanged(EventType delete, Integer key, Dataset old, Dataset d) {

@@ -1,30 +1,44 @@
 package life.catalogue.common.csl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import de.undercouch.citeproc.csl.*;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.CslData;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.*;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.io.Resources;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.checkerframework.checker.units.qual.A;
 import org.checkerframework.checker.units.qual.C;
 import org.junit.Test;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import de.undercouch.citeproc.csl.*;
 
 import static org.junit.Assert.*;
 
 public class CslUtilTest {
+
+  @Test
+  public void parseVolumeIssuePage() {
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null, 1,2,3)), CslUtil.parseVolumeIssuePage("1(2):3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null, 1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): 3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null, 1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): p.3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null, 1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): pp 3"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null, 1,2,3)), CslUtil.parseVolumeIssuePage("1 (2): page 3"));
+
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage(null,13,null,137)), CslUtil.parseVolumeIssuePage("13 : p 137"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage("My great Journal.",13,null,137)), CslUtil.parseVolumeIssuePage("My great Journal. 13 : p 137"));
+    assertEquals(Optional.empty(), CslUtil.parseVolumeIssuePage("My great Journal. (1848)"));
+    assertEquals(Optional.of(new CslUtil.VolumeIssuePage("anything allowed here!+#\"§$%", 1,2,3)), CslUtil.parseVolumeIssuePage("anything allowed here!+#\"§$% 1 (2): p.3"));
+  }
 
   @Test
   public void makeBibliography() {
@@ -57,6 +71,30 @@ public class CslUtilTest {
 
     // APA defines 21 authors before et al. <bibliography et-al-min="21"
     assertEquals("Droege, G., Barker, K., Seberg, O., Coddington, J., Benson, E., Berendsohn, W. G., Bunk, B., Butler, C., Cawsey, E. M., Deck, J., Döring, M., Flemons, P., Gemeinholzer, B., Güntsch, A., Hollowell, T., Kelbert, P., Kostadinov, I., Kottmann, R., Lawlor, R. T., et al. (2016). The Global Genome Biodiversity Network (GGBN) Data Standard specification. Database, 2016, baw125. https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(refs.get(0)));
+
+    // no csl data but the id should not return anything
+    CslData data = new CslData();
+    data.setId("1234");
+    assertNull(CslUtil.buildCitation(data));
+
+    // literal author example
+    CslName ed = new CslName("Greuter,W. et al.");
+    data.setEditor(new CslName[]{ed});
+    data.setContainerTitle("Med-Checklist Vol.4 (published)");
+    data.setIssued(new CslDate(1989));
+    assertEquals("Greuter,W. et al. (1989). Med-Checklist Vol.4 (Published).", CslUtil.buildCitation(data));
+
+    // volume issue pages
+    data = new CslData();
+    data.setAuthor(new CslName[]{new CslName("Werner", "Greuter")});
+    data.setContainerTitle("J. Linn. Soc., Bot.");
+    data.setIssued(new CslDate(1911));
+    data.setVolume("10");
+    data.setPage("141-156");
+    assertEquals("Greuter, W. (1911). J. Linn. Soc., Bot., 10, 141–156.", CslUtil.buildCitation(data));
+
+    data.setIssue("41");
+    assertEquals("Greuter, W. (1911). J. Linn. Soc., Bot., 10(41), 141–156.", CslUtil.buildCitation(data));
   }
   
   @Test
@@ -73,7 +111,7 @@ public class CslUtilTest {
         .originalTitle("my orig tittel");
     
     CSLItemData csl = builder.build();
-    assertEquals("Döring, M. my Title. https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(csl));
+    assertEquals("Döring, M. (n.d.). my Title. https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(csl));
 
     System.out.println("Start time measuring");
     StopWatch watch = StopWatch.createStarted();
@@ -81,7 +119,7 @@ public class CslUtilTest {
     for (int x=1; x<=times; x++){
       builder.title("my Title "+x);
       csl = builder.accessed(1900+x).build();
-      assertEquals("Döring, M. my Title "+x+". https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(csl));
+      assertEquals("Döring, M. (n.d.). my Title "+x+". https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(csl));
     }
     watch.stop();
     System.out.println(watch);

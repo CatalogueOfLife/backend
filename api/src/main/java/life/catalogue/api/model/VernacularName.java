@@ -4,8 +4,9 @@ import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.api.vocab.Sex;
 
-import javax.validation.constraints.Size;
 import java.util.Objects;
+
+import javax.validation.constraints.Size;
 
 public class VernacularName extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity {
 

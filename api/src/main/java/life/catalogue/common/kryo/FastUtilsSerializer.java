@@ -1,12 +1,14 @@
 package life.catalogue.common.kryo;
 
+import life.catalogue.common.kryo.jdk.JdkImmutableSetSerializer;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import life.catalogue.common.kryo.jdk.JdkImmutableSetSerializer;
 
 /**
  * We only need IntSet so far, so we create an efficient manual class here.

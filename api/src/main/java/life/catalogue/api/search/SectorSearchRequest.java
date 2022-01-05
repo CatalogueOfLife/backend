@@ -2,10 +2,11 @@ package life.catalogue.api.search;
 
 import life.catalogue.api.model.Sector;
 
-import javax.validation.constraints.Min;
-import javax.ws.rs.QueryParam;
 import java.time.LocalDate;
 import java.util.Objects;
+
+import javax.validation.constraints.Min;
+import javax.ws.rs.QueryParam;
 
 public class SectorSearchRequest extends BaseDecisionSearchRequest {
 

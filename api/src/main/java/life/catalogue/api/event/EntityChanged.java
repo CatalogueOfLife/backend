@@ -1,7 +1,9 @@
 package life.catalogue.api.event;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DataEntity;
+
+import com.google.common.base.Preconditions;
+
 import static life.catalogue.api.event.EventType.*;
 /**
  * A changed entity message for the bus system.

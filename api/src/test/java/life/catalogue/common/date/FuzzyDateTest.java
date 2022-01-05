@@ -1,9 +1,10 @@
 package life.catalogue.common.date;
 
 import life.catalogue.api.jackson.SerdeTestBase;
-import org.junit.Test;
 
 import java.util.Random;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

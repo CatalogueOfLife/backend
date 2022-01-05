@@ -1,11 +1,12 @@
 package life.catalogue.api.vocab;
 
-import com.google.common.base.Preconditions;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDate;
+
+import com.google.common.base.Preconditions;
 
 import static life.catalogue.api.vocab.DatasetOrigin.*;
 
@@ -75,7 +76,12 @@ public enum Setting {
   RELEASE_ADD_CONTRIBUTORS(Boolean.class, MANAGED),
 
   /**
-   * Number of first authors to use for the container authors of a source chapter-in-a-book citation.
+   * If true a release will first delete all bare names from the project before it copies data.
+   */
+  RELEASE_REMOVE_BARE_NAMES(Boolean.class, MANAGED),
+
+  /**
+   * Number of first authors from a project/release to use for the container authors of a source chapter-in-a-book citation.
    * If not given all authors are used.
    */
   SOURCE_MAX_CONTAINER_AUTHORS(Integer.class, MANAGED, RELEASED),

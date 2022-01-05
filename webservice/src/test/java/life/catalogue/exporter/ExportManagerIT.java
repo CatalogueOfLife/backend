@@ -1,6 +1,12 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.MetricRegistry;
+
+import com.codahale.metrics.Timer;
+
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
@@ -9,6 +15,11 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.img.ImageService;
+
+import life.catalogue.release.ProjectRelease;
+
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.jetbrains.annotations.Nullable;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,7 +48,7 @@ public class ExportManagerIT {
     cfg.job.threads = 3;
     JobExecutor executor = new JobExecutor(cfg.job);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
-    ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), null, exDao, mock(DatasetImportDao.class));
+    ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), null, exDao, mock(DatasetImportDao.class), new MetricRegistry());
 
     PrintBlockJob job = new PrintBlockJob(TestDataRule.APPLE.key);
     PrintBlockJob job2 = new PrintBlockJob(TestDataRule.APPLE.key);
@@ -65,5 +76,46 @@ public class ExportManagerIT {
       TimeUnit.SECONDS.sleep(1);
       didRun = true;
     }
+  }
+
+  static class BlockJob extends DatasetBlockingJob {
+    final int blockTime;
+
+    /**
+     * @param blockTime in seconds
+     */
+    public BlockJob(int datasetKey, int blockTime) {
+      super(datasetKey, TestDataRule.TEST_USER.getKey(), JobPriority.HIGH);
+      this.blockTime = blockTime;
+    }
+
+    @Override
+    protected void runWithLock() throws Exception {
+      TimeUnit.SECONDS.sleep(blockTime);
+    }
+  }
+
+  @Test
+  public void releaseExports() throws Exception {
+    final int datasetKey = TestDataRule.APPLE.key;
+    final int userKey = TestDataRule.TEST_USER.getKey();
+
+    WsServerConfig cfg = new WsServerConfig();
+    cfg.downloadURI = URI.create("http://gbif.org");
+    cfg.exportDir = new File("/tmp/col");
+    cfg.job.threads = 3;
+    JobExecutor executor = new JobExecutor(cfg.job);
+    DatasetExportDao exDao = mock(DatasetExportDao.class);
+    ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), null, exDao, mock(DatasetImportDao.class), new MetricRegistry());
+
+    // first schedule a block job that runs forever
+    executor.submit(new BlockJob(TestDataRule.APPLE.key, 1000));
+    for (DataFormat df : ProjectRelease.EXPORT_FORMATS) {
+      ExportRequest req = new ExportRequest();
+      req.setDatasetKey(datasetKey);
+      req.setFormat(df);
+      manager.submit(req, userKey);
+    }
+    TimeUnit.SECONDS.sleep(1000);
   }
 }

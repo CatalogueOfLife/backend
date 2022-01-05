@@ -13,7 +13,6 @@ import static java.lang.annotation.ElementType.TYPE;
  * Specifies that the response varies based on accept headers.
  * The response will therefore be added a Vary: Accept header by binding the VaryResponseFilter
  */
-
 @NameBinding
 @Target({TYPE, METHOD})
 @Retention(RetentionPolicy.RUNTIME)

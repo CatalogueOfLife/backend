@@ -1,8 +1,8 @@
 package life.catalogue.api.model;
 
-import org.junit.Test;
-
 import java.util.List;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -47,5 +47,16 @@ public class ProjectContributionTest {
         assertEquals(2, c.getSources().size());
       }
     }
+
+    contrib.add(new ProjectContribution.Contributor(new Agent("Joe", "Miller")));
+    var a = new Agent("Joe", "Miller");
+    a.setOrcid("1234-1234-1234-1234");
+    contrib.add(new ProjectContribution.Contributor(a));
+
+    a = new Agent("Joseph", "Jeremy");
+    a.setOrcid("1234-1234-1234-1234");
+    contrib.add(new ProjectContribution.Contributor(a));
+
+    assertEquals(11, contrib.size());
   }
 }

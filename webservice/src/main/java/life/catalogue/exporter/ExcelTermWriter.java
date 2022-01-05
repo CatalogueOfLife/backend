@@ -19,8 +19,8 @@ public class ExcelTermWriter extends TermWriter {
   public static final int MAX_VALUE_CHARS = 32767; // IAE: The maximum length of cell contents (text) is 32767 characters
   private static final Logger LOG = LoggerFactory.getLogger(ExcelTermWriter.class);
 
-  public ExcelTermWriter(Workbook wb, Term rowType, Term idTerm, List<Term> cols) throws IOException {
-    super(new ExcelRowWriter(wb, rowType), rowType, idTerm, cols);
+  public ExcelTermWriter(Workbook wb, Term rowType, List<Term> cols) throws IOException {
+    super(new ExcelRowWriter(wb, rowType), rowType, cols);
   }
 
   public static class MaxRowsException extends IOException {

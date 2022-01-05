@@ -2,6 +2,7 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.SerdeTestBase;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;

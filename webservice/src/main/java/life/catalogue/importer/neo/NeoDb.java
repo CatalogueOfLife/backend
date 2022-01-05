@@ -77,7 +77,7 @@ public class NeoDb {
   // verbatimKey sequence and lookup
   private final AtomicInteger verbatimSequence = new AtomicInteger(0);
   private final Map<Integer, VerbatimRecord> verbatim;
-  private final ReferenceStore references;
+  private final ReferenceMapStore references;
   private final MapStore<TypeMaterial> typeMaterial;
   private final NeoNameStore names;
   private final NeoUsageStore usages;
@@ -110,7 +110,7 @@ public class NeoDb {
           .keySerializer(Serializer.INTEGER)
           .valueSerializer(new MapDbObjectSerializer(VerbatimRecord.class, pool, 128))
           .createOrOpen();
-      references = new ReferenceStore(mapDb, pool, this::addIssues);
+      references = new ReferenceMapStore(mapDb, pool, this::addIssues);
       typeMaterial = new MapStore<>(TypeMaterial.class, "tm", mapDb, pool, this::addIssues);
 
       openNeo();
@@ -199,7 +199,7 @@ public class NeoDb {
     return usages;
   }
 
-  public ReferenceStore references() {
+  public ReferenceMapStore references() {
     return references;
   }
 
@@ -426,9 +426,9 @@ public class NeoDb {
     }
     if (nn.getName().getOrigin() == null) {
       if (u.isSynonym()) {
-        nn.getName().setOrigin(u.getSynonym().getOrigin());
+        nn.getName().setOrigin(u.asSynonym().getOrigin());
       } else {
-        nn.getName().setOrigin(u.getTaxon().getOrigin());
+        nn.getName().setOrigin(u.asTaxon().getOrigin());
       }
     }
     nn.homotypic = u.homotypic;
@@ -437,7 +437,9 @@ public class NeoDb {
     if (u.nameNode != null) {
       // remove name from usage & create it which results in a new node on the usage
       u.usage.setName(null);
-      usages.create(u);
+      if (!u.usage.isBareName()) {
+        usages.create(u);
+      }
     } else {
       LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.getName().getLabel());
     }
@@ -630,7 +632,7 @@ public class NeoDb {
           // parent
           Node p = getSingleRelated(u.node, RelType.PARENT_OF, Direction.INCOMING);
           NeoUsage pt = usages().objByNode(p);
-          u.getTaxon().setParentId(pt.getId());
+          u.asTaxon().setParentId(pt.getId());
         }
         // store the updated object
         usages().update(u);

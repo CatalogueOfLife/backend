@@ -1,9 +1,5 @@
 package life.catalogue.common.io;
 
-import com.google.common.collect.ImmutableMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -18,6 +14,11 @@ import java.nio.file.StandardOpenOption;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.function.Predicate;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * <p>

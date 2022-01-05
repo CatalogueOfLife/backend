@@ -1,15 +1,17 @@
 package life.catalogue.common.io;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.common.text.StringUtils;
+
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
+import com.google.common.base.Preconditions;
 
 import static life.catalogue.common.io.CharsetDetection.BUFFER_SIZE;
 

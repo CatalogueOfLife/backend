@@ -2,6 +2,7 @@ package life.catalogue.api.jackson;
 
 import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.dwc.terms.Term;
+
 import org.junit.Assert;
 import org.junit.Test;
 

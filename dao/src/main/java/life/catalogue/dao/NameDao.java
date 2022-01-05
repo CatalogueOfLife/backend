@@ -100,11 +100,11 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
     }
   }
 
-  public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, User user) {
+  public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, int userKey) {
     try (SqlSession session = factory.openSession()) {
       int cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
       session.commit();
-      LOG.info("Removed {} orphan names from dataset {} by user {}", cnt, datasetKey, user);
+      LOG.info("Removed {} orphan names from dataset {} by user {}", cnt, datasetKey, userKey);
       // also remove from ES
       int cnt2 = indexService.deleteBareNames(datasetKey);
       LOG.info("Removed {} bare names from ES index for dataset {}", cnt2, datasetKey);

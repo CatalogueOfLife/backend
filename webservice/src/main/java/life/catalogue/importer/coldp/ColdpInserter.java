@@ -3,17 +3,19 @@ package life.catalogue.importer.coldp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
+import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.TreatmentFormatParser;
@@ -22,6 +24,9 @@ import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.jbibtex.*;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.helpers.collection.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -145,6 +151,44 @@ public class ColdpInserter extends NeoCsvInserter {
       (t, d) -> t.estimates.add(d)
     );
     insertTreatments();
+  }
+
+  @Override
+  protected void postBatchInsert() throws NormalizationFailedException {
+    // lookup species interaction related names - this requires neo4j so cant be done during batch inserts
+    for (RelType rt : RelType.values()) {
+      if (rt.isSpeciesInteraction()) {
+        int counter = 0;
+        try (Transaction tx = store.getNeo().beginTx();
+             var iter = store.iterRelations(rt)
+        ) {
+          while (iter.hasNext()) {
+            var rel = iter.next();
+            if (!rel.hasProperty(NeoProperties.SCINAME)) {
+              Node relatedUsageNode = rel.getEndNode();
+              if (store.getDevNullNode().getId() != relatedUsageNode.getId()) {
+                // there is a real related usage node existing, use its name
+                String name = NeoProperties.getScientificNameWithAuthorFromUsage(relatedUsageNode);
+                if (!name.equals(NeoProperties.NULL_NAME)) {
+                  rel.setProperty(NeoProperties.SCINAME, name);
+                  counter++;
+                }
+              }
+            }
+            // still no name? flag issue
+            if (!rel.hasProperty(NeoProperties.SCINAME) && rel.hasProperty(NeoProperties.VERBATIM_KEY)) {
+              Integer vkey = (Integer) rel.getProperty(NeoProperties.VERBATIM_KEY, null);
+              LOG.debug("Missing related names for {} interaction, verbatimKey={}", rt.specInterType, vkey);
+              store.addIssues(vkey, Issue.RELATED_NAME_MISSING);
+            }
+          }
+          tx.success();
+        }
+        if (counter > 0) {
+          LOG.info("Added related names for {} {} interactions", counter, rt.specInterType);
+        }
+      }
+    }
   }
 
   private void insertTreatments(){

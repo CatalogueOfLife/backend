@@ -335,7 +335,35 @@ public class DoiAttributes {
     if (this == o) return true;
     if (!(o instanceof DoiAttributes)) return false;
     DoiAttributes that = (DoiAttributes) o;
-    return publicationYear == that.publicationYear && Objects.equals(doi, that.doi) && event == that.event && Objects.equals(identifiers, that.identifiers) && Objects.equals(creators, that.creators) && Objects.equals(titles, that.titles) && Objects.equals(publisher, that.publisher) && Objects.equals(subjects, that.subjects) && Objects.equals(contributors, that.contributors) && Objects.equals(dates, that.dates) && Objects.equals(language, that.language) && Objects.equals(types, that.types) && Objects.equals(relatedIdentifiers, that.relatedIdentifiers) && Objects.equals(sizes, that.sizes) && Objects.equals(formats, that.formats) && Objects.equals(version, that.version) && Objects.equals(schemaVersion, that.schemaVersion) && Objects.equals(rightsList, that.rightsList) && Objects.equals(descriptions, that.descriptions) && Objects.equals(geoLocations, that.geoLocations) && Objects.equals(url, that.url) && Objects.equals(contentUrl, that.contentUrl) && Objects.equals(metadataVersion, that.metadataVersion) && Objects.equals(source, that.source) && state == that.state && Objects.equals(reason, that.reason) && Objects.equals(created, that.created) && Objects.equals(registered, that.registered) && Objects.equals(updated, that.updated);
+    return Objects.equals(doi, that.doi)
+           && event == that.event
+           && Objects.equals(identifiers, that.identifiers)
+           && Objects.equals(creators, that.creators)
+           && Objects.equals(titles, that.titles)
+           && Objects.equals(publisher, that.publisher)
+           && Objects.equals(publicationYear, that.publicationYear)
+           && Objects.equals(subjects, that.subjects)
+           && Objects.equals(contributors, that.contributors)
+           && Objects.equals(dates, that.dates)
+           && Objects.equals(language, that.language)
+           && Objects.equals(types, that.types)
+           && Objects.equals(relatedIdentifiers, that.relatedIdentifiers)
+           && Objects.equals(sizes, that.sizes)
+           && Objects.equals(formats, that.formats)
+           && Objects.equals(version, that.version)
+           && Objects.equals(schemaVersion, that.schemaVersion)
+           && Objects.equals(rightsList, that.rightsList)
+           && Objects.equals(descriptions, that.descriptions)
+           && Objects.equals(geoLocations, that.geoLocations)
+           && Objects.equals(url, that.url)
+           && Objects.equals(contentUrl, that.contentUrl)
+           && Objects.equals(metadataVersion, that.metadataVersion)
+           && Objects.equals(source, that.source)
+           && state == that.state
+           && Objects.equals(reason, that.reason)
+           && Objects.equals(created, that.created)
+           && Objects.equals(registered, that.registered)
+           && Objects.equals(updated, that.updated);
   }
 
   @Override

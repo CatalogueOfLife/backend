@@ -30,6 +30,7 @@ public enum RelatedIdentifierType implements EnumValue {
     value = v;
   }
 
+  @Override
   public String value() {
     return value;
   }

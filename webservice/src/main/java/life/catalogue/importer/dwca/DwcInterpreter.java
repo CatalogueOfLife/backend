@@ -1,9 +1,11 @@
 package life.catalogue.importer.dwca;
 
-import com.google.common.collect.Lists;
-import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.neo.NeoDb;
@@ -14,16 +16,19 @@ import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.EnumNote;
 import life.catalogue.parser.NomRelTypeParser;
 import life.catalogue.parser.SafeParser;
+
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.DwcaTerm;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * Interprets a verbatim record and transforms it into a name, taxon and unique references.
@@ -43,13 +48,19 @@ public class DwcInterpreter extends InterpreterBase {
     // name
     return interpretName(v).map(pnu -> {
       NeoUsage u = interpretUsage(pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcaTerm.ID);
-      u.usage.setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
-      u.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
-      // explicit accordingTo & namePhrase - the authorship could already have set these properties!
-      if (v.hasTerm(DwcTerm.nameAccordingTo)) {
-        setAccordingTo(u.usage, v.get(DwcTerm.nameAccordingTo), v);
+      if (u.isNameUsageBase()) {
+        u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
+        if (!u.isSynonym()) {
+          Taxon tax = u.asTaxon();
+          tax.setExtinct(null);
+          // TODO: lifezones come through the species profile extension.
+        }
+        // explicit accordingTo & namePhrase - the authorship could already have set these properties!
+        if (v.hasTerm(DwcTerm.nameAccordingTo)) {
+          setAccordingTo(u.usage, v.get(DwcTerm.nameAccordingTo), v);
+        }
       }
-      interpretTaxon(u, v);
+      u.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
       return u;
     });
   }
@@ -83,7 +94,7 @@ public class DwcInterpreter extends InterpreterBase {
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     // try to figure out an area
     if (rec.hasTerm(DwcTerm.locationID)) {
-      return createDistributions(Gazetteer.ISO,
+      return createDistributions(null,
           rec.getRaw(DwcTerm.locationID),
           rec.get(DwcTerm.occurrenceStatus),
           rec, this::setReference);
@@ -150,14 +161,6 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private void interpretTaxon(NeoUsage u, VerbatimRecord v) {
-    if (!u.isSynonym()) {
-      Taxon tax = u.getTaxon();
-      tax.setExtinct(null);
-      // TODO: lifezones come through the species profile extension.
-    }
-  }
-  
   private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
     Optional<ParsedNameUsage> opt = interpretName(false, v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),

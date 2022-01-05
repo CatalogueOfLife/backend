@@ -1,6 +1,6 @@
 package life.catalogue.db;
 
-import life.catalogue.api.datapackage.DwcUnofficialTerm;
+import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;

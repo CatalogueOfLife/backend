@@ -1,0 +1,51 @@
+digraph G {
+  node [shape=plaintext]
+
+  nt1  [label="Animalia"]
+  nt2  [label="Chordata"]
+  nt1 -> nt2
+  nt3  [label="Mammalia"]
+  nt2 -> nt3
+  nt4  [label="Carnivora"]
+  nt3 -> nt4
+  nt5  [label="Canidae"]
+  nt4 -> nt5
+  nt20  [label="Canis"]
+  nt5 -> nt20
+  ns21  [label="Alopsis", fontcolor=darkgreen]
+  nt20 -> ns21  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  ns22  [label="Lupulus", fontcolor=darkgreen]
+  nt20 -> ns22  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  nt23  [label="Canis adustus"]
+  nt20 -> nt23
+  nt24  [label="Canis argentinus"]
+  nt20 -> nt24
+  nt25  [label="Canis aureus"]
+  nt20 -> nt25
+  nt6  [label="Felidae"]
+  nt4 -> nt6
+  nt10  [label="Lynx"]
+  nt6 -> nt10
+  ns11  [label="Pardina", fontcolor=darkgreen]
+  nt10 -> ns11  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  nt12  [label="Lynx lynx"]
+  nt10 -> nt12
+  nt13  [label="Lynx rufus"]
+  nt10 -> nt13
+  ns14  [label="Felis rufus", fontcolor=darkgreen]
+  nt13 -> ns14  [color=darkgreen, fontcolor=darkgreen, label=syn]
+  nt15  [label="Lynx rufus baileyi"]
+  nt13 -> nt15
+  nt16  [label="Lynx rufus gigas"]
+  nt13 -> nt16
+  nt30  [label="Urocyon"]
+  nt4 -> nt30
+  nt31  [label="Urocyon citrinus"]
+  nt30 -> nt31
+  nt32  [label="Urocyon littoralis"]
+  nt30 -> nt32
+  nt33  [label="Urocyon minicephalus"]
+  nt30 -> nt33
+  nt34  [label="Urocyon webbi"]
+  nt30 -> nt34
+}

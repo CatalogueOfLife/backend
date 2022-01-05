@@ -11,7 +11,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2021-10-04 dataset partitioning
+### 2022-01-05 dataset partitioning
 ```
 -- general table changes first
 ALTER TABLE name DROP COLUMN homotypic_name_id;
@@ -317,6 +317,30 @@ CREATE INDEX ON media (dataset_key, reference_id);
 
 ```
 
+### 2021-12-15 new issue
+```
+ALTER TYPE ISSUE ADD VALUE 'RELATED_NAME_MISSING';
+```
+
+### 2021-11-04 non dropping particle in cslname
+```
+ALTER TYPE cslname DROP ATTRIBUTE literal;
+ALTER TYPE cslname ADD ATTRIBUTE particle text;
+
+CREATE OR REPLACE FUNCTION text2cslname(text) RETURNS cslname AS
+$$
+SELECT ROW(null, $1, null)::cslname
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+```
+
+### 2021-10-15 new issue
+```
+ALTER TYPE ISSUE ADD VALUE 'INVISIBLE_CHARACTERS';
+ALTER TYPE ISSUE ADD VALUE 'HOMOGLYPH_CHARACTERS';
+
+ALTER TYPE DATAFORMAT ADD VALUE 'NEWICK';
+ALTER TYPE DATAFORMAT ADD VALUE 'DOT';
+```
 
 ### 2021-06-14 dataset NG
 ```

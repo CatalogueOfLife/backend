@@ -23,7 +23,7 @@ public enum Issue {
       " 2) unicode entities U+0026 " +
       " 3) hexadecimal or octal java unicode entites " +
       " 4) CSS & ECMA Javascript entities"),
-  
+
   REFERENCE_ID_INVALID(ANY, Level.ERROR,
       "Identifier for a reference could not be resolved. " +
       "This can be from any entity, e.g. name, distribution, vernaculars, etc"),
@@ -366,7 +366,24 @@ public enum Issue {
   ESTIMATE_INVALID(ESTIMATE, Level.ERROR,
       "The species estimate could not be parsed to a positive integer."),
   ESTIMATE_TYPE_INVALID(ESTIMATE, Level.WARNING,
-      "The species estimate type could not be parsed.");
+      "The species estimate type could not be parsed."),
+
+
+  //
+  // Collect NEW ISSUES here - we need to keep ordinal id's fixed otherwise we need to reindex ElasticSearch
+  //
+  INVISIBLE_CHARACTERS(ANY, Level.WARNING,
+    "Invisible characters such as control characters have been removed "
+    + "or exotic alternatives for spaces been replaced with their canonical form."),
+
+  HOMOGLYPH_CHARACTERS(ANY, Level.WARNING,
+    "Potential homoglyphs of the latin alphabet are encountered."
+    + "In vernacular names, authors or references this can be perfectly fine content if other scripts than latin, e.g. cyrillic or greek are used."),
+
+  RELATED_NAME_MISSING(SPECIES_INTERACTION, Level.WARNING,
+    "Species interaction without a related name."
+    + "Neither relatedTaxonID nor relatedScientificName is given with a valid value."),
+  ;
 
   /**
    * Level of importance.

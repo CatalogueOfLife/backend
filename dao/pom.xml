@@ -39,6 +39,10 @@
 
 	<dependencies>
 		<!-- CoL & GBIF -->
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>coldp</artifactId>
+      </dependency>
 		<dependency>
 			<groupId>org.catalogueoflife</groupId>
 			<artifactId>api</artifactId>
@@ -50,6 +54,10 @@
         <dependency>
           <groupId>org.catalogueoflife</groupId>
           <artifactId>doi</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.catalogueoflife</groupId>
+          <artifactId>newick-io</artifactId>
         </dependency>
 
 		<!-- mybatis / DB -->

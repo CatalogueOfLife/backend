@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- *
+ * A parser for various license values.
  */
 public class LicenseParser extends EnumParser<License> {
   private static final Pattern CC0 = Pattern.compile("/publicdomain", Pattern.CASE_INSENSITIVE);
@@ -24,7 +24,7 @@ public class LicenseParser extends EnumParser<License> {
   }
 
   @Override
-  public Optional<License> parse(String value) throws UnparsableException {
+  public Optional<? extends License> parse(String value) throws UnparsableException {
     if (value != null) {
       if (CC0.matcher(value).find()) {
         return Optional.of(License.CC0);

@@ -1,6 +1,5 @@
 package life.catalogue.api.search;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.Issue;
 
@@ -9,6 +8,8 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+
+import com.google.common.base.Preconditions;
 
 public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValue<T>> {
 

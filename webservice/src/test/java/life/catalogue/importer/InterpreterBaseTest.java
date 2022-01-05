@@ -1,13 +1,13 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.ReferenceStore;
+import life.catalogue.importer.neo.ReferenceMapStore;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
 import org.gbif.nameparser.api.Authorship;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 public class InterpreterBaseTest {
   
   @Mock
-  ReferenceStore refStore;
+  ReferenceMapStore refStore;
 
   @Mock
   NeoDb store;
@@ -242,7 +242,7 @@ public class InterpreterBaseTest {
     NeoUsage u = ib.interpretUsage(pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, ColdpTerm.ID);
 
     assertTrue(u.usage.isTaxon());
-    Taxon t = u.getTaxon();
+    Taxon t = u.asTaxon();
 
     assertTrue(t.isExtinct());
     assertNull(t.getNamePhrase());
@@ -301,7 +301,7 @@ public class InterpreterBaseTest {
   public void createDistributions() throws Exception {
     assertDistributions(Gazetteer.ISO, "DE", "DE");
     assertDistributions(Gazetteer.ISO, "DE,fr,es", "DE", "FR", "ES");
-    assertDistributions(Gazetteer.ISO, "az-tar; AZ; ", "AZ-TAR", "AZ");
+    assertDistributions(Gazetteer.ISO, "az-tar; AZ; ", "AZ", "AZ");
     // ignore unparsable regions
     assertDistributions(Gazetteer.ISO, "Bolivia (Chuquisaca, Cochabamba, Santa Cruz, Tarija), Peru, Colombia (Amazonas, Antioquia, Boyac, Cauca, Choc, Cundinamarca, Huila, La Guajira, Magdalena, Meta, Nario, Putumayo, Risaralda, Santander, Valle), NE-Brazil (Pernambuco, Bahia, Alagoas), WC-Brazil (Goias, Distrito Federal, Mato Grosso do Sul), SE-Brazil (Minas Gerais, Espirito Santo, Sao Paulo, Rio de Janeiro), Ecuador, Galapagos, Mexico (Hidalgo, Michoacan, Oaxaca, Tamaulipas, Veracruz), Venezuela (Tachira), Argentina (Buenos Aires, Chaco, Chubut, Cordoba, Corrientes, Entre Rios, Formosa, Jujuy, Misiones,Rio Negro, Salta, Santa Fe, Tucuman), S-Brazil (Parana, Rio Grande do Sul, Santa Catarina), Paraguay (Caazapa, Central, Cordillera, Guaira, Paraguari), Uruguay (Artigas, Canelones, Cerro Largo, Colonia, Durazno, Flores Prov., Florida Prov., Lavalleja, Maldonado, Montevideo, Paysandu, Rio Negro, Rivera, Rocha, Salto, San Jose, Soriano, Tacuarembo, Treinta y Tres), Costa Rica (I)",
             Country.BOLIVIA, Country.PERU, Country.COLOMBIA, Country.ECUADOR, Country.MEXICO,
@@ -313,7 +313,7 @@ public class InterpreterBaseTest {
     assertDistributions(std, loc, exp);
   }
 
-  private void assertDistributions(Gazetteer std, String loc, String... expected) {
+  private void assertDistributions(Gazetteer std, String loc, String... expectedIDs) {
     List<Distribution> dis = InterpreterBase.createDistributions(std, loc, "present", new VerbatimRecord(), new BiConsumer<Distribution, VerbatimRecord>() {
       @Override
       public void accept(Distribution distribution, VerbatimRecord verbatimRecord) {
@@ -323,8 +323,8 @@ public class InterpreterBaseTest {
 
     int counter = 0;
     for (Distribution d : dis) {
-      assertEquals(std, d.getGazetteer());
-      assertEquals(expected[counter++], d.getArea());
+      assertEquals(std, d.getArea().getGazetteer());
+      assertEquals(expectedIDs[counter++], d.getArea().getId());
     }
   }
 }

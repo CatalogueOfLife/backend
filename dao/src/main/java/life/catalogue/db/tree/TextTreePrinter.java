@@ -10,6 +10,7 @@ import life.catalogue.db.mapper.SectorMapper;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,51 +48,28 @@ public class TextTreePrinter extends AbstractTreePrinter {
   public static final String BASIONYM_SYMBOL = "$";
   
   private static final int indentation = 2;
-  private final boolean showIDs;
-  private final Writer writer;
+  private boolean showIDs;
 
   /**
-   * @param sectorKey optional sectorKey to restrict printed tree to
+   * @param datasetKey
+   * @param sectorKey    optional sectorKey to restrict printed tree to
+   * @param startID
+   * @param synonyms
+   * @param ranks
+   * @param countRank    the rank to be used when counting with the taxonCounter
+   * @param taxonCounter
+   * @param factory
+   * @param writer
    */
-  private TextTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, boolean showIDs, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory);
-    this.writer = writer;
-    this.showIDs=showIDs;
+  public TextTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
   }
 
-  /**
-   * Prints the entire dataset
-   */
-  public static TextTreePrinter dataset(int datasetKey, SqlSessionFactory factory, Writer writer) {
-    return new TextTreePrinter(datasetKey, null, null, true, null, null, null, false, factory, writer);
-  }
-  
-  public static TextTreePrinter dataset(int datasetKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, boolean showIDs, SqlSessionFactory factory, Writer writer) {
-    return new TextTreePrinter(datasetKey, null, startID, synonyms, ranks, countRank, taxonCounter, showIDs, factory, writer);
+
+  public void showIDs() {
+    this.showIDs = true;
   }
 
-  public static TextTreePrinter dataset(int datasetKey, String startID, boolean synonyms, Rank minRank, SqlSessionFactory factory, Writer writer) {
-    Set<Rank> above = null;
-    if (minRank != null) {
-      above = Arrays.stream(Rank.values()).filter(r -> r.ordinal() <= minRank.ordinal() || r==Rank.UNRANKED).collect(Collectors.toSet());
-    }
-    return new TextTreePrinter(datasetKey, null, startID, synonyms, above, null, null, false, factory, writer);
-  }
-
-  /**
-   * Prints a sector from the given catalogue.
-   */
-  public static TextTreePrinter sector(final DSID<Integer> sectorKey, SqlSessionFactory factory, Writer writer) {
-    try (SqlSession session = factory.openSession(true)) {
-      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      return new TextTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), true, null, null, null, false, factory, writer);
-    }
-  }
-
-  @Override
-  public void flush() throws IOException {
-    writer.flush();
-  }
 
   protected void start(SimpleName u) throws IOException {
     writer.write(StringUtils.repeat(' ', level * indentation));

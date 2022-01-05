@@ -41,7 +41,7 @@ public class ColdpExporterTest extends ExporterTest {
 
   @Test
   public void dataset() {
-    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
     exp.run();
 
     assertTrue(exp.getArchive().exists());
@@ -50,7 +50,7 @@ public class ColdpExporterTest extends ExporterTest {
   @Test
   public void bareName() {
     req.setBareNames(true);
-    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
     exp.run();
 
     assertTrue(exp.getArchive().exists());
@@ -59,7 +59,7 @@ public class ColdpExporterTest extends ExporterTest {
   @Test
   public void excel() {
     req.setExcel(true);
-    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
     exp.run();
 
     assertTrue(exp.getArchive().exists());

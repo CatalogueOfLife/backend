@@ -27,6 +27,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.net.URI;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -106,6 +108,12 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public JobConfig job = new JobConfig();
 
   /**
+   * The maximum allowed time in seconds for a unix diff to take before throwing a time out.
+   */
+  @Min(1)
+  public int diffTimeout = 30;
+
+  /**
    * Names index kvp file to persist map on disk. If empty will use a volatile memory index.
    */
   public File namesIndexFile;
@@ -126,16 +134,23 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public String exportCss = "https://gitcdn.link/repo/CatalogueOfLife/backend/master/webservice/src/main/resources/exporter/html/catalogue.css";
 
+  public URI apiURI = URI.create("https://api.catalogueoflife.org");
+
   @NotNull
   public URI downloadURI = URI.create("https://download.catalogueoflife.org");
 
   @NotNull
-  public URI portalURI = URI.create("https://www.catalogueoflife.org");
-
-  @NotNull
   public URI clbURI = URI.create("https://data.catalogueoflife.org");
 
-  public URI apiURI = URI.create("https://api.catalogueoflife.org");
+  @NotNull
+  public URI portalURI = URI.create("https://www.catalogueoflife.org");
+
+  /**
+   * The directory where the templates for the dynamic data pages of the life.catalogue.portal are stored.
+   * See PortalPageRenderer.
+   */
+  @NotNull
+  public File portalTemplateDir = new File("/tmp/col/life.catalogue.portal-templates");
 
   /**
    * Optional URI to a TSV file that contains a mapping of legacy COL IDs to new name usage IDs.
@@ -148,6 +163,20 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    */
   public File legacyIdMapFile;
 
+  @NotNull
+  public String support = "support@catalogueoflife.org";
+
+  /**
+   * Optional sunset value for the deprecation header.
+   * See https://datatracker.ietf.org/doc/draft-ietf-httpapi-deprecation-header/
+   */
+  public LocalDate sunset;
+
+  /**
+   * Delay in milliseconds to all requests to the legacy API.
+   */
+  @Min(0)
+  public int legacyDelay = 0;
 
   @Override
   @JsonIgnore
@@ -191,7 +220,8 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
 
   public String versionString() {
     if (version != null) {
-      return version.getProperty("git.commit.id.abbrev") + "  " + version.getProperty("git.commit.time");
+      String datetime = version.getProperty("git.commit.time").substring(0, 10);
+      return version.getProperty("git.commit.id.abbrev") + " " + datetime;
     }
     return null;
   }

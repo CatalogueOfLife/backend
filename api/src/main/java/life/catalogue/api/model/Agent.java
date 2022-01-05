@@ -1,13 +1,5 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import de.undercouch.citeproc.csl.CSLName;
-
-import de.undercouch.citeproc.csl.CSLNameBuilder;
-
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.util.RegexUtils;
@@ -20,16 +12,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.jetbrains.annotations.NotNull;
-
 import javax.validation.Validator;
 import javax.validation.constraints.Email;
 
-import static java.util.Comparator.*;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
+
+import de.undercouch.citeproc.csl.CSLName;
+import de.undercouch.citeproc.csl.CSLNameBuilder;
+
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsLast;
 
 public class Agent implements Comparable<Agent> {
   private static final String ORCID_URL = "https://orcid.org/";
@@ -67,6 +64,10 @@ public class Agent implements Comparable<Agent> {
   private String email;
   private String url;
   private String note;
+
+  public static Agent person(String orcid) {
+    return new Agent(orcid, null, null, null, null, null, null, null, null, null, null, null);
+  }
 
   public static Agent person(String given, String family) {
     return new Agent(null, given, family, null, null, null, null, null, null, null, null, null);
@@ -394,7 +395,7 @@ public class Agent implements Comparable<Agent> {
 
   @JsonIgnore
   public String getCountryTitle() {
-    return country == null ? null : country.getTitle();
+    return country == null ? null : country.getName();
   }
 
   public void setCountry(Country country) {
@@ -423,6 +424,15 @@ public class Agent implements Comparable<Agent> {
 
   public void setNote(String note) {
     this.note = note;
+  }
+
+  public void addNote(String note) {
+    // merge notes if both exist
+    if (this.note != null && note != null) {
+      setNote(this.note + "; " + note);
+    } else if (note != null){
+      setNote(note);
+    }
   }
 
   public void setOrcid(String orcid) {
@@ -463,12 +473,7 @@ public class Agent implements Comparable<Agent> {
     ObjectUtils.setIfNull(getCountry(), this::setCountry, addition.getCountry());
     ObjectUtils.setIfNull(getEmail(), this::setEmail, addition.getEmail());
     ObjectUtils.setIfNull(getUrl(), this::setUrl, addition.getUrl());
-    if (note != null && addition.getNote() != null) {
-      // merge notes
-      setNote(note + "; " + addition.getNote());
-    } else if (addition.getNote() != null){
-      setNote(addition.getNote());
-    }
+    addNote(addition.getNote());
   }
 
   /**
@@ -547,6 +552,22 @@ public class Agent implements Comparable<Agent> {
   @Override
   public int compareTo(@NotNull Agent o) {
     return COMP.compare(this, o);
+  }
+
+  private String key() {
+    String name = getName();
+    return name == null ? null : name.replaceAll("\\.+", " ")
+                                     .replaceAll("  +", " ")
+                                     .trim()
+                                     .toLowerCase();
+  }
+
+  public boolean sameAs(Agent other) {
+    if (other != null) {
+      return ObjectUtils.equalsNonNull(getOrcid(), other.getOrcid())
+             || ObjectUtils.equalsNonNull(key(), other.key());
+    }
+    return false;
   }
 
 }

@@ -23,19 +23,13 @@ import org.apache.ibatis.session.SqlSessionFactory;
  * Print an entire dataset in a flat SimpleName json array.
  */
 public class JsonFlatPrinter extends AbstractTreePrinter {
-  private final Writer writer;
   private boolean first;
 
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  protected JsonFlatPrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory);
-    this.writer = writer;
-  }
-
-  public static JsonFlatPrinter dataset(int datasetKey, @Nullable String startID, boolean synonyms, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    return new JsonFlatPrinter(datasetKey, null, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
+  public JsonFlatPrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
   }
 
   @Override
@@ -72,10 +66,5 @@ public class JsonFlatPrinter extends AbstractTreePrinter {
   @Override
   protected void end(SimpleName u) throws IOException {
     // nothing to do
-  }
-
-  @Override
-  protected void flush() throws IOException {
-    writer.flush();
   }
 }

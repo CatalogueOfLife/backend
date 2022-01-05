@@ -1,11 +1,12 @@
 package life.catalogue.common.datapackage;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import life.catalogue.api.datapackage.ColdpTerm;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import life.catalogue.coldp.ColdpTerm;
 
 
 /**

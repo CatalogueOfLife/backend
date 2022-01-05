@@ -1,16 +1,23 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.MetricRegistry;
+
+import com.codahale.metrics.Timer;
+
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.VernacularName;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.dw.mail.MailConfig;
+import life.catalogue.img.ImageService;
+
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,9 +47,10 @@ public class EmailNotificationTest {
 
     Dataset d = new Dataset();
     d.setKey(1000);
-    d.setTitle("My Big D");
+    d.setTitle("My Big Day");
 
-    DatasetExporter job = new DatasetExporter(req, Users.TESTER, req.getFormat(), d, null, PgSetupRule.getSqlSessionFactory(), cfg, null) {
+    MetricRegistry registry = new MetricRegistry();
+    DatasetExporter job = new DatasetExporter(req, Users.TESTER, req.getFormat(), d, null, PgSetupRule.getSqlSessionFactory(), cfg, null, registry.timer("test.timer")) {
       @Override
       protected void export() throws Exception {
         System.out.println("EXPORT");
@@ -62,6 +70,8 @@ public class EmailNotificationTest {
           mail = EmailNotification.downloadMail(exp, d, TestDataRule.TEST_USER, cfg);
           System.out.println(mail);
         }
+        // try also with version
+        d.setVersion("12.8");
       }
     }
   }

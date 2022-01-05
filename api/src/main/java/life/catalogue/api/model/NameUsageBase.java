@@ -1,19 +1,22 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.NameFormatter;
-import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 
 /**
  *
@@ -210,10 +213,12 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     this.parentId = key;
   }
 
+  @Override
   public String getAccordingTo() {
     return accordingTo;
   }
 
+  @Override
   public void setAccordingTo(String accordingTo) {
     this.accordingTo = accordingTo;
   }

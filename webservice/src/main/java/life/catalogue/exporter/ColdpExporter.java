@@ -1,11 +1,13 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.Timer;
+
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.DatasetSourceMapper;
@@ -31,8 +33,8 @@ public class ColdpExporter extends ArchiveExporter {
   private Writer cslWriter;
   private boolean cslFirst = true;
 
-  public ColdpExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(DataFormat.COLDP, userKey, req, factory, cfg, imageService);
+  public ColdpExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+    super(DataFormat.COLDP, userKey, req, factory, cfg, imageService, timer);
   }
 
   @Override
@@ -136,16 +138,29 @@ public class ColdpExporter extends ArchiveExporter {
     writer.set(ColdpTerm.citation, r.getCitation());
     if (r.getCsl() != null) {
       var csl = r.getCsl();
+      writer.set(ColdpTerm.type, csl.getType());
       writer.set(ColdpTerm.author, csl.getAuthor());
+      writer.set(ColdpTerm.editor, csl.getEditor());
       writer.set(ColdpTerm.title, csl.getTitle());
-      if (csl.getIssued() != null && csl.getIssued().getDateParts() != null) {
-        writer.set(ColdpTerm.year, csl.getIssued().getDateParts()[0]);
-      }
-      writer.set(ColdpTerm.source, ObjectUtils.coalesce(csl.getContainerTitle(), csl.getCollectionTitle()));
-      writer.set(ColdpTerm.details, StringUtils.concatWS(csl.getVolume(), csl.getIssue(), csl.getPage(), r.getPage()));
+      writer.set(ColdpTerm.containerAuthor, csl.getContainerAuthor());
+      writer.set(ColdpTerm.containerTitle, csl.getContainerTitle());
+      writer.set(ColdpTerm.issued, csl.getIssued());
+      writer.set(ColdpTerm.accessed, csl.getAccessed());
+      writer.set(ColdpTerm.collectionTitle, csl.getCollectionTitle());
+      writer.set(ColdpTerm.collectionEditor, csl.getCollectionEditor());
+      writer.set(ColdpTerm.volume, csl.getVolume());
+      writer.set(ColdpTerm.issue, csl.getIssue());
+      writer.set(ColdpTerm.edition, csl.getEdition());
+      writer.set(ColdpTerm.page, csl.getPage());
+      writer.set(ColdpTerm.publisher, csl.getPublisher());
+      writer.set(ColdpTerm.publisherPlace, csl.getPublisherPlace());
+      writer.set(ColdpTerm.version, csl.getVersion());
+      writer.set(ColdpTerm.isbn, csl.getISBN());
+      writer.set(ColdpTerm.issn, csl.getISSN());
       writer.set(ColdpTerm.doi, csl.getDOI());
       writer.set(ColdpTerm.link, r.getCsl().getURL());
       writer.set(ColdpTerm.remarks, ObjectUtils.coalesce(r.getRemarks(), csl.getNote()));
+
       // write also to CSL-JSON file
       if (cslFirst) {
         LOG.info("Export references also as CSL-JSON");
@@ -230,9 +245,12 @@ public class ColdpExporter extends ArchiveExporter {
   void write(String taxonID, Distribution d) {
     writer.set(ColdpTerm.taxonID, taxonID);
     writer.set(ColdpTerm.sourceID, sector2datasetKey(d.getSectorKey()));
-    writer.set(ColdpTerm.area, d.getArea());
-    //writer.set(ColdpTerm.areaID, d.get());
-    writer.set(ColdpTerm.gazetteer, d.getGazetteer());
+    var area = d.getArea();
+    if (area != null) {
+      writer.set(ColdpTerm.area, area.getName());
+      writer.set(ColdpTerm.areaID, area.getId());
+      writer.set(ColdpTerm.gazetteer, area.getGazetteer());
+    }
     writer.set(ColdpTerm.status, d.getStatus());
     writer.set(ColdpTerm.referenceID, d.getReferenceId());
     //writer.set(ColdpTerm.remarks, d.getRemarks());
@@ -251,31 +269,13 @@ public class ColdpExporter extends ArchiveExporter {
   }
 
   @Override
-  void exportMetadata() throws IOException {
-    Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
-    // for releases and projects also include a source entry
-    for (Integer key : sourceKeys) {
-      Dataset src = null;
-      if (DatasetOrigin.MANAGED == dataset.getOrigin()) {
-        src = projectSourceMapper.getProjectSource(key, datasetKey);
-      } else if (DatasetOrigin.RELEASED == dataset.getOrigin()) {
-        src = projectSourceMapper.getReleaseSource(key, datasetKey);
-      }
-      if (src == null) {
-        LOG.warn("Skip missing dataset {} for archive metadata", key);
-        return;
-      }
-      // create source entry in dataset and separate file
-      dataset.addSource(src.toCitation());
-      File f = new File(tmpDir, String.format("source/%s.yaml", key));
-      DatasetYamlWriter.write(src, f);
-    }
-
-    // write to YAML
+  void writeMetadata(Dataset dataset) throws IOException {
     DatasetYamlWriter.write(dataset, new File(tmpDir, METADATA_FILENAME));
-
-    // add logo image
-    imageService.copyDatasetLogo(datasetKey, new File(tmpDir, LOGO_FILENAME));
   }
 
+  @Override
+  void writeSourceMetadata(Dataset src) throws IOException {
+    File f = new File(tmpDir, String.format("source/%s.yaml", src.getKey()));
+    DatasetYamlWriter.write(src, f);
+  }
 }

@@ -55,10 +55,6 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
 
   @Override
   public Response toResponse(T ex) {
-    return toResponse(null, ex);
-  }
-
-  protected Response toResponse(String message, T ex) {
     if (debug) {
       if (stacktrace) {
         LOG.debug("{}: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
@@ -73,10 +69,10 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
       }
     }
 
-    if (message == null && defaultMessage == null) {
+    if (defaultMessage == null) {
       return jsonErrorResponse(errorCode, message(ex));
     }
-    return jsonErrorResponse(errorCode, message == null ? defaultMessage : message, message(ex));
+    return jsonErrorResponse(errorCode, defaultMessage, message(ex));
   }
   
   String message(T e) {

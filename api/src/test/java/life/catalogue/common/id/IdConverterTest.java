@@ -1,11 +1,12 @@
 package life.catalogue.common.id;
 
 import life.catalogue.common.io.UTF8IoUtils;
-import org.junit.Test;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.util.*;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

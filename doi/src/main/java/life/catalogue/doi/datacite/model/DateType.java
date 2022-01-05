@@ -22,6 +22,7 @@ public enum DateType implements EnumValue {
     value = v;
   }
 
+  @Override
   public String value() {
     return value;
   }

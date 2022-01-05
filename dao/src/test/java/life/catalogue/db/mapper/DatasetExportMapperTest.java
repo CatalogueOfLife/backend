@@ -1,6 +1,5 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.Page;
@@ -9,6 +8,7 @@ import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.db.TestDataRule;
 
 import org.gbif.dwc.terms.DwcTerm;

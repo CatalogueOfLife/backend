@@ -12,6 +12,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Set;
@@ -26,6 +27,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
  */
 public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
   private final UsageCounter counter = new UsageCounter();
+  protected final Writer writer;
   protected final int datasetKey;
   protected final Integer sectorKey;
   protected final String startID;
@@ -40,16 +42,15 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
   protected int level = 0;
   protected int taxonCount;
   protected boolean exhausted;
-
-  protected AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, SqlSessionFactory factory) {
-    this(datasetKey, sectorKey, startID, synonyms, ranks, null, null, factory);
-  }
+  protected EVENT last;
+  protected enum EVENT {START, END}
 
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    * @param countRank the rank to be used when counting with the taxonCounter
    */
-  protected AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory) {
+  public AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    this.writer = writer;
     this.datasetKey = datasetKey;
     this.startID = startID;
     this.sectorKey = sectorKey;
@@ -82,11 +83,12 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
         if (ranks.isEmpty() || ranks.contains(p.getRank())) {
           end(p);
           level--;
+          last = EVENT.END;
         }
       }
 
     } finally {
-      flush();
+      close();
       session.close();
     }
     return counter.size();
@@ -105,6 +107,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
         if (ranks.isEmpty() || ranks.contains(p.getRank())) {
           end(p);
           level--;
+          last = EVENT.END;
         }
       }
       if (ranks.isEmpty() || ranks.contains(u.getRank())) {
@@ -114,6 +117,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
         }
         start(u);
         level++;
+        last = EVENT.START;
       }
       parents.add(u);
       
@@ -126,6 +130,8 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
 
   protected abstract void end(SimpleName u) throws IOException;
 
-  protected abstract void flush() throws IOException;
+  protected void close() throws IOException {
+    writer.flush();
+  }
 
 }

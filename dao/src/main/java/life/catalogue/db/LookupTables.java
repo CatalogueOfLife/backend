@@ -76,7 +76,7 @@ public class LookupTables {
       st.execute("CREATE TABLE __country (code text PRIMARY KEY, title TEXT)");
       for (Country cn : Country.values()) {
         pst.setString(1, cn.getIso2LetterCode());
-        pst.setString(2, cn.getTitle());
+        pst.setString(2, cn.getName());
         pst.execute();
       }
     }

@@ -1,8 +1,8 @@
 package life.catalogue.api;
 
-import org.junit.Test;
-
 import java.net.URI;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

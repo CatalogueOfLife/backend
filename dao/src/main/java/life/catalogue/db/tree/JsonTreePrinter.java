@@ -24,37 +24,12 @@ import javax.annotation.Nullable;
  */
 public class JsonTreePrinter extends AbstractTreePrinter {
   private static final int indentation = 2;
-  private final Writer writer;
-  private EVENT last;
-  private enum EVENT {START, END}
 
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  protected JsonTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory);
-    this.writer = writer;
-  }
-
-  /**
-   * Prints the entire dataset
-   */
-  public static JsonTreePrinter dataset(int datasetKey, SqlSessionFactory factory, Writer writer) {
-    return new JsonTreePrinter(datasetKey, null, null, true, null, null, null, factory, writer);
-  }
-
-  public static JsonTreePrinter dataset(int datasetKey, @Nullable String startID, boolean synonyms, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    return new JsonTreePrinter(datasetKey, null, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
-  }
-
-  /**
-   * Prints a sector from the given catalogue.
-   */
-  public static JsonTreePrinter sector(final DSID<Integer> sectorKey, SqlSessionFactory factory, Writer writer) {
-    try (SqlSession session = factory.openSession(true)) {
-      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      return new JsonTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), true, null, null, null, factory, writer);
-    }
+  public JsonTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
   }
 
   @Override
@@ -83,7 +58,6 @@ public class JsonTreePrinter extends AbstractTreePrinter {
       writer.write(",\"" + countRankPropertyName(countRank) + "\":" + taxonCount);
     }
     writer.write(",\"children\":[");
-    last = EVENT.START;
   }
 
   protected void end(SimpleName u) throws IOException {
@@ -92,11 +66,6 @@ public class JsonTreePrinter extends AbstractTreePrinter {
       writer.write(StringUtils.repeat(' ', (level-1) * indentation));
     }
     writer.write("]}");
-    last = EVENT.END;
   }
 
-  @Override
-  protected void flush() throws IOException {
-    writer.flush();
-  }
 }

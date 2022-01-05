@@ -32,6 +32,7 @@ import life.catalogue.img.ImageService;
 
 import life.catalogue.img.ImageServiceFS;
 
+import life.catalogue.release.ProjectRelease;
 import life.catalogue.release.PublicReleaseListener;
 
 import org.apache.ibatis.session.SqlSession;
@@ -96,7 +97,9 @@ public class ExportCmd extends AbstractMybatisCmd {
     if (df != null) {
       formats = Set.of(df);
     } else {
-      formats = Arrays.stream(DataFormat.values()).filter(DataFormat::isExportable).collect(Collectors.toSet());
+      formats = Arrays.stream(DataFormat.values())
+                      .filter(ProjectRelease.EXPORT_FORMATS::contains)
+                      .collect(Collectors.toSet());
     }
     System.out.printf("Export format(s): %s\n", formats.stream().map(DataFormat::getName).collect(Collectors.joining(", ")));
 
@@ -120,7 +123,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       exec = new JobExecutor(cfg.job, mail.getMailer());
       final ImageService imageService = new ImageServiceFS(cfg.img);
       final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, bus, validator);
-      manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
+      manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao, new DatasetImportDao(factory, cfg.metricsRepo), metrics);
       UserDao udao = new UserDao(factory, bus, validator);
       DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
       DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);

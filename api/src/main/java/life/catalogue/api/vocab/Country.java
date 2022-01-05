@@ -12,20 +12,15 @@
  */
 package life.catalogue.api.vocab;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import life.catalogue.api.jackson.CountrySerde;
-import life.catalogue.api.jackson.DOISerde;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * Enumeration for all current ISO 3166-1 ALPHA2 country codes using 2 letters,
@@ -51,7 +46,7 @@ import java.util.Set;
  * <p>
  */
 
-public enum Country {
+public enum Country implements Area {
   
   /**
    * Afghanistan.
@@ -1323,7 +1318,7 @@ public enum Country {
   private final String alpha2;
   private final String alpha3;
   private final int numericalCode;
-  private final String title;
+  private final String name;
   private final Continent continent;
   
   static {
@@ -1388,32 +1383,43 @@ public enum Country {
    * @param alpha2
    * @param alpha3
    * @param numericalCode
-   * @param title
+   * @param name
    */
-  Country(String alpha2, String alpha3, int numericalCode, String title) {
-    this(alpha2, alpha3, numericalCode, title, null);
+  Country(String alpha2, String alpha3, int numericalCode, String name) {
+    this(alpha2, alpha3, numericalCode, name, null);
   }
   
   /**
    * @param alpha2
    * @param alpha3
    * @param numericalCode
-   * @param title
+   * @param name
    * @param continent
    */
-  Country(String alpha2, String alpha3, int numericalCode, String title, Continent continent) {
+  Country(String alpha2, String alpha3, int numericalCode, String name, Continent continent) {
     this.alpha2 = alpha2;
     this.alpha3 = alpha3;
     this.numericalCode = numericalCode;
-    this.title = title;
+    this.name = name;
     this.continent = continent;
   }
-  
+
+  @Override
+  public Gazetteer getGazetteer() {
+    return Gazetteer.ISO;
+  }
+
+  @Override
+  public String getId() {
+    return alpha2;
+  }
+
   /**
    * @return the country name in the English language as maintained by ISO.
    */
-  public String getTitle() {
-    return title;
+  @Override
+  public String getName() {
+    return name;
   }
   
   /**

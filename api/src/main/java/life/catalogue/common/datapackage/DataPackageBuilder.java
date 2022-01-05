@@ -1,35 +1,48 @@
 package life.catalogue.common.datapackage;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import life.catalogue.api.datapackage.ColdpTerm;
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.datapackage.PackageDescriptor;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.common.text.UnicodeUtils;
-import org.apache.commons.io.FilenameUtils;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 public class DataPackageBuilder {
-  private static final String MONOMIAL_PATTERN = "[A-ZÏËÖÜÄÉÈČÁÀÆŒ](?:\\.|[a-zïëöüäåéèčáàæœ]+)(?:-[A-ZÏËÖÜÄÉÈČÁÀÆŒ]?[a-zïëöüäåéèčáàæœ]+)?";
+  private static final String MONOMIAL_PATTERN = "^[A-Z\\p{Lu}]\\p{L}+$";
   
   // only non string data types here
-  private static final Map<ColdpTerm, String> dataTypes = ImmutableMap.<ColdpTerm, String>builder()
-      .put(ColdpTerm.year, Field.TYPE_YEAR)
-      .put(ColdpTerm.scrutinizerDate, Field.TYPE_DATE)
-      .put(ColdpTerm.created, Field.TYPE_DATETIME)
-      .put(ColdpTerm.extinct, Field.TYPE_BOOLEAN)
-      .build();
+  private static final Map<Class, String> dataTypes = Map.of(
+    String.class, Field.TYPE_STRING,
+    Integer.class, Field.TYPE_INTEGER,
+    Double.class, Field.TYPE_NUMBER,
+    Year.class, Field.TYPE_YEAR,
+    Date.class, Field.TYPE_DATE,
+    LocalDateTime.class, Field.TYPE_DATETIME,
+    Boolean.class, Field.TYPE_BOOLEAN,
+    URI.class, Field.TYPE_STRING,
+    Enum.class, Field.TYPE_STRING
+  );
   
-  private static final Map<ColdpTerm, String> dataFormats = ImmutableMap.<ColdpTerm, String>builder()
-      .put(ColdpTerm.link, Field.FORMAT_URI)
-      .build();
+  private static final Map<Class, String> dataFormats = Map.of(
+      URI.class, Field.FORMAT_URI
+  );
   
   private static final Set<ColdpTerm> monomials = ImmutableSet.copyOf(
     Arrays.stream(ColdpTerm.DENORMALIZED_RANKS)
@@ -37,16 +50,37 @@ public class DataPackageBuilder {
       .collect(Collectors.toSet())
   );
 
-  private static final Map<ColdpTerm, Class<? extends Enum>> enums = ImmutableMap.<ColdpTerm, Class<? extends Enum>>builder()
-      .put(ColdpTerm.status, TaxonomicStatus.class)
-      .put(ColdpTerm.type, NomRelType.class)
-      .put(ColdpTerm.code, NomCode.class)
-      .put(ColdpTerm.country, Country.class)
-      .put(ColdpTerm.format, DataFormat.class)
-      .put(ColdpTerm.gazetteer, Gazetteer.class)
-      .put(ColdpTerm.rank, Rank.class)
-      .put(ColdpTerm.environment, Environment.class)
-      .build();
+  /**
+   * Vocabulary enums by term, then rowType.
+   * If ColdpTerm.ID is given for the only rowType then it is assumed it applies to any rowType and is always the same enum.
+   */
+  private static final Map<ColdpTerm, Map<ColdpTerm, Class<? extends Enum>>> enums = Map.of(
+    ColdpTerm.code, Map.of(ColdpTerm.ID, NomCode.class),
+    ColdpTerm.country, Map.of(ColdpTerm.ID, Country.class),
+    ColdpTerm.environment, Map.of(ColdpTerm.ID, Environment.class),
+    ColdpTerm.format, Map.of(ColdpTerm.ID, TreatmentFormat.class),
+    ColdpTerm.gazetteer, Map.of(ColdpTerm.ID, Gazetteer.class),
+    ColdpTerm.nameStatus, Map.of(ColdpTerm.ID, NomStatus.class),
+    ColdpTerm.rank, Map.of(ColdpTerm.ID, Rank.class),
+    ColdpTerm.sex, Map.of(ColdpTerm.ID, Sex.class),
+
+    ColdpTerm.type, Map.of(
+      ColdpTerm.Reference, CSLType.class,
+      ColdpTerm.NameRelation, NomRelType.class,
+      ColdpTerm.TaxonConceptRelation, TaxonConceptRelType.class,
+      ColdpTerm.SpeciesInteraction, SpeciesInteractionType.class,
+      ColdpTerm.Media, MediaType.class,
+      ColdpTerm.SpeciesEstimate, EstimateType.class
+    ),
+    ColdpTerm.status, Map.of(
+      ColdpTerm.Name, NomStatus.class,
+      ColdpTerm.TypeMaterial, TypeStatus.class,
+      ColdpTerm.Synonym, TaxonomicStatus.class,
+      ColdpTerm.Taxon, TaxonomicStatus.class,
+      ColdpTerm.NameUsage, TaxonomicStatus.class,
+      ColdpTerm.Distribution, DistributionStatus.class
+    )
+  );
   
   private static final Map<ColdpTerm, ForeignKey> foreignKeys = ImmutableMap.<ColdpTerm, ForeignKey>builder()
       .put(ColdpTerm.referenceID, new ForeignKey(ColdpTerm.referenceID, ColdpTerm.Reference, ColdpTerm.ID))
@@ -81,7 +115,9 @@ public class DataPackageBuilder {
     for (String res : pd.getResources()) {
       Resource r = new Resource();
       r.setPath(resourceUrl(pd.getBase(), res));
-      if (!res.toLowerCase().endsWith("csv")) {
+      if (res.toLowerCase().endsWith("csv")) {
+        r.setDialect(Dialect.CSV);
+      } else {
         r.setDialect(Dialect.TSV);
       }
       r.setSchema(buildSchema(res));
@@ -107,8 +143,8 @@ public class DataPackageBuilder {
     s.setRowType(rowType);
     
     for (ColdpTerm t : ColdpTerm.RESOURCES.get(rowType)) {
-      String type = dataTypes.getOrDefault(t, Field.TYPE_STRING);
-      String format = dataFormats.getOrDefault(t, Field.FORMAT_DEFAULT);
+      String type = dataTypes.get(t.getType());
+      String format = dataFormats.getOrDefault(t.getType(), Field.FORMAT_DEFAULT);
       Map<String, Object> constraints = new HashMap<>();
       if (enums.containsKey(t)) {
         constraints.put(Field.CONSTRAINT_KEY_ENUM, enumValues(rowType, t));
@@ -139,14 +175,11 @@ public class DataPackageBuilder {
     }
     
     Class<? extends Enum> enumClass;
-    if (t == ColdpTerm.status && rowType == ColdpTerm.Name) {
-      enumClass = NomStatus.class;
-      
-    } else if (t == ColdpTerm.type && rowType == ColdpTerm.Media) {
-      enumClass = MediaType.class;
-
+    var resources = enums.get(t);
+    if (resources.size() == 1 && resources.containsKey(ColdpTerm.ID)) {
+      enumClass = resources.get(ColdpTerm.ID);
     } else {
-      enumClass = enums.get(t);
+      enumClass = resources.get(rowType);
     }
 
     return enumValues(enumClass, PermissiveEnumSerde::enumValueName);

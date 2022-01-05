@@ -1,10 +1,6 @@
 package life.catalogue.doi;
 
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DoiChange;
-
-import com.google.common.eventbus.Subscribe;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
@@ -17,19 +13,20 @@ import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiException;
 import life.catalogue.doi.service.DoiService;
-
 import life.catalogue.release.ProjectRelease;
+
+import java.net.URI;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-
-import java.net.URI;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import com.google.common.eventbus.Subscribe;
 
 /**
  * Service to update or delete DOI metadata when datasets change or get deleted.

@@ -52,8 +52,8 @@ public class CoordParser {
       return Optional.empty();
     }
 
-    Optional<Double> lat = DecimalParser.PARSER.parse(latitude);
-    Optional<Double> lon = DecimalParser.PARSER.parse(longitude);
+    var lat = DecimalParser.PARSER.parse(latitude);
+    var lon = DecimalParser.PARSER.parse(longitude);
     if (lat.isPresent() && lon.isPresent()) {
       LatLon ll = new LatLon(lat.get(), lon.get());
       if (ll.isValid()) {

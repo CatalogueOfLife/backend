@@ -2,8 +2,8 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.coldp.MetadataParser;
@@ -11,16 +11,16 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.reference.ReferenceFactory;
 
-import org.apache.commons.io.FilenameUtils;
-
 import org.gbif.dwc.terms.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+
+import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -48,7 +48,15 @@ public class DwcaInserter extends NeoCsvInserter {
         u -> store.createNameAndUsage(u) != null
     );
 
-    // TODO: read type specimen extension and update name usage!
+    // https://github.com/CatalogueOfLife/backend/issues/1071
+    // TODO: read type specimen extension and create type material & update name usage!
+    // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
+    //updateEntities(reader, DwcTerm.Taxon,
+    //    inter::interpret,
+    //    u -> store.createNameAndUsage(u) != null
+    //);
+
+    // TODO: read occurrence extension and create type material
     // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
     //updateEntities(reader, DwcTerm.Taxon,
     //    inter::interpret,
@@ -87,7 +95,9 @@ public class DwcaInserter extends NeoCsvInserter {
         DwcaTerm.ID,
         (t, r) -> {
           if (store.references().create(r)) {
-            t.usage.getReferenceIds().add(r.getId());
+            if (t.isNameUsageBase()) {
+              t.asNameUsageBase().getReferenceIds().add(r.getId());
+            }
           } else {
 
           }

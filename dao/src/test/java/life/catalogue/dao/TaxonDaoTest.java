@@ -70,20 +70,38 @@ public class TaxonDaoTest extends DaoTestBase {
 
 		assertEquals(refKeys1, refKeys2);
 
-    assertEquals(2, info.getDistributions().size());
+    assertEquals(4, info.getDistributions().size());
     for (Distribution d : info.getDistributions()) {
       switch (d.getId()) {
         case 1:
-          assertEquals("Berlin", d.getArea());
-          assertEquals(Gazetteer.TEXT, d.getGazetteer());
+          assertEquals("Berlin", d.getArea().getName());
+          assertEquals(Gazetteer.TEXT, d.getArea().getGazetteer());
           assertNull(d.getStatus());
+          assertNull(d.getArea().getId());
           assertEquals("ref-1", d.getReferenceId());
           break;
         case 2:
-          assertEquals("Leiden", d.getArea());
-          assertEquals(Gazetteer.TEXT, d.getGazetteer());
+          assertEquals("Leiden", d.getArea().getName());
+          assertEquals(Gazetteer.TEXT, d.getArea().getGazetteer());
           assertNull(d.getStatus());
+          assertNull(d.getArea().getId());
           assertEquals("ref-1b" ,d.getReferenceId());
+          break;
+        case 4:
+          assertEquals(new AreaImpl(Country.GERMANY), d.getArea());
+          assertEquals(Gazetteer.ISO, d.getArea().getGazetteer());
+          assertNull(d.getStatus());
+          assertNotNull(d.getArea().getId());
+          assertNotNull(d.getArea().getName());
+          assertNull(d.getReferenceId());
+          break;
+        case 5:
+          assertEquals(TdwgArea.of("BZE"), d.getArea());
+          assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
+          assertNull(d.getStatus());
+          assertEquals("BZE", d.getArea().getId());
+          assertNotNull(d.getArea().getName());
+          assertNull(d.getReferenceId());
           break;
         default:
           fail("Unexpected distribution");

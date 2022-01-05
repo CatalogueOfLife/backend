@@ -611,7 +611,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setHighlight(false);
     // Only search in authorship field
-    query.setContent(EnumSet.of(NameUsageSearchRequest.SearchContent.AUTHORSHIP));
+    query.setSingleContent(NameUsageSearchRequest.SearchContent.AUTHORSHIP);
     query.setQ("UNLIKE");
 
     // No match
@@ -642,6 +642,36 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     ResultPage<NameUsageWrapper> result = search(query);
 
     assertEquals(0, result.getResult().size());
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/992
+   */
+  @Test
+  @Ignore("Generic fuzzy search not yet working")
+  public void fuzzySearch() {
+
+    // Define search
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setSearchType(SearchType.WHOLE_WORDS);
+    // Only search in sciname field
+    query.setSingleContent(NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME);
+    query.setQ("Lilium rhodopaeum");
+
+    NameUsageWrapper uLr = index(minimalTaxon(Rank.SPECIES, "Lilium rhodopeum", "Delip."));
+
+    // No match
+    NameUsageWrapper uLr2 = index(minimalTaxon(Rank.SPECIES, "Lilium roseneum", "Delip."));
+
+    ResultPage<NameUsageWrapper> result = search(query);
+    assertEquals(0, result.getResult().size());
+
+    // fuzzy now
+    query.setFuzzy(true);
+    result = search(query);
+    assertEquals(1, result.getResult().size());
+    NameUsageWrapper res = result.getResult().get(0);
+    assertEquals(uLr.getUsage().getName().getScientificName(), res.getUsage().getName().getScientificName());
   }
 
   static <T extends NameUsageBase> T fill (T nu, String id) {

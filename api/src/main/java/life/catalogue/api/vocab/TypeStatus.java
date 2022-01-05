@@ -2,8 +2,9 @@ package life.catalogue.api.vocab;
 
 import org.gbif.nameparser.api.NomCode;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
+
+import javax.annotation.Nullable;
 
 import static org.gbif.nameparser.api.NomCode.*;
 /**

@@ -1,14 +1,16 @@
 package life.catalogue.api.model;
 
-import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
+
 import org.gbif.dwc.terms.Term;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
+
+import com.google.common.collect.Maps;
 
 /**
  * Metrics and import details about a single dataset import event.

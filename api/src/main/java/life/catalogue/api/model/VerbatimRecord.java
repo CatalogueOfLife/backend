@@ -1,24 +1,30 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import life.catalogue.api.datapackage.ColdpTerm;
-import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.api.vocab.Issue;
-import org.apache.commons.text.StringEscapeUtils;
+import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.coldp.DwcUnofficialTerm;
+import life.catalogue.common.text.StringUtils;
+import life.catalogue.common.text.UnicodeUtils;
+
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.text.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -180,7 +186,31 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
       return x;
     }
   }
-  
+
+  /**
+   * This cleans the string from invisible characters and homoglyphs:
+   * - removes invisible control characters
+   * - normalises space characters
+   * - replaces various homoglyphs with their standard form
+   */
+  private String cleanInvisible(String x) {
+    if (Strings.isNullOrEmpty(x)) {
+      return null;
+    }
+    String cleaned = StringUtils.cleanInvisible(x);
+    if (!x.equals(cleaned)) {
+      issues.add(Issue.INVISIBLE_CHARACTERS);
+    }
+    return cleaned;
+  }
+
+  private String flagHomoglyphs(String x) {
+    if (UnicodeUtils.containsHomoglyphs(x)) {
+      issues.add(Issue.HOMOGLYPH_CHARACTERS);
+    }
+    return x;
+  }
+
   /**
    * @return true if a term exists and is not null or an empty string
    */
@@ -216,7 +246,7 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     checkNotNull(term, "term can't be null");
     String val = terms.get(term);
     if (val != null) {
-      return unescape(val);
+      return flagHomoglyphs(cleanInvisible(unescape(val)));
     }
     return null;
   }

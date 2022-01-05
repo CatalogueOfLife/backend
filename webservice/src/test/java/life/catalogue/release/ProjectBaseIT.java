@@ -2,7 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.HttpClientUtils;
 import life.catalogue.WsServerConfig;
-import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.doi.DoiUpdater;
@@ -40,6 +40,7 @@ public abstract class ProjectBaseIT {
   EstimateDao eDao;
   SectorDao sdao;
   DatasetDao dDao;
+  NameDao nDao;
   TaxonDao tdao;
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   ReleaseManager releaseManager;
@@ -56,19 +57,19 @@ public abstract class ProjectBaseIT {
     UserDao udao = mock(UserDao.class);
     DoiService doiService = mock(DoiService.class);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    LatestDatasetKeyCache lrCache = mock(LatestDatasetKeyCache.class);
+    LatestDatasetKeyCacheImpl lrCache = mock(LatestDatasetKeyCacheImpl.class);
     DoiUpdater doiUpdater = new DoiUpdater(PgSetupRule.getSqlSessionFactory(), doiService, lrCache, converter);
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus, validator);
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     eDao = new EstimateDao(PgSetupRule.getSqlSessionFactory(), validator);
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
     sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     client = HttpClientUtils.httpsClient();
-    releaseManager = new ReleaseManager(client, diDao, dDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), validator, cfg);
+    releaseManager = new ReleaseManager(client, diDao, dDao, nDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), validator, cfg);
   }
 
   @After

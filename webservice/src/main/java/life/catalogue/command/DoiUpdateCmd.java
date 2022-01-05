@@ -131,6 +131,8 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       }
     } catch (DoiException e) {
       LOG.error("Error updating DOIs for release {} with DOI {}", release.getKey(), doi, e);
+    } finally {
+      LOG.info("Total releases created={}, updated={}, published={}. Total sources updated={}, published={}", releaseCreated, releaseUpdated, releasePublished,  sourceUpdated, sourcePublished);
     }
   }
 

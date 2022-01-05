@@ -1,10 +1,11 @@
 package life.catalogue.common.kryo;
 
+import life.catalogue.common.date.FuzzyDate;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import life.catalogue.common.date.FuzzyDate;
 
 public class FuzzyDateSerializer extends Serializer<FuzzyDate> {
 

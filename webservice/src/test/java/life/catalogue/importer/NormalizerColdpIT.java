@@ -1,13 +1,14 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.datapackage.ColdpTerm;
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.model.NameRelation;
+import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.common.csl.CslUtil;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -84,8 +85,20 @@ public class NormalizerColdpIT extends NormalizerITBase {
       });
   
       store.references().forEach(r -> {
+        assertNotNull(r.getId());
         assertNotNull(r.getCitation());
-        assertNotNull(r.getCsl().getTitle());
+        if (r.getId().equals("greene1895")) {
+          assertNull(r.getCsl().getTitle());
+          assertNotNull(r.getCsl().getContainerTitle());
+        } else if (r.getId().equals("rel")) {
+          assertNull(r.getCsl().getTitle());
+          assertNull(r.getCsl().getContainerTitle());
+        } else {
+          assertNotNull(r.getCsl().getTitle());
+        }
+        if (r.getCsl().getType() == CSLType.ARTICLE_JOURNAL) {
+          assertNotNull(r.getCsl().getContainerTitle());
+        }
       });
 
       t = usageByNameID("1001c");
@@ -260,7 +273,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       t = usageByID("778");
       assertFalse(t.isSynonym());
       assertEquals(TaxonomicStatus.ACCEPTED, t.usage.getStatus());
-      Taxon tt = t.getTaxon();
+      Taxon tt = t.asTaxon();
       assertTrue(tt.isExtinct());
       assertNull(tt.getNamePhrase());
       assertEquals("†Anstenoptilia marmarodactyla Dyar, 1902", tt.getLabel());
@@ -287,7 +300,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals(1, rels.size());
 
       for (VerbatimRecord vr : store.verbatimList()) {
-        if (vr.getType()== ColdpTerm.NameRelation) {
+        if (vr.getType() == ColdpTerm.NameRelation) {
           if (vr.getRaw(ColdpTerm.nameID).equals(key)) {
             assertTrue(vr.hasIssue(Issue.SELF_REFERENCED_RELATION));
           } else {
@@ -344,9 +357,53 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(12);
 
     printTree();
+  }
 
-    //try (Transaction tx = store.getNeo().beginTx()) {
-    //}
+
+  @Test
+  public void bareNameUsages() throws Exception {
+    normalize(15);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      //125,,Species,bare name,,Jupunba bara,L.,,,,,
+      NeoName nn = nameByID("125");
+      assertEquals("Jupunba bara", nn.getName().getScientificName());
+      assertEquals("L.", nn.getName().getAuthorship());
+      var nu = usageByID("125");
+      assertNull(nu);
+
+      //124,,Species,unplaced,unavailable,Jupunba nuduta,L.,,,,nom.nud.,
+      nn = nameByID("124");
+      assertEquals("Jupunba nuduta", nn.getName().getScientificName());
+      assertEquals("L.", nn.getName().getAuthorship());
+      assertEquals("nom.nud.", nn.getName().getRemarks());
+      assertEquals(NomStatus.NOT_ESTABLISHED, nn.getName().getNomStatus());
+      nu = usageByID(nn.getId());
+      assertNull(nu);
+
+      // 331502,609287,Species,Synonym,,Jupunba abbottii,(Rose & Leonard) Britton & Rose,R2,1928,R2,nom.illeg.,
+      nn = nameByID("331502");
+      assertEquals("Jupunba abbottii", nn.getName().getScientificName());
+      assertEquals("(Rose & Leonard) Britton & Rose", nn.getName().getAuthorship());
+      assertEquals("nom.illeg.", nn.getName().getRemarks());
+      assertEquals((Integer)1928, nn.getName().getPublishedInYear());
+      assertEquals("R2", nn.getName().getPublishedInId());
+      //TODO: derive status from remarks!
+      //assertEquals(NomStatus.UNACCEPTABLE, nn.getName().getNomStatus());
+      nu = usageByID(nn.getId());
+      assertNotNull(nu);
+      assertEquals(TaxonomicStatus.SYNONYM, nu.usage.getStatus());
+
+      // test reference
+      // R2,Barneby & J.W.Grimes,N. Amer. Fl.,1928,23,,27
+      Reference r2 = refByID("R2");
+      assertEquals("Barneby, & Grimes, J. W. (1928). N. Amer. Fl., 23, 27.", r2.getCitation());
+      assertEquals("Barneby; Grimes,J.W.", CslUtil.toColdpString(r2.getCsl().getAuthor()));
+      assertEquals("N. Amer. Fl.", r2.getCsl().getContainerTitle());
+      assertEquals("23", r2.getCsl().getVolume());
+      assertNull(r2.getCsl().getIssue());
+      assertEquals("27", r2.getCsl().getPage());
+    }
   }
 
 }

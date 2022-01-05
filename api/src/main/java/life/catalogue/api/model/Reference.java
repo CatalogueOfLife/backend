@@ -1,7 +1,8 @@
 package life.catalogue.api.model;
 
-import javax.annotation.Nonnull;
 import java.util.Objects;
+
+import javax.annotation.Nonnull;
 
 /**
  * Simplified citation class linked to an optional serial container.

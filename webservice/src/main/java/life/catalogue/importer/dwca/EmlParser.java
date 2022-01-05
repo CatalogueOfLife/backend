@@ -238,7 +238,7 @@ public class EmlParser {
                   try {
                     d.setLogo(URI.create(text.toString()));
                   } catch (IllegalArgumentException e) {
-                    LOG.warn("Invalid logo URL {}", text.toString());
+                    LOG.warn("Invalid logo URL {}", text);
                   }
                   break;
                 case "confidence":
@@ -246,6 +246,9 @@ public class EmlParser {
                   break;
                 case "completeness":
                   d.setCompleteness(integer(text));
+                  break;
+                case "version":
+                  d.setVersion(text.toString());
                   break;
                 case "citation":
                   Citation cite = new Citation();

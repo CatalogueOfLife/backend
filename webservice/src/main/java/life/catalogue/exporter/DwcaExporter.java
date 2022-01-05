@@ -1,7 +1,8 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.Timer;
+
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.TermWriter;
@@ -39,8 +40,8 @@ public class DwcaExporter extends ArchiveExporter {
   private final UriBuilder logoUriBuilder;
   private final AtomicInteger bareNameID = new AtomicInteger(1);
 
-  public DwcaExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(DataFormat.DWCA, userKey, req, factory, cfg, imageService);
+  public DwcaExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+    super(DataFormat.DWCA, userKey, req, factory, cfg, imageService, timer);
     logoUriBuilder = UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
   }
 
@@ -55,39 +56,21 @@ public class DwcaExporter extends ArchiveExporter {
       if (writer2 != null) {
         writer2.close();
       }
-      writer2 = new TermWriter.TSV(tmpDir, terms[0], terms[1], List.of(Arrays.copyOfRange(terms, 2, terms.length)));
+      writer2 = new TermWriter.TSV(tmpDir, terms[0], List.of(Arrays.copyOfRange(terms, 1, terms.length)));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  void exportMetadata() throws IOException {
-    // add CLB logo URL if missing
-    if (dataset.getLogo() == null && imageService.datasetLogoExists(dataset.getKey())) {
-      dataset.setLogo(logoUriBuilder.build(dataset.getKey()));
-    }
-
-    // main dataset metadata
+  void writeMetadata(Dataset dataset) throws IOException {
     EmlWriter.write(dataset, new File(tmpDir, EML_FILENAME));
+  }
 
-    // extract unique source datasets if sectors were given
-    Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
-    // for releases and projects also include an EML for each source dataset as defined by all sectors
-    for (Integer key : sourceKeys) {
-      Dataset src = null;
-      if (DatasetOrigin.MANAGED == dataset.getOrigin()) {
-        src = projectSourceMapper.getProjectSource(key, datasetKey);
-      } else if (DatasetOrigin.RELEASED == dataset.getOrigin()) {
-        src = projectSourceMapper.getReleaseSource(key, datasetKey);
-      }
-      if (src == null) {
-        LOG.warn("Skip missing dataset {} for archive metadata", key);
-        return;
-      }
-      File f = new File(tmpDir, String.format("dataset/%s.xml", key));
-      EmlWriter.write(projectSourceMapper.getReleaseSource(key, datasetKey), f);
-    }
+  @Override
+  void writeSourceMetadata(Dataset src) throws IOException {
+    File f = new File(tmpDir, String.format("dataset/%s.xml", src.getKey()));
+    EmlWriter.write(src, f);
   }
 
   @Override
@@ -215,12 +198,11 @@ public class DwcaExporter extends ArchiveExporter {
   void write(String taxonID, Distribution d) {
     writer.set(DwcTerm.taxonID, taxonID);
     writer.set(DwcTerm.occurrenceStatus, d.getStatus());
-    if (d.getGazetteer() == Gazetteer.TEXT) {
-        writer.set(DwcTerm.locality, d.getArea());
-    } else if (d.getGazetteer() == Gazetteer.ISO) {
-        writer.set(DwcTerm.countryCode, d.getArea());
-    } else {
-        writer.set(DwcTerm.locationID, d.getGazetteer().locationID(d.getArea()));
+    writer.set(DwcTerm.locality, d.getArea().getName());
+    if (d.getArea().getGazetteer() == Gazetteer.ISO) {
+        writer.set(DwcTerm.countryCode, d.getArea().getId());
+    } else if (d.getArea().getGlobalId() != null) {
+        writer.set(DwcTerm.locationID, d.getArea().getGlobalId());
     }
     if (d.getReferenceId() != null) {
       writer.set(DcTerm.source, refCache.getUnchecked(d.getReferenceId()));

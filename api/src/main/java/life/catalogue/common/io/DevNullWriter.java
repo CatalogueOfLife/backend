@@ -1,9 +1,9 @@
 package life.catalogue.common.io;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
 import java.io.Writer;
+
+import org.jetbrains.annotations.NotNull;
 
 public class DevNullWriter extends Writer {
   @Override

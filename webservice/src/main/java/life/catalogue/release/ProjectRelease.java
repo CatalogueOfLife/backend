@@ -11,6 +11,7 @@ import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class ProjectRelease extends AbstractProjectCopy {
+  public static Set<DataFormat> EXPORT_FORMATS = Set.of(DataFormat.TEXT_TREE, DataFormat.COLDP, DataFormat.DWCA, DataFormat.ACEF);
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
 
   private final ImageService imageService;
@@ -44,27 +46,36 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ExportManager exportManager;
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
+  private final NameDao nDao;
 
-  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
+  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super("releasing", factory, diDao, dDao, indexService, validator, userKey, datasetKey, true);
     this.imageService = imageService;
     this.doiService = doiService;
+    this.nDao = nDao;
     this.cfg = cfg;
     this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
     this.colseo = UriBuilder.fromUri(cfg.apiURI).path("colseo").build();
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
-    if (modifyDatasetWithKey(newDataset)) {
-      dDao.update(newDataset, userKey);
-    }
+    // point to release in CLB - this requires the datasetKey to exist already
+    newDataset.setUrl(UriBuilder.fromUri(cfg.clbURI)
+                       .path("dataset")
+                       .path(newDataset.getKey().toString())
+                       .build());
+    dDao.update(newDataset, userKey);
   }
 
   @Override
   protected void modifyDataset(Dataset d, DatasetSettings ds) {
     super.modifyDataset(d, ds);
+    modifyDataset(datasetKey, d, ds, srcDao, new AuthorlistGenerator(validator));
+  }
+
+  public static void modifyDataset(int datasetKey, Dataset d, DatasetSettings ds, DatasetSourceDao srcDao, AuthorlistGenerator authGen) {
     d.setOrigin(DatasetOrigin.RELEASED);
 
     final FuzzyDate today = FuzzyDate.now();
@@ -75,71 +86,19 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setAlias(alias);
 
     // append authors for release?
-    final List<Agent> authors = new ArrayList<>();
-    if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {
-      srcDao.list(datasetKey, null, false).forEach(src -> {
-        if (src.getCreator() != null) {
-          authors.addAll(setSourceNote(src, src.getCreator()));
-        }
-        if (src.getEditor() != null) {
-          authors.addAll(setSourceNote(src, src.getEditor()));
-        }
-      });
-    }
-    if (ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS) && d.getContributor() != null) {
-      authors.addAll(setSourceNote(d, d.getContributor()));
-    }
-    // remove authors without a family name and distinct them based in the generated name alone!
-    Map<String, Agent> uniq = new HashMap<>();
-    for (Agent a : authors) {
-      if (a != null) {
-        String name = a.getName();
-        if (name != null) {
-          String key = name.replaceAll("\\.", " ").replaceAll("  +", " ").toLowerCase();
-          if (uniq.containsKey(key)) {
-            uniq.get(key).merge(a);
-          } else {
-            uniq.put(key, a);
-          }
-        }
-      }
-    }
-    // sort them alphabetically
-    if (!uniq.isEmpty()) {
-      authors.clear();
-      authors.addAll(uniq.values());
-      Collections.sort(authors);
-      // now append them to already existing creators
-      if (d.getCreator() == null) {
-        d.setCreator(new ArrayList<>());
-        ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, 0);
-      } else {
-        ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, d.getCreator().size());
-      }
-      // verify emails as they can break validation on insert
-      authors.forEach(a -> a.validateAndNullify(validator));
-      d.getCreator().addAll(authors);
-    }
+    authGen.appendSourceAuthors(d, srcDao.list(datasetKey, null, false), ds);
 
-    d.setPrivat(true); // all releases are private candidate releases first
-  }
-
-  private boolean modifyDatasetWithKey(Dataset d) {
-    // point to release in CLB - this requires the datasetKey to exist already
-    d.setUrl(UriBuilder.fromUri(cfg.clbURI)
-                       .path("dataset")
-                       .path(d.getKey().toString())
-                       .build());
-    return true;
-  }
-
-  private List<Agent> setSourceNote(Dataset d, List<Agent> agents) {
-    agents.forEach(a -> a.setNote(d.getAliasOrTitle()));
-    return agents;
+    // all releases are private candidate releases first
+    d.setPrivat(true);
   }
 
   @Override
   void prepWork() throws Exception {
+    if (settings.isEnabled(Setting.RELEASE_REMOVE_BARE_NAMES)) {
+      LOG.info("Remove bare names from project {}", datasetKey);
+      nDao.deleteOrphans(datasetKey, null, user);
+    }
+
     try (SqlSession session = factory.openSession(true)) {
       // find previous public release needed for DOI management
       final Integer prevReleaseKey = findPreviousRelease(datasetKey, session);
@@ -254,13 +213,12 @@ public class ProjectRelease extends AbstractProjectCopy {
       VarnishUtils.ban(client, colseo); // flush also /colseo which also points to latest releases
     }
     // kick off exports
-    for (DataFormat df : DataFormat.values()) {
-      if (df.isExportable()) {
-        ExportRequest req = new ExportRequest();
-        req.setDatasetKey(newDatasetKey);
-        req.setFormat(df);
-        exportManager.submit(req, user);
-      }
+    for (DataFormat df : EXPORT_FORMATS) {
+      ExportRequest req = new ExportRequest();
+      req.setDatasetKey(newDatasetKey);
+      req.setFormat(df);
+      req.setExcel(false);
+      exportManager.submit(req, user);
     }
   }
 

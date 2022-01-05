@@ -1,8 +1,8 @@
 package life.catalogue.common.tax;
 
 
-import com.google.common.base.Joiner;
 import life.catalogue.api.model.Name;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NomCode;
@@ -12,6 +12,8 @@ import org.gbif.nameparser.util.UnicodeUtils;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+
+import com.google.common.base.Joiner;
 
 /**
  *

@@ -1,10 +1,10 @@
 package life.catalogue.common.io;
 
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 

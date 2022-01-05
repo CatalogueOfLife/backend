@@ -1,16 +1,19 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.util.regex.Matcher;
+
+import org.junit.Test;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import static org.junit.Assert.*;
 

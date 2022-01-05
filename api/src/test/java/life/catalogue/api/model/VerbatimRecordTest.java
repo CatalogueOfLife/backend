@@ -1,12 +1,15 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.Issue;
+
+import life.catalogue.coldp.ColdpTerm;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -76,13 +79,16 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
   
     init();
     assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
-    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.scientificName));
+    assertFalse(v.hasIssue(Issue.INVISIBLE_CHARACTERS));
+    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.scientificName));
     assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
-  
+    assertTrue(v.hasIssue(Issue.INVISIBLE_CHARACTERS));
+
     init();
     assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
-    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.specificEpithet));
+    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.specificEpithet));
     assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.hasIssue(Issue.INVISIBLE_CHARACTERS));
   }
   
   @Test

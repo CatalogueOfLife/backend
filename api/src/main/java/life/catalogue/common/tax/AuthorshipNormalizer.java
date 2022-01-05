@@ -1,19 +1,22 @@
 package life.catalogue.common.tax;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import life.catalogue.api.model.Name;
 import life.catalogue.common.io.Resources;
-import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.Authorship;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import static life.catalogue.common.text.StringUtils.foldToAscii;
 
@@ -227,7 +230,7 @@ public class AuthorshipNormalizer {
             smaller = larger;
             larger = tmp;
           }
-          // remove all of the chars from the larger queue and see if any remain
+          // is the smaller included in the larger, possibly requiring multiple chars?
           if (org.apache.commons.collections4.CollectionUtils.isSubCollection(smaller, larger)) {
             // one is a subset of the other
             return false;

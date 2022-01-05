@@ -1,14 +1,12 @@
 package life.catalogue;
 
-import com.google.common.eventbus.AsyncEventBus;
-
-import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.datapackage.DwcUnofficialTerm;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.cache.CacheFlush;
+import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -32,6 +30,7 @@ import life.catalogue.dw.health.*;
 import life.catalogue.dw.jersey.ColJerseyBundle;
 import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.metrics.GangliaBundle;
+import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
@@ -45,17 +44,16 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
-import life.catalogue.legacy.IdMap;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
+import life.catalogue.portal.PortalPageRenderer;
 import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
-import life.catalogue.resources.parser.IdEncoderResource;
-import life.catalogue.resources.parser.MetadataParserResource;
-import life.catalogue.resources.parser.NameParserResource;
-import life.catalogue.resources.parser.ParserResource;
+import life.catalogue.resources.legacy.IdMap;
+import life.catalogue.resources.legacy.LegacyWebserviceResource;
+import life.catalogue.resources.parser.*;
 import life.catalogue.swagger.OpenApiFactory;
 
 import org.gbif.dwc.terms.TermFactory;
@@ -82,11 +80,11 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 
 import io.dropwizard.Application;
 import io.dropwizard.client.DropwizardApacheConnector;
-import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.forms.MultiPartBundle;
@@ -195,7 +193,10 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetExport.setDownloadBaseURI(cfg.downloadURI);
 
     // http client pool is managed via DW lifecycle already
-    httpClient = new HttpClientBuilder(env).using(cfg.client).build(getUserAgent(cfg));
+    // use a custom metrics naming strategy that does not involve the user agent name with a version
+    httpClient = new HttpClientBuilder(env)
+      .using(cfg.client)
+      .build(getUserAgent(cfg));
 
     // reuse the same http client pool also for jersey clients!
     JerseyClientBuilder builder = new JerseyClientBuilder(env)
@@ -262,8 +263,8 @@ public class WsServer extends Application<WsServerConfig> {
     final FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(getSqlSessionFactory(), cfg.metricsRepo);
 
     // diff
-    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);
-    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao);
+    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao, cfg.diffTimeout);
+    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao, cfg.diffTimeout);
     env.healthChecks().register("dataset-diff", new DiffHealthCheck(dDiff));
     env.healthChecks().register("sector-diff", new DiffHealthCheck(sDiff));
 
@@ -290,8 +291,11 @@ public class WsServer extends Application<WsServerConfig> {
     TreeDao trDao = new TreeDao(getSqlSessionFactory(), searchService);
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
+    // portal html page renderer
+    PortalPageRenderer renderer = new PortalPageRenderer(dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
+
     // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao);
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao, env.metrics());
 
     // DOI
     DoiService doiService;
@@ -305,7 +309,7 @@ public class WsServer extends Application<WsServerConfig> {
     DoiUpdater doiUpdater = new DoiUpdater(getSqlSessionFactory(), doiService, coljersey.getCache(), converter);
 
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
+    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, ndao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
 
     // importer
     importManager = new ImportManager(cfg,
@@ -343,7 +347,6 @@ public class WsServer extends Application<WsServerConfig> {
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
       importManager, gbifSync, ni, executor, idMap, validator));
-    j.register(new ColSeoResource(tdao, dsdao, coljersey.getCache()));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetExportResource(getSqlSessionFactory(), searchService, exportManager, diDao, cfg));
@@ -357,12 +360,13 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new ExportResource(exdao, cfg));
     j.register(new ImageResource(imgService));
     j.register(new ImporterResource(importManager, diDao));
-    j.register(new LegacyWebserviceResource(cfg, idMap));
+    j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new MatchingResource(ni));
     j.register(new NamesIndexResource(ni));
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService));
     j.register(new NameUsageSearchResource(searchService));
+    j.register(new PortalResource(renderer));
     j.register(new ReferenceResource(rdao));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, tdao, fmsDao, assembly));
@@ -376,9 +380,11 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new VocabResource());
 
     // parsers
+    j.register(new HomotypicGroupingResource());
     j.register(new NameParserResource(getSqlSessionFactory()));
     j.register(new MetadataParserResource());
     j.register(new ParserResource<>());
+
     j.register(new IdEncoderResource());
 
     // attach listeners to event bus

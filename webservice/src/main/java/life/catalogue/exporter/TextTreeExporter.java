@@ -1,10 +1,13 @@
 package life.catalogue.exporter;
 
+import com.codahale.metrics.Timer;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.img.ImageService;
 import org.apache.commons.io.FileUtils;
@@ -18,32 +21,20 @@ import java.io.Writer;
 
 public class TextTreeExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(TextTreeExporter.class);
-  private File f;
 
-  public TextTreeExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req, userKey, DataFormat.TEXT_TREE, factory, cfg, imageService);
-    if (req.isExcel()) {
-      throw new IllegalArgumentException("TextTree cannot be exported in Excel");
-    }
+  public TextTreeExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+    super(req, userKey, DataFormat.TEXT_TREE, false, factory, cfg, imageService, timer);
   }
 
   @Override
   public void export() throws Exception {
-    // do we have a full dataset export request?
-    f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".txt");
+    File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".txt");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
-      TextTreePrinter printer = TextTreePrinter.dataset(req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getMinRank(), factory, writer);
+      TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getMinRank(), factory, writer);
       int cnt = printer.print();
       LOG.info("Written {} taxa to text tree for dataset {}", cnt, req.getDatasetKey());
       counter.set(printer.getCounter());
     }
-  }
-
-  @Override
-  protected void bundle() throws IOException {
-    LOG.info("Compressing text tree to {}", archive.getAbsolutePath());
-    FileUtils.forceMkdir(archive.getParentFile());
-    CompressionUtil.zipFile(f, archive);
   }
 
 }

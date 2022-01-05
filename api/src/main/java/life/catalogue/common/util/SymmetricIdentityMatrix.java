@@ -1,10 +1,10 @@
 package life.catalogue.common.util;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * A boolean matrix with values defaulting to false.

@@ -22,12 +22,12 @@ public class BareName implements NameUsage {
 
   @Override
   public String getLabel() {
-    return name.getLabel(false);
+    return name == null ? null : name.getLabel(false);
   }
 
   @Override
   public String getLabelHtml() {
-    return name.getLabel(true);
+    return name == null ? null : name.getLabel(true);
   }
 
   @Override
@@ -65,9 +65,20 @@ public class BareName implements NameUsage {
   }
   
   @Override
-  public void setAccordingToId(String according) {
+  public void setAccordingToId(String accordingToID) {
     // nothing, throw if according is supposed to be non null
-    if (according != null) throw new IllegalArgumentException("Bare names do not have an accordingTo");
+    if (accordingToID != null) throw new IllegalArgumentException("Bare names do not have an accordingTo");
+  }
+
+  @Override
+  public String getAccordingTo() {
+    return null;
+  }
+
+  @Override
+  public void setAccordingTo(String accordingTo) {
+    // nothing, throw if according is supposed to be non null
+    if (accordingTo != null) throw new IllegalArgumentException("Bare names do not have an accordingTo");
   }
 
   @Override
@@ -83,12 +94,14 @@ public class BareName implements NameUsage {
 
   @Override
   public String getRemarks() {
-    return name.getRemarks();
+    return name == null ? null : name.getRemarks();
   }
   
   @Override
   public void setRemarks(String remarks) {
-    name.setRemarks(remarks);
+    if (name != null) {
+      name.setRemarks(remarks);
+    }
   }
   
   @Override
@@ -106,22 +119,26 @@ public class BareName implements NameUsage {
   
   @Override
   public Origin getOrigin() {
-    return name.getOrigin();
+    return name == null ? null : name.getOrigin();
   }
   
   @Override
   public void setOrigin(Origin origin) {
-    name.setOrigin(origin);
+    if (name != null) {
+      name.setOrigin(origin);
+    }
   }
   
   @Override
   public Integer getVerbatimKey() {
-    return name.getVerbatimKey();
+    return name == null ? null : name.getVerbatimKey();
   }
   
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
-    name.setVerbatimKey(verbatimKey);
+    if (name != null) {
+      name.setVerbatimKey(verbatimKey);
+    }
   }
   
   @Override
