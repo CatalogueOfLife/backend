@@ -76,6 +76,11 @@ public enum Setting {
   RELEASE_ADD_CONTRIBUTORS(Boolean.class, MANAGED),
 
   /**
+   * If true a release will first delete all bare names from the project before it copies data.
+   */
+  RELEASE_REMOVE_BARE_NAMES(Boolean.class, MANAGED),
+
+  /**
    * Number of first authors from a project/release to use for the container authors of a source chapter-in-a-book citation.
    * If not given all authors are used.
    */

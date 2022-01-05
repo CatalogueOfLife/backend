@@ -11,6 +11,7 @@ import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
@@ -45,13 +46,15 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ExportManager exportManager;
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
+  private final NameDao nDao;
 
-  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
+  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super("releasing", factory, diDao, dDao, indexService, validator, userKey, datasetKey, true);
     this.imageService = imageService;
     this.doiService = doiService;
+    this.nDao = nDao;
     this.cfg = cfg;
     this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
     this.colseo = UriBuilder.fromUri(cfg.apiURI).path("colseo").build();
@@ -91,6 +94,11 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   void prepWork() throws Exception {
+    if (settings.isEnabled(Setting.RELEASE_REMOVE_BARE_NAMES)) {
+      LOG.info("Remove bare names from project {}", datasetKey);
+      nDao.deleteOrphans(datasetKey, null, user);
+    }
+
     try (SqlSession session = factory.openSession(true)) {
       // find previous public release needed for DOI management
       final Integer prevReleaseKey = findPreviousRelease(datasetKey, session);
