@@ -10,6 +10,8 @@ import life.catalogue.db.TaxonProcessable;
 
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface TaxonExtensionMapper<T extends SectorScopedEntity<Integer>>
   extends DatasetProcessable<TaxonExtension<T>>, SectorProcessable<T>, TaxonProcessable<T>, CopyDataset {
 
@@ -17,5 +19,5 @@ public interface TaxonExtensionMapper<T extends SectorScopedEntity<Integer>>
 
 	void create(@Param("obj") T object,
               @Param("taxonId") String taxonId);
-	
+
 }

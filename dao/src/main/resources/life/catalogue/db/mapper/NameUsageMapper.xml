@@ -367,21 +367,35 @@
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
-  <delete id="deleteBySectorAndRank" parameterType="map">
-    DELETE FROM name_usage u
-    USING name n
-    WHERE u.dataset_key=#{key.datasetKey} AND u.name_id=n.id
+  <update id="createTempTable" parameterType="map">
+    CREATE TEMP TABLE _tmp_nu (uid text, nid text)
+  </update>
+
+  <insert id="addSectorSynonymsToTemp" parameterType="map">
+    INSERT INTO _tmp_nu
+    SELECT u.id, u.name_id FROM name_usage u
+    WHERE u.dataset_key=#{key.datasetKey} AND u.sector_key = #{key.id} AND u.is_synonym
+  </insert>
+
+  <insert id="addSectorBelowRankToTemp" parameterType="map">
+    INSERT INTO _tmp_nu
+    SELECT u.id, u.name_id
+    FROM name_usage u
+      JOIN name n ON u.dataset_key=#{key.datasetKey} AND u.name_id=n.id
+    WHERE u.dataset_key=#{key.datasetKey}
       AND u.sector_key = #{key.id}
       AND n.rank >= #{rank}::rank
-      <if test="nameIds != null and !nameIds.isEmpty()">
-        AND n.id NOT IN
-        <foreach item="id" collection="nameIds" open="(" separator="," close=")">#{id}</foreach>
-      </if>
+  </insert>
+
+  <delete id="removeFromTemp" parameterType="map">
+    DELETE FROM _tmp_nu
+    WHERE nid=#{nameID}
   </delete>
 
-  <delete id="deleteSynonymsBySector" parameterType="map">
-    DELETE FROM name_usage u
-    WHERE u.dataset_key=#{key.datasetKey} AND u.sector_key = #{key.id} AND u.is_synonym
+  <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM name_usage
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND id = tmp.uid
   </delete>
 
   <select id="deleteSubtree" parameterType="map" resultType="String">

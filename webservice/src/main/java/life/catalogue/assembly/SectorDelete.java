@@ -4,6 +4,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
+import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.TempNameUsageRelated;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
@@ -13,9 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -68,27 +68,47 @@ public class SectorDelete extends SectorRunnable {
       }
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
-      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
       VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
 
-      // cascading delete removes vernacular, distributions, descriptions, media
-      int del = um.deleteSynonymsBySector(sectorKey);
-      LOG.info("Deleted {} synonyms from sector {}", del, sectorKey);
+      // create a temp table that holds usage and name ids to be deleted - we need to be flexible keeping some
+      // temp tables will be visible only to this session and removed by postgres once the session is closed
+      um.createTempTable();
+      // add all synonyms from the sector to the temp table
+      um.addSectorSynonymsToTemp(sectorKey);
+      // add all usages below genus from the sector to the temp table
+      um.addSectorBelowRankToTemp(sectorKey, Rank.SUBGENUS);
+      // remove ambiguous zoological ranks from the temp table so they dont get deleted - they might be higher ranks to keep!
+      removeZoologicalAmbiguousRanks(sectorKey, session);
 
-      Set<String> nameIds = findZoologicalAmbiguousRanks(sectorKey, session);
-      LOG.info("Found {} ambiguous zoological ranks above genus from sector {} that we will keep", nameIds.size(), sectorKey);
+      // delete usages, names and related records that are listed in the temp table
+      // order matters!
+      List<TempNameUsageRelated> mappers = List.of(
+        // usage related
+        session.getMapper(DistributionMapper.class),
+        session.getMapper(MediaMapper.class),
+        session.getMapper(VernacularNameMapper.class),
+        session.getMapper(SpeciesInteractionMapper.class),
+        session.getMapper(TaxonConceptRelationMapper.class),
+        session.getMapper(TreatmentMapper.class),
+        // usage
+        session.getMapper(NameUsageMapper.class),
+        // name related
+        session.getMapper(NameMatchMapper.class),
+        session.getMapper(TypeMaterialMapper.class),
+        session.getMapper(NameRelationMapper.class),
+        // name
+        session.getMapper(NameMapper.class)
+      );
 
-      del = um.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS, nameIds);
-      LOG.info("Deleted {} taxa below genus level from sector {}", del, sectorKey);
+      mappers.forEach(m -> {
+        int count = m.deleteByTemp(sectorKey.getDatasetKey());
+        String type = m.getClass().getSimpleName().replace("Mapper", "");
+        LOG.info("Deleted {} {} records from sector {}", count, type, sectorKey);
+        session.commit();
+      });
       session.commit();
 
-      // now also remove the names - they should not be shared by other usages as they also belong to the same sector
-      del = nm.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS, nameIds);
-      session.commit();
-      // rm matches for those names
-      nmm.deleteOrphaned(sectorKey.getDatasetKey(), sectorKey.getId());
       // TODO: remove refs and name rels
-      LOG.info("Deleted {} names below genus level from sector {}", del, sectorKey);
 
       // remove verbatim sources from remaining usages
       vsm.deleteBySector(s);
@@ -111,12 +131,8 @@ public class SectorDelete extends SectorRunnable {
     }
   }
 
-  /**
-   * @param sectorKey
-   * @return name ids of the ambiguous zoological ranks above genus
-   */
-  private Set<String> findZoologicalAmbiguousRanks(DSID<Integer> sectorKey, SqlSession session) {
-    Set<String> zoological = new HashSet<>();
+  private void removeZoologicalAmbiguousRanks(DSID<Integer> sectorKey, SqlSession session) {
+    int counter = 0;
     List<String> nids = session.getMapper(NameMapper.class).ambiguousRankNameIds(sectorKey.getDatasetKey(), sectorKey.getId());
     LOG.debug("Found {} names of ambiguous ranks. Check their usages next", nids.size());
     // if we have ambiguous ranks filter out the ones that have children of ranks above SUPERSECTION
@@ -128,14 +144,15 @@ public class SectorDelete extends SectorRunnable {
         for (NameUsageBase u : um.listByNameID(sector.getDatasetKey(), nid, new Page(0, 1000))){
           for (SimpleName sn : um.processTreeSimple(sector.getDatasetKey(), sector.getId(), u.getId(), null, Rank.INFRAGENERIC_NAME, false)) {
             if (sn.getRank().higherThan(maxAmbiguousRank)) {
-              zoological.add(nid);
+              um.removeFromTemp(nid);
+              counter++;
               break usageLoop;
             }
           }
         }
       }
     }
-    return zoological;
+    LOG.info("Found {} ambiguous zoological ranks above genus from sector {} that we will keep", counter, sectorKey);
   }
 
 }

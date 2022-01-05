@@ -4,6 +4,8 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
+import life.catalogue.db.NameProcessable;
+import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
@@ -578,7 +580,20 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      List<TaxonProcessable<?>> taxProcMappers = List.of(
+        session.getMapper(DistributionMapper.class),
+        session.getMapper(MediaMapper.class),
+        session.getMapper(VernacularNameMapper.class),
+        session.getMapper(SpeciesInteractionMapper.class),
+        session.getMapper(TaxonConceptRelationMapper.class)
+      );
+      TreatmentMapper trm = session.getMapper(TreatmentMapper.class);
+
       NameMapper nm = session.getMapper(NameMapper.class);
+      List<NameProcessable<?>> nameProcMappers = List.of(
+        session.getMapper(TypeMaterialMapper.class),
+        session.getMapper(NameRelationMapper.class)
+      );
       SectorMapper sm = session.getMapper(SectorMapper.class);
       VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
 
@@ -599,11 +614,17 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       // but NOT name_rels or refs
       DSID<String> key = DSID.copy(id);
       for (UsageNameID unid : num.processTreeIds(id)) {
-        // cascading delete removes vernacular, distributions, descriptions, media
-        var nuKey = key.id(unid.usageId);
+        final var nuKey = key.id(unid.usageId);
+        // deletes no longer cascade, remove vernacular, distributions, media and treatments manually
+        taxProcMappers.forEach(m -> m.deleteByTaxon(nuKey));
+        trm.deleteByTaxon(nuKey);
+        // remove usage
         num.delete(nuKey);
         vsm.delete(nuKey);
-        nm.delete(key.id(unid.nameId));
+        // remove name relations and name
+        final var nnKey = key.id(unid.nameId);
+        nameProcMappers.forEach(m -> m.deleteByName(nnKey));
+        nm.delete(nnKey);
       }
       session.commit();
 

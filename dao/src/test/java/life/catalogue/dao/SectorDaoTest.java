@@ -132,4 +132,26 @@ public class SectorDaoTest extends DaoTestBase {
   public void delete() {
     dao.delete(SectorMapperTest.create(), Users.TESTER);
   }
+
+  @Test
+  public void deleteSector() {
+
+    try (SqlSession session = factory().openSession(true)) {
+      MybatisTestUtils.populateDraftTree(session);
+      MybatisTestUtils.populateTestTree(12, session);
+
+      TaxonMapper txm = session.getMapper(TaxonMapper.class);
+      txm.resetDatasetSectorCount(3);
+      session.commit();
+    }
+
+    Sector s = SectorMapperTest.create();
+    s.setSubjectDatasetKey(11);
+    s.getSubject().setId("root-1");
+    s.getTarget().setId("t4");
+    dao.create(s, user);
+
+    dao.deleteSector(s, false);
+  }
+
 }

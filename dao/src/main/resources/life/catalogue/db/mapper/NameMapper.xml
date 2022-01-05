@@ -337,4 +337,9 @@
     WHERE n.dataset_key = #{key.datasetKey} AND n.id = #{key.id}
   </select>
 
+  <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM name
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND id = tmp.nid
+  </delete>
 </mapper>

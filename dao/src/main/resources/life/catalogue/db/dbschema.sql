@@ -1104,8 +1104,8 @@ CREATE TABLE reference (
           to_tsvector('simple2', coalesce(year::text,''))
   ) STORED,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON reference (dataset_key, verbatim_key);
@@ -1153,9 +1153,9 @@ CREATE TABLE name (
   unparsed TEXT,
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON name (dataset_key, sector_key);
@@ -1193,7 +1193,7 @@ CREATE TABLE name_rel (
   reference_id TEXT,
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE,
   FOREIGN KEY (dataset_key, name_id) REFERENCES name ON DELETE CASCADE,

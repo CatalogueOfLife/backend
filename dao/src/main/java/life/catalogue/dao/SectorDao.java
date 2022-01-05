@@ -4,6 +4,9 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.db.NameProcessable;
+import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 
@@ -188,28 +191,38 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (s == null) {
         throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
       }
-      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
-      NameMapper nm = session.getMapper(NameMapper.class);
-      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+      // order matters!
+      List<SectorProcessable<?>> secProcMappers = List.of(
+        // usage related
+        session.getMapper(DistributionMapper.class),
+        session.getMapper(MediaMapper.class),
+        session.getMapper(VernacularNameMapper.class),
+        session.getMapper(SpeciesInteractionMapper.class),
+        session.getMapper(TaxonConceptRelationMapper.class),
+        session.getMapper(TreatmentMapper.class),
+        // usage
+        session.getMapper(NameUsageMapper.class),
+        // name related
+        session.getMapper(NameMatchMapper.class),
+        session.getMapper(TypeMaterialMapper.class),
+        session.getMapper(NameRelationMapper.class),
+        // name
+        session.getMapper(NameMapper.class),
+        // refs
+        session.getMapper(ReferenceMapper.class)
+      );
 
-      // cascading delete removes vernacular, distributions, descriptions, media
-      int count = um.deleteBySector(sectorKey);
-      String sectorType = subSector ? "subsector" : "sector";
-      LOG.info("Deleted all {} name usage and related information from {} {}", count, sectorType, sectorKey);
+      final String sectorType = subSector ? "subsector" : "sector";
 
-      // name matches
-      nmm.deleteBySector(sectorKey);
-
-      // names - they should not be shared by other usages as they also belong to the same sector
-      nm.deleteBySector(sectorKey);
+      secProcMappers.forEach(m -> {
+        int count = m.deleteBySector(sectorKey);
+        String type = m.getClass().getSimpleName().replace("Mapper", "");
+        LOG.info("Deleted {} {} records from {} {}", count, type, sectorType, sectorKey);
+      });
 
       // remove verbatim sources from remaining usages
+      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
       vsm.deleteBySector(s);
-
-      // reference
-      rm.deleteBySector(sectorKey);
 
       // update datasetSectors counts
       SectorDao.incSectorCounts(session, s, -1);

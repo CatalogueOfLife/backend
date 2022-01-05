@@ -96,6 +96,17 @@
     ORDER BY id
   </select>
 
+  <delete id="deleteByName" parameterType="map">
+    DELETE FROM type_material
+    WHERE dataset_key = #{key.datasetKey} AND name_id = #{key.id}
+  </delete>
+
+  <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM type_material
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND name_id = tmp.nid
+  </delete>
+
   <select id="get" resultMap="typeResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

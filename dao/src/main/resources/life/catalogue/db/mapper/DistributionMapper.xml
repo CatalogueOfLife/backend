@@ -98,6 +98,17 @@
     VALUES (<include refid="PROPS"/>, now(), now(), nextval('distribution_${obj.datasetKey}_id_seq'))
   </insert>
 
+  <delete id="deleteByTaxon" parameterType="map">
+    DELETE FROM distribution
+    WHERE dataset_key = #{key.datasetKey} AND taxon_id = #{key.id}
+  </delete>
+
+  <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM distribution
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND taxon_id = tmp.uid
+  </delete>
+
   <insert id="copyDataset" parameterType="map">
     INSERT INTO distribution_${newDatasetKey} (dataset_key,taxon_id,id,<include refid="COLS_COPY"/>, created, modified)
     SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>taxon_id),nextval('distribution_${newDatasetKey}_id_seq'),<include refid="COLS_COPY"/>, created, modified

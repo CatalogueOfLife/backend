@@ -64,6 +64,17 @@
     ORDER BY tc.id
   </select>
 
+  <delete id="deleteByTaxon" parameterType="map">
+    DELETE FROM taxon_concept_rel
+    WHERE dataset_key = #{key.datasetKey} AND (taxon_id = #{key.id} OR related_taxon_id = #{key.id})
+  </delete>
+
+  <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM taxon_concept_rel
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND (taxon_id = tmp.uid OR related_taxon_id = tmp.uid)
+  </delete>
+
   <select id="listByRelatedTaxon" resultMap="tcRelResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

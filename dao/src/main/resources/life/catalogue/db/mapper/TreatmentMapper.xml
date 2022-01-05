@@ -57,6 +57,22 @@
     VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
 
+  <delete id="deleteByTaxon" parameterType="map">
+    DELETE FROM treatment
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </delete>
+
+  <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM treatment
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND taxon_id = tmp.uid
+  </delete>
+
+  <delete id="deleteBySector" parameterType="map">
+    DELETE FROM treatment
+    WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id}
+  </delete>
+
   <insert id="copyDataset" parameterType="map">
     INSERT INTO treatment_${newDatasetKey} (dataset_key,id,<include refid="COLS_COPY"/>, created, modified)
     SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>t.id),<include refid="COLS_COPY"/>, created, modified

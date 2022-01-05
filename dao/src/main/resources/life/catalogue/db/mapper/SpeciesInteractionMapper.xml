@@ -67,6 +67,17 @@
     ORDER BY si.id
   </select>
 
+  <delete id="deleteByTaxon" parameterType="map">
+    DELETE FROM species_interaction
+    WHERE dataset_key = #{key.datasetKey} AND (taxon_id = #{key.id} OR related_taxon_id = #{key.id})
+  </delete>
+
+  <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM species_interaction
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND (taxon_id = tmp.uid OR related_taxon_id = tmp.uid)
+  </delete>
+
   <select id="listByRelatedTaxon" resultMap="speciesInteractionResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

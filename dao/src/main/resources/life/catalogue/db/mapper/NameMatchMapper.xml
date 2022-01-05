@@ -46,14 +46,17 @@
   <delete id="deleteOrphaned" parameterType="map">
     DELETE FROM name_match nm
     WHERE dataset_key=#{datasetKey}
-    <if test="sectorKey != null">
-      AND sector_key = #{sectorKey}
-    </if>
     AND NOT EXISTS (
       SELECT NULL
       FROM name n
       WHERE n.dataset_key=#{datasetKey} AND n.id = nm.name_id
     )
+  </delete>
+
+  <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM name_match
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND name_id = tmp.nid
   </delete>
 
   <delete id="deleteBySector" parameterType="map">

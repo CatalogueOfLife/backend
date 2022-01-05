@@ -63,7 +63,7 @@ public class DatasetMatcher {
     try (SqlSession session = factory.openSession(false)) {
       if (update) {
         NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
-        int del = nmm.deleteOrphaned(datasetKey, null);
+        int del = nmm.deleteOrphaned(datasetKey);
         if (del > 0) {
           LOG.info("Removed {} orphaned name matches for {}", del, datasetKey);
         }

@@ -8,6 +8,8 @@ import life.catalogue.db.SectorProcessable;
 
 import javax.annotation.Nullable;
 
+import life.catalogue.db.TempNameUsageRelated;
+
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
@@ -15,7 +17,7 @@ import org.apache.ibatis.cursor.Cursor;
  * WARNING !!!
  * Only SectorProcessable.deleteBySector is implemented, no other methods of SectorProcessable!!!
  */
-public interface NameMatchMapper extends CopyDataset, SectorProcessable<Integer> {
+public interface NameMatchMapper extends CopyDataset, SectorProcessable<Integer>, TempNameUsageRelated {
 
   /**
    * @return true if at least one name match for the given dataset exists
@@ -25,10 +27,9 @@ public interface NameMatchMapper extends CopyDataset, SectorProcessable<Integer>
   int deleteByDataset(@Param("datasetKey") int datasetKey);
 
   /**
-   * Removes all matches that have no related name record for the given dataset and optionally sector.
+   * Removes all matches that have no related name record for the given dataset.
    */
-  int deleteOrphaned(@Param("datasetKey") int datasetKey,
-                     @Nullable @Param("sectorKey") Integer sectorKey);
+  int deleteOrphaned(@Param("datasetKey") int datasetKey);
 
   /**
    * Lists all distinct index ids from the name match table.

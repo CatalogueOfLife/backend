@@ -64,6 +64,17 @@
     ORDER BY nr.id
   </select>
 
+  <delete id="deleteByName" parameterType="map">
+    DELETE FROM name_rel
+    WHERE dataset_key = #{key.datasetKey} AND name_id = #{key.id}
+  </delete>
+
+  <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM name_rel
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND name_id = tmp.nid
+  </delete>
+
   <select id="listByRelatedName" resultMap="nameRelResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

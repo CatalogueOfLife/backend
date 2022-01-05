@@ -22,7 +22,8 @@ import org.apache.ibatis.cursor.Cursor;
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be
  * used to point to the name itself
  */
-public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable<Name>, DatasetPageable<Name>, SectorProcessable<Name>, CopyDataset {
+public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable<Name>, DatasetPageable<Name>, SectorProcessable<Name>,
+  CopyDataset, TempNameUsageRelated {
 
   /**
    * Selects a number of distinct name from a single dataset by their keys
@@ -102,4 +103,5 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    * Same as regular get, but includes a names index mapping
    */
   NameWithNidx getWithNidx(DSID<String> key);
+
 }

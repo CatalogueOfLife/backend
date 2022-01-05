@@ -4,6 +4,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
 
+import life.catalogue.db.TempNameUsageRelated;
+
 import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
@@ -23,7 +25,7 @@ import org.apache.ibatis.cursor.Cursor;
  * <p>
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
-public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyDataset {
+public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyDataset, TempNameUsageRelated {
 
   NameUsageBase get(@Param("key") DSID<String> key);
 
@@ -123,16 +125,27 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("userKey") int userKey);
 
   /**
-   * Deletes usages by sector key and a max rank to be included.
-   * An optional set of name ids can be provided that will be excluded from the deletion.
-   * This is useful to avoid deletion of ambiguous ranks like section or series which are placed differently in zoology and botany.
+   * Creates a new temp table for usage & name ids in the current session.
+   * This can only be done once for a session, the table will be removed automatically by postgres once the session is closed.
+   */
+  void createTempTable();
+
+  /**
+   * Add usage and name ids for all synonyms of a given sector to the sectors temp table.
+   * Make sure the temp table was created in the session before!
+   */
+  void addSectorSynonymsToTemp(@Param("key") DSID<Integer> key);
+
+  /**
+   * Add usage and name ids for all usages of a given sector and below or equal a max rank to the sessions temp table.
+   * Make sure the temp table was created in the session before!
    *
    * @param key the sector key
-   * @param excludeNameIds name ids to exclude from the deletion
+   * @param rank max rank to be included, higher ranks will not be deleted
    */
-  int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank, @Param("nameIds") Collection<String> excludeNameIds);
+  void addSectorBelowRankToTemp(@Param("key") DSID<Integer> key, @Param("rank") Rank rank);
 
-  int deleteSynonymsBySector(@Param("key") DSID<Integer> key);
+  void removeFromTemp(@Param("nameID") String nameID);
 
   /**
    * Does a recursive delete to remove an entire subtree including synonyms and cascading to all associated data.

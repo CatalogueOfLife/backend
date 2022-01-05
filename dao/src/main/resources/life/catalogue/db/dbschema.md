@@ -11,7 +11,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2022-01-05 dataset partitioning
+### 2022-01-05 dataset partitioning without cascading deletes
 ```
 -- general table changes first
 ALTER TABLE name DROP COLUMN homotypic_name_id;
@@ -200,7 +200,7 @@ Now we can create default subpartitions with a configurable number of shards usi
 Note that the postgres user that runs this must have (temporary) SUPERUSER rights to change the session_replication_role environment setting!
 ```
 ALTER USER col WITH SUPERUSER;
-./repartition.sh --num 3
+./repartition.sh --num 8
 ```
 
 Finally Run:
@@ -227,40 +227,40 @@ ALTER TABLE verbatim_source ADD PRIMARY KEY (dataset_key, id);
 --
 -- FOREIGN KEYS
 --
-ALTER TABLE reference ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE name ADD FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference ON DELETE CASCADE;
-ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
-ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name ON DELETE CASCADE;
-ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, related_name_id) REFERENCES name ON DELETE CASCADE;
-ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
-ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name ON DELETE CASCADE;
-ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference ON DELETE CASCADE;
+ALTER TABLE reference ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE name ADD FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, related_name_id) REFERENCES name;
+ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference;
 ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name ON DELETE CASCADE;
-ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
-ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE;
-ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage ON DELETE CASCADE;
-ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
-ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE;
-ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage ON DELETE CASCADE;
-ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
-ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE;
-ALTER TABLE media ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE media ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
-ALTER TABLE media ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE;
-ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage ON DELETE CASCADE;
-ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE;
-ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE;
-ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE;
-ALTER TABLE verbatim_source ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage ON DELETE CASCADE;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage;
+ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE verbatim_source ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage;
 
 --
 -- INDICES

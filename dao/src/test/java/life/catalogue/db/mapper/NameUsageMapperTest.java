@@ -215,9 +215,10 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void deleteBySectorAndRank() throws Exception {
     // no real data to delete but tests valid SQL
-    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.GENUS, null);
-    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.SUPERSECTION, Set.of());
-    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.FAMILY, Set.of("1,2,3", "abc"));
+    mapper().createTempTable();
+    mapper().addSectorBelowRankToTemp(DSID.of(datasetKey, 1), Rank.GENUS);
+    mapper().addSectorBelowRankToTemp(DSID.of(datasetKey, 1), Rank.SUPERSECTION);
+    mapper().addSectorBelowRankToTemp(DSID.of(datasetKey, 1), Rank.FAMILY);
   }
 
   @Test
@@ -252,7 +253,9 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertEquals(468, count.get());
 
     // delete
-    int dels = mapper().deleteBySectorAndRank(s1, Rank.SUBSPECIES, Collections.emptySet());
+    mapper().createTempTable();
+    mapper().addSectorBelowRankToTemp(s1, Rank.SUBSPECIES);
+    int dels = mapper().deleteByTemp(s1.getDatasetKey());
     assertEquals(450, dels);
     count.set(0);
     mapper().processSector(s1).forEach(n -> count.incrementAndGet());
