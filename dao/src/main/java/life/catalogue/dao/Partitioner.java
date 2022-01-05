@@ -164,7 +164,7 @@ public class Partitioner {
     interruptIfCancelled();
     // attach to main table - this requires an AccessExclusiveLock on all main tables
     // see https://github.com/Sp2000/colplus-backend/issues/387
-    LOG.info("Attach partition tables for dataset {}", datasetKey);
+    LOG.info("Attach partition tables for dataset {} with origin {}", datasetKey, origin);
     session.getMapper(DatasetPartitionMapper.class).attach(datasetKey, origin);
   }
 }
