@@ -65,7 +65,7 @@
   <delete id="deleteByTemp" parameterType="map">
     DELETE FROM treatment
     USING _tmp_nu tmp
-    WHERE dataset_key=#{datasetKey} AND taxon_id = tmp.uid
+    WHERE dataset_key=#{datasetKey} AND id = tmp.uid
   </delete>
 
   <delete id="deleteBySector" parameterType="map">

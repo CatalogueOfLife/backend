@@ -125,8 +125,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("userKey") int userKey);
 
   /**
-   * Creates a new temp table for usage & name ids in the current session.
-   * This can only be done once for a session, the table will be removed automatically by postgres once the session is closed.
+   * Creates a new temp table for usage & name ids in the current transaction.
+   * The table will be dropped immediately if the transaction is committed, otherwise at the end of the session.
    */
   void createTempTable();
 

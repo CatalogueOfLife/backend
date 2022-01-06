@@ -104,8 +104,8 @@ public class SectorDelete extends SectorRunnable {
         int count = m.deleteByTemp(sectorKey.getDatasetKey());
         String type = m.getClass().getSimpleName().replace("Mapper", "");
         LOG.info("Deleted {} {} records from sector {}", count, type, sectorKey);
-        session.commit();
       });
+      // the commit removes the temp table!!!
       session.commit();
 
       // TODO: remove refs and name rels

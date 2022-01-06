@@ -368,7 +368,7 @@
   </update>
 
   <update id="createTempTable" parameterType="map">
-    CREATE TEMP TABLE _tmp_nu (uid text, nid text)
+    CREATE TEMP TABLE _tmp_nu (uid text, nid text) ON COMMIT DROP
   </update>
 
   <insert id="addSectorSynonymsToTemp" parameterType="map">

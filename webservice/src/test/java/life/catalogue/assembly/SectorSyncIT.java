@@ -62,6 +62,7 @@ public class SectorSyncIT {
     NomCode.VIRUS,
       DataFormat.ACEF,  14
   );
+
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   static IndexName match;
   static NameIndex nidx;
