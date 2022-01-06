@@ -57,11 +57,12 @@ public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig
 
   @Override
   protected void run(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
+    System.out.format("This is COL Server version %s%n", cfg.versionString());
     prePromt(bootstrap, namespace, cfg);
     final int prompt = namespace.getInt(ARG_PROMPT);
     if (prompt > 0) {
       System.out.format(describeCmd(namespace, cfg) + "\n");
-      System.out.format("You have %s seconds to abort if you did not intend to do so !!!\n", prompt);
+      System.out.format("You have %s seconds to abort if you did not intend to do so !!!%n", prompt);
       TimeUnit.SECONDS.sleep(prompt);
     }
     this.cfg = cfg;

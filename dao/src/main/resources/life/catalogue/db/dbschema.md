@@ -14,8 +14,8 @@ and done it manually. So we can as well log changes here.
 ### 2022-01-05 dataset partitioning without cascading deletes
 ```
 -- general table changes first
-ALTER TABLE name DROP COLUMN homotypic_name_id;
-DROP FUNCTION homotypic_name_id_default;
+ALTER TABLE name DROP COLUMN homotypic_name_id CASCADE;
+DROP FUNCTION homotypic_name_id_default CASCADE;
 
 CREATE EXTENSION IF NOT EXISTS btree_gin;
 
