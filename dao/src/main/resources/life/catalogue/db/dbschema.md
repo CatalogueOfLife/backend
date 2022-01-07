@@ -200,7 +200,7 @@ Now we can create default subpartitions with a configurable number of shards usi
 Note that the postgres user that runs this must have (temporary) SUPERUSER rights to change the session_replication_role environment setting!
 ```
 ALTER USER col WITH SUPERUSER;
-./repartition.sh --num 8
+./repartition.sh {PORT} --num 8
 ```
 
 Finally Run:
@@ -314,7 +314,6 @@ CREATE INDEX ON media (dataset_key, taxon_id);
 CREATE INDEX ON media (dataset_key, sector_key);
 CREATE INDEX ON media (dataset_key, verbatim_key);
 CREATE INDEX ON media (dataset_key, reference_id);
-
 ```
 
 ### 2021-12-15 new issue
