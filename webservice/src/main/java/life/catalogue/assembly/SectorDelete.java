@@ -84,6 +84,7 @@ public class SectorDelete extends SectorRunnable {
       // order matters!
       List<TempNameUsageRelated> mappers = List.of(
         // usage related
+        session.getMapper(VerbatimSourceMapper.class),
         session.getMapper(DistributionMapper.class),
         session.getMapper(MediaMapper.class),
         session.getMapper(VernacularNameMapper.class),

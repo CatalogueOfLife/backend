@@ -45,6 +45,9 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 /**
+ * Testing SectorSync but also SectorDelete and SectorDeleteFull.
+ * The test takes some time and prepares various sources for all tests, hence we test deletions here too avoiding duplication of the time consuming overhead.
+ *
  * Before we start any test we prepare the db with imports that can be reused across tests later on.
  */
 public class SectorSyncIT {

@@ -94,4 +94,10 @@
     WHERE v.dataset_key = #{key.datasetKey} AND u.dataset_key = #{key.datasetKey} AND u.id=v.id AND u.sector_key=#{key.id}
   </delete>
 
+  <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM verbatim_source
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND id = tmp.uid
+  </delete>
+
 </mapper>

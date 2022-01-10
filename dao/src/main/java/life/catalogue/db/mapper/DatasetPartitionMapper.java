@@ -5,9 +5,14 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import java.util.List;
 import java.util.Map;
 
+import life.catalogue.dao.Partitioner;
+
 import org.apache.ibatis.annotations.Param;
 
 import com.google.common.collect.Lists;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mapper with default methods to manage the lifetime of dataset based partitions
@@ -26,6 +31,7 @@ import com.google.common.collect.Lists;
  * so these should always live on their own partition.
  */
 public interface DatasetPartitionMapper {
+  Logger LOG = LoggerFactory.getLogger(DatasetPartitionMapper.class);
 
   List<String> IDMAP_TABLES = Lists.newArrayList(
     "idmap_name",
@@ -170,6 +176,7 @@ public interface DatasetPartitionMapper {
    * @param key
    */
   default void delete(int key, DatasetOrigin origin) {
+    LOG.info("Delete partition data for {} dataset {}", origin, key);
     deleteUsageCounter(key);
     if (origin.isManagedOrRelease()) {
       PROJECT_TABLES.forEach(t -> dropTable(t, key));

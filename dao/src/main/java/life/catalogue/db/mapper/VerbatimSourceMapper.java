@@ -4,9 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.db.CopyDataset;
-import life.catalogue.db.Create;
-import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.*;
 
 import java.util.Set;
 
@@ -15,7 +13,8 @@ import org.apache.ibatis.annotations.Param;
 /**
  *
  */
-public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDataset, DatasetProcessable<VerbatimSource> {
+public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDataset, DatasetProcessable<VerbatimSource>,
+  SectorProcessable<VerbatimSource>, TempNameUsageRelated {
 
   VerbatimSource get(@Param("key") DSID<String> key);
   
@@ -25,6 +24,5 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   void delete(@Param("key") DSID<String> key);
 
-  void deleteBySector(@Param("key") DSID<Integer> key);
 }
 

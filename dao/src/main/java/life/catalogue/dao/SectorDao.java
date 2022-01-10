@@ -194,6 +194,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       // order matters!
       List<SectorProcessable<?>> secProcMappers = List.of(
         // usage related
+        session.getMapper(VerbatimSourceMapper.class),
         session.getMapper(DistributionMapper.class),
         session.getMapper(MediaMapper.class),
         session.getMapper(VernacularNameMapper.class),
@@ -219,10 +220,6 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
         String type = m.getClass().getSimpleName().replace("Mapper", "");
         LOG.info("Deleted {} {} records from {} {}", count, type, sectorType, sectorKey);
       });
-
-      // remove verbatim sources from remaining usages
-      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-      vsm.deleteBySector(s);
 
       // update datasetSectors counts
       SectorDao.incSectorCounts(session, s, -1);
