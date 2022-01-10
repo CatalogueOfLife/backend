@@ -41,7 +41,7 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
  */
 public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, LinneanName, ScientificName {
 
-  private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?(\\b.+)?$");
+  private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?( .+)?$");
   // matches only uninomials or binomials without any authorship
   private static String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
   @VisibleForTesting

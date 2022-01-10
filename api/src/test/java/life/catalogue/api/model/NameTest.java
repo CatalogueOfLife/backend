@@ -4,10 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 
 import java.util.regex.Matcher;
 
@@ -133,6 +130,32 @@ public class NameTest extends SerdeTestBase<Name> {
 
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel(false));
     assertEquals("<i>Abies × alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel(true));
+
+    // https://github.com/CatalogueOfLife/backend/issues/1090
+    n = new Name();
+    n.setGenus("Hieracium");
+    n.setSpecificEpithet("brevifolium");
+    n.setRank(Rank.SPECIES);
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
+    assertEquals("Hieracium brevifolium", n.getLabel(false));
+    assertEquals("<i>Hieracium brevifolium</i>", n.getLabel(true));
+
+    n.setRank(Rank.SUBSPECIES);
+    n.setInfraspecificEpithet("malyi-caroli");
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
+    assertEquals("Hieracium brevifolium malyi-caroli", n.getLabel(false));
+    assertEquals("<i>Hieracium brevifolium malyi-caroli</i>", n.getLabel(true));
+
+    n.setCombinationAuthorship(Authorship.yearAuthors(null, "Zahn"));
+    n.setBasionymAuthorship(Authorship.yearAuthors(null,"Gus. Schneid."));
+    n.setCode(NomCode.BOTANICAL);
+
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
+    assertEquals("Hieracium brevifolium subsp. malyi-caroli (Gus. Schneid.) Zahn", n.getLabel(false));
+    assertEquals("<i>Hieracium brevifolium</i> subsp. <i>malyi-caroli</i> (Gus. Schneid.) Zahn", n.getLabel(true));
   }
 
   @Test
