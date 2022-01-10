@@ -91,8 +91,11 @@ public class GbifSync implements Managed {
         LOG.debug("Received page " + pager.currPageNumber() + " with " + page.size() + " datasets from GBIF");
         for (DatasetWithSettings gbif : page) {
           Dataset d = mapper.getByGBIF(gbif.getGbifKey());
-          DatasetSettings s = mapper.getSettings(d.getKey());
-          DatasetWithSettings curr = new DatasetWithSettings(d, s);
+          DatasetWithSettings curr = null;
+          if (d != null) {
+            DatasetSettings s = mapper.getSettings(d.getKey());
+            curr = new DatasetWithSettings(d, s);
+          }
           sync(gbif, curr);
         }
       }
@@ -116,40 +119,44 @@ public class GbifSync implements Managed {
       }
     }
     
-    private void sync(DatasetWithSettings gbif, DatasetWithSettings curr) throws Exception {
-      if (curr == null) {
-        // create new dataset
-        gbif.setCreatedBy(Users.GBIF_SYNC);
-        gbif.setModifiedBy(Users.GBIF_SYNC);
-        mapper.create(gbif.getDataset());
-        gbif.setKey(gbif.getKey());
-        mapper.updateSettings(gbif.getKey(), gbif.getSettings(), Users.GBIF_SYNC);
-        created++;
-        LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
+    private void sync(DatasetWithSettings gbif, DatasetWithSettings curr) {
+      try {
+        if (curr == null) {
+          // create new dataset
+          gbif.setCreatedBy(Users.GBIF_SYNC);
+          gbif.setModifiedBy(Users.GBIF_SYNC);
+          mapper.create(gbif.getDataset());
+          gbif.setKey(gbif.getKey());
+          mapper.updateSettings(gbif.getKey(), gbif.getSettings(), Users.GBIF_SYNC);
+          created++;
+          LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
 
-      } else if (curr.has(Setting.GBIF_SYNC_LOCK) && curr.getBool(Setting.GBIF_SYNC_LOCK)) {
-        LOG.info("Dataset {} is locked for GBIF updates: {}", gbif.getKey(), gbif.getTitle());
+        } else if (curr.has(Setting.GBIF_SYNC_LOCK) && curr.getBool(Setting.GBIF_SYNC_LOCK)) {
+          LOG.info("Dataset {} is locked for GBIF updates: {}", gbif.getKey(), gbif.getTitle());
 
-      } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
-          !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
-          !Objects.equals(gbif.getPublisher(), curr.getPublisher()) ||
-          !Objects.equals(gbif.getUrl(), curr.getUrl()) ||
-          !Objects.equals(gbif.getDoi(), curr.getDoi())
-          ) {
-        // we modify core metadata (title, description, contacts, version) via the dwc archive metadata
-        //gbif syncs only change one of the following
-        // - dwca access url
-        // - license
-        // - publisher (publishOrgKey)
-        // - homepage
-        // - doi
-        curr.setDataAccess(gbif.getDataAccess());
-        curr.setLicense(gbif.getLicense());
-        curr.setPublisher(gbif.getPublisher());
-        curr.setUrl(gbif.getUrl());
-        curr.setDoi(gbif.getDoi());
-        mapper.updateAll(curr);
-        updated++;
+        } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
+                   !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
+                   !Objects.equals(gbif.getPublisher(), curr.getPublisher()) ||
+                   !Objects.equals(gbif.getUrl(), curr.getUrl()) ||
+                   !Objects.equals(gbif.getDoi(), curr.getDoi())
+        ) {
+          // we modify core metadata (title, description, contacts, version) via the dwc archive metadata
+          //gbif syncs only change one of the following
+          // - dwca access url
+          // - license
+          // - publisher (publishOrgKey)
+          // - homepage
+          // - doi
+          curr.setDataAccess(gbif.getDataAccess());
+          curr.setLicense(gbif.getLicense());
+          curr.setPublisher(gbif.getPublisher());
+          curr.setUrl(gbif.getUrl());
+          curr.setDoi(gbif.getDoi());
+          mapper.updateAll(curr);
+          updated++;
+        }
+      } catch (Exception e) {
+        LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
       }
     }
   }
