@@ -38,6 +38,9 @@ public class CslUtilTest {
     assertEquals(Optional.of(new CslUtil.VolumeIssuePage("My great Journal.",13,null,137)), CslUtil.parseVolumeIssuePage("My great Journal. 13 : p 137"));
     assertEquals(Optional.empty(), CslUtil.parseVolumeIssuePage("My great Journal. (1848)"));
     assertEquals(Optional.of(new CslUtil.VolumeIssuePage("anything allowed here!+#\"§$%", 1,2,3)), CslUtil.parseVolumeIssuePage("anything allowed here!+#\"§$% 1 (2): p.3"));
+
+    assertEquals(Optional.empty(), CslUtil.parseVolumeIssuePage("9781486300051"));
+    assertEquals(Optional.empty(), CslUtil.parseVolumeIssuePage("1(48)9781486300051"));
   }
 
   @Test

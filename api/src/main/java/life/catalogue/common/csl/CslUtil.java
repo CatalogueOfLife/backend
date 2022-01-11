@@ -190,7 +190,11 @@ public class CslUtil {
     if (volIssuePage != null) {
       Matcher m = VOLUME_ISSUE_PAGE.matcher(volIssuePage);
       if (m.find()) {
-        return Optional.of(new VolumeIssuePage(m.group(1), toInt(m, 2), toInt(m, 3), toInt(m, 4)));
+        try {
+          return Optional.of(new VolumeIssuePage(m.group(1), toInt(m, 2), toInt(m, 3), toInt(m, 4)));
+        } catch (NumberFormatException e) {
+          LOG.warn("Number exceeding integer capacity found while scanning volume issue page values {}", volIssuePage);
+        }
       }
     }
     return Optional.empty();
