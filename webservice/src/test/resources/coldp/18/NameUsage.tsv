@@ -1,0 +1,6 @@
+ID	parentID	basionymID	scientificName	authorship	rank	genus	status	family	nameReferenceID
+232484-wcs			× Catyclia	J.M.H.Shaw	Genus	Catyclia	Accepted	Orchidaceae	R1138865
+192989-wcs	232484-wcs		× Sophrocyclia	Van den Berg & M.W.Chase	Genus		Synonym		R1205268
+376626-wcs		67321-wcs	× Catyclia intermedia	(F.E.L.Miranda) Van den Berg	Species	Catyclia	Accepted	Orchidaceae	R1138864
+67321-wcs	376626-wcs		× Encylaelia intermedia	F.E.L.Miranda	Species		Synonym		R1154824
+192990-wcs	376626-wcs	67321-wcs	× Sophrocyclia intermedia	(F.E.L.Miranda) Van den Berg & M.W.Chase	Species		Synonym		R1205267

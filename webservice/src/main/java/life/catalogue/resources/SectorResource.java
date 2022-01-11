@@ -133,6 +133,8 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     Sector s = session.getMapper(SectorMapper.class).get(skey);
     if (s == null) {
       throw NotFoundException.notFound(Sector.class, skey);
+    } else if (s.getSyncAttempt() == null) {
+      throw new NotFoundException(skey, "Sector " + skey + " was never synced");
     }
     if (info.origin == DatasetOrigin.RELEASED) {
       Integer projectKey = info.sourceKey;

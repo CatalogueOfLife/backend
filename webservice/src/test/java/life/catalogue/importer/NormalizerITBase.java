@@ -1,5 +1,6 @@
 package life.catalogue.importer;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.io.Files;
@@ -16,10 +17,13 @@ import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -36,6 +40,7 @@ import javax.validation.Validator;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -52,6 +57,7 @@ abstract class NormalizerITBase {
   private final DataFormat format;
   private final Supplier<NameIndex> nameIndexSupplier;
   protected DatasetWithSettings dws;
+  private int datasetKey;
 
   NormalizerITBase(DataFormat format, Supplier<NameIndex> supplier) {
     this.format = format;
@@ -83,7 +89,14 @@ abstract class NormalizerITBase {
   public void normalize(int datasetKey) throws Exception {
     normalize(datasetKey, null);
   }
-  
+
+  public void assertTree() throws Exception {
+    InputStream tree = getClass().getResourceAsStream(resourceDir() + "/expected.tree");
+    String expected = IOUtils.toString(tree, Charsets.UTF_8).trim();
+    String neotree = PrinterUtils.textTree(store.getNeo());
+    assertEquals(expected, neotree);
+  }
+
   public static Optional<NomCode> readDatasetCode(String resourceDir) {
     URL metaUrl = NormalizerTreeIT.class.getResource(resourceDir + "/metadata.yaml");
     if (metaUrl != null) {
@@ -107,12 +120,17 @@ abstract class NormalizerITBase {
    *
    */
   public void normalize(int datasetKey, @Nullable NomCode code) throws Exception {
-    String resourceDir = "/" + format.name().toLowerCase().replaceAll("_", "-") + "/" + datasetKey;
+    this.datasetKey = datasetKey;
+    String resourceDir = resourceDir();
     URL url = getClass().getResource(resourceDir);
     if (code == null) {
       code = readDatasetCode(resourceDir).orElse(null);
     }
     normalize(Paths.get(url.toURI()), code);
+  }
+
+  protected String resourceDir() {
+    return "/" + format.name().toLowerCase().replaceAll("_", "-") + "/" + datasetKey;
   }
   
   public void normalize(URI url) throws Exception {

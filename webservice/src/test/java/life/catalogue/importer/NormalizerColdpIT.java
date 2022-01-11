@@ -1,5 +1,7 @@
 package life.catalogue.importer;
 
+import com.google.common.base.Charsets;
+
 import de.undercouch.citeproc.csl.CSLType;
 
 import life.catalogue.api.model.NameRelation;
@@ -13,13 +15,21 @@ import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
+
+import life.catalogue.importer.neo.printer.PrinterUtils;
+
+import org.apache.commons.io.IOUtils;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.Iterators;
 
+import java.io.InputStream;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -359,7 +369,6 @@ public class NormalizerColdpIT extends NormalizerITBase {
     printTree();
   }
 
-
   @Test
   public void bareNameUsages() throws Exception {
     normalize(15);
@@ -406,4 +415,14 @@ public class NormalizerColdpIT extends NormalizerITBase {
     }
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/testing/issues/177
+   */
+  @Test
+  @Ignore
+  public void hybridGenera() throws Exception {
+    normalize(18);
+    printTree();
+    assertTree();
+  }
 }
