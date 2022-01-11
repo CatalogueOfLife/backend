@@ -88,6 +88,9 @@
         AND d.source_key=#{req.releasedFrom}
         AND d.origin = 'RELEASED'::DATASETORIGIN
       </if>
+      <if test="req.gbifPublisherKey != null">
+        AND d.gbif_publisher_key=#{req.gbifPublisherKey}
+      </if>
       <if test="req.license != null and !req.license.isEmpty()">
         AND d.license IN <foreach item="o" collection="req.license" open="(" separator="," close=")">#{o}::LICENSE</foreach>
       </if>

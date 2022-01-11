@@ -10,6 +10,7 @@ import org.gbif.nameparser.api.NomCode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import javax.validation.constraints.Min;
 import javax.ws.rs.QueryParam;
@@ -60,6 +61,12 @@ public class DatasetSearchRequest {
    */
   @QueryParam("hasSourceDataset")
   private Integer hasSourceDataset;
+
+  /**
+   * Filters datasets by their gbif Publisher UUID.
+   */
+  @QueryParam("gbifPublisherKey")
+  private UUID gbifPublisherKey;
 
   /**
    * Filters datasets by having the given editor key authorized.
@@ -153,6 +160,14 @@ public class DatasetSearchRequest {
 
   public void setReleasedFrom(Integer releasedFrom) {
     this.releasedFrom = releasedFrom;
+  }
+
+  public UUID getGbifPublisherKey() {
+    return gbifPublisherKey;
+  }
+
+  public void setGbifPublisherKey(UUID gbifPublisherKey) {
+    this.gbifPublisherKey = gbifPublisherKey;
   }
 
   public Integer getEditor() {
@@ -256,11 +271,28 @@ public class DatasetSearchRequest {
     if (this == o) return true;
     if (!(o instanceof DatasetSearchRequest)) return false;
     DatasetSearchRequest that = (DatasetSearchRequest) o;
-    return reverse == that.reverse && Objects.equals(q, that.q) && code == that.code && Objects.equals(privat, that.privat) && Objects.equals(releasedFrom, that.releasedFrom) && Objects.equals(contributesTo, that.contributesTo) && Objects.equals(hasSourceDataset, that.hasSourceDataset) && Objects.equals(editor, that.editor) && Objects.equals(modifiedBy, that.modifiedBy) && Objects.equals(origin, that.origin) && Objects.equals(type, that.type) && Objects.equals(license, that.license) && Objects.equals(modified, that.modified) && Objects.equals(created, that.created) && Objects.equals(issued, that.issued) && Objects.equals(minSize, that.minSize) && sortBy == that.sortBy;
+    return reverse == that.reverse
+           && Objects.equals(q, that.q)
+           && code == that.code
+           && Objects.equals(privat, that.privat)
+           && Objects.equals(releasedFrom, that.releasedFrom)
+           && Objects.equals(contributesTo, that.contributesTo)
+           && Objects.equals(hasSourceDataset, that.hasSourceDataset)
+           && Objects.equals(gbifPublisherKey, that.gbifPublisherKey)
+           && Objects.equals(editor, that.editor)
+           && Objects.equals(modifiedBy, that.modifiedBy)
+           && Objects.equals(origin, that.origin)
+           && Objects.equals(type, that.type)
+           && Objects.equals(license, that.license)
+           && Objects.equals(modified, that.modified)
+           && Objects.equals(created, that.created)
+           && Objects.equals(issued, that.issued)
+           && Objects.equals(minSize, that.minSize)
+           && sortBy == that.sortBy;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, editor, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
+    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, gbifPublisherKey, editor, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
   }
 }
