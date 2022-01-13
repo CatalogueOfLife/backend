@@ -49,7 +49,6 @@ import static life.catalogue.api.model.User.userkey;
 @Path("/dataset")
 @SuppressWarnings("static-method")
 public class DatasetResource extends AbstractGlobalResource<Dataset> {
-  private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
   private final DatasetDao dao;
   private final DatasetSourceDao sourceDao;
   private final AssemblyCoordinator assembly;
@@ -165,27 +164,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Integer release(@PathParam("key") int key, @Auth User user) {
     return releaseManager.release(key, user);
-  }
-
-  @GET
-  @Path("{key}/editor")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public List<User> editors(@PathParam("key") int key, @Auth User user, @Context SqlSession session) {
-    return session.getMapper(UserMapper.class).datasetEditors(key);
-  }
-
-  @POST
-  @Path("/{key}/editor")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void addEditor(@PathParam("key") int key, int editorKey, @Auth User user) {
-    dao.addEditor(key, editorKey, user);
-  }
-
-  @DELETE
-  @Path("/{key}/editor/{id}")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void removeEditor(@PathParam("key") int key, @PathParam("id") int editorKey, @Auth User user) {
-    dao.removeEditor(key, editorKey, user);
   }
 
   @GET

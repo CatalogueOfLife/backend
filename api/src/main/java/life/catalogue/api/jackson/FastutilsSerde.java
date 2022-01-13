@@ -41,7 +41,12 @@ public class FastutilsSerde {
       // We are not delegating
       return null;
     }
-  
+
+    @Override
+    public boolean isEmpty(SerializerProvider provider, Int2IntMap value) {
+      return value == null || value.isEmpty();
+    }
+
     @Override
     public boolean hasSingleElement(Int2IntMap value) {
       return false;
@@ -116,6 +121,11 @@ public class FastutilsSerde {
     @Override
     protected ContainerSerializer<?> _withValueTypeSerializer(TypeSerializer vts) {
       return null;
+    }
+
+    @Override
+    public boolean isEmpty(SerializerProvider provider, IntSet value) {
+      return value == null || value.isEmpty();
     }
 
     @Override

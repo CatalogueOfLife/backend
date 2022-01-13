@@ -57,8 +57,8 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
     }
     user.setRoles(roleSet);
     // if we revoke the editor role the user lost access to all datasets!
-    if (!roles.contains(User.Role.EDITOR) && user.getDatasets() != null) {
-      user.getDatasets().clear();
+    if (!roles.contains(User.Role.EDITOR) && user.getEditor() != null) {
+      user.getEditor().clear();
     }
     update(user, admin.getKey());
   }

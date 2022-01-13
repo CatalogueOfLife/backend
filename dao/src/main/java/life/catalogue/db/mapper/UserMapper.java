@@ -42,4 +42,6 @@ public interface UserMapper extends CRUD<Integer, User>, GlobalPageable<User> {
    */
   List<User> datasetEditors(@Param("datasetKey") int datasetKey);
 
+  List<User> datasetReviewer(@Param("datasetKey") int datasetKey);
+
 }

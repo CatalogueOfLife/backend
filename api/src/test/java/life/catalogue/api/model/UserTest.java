@@ -32,7 +32,7 @@ public class UserTest {
     User u = new User();
     assertFalse(u.isEditor(1));
 
-    u.addDataset(1);
+    u.addDatasetRole(EDITOR, 1);
     assertTrue(u.isEditor(1));
 
     u.addRole(ADMIN);

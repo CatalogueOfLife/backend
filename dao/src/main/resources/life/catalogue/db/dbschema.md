@@ -11,6 +11,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-01-13 reviewer role
+```
+ALTER TABLE dataset RENAME COLUMN access_control TO acl_editor;
+ALTER TABLE dataset ADD COLUMN acl_reviewer INT[];
+```
+
 ### 2021-12-15 new issue
 ```
 ALTER TYPE ISSUE ADD VALUE 'RELATED_NAME_MISSING';

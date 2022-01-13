@@ -7,9 +7,9 @@
   <sql id="SELECT">
     <include refid="SELECT_PUBLIC"/>,
     u.email,
-    u.roles,
     u.settings,
-    (SELECT array_agg(d.key) FROM dataset d WHERE d.deleted IS NULL AND d.access_control @> ARRAY[u.key] OR d.created_by=u.key) AS datasets,
+    (SELECT array_agg(d.key) FROM dataset d WHERE d.deleted IS NULL AND d.acl_editor @> ARRAY[u.key]) AS editor,
+    (SELECT array_agg(d.key) FROM dataset d WHERE d.deleted IS NULL AND d.acl_reviewer @> ARRAY[u.key]) AS reviewer,
     u.last_login,
     u.created,
     u.deleted
@@ -17,6 +17,7 @@
 
   <sql id="SELECT_PUBLIC">
     u.key,
+    u.roles,
     u.username,
     u.firstname,
     u.lastname,
@@ -103,7 +104,14 @@
   <select id="datasetEditors" resultMap="userResultMap">
     SELECT <include refid="SELECT_PUBLIC"/>
     FROM dataset d
-    JOIN "user" u ON d.access_control @> ARRAY[u.key]
+    JOIN "user" u ON d.acl_editor @> ARRAY[u.key]
+    WHERE d.key = #{datasetKey}
+  </select>
+
+  <select id="datasetReviewer" resultMap="userResultMap">
+    SELECT <include refid="SELECT_PUBLIC"/>
+    FROM dataset d
+    JOIN "user" u ON d.acl_reviewer @> ARRAY[u.key]
     WHERE d.key = #{datasetKey}
   </select>
 

@@ -55,12 +55,13 @@ public abstract class SerdeTestBase<T> {
     return ApiModule.MAPPER.writeValueAsString(new Wrapper<T>(genTestValue()));
   }
 
-  protected void testRoundtrip(T value) throws Exception {
+  protected String testRoundtrip(T value) throws Exception {
     Wrapper<T> wrapper = new Wrapper<T>(value);
     String json = ApiModule.MAPPER.writeValueAsString(wrapper);
     System.out.println(json);
     Wrapper<T> wrapper2 = ApiModule.MAPPER.readValue(json, type);
     assertEquals(wrapper.value, wrapper2.value);
+    return json;
   }
 
 }

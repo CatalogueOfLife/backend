@@ -710,7 +710,8 @@ CREATE TABLE dataset (
   notes TEXT,
 
   settings JSONB,
-  access_control INT[],
+  acl_editor INT[],
+  acl_reviewer INT[],
 
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
