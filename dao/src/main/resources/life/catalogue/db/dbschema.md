@@ -15,6 +15,7 @@ and done it manually. So we can as well log changes here.
 ```
 ALTER TABLE dataset RENAME COLUMN access_control TO acl_editor;
 ALTER TABLE dataset ADD COLUMN acl_reviewer INT[];
+ALTER TYPE USER_ROLE ADD VALUE 'REVIEWER' BEFORE 'EDITOR';
 ```
 
 ### 2021-12-15 new issue
