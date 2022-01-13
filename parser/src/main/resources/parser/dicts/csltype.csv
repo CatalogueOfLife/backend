@@ -1,0 +1,31 @@
+movie,MOTION_PICTURE
+
+# mappings to Zotero
+# https://aurimasv.github.io/z2csl/typeMap.xml
+artwork,GRAPHIC
+attachment,ARTICLE
+audioRecording,SONG
+blogPost,POST_WEBLOG
+bookSection,CHAPTER
+case,LEGAL_CASE
+computerProgram,BOOK
+conferencePaper,PAPER_CONFERENCE
+dictionaryEntry,ENTRY_DICTIONARY
+document,ARTICLE
+email,PERSONAL_COMMUNICATION
+encyclopediaArticle,ENTRY_ENCYCLOPEDIA
+film,MOTION_PICTURE
+forumPost,POST
+hearing,BILL
+instantMessage,PERSONAL_COMMUNICATION
+journalArticle,ARTICLE_JOURNAL
+letter,PERSONAL_COMMUNICATION
+magazineArticle,ARTICLE_MAGAZINE
+newspaperArticle,ARTICLE_NEWSPAPER
+note,ARTICLE
+podcast,SONG
+presentation,SPEECH
+radioBroadcast,BROADCAST
+statute,LEGISLATION
+tvBroadcast,BROADCAST
+videoRecording,MOTION_PICTURE

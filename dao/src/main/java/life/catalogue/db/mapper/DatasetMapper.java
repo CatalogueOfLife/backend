@@ -52,7 +52,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   IntSet getEditors(@Param("key") int key);
 
-  void updateEditors(@Param("key") int key, @Param("editors") IntSet editors, @Param("userKey") int userKey);
+  void updateEditors(@Param("key") int key, @Param("editor") IntSet editors, @Param("userKey") int userKey);
 
   void addEditor(@Param("key") int key, @Param("editor") int editor, @Param("userKey") int userKey);
 

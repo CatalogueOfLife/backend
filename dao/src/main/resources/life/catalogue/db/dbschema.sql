@@ -774,7 +774,8 @@ CREATE TABLE dataset_archive (LIKE dataset);
 ALTER TABLE dataset_archive
   DROP COLUMN deleted,
   DROP COLUMN doc,
-  DROP COLUMN access_control,
+  DROP COLUMN acl_editor,
+  DROP COLUMN acl_reviewer,
   DROP COLUMN gbif_key,
   DROP COLUMN gbif_publisher_key,
   DROP COLUMN private,
