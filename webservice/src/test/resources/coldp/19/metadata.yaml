@@ -1,0 +1,75 @@
+title: Catalogue of Life Hierarchy
+alias: COLH
+description: | 
+    We present a consensus classification of life to embrace the more than 1.6 million species 
+    already provided by more than 3,000 taxonomists’ expert opinions 
+    in a unified and coherent, hierarchically ranked system known as the Catalogue of Life (CoL).
+
+contact:
+  given: Markus
+  family: Döring
+  email: mdoering@gbif.org
+  orcid: 0000-0001-7757-1889
+
+creator:
+  - family: Ruggiero
+    given: Michael A.
+  - family: Gordon
+    given: Dennis P.
+  - family: Orrell
+    given: Thomas M.
+    organisation: ITIS
+  - family: Bailly
+    given: Nicolas
+    orcid: 0000-0003-4994-0653    
+  - family: Bourgoin
+    given: Thierry
+  - family: Brusca
+    given: Richard C.
+  - family: Cavalier-Smith
+    given: Thomas
+  - family: Guiry
+    given: Michael D.
+  - family: Kirk
+    given: Paul M.
+
+geographicScope: global
+taxonomicScope: Biota
+license: CC-BY
+version: 1.4
+issued: 2019-05-06      
+source:
+  - id: plos
+    doi: 10.1371/journal.pone.0119248
+    type: article-journal
+    title: A Higher Level Classification of All Living Organisms
+    collectionTitle: PLOS ONE
+    volume: "10"
+    issue: "4"
+    author:
+      - family: Ruggiero
+        given: Michael A.
+      - family: Gordon
+        given: Dennis P.
+      - family: Orrell
+        given: Thomas M.
+        organisation: ITIS
+      - family: Bailly
+        given: Nicolas
+        orcid: 0000-0003-4994-0653    
+      - family: Bourgoin
+        given: Thierry
+      - family: Brusca
+        given: Richard C.
+      - family: Cavalier-Smith
+        given: Thomas
+      - family: Guiry
+        given: Michael D.
+      - family: Kirk
+        given: Paul M.
+    editor:
+      - family: Thuesen
+        given: Erik V.
+    publisher: Public Library of Science (PLoS)
+    issued: 2015-04-29
+    url: http://dx.plos.org/10.1371/journal.pone.0119248
