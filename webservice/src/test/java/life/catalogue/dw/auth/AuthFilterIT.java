@@ -45,7 +45,7 @@ public class AuthFilterIT {
     assertTrue(AuthFilter.hasReadAccess(u,13));
     assertTrue(AuthFilter.hasReadAccess(u,20));
 
-    u.removeRole(ADMIN);
+    u.getRoles().remove(ADMIN);
     u.addDatasetRole(EDITOR, 20);
     assertFalse(AuthFilter.hasReadAccess(u,10));
     assertFalse(AuthFilter.hasReadAccess(u,11));

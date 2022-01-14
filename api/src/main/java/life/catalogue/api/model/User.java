@@ -158,6 +158,12 @@ public class User implements Entity<Integer>, Principal {
     return roles.contains(role);
   }
 
+  public void addRole(Role role) {
+    if (role != null) {
+      roles.add(role);
+    }
+  }
+
   public Set<Role> getRoles() {
     return roles;
   }

@@ -15,7 +15,7 @@ public class UserTest {
     assertTrue(u.getRoles().isEmpty());
     assertFalse(u.isAdmin());
 
-    u.setAdmin(true);
+    u.getRoles().add(ADMIN);
     assertFalse(u.getRoles().isEmpty());
     assertTrue(u.isAdmin());
   }
@@ -28,7 +28,7 @@ public class UserTest {
     u.addDatasetRole(EDITOR, 1);
     assertTrue(u.isEditor(1));
 
-    u.setAdmin(true);
+    u.getRoles().add(ADMIN);
     assertTrue(u.isEditor(1));
 
     assertTrue(u.isEditor(1));
