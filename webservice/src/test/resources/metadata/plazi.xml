@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='utf-8'?><eml:eml packageId="237AC03DFF9CF019FFAAFFA10749FFF8/eml-1641894445746.xml" scope="system" system="Plazi" xmlns:d="eml://ecoinformatics.org/dataset-2.0.1" xmlns:dc="http://purl.org/dc/terms/" xmlns:eml="eml://ecoinformatics.org/eml-2.0.1" xmlns:md="eml://ecoinformatics.org/methods-2.0.1" xmlns:proj="eml://ecoinformatics.org/project-2.0.1" xmlns:res="eml://ecoinformatics.org/resource-2.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dataset><alternateIdentifier>237AC03DFF9CF019FFAAFFA10749FFF8</alternateIdentifier><alternateIdentifier>https://doi.org/10.11646/zootaxa.5090.1.1</alternateIdentifier><alternateIdentifier>1175-5326</alternateIdentifier><alternateIdentifier>5836207</alternateIdentifier><alternateIdentifier>FD5683E4-4FB8-4A9C-99FE-22344A7EC4F9</alternateIdentifier><citation>Rosa, Paolo, Heim, René, Bernasconi, Marco Valerio (2022): The Palaearctic types of Chrysididae (Insecta, Hymenoptera) deposited in the Linsenmaier collection. Part 2. Elampini: genus Hedychridium Abeille de Perrin, 1878. Zootaxa 5090 (1): 1-94, DOI: https://doi.org/10.11646/zootaxa.5090.1.1</citation><title>The Palaearctic types of Chrysididae (Insecta, Hymenoptera) deposited in the Linsenmaier collection. Part 2. Elampini: genus Hedychridium Abeille de Perrin, 1878</title><creator><individualName><givenName>Paolo</givenName><surName>Rosa</surName></individualName></creator><creator><individualName><givenName>René</givenName><surName>Heim</surName></individualName></creator><creator><individualName><givenName>Marco Valerio</givenName><surName>Bernasconi</surName></individualName></creator><pubDate>2022</pubDate><language>en</language><abstract><para>This dataset contains the digitized treatments in Plazi based on the original journal article Rosa, Paolo, Heim, René, Bernasconi, Marco Valerio (2022): The Palaearctic types of Chrysididae (Insecta, Hymenoptera) deposited in the Linsenmaier collection. Part 2. Elampini: genus Hedychridium Abeille de Perrin, 1878. Zootaxa 5090 (1): 1-94, DOI: https://doi.org/10.11646/zootaxa.5090.1.1</para></abstract><intellectualRights><para>To the extent possible under law, the publisher has waived all copyright and related or neighboring rights to these data, and has released them under<ulink url="https://creativecommons.org/publicdomain/zero/1.0/"><citetitle>CC0 Public Domain Dedication</citetitle></ulink>.
+        Users may copy, modify, distribute and use the work, including for commercial purposes.</para><para>No known copyright restrictions apply. See Agosti, D., Egloff, W., 2009. Taxonomic information exchange and copyright: the Plazi approach. BMC Research Notes 2009, 2:53<ulink url="https://doi.org/10.1186/1756-0500-2-53"><citetitle>https://doi.org/10.1186/1756-0500-2-53</citetitle></ulink>for further explanation.</para></intellectualRights><distribution scope="document"><online><url function="information">http://tb.plazi.org/GgServer/summary/237AC03DFF9CF019FFAAFFA10749FFF8</url></online></distribution><contact><individualName><givenName>Guido</givenName><surName>Sautter</surName></individualName><electronicMailAddress>gsautter@gmail.com</electronicMailAddress><onlineUrl>http://plazi.org</onlineUrl></contact><associatedParty><organizationName>Magnolia Press</organizationName><address><deliveryPoint>St. Lukes 1346</deliveryPoint><city>Auckland</city><country>New Zealand</country></address><electronicMailAddress>magnolia@mapress.com</electronicMailAddress><onlineUrl>http://www.mapress.com/</onlineUrl><role>publisher</role></associatedParty><associatedParty><organizationName>Plazi</organizationName><address><city>Bern</city><country>Switzerland</country></address><electronicMailAddress>info@plazi.org</electronicMailAddress><onlineUrl>http://plazi.org/</onlineUrl><role>distributor</role></associatedParty><metadataProvider><organizationName>Plazi</organizationName><individualName><surName>plazi</surName></individualName></metadataProvider></dataset><additionalMetadata><metadata><gbif><dateStamp>2022-01-11T09:47:25+0000</dateStamp><citation>Rosa, Paolo, Heim, René, Bernasconi, Marco Valerio (2022): The Palaearctic types of Chrysididae (Insecta, Hymenoptera) deposited in the Linsenmaier collection. Part 2. Elampini: genus Hedychridium Abeille de Perrin, 1878. Zootaxa 5090 (1): 1-94, DOI: https://doi.org/10.11646/zootaxa.5090.1.1</citation></gbif><plaziMods><mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+<mods:titleInfo>
+<mods:title>The Palaearctic types of Chrysididae (Insecta, Hymenoptera) deposited in the Linsenmaier collection. Part 2. Elampini: genus Hedychridium Abeille de Perrin, 1878</mods:title>
+</mods:titleInfo>
+<mods:name type="personal">
+<mods:role>
+<mods:roleTerm>Author</mods:roleTerm>
+</mods:role>
+<mods:namePart>Rosa, Paolo</mods:namePart>
+<mods:nameIdentifier type="ORCID">0000-0003-2919-5297</mods:nameIdentifier>
+<mods:nameIdentifier type="email">paolo.rosa@umons.ac.be</mods:nameIdentifier>
+</mods:name>
+<mods:name type="personal">
+<mods:role>
+<mods:roleTerm>Author</mods:roleTerm>
+</mods:role>
+<mods:namePart>Heim, René</mods:namePart>
+<mods:nameIdentifier type="ORCID">0000-0002-6011-5200</mods:nameIdentifier>
+<mods:nameIdentifier type="email">rene.heim@bluewin.ch</mods:nameIdentifier>
+</mods:name>
+<mods:name type="personal">
+<mods:role>
+<mods:roleTerm>Author</mods:roleTerm>
+</mods:role>
+<mods:namePart>Bernasconi, Marco Valerio</mods:namePart>
+<mods:nameIdentifier type="ORCID">0000-0003-0993-8049</mods:nameIdentifier>
+<mods:nameIdentifier type="email">ernasconi@lu.ch</mods:nameIdentifier>
+</mods:name>
+<mods:typeOfResource>text</mods:typeOfResource>
+<mods:relatedItem type="host">
+<mods:titleInfo>
+<mods:title>Zootaxa</mods:title>
+</mods:titleInfo>
+<mods:part>
+<mods:date>2022</mods:date>
+<mods:detail type="pubDate">
+<mods:number>2022-01-11</mods:number>
+</mods:detail>
+<mods:detail type="volume">
+<mods:number>5090</mods:number>
+</mods:detail>
+<mods:detail type="issue">
+<mods:number>1</mods:number>
+</mods:detail>
+<mods:extent unit="page">
+<mods:start>1</mods:start>
+<mods:end>94</mods:end>
+</mods:extent>
+</mods:part>
+</mods:relatedItem>
+<mods:classification>journal article</mods:classification>
+<mods:identifier type="DOI">https://doi.org/10.11646/zootaxa.5090.1.1</mods:identifier>
+<mods:identifier type="ISSN">1175-5326</mods:identifier>
+<mods:identifier type="Zenodo-Dep">5836207</mods:identifier>
+<mods:identifier type="ZooBank">FD5683E4-4FB8-4A9C-99FE-22344A7EC4F9</mods:identifier>
+</mods:mods></plaziMods></metadata></additionalMetadata></eml:eml>
