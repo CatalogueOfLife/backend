@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-01-14 blocking user
+```
+ALTER TABLE "user" ADD COLUMN blocked TIMESTAMP WITHOUT TIME ZONE;
+```
+
 ### 2022-01-13 reviewer role
 ```
 ALTER TABLE dataset RENAME COLUMN access_control TO acl_editor;

@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.exporter.FmUtil;
 
 import java.io.IOException;
@@ -37,4 +38,13 @@ public class ResourceUtils {
       .type(mediaType)
       .build();
   }
+
+  /**
+   * Content-Disposition: attachment; filename="filename.jpg"
+   */
+  public static String fileAttachment(String filename) {
+    return "attachment; filename=\"" + filename + "\"";
+  }
+
+
 }

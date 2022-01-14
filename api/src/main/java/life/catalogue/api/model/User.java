@@ -1,7 +1,6 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Country;
-import life.catalogue.common.collection.CollectionUtils;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -15,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+
+import life.catalogue.common.collection.CollectionUtils;
 
 public class User implements Entity<Integer>, Principal {
 
@@ -32,7 +33,7 @@ public class User implements Entity<Integer>, Principal {
   public static Integer userkey(Optional<User> user){
     if (user.isPresent()) {
       User u = user.get();
-      if (u.hasRole(Role.ADMIN)) {
+      if (u.isAdmin()) {
         return ADMIN_MAGIC_KEY;
       }
       return u.getKey();
@@ -48,24 +49,17 @@ public class User implements Entity<Integer>, Principal {
   private String email;
   private String orcid;
   private Country country;
-  private Set<Role> roles = EnumSet.noneOf(Role.class);
+  private final Set<Role> roles = EnumSet.noneOf(Role.class);
   @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
-  private IntSet editor = new IntOpenHashSet();
+  private final IntSet editor = new IntOpenHashSet();
   @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
-  private IntSet reviewer = new IntOpenHashSet();
+  private final IntSet reviewer = new IntOpenHashSet();
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> settings = new HashMap<>();
   private LocalDateTime lastLogin;
   private LocalDateTime created;
+  private LocalDateTime blocked;
   private LocalDateTime deleted;
-
-  public void addRole(Role role) {
-    roles.add(role);
-  }
-
-  public void removeRole(Role role) {
-    roles.remove(role);
-  }
 
   /**
    * Copies properties that are not managed in the GBIF registry to this instance.
@@ -73,9 +67,11 @@ public class User implements Entity<Integer>, Principal {
    */
   public void copyNonGbifData(User src) {
     key = src.key;
-    roles = src.roles;
-    editor = src.editor;
     settings = src.settings;
+    blocked = src.blocked;
+    setRoles(src.roles);
+    setEditor(src.editor);
+    setReviewer(src.reviewer);
   }
 
   @Override
@@ -89,16 +85,9 @@ public class User implements Entity<Integer>, Principal {
     return false;
   }
 
-  /**
-   * Checks if a user has the given role. Note that the {@link Role#EDITOR} role is dataset specific.
-   * Use hasRole(Role, Integer) to evaluate for a specific datasetKey.
-   */
-  public boolean hasRole(Role role) {
-    return roles.contains(role);
-  }
-
+  @JsonIgnore
   public boolean isAdmin() {
-    return hasRole(Role.ADMIN);
+    return roles.contains(Role.ADMIN);
   }
 
   public boolean isEditor(int datasetKey) {
@@ -164,15 +153,22 @@ public class User implements Entity<Integer>, Principal {
   public void setCountry(Country country) {
     this.country = country;
   }
-  
+
+  public boolean hasRole(Role role) {
+    return roles.contains(role);
+  }
+
   public Set<Role> getRoles() {
     return roles;
   }
-  
+
   public void setRoles(Set<Role> roles) {
-    this.roles = roles;
+    this.roles.clear();
+    if (roles != null) {
+      this.roles.addAll(roles);;
+    }
   }
-  
+
   public Map<String, String> getSettings() {
     return settings;
   }
@@ -186,8 +182,9 @@ public class User implements Entity<Integer>, Principal {
   }
 
   public void setEditor(IntSet editor) {
-    this.editor = editor == null ? new IntOpenHashSet() : editor;
-    if (CollectionUtils.notEmpty(editor)) {
+    this.editor.clear();
+    if (editor != null && !editor.isEmpty()) {
+      this.editor.addAll(editor);;
       roles.add(Role.EDITOR);
     }
   }
@@ -197,8 +194,9 @@ public class User implements Entity<Integer>, Principal {
   }
 
   public void setReviewer(IntSet reviewer) {
-    this.reviewer = reviewer == null ? new IntOpenHashSet() : reviewer;
-    if (CollectionUtils.notEmpty(reviewer)) {
+    this.reviewer.clear();
+    if (reviewer != null && !reviewer.isEmpty()) {
+      this.reviewer.addAll(reviewer);;
       roles.add(Role.REVIEWER);
     }
   }
@@ -222,15 +220,9 @@ public class User implements Entity<Integer>, Principal {
     switch (role) {
       case EDITOR:
         editor.remove(datasetKey);
-        if (editor.isEmpty()) {
-          roles.remove(role);
-        }
         break;
       case REVIEWER:
         reviewer.remove(datasetKey);
-        if (reviewer.isEmpty()) {
-          roles.remove(role);
-        }
         break;
       default:
         throw new IllegalArgumentException("Unsupported role " + role);
@@ -272,19 +264,20 @@ public class User implements Entity<Integer>, Principal {
            Objects.equals(lastname, user.lastname) &&
            Objects.equals(email, user.email) &&
            Objects.equals(orcid, user.orcid) &&
-        country == user.country &&
+           country == user.country &&
            Objects.equals(roles, user.roles) &&
-           Objects.equals(settings, user.settings) &&
            Objects.equals(editor, user.editor) &&
+           Objects.equals(reviewer, user.reviewer) &&
+           Objects.equals(settings, user.settings) &&
            Objects.equals(lastLogin, user.lastLogin) &&
            Objects.equals(created, user.created) &&
+           Objects.equals(blocked, user.blocked) &&
            Objects.equals(deleted, user.deleted);
   }
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, settings, editor, lastLogin, created, deleted);
+    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, editor, reviewer, settings, lastLogin, created, blocked, deleted);
   }
   
   @Override

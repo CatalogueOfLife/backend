@@ -11,6 +11,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 
 import java.util.UUID;
@@ -23,6 +24,8 @@ import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import scala.inline;
 
 @Path("/export")
 @Produces(MediaType.APPLICATION_JSON)
@@ -58,8 +61,9 @@ public class ExportResource {
   })
   public Response redirectToExportFile(@PathParam("id") UUID key) {
     return Response.status(Response.Status.FOUND)
-      .location(DatasetExport.downloadURI(key))
-      .build();
+                   .location(DatasetExport.downloadURI(key))
+                   .header(MoreHttpHeaders.CONTENT_DISPOSITION, ResourceUtils.fileAttachment("export-"+key+".zip"))
+                   .build();
   }
 
   @DELETE

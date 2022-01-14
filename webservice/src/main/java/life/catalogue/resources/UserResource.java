@@ -111,7 +111,7 @@ public class UserResource {
   @GET
   @Path("/dataset/{key}")
   public boolean isAuthorized(@PathParam("key") int key, @Auth User user) {
-    return AuthFilter.isAuthorized(user, key);
+    return AuthFilter.hasReadAccess(user, key);
   }
 
   @PUT
@@ -119,6 +119,20 @@ public class UserResource {
   @RolesAllowed({Roles.ADMIN})
   public void changeRole(@PathParam("key") int key, @Auth User admin, List<User.Role> roles) {
     dao.changeRole(key, admin, roles);
+  }
+
+  @POST
+  @Path("/{key}/block")
+  @RolesAllowed({Roles.ADMIN})
+  public void block(@PathParam("key") int key, @Auth User admin) {
+    dao.block(key, admin);
+  }
+
+  @DELETE
+  @Path("/{key}/block")
+  @RolesAllowed({Roles.ADMIN})
+  public void unblock(@PathParam("key") int key, @Auth User admin) {
+    dao.unblock(key, admin);
   }
 
   private User getUser(int key) throws NotFoundException {

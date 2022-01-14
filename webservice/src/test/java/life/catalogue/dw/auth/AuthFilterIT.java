@@ -25,48 +25,48 @@ public class AuthFilterIT {
   @Test
   public void isAuthorized() {
     User u = new User();
-    assertFalse(AuthFilter.isAuthorized(u,10));
-    assertFalse(AuthFilter.isAuthorized(u,11));
-    assertFalse(AuthFilter.isAuthorized(u,12));
-    assertFalse(AuthFilter.isAuthorized(u,13));
-    assertFalse(AuthFilter.isAuthorized(u,20));
+    assertFalse(AuthFilter.hasReadAccess(u,10));
+    assertFalse(AuthFilter.hasReadAccess(u,11));
+    assertFalse(AuthFilter.hasReadAccess(u,12));
+    assertFalse(AuthFilter.hasReadAccess(u,13));
+    assertFalse(AuthFilter.hasReadAccess(u,20));
 
     u.addDatasetRole(EDITOR, 1); // also adds editor role
-    assertFalse(AuthFilter.isAuthorized(u,10));
-    assertFalse(AuthFilter.isAuthorized(u,11));
-    assertFalse(AuthFilter.isAuthorized(u,12));
-    assertFalse(AuthFilter.isAuthorized(u,13));
-    assertFalse(AuthFilter.isAuthorized(u,20));
+    assertFalse(AuthFilter.hasReadAccess(u,10));
+    assertFalse(AuthFilter.hasReadAccess(u,11));
+    assertFalse(AuthFilter.hasReadAccess(u,12));
+    assertFalse(AuthFilter.hasReadAccess(u,13));
+    assertFalse(AuthFilter.hasReadAccess(u,20));
 
     u.addRole(ADMIN);
-    assertTrue(AuthFilter.isAuthorized(u,10));
-    assertTrue(AuthFilter.isAuthorized(u,11));
-    assertTrue(AuthFilter.isAuthorized(u,12));
-    assertTrue(AuthFilter.isAuthorized(u,13));
-    assertTrue(AuthFilter.isAuthorized(u,20));
+    assertTrue(AuthFilter.hasReadAccess(u,10));
+    assertTrue(AuthFilter.hasReadAccess(u,11));
+    assertTrue(AuthFilter.hasReadAccess(u,12));
+    assertTrue(AuthFilter.hasReadAccess(u,13));
+    assertTrue(AuthFilter.hasReadAccess(u,20));
 
     u.removeRole(ADMIN);
     u.addDatasetRole(EDITOR, 20);
-    assertFalse(AuthFilter.isAuthorized(u,10));
-    assertFalse(AuthFilter.isAuthorized(u,11));
-    assertFalse(AuthFilter.isAuthorized(u,12));
-    assertFalse(AuthFilter.isAuthorized(u,13));
-    assertTrue(AuthFilter.isAuthorized(u,20));
+    assertFalse(AuthFilter.hasReadAccess(u,10));
+    assertFalse(AuthFilter.hasReadAccess(u,11));
+    assertFalse(AuthFilter.hasReadAccess(u,12));
+    assertFalse(AuthFilter.hasReadAccess(u,13));
+    assertTrue(AuthFilter.hasReadAccess(u,20));
 
     u.addDatasetRole(EDITOR, 12); // releases should not be added to permissions, but we make sure here it has no effect
-    assertFalse(AuthFilter.isAuthorized(u,10));
-    assertFalse(AuthFilter.isAuthorized(u,11));
-    assertFalse(AuthFilter.isAuthorized(u,12));
-    assertFalse(AuthFilter.isAuthorized(u,13));
-    assertTrue(AuthFilter.isAuthorized(u,20));
+    assertFalse(AuthFilter.hasReadAccess(u,10));
+    assertFalse(AuthFilter.hasReadAccess(u,11));
+    assertFalse(AuthFilter.hasReadAccess(u,12));
+    assertFalse(AuthFilter.hasReadAccess(u,13));
+    assertTrue(AuthFilter.hasReadAccess(u,20));
 
     u.addDatasetRole(EDITOR, 10); // projects give access to all releases
     u.removeDatasetRole(EDITOR, 20);
-    assertTrue(AuthFilter.isAuthorized(u,10));
-    assertTrue(AuthFilter.isAuthorized(u,11));
-    assertTrue(AuthFilter.isAuthorized(u,12));
-    assertTrue(AuthFilter.isAuthorized(u,13));
-    assertFalse(AuthFilter.isAuthorized(u,20));
+    assertTrue(AuthFilter.hasReadAccess(u,10));
+    assertTrue(AuthFilter.hasReadAccess(u,11));
+    assertTrue(AuthFilter.hasReadAccess(u,12));
+    assertTrue(AuthFilter.hasReadAccess(u,13));
+    assertFalse(AuthFilter.hasReadAccess(u,20));
   }
 
 }

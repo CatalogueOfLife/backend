@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMaps;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import life.catalogue.api.model.User;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -20,7 +19,7 @@ import java.io.IOException;
 import java.util.function.IntPredicate;
 
 /**
- * Avoids unprivileged access to private datasets.
+ * Avoids unprivileged access to private datasets. A user has to be at least a reviewer with read access to pass this filter.
  * See https://github.com/CatalogueOfLife/backend/issues/659
  * <p>
  * To prevent performance penalties a low memory footprint cache is used.
@@ -32,6 +31,7 @@ import java.util.function.IntPredicate;
 public class PrivateFilter implements ContainerRequestFilter {
 
   private SqlSessionFactory factory;
+  // is dataset private cache?
   private final Int2BooleanMap cache = Int2BooleanMaps.synchronize(new Int2BooleanOpenHashMap());
 
   @Override
@@ -47,11 +47,11 @@ public class PrivateFilter implements ContainerRequestFilter {
       });
 
       if (priv) {
-        // check if users has permissions
+        // check if user has permissions to at least read
         SecurityContext secCtxt = req.getSecurityContext();
         if (secCtxt != null && secCtxt.getUserPrincipal() != null && secCtxt.getUserPrincipal() instanceof User) {
           User user = (User) secCtxt.getUserPrincipal();
-          if (!AuthFilter.isAuthorized(user, datasetKey)) {
+          if (!AuthFilter.hasReadAccess(user, datasetKey)) {
             throw new ForbiddenException("Dataset " + datasetKey + " is private");
           }
         } else {

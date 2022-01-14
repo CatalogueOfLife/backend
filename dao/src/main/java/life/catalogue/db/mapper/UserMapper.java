@@ -5,9 +5,12 @@ import life.catalogue.api.model.User;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
+
+import javax.annotation.Nullable;
 
 /**
  * Mapper for users.
@@ -15,6 +18,13 @@ import org.apache.ibatis.annotations.Param;
  * The standard CRUD methods do all use the full user instance.
  */
 public interface UserMapper extends CRUD<Integer, User>, GlobalPageable<User> {
+
+  /**
+   * To unblock set blocked to null
+   *
+   * @param key user key
+   */
+  void block(@Param("key") int key, @Param("blocked") @Nullable LocalDateTime blocked);
 
   /**
    * @return full user info
@@ -31,17 +41,10 @@ public interface UserMapper extends CRUD<Integer, User>, GlobalPageable<User> {
   int searchCount(@Param("q") String query);
 
   /**
-   * Retrieves a user with its public information only
-   * @return public user infos
-   */
-  User getPublic(@Param("key") int key);
-
-  /**
    * Lists all editors for a given dataset with their public information only
    * @return public user infos
    */
   List<User> datasetEditors(@Param("datasetKey") int datasetKey);
 
   List<User> datasetReviewer(@Param("datasetKey") int datasetKey);
-
 }

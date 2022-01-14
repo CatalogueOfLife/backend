@@ -11,7 +11,6 @@ import life.catalogue.api.model.User;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.jersey.exception.JsonExceptionMapperBase;
 
-import org.parboiled.support.Checks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,11 +127,14 @@ public class AuthFilter implements ContainerRequestFilter {
         Integer datasetKey = requestedDataset(req.getUriInfo());
         try {
           User.Role r = User.Role.valueOf(role.trim().toUpperCase());
-          if (user.user.hasRole(r)) {
-            // the editor role is scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
+          if (user.user.getRoles().contains(r)) {
+            // the editor and reviewer role is scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
             // Check if the user has permissions. For releases use the project key for evaluation.
             if (r == User.Role.EDITOR && datasetKey != null) {
-              return isAuthorized(user.user, datasetKey);
+              return hasWriteAccess(user.user, datasetKey);
+            }
+            if (r == User.Role.REVIEWER && datasetKey != null) {
+              return hasReadAccess(user.user, datasetKey);
             }
             return true;
           }
@@ -158,15 +160,30 @@ public class AuthFilter implements ContainerRequestFilter {
   }
 
   /**
-   * Evaluates if a user has editorial permission on a given dataset.
-   * Admins have access to all datasets. Editors only to the ones explicitly listed in the users dataset property.
+   * Evaluates if a user has read permissions on a given dataset.
+   * Admins have access to all datasets. Editors and reviewers only to the ones explicitly listed in the users properties.
    * Project releases are evaluated by the project only, thus an editor of a project always has access to all releases.
    */
-  public static boolean isAuthorized(User user, int datasetKey){
+  public static boolean hasReadAccess(User user, int datasetKey){
     try {
       // use the project key to evaluate permissions
       int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(datasetKey);
-      return user.hasRole(User.Role.ADMIN) || user.isEditor(masterKey);
+      return user.isAdmin() || user.isEditor(masterKey) || user.isReviewer(masterKey);
+    } catch (NotFoundException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Evaluates if a user has write permission on a given dataset.
+   * Admins have access to all datasets. Editors only to the ones explicitly listed in the users property.
+   * Project releases are evaluated by the project only, thus an editor of a project always has access to all releases.
+   */
+  public static boolean hasWriteAccess(User user, int datasetKey){
+    try {
+      // use the project key to evaluate permissions
+      int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(datasetKey);
+      return user.isAdmin() || user.isEditor(masterKey);
     } catch (NotFoundException e) {
       return false;
     }
