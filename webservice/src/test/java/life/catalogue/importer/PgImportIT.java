@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
 public class PgImportIT extends PgImportITBase {
 
   @Test
+  public void coldpMetadata() throws Exception {
+    normalizeAndImport(COLDP, 19);
+    assertEquals(1, dataset.getSource().size());
+  }
+
+  @Test
   public void testPublishedIn() throws Exception {
     normalizeAndImport(DWCA, 0);
 

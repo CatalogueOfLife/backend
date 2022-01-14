@@ -394,6 +394,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     ObjectUtils.setIfNull(obj.getType(), obj::setType, old.getType());
     ObjectUtils.setIfNull(obj.getTitle(), obj::setTitle, old.getTitle());
+    ObjectUtils.setIfNull(obj.getLicense(), obj::setLicense, old.getLicense());
     sanitize(obj);
     // if list of creators for a project changes, adjust the max container author settings
     if (obj.getOrigin() == DatasetOrigin.MANAGED && CollectionUtils.size(obj.getCreator()) != CollectionUtils.size(old.getCreator())) {

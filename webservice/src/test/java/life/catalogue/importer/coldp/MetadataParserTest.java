@@ -11,11 +11,13 @@ import life.catalogue.common.io.Resources;
 
 import org.gbif.nameparser.api.NomCode;
 
+import java.io.FileInputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -267,6 +269,15 @@ public class MetadataParserTest {
     assertEquals(List.of(o1, o2, o3), d.getContributor());
 
     assertEquals("Fishes", d.getTaxonomicScope());
+  }
 
+   @Test
+   @Ignore
+   public void manualFile() throws Exception {
+    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(new FileInputStream("/Users/markus/code/data/data-col-hierarchy/metadata.yaml"));
+    Dataset d = m.get().getDataset();
+
+    var sources = d.getSource();
+    System.out.println("done");
   }
 }

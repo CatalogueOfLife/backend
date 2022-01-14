@@ -65,7 +65,8 @@
     <id property="key" column="key"/>
     <result property="roles" column="roles" typeHandler="life.catalogue.db.type.RoleSetTypeHandler"/>
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
-    <result property="datasets" column="datasets" typeHandler="life.catalogue.db.type.IntSetTypeHandler"/>
+    <result property="editor" column="editor" typeHandler="life.catalogue.db.type.IntSetTypeHandler"/>
+    <result property="reviewer" column="reviewer" typeHandler="life.catalogue.db.type.IntSetTypeHandler"/>
   </resultMap>
 
 
@@ -88,7 +89,7 @@
   </select>
 
   <select id="search" resultMap="userResultMap">
-    SELECT <include refid="SELECT_PUBLIC"/>
+    SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE <include refid="WHERE"/>
     ORDER BY u.username
