@@ -5,7 +5,6 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.AuthFilter;
@@ -57,10 +56,11 @@ public class UserResource {
   }
 
   @GET
-  public ResultPage<User> search(@QueryParam("q") String q, @Valid @BeanParam Page page) {
-    ResultPage<User> user = dao.search(q, page);
-    user.forEach(UserResource::obfuscate);
-    return user;
+  public ResultPage<User> search(@QueryParam("q") String q, @Valid @BeanParam Page page, @Auth User user) {
+    ResultPage<User> users = dao.search(q, page);
+    if (!user.isAdmin()) {
+    }    users.forEach(UserResource::obfuscate);
+    return users;
   }
 
   @GET
@@ -103,9 +103,9 @@ public class UserResource {
   @Path("/dataset")
   public List<Dataset> datasets(@Auth User user, @Context SqlSession session) {
     final DatasetMapper dm = session.getMapper(DatasetMapper.class);
-    return user.getDatasets().stream()
-      .map(dm::get)
-      .collect(Collectors.toList());
+    return user.getEditor().stream()
+               .map(dm::get)
+               .collect(Collectors.toList());
   }
 
   @GET

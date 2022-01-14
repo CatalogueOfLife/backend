@@ -6,10 +6,7 @@ import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
@@ -398,6 +395,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     ObjectUtils.setIfNull(obj.getType(), obj::setType, old.getType());
     ObjectUtils.setIfNull(obj.getTitle(), obj::setTitle, old.getTitle());
+    ObjectUtils.setIfNull(obj.getLicense(), obj::setLicense, old.getLicense());
     sanitize(obj);
     // if list of creators for a project changes, adjust the max container author settings
     if (obj.getOrigin() == DatasetOrigin.MANAGED && CollectionUtils.size(obj.getCreator()) != CollectionUtils.size(old.getCreator())) {
@@ -446,30 +444,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (old == null || !Objects.equal(d.getLogo(), old.getLogo())) {
       LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService, user);
     }
-  }
-
-  public void addEditor(int key, int editorKey, User user) {
-    changeEditor(key, editorKey, user, dm -> dm.addEditor(key, editorKey, user.getKey()));
-  }
-
-  public void removeEditor(int key, int editorKey, User user) {
-    changeEditor(key, editorKey, user, dm -> dm.removeEditor(key, editorKey, user.getKey()));
-  }
-
-  private void changeEditor(int key, int editorKey, User user, Consumer<DatasetMapper> action) {
-    if (!user.hasRole(User.Role.ADMIN) && !user.isEditor(key)) {
-      throw new WebApplicationException(Response.Status.FORBIDDEN);
-    }
-    User editor;
-    try (SqlSession session = factory.openSession()){
-      editor = session.getMapper(UserMapper.class).get(editorKey);
-      if (editor == null) {
-        throw new IllegalArgumentException("Editor " + editorKey + " does not exist");
-      }
-      action.accept(session.getMapper(DatasetMapper.class));
-      session.commit();
-    }
-    bus.post(new UserPermissionChanged(editor.getUsername()));
   }
 
   public Dataset copy(int datasetKey, int userKey, BiConsumer<Dataset, DatasetSettings> modifier){

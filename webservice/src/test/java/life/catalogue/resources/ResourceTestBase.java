@@ -5,6 +5,7 @@ import life.catalogue.WsServerRule;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.dao.AuthorizationDao;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -30,15 +31,13 @@ public class ResourceTestBase {
   protected String baseURL;
   protected WebTarget base;
   private final String path;
-  private final DatasetDao ddao;
+  private final AuthorizationDao adao;
 
   public ResourceTestBase(String path) {
     this.path = path;
     baseURL = String.format("http://localhost:%d"+path, RULE.getLocalPort());
     base = RULE.client().target(baseURL);
-    DatasetExportDao exDao = mock(DatasetExportDao.class);
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    ddao = new DatasetDao(factory(), null, ImageService.passThru(), null, exDao, NameUsageIndexService.passThru(), null, RULE.getServer().getBus(), validator);
+    adao = new AuthorizationDao(factory(), RULE.getServer().getBus());
   }
   
   @ClassRule
@@ -64,7 +63,7 @@ public class ResourceTestBase {
     try (SqlSession session = factory().openSession(true)) {
       session.getMapper(DatasetMapper.class).addEditor(datasetKey, editorKey, Users.TESTER);
     }
-    ddao.addEditor(datasetKey, editorKey, TestEntityGenerator.USER_ADMIN);
+    adao.add(datasetKey, editorKey, User.Role.EDITOR, TestEntityGenerator.USER_ADMIN);
   }
 
   protected void printDiff(Object o1, Object o2) {

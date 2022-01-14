@@ -25,6 +25,13 @@ public class CSLTypeParserTest extends ParserTestBase<CSLType> {
     assertParse(CSLType.ARTICLE_JOURNAL, "article journal");
     assertParse(CSLType.ARTICLE_JOURNAL, "ARTICLE-journal");
     assertParse(CSLType.ARTICLE_JOURNAL, "Article  Journal");
+    assertParse(CSLType.ARTICLE_JOURNAL, "journal article");
+    assertParse(CSLType.ARTICLE_JOURNAL, "journal-article");
+    assertParse(CSLType.ARTICLE_JOURNAL, "journal_article");
+    assertParse(CSLType.ARTICLE_JOURNAL, "JournalArticle");
+    assertParse(CSLType.ARTICLE_JOURNAL, "journalArticle");
+    assertParse(CSLType.PERSONAL_COMMUNICATION, "email");
+    assertParse(CSLType.PERSONAL_COMMUNICATION, "eMail");
 
     assertUnparsable("0");
     assertUnparsable("f");

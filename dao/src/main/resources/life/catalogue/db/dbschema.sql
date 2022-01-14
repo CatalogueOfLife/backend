@@ -601,6 +601,7 @@ CREATE TYPE TYPESTATUS AS ENUM (
 );
 
 CREATE TYPE USER_ROLE AS ENUM (
+  'REVIEWER',
   'EDITOR',
   'ADMIN'
 );
@@ -711,7 +712,8 @@ CREATE TABLE dataset (
   notes TEXT,
 
   settings JSONB,
-  access_control INT[],
+  acl_editor INT[],
+  acl_reviewer INT[],
 
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
@@ -774,7 +776,8 @@ CREATE TABLE dataset_archive (LIKE dataset);
 ALTER TABLE dataset_archive
   DROP COLUMN deleted,
   DROP COLUMN doc,
-  DROP COLUMN access_control,
+  DROP COLUMN acl_editor,
+  DROP COLUMN acl_reviewer,
   DROP COLUMN gbif_key,
   DROP COLUMN gbif_publisher_key,
   DROP COLUMN private,

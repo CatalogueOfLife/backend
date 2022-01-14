@@ -11,7 +11,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2022-01-05 dataset partitioning without cascading deletes
+### 2022-01-17 dataset partitioning without cascading deletes
 ```
 -- general table changes first
 ALTER TABLE name DROP COLUMN homotypic_name_id CASCADE;
@@ -314,6 +314,13 @@ CREATE INDEX ON media (dataset_key, taxon_id);
 CREATE INDEX ON media (dataset_key, sector_key);
 CREATE INDEX ON media (dataset_key, verbatim_key);
 CREATE INDEX ON media (dataset_key, reference_id);
+```
+
+### 2022-01-13 reviewer role
+```
+ALTER TABLE dataset RENAME COLUMN access_control TO acl_editor;
+ALTER TABLE dataset ADD COLUMN acl_reviewer INT[];
+ALTER TYPE USER_ROLE ADD VALUE 'REVIEWER' BEFORE 'EDITOR';
 ```
 
 ### 2021-12-15 new issue

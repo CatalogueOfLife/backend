@@ -14,7 +14,10 @@ import javax.validation.constraints.NotNull;
 import java.util.*;
 
 /**
- * Configuration for the GBIF IdentityService.
+ * Config based authentication provider that can be used for local tests or GBIF registry independent installations.
+ * Not used in production.
+ *
+ * The datasets key list is used for the role assigned.
  */
 @JsonTypeName("map")
 public class MapAuthenticationFactory implements AuthenticationProviderFactory {
@@ -59,9 +62,9 @@ public class MapAuthenticationFactory implements AuthenticationProviderFactory {
           u.setLastname(c.username);
           if (c.role != null) {
             u.getRoles().add(c.role);
-          }
-          if (c.datasets != null) {
-            c.datasets.forEach(u::addDataset);
+            if (c.datasets != null && c.role != User.Role.ADMIN) {
+              c.datasets.forEach(dk -> u.addDatasetRole(c.role, dk));
+            }
           }
           return Optional.of(u);
         }

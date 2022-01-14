@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.security.auth.Subject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -20,6 +21,7 @@ public class User implements Entity<Integer>, Principal {
   public static final int ADMIN_MAGIC_KEY = -42;
 
   public enum Role {
+    REVIEWER,
     EDITOR,
     ADMIN
   }
@@ -47,8 +49,12 @@ public class User implements Entity<Integer>, Principal {
   private String orcid;
   private Country country;
   private Set<Role> roles = EnumSet.noneOf(Role.class);
+  @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+  private IntSet editor = new IntOpenHashSet();
+  @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+  private IntSet reviewer = new IntOpenHashSet();
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> settings = new HashMap<>();
-  private IntSet datasets = new IntOpenHashSet();
   private LocalDateTime lastLogin;
   private LocalDateTime created;
   private LocalDateTime deleted;
@@ -68,7 +74,7 @@ public class User implements Entity<Integer>, Principal {
   public void copyNonGbifData(User src) {
     key = src.key;
     roles = src.roles;
-    datasets = src.datasets;
+    editor = src.editor;
     settings = src.settings;
   }
 
@@ -91,8 +97,16 @@ public class User implements Entity<Integer>, Principal {
     return roles.contains(role);
   }
 
+  public boolean isAdmin() {
+    return hasRole(Role.ADMIN);
+  }
+
   public boolean isEditor(int datasetKey) {
-    return roles.contains(Role.EDITOR) && datasets.contains(datasetKey);
+    return editor.contains(datasetKey);
+  }
+
+  public boolean isReviewer(int datasetKey) {
+    return reviewer.contains(datasetKey);
   }
 
   public Integer getKey() {
@@ -167,26 +181,59 @@ public class User implements Entity<Integer>, Principal {
     this.settings = settings;
   }
 
-  public IntSet getDatasets() {
-    return datasets;
+  public IntSet getEditor() {
+    return editor;
   }
 
-  public void setDatasets(IntSet datasets) {
-    this.datasets = datasets == null ? new IntOpenHashSet() : datasets;
-    if (CollectionUtils.notEmpty(datasets)) {
+  public void setEditor(IntSet editor) {
+    this.editor = editor == null ? new IntOpenHashSet() : editor;
+    if (CollectionUtils.notEmpty(editor)) {
       roles.add(Role.EDITOR);
     }
   }
 
-  public void addDataset(int datasetKey) {
-    datasets.add(datasetKey);
-    roles.add(Role.EDITOR);
+  public IntSet getReviewer() {
+    return reviewer;
   }
 
-  public void removeDataset(int datasetKey) {
-    datasets.remove(datasetKey);
-    if (datasets.isEmpty()) {
-      roles.remove(Role.EDITOR);
+  public void setReviewer(IntSet reviewer) {
+    this.reviewer = reviewer == null ? new IntOpenHashSet() : reviewer;
+    if (CollectionUtils.notEmpty(reviewer)) {
+      roles.add(Role.REVIEWER);
+    }
+  }
+
+  public void addDatasetRole(User.Role role, int datasetKey) {
+    switch (role) {
+      case EDITOR:
+        editor.add(datasetKey);
+        roles.add(role);
+        break;
+      case REVIEWER:
+        reviewer.add(datasetKey);
+        roles.add(role);
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported role " + role);
+    }
+  }
+
+  public void removeDatasetRole(User.Role role, int datasetKey) {
+    switch (role) {
+      case EDITOR:
+        editor.remove(datasetKey);
+        if (editor.isEmpty()) {
+          roles.remove(role);
+        }
+        break;
+      case REVIEWER:
+        reviewer.remove(datasetKey);
+        if (reviewer.isEmpty()) {
+          roles.remove(role);
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported role " + role);
     }
   }
 
@@ -220,24 +267,24 @@ public class User implements Entity<Integer>, Principal {
     if (o == null || getClass() != o.getClass()) return false;
     User user = (User) o;
     return Objects.equals(key, user.key) &&
-        Objects.equals(username, user.username) &&
-        Objects.equals(firstname, user.firstname) &&
-        Objects.equals(lastname, user.lastname) &&
-        Objects.equals(email, user.email) &&
-        Objects.equals(orcid, user.orcid) &&
+           Objects.equals(username, user.username) &&
+           Objects.equals(firstname, user.firstname) &&
+           Objects.equals(lastname, user.lastname) &&
+           Objects.equals(email, user.email) &&
+           Objects.equals(orcid, user.orcid) &&
         country == user.country &&
-        Objects.equals(roles, user.roles) &&
-        Objects.equals(settings, user.settings) &&
-        Objects.equals(datasets, user.datasets) &&
-        Objects.equals(lastLogin, user.lastLogin) &&
-        Objects.equals(created, user.created) &&
-        Objects.equals(deleted, user.deleted);
+           Objects.equals(roles, user.roles) &&
+           Objects.equals(settings, user.settings) &&
+           Objects.equals(editor, user.editor) &&
+           Objects.equals(lastLogin, user.lastLogin) &&
+           Objects.equals(created, user.created) &&
+           Objects.equals(deleted, user.deleted);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, settings, datasets, lastLogin, created, deleted);
+    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, settings, editor, lastLogin, created, deleted);
   }
   
   @Override

@@ -41,7 +41,7 @@
   <sql id="PRIVATE">
     <!-- magic number for admins -->
     <if test="userKey != -42">
-      AND (NOT ${alias}.private <if test="userKey != null">OR ${alias}.access_control @> ARRAY[#{userKey}::int]</if>)
+      AND (NOT ${alias}.private <if test="userKey != null">OR ${alias}.acl_editor @> ARRAY[#{userKey}::int] OR ${alias}.acl_reviewer @> ARRAY[#{userKey}::int]</if>)
     </if>
   </sql>
 
@@ -95,7 +95,7 @@
         AND d.license IN <foreach item="o" collection="req.license" open="(" separator="," close=")">#{o}::LICENSE</foreach>
       </if>
       <if test="req.editor != null">
-        AND d.access_control @> ARRAY[#{req.editor}::int]
+        AND d.acl_editor @> ARRAY[#{req.editor}::int]
       </if>
       <if test="req.modifiedBy != null">
         AND d.modified_by = #{req.modifiedBy}
@@ -307,13 +307,13 @@
 
   <!--  makes sure to add creator to editors -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, access_control, created, modified)
+    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, acl_editor, created, modified)
     VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
   <!--  makes sure to add creator to editors -->
   <insert id="createWithKey" parameterType="Dataset" useGeneratedKeys="false">
-    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, access_control, created, modified)
+    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, acl_editor, created, modified)
     VALUES (#{key},<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
@@ -329,27 +329,49 @@
     WHERE key = #{key}
   </update>
 
-  <select id="getEditors" resultType="it.unimi.dsi.fastutil.ints.IntSet">
-    SELECT access_control || array[created_by]
-    FROM dataset
+
+  <select id="getReviewer" resultType="it.unimi.dsi.fastutil.ints.IntSet">
+    SELECT acl_reviewer FROM dataset WHERE key = #{key}
+  </select>
+
+  <update id="updateReviewer" parameterType="map">
+    UPDATE dataset  SET (acl_reviewer, modified_by, modified) =
+    ( #{reviewer, typeHandler=life.catalogue.db.type.IntSetTypeHandler}, #{userKey}, now() )
     WHERE key = #{key}
+  </update>
+
+  <update id="addReviewer" parameterType="map">
+    UPDATE dataset SET (acl_reviewer, modified_by, modified) =
+    ( acl_reviewer || #{reviewer}, #{userKey}, now() )
+    WHERE key = #{key}
+  </update>
+
+  <update id="removeReviewer" parameterType="map">
+    UPDATE dataset  SET (acl_reviewer, modified_by, modified) =
+    ( array_remove(acl_reviewer, #{reviewer}), #{userKey}, now() )
+    WHERE key = #{key}
+  </update>
+
+
+  <select id="getEditors" resultType="it.unimi.dsi.fastutil.ints.IntSet">
+    SELECT acl_editor FROM dataset WHERE key = #{key}
   </select>
 
   <update id="updateEditors" parameterType="map">
-    UPDATE dataset  SET (access_control, modified_by, modified) =
-      ( #{editors, typeHandler=life.catalogue.db.type.IntSetTypeHandler}, #{userKey}, now() )
+    UPDATE dataset  SET (acl_editor, modified_by, modified) =
+      ( #{editor, typeHandler=life.catalogue.db.type.IntSetTypeHandler}, #{userKey}, now() )
     WHERE key = #{key}
   </update>
 
   <update id="addEditor" parameterType="map">
-    UPDATE dataset SET (access_control, modified_by, modified) =
-      ( access_control || #{editor}, #{userKey}, now() )
+    UPDATE dataset SET (acl_editor, modified_by, modified) =
+      ( acl_editor || #{editor}, #{userKey}, now() )
     WHERE key = #{key}
   </update>
 
   <update id="removeEditor" parameterType="map">
-    UPDATE dataset  SET (access_control, modified_by, modified) =
-      ( array_remove(access_control, #{editor}), #{userKey}, now() )
+    UPDATE dataset  SET (acl_editor, modified_by, modified) =
+      ( array_remove(acl_editor, #{editor}), #{userKey}, now() )
     WHERE key = #{key}
   </update>
 

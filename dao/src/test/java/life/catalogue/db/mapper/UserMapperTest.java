@@ -92,7 +92,7 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
   @Test
   public void roundtrip() throws Exception {
     User u1 = createTestEntity();
-    u1.getDatasets().addAll(List.of(1,2,3));
+    u1.getEditor().addAll(List.of(1,2,3));
     mapper().create(u1);
     commit();
     
@@ -139,7 +139,7 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
   User removeDbCreatedProps(User obj) {
     obj.setLastLogin(null);
     obj.setCreated(null);
-    obj.getDatasets().clear();
+    obj.getEditor().clear();
     return obj;
   }
   

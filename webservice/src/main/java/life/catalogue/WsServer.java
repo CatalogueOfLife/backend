@@ -277,6 +277,7 @@ public class WsServer extends Application<WsServerConfig> {
     Validator validator = env.getValidator();
 
     // daos
+    AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), bus);
     DatasetExportDao exdao = new DatasetExportDao(cfg.exportDir, getSqlSessionFactory(), bus, validator);
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
@@ -349,10 +350,12 @@ public class WsServer extends Application<WsServerConfig> {
       importManager, gbifSync, ni, executor, idMap, validator));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
+    j.register(new DatasetEditorResource(adao));
     j.register(new DatasetExportResource(getSqlSessionFactory(), searchService, exportManager, diDao, cfg));
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetPatchResource());
     j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, assembly, releaseManager));
+    j.register(new DatasetReviewerResource(adao));
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));
     j.register(new DuplicateResource());

@@ -10,9 +10,7 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.img.ImgConfig;
-
 import life.catalogue.parser.AreaParser;
-
 import life.catalogue.parser.UnparsableException;
 
 import org.gbif.dwc.terms.Term;
@@ -34,11 +32,11 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
+
+import de.undercouch.citeproc.csl.CSLType;
 
 @Path("/vocab")
 @Produces(MediaType.APPLICATION_JSON)
@@ -58,13 +56,15 @@ public class VocabResource {
           add(enums, info.load());
         }
       }
-      
-      for (Class<?> clazz : ImmutableList.of(
+
+      // manually add scattered enums
+      for (Class<?> clazz : List.of(
           User.Role.class,
           ImgConfig.Scale.class,
           EditorialDecision.Mode.class,
           Sector.Mode.class,
           NameUsageSearchParameter.class,
+          CSLType.class,
           TreeNode.Type.class)) {
         add(enums, clazz);
       }
@@ -72,14 +72,14 @@ public class VocabResource {
     } catch (IOException e) {
       LOG.error("Failed to init enum class map", e);
     }
-    vocabs = ImmutableMap.copyOf(enums);
+    vocabs = Map.copyOf(enums);
     List<String> names = new ArrayList<>(enums.keySet());
     names.add("language");
     names.add("geotime");
     names.add("terms");
     names.remove(binaryName(DwcUnofficialTerm.class));
     Collections.sort(names);
-    vocabNames = ImmutableList.copyOf(names);
+    vocabNames = List.copyOf(names);
   }
   
   private static void add(Map<String, Class<Enum>> enums, Class<?> clazz) {
