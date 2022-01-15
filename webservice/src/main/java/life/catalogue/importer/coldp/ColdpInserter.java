@@ -49,7 +49,7 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 public class ColdpInserter extends NeoCsvInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInserter.class);
-  static final Term CSLJSON_CLASS_TERM = new UnknownTerm(URI.create("http://citationstyles.org/CSL-JSON"), "CSL-JSON", true);
+  static final Term CSLJSON_CLASS_TERM = new UnknownTerm(URI.create("http://citationstyles.org/CSL-JSON"), "csl", "CSL-JSON", true);
 
   private ColdpInterpreter inter;
 
