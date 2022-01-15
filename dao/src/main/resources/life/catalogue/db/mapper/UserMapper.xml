@@ -4,25 +4,26 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.UserMapper">
 
-  <sql id="SELECT">
-    <include refid="SELECT_PUBLIC"/>,
-    u.email,
-    u.settings,
+  <sql id="SELECT_ACL">
+    <include refid="SELECT"/>,
     (SELECT array_agg(d.key) FROM dataset d WHERE d.deleted IS NULL AND d.acl_editor @> ARRAY[u.key]) AS editor,
-    (SELECT array_agg(d.key) FROM dataset d WHERE d.deleted IS NULL AND d.acl_reviewer @> ARRAY[u.key]) AS reviewer,
-    u.last_login,
-    u.created,
-    u.deleted
+    (SELECT array_agg(d.key) FROM dataset d WHERE d.deleted IS NULL AND d.acl_reviewer @> ARRAY[u.key]) AS reviewer
   </sql>
 
-  <sql id="SELECT_PUBLIC">
+  <sql id="SELECT">
     u.key,
     u.roles,
     u.username,
     u.firstname,
     u.lastname,
     u.orcid,
-    u.country
+    u.country,
+    u.email,
+    u.settings,
+    u.last_login,
+    u.created,
+    u.blocked,
+    u.deleted
   </sql>
 
   <sql id="COLS">
@@ -35,6 +36,7 @@
     roles,
     settings,
     last_login,
+    blocked,
     deleted
   </sql>
 
@@ -48,6 +50,7 @@
     #{roles, typeHandler=life.catalogue.db.type.RoleSetTypeHandler},
     #{settings, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
     #{lastLogin},
+    #{blocked},
     #{deleted}
   </sql>
 
@@ -59,6 +62,8 @@
     u.username ILIKE '%${q}%'
     OR u.firstname ILIKE '%${q}%'
     OR u.lastname ILIKE '%${q}%'
+    OR u.email ILIKE '%${q}%'
+    OR u.orcid ILIKE '%${q}%'
   </sql>
 
   <resultMap id="userResultMap" type="User" autoMapping="true">
@@ -71,25 +76,19 @@
 
 
   <select id="get" resultMap="userResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    WHERE u.key = #{key}
-  </select>
-
-  <select id="getPublic" resultMap="userResultMap">
-    SELECT <include refid="SELECT_PUBLIC"/>
+    SELECT <include refid="SELECT_ACL"/>
     FROM <include refid="FROM"/>
     WHERE u.key = #{key}
   </select>
 
   <select id="getByUsername" resultMap="userResultMap">
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT_ACL"/>
     FROM <include refid="FROM"/>
     WHERE u.username = #{username}
   </select>
 
   <select id="search" resultMap="userResultMap">
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT_ACL"/>
     FROM <include refid="FROM"/>
     WHERE <include refid="WHERE"/>
     ORDER BY u.username
@@ -103,14 +102,14 @@
   </select>
 
   <select id="datasetEditors" resultMap="userResultMap">
-    SELECT <include refid="SELECT_PUBLIC"/>
+    SELECT <include refid="SELECT"/>
     FROM dataset d
     JOIN "user" u ON d.acl_editor @> ARRAY[u.key]
     WHERE d.key = #{datasetKey}
   </select>
 
   <select id="datasetReviewer" resultMap="userResultMap">
-    SELECT <include refid="SELECT_PUBLIC"/>
+    SELECT <include refid="SELECT"/>
     FROM dataset d
     JOIN "user" u ON d.acl_reviewer @> ARRAY[u.key]
     WHERE d.key = #{datasetKey}
@@ -127,9 +126,16 @@
     WHERE key = #{key}
   </update>
 
-  <delete id="delete" parameterType="map">
-    DELETE FROM "user"
+  <update id="delete" parameterType="map">
+    UPDATE "user"
+    SET deleted = now()
     WHERE key = #{key}
-  </delete>
+  </update>
+
+  <update id="block" parameterType="map">
+    UPDATE "user"
+    SET blocked = #{blocked}
+    WHERE key = #{key}
+  </update>
 
 </mapper>

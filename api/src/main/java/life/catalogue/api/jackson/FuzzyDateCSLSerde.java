@@ -83,6 +83,11 @@ public class FuzzyDateCSLSerde {
           }
         }
         return date;
+
+      // try to also parse ISO date strings - we don't serialize them, but support them for reads
+      } else if (p.currentToken() == JsonToken.VALUE_STRING) {
+        String iso = p.getValueAsString();
+        return FuzzyDate.of(iso);
       }
 
       // if we reach here some token was wrong

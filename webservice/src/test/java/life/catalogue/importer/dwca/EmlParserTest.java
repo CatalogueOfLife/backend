@@ -1,12 +1,17 @@
 package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.License;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+
+import life.catalogue.common.io.Resources;
+import life.catalogue.importer.coldp.MetadataParser;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,6 +27,17 @@ public class EmlParserTest {
 
   private DatasetWithSettings read(String name) throws IOException {
     return EmlParser.parse(getClass().getResourceAsStream("/metadata/" + name)).get();
+  }
+
+  @Test
+  public void plazi() throws Exception {
+    Optional<DatasetWithSettings> m = EmlParser.parse(Resources.stream("metadata/plazi.xml"));
+    Dataset d = m.get().getDataset();
+
+    Agent guido = Agent.person("Guido","Sautter","gsautter@gmail.com");
+    guido.setUrl("http://plazi.org");
+
+    assertEquals(guido, d.getContact());
   }
 
   @Test

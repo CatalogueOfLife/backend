@@ -11,6 +11,7 @@ import life.catalogue.common.tax.RankUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.tree.*;
+import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
@@ -103,6 +104,7 @@ public class DatasetExportResource {
 
         return Response.ok(stream)
           .type(MoreMediaTypes.APP_ZIP)
+          .header(MoreHttpHeaders.CONTENT_DISPOSITION, ResourceUtils.fileAttachment("dataset-" + key + ".zip"))
           .build();
       }
     } else {

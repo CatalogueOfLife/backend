@@ -1,12 +1,15 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.event.UserChanged;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import javax.annotation.Nullable;
@@ -51,16 +54,43 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
 
   public void changeRole(int key, User admin, List<User.Role> roles) {
     User user;
-    Set<User.Role> roleSet = new HashSet<User.Role>(ObjectUtils.coalesce(roles, Collections.EMPTY_SET));
+    final var newRoles = new HashSet<User.Role>(ObjectUtils.coalesce(roles, Collections.EMPTY_SET));
     try (SqlSession session = factory.openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
       user = session.getMapper(mapperClass).get(key);
+      if (user == null) {
+        throw NotFoundException.notFound(User.class, key);
+      }
+
+      // if we revoke the editor or reviewer role the user will lose access to all datasets
+      if (user.hasRole(User.Role.EDITOR) && !newRoles.contains(User.Role.EDITOR)) {
+        user.getEditor().forEach(dk -> {
+          dm.removeEditor(dk, user.getKey(), admin.getKey());
+        });
+      }
+      if (user.hasRole(User.Role.REVIEWER) && !newRoles.contains(User.Role.REVIEWER)) {
+        user.getReviewer().forEach(dk -> {
+          dm.removeReviewer(dk, user.getKey(), admin.getKey());
+        });
+      }
     }
-    user.setRoles(roleSet);
-    // if we revoke the editor role the user lost access to all datasets!
-    if (!roles.contains(User.Role.EDITOR) && user.getEditor() != null) {
-      user.getEditor().clear();
+    // only update if changed
+    if (!user.getRoles().equals(newRoles)) {
+      user.setRoles(newRoles);
+      update(user, admin.getKey());
     }
-    update(user, admin.getKey());
+  }
+
+  public void block(int key, User admin) {
+    try (SqlSession session = factory.openSession()){
+      session.getMapper(UserMapper.class).block(key, LocalDateTime.now());
+    }
+  }
+
+  public void unblock(int key, User admin) {
+    try (SqlSession session = factory.openSession()){
+      session.getMapper(UserMapper.class).block(key, null);
+    }
   }
 
   private static Page defaultPage(Page page){

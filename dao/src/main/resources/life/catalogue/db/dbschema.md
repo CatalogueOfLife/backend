@@ -316,6 +316,11 @@ CREATE INDEX ON media (dataset_key, verbatim_key);
 CREATE INDEX ON media (dataset_key, reference_id);
 ```
 
+### 2022-01-14 blocking user
+```
+ALTER TABLE "user" ADD COLUMN blocked TIMESTAMP WITHOUT TIME ZONE;
+```
+
 ### 2022-01-13 reviewer role
 ```
 ALTER TABLE dataset RENAME COLUMN access_control TO acl_editor;

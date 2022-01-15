@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.Resources;
 
@@ -278,6 +279,10 @@ public class MetadataParserTest {
     Dataset d = m.get().getDataset();
 
     var sources = d.getSource();
-    System.out.println("done");
+    System.out.println("Sources");
+    sources.forEach(c -> {
+      System.out.println(c.getCitation());
+      System.out.println(CslUtil.buildCitation(c.toCSL()));
+     });
   }
 }
