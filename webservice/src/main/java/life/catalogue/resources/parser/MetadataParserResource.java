@@ -63,20 +63,5 @@ public class MetadataParserResource {
     }
     return parseAny(data, format);
   }
-  
-  /**
-   * Parses metadata uploaded as plain UTF-8 YAML file.
-   * <pre>
-   * curl -F metadata=@metadata.yaml http://api.catalogueoflife.org/parser/metadata
-   * </pre>
-   */
-  @POST
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Optional<Dataset> parseFile(@FormDataParam("metadata") InputStream data, @QueryParam("format") MetadataFormat format) throws Exception {
-    if (data == null) {
-      throw new IllegalArgumentException("No metadata uploaded");
-    }
-    return parseAny(data, format);
-  }
 
 }

@@ -53,8 +53,10 @@ public class DatasetMessageBodyReader implements MessageBodyReader<Dataset> {
   public static MetadataFormat parseType(MediaType mediaType) {
     if (mediaType.getSubtype().toLowerCase().contains("yaml")) {
       return MetadataFormat.YAML;
-    } else {
+    } else if (mediaType.getSubtype().toLowerCase().contains("xml")) {
       return MetadataFormat.EML;
+    } else {
+      return MetadataFormat.JSON;
     }
   }
 
