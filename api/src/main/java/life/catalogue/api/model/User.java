@@ -235,6 +235,11 @@ public class User implements Entity<Integer>, Principal {
     }
   }
 
+  @JsonIgnore
+  public boolean isDeletedUser() {
+    return deleted != null;
+  }
+
   public LocalDateTime getDeleted() {
     return deleted;
   }
@@ -242,7 +247,20 @@ public class User implements Entity<Integer>, Principal {
   public void setDeleted(LocalDateTime deleted) {
     this.deleted = deleted;
   }
-  
+
+  @JsonIgnore
+  public boolean isBlockedUser() {
+    return blocked != null;
+  }
+
+  public LocalDateTime getBlocked() {
+    return blocked;
+  }
+
+  public void setBlocked(LocalDateTime blocked) {
+    this.blocked = blocked;
+  }
+
   public LocalDateTime getLastLogin() {
     return lastLogin;
   }
