@@ -7,6 +7,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,15 +17,14 @@ import org.junit.Test;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class UserMapperTest extends MapperTestBase<UserMapper> {
-  
+
   public UserMapperTest() {
     super(UserMapper.class);
   }
-  
+
   @Test
   public void getNull() throws Exception {
     assertNull(mapper().get(-34567));
@@ -95,54 +95,72 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     u1.getEditor().addAll(List.of(1,2,3));
     mapper().create(u1);
     commit();
-    
+
     removeDbCreatedProps(u1);
     User u2 = removeDbCreatedProps(mapper().get(u1.getKey()));
     //printDiff(u1, u2);
     assertEquals(u1, u2);
   }
-  
+
   @Test
   public void update() throws Exception {
     User u1 = createTestEntity();
     mapper().create(u1);
     commit();
-  
+
     u1.setFirstname("Peter Punk");
     mapper().update(u1);
     commit();
-    
+
     removeDbCreatedProps(u1);
     User u2 = removeDbCreatedProps(mapper().get(u1.getKey()));
-    
+
     //printDiff(u1, u2);
     assertEquals(u1, u2);
   }
-  
+
   @Test
   public void deleted() throws Exception {
     User u1 = createTestEntity();
     mapper().create(u1);
+    assertNull(u1.getDeleted());
     commit();
-    
+
     mapper().delete(u1.getKey());
     commit();
-    
-    assertNull(mapper().get(u1.getKey()));
+
+    var del = mapper().get(u1.getKey());
+    assertNotNull(del.getDeleted());
   }
-  
-  
+
+  @Test
+  public void block() throws Exception {
+    User u = createTestEntity();
+    mapper().create(u);
+    commit();
+    final int key = u.getKey();
+
+    mapper().block(key, LocalDateTime.now());
+    u = mapper().get(key);
+    assertTrue(u.isBlockedUser());
+
+    mapper().block(key, null);
+    u = mapper().get(key);
+    assertFalse(u.isBlockedUser());
+  }
+
+
   User createTestEntity() {
     return create(RandomUtils.randomLatinString(10));
   }
-  
+
   User removeDbCreatedProps(User obj) {
     obj.setLastLogin(null);
     obj.setCreated(null);
     obj.getEditor().clear();
     return obj;
   }
-  
+
   User create(String username) {
     User iggy = new User();
     iggy.setUsername(username);

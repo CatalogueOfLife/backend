@@ -79,7 +79,7 @@ public class User implements Entity<Integer>, Principal {
   public String getName() {
     return username;
   }
-  
+
   @Override
   public boolean implies(Subject subject) {
     return false;
@@ -101,55 +101,55 @@ public class User implements Entity<Integer>, Principal {
   public Integer getKey() {
     return key;
   }
-  
+
   public void setKey(Integer key) {
     this.key = key;
   }
-  
+
   public String getUsername() {
     return username;
   }
-  
+
   public void setUsername(String username) {
     this.username = username;
   }
-  
+
   public String getFirstname() {
     return firstname;
   }
-  
+
   public void setFirstname(String firstname) {
     this.firstname = firstname;
   }
-  
+
   public String getLastname() {
     return lastname;
   }
-  
+
   public void setLastname(String lastname) {
     this.lastname = lastname;
   }
-  
+
   public String getEmail() {
     return email;
   }
-  
+
   public void setEmail(String email) {
     this.email = email;
   }
-  
+
   public String getOrcid() {
     return orcid;
   }
-  
+
   public void setOrcid(String orcid) {
     this.orcid = orcid;
   }
-  
+
   public Country getCountry() {
     return country;
   }
-  
+
   public void setCountry(Country country) {
     this.country = country;
   }
@@ -178,7 +178,7 @@ public class User implements Entity<Integer>, Principal {
   public Map<String, String> getSettings() {
     return settings;
   }
-  
+
   public void setSettings(Map<String, String> settings) {
     this.settings = settings;
   }
@@ -235,30 +235,48 @@ public class User implements Entity<Integer>, Principal {
     }
   }
 
+  @JsonIgnore
+  public boolean isDeletedUser() {
+    return deleted != null;
+  }
+
   public LocalDateTime getDeleted() {
     return deleted;
   }
-  
+
   public void setDeleted(LocalDateTime deleted) {
     this.deleted = deleted;
   }
-  
+
+  @JsonIgnore
+  public boolean isBlockedUser() {
+    return blocked != null;
+  }
+
+  public LocalDateTime getBlocked() {
+    return blocked;
+  }
+
+  public void setBlocked(LocalDateTime blocked) {
+    this.blocked = blocked;
+  }
+
   public LocalDateTime getLastLogin() {
     return lastLogin;
   }
-  
+
   public void setLastLogin(LocalDateTime lastLogin) {
     this.lastLogin = lastLogin;
   }
-  
+
   public LocalDateTime getCreated() {
     return created;
   }
-  
+
   public void setCreated(LocalDateTime created) {
     this.created = created;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -280,12 +298,12 @@ public class User implements Entity<Integer>, Principal {
            Objects.equals(blocked, user.blocked) &&
            Objects.equals(deleted, user.deleted);
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, editor, reviewer, settings, lastLogin, created, blocked, deleted);
   }
-  
+
   @Override
   public String toString() {
     return username + " {" + key + "}";
