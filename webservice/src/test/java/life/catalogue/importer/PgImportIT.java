@@ -565,7 +565,7 @@ public class PgImportIT extends PgImportITBase {
   public void testExternalManually() throws Exception {
     dataset.setType(DatasetType.TAXONOMIC);
 
-    normalizeAndImportArchive(new File("/Users/markus/Downloads/Gelechiidae.zip"), COLDP);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/dataset-1049.zip"), COLDP);
     //normalizeAndImport(URI.create("https://github.com/jhnwllr/world-odonata-list-dwca/archive/refs/heads/main.zip"), DWCA);
     //normalizeAndImport(URI.create("https://github.com/Sp2000/coldp/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);

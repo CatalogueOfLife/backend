@@ -83,7 +83,7 @@ public class CsvReader {
   protected final MappingFlags mappingFlags = new MappingFlags();
   private static final Character[] delimiterCandidates = {'\t', ',', ';', '|'};
   // we also use \0 for hopefully no quote...
-  private static final Character[] quoteCandidates = {'\0', '"', '\''};
+  private static final Character[] quoteCandidates = {'"', '\'', '\0'};
   
   /**
    * @param folder

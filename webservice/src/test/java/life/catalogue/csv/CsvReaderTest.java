@@ -128,5 +128,7 @@ public class CsvReaderTest {
     assertFormat("csv/15-CommonNames.txt", ',', '"');
     assertFormat("csv/15-References.txt", ',', '"');
     assertFormat("csv/15-Synonyms.txt", ',', '"');
+    assertFormat("csv/Media.csv", ',', '"');
+    assertFormat("csv/Media-pipe.txt", '|', '"');
   }
 }
