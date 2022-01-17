@@ -135,7 +135,7 @@ public class IdentityService {
           if (existing != null) {
             LOG.debug("Update CoL user {} [{}] with latest GBIF information", existing.getUsername(), existing.getKey());
             user.copyNonGbifData(existing);
-            mapper.update(existing);
+            mapper.update(user);
           } else {
             LOG.info("Creating new CoL user {} {}", user.getUsername(), user.getKey());
             mapper.create(user);

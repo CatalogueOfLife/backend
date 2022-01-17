@@ -14,6 +14,7 @@ and done it manually. So we can as well log changes here.
 ### 2022-01-14 blocking user
 ```
 ALTER TABLE "user" ADD COLUMN blocked TIMESTAMP WITHOUT TIME ZONE;
+ALTER TABLE "user" DROP COLUMN deleted;
 ```
 
 ### 2022-01-13 reviewer role

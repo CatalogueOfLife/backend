@@ -126,12 +126,6 @@
     WHERE key = #{key}
   </update>
 
-  <update id="delete" parameterType="map">
-    UPDATE "user"
-    SET deleted = now()
-    WHERE key = #{key}
-  </update>
-
   <update id="block" parameterType="map">
     UPDATE "user"
     SET blocked = #{blocked}
