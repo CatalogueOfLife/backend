@@ -82,15 +82,21 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   }
 
   public void block(int key, User admin) {
-    try (SqlSession session = factory.openSession()){
-      session.getMapper(UserMapper.class).block(key, LocalDateTime.now());
-    }
+    block(key, LocalDateTime.now(), admin);
   }
 
   public void unblock(int key, User admin) {
-    try (SqlSession session = factory.openSession()){
-      session.getMapper(UserMapper.class).block(key, null);
+    block(key, null, admin);
+  }
+
+  private void block(int key, @Nullable LocalDateTime datetime, User admin) {
+    User u;
+    try (SqlSession session = factory.openSession(true)){
+      var um = session.getMapper(UserMapper.class);
+      um.block(key, datetime);
+      u = um.get(key);
     }
+    bus.post(UserChanged.created(u));
   }
 
   private static Page defaultPage(Page page){

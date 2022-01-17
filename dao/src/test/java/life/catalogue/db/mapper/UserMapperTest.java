@@ -149,7 +149,6 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     assertFalse(u.isBlockedUser());
   }
 
-
   User createTestEntity() {
     return create(RandomUtils.randomLatinString(10));
   }
