@@ -10,10 +10,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.FuzzyDateCSLSerde;
 import life.catalogue.api.jackson.FuzzyDateISOSerde;
-import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.Citation;
-import life.catalogue.api.model.CslName;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -88,6 +85,10 @@ public class YamlMapper {
   abstract class AgentMixIn {
     @JsonIgnore
     abstract String getName();
+
+    @JsonIgnore
+    abstract String getOrcidAsUrlorcidAsUrl();
+
   }
 
   abstract class DatasetMixIn {
@@ -150,6 +151,22 @@ public class YamlMapper {
   }
 
   abstract class CitationMixIn {
+    @JsonAlias("DOI")
+    @JsonProperty("doi")
+    private DOI doi;
+
+    @JsonAlias("ISBN")
+    @JsonProperty("isbn")
+    private String isbn;
+
+    @JsonAlias("ISSN")
+    @JsonProperty("issn")
+    private String issn;
+
+    @JsonAlias("URL")
+    @JsonProperty("url")
+    private String url;
+
     @JsonSerialize(using = FuzzyDateISOSerde.Serializer.class)
     @JsonDeserialize(using = FuzzyDateISOSerde.Deserializer.class)
     private FuzzyDate issued;
@@ -178,6 +195,21 @@ public class YamlMapper {
     @JsonProperty("publisherPlace")
     private String publisherPlace;
 
+    @JsonIgnore
+    abstract String getCitation();
+
+    @JsonIgnore(false)
+    @JsonProperty(value = "citation", access = JsonProperty.Access.READ_ONLY)
+    abstract String getCitationText();
+
+//    @JsonProperty("issn")
+//    abstract String getIssn();
+//
+//    @JsonProperty("isbn")
+//    abstract String getIsbn();
+//
+//    @JsonProperty("url")
+//    abstract String getUrl();
   }
 
 }
