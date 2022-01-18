@@ -134,8 +134,15 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     assertFalse(mapper().isPrivate(d1.getKey()));
     assertFalse(mapper().isPrivate(-528));
 
+    // now add a real user (not a bot) as a creator
+    User user = new User();
+    user.setUsername("abcd");
+    session().getMapper(UserMapper.class).create(user);
+    final int ukey = user.getKey();
+
     d1.setPrivat(true);
     mapper().update(d1);
+    mapper().addEditor(d1.getKey(), ukey, Users.DB_INIT);
     commit();
 
     assertTrue(d1.isPrivat());
@@ -148,10 +155,14 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     assertEquals(3, resp.size());
 
     resp = mapper().search(req, Users.DB_INIT, new Page());
-    assertEquals(4, resp.size());
+    assertEquals(3, resp.size());
 
     resp = mapper().search(req, Users.TESTER, new Page());
     assertEquals(3, resp.size());
+
+    // this user has access to the private dataset!
+    resp = mapper().search(req, ukey, new Page());
+    assertEquals(4, resp.size());
 
     // add editor to private dataset
     mapper().addEditor(d1.getKey(), Users.TESTER, Users.TESTER);

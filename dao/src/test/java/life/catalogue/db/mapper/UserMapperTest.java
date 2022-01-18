@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.ibatis.binding.BindingException;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -37,7 +38,6 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     for (int x = 1; x<=20; x++) {
       User u = createTestEntity();
       u.setUsername("user"+x);
-      u.setDeleted(null);
       if (x % 2 == 0) {
         u.setFirstname(john);
       }
@@ -65,7 +65,6 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     List<Integer> even = new ArrayList<>();
     for (int x = 1; x<=10; x++) {
       User u = createTestEntity();
-      u.setDeleted(null);
       mapper().create(u);
       all.add(u.getKey());
       if (x % 2 == 0) {
@@ -119,18 +118,17 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     assertEquals(u1, u2);
   }
 
-  @Test
+  /**
+   * We don't offer a delete method!!!
+   */
+  @Test(expected = BindingException.class)
   public void deleted() throws Exception {
     User u1 = createTestEntity();
     mapper().create(u1);
-    assertNull(u1.getDeleted());
     commit();
 
     mapper().delete(u1.getKey());
     commit();
-
-    var del = mapper().get(u1.getKey());
-    assertNotNull(del.getDeleted());
   }
 
   @Test

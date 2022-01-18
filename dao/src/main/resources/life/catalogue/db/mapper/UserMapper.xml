@@ -22,8 +22,7 @@
     u.settings,
     u.last_login,
     u.created,
-    u.blocked,
-    u.deleted
+    u.blocked
   </sql>
 
   <sql id="COLS">
@@ -36,8 +35,7 @@
     roles,
     settings,
     last_login,
-    blocked,
-    deleted
+    blocked
   </sql>
 
   <sql id="PROPS">
@@ -50,8 +48,7 @@
     #{roles, typeHandler=life.catalogue.db.type.RoleSetTypeHandler},
     #{settings, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
     #{lastLogin},
-    #{blocked},
-    #{deleted}
+    #{blocked}
   </sql>
 
   <sql id="FROM">
