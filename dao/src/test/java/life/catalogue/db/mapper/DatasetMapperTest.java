@@ -136,6 +136,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset rel1 = create();
     rel1.setOrigin(DatasetOrigin.RELEASED);
     rel1.setSourceKey(projKey);
+    rel1.setCreatedBy(ukey);
     mapper().create(rel1);
 
     Dataset rel2 = create();
@@ -170,6 +171,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     mapper().addReviewer(projKey, rkey, ukey);
     resp = mapper().search(req, rkey, new Page());
     assertEquals(2, resp.size());
+    commit();
+
   }
 
   @Test
