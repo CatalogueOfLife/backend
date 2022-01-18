@@ -12,6 +12,7 @@ import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.dao.SectorDao;
@@ -63,6 +64,7 @@ public class ImportJob implements Runnable {
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
   private final DatasetImportDao dao;
+  private final DatasetDao dDao;
   private final DecisionDao decisionDao;
   private final SectorDao sDao;
   private final NameIndex index;
@@ -78,7 +80,7 @@ public class ImportJob implements Runnable {
   ImportJob(ImportRequest req, DatasetWithSettings d,
             WsServerConfig cfg,
             DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, Validator validator,
-            NameUsageIndexService indexService, ImageService imgService, SectorDao sDao, DecisionDao decisionDao,
+            NameUsageIndexService indexService, ImageService imgService, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
             BiConsumer<ImportRequest, Exception> errorCallback
@@ -93,6 +95,7 @@ public class ImportJob implements Runnable {
     this.factory = factory;
     this.index = index;
     this.indexService = indexService;
+    this.dDao = dDao;
     this.sDao = sDao;
     this.decisionDao = decisionDao;
     dao = new DatasetImportDao(factory, cfg.metricsRepo);
@@ -243,7 +246,7 @@ public class ImportJob implements Runnable {
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
-        new PgImport(di.getAttempt(), dataset, store, factory, cfg.importer, indexService, validator).call();
+        new PgImport(di.getAttempt(), dataset, req.createdBy, store, factory, cfg.importer, dDao, indexService, validator).call();
 
         LOG.info("Build import metrics for dataset {}", datasetKey);
         updateState(ImportState.ANALYZING);

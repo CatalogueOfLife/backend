@@ -12,6 +12,7 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.Create;
 import life.catalogue.db.mapper.*;
@@ -62,6 +63,7 @@ public class PgImport implements Callable<Boolean> {
   private final NeoDb store;
   private final int batchSize;
   private final SqlSessionFactory sessionFactory;
+  private final DatasetDao datasetDao;
   private final NameUsageIndexService indexService;
   private final int attempt;
   private final DatasetWithSettings dataset;
@@ -83,14 +85,18 @@ public class PgImport implements Callable<Boolean> {
   private int nRelCounter;
   private int tRelCounter;
   private int sRelCounter;
+  private int userKey;
 
-  public PgImport(int attempt, DatasetWithSettings dataset, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg, NameUsageIndexService indexService, Validator validator) {
+  public PgImport(int attempt, DatasetWithSettings dataset, int userKey, NeoDb store,
+                  SqlSessionFactory sessionFactory, ImporterConfig cfg, DatasetDao datasetDao, NameUsageIndexService indexService, Validator validator) {
     this.attempt = attempt;
     this.dataset = dataset;
+    this.userKey = userKey;
     this.store = store;
     this.batchSize = cfg.batchSize;
     this.sessionFactory = sessionFactory;
     this.indexService = indexService;
+    this.datasetDao = datasetDao;
     this.validator = validator;
     verbatimIssueCache = Caffeine.newBuilder()
       .maximumSize(10000)
@@ -157,8 +163,8 @@ public class PgImport implements Callable<Boolean> {
 
       } else {
         LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
-        updateMetadata(old, dataset, validator);
-        dm.updateAll(old);
+        updateMetadata(old.getDataset(), dataset.getDataset(), validator);
+        datasetDao.update(old.getDataset(), userKey);
       }
 
       dm.updateLastImport(dataset.getKey(), attempt);
@@ -173,14 +179,14 @@ public class PgImport implements Callable<Boolean> {
    * @param d
    * @param update
    */
-  public static DatasetWithSettings updateMetadata(DatasetWithSettings d, DatasetWithSettings update, Validator validator) {
+  public static Dataset updateMetadata(Dataset d, Dataset update, Validator validator) {
     Set<String> nonNullProps = Set.of("title", "alias", "license");
     try {
       for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
-        Object val = prop.getReadMethod().invoke(update.getDataset());
-        // title is the only required property
+        Object val = prop.getReadMethod().invoke(update);
+        // for required property do not allow null
         if (val != null || !nonNullProps.contains(prop.getName())) {
-          prop.getWriteMethod().invoke(d.getDataset(), val);
+          prop.getWriteMethod().invoke(d, val);
         }
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
@@ -188,7 +194,7 @@ public class PgImport implements Callable<Boolean> {
     }
     ObjectUtils.copyIfNotNull(update::getType, d::setType);
     // verify emails, orcids & rorid as they can break validation on insert
-    d.getDataset().processAllAgents(a -> a.validateAndNullify(validator));
+    d.processAllAgents(a -> a.validateAndNullify(validator));
     return d;
   }
   

@@ -899,7 +899,7 @@ public class Normalizer implements Callable<Boolean> {
           throw new NormalizationFailedException("Unsupported data format " + format);
       }
       // first metadata, the key will be preserved by the store
-      inserter.readMetadata().ifPresent(d -> PgImport.updateMetadata(dataset, d, validator));
+      inserter.readMetadata().ifPresent(d -> PgImport.updateMetadata(dataset.getDataset(), d.getDataset(), validator));
       // data
       inserter.insertAll();
       meta = inserter.getMappingFlags();

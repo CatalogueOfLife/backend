@@ -55,7 +55,7 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   public void changeRole(int key, User admin, List<User.Role> roles) {
     User user;
     final var newRoles = new HashSet<User.Role>(ObjectUtils.coalesce(roles, Collections.EMPTY_SET));
-    try (SqlSession session = factory.openSession()) {
+    try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       user = session.getMapper(mapperClass).get(key);
       if (user == null) {
@@ -74,11 +74,9 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
         });
       }
     }
-    // only update if changed
-    if (!user.getRoles().equals(newRoles)) {
-      user.setRoles(newRoles);
-      update(user, admin.getKey());
-    }
+    // update user
+    user.setRoles(newRoles);
+    update(user, admin.getKey());
   }
 
   public void block(int key, User admin) {
