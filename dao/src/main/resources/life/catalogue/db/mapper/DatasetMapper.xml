@@ -38,10 +38,19 @@
       LEFT JOIN usage_count uc ON uc.dataset_key=d.key
   </sql>
 
+  <sql id="FROM_PROJ">
+    <if test="userKey != null">
+      LEFT JOIN dataset proj ON d.source_key=proj.key AND d.origin = 'RELEASED'::DATASETORIGIN
+    </if>
+  </sql>
+
   <sql id="PRIVATE">
     <!-- magic number for admins -->
     <if test="userKey != -42">
-      AND (NOT ${alias}.private <if test="userKey != null">OR ${alias}.acl_editor @> ARRAY[#{userKey}::int] OR ${alias}.acl_reviewer @> ARRAY[#{userKey}::int]</if>)
+      AND (NOT ${alias}.private <if test="userKey != null">
+        OR COALESCE(${projAlias}.acl_editor, ${alias}.acl_editor) @> ARRAY[#{userKey}::int]
+        OR COALESCE(${projAlias}.acl_reviewer, ${alias}.acl_reviewer) @> ARRAY[#{userKey}::int]</if>
+      )
     </if>
   </sql>
 
@@ -49,6 +58,7 @@
     d.deleted IS NULL
     <include refid="PRIVATE">
       <property name="alias" value="d"/>
+      <property name="projAlias" value="proj"/>
     </include>
     <if test="req != null">
       <if test="req.q != null">
@@ -75,7 +85,10 @@
         AND exists(
           SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
           WHERE s.dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key
-          <include refid="PRIVATE"><property name="alias" value="pr"/></include>
+          <include refid="PRIVATE">
+            <property name="alias" value="pr"/>
+            <property name="projAlias" value="pr"/>
+          </include>
         )
       </if>
       <if test="req.hasSourceDataset != null">
@@ -176,23 +189,22 @@
 
   <select id="count" resultType="integer">
     SELECT COUNT(*)
-    FROM
-    <include refid="FROM"/>
-    WHERE
-    <include refid="SEARCH_WHERE"/>
+    FROM <include refid="FROM"/> <include refid="FROM_PROJ"/>
+    WHERE <include refid="SEARCH_WHERE"/>
   </select>
 
   <select id="search" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
+    FROM <include refid="FROM"/> <include refid="FROM_PROJ"/>
     WHERE <include refid="SEARCH_WHERE"/>
     ORDER BY
-    <bind name="rev" value="req.reverse"/>
+    <bind name="rev" value="false"/>
     <choose>
       <when test="req == null || req.sortBy == null">
         key
       </when>
       <otherwise>
+        <bind name="rev" value="req.reverse"/>
         <bind name="sortBy" value="req.sortBy.name()"/>
         <choose>
           <when test="sortBy == 'RELEVANCE'">
