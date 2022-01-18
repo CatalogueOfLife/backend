@@ -64,9 +64,9 @@
       <if test="req.q != null">
         <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
         AND (
-          f_unaccent(title) ILIKE f_unaccent($Grtz5$%${req.q}%$Grtz5$)
-          OR f_unaccent(alias) ILIKE f_unaccent($Grtz5$%${req.q}%$Grtz5$)
-          OR doc @@ plainto_tsquery('simple2', $Grtz5$%${req.q}%$Grtz5$)
+          f_unaccent(d.title) ILIKE f_unaccent($Grtz5$%${req.q}%$Grtz5$)
+          OR f_unaccent(d.alias) ILIKE f_unaccent($Grtz5$%${req.q}%$Grtz5$)
+          OR d.doc @@ plainto_tsquery('simple2', $Grtz5$%${req.q}%$Grtz5$)
         )
       </if>
       <if test="req.privat != null">
@@ -117,10 +117,10 @@
         AND di.finished > #{req.modified}
       </if>
       <if test="req.created != null">
-        AND created > #{req.created}
+        AND d.created > #{req.created}
       </if>
       <if test="req.issued != null">
-        AND issued > #{req.issued}
+        AND d.issued > #{req.issued}
       </if>
       <if test="req.minSize != null">
         AND <include refid="size"/> >= #{req.minSize}
@@ -208,7 +208,7 @@
         <bind name="sortBy" value="req.sortBy.name()"/>
         <choose>
           <when test="sortBy == 'RELEVANCE'">
-            ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q}))
+            ts_rank_cd(d.doc, plainto_tsquery('simple2', #{req.q}))
             <bind name="rev" value="!req.reverse"/>
           </when>
           <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED'">
@@ -216,14 +216,14 @@
             <bind name="rev" value="!req.reverse"/>
           </when>
           <when test="sortBy == 'AUTHORS'">
-            lower((editor[1]).family),
-            lower((creator[1]).family)
+            lower((d.editor[1]).family),
+            lower((d.creator[1]).family)
           </when>
           <when test="sortBy == 'ALIAS'">
-            lower(alias)
+            lower(d.alias)
           </when>
           <when test="sortBy == 'TITLE'">
-            lower(title)
+            lower(d.title)
           </when>
           <otherwise>
             ${req.sortBy.name().toLowerCase()}
