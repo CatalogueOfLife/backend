@@ -56,19 +56,23 @@ public class UserResource {
   }
 
   @GET
-  public ResultPage<User> search(@QueryParam("q") String q, @Valid @BeanParam Page page, @Auth User user) {
+  public ResultPage<User> search(@QueryParam("q") String q, @Valid @BeanParam Page page, @Auth User admin) {
     ResultPage<User> users = dao.search(q, page);
-    if (!user.isAdmin()) {
-    }    users.forEach(UserResource::obfuscate);
+    if (!admin.isAdmin()) {
+      users.forEach(UserResource::obfuscate);
+    }
     return users;
   }
 
   @GET
   @Path("/{key}")
-  public User get(@PathParam("key") Integer key) {
+  public User get(@PathParam("key") Integer key, @Auth User admin) {
     User user = getUser(key);
     // obfuscate email and personal things
-    return obfuscate(user);
+    if (!admin.isAdmin()) {
+      obfuscate(user);
+    }
+    return user;
   }
 
   @GET

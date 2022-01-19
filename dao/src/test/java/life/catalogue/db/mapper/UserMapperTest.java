@@ -55,6 +55,27 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     assertEquals(11, mapper().search("user1", page).size());
     assertEquals(2, mapper().search("user2", page).size());
     assertEquals(26, mapper().search("", page).size());
+    mapper().search("", page).forEach(u -> {
+      assertNotNull(u.getKey());
+      assertNotNull(u.getUsername());
+      assertNotNull(u.getCreated());
+    });
+    // last login persistency
+    var login = mapper().getByUsername("user8");
+    final var now = LocalDateTime.now();
+    login.setLastLogin(now);
+    mapper().update(login);
+    commit();
+
+    mapper().search("user8", page).forEach(u -> {
+      assertNotNull(u.getKey());
+      assertNotNull(u.getUsername());
+      assertNotNull(u.getCreated());
+      assertEquals(now, u.getLastLogin());
+    });
+
+    var u2 = mapper().getByUsername("user8");
+    assertEquals(now, u2.getLastLogin());
   }
 
   @Test
