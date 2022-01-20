@@ -1,6 +1,11 @@
 package life.catalogue.gbifsync;
 
 import io.dropwizard.lifecycle.Managed;
+import it.unimi.dsi.fastutil.ints.Int2LongLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntSets;
+
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
@@ -85,6 +90,7 @@ public class GbifSync implements Managed {
     
     
     private void syncAll() throws Exception {
+      final IntSet keys = new IntOpenHashSet();
       LOG.info("Syncing all datasets from GBIF registry {}", gbif.api);
       while (pager.hasNext()) {
         List<DatasetWithSettings> page = pager.next();
@@ -97,9 +103,17 @@ public class GbifSync implements Managed {
             curr = new DatasetWithSettings(d, s);
           }
           sync(gbif, curr);
+          keys.add(gbif.getKey());
         }
       }
-      //TODO: delete datasets no longer in GBIF
+      // report datasets no longer in GBIF
+      mapper.listGBIF().forEach(key -> {
+        if (!keys.contains(key)) {
+          // this key was not seen in this registry sync round before - TODO: delete it ???
+          Dataset d = mapper.get(key);
+          LOG.warn("Dataset {} {} missing in GBIF but has key {}", key, d.getTitle(), d.getGbifKey());
+        }
+      });
     }
     
     private void updateExisting() throws Exception {
@@ -126,7 +140,6 @@ public class GbifSync implements Managed {
           gbif.setCreatedBy(Users.GBIF_SYNC);
           gbif.setModifiedBy(Users.GBIF_SYNC);
           mapper.create(gbif.getDataset());
-          gbif.setKey(gbif.getKey());
           mapper.updateSettings(gbif.getKey(), gbif.getSettings(), Users.GBIF_SYNC);
           created++;
           LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());

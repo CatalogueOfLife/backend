@@ -75,7 +75,7 @@ public class ContinuousImporter implements Managed {
           }
           List<Dataset> datasets = fetch();
           if (datasets.isEmpty()) {
-            LOG.info("No datasets eligable to be imported. Sleep for {} hour", WAIT_TIME_IN_HOURS);
+            LOG.debug("No datasets eligable to be imported. Sleep for {} hour", WAIT_TIME_IN_HOURS);
             TimeUnit.HOURS.sleep(WAIT_TIME_IN_HOURS);
             
           } else {

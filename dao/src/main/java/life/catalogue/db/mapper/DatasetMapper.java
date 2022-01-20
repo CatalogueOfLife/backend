@@ -136,7 +136,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   Integer releaseAttempt(@Param("key") int key, @Param("attempt") int attempt);
 
   Dataset getByGBIF(@Param("key") UUID key);
-  
+
+  /**
+   * Lists all dataset keys of non deleted datasets that have a UUID GBIF registry key.
+   */
+  List<Integer> listGBIF();
+
   /**
    * @return the last import attempt or null if never attempted
    */

@@ -249,14 +249,19 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <sql id="importable">
+    d.deleted IS NULL
+    AND d.origin = 'EXTERNAL'
+    AND d.settings ? 'data access'
+    AND coalesce((d.settings ->> 'import frequency')::int, 0) >= 0
+  </sql>
+
   <select id="listNeverImported" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM dataset d
       LEFT JOIN dataset_import di ON di.dataset_key=d.key
       LEFT JOIN usage_count uc ON uc.dataset_key=d.key
-    WHERE d.deleted IS NULL
-      AND d.origin = 'EXTERNAL'
-      AND coalesce((d.settings ->> 'import frequency')::int, 0) >= 0
+    WHERE <include refid="importable"/>
       AND di.attempt IS NULL
     ORDER BY d.key ASC
     LIMIT #{limit}
@@ -270,10 +275,8 @@
       FROM dataset d
         LEFT JOIN dataset_import di ON di.dataset_key=d.key
         LEFT JOIN usage_count uc ON uc.dataset_key=d.key
-      WHERE d.deleted IS NULL
-        AND d.origin = 'EXTERNAL'
+      WHERE <include refid="importable"/>
         AND di.finished IS NOT NULL
-        AND coalesce((d.settings ->> 'import frequency')::int, 0) > 0
       ORDER BY d.key, di.attempt DESC
     ) AS latest
     WHERE state != 'WAITING'::importstate AND (finished + frequency * interval '1 day') &lt; now()
@@ -318,6 +321,12 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE gbif_key = #{key}
+  </select>
+
+  <select id="listGBIF" resultType="integer">
+    SELECT key
+    FROM dataset
+    WHERE deleted IS NULL AND gbif_key IS NOT NULL
   </select>
 
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
