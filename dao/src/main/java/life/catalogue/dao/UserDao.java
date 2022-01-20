@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.event.UserChanged;
+import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -64,14 +65,10 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
 
       // if we revoke the editor or reviewer role the user will lose access to all datasets
       if (user.hasRole(User.Role.EDITOR) && !newRoles.contains(User.Role.EDITOR)) {
-        user.getEditor().forEach(dk -> {
-          dm.removeEditor(dk, user.getKey(), admin.getKey());
-        });
+        dm.removeEditorEverywhere(user.getKey(), admin.getKey());
       }
       if (user.hasRole(User.Role.REVIEWER) && !newRoles.contains(User.Role.REVIEWER)) {
-        user.getReviewer().forEach(dk -> {
-          dm.removeReviewer(dk, user.getKey(), admin.getKey());
-        });
+        dm.removeReviewerEverywhere(user.getKey(), admin.getKey());
       }
     }
     // update user
