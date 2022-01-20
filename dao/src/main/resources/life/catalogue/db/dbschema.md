@@ -319,6 +319,7 @@ CREATE INDEX ON media (dataset_key, reference_id);
 ### 2022-01-14 blocking user
 ```
 ALTER TABLE "user" ADD COLUMN blocked TIMESTAMP WITHOUT TIME ZONE;
+ALTER TABLE "user" DROP COLUMN deleted;
 ```
 
 ### 2022-01-13 reviewer role

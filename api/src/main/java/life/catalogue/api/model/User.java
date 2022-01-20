@@ -15,8 +15,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
-import life.catalogue.common.collection.CollectionUtils;
-
 public class User implements Entity<Integer>, Principal {
 
   public static final int ADMIN_MAGIC_KEY = -42;
@@ -43,12 +41,12 @@ public class User implements Entity<Integer>, Principal {
 
   private Integer key;
   @Nonnull
-  private String username;
-  private String firstname;
-  private String lastname;
-  private String email;
-  private String orcid;
-  private Country country;
+  private String username; // gbif managed
+  private String firstname; // gbif managed
+  private String lastname; // gbif managed
+  private String email; // gbif managed
+  private String orcid; // gbif managed
+  private Country country; // gbif managed
   private final Set<Role> roles = EnumSet.noneOf(Role.class);
   @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
   private final IntSet editor = new IntOpenHashSet();
@@ -57,9 +55,8 @@ public class User implements Entity<Integer>, Principal {
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> settings = new HashMap<>();
   private LocalDateTime lastLogin;
-  private LocalDateTime created;
   private LocalDateTime blocked;
-  private LocalDateTime deleted;
+  private LocalDateTime created;
 
   /**
    * Copies properties that are not managed in the GBIF registry to this instance.
@@ -67,11 +64,13 @@ public class User implements Entity<Integer>, Principal {
    */
   public void copyNonGbifData(User src) {
     key = src.key;
-    settings = src.settings;
-    blocked = src.blocked;
     setRoles(src.roles);
     setEditor(src.editor);
     setReviewer(src.reviewer);
+    settings = src.settings;
+    lastLogin = src.lastLogin;
+    blocked = src.blocked;
+    created = src.created;
   }
 
   @Override
@@ -79,7 +78,7 @@ public class User implements Entity<Integer>, Principal {
   public String getName() {
     return username;
   }
-  
+
   @Override
   public boolean implies(Subject subject) {
     return false;
@@ -101,55 +100,55 @@ public class User implements Entity<Integer>, Principal {
   public Integer getKey() {
     return key;
   }
-  
+
   public void setKey(Integer key) {
     this.key = key;
   }
-  
+
   public String getUsername() {
     return username;
   }
-  
+
   public void setUsername(String username) {
     this.username = username;
   }
-  
+
   public String getFirstname() {
     return firstname;
   }
-  
+
   public void setFirstname(String firstname) {
     this.firstname = firstname;
   }
-  
+
   public String getLastname() {
     return lastname;
   }
-  
+
   public void setLastname(String lastname) {
     this.lastname = lastname;
   }
-  
+
   public String getEmail() {
     return email;
   }
-  
+
   public void setEmail(String email) {
     this.email = email;
   }
-  
+
   public String getOrcid() {
     return orcid;
   }
-  
+
   public void setOrcid(String orcid) {
     this.orcid = orcid;
   }
-  
+
   public Country getCountry() {
     return country;
   }
-  
+
   public void setCountry(Country country) {
     this.country = country;
   }
@@ -178,7 +177,7 @@ public class User implements Entity<Integer>, Principal {
   public Map<String, String> getSettings() {
     return settings;
   }
-  
+
   public void setSettings(Map<String, String> settings) {
     this.settings = settings;
   }
@@ -236,19 +235,6 @@ public class User implements Entity<Integer>, Principal {
   }
 
   @JsonIgnore
-  public boolean isDeletedUser() {
-    return deleted != null;
-  }
-
-  public LocalDateTime getDeleted() {
-    return deleted;
-  }
-  
-  public void setDeleted(LocalDateTime deleted) {
-    this.deleted = deleted;
-  }
-
-  @JsonIgnore
   public boolean isBlockedUser() {
     return blocked != null;
   }
@@ -264,19 +250,19 @@ public class User implements Entity<Integer>, Principal {
   public LocalDateTime getLastLogin() {
     return lastLogin;
   }
-  
+
   public void setLastLogin(LocalDateTime lastLogin) {
     this.lastLogin = lastLogin;
   }
-  
+
   public LocalDateTime getCreated() {
     return created;
   }
-  
+
   public void setCreated(LocalDateTime created) {
     this.created = created;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -295,15 +281,14 @@ public class User implements Entity<Integer>, Principal {
            Objects.equals(settings, user.settings) &&
            Objects.equals(lastLogin, user.lastLogin) &&
            Objects.equals(created, user.created) &&
-           Objects.equals(blocked, user.blocked) &&
-           Objects.equals(deleted, user.deleted);
+           Objects.equals(blocked, user.blocked);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, editor, reviewer, settings, lastLogin, created, blocked, deleted);
+    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, editor, reviewer, settings, lastLogin, created, blocked);
   }
-  
+
   @Override
   public String toString() {
     return username + " {" + key + "}";

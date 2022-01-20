@@ -6,8 +6,10 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.ImporterConfig;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -16,6 +18,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -37,7 +40,8 @@ public class PgImportTest {
   @Rule
   public TestDataRule testDataRule = TestDataRule.empty();
   AtomicInteger cnt = new AtomicInteger(0);
-  
+  DatasetDao ddao = Mockito.mock(DatasetDao.class);
+
   static class PartitionJob implements Callable<Boolean> {
     final int datasetKey;
     
@@ -88,7 +92,8 @@ public class PgImportTest {
     DatasetWithSettings ds = new DatasetWithSettings(d2, new DatasetSettings());
     d2.setAlias(d.getAlias());
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    PgImport imp = new PgImport(1, ds, null, PgSetupRule.getSqlSessionFactory(), new ImporterConfig(), null, validator);
+    PgImport imp = new PgImport(1, ds, Users.TESTER, null,
+      PgSetupRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null, validator);
     imp.updateMetadata();
   }
 

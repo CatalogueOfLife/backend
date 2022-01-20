@@ -84,6 +84,14 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.bus = bus;
   }
 
+  /**
+   * For testing only!!!
+   * THis is using mocks and misses real functionality, but simplifies the construction of the core dao.
+   */
+  public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
+    this(factory, downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
+  }
+
   private void sanitize(Dataset d) {
     if (d != null) {
       if (d.getType() == null) {
@@ -349,6 +357,15 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // apply some defaults for required fields
     sanitize(obj);
     return super.create(obj, user);
+  }
+
+  public Integer create(DatasetWithSettings obj, int user) {
+    var key = create(obj.getDataset(), user);
+    try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(mapperClass);
+      dm.updateSettings(key, obj.getSettings(), user);
+    }
+    return key;
   }
 
   @Override

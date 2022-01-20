@@ -56,54 +56,54 @@ public class MetadataParser {
       if (contact instanceof List) {
         List<?> contacts = (List)contact;
         if (!contacts.isEmpty()) {
-          setContact(parseAgent(contacts.get(0)));
+          setContact(parseAgent(contacts.get(0), false));
         }
       } else {
-        setContact(parseAgent(contact));
+        setContact(parseAgent(contact, false));
       }
     }
 
     @JsonProperty("creator")
     public void setCreatorAlt(Object creators) {
-      super.setCreator(parseAgents(creators));
+      super.setCreator(parseAgents(creators, false));
     }
 
     @JsonProperty("creators")
     public void setCreators(Object creators) {
-      super.setCreator(parseAgents(creators));
+      super.setCreator(parseAgents(creators, false));
     }
 
     @JsonProperty("author")
     public void setAuthor(Object authors) {
-      super.setCreator(parseAgents(authors));
+      super.setCreator(parseAgents(authors, false));
     }
 
     @JsonProperty("authors")
     public void setAuthorsAlt(Object authors) {
-      super.setCreator(parseAgents(authors));
+      super.setCreator(parseAgents(authors, false));
     }
 
     @JsonProperty("editor")
     public void setEditorAlt(Object editors) {
-      super.setEditor(parseAgents(editors));
+      super.setEditor(parseAgents(editors, false));
     }
 
     @JsonProperty("editors")
     public void setEditors(Object editors) {
-      super.setEditor(parseAgents(editors));
+      super.setEditor(parseAgents(editors, false));
     }
 
     @JsonProperty("organisations")
     public void setOrganisations(Object orgs) {
-      super.setContributor(parseAgents(orgs));
+      super.setContributor(parseAgents(orgs, true));
     }
 
-    List<Agent> parseAgents(Object obj) {
+    List<Agent> parseAgents(Object obj, final boolean acceptNameAsOrganisation) {
       if (obj != null) {
         if (obj instanceof List) {
           List<Agent> persons = new ArrayList<>();
           for (Object o : (List) obj) {
-            Agent p = parseAgent(o);
+            Agent p = parseAgent(o, acceptNameAsOrganisation);
             if (p != null) {
               persons.add(p);
             }
@@ -112,10 +112,10 @@ public class MetadataParser {
 
         } else if (obj instanceof String){
           return split((String)obj).stream()
-            .map(this::parseAgent)
+            .map(x -> parseAgent(x, acceptNameAsOrganisation))
             .collect(Collectors.toList());
         } else {
-          Agent p = parseAgent(obj);
+          Agent p = parseAgent(obj, acceptNameAsOrganisation);
           if (p != null) return List.of(p);
         }
       }
@@ -130,7 +130,7 @@ public class MetadataParser {
       return List.of(x.trim());
     }
 
-    Agent parseAgent(Object obj) {
+    Agent parseAgent(Object obj, final boolean acceptNameAsOrganisation) {
       if (obj != null) {
         if (obj instanceof Agent) {
           return (Agent)obj;
@@ -140,12 +140,13 @@ public class MetadataParser {
 
         } else if (obj instanceof Map) {
           // allow name as alternative to organisation to support older YAML format
-          Map<Object, Object> map = (Map<Object, Object>) obj;
-          if (map.containsKey("name") && !map.containsKey("organisation")) {
-            map.put("organisation", map.get("name"));
+          if (acceptNameAsOrganisation) {
+            Map<Object, Object> map = (Map<Object, Object>) obj;
+            if (map.containsKey("name") && !map.containsKey("organisation")) {
+              map.put("organisation", map.get("name"));
+            }
           }
           return YamlMapper.MAPPER.convertValue(obj, Agent.class);
-
         }
       }
       return null;

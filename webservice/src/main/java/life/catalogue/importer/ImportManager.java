@@ -24,10 +24,7 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.csv.ExcelCsvExtractor;
-import life.catalogue.dao.DaoUtils;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.DecisionDao;
-import life.catalogue.dao.SectorDao;
+import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
@@ -75,15 +72,16 @@ public class ImportManager implements Managed {
   private final NameUsageIndexService indexService;
   private final ReleaseManager releaseManager;
   private final SectorDao sDao;
-  private final DecisionDao decisionDao;
+  private final DatasetDao dDao;
   private final DatasetImportDao dao;
+  private final DecisionDao decisionDao;
   private final ImageService imgService;
   private final Validator validator;
   private final Timer importTimer;
   private final Counter failed;
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-      SqlSessionFactory factory, NameIndex index, SectorDao sDao, DecisionDao decisionDao,
+      SqlSessionFactory factory, NameIndex index, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
       NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager, Validator validator) {
     this.cfg = cfg;
     this.factory = factory;
@@ -93,6 +91,7 @@ public class ImportManager implements Managed {
     this.index = index;
     this.imgService = imgService;
     this.indexService = indexService;
+    this.dDao = dDao;
     this.sDao = sDao;
     this.decisionDao = decisionDao;
     this.dao = new DatasetImportDao(factory, cfg.metricsRepo);
@@ -435,7 +434,7 @@ public class ImportManager implements Managed {
         ds.remove(Setting.DATA_ACCESS);
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
-      ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, indexService, imgService, sDao, decisionDao,
+      ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, indexService, imgService, dDao, sDao, decisionDao,
           new StartNotifier() {
             @Override
             public void started() {

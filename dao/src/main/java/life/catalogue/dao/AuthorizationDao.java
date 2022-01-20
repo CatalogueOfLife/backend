@@ -31,7 +31,7 @@ public class AuthorizationDao {
     this.bus = bus;
   }
 
-  public List<User> list(int datasetKey, User.Role role) {
+  public List<User> listUsers(int datasetKey, User.Role role) {
     try (SqlSession session = factory.openSession()){
       UserMapper um = session.getMapper(UserMapper.class);
       if (role == User.Role.EDITOR) {
@@ -43,14 +43,14 @@ public class AuthorizationDao {
     throw new IllegalArgumentException("Unsupported role " + role);
   }
 
-  public void add(int datasetKey, int userKey, User.Role role, User actor) {
+  public void addUser(int datasetKey, int userKey, User.Role role, User actor) {
     changeDatasetUserRole(datasetKey, userKey, role, actor, role == User.Role.EDITOR ?
                                                      dm -> dm.addEditor(datasetKey, userKey, actor.getKey()) :
                                                      dm -> dm.addReviewer(datasetKey, userKey, actor.getKey())
     );
   }
 
-  public void remove(int datasetKey, int userKey, User.Role role, User actor) {
+  public void removeUser(int datasetKey, int userKey, User.Role role, User actor) {
     changeDatasetUserRole(datasetKey, userKey, role, actor, role == User.Role.EDITOR ?
                                                      dm -> dm.removeEditor(datasetKey, userKey, actor.getKey()) :
                                                      dm -> dm.removeReviewer(datasetKey, userKey, actor.getKey())

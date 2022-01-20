@@ -86,6 +86,9 @@ public class AuthFilter implements ContainerRequestFilter {
     }
 
     if (user != null) {
+      if (user.user.isBlockedUser()) {
+        throw authorizationError("User " + user.user.getUsername() + " is blocked. Please contact support.");
+      }
       setSecurityContext(user, req);
     }
   }
@@ -202,7 +205,15 @@ public class AuthFilter implements ContainerRequestFilter {
   }
 
   static WebApplicationException authenticationError(String msg) {
-    Response resp = JsonExceptionMapperBase.jsonErrorResponse(Response.Status.UNAUTHORIZED, msg);
+    return error(Response.Status.UNAUTHORIZED, msg);
+  }
+
+  static WebApplicationException authorizationError(String msg) {
+    return error(Response.Status.FORBIDDEN, msg);
+  }
+
+  static WebApplicationException error(Response.Status status, String msg) {
+    Response resp = JsonExceptionMapperBase.jsonErrorResponse(status, msg);
     return new WebApplicationException(resp);
   }
 

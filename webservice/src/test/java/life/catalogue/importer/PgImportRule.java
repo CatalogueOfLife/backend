@@ -1,7 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.base.Preconditions;
-import com.google.common.io.Files;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
@@ -9,28 +7,33 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.matching.NameIndexFactory;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.gbif.nameparser.api.NomCode;
-import org.junit.rules.ExternalResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import org.gbif.nameparser.api.NomCode;
 
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+import com.google.common.io.Files;
 
 /**
  * Imports the given datasets from the test resources
@@ -152,27 +155,21 @@ public class PgImportRule extends ExternalResource {
     dataset.setCode(tr.code);
     dataset.setTitle("Test Dataset " + source.toString());
 
+    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    DatasetDao ddao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, null, validator);
     // insert trusted dataset
-    try {
-      SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
-      // this creates a new key, usually above 1000!
-      session.getMapper(DatasetMapper.class).createAll(dataset);
-      session.commit();
-      session.close();
-      
-      // normalize
-      store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
-      Normalizer norm = new Normalizer(dataset, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator);
-      norm.call();
-      
-      // import into postgres
-      store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(1, dataset, store, PgSetupRule.getSqlSessionFactory(), icfg, NameUsageIndexService.passThru(), validator);
-      importer.call();
-      
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    // this creates a new key, usually above 1000!
+    ddao.create(dataset, IMPORT_USER.getKey());
+
+    // normalize
+    store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
+    Normalizer norm = new Normalizer(dataset, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator);
+    norm.call();
+
+    // import into postgres
+    store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
+    PgImport importer = new PgImport(1, dataset, IMPORT_USER.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru(), validator);
+    importer.call();
   }
   
 }

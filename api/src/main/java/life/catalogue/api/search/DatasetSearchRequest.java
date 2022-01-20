@@ -75,6 +75,12 @@ public class DatasetSearchRequest {
   private Integer editor;
 
   /**
+   * Filters datasets by having the given reviewer key authorized.
+   */
+  @QueryParam("reviewer")
+  private Integer reviewer;
+
+  /**
    * Filters datasets by the user key that has last modified/created the dataset.
    */
   @QueryParam("modifiedBy")

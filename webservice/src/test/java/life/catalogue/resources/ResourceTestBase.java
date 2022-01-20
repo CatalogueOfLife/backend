@@ -6,12 +6,9 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.AuthorizationDao;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.img.ImageService;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.javers.core.Javers;
@@ -20,8 +17,6 @@ import org.javers.core.diff.Diff;
 import org.junit.Before;
 import org.junit.ClassRule;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
 import javax.ws.rs.client.WebTarget;
 
 import static org.mockito.Mockito.mock;
@@ -63,7 +58,7 @@ public class ResourceTestBase {
     try (SqlSession session = factory().openSession(true)) {
       session.getMapper(DatasetMapper.class).addEditor(datasetKey, editorKey, Users.TESTER);
     }
-    adao.add(datasetKey, editorKey, User.Role.EDITOR, TestEntityGenerator.USER_ADMIN);
+    adao.addUser(datasetKey, editorKey, User.Role.EDITOR, TestEntityGenerator.USER_ADMIN);
   }
 
   protected void printDiff(Object o1, Object o2) {

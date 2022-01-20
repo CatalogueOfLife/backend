@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.EventBus;
 import com.google.common.io.Files;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
@@ -51,10 +52,12 @@ public class PgImportITBase {
   DatasetWithSettings dataset;
   VerbatimRecordMapper vMapper;
   boolean fullInit = true;
+  DatasetDao ddao;
   SynonymDao sdao;
   TaxonDao tdao;
   NameDao ndao;
   ReferenceDao rdao;
+  EventBus bus = new EventBus();
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   NameUsageIndexService indexService = NameUsageIndexService.passThru();
 
@@ -82,11 +85,11 @@ public class PgImportITBase {
       InitDbCmd.setupColPartition(testDataRule.getSqlSession());
       testDataRule.commit();
     }
-
     sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory(), validator);
     ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), ndao, indexService, validator);
     rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory(), validator);
+    ddao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null,null, validator);
   }
   
   @After
@@ -109,12 +112,9 @@ public class PgImportITBase {
       // insert trusted dataset
       dataset.setTitle("Test Dataset " + source.toString());
       
-      SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
       // this creates a new key, usually 2000!
-      session.getMapper(DatasetMapper.class).createAll(dataset);
-      session.commit();
-      session.close();
-      
+      ddao.create(dataset, Users.IMPORTER);
+
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       Normalizer norm = new Normalizer(dataset, store, source,
@@ -124,7 +124,7 @@ public class PgImportITBase {
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(1, dataset, store, PgSetupRule.getSqlSessionFactory(), icfg, indexService, validator);
+      PgImport importer = new PgImport(1, dataset, Users.IMPORTER, store, PgSetupRule.getSqlSessionFactory(), icfg, ddao, indexService, validator);
       importer.call();
       
     } catch (Exception e) {

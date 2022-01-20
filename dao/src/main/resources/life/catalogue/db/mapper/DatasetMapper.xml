@@ -38,10 +38,19 @@
       LEFT JOIN usage_count uc ON uc.dataset_key=d.key
   </sql>
 
+  <sql id="FROM_PROJ">
+    <if test="userKey != null">
+      LEFT JOIN dataset proj ON d.source_key=proj.key AND d.origin = 'RELEASED'::DATASETORIGIN
+    </if>
+  </sql>
+
   <sql id="PRIVATE">
     <!-- magic number for admins -->
     <if test="userKey != -42">
-      AND (NOT ${alias}.private <if test="userKey != null">OR ${alias}.acl_editor @> ARRAY[#{userKey}::int] OR ${alias}.acl_reviewer @> ARRAY[#{userKey}::int]</if>)
+      AND (NOT ${alias}.private <if test="userKey != null">
+        OR COALESCE(${projAlias}.acl_editor, ${alias}.acl_editor) @> ARRAY[#{userKey}::int]
+        OR COALESCE(${projAlias}.acl_reviewer, ${alias}.acl_reviewer) @> ARRAY[#{userKey}::int]</if>
+      )
     </if>
   </sql>
 
@@ -49,14 +58,15 @@
     d.deleted IS NULL
     <include refid="PRIVATE">
       <property name="alias" value="d"/>
+      <property name="projAlias" value="proj"/>
     </include>
     <if test="req != null">
       <if test="req.q != null">
         <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
         AND (
-          f_unaccent(title) ILIKE f_unaccent($Grtz5$%${req.q}%$Grtz5$)
-          OR f_unaccent(alias) ILIKE f_unaccent($Grtz5$%${req.q}%$Grtz5$)
-          OR doc @@ plainto_tsquery('simple2', $Grtz5$%${req.q}%$Grtz5$)
+          f_unaccent(d.title) ILIKE f_unaccent($Grtz5$%${req.q}%$Grtz5$)
+          OR f_unaccent(d.alias) ILIKE f_unaccent($Grtz5$%${req.q}%$Grtz5$)
+          OR d.doc @@ plainto_tsquery('simple2', $Grtz5$%${req.q}%$Grtz5$)
         )
       </if>
       <if test="req.privat != null">
@@ -75,7 +85,10 @@
         AND exists(
           SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
           WHERE s.dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key
-          <include refid="PRIVATE"><property name="alias" value="pr"/></include>
+          <include refid="PRIVATE">
+            <property name="alias" value="pr"/>
+            <property name="projAlias" value="pr"/>
+          </include>
         )
       </if>
       <if test="req.hasSourceDataset != null">
@@ -97,6 +110,9 @@
       <if test="req.editor != null">
         AND d.acl_editor @> ARRAY[#{req.editor}::int]
       </if>
+      <if test="req.reviewer != null">
+        AND d.acl_reviewer @> ARRAY[#{req.reviewer}::int]
+      </if>
       <if test="req.modifiedBy != null">
         AND d.modified_by = #{req.modifiedBy}
       </if>
@@ -104,10 +120,10 @@
         AND di.finished > #{req.modified}
       </if>
       <if test="req.created != null">
-        AND created > #{req.created}
+        AND d.created > #{req.created}
       </if>
       <if test="req.issued != null">
-        AND issued > #{req.issued}
+        AND d.issued > #{req.issued}
       </if>
       <if test="req.minSize != null">
         AND <include refid="size"/> >= #{req.minSize}
@@ -176,27 +192,26 @@
 
   <select id="count" resultType="integer">
     SELECT COUNT(*)
-    FROM
-    <include refid="FROM"/>
-    WHERE
-    <include refid="SEARCH_WHERE"/>
+    FROM <include refid="FROM"/> <include refid="FROM_PROJ"/>
+    WHERE <include refid="SEARCH_WHERE"/>
   </select>
 
   <select id="search" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
+    FROM <include refid="FROM"/> <include refid="FROM_PROJ"/>
     WHERE <include refid="SEARCH_WHERE"/>
     ORDER BY
-    <bind name="rev" value="req.reverse"/>
+    <bind name="rev" value="false"/>
     <choose>
       <when test="req == null || req.sortBy == null">
         key
       </when>
       <otherwise>
+        <bind name="rev" value="req.reverse"/>
         <bind name="sortBy" value="req.sortBy.name()"/>
         <choose>
           <when test="sortBy == 'RELEVANCE'">
-            ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q}))
+            ts_rank_cd(d.doc, plainto_tsquery('simple2', #{req.q}))
             <bind name="rev" value="!req.reverse"/>
           </when>
           <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED'">
@@ -204,14 +219,14 @@
             <bind name="rev" value="!req.reverse"/>
           </when>
           <when test="sortBy == 'AUTHORS'">
-            lower((editor[1]).family),
-            lower((creator[1]).family)
+            lower((d.editor[1]).family),
+            lower((d.creator[1]).family)
           </when>
           <when test="sortBy == 'ALIAS'">
-            lower(alias)
+            lower(d.alias)
           </when>
           <when test="sortBy == 'TITLE'">
-            lower(title)
+            lower(d.title)
           </when>
           <otherwise>
             ${req.sortBy.name().toLowerCase()}
@@ -305,10 +320,16 @@
     WHERE gbif_key = #{key}
   </select>
 
-  <!--  makes sure to add creator to editors -->
+  <!--  makes sure to add creator to editors if its not a bot with key<100 -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, acl_editor, created, modified)
-    VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
+    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, created, modified, acl_editor)
+    VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now(),
+      <if test="sourceKey != null">NULL</if>
+      <if test="sourceKey == null">
+        <if test="createdBy &lt; 100">NULL</if>
+        <if test="createdBy &gt;= 100">array[#{createdBy}::int]</if>
+      </if>
+    )
   </insert>
 
   <!--  makes sure to add creator to editors -->
@@ -352,6 +373,12 @@
     WHERE key = #{key}
   </update>
 
+  <update id="removeReviewerEverywhere" parameterType="map">
+    UPDATE dataset  SET (acl_reviewer, modified_by, modified) =
+    ( array_remove(acl_reviewer, #{reviewer}), #{userKey}, now() )
+    WHERE acl_reviewer @> ARRAY[#{reviewer}::int]
+  </update>
+
 
   <select id="getEditors" resultType="it.unimi.dsi.fastutil.ints.IntSet">
     SELECT acl_editor FROM dataset WHERE key = #{key}
@@ -374,6 +401,13 @@
       ( array_remove(acl_editor, #{editor}), #{userKey}, now() )
     WHERE key = #{key}
   </update>
+
+  <update id="removeEditorEverywhere" parameterType="map">
+    UPDATE dataset  SET (acl_editor, modified_by, modified) =
+    ( array_remove(acl_editor, #{editor}), #{userKey}, now() )
+    WHERE acl_editor @> ARRAY[#{editor}::int]
+  </update>
+
 
   <update id="update" parameterType="Dataset">
     UPDATE dataset SET (<include refid="COLS"/>, modified) = (<include refid="PROPS"/>, now())

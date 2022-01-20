@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.ibatis.binding.BindingException;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -20,11 +21,11 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import static org.junit.Assert.*;
 
 public class UserMapperTest extends MapperTestBase<UserMapper> {
-  
+
   public UserMapperTest() {
     super(UserMapper.class);
   }
-  
+
   @Test
   public void getNull() throws Exception {
     assertNull(mapper().get(-34567));
@@ -37,7 +38,6 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     for (int x = 1; x<=20; x++) {
       User u = createTestEntity();
       u.setUsername("user"+x);
-      u.setDeleted(null);
       if (x % 2 == 0) {
         u.setFirstname(john);
       }
@@ -55,6 +55,27 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     assertEquals(11, mapper().search("user1", page).size());
     assertEquals(2, mapper().search("user2", page).size());
     assertEquals(26, mapper().search("", page).size());
+    mapper().search("", page).forEach(u -> {
+      assertNotNull(u.getKey());
+      assertNotNull(u.getUsername());
+      assertNotNull(u.getCreated());
+    });
+    // last login persistency
+    var login = mapper().getByUsername("user8");
+    final var now = LocalDateTime.now();
+    login.setLastLogin(now);
+    mapper().update(login);
+    commit();
+
+    mapper().search("user8", page).forEach(u -> {
+      assertNotNull(u.getKey());
+      assertNotNull(u.getUsername());
+      assertNotNull(u.getCreated());
+      assertEquals(now, u.getLastLogin());
+    });
+
+    var u2 = mapper().getByUsername("user8");
+    assertEquals(now, u2.getLastLogin());
   }
 
   @Test
@@ -65,7 +86,6 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     List<Integer> even = new ArrayList<>();
     for (int x = 1; x<=10; x++) {
       User u = createTestEntity();
-      u.setDeleted(null);
       mapper().create(u);
       all.add(u.getKey());
       if (x % 2 == 0) {
@@ -95,43 +115,38 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     u1.getEditor().addAll(List.of(1,2,3));
     mapper().create(u1);
     commit();
-    
+
     removeDbCreatedProps(u1);
     User u2 = removeDbCreatedProps(mapper().get(u1.getKey()));
     //printDiff(u1, u2);
     assertEquals(u1, u2);
   }
-  
+
   @Test
   public void update() throws Exception {
     User u1 = createTestEntity();
     mapper().create(u1);
     commit();
-  
+
     u1.setFirstname("Peter Punk");
     mapper().update(u1);
     commit();
-    
+
     removeDbCreatedProps(u1);
     User u2 = removeDbCreatedProps(mapper().get(u1.getKey()));
-    
+
     //printDiff(u1, u2);
     assertEquals(u1, u2);
   }
-  
-  @Test
-  public void deleted() throws Exception {
-    User u1 = createTestEntity();
-    mapper().create(u1);
-    assertNull(u1.getDeleted());
-    commit();
-    
-    mapper().delete(u1.getKey());
-    commit();
 
-    var del = mapper().get(u1.getKey());
-    assertNotNull(del.getDeleted());
+  /**
+   * We don't offer a delete method!!!
+   */
+  @Test(expected = BindingException.class)
+  public void deleted() throws Exception {
+    mapper().delete(1);
   }
+
 
   @Test
   public void block() throws Exception {
@@ -148,19 +163,18 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     u = mapper().get(key);
     assertFalse(u.isBlockedUser());
   }
-  
-  
+
   User createTestEntity() {
     return create(RandomUtils.randomLatinString(10));
   }
-  
+
   User removeDbCreatedProps(User obj) {
     obj.setLastLogin(null);
     obj.setCreated(null);
     obj.getEditor().clear();
     return obj;
   }
-  
+
   User create(String username) {
     User iggy = new User();
     iggy.setUsername(username);

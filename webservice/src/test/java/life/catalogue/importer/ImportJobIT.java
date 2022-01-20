@@ -17,6 +17,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.release.ReleaseManager;
@@ -63,6 +64,7 @@ public class ImportJobIT {
   private NameUsageIndexService indexService;
   private SectorDao sDao;
   private DecisionDao dDao;
+  private DatasetDao datasetDao;
 
   private static WsServerConfig provideConfig() {
     WsServerConfig cfg = new WsServerConfig();
@@ -96,6 +98,7 @@ public class ImportJobIT {
     TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService, validator);
     sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao, validator);
     dDao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
+    datasetDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null,diDao, validator);
     LOG.warn("Test initialized");
   }
 
@@ -135,7 +138,7 @@ public class ImportJobIT {
 
     ImportRequest req = new ImportRequest(d.getKey(), Users.TESTER, false, false, false);
     job = new ImportJob(req, d, cfg, new DownloadUtil(hc), PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator,
-      indexService, new ImageServiceFS(cfg.img), sDao, dDao, this::start, this::success, this::error);
+      indexService, new ImageServiceFS(cfg.img), datasetDao, sDao, dDao, this::start, this::success, this::error);
 
   }
 

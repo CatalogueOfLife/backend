@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.event.UserChanged;
+import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -55,7 +56,7 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   public void changeRole(int key, User admin, List<User.Role> roles) {
     User user;
     final var newRoles = new HashSet<User.Role>(ObjectUtils.coalesce(roles, Collections.EMPTY_SET));
-    try (SqlSession session = factory.openSession()) {
+    try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       user = session.getMapper(mapperClass).get(key);
       if (user == null) {
@@ -64,33 +65,33 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
 
       // if we revoke the editor or reviewer role the user will lose access to all datasets
       if (user.hasRole(User.Role.EDITOR) && !newRoles.contains(User.Role.EDITOR)) {
-        user.getEditor().forEach(dk -> {
-          dm.removeEditor(dk, user.getKey(), admin.getKey());
-        });
+        dm.removeEditorEverywhere(user.getKey(), admin.getKey());
       }
       if (user.hasRole(User.Role.REVIEWER) && !newRoles.contains(User.Role.REVIEWER)) {
-        user.getReviewer().forEach(dk -> {
-          dm.removeReviewer(dk, user.getKey(), admin.getKey());
-        });
+        dm.removeReviewerEverywhere(user.getKey(), admin.getKey());
       }
     }
-    // only update if changed
-    if (!user.getRoles().equals(newRoles)) {
-      user.setRoles(newRoles);
-      update(user, admin.getKey());
-    }
+    // update user
+    user.setRoles(newRoles);
+    update(user, admin.getKey());
   }
 
   public void block(int key, User admin) {
-    try (SqlSession session = factory.openSession()){
-      session.getMapper(UserMapper.class).block(key, LocalDateTime.now());
-    }
+    block(key, LocalDateTime.now(), admin);
   }
 
   public void unblock(int key, User admin) {
-    try (SqlSession session = factory.openSession()){
-      session.getMapper(UserMapper.class).block(key, null);
+    block(key, null, admin);
+  }
+
+  private void block(int key, @Nullable LocalDateTime datetime, User admin) {
+    User u;
+    try (SqlSession session = factory.openSession(true)){
+      var um = session.getMapper(UserMapper.class);
+      um.block(key, datetime);
+      u = um.get(key);
     }
+    bus.post(UserChanged.created(u));
   }
 
   private static Page defaultPage(Page page){

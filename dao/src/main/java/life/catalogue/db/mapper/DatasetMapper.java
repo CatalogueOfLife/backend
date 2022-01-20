@@ -49,6 +49,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   void removeReviewer(@Param("key") int key, @Param("reviewer") int reviewer, @Param("userKey") int userKey);
 
+  void removeReviewerEverywhere(@Param("editor") int editor, @Param("userKey") int userKey);
+
 
   IntSet getEditors(@Param("key") int key);
 
@@ -57,6 +59,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   void addEditor(@Param("key") int key, @Param("editor") int editor, @Param("userKey") int userKey);
 
   void removeEditor(@Param("key") int key, @Param("editor") int editor, @Param("userKey") int userKey);
+
+  void removeEditorEverywhere(@Param("editor") int editor, @Param("userKey") int userKey);
 
   default void updateAll(DatasetWithSettings d) {
     update(d.getDataset());
