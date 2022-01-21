@@ -32,8 +32,10 @@ DROP INDEX name_published_in_id_idx;
 DROP INDEX name_scientific_name_normalized_idx;
 DROP INDEX name_sector_key_idx;
 DROP INDEX name_verbatim_key_idx;
-DROP INDEX name_rel_name_id_type_idx;
+DROP INDEX name_rel_name_id_idx;
 DROP INDEX name_rel_reference_id_idx;
+DROP INDEX name_rel_published_in_id_idx;
+DROP INDEX name_rel_related_name_id_idx;
 DROP INDEX name_rel_sector_key_idx;
 DROP INDEX name_rel_verbatim_key_idx;
 DROP INDEX type_material_name_id_idx;
@@ -109,7 +111,6 @@ $$
   END;
 $$
 LANGUAGE 'plpgsql';
-
 ```
 
 execute the following to clean project tables for managed and released datasets each:
@@ -149,6 +150,7 @@ ALTER TABLE name_{KEY} DROP CONSTRAINT IF EXISTS name_{KEY}_verbatim_key_fkey;
 ALTER TABLE name_{KEY} DROP CONSTRAINT IF EXISTS name_{KEY}_published_in_id_fkey;
 ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_verbatim_key_fkey;
 ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_reference_id_fkey;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_published_in_id_fkey;
 ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_name_id_fkey;
 ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_related_name_id_fkey;
 ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_verbatim_key_fkey;
@@ -200,7 +202,7 @@ Now we can create default subpartitions with a configurable number of shards usi
 Note that the postgres user that runs this must have (temporary) SUPERUSER rights to change the session_replication_role environment setting!
 ```
 ALTER USER col WITH SUPERUSER;
-./repartition.sh {PORT} --num 8
+./repartition.sh {PORT} --num 12
 ```
 
 Finally Run:

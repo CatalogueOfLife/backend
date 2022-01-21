@@ -87,14 +87,14 @@ public class RepartitionCmd extends AbstractMybatisCmd {
     ){
       DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
 
-      System.out.println("Analyze table columns");
+      LOG.info("Analyze table columns");
       for (String t : Lists.reverse(DatasetPartitionMapper.TABLES)) {
         tables.put(t, dpm.columns(t).stream()
                          .map(c -> '"'+c+'"')
                          .collect(Collectors.joining(","))
         );
       }
-      System.out.println("Detach and rename existing partitions for external data");
+      LOG.info("Detach and rename existing partitions for external data");
       for (String key : Partitioner.partitionSuffices(con, DatasetOrigin.EXTERNAL)) {
         existing.add(key);
         final boolean isDefault = key.startsWith("m");
@@ -105,7 +105,7 @@ public class RepartitionCmd extends AbstractMybatisCmd {
             if (Partitioner.isAttached(con, src)) {
               st.execute(String.format("ALTER TABLE %s DETACH PARTITION %s", parentTable, src));
             } else {
-              System.out.println("  table " +src+ " was not attached");
+              LOG.info("  table " +src+ " was not attached");
             }
             st.execute(String.format("ALTER TABLE %s RENAME TO _%s", src, src));
           } catch (SQLException e) {
@@ -114,28 +114,28 @@ public class RepartitionCmd extends AbstractMybatisCmd {
         }
       }
       if (createDefault) {
-        System.out.println("Create new default partitions");
+        LOG.info("Create new default partitions");
       }
-      System.out.println("Create "+cfg.db.partitions+" new default subpartitions");
+      LOG.info("Create "+cfg.db.partitions+" new default subpartitions");
       dpm.createDefaultPartitions(cfg.db.partitions, createDefault);
       session.commit();
 
-      System.out.println("Copy data to new partitions");
+      LOG.info("Copy data to new partitions");
       // disable triggers, e.g. usage counting
       st.execute("SET session_replication_role = replica");
 
       for (String suffix : existing) {
-        System.out.println("  source partition "+suffix);
+        LOG.info("  source partition "+suffix);
         for (String t : DatasetPartitionMapper.TABLES) {
           final String src = String.format("%s_%s", t, suffix);
-          System.out.println("    copy " + src);
+          LOG.info("    copy " + src);
           String cols = tables.get(t);
           st.execute(String.format("INSERT INTO %s (%s) SELECT %s FROM _%s", t, cols, cols, src));
           con.commit();
         }
         for (String t : Lists.reverse(DatasetPartitionMapper.TABLES)) {
           final String src = String.format("%s_%s", t, suffix);
-          System.out.println("    delete " + src);
+          LOG.info("    delete " + src);
           st.execute(String.format("DROP TABLE _%s", src));
           con.commit();
         }
