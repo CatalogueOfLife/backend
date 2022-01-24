@@ -98,7 +98,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    *
    * @param limit maximum of datasets to return
    */
-  List<Dataset> listNeverImported(int limit);
+  List<Dataset> listNeverImported(@Param("limit") int limit);
 
   /**
    * list datasets which have already been imported before, but need a refresh. The dataset.importFrequency is respected for rescheduling an
@@ -107,7 +107,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    *
    * @param limit maximum of datasets to return
    */
-  List<Dataset> listToBeImported(int limit);
+  List<Dataset> listToBeImported(@Param("limit") int limit);
 
   /**
    * @return true if dataset exists and is not deleted

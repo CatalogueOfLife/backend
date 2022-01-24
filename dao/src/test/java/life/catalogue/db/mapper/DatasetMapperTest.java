@@ -375,18 +375,29 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   @Test
   public void listNeverImported() throws Exception {
     List<Dataset> ds = createExpected();
+    int withURL = 0;
     for (Dataset d : ds) {
       if (d.getKey() == null) {
         mapper().create(d);
+        // we need a URL to be considered for imports
+        if (withURL++ < 3) {
+          DatasetSettings settings = mapper().getSettings(d.getKey());
+          settings.put(Setting.DATA_ACCESS, URI.create("http://localhost/dataset-"+d.getKey()));
+          mapper().updateSettings(d.getKey(), settings, Users.DB_INIT);
+        }
       }
     }
     commit();
 
+    List<Dataset> tobe = mapper().listToBeImported(3);
+    assertEquals(0, tobe.size());
+
     List<Dataset> never = mapper().listNeverImported(3);
     assertEquals(3, never.size());
 
-    List<Dataset> tobe = mapper().listToBeImported(3);
-    assertEquals(0, tobe.size());
+    // we only have 3 with URLs
+    never = mapper().listNeverImported(10);
+    assertEquals(3, never.size());
   }
 
   @Test

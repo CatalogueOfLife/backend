@@ -280,10 +280,11 @@ CREATE INDEX ON name (dataset_key, verbatim_key);
 CREATE INDEX ON name (dataset_key, published_in_id);
 CREATE INDEX ON name (dataset_key, lower(scientific_name));
 CREATE INDEX ON name (dataset_key, scientific_name_normalized);
-CREATE INDEX ON name_rel (dataset_key, name_id, type);
 CREATE INDEX ON name_rel (dataset_key, sector_key);
 CREATE INDEX ON name_rel (dataset_key, verbatim_key);
 CREATE INDEX ON name_rel (dataset_key, reference_id);
+CREATE INDEX ON name_rel (dataset_key, name_id);
+CREATE INDEX ON name_rel (dataset_key, related_name_id);
 CREATE INDEX ON type_material (dataset_key, name_id);
 CREATE INDEX ON type_material (dataset_key, sector_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_key);
@@ -316,6 +317,8 @@ CREATE INDEX ON media (dataset_key, taxon_id);
 CREATE INDEX ON media (dataset_key, sector_key);
 CREATE INDEX ON media (dataset_key, verbatim_key);
 CREATE INDEX ON media (dataset_key, reference_id);
+
+ALTER USER col WITH NOSUPERUSER;
 ```
 
 ### 2022-01-14 blocking user
