@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 
 public class IdMap implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(IdMap.class);
+  private static final String SERVICE_NAME = "legacy ID redirection";
 
   private final Supplier<InputStream> tsvSupplier;
   private final String tsvName;
@@ -97,23 +98,43 @@ public class IdMap implements Managed {
   }
 
   public boolean contains(String id) {
-    return map.containsKey(id);
+    try {
+      return map.containsKey(id);
+    } catch (IllegalAccessError e) {
+      throw UnavailableException.unavailable(SERVICE_NAME);
+    }
   }
 
   public String lookup(String id) {
-    return map.get(id);
+    try {
+      return map.get(id);
+    } catch (IllegalAccessError e) {
+      throw UnavailableException.unavailable(SERVICE_NAME);
+    }
   }
 
   public int size() {
-    return map.size();
+    try {
+      return map.size();
+    } catch (IllegalAccessError e) {
+      throw UnavailableException.unavailable(SERVICE_NAME);
+    }
   }
 
   public boolean isEmpty() {
-    return map.isEmpty();
+    try {
+      return map.isEmpty();
+    } catch (IllegalAccessError e) {
+      throw UnavailableException.unavailable(SERVICE_NAME);
+    }
   }
 
   public void clear() {
-    map.clear();
+    try {
+      map.clear();
+    } catch (IllegalAccessError e) {
+      throw UnavailableException.unavailable(SERVICE_NAME);
+    }
   }
 
   @Override
@@ -158,7 +179,7 @@ public class IdMap implements Managed {
         map.get("something1234567");
         return true;
       }
-    } catch (UnavailableException e) {
+    } catch (UnavailableException | IllegalAccessError e) {
       return false;
     }
     return false;

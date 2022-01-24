@@ -5,6 +5,7 @@ import com.codahale.metrics.Timer;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.id.ShortUuid;
 import life.catalogue.common.text.StringUtils;
