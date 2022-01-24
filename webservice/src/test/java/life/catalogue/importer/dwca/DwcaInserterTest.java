@@ -33,6 +33,25 @@ public class DwcaInserterTest extends InserterBaseTest {
   public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException  {
     return new DwcaInserter(store, resource, settings, new ReferenceFactory(store));
   }
+
+  /**
+   * Plazi with COL metadata.json
+   */
+  @Test
+  public void dwca40() throws Exception {
+    NeoInserter ins = setup("/dwca/40");
+    ins.insertAll();
+
+    var m = ins.readMetadata().get();
+    // should read json, not eml!
+    assertEquals("Chapter 7: Linnaean Plant Names and their Types (part Q)", m.getTitle());
+    assertEquals("93F443DCBCEDFBF26165C392E1E8901C", m.getIdentifier().get("plazi"));
+    assertEquals("Department of Botany, Natural History Museum, Cromwell Road, London, UK", m.getCreator().get(0).getOrganisation());
+    assertEquals(License.CC0, m.getLicense());
+    assertEquals(1, m.getSource().size());
+    assertEquals("Linnaean Society of London in association with the Natural History Museum", m.getSource().get(0).getPublisher());
+  }
+
   /**
    * EEA redlist file with unknown term columns
    */

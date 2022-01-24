@@ -41,7 +41,26 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 import static org.junit.Assert.*;
 
 public class ColdpInserterTest extends InserterBaseTest {
-  
+
+  @Test
+  public void bareNamesWithAccordingToID() throws Exception {
+    NeoInserter ins = setup("/coldp/20");
+    ins.insertAll();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      assertNull(store.usages().objByID("111"));
+      assertNull(store.usages().objByID("222"));
+
+      var n = store.names().objByID("111").getName();
+      assertEquals("Catyclia", n.getScientificName());
+      assertEquals(Rank.GENUS, n.getRank());
+
+      n = store.names().objByID("222").getName();
+      assertEquals("Killmora", n.getScientificName());
+      assertEquals(Rank.GENUS, n.getRank());
+    }
+  }
+
   @Test
   public void readMetadata() throws Exception {
     NeoInserter ins = setup("/coldp/0");

@@ -1,0 +1,1 @@
+test illegal bare names handling

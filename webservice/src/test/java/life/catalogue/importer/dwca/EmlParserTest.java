@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import life.catalogue.common.io.Resources;
-import life.catalogue.importer.coldp.MetadataParser;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;

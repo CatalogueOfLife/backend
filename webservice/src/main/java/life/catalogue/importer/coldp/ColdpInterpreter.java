@@ -31,7 +31,6 @@ import static life.catalogue.parser.SafeParser.parse;
  * Interprets a verbatim ACEF record and transforms it into a name, taxon and unique references.
  */
 public class ColdpInterpreter extends InterpreterBase {
-  private static final Logger LOG = LoggerFactory.getLogger(ColdpInterpreter.class);
   private static final EnumNote<TaxonomicStatus> SYN_NOTE = new EnumNote<>(TaxonomicStatus.SYNONYM, null);
   private static final EnumNote<TaxonomicStatus> ACC_NOTE = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings(); // for multi value ID fields
@@ -140,14 +139,14 @@ public class ColdpInterpreter extends InterpreterBase {
     return Optional.of(n);
   }
 
-  private void interpretUsageBase(NeoUsage u, NeoName n, VerbatimRecord v) {
+  private void interpretUsageBase(NeoUsage u, NeoName n, VerbatimRecord v) throws IllegalArgumentException {
     u.nameNode = n.node;
     u.setId(v.getRaw(ColdpTerm.ID));
     u.setVerbatimKey(v.getId());
     setReference(v, ColdpTerm.accordingToID, u.usage::setAccordingToId, u.usage::setAccordingTo);
     u.usage.setOrigin(Origin.SOURCE);
-    u.usage.setNamePhrase(ObjectUtils.coalesce(v.get(ColdpTerm.namePhrase), n.pnu.getTaxonomicNote()));
     u.usage.setRemarks(v.get(ColdpTerm.remarks));
+    u.usage.setNamePhrase(ObjectUtils.coalesce(v.get(ColdpTerm.namePhrase), n.pnu.getTaxonomicNote()));
     if (!u.usage.isBareName()) {
       NameUsageBase nub = (NameUsageBase) u.usage;
       setReferences(v, ColdpTerm.referenceID, COMMA_SPLITTER, nub::setReferenceIds);

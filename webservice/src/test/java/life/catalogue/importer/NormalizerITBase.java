@@ -9,7 +9,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.img.ImageService;
-import life.catalogue.importer.coldp.MetadataParser;
+import life.catalogue.importer.coldp.ColdpMetadataParser;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.NotUniqueRuntimeException;
@@ -101,7 +101,7 @@ abstract class NormalizerITBase {
     URL metaUrl = NormalizerTreeIT.class.getResource(resourceDir + "/metadata.yaml");
     if (metaUrl != null) {
       try {
-        Optional<DatasetWithSettings> meta = MetadataParser.readMetadata(metaUrl.openStream());
+        Optional<DatasetWithSettings> meta = ColdpMetadataParser.readYAML(metaUrl.openStream());
         if (meta.isPresent()) {
           NomCode code = meta.get().getCode();
           System.out.println("Use code " + code);

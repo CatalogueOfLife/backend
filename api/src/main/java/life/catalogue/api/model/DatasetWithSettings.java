@@ -23,6 +23,10 @@ public class DatasetWithSettings {
     this(new Dataset(), new DatasetSettings());
   }
 
+  public DatasetWithSettings(Dataset dataset) {
+    this(dataset, null);
+  }
+
   public DatasetWithSettings(Dataset dataset, DatasetSettings settings) {
     this.dataset = dataset;
     this.settings = settings;

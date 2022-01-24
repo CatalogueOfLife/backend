@@ -1,0 +1,1 @@
+Test plazi archive with col metadata.json

@@ -1,16 +1,11 @@
 package life.catalogue.dw.jersey.provider;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.MetadataFormat;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.importer.coldp.MetadataParser;
+import life.catalogue.importer.coldp.ColdpMetadataParser;
 import life.catalogue.importer.dwca.EmlParser;
-import life.catalogue.jackson.YamlMapper;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
@@ -42,7 +37,7 @@ public class DatasetMessageBodyReader implements MessageBodyReader<Dataset> {
   public Dataset readFrom(Class<Dataset> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
     switch (parseType(mediaType)) {
       case YAML:
-        return MetadataParser.readMetadata(entityStream).map(DatasetWithSettings::getDataset).orElse(null);
+        return ColdpMetadataParser.readYAML(entityStream).map(DatasetWithSettings::getDataset).orElse(null);
       case EML:
         return EmlParser.parse(entityStream).map(DatasetWithSettings::getDataset).orElse(null);
       default:

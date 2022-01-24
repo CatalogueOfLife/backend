@@ -4,9 +4,10 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.DwcUnofficialTerm;
+import life.catalogue.importer.MetadataFactory;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
-import life.catalogue.importer.coldp.MetadataParser;
+import life.catalogue.importer.coldp.ColdpMetadataParser;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.reference.ReferenceFactory;
@@ -117,30 +118,39 @@ public class DwcaInserter extends NeoCsvInserter {
    */
   @Override
   public Optional<DatasetWithSettings> readMetadata() {
-    Optional<Path> mf = ((DwcaReader)reader).getMetadataFile();
-    if (mf.isPresent()) {
-      Path metadataPath = mf.get();
-      if (Files.exists(metadataPath)) {
-        try {
-          String ext = FilenameUtils.getExtension(metadataPath.getFileName().toString());
-          if (ext.equalsIgnoreCase("yaml") || ext.equalsIgnoreCase("yml")) {
-            LOG.info("Read dataset metadata from YAML file {}", metadataPath);
-            return MetadataParser.readMetadata(Files.newInputStream(metadataPath));
+    // first try COL overrides, e.g. metadata.yaml
+    Optional<DatasetWithSettings> ds = super.readMetadata();
+    if (!ds.isPresent()) {
+      // now look into the meta.xml for some other filename
+      Optional<Path> mf = ((DwcaReader)reader).getMetadataFile();
+      if (mf.isPresent()) {
+        Path metadataPath = mf.get();
+        if (Files.exists(metadataPath)) {
+          try {
+            String ext = FilenameUtils.getExtension(metadataPath.getFileName().toString());
+            if (ext.equalsIgnoreCase("yaml") || ext.equalsIgnoreCase("yml")) {
+              LOG.info("Read dataset metadata from YAML file {}", metadataPath);
+              ds = ColdpMetadataParser.readYAML(Files.newInputStream(metadataPath));
+
+            } else if (ext.equalsIgnoreCase("json")) {
+              LOG.info("Read dataset metadata from JSON file {}", metadataPath);
+              ds = ColdpMetadataParser.readJSON(Files.newInputStream(metadataPath));
+
+            } else {
+              ds = EmlParser.parse(metadataPath);
+            }
+
+          } catch (IOException | RuntimeException e) {
+            LOG.error("Unable to read dataset metadata from dwc archive: {}", e.getMessage(), e);
           }
-          return EmlParser.parse(metadataPath);
-          
-        } catch (IOException | RuntimeException e) {
-          LOG.error("Unable to read dataset metadata from dwc archive: {}", e.getMessage(), e);
+        } else {
+          LOG.warn("Declared dataset metadata file {} does not exist.", metadataPath);
         }
       } else {
-        LOG.warn("Declared dataset metadata file {} does not exist.", metadataPath);
+        LOG.info("No dataset metadata available");
       }
-    } else {
-      LOG.info("No dataset metadata available");
     }
-
-    // try other metadata formats
-    return MetadataParser.readMetadata(folder);
+    return ds;
   }
   
 }

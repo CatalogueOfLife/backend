@@ -3,6 +3,10 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Objects;
 
 /**
@@ -10,6 +14,8 @@ import java.util.Objects;
  * We indicate this by having no taxonomic status at all.
  */
 public class BareName implements NameUsage {
+  private static final Logger LOG = LoggerFactory.getLogger(BareName.class);
+
   private Name name;
   
   public BareName() {
@@ -77,8 +83,10 @@ public class BareName implements NameUsage {
 
   @Override
   public void setAccordingTo(String accordingTo) {
-    // nothing, throw if according is supposed to be non null
-    if (accordingTo != null) throw new IllegalArgumentException("Bare names do not have an accordingTo");
+    // log not throw if unexpected accordingTo is used
+    if (StringUtils.isBlank(accordingTo)) {
+      LOG.warn("Bare name with a usage accordingTo: {}", accordingTo);
+    }
   }
 
   @Override
@@ -88,8 +96,10 @@ public class BareName implements NameUsage {
 
   @Override
   public void setNamePhrase(String namePhrase) {
-    // nothing, throw if namePhrase is supposed to be non null
-    if (namePhrase != null) throw new IllegalArgumentException("Bare names do not have a usage namePhrase");
+    // log not throw if unexpected namePhrase is used
+    if (StringUtils.isBlank(namePhrase)) {
+      LOG.warn("Bare name with a usage namePhrase: {}", namePhrase);
+    }
   }
 
   @Override

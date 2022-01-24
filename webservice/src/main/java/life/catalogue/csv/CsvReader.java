@@ -177,7 +177,7 @@ public class CsvReader {
    *
    * @param filename to resolve
    */
-  protected Path resolve(String filename) {
+  public Path resolve(String filename) {
     return folder.resolve(filename);
   }
   

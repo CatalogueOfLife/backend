@@ -1,6 +1,8 @@
 package life.catalogue.importer.coldp;
 
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.importer.dwca.EmlParser;
@@ -26,13 +28,14 @@ import com.google.common.collect.ImmutableList;
 /**
  * ColDP metadata parser that falls back to EML if no YAML metadata is found.
  */
-public class MetadataParser {
-  private static final Logger LOG = LoggerFactory.getLogger(MetadataParser.class);
-  private static final List<String> METADATA_FILENAMES = ImmutableList.of("metadata.yaml", "metadata.yml");
-  private static final List<String> EML_FILENAMES = ImmutableList.of("eml.xml", "metadata.xml");
+public class ColdpMetadataParser {
   private static final ObjectReader DATASET_YAML_READER;
   static {
     DATASET_YAML_READER = YamlMapper.MAPPER.readerFor(YamlDataset.class);
+  }
+  private static final ObjectReader DATASET_JSON_READER;
+  static {
+    DATASET_JSON_READER = ApiModule.MAPPER.readerFor(Dataset.class);
   }
 
   /**
@@ -172,41 +175,19 @@ public class MetadataParser {
     }
   }
 
-  /**
-   * Reads the dataset metadata.yaml or metadata.yml from a given folder.
-   * In case of parsing errors an empty optional is returned.
-   */
-  public static Optional<DatasetWithSettings> readMetadata(Path dir) {
-    for (String fn : METADATA_FILENAMES) {
-      Path metapath = dir.resolve(fn);
-      if (Files.exists(metapath)) {
-        try {
-          return readMetadata(Files.newInputStream(metapath));
-        } catch (Exception e) {
-          LOG.error("Error reading metadata from " + fn, e);
-        }
-      }
-    }
-    // also try with EML if none is found
-    for (String fn : EML_FILENAMES) {
-      Path eml = dir.resolve(fn);
-      if (Files.exists(eml)) {
-        try {
-          return EmlParser.parse(eml);
-        } catch (IOException e) {
-          LOG.error("Error reading EML file " + fn, e);
-        }
-      }
-    }
-
-    return Optional.empty();
-  }
-  
-  public static Optional<DatasetWithSettings> readMetadata(InputStream stream) throws IOException {
+  public static Optional<DatasetWithSettings> readYAML(InputStream stream) throws IOException {
     if (stream != null) {
       DatasetWithSettings d = DATASET_YAML_READER.readValue(stream);
       return Optional.of(d);
   }
+    return Optional.empty();
+  }
+
+  public static Optional<DatasetWithSettings> readJSON(InputStream stream) throws IOException {
+    if (stream != null) {
+      Dataset d = DATASET_JSON_READER.readValue(stream);
+      return Optional.of(new DatasetWithSettings(d));
+    }
     return Optional.empty();
   }
 

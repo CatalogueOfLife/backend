@@ -241,11 +241,10 @@ public class AcefInserter extends NeoCsvInserter {
    */
   @Override
   public Optional<DatasetWithSettings> readMetadata() {
-    DatasetWithSettings d = null;
     Optional<VerbatimRecord> metadata = reader.readFirstRow(AcefTerm.SourceDatabase);
     if (metadata.isPresent()) {
       VerbatimMeta dr = new VerbatimMeta(metadata.get());
-      d = new DatasetWithSettings();
+      DatasetWithSettings d = new DatasetWithSettings();
       d.setDataFormat(DataFormat.ACEF);
       d.setTitle(dr.get(AcefTerm.DatabaseFullName));
       d.setAlias(dr.get(AcefTerm.DatabaseShortName));
@@ -262,8 +261,10 @@ public class AcefInserter extends NeoCsvInserter {
       d.setContact(Agent.parse(dr.get(AcefTerm.ContactPerson)));
       d.setCreator(Agent.parse(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER)));
       d.setContributor(Agent.parse(dr.get(AcefTerm.Organisation, COMMA_SPLITTER)));
+      return Optional.ofNullable(d);
     }
-    return Optional.ofNullable(d);
+    // try others
+    return super.readMetadata();
   }
   
   static class VerbatimMeta {

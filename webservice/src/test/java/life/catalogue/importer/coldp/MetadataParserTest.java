@@ -27,7 +27,7 @@ public class MetadataParserTest {
 
   @Test
   public void coldpSpecs() throws Exception {
-    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("coldp/0/metadata.yaml"));
+    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(Resources.stream("coldp/0/metadata.yaml"));
     DatasetWithSettings d = m.get();
 
     assertNull(d.getType());
@@ -61,7 +61,7 @@ public class MetadataParserTest {
   @Test
   public void coldpSpecsCslStyle() throws Exception {
     // uses proper csl field names like container-title
-    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/coldpspecs2.yaml"));
+    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(Resources.stream("metadata/coldpspecs2.yaml"));
     DatasetWithSettings d = m.get();
 
     assertNull(d.getType());
@@ -95,7 +95,7 @@ public class MetadataParserTest {
 
   @Test
   public void milliBase() throws Exception {
-    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/worms-MilliBase.yaml"));
+    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(Resources.stream("metadata/worms-MilliBase.yaml"));
     DatasetWithSettings d = m.get();
     assertEquals("MilliBase", d.getTitle());
     assertEquals("WoRMS_Myriapoda", d.getAlias());
@@ -123,7 +123,7 @@ public class MetadataParserTest {
 
   @Test
   public void cycad() throws Exception {
-    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/cycads.yaml"));
+    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(Resources.stream("metadata/cycads.yaml"));
     DatasetWithSettings d = m.get();
     assertEquals("The World List of Cycads, online edition", d.getTitle());
     assertEquals("Cycad List", d.getAlias());
@@ -157,7 +157,7 @@ public class MetadataParserTest {
 
   @Test
   public void cycadStrings() throws Exception {
-    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/cycadsStrings.yaml"));
+    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(Resources.stream("metadata/cycadsStrings.yaml"));
     DatasetWithSettings d = m.get();
     assertEquals("The World List of Cycads, online edition", d.getTitle());
     assertEquals("Cycad List", d.getAlias());
@@ -189,7 +189,7 @@ public class MetadataParserTest {
 
   @Test
   public void alucitoidea() throws Exception {
-    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/Alucitoidea.yaml"));
+    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(Resources.stream("metadata/Alucitoidea.yaml"));
     DatasetWithSettings d = m.get();
 
     Agent donald = Agent.person("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
@@ -219,7 +219,7 @@ public class MetadataParserTest {
 
   @Test
   public void alucitoideaWithHtml() throws Exception {
-    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/AlucitoideaWithHtml.yaml"));
+    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(Resources.stream("metadata/AlucitoideaWithHtml.yaml"));
     DatasetWithSettings d = m.get();
 
     Agent donald = Agent.person("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
@@ -255,7 +255,7 @@ public class MetadataParserTest {
    */
   @Test
   public void simple() throws Exception {
-    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/simple-person.yaml"));
+    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(Resources.stream("metadata/simple-person.yaml"));
     Dataset d = m.get().getDataset();
 
     Agent rainer = Agent.person("Rainer","Froese","rainer@mailinator.com");
@@ -275,7 +275,7 @@ public class MetadataParserTest {
    @Test
    @Ignore
    public void manualFile() throws Exception {
-    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(new FileInputStream("/Users/markus/code/data/data-col-hierarchy/metadata.yaml"));
+    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(new FileInputStream("/Users/markus/code/data/data-col-hierarchy/metadata.yaml"));
     Dataset d = m.get().getDataset();
 
     var sources = d.getSource();

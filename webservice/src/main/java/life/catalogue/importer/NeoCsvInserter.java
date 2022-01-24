@@ -1,10 +1,6 @@
 package life.catalogue.importer;
 
-import com.google.common.base.Objects;
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.TypeMaterial;
-import life.catalogue.api.model.VerbatimEntity;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.collection.DefaultMap;
@@ -226,6 +222,14 @@ public abstract class NeoCsvInserter implements NeoInserter {
       }
       return false;
     });
+  }
+
+  /**
+   * Reads all kind of metadata with preference of metadata.yaml > metadata.json > eml.xml
+   */
+  @Override
+  public Optional<DatasetWithSettings> readMetadata() {
+    return MetadataFactory.readMetadata(folder);
   }
 
   @Override

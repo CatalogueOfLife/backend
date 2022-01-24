@@ -26,7 +26,6 @@ import org.gbif.dwc.terms.UnknownTerm;
 import org.jbibtex.*;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.helpers.collection.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +38,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -345,12 +343,4 @@ public class ColdpInserter extends NeoCsvInserter {
     return new ColdpRelationInserter(store);
   }
 
-  /**
-   * Reads the dataset metadata.yaml and puts it into the store
-   */
-  @Override
-  public Optional<DatasetWithSettings> readMetadata() {
-    return MetadataParser.readMetadata(folder);
-  }
-  
 }

@@ -14,9 +14,10 @@ import life.catalogue.api.vocab.TxtTreeTerm;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.importer.MappingFlags;
+import life.catalogue.importer.MetadataFactory;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.NormalizationFailedException;
-import life.catalogue.importer.coldp.MetadataParser;
+import life.catalogue.importer.coldp.ColdpMetadataParser;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -112,6 +113,11 @@ public class TxtTreeInserter implements NeoInserter {
     }
   }
 
+  @Override
+  public Optional<DatasetWithSettings> readMetadata() {
+    return MetadataFactory.readMetadata(folder);
+  }
+
   private void recursiveNodeInsert(Node parent, TreeNode t){
     NeoUsage u = usage(t, false);
     store.createNameAndUsage(u);
@@ -154,13 +160,6 @@ public class TxtTreeInserter implements NeoInserter {
   @Override
   public MappingFlags getMappingFlags() {
     return FLAGS;
-  }
-
-  /**
-   * Reads the ColDP metadata.yaml if existing and puts it into the store
-   */
-  public Optional<DatasetWithSettings> readMetadata() {
-    return MetadataParser.readMetadata(folder);
   }
 
   public Optional<Path> logo() {

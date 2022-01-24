@@ -7,7 +7,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MetadataFormat;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.provider.DatasetMessageBodyReader;
-import life.catalogue.importer.coldp.MetadataParser;
+import life.catalogue.importer.coldp.ColdpMetadataParser;
 import life.catalogue.importer.dwca.EmlParser;
 
 import java.io.InputStream;
@@ -19,8 +19,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import org.glassfish.jersey.media.multipart.FormDataParam;
-
 @Path("/parser/metadata")
 @Produces({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML, MediaType.APPLICATION_XML, MediaType.TEXT_XML})
 public class MetadataParserResource {
@@ -28,7 +26,7 @@ public class MetadataParserResource {
   private static Optional<Dataset> parseAny(InputStream stream, MetadataFormat format) throws Exception {
     switch (ObjectUtils.coalesce(format, MetadataFormat.YAML)) {
       case YAML:
-        return MetadataParser.readMetadata(stream).map(DatasetWithSettings::getDataset);
+        return ColdpMetadataParser.readYAML(stream).map(DatasetWithSettings::getDataset);
       case EML:
         return EmlParser.parse(stream).map(DatasetWithSettings::getDataset);
       default:
