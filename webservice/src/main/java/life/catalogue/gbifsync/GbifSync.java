@@ -1,10 +1,8 @@
 package life.catalogue.gbifsync;
 
 import io.dropwizard.lifecycle.Managed;
-import it.unimi.dsi.fastutil.ints.Int2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntSets;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
@@ -135,38 +133,44 @@ public class GbifSync implements Managed {
     
     private void sync(DatasetWithSettings gbif, DatasetWithSettings curr) {
       try {
-        if (curr == null) {
-          // create new dataset
-          gbif.setCreatedBy(Users.GBIF_SYNC);
-          gbif.setModifiedBy(Users.GBIF_SYNC);
-          mapper.create(gbif.getDataset());
-          mapper.updateSettings(gbif.getKey(), gbif.getSettings(), Users.GBIF_SYNC);
-          created++;
-          LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
+        // a GBIF license is required
+        if (gbif.getDataset().getLicense() == null || !gbif.getDataset().getLicense().isCreativeCommons()) {
+          LOG.warn("GBIF dataset {} without a creative commons license: {}", gbif.getGbifKey(), gbif.getTitle());
 
-        } else if (curr.has(Setting.GBIF_SYNC_LOCK) && curr.getBool(Setting.GBIF_SYNC_LOCK)) {
-          LOG.info("Dataset {} is locked for GBIF updates: {}", gbif.getKey(), gbif.getTitle());
+        } else {
+          if (curr == null) {
+            // create new dataset
+            gbif.setCreatedBy(Users.GBIF_SYNC);
+            gbif.setModifiedBy(Users.GBIF_SYNC);
+            mapper.create(gbif.getDataset());
+            mapper.updateSettings(gbif.getKey(), gbif.getSettings(), Users.GBIF_SYNC);
+            created++;
+            LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
 
-        } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
-                   !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
-                   !Objects.equals(gbif.getPublisher(), curr.getPublisher()) ||
-                   !Objects.equals(gbif.getUrl(), curr.getUrl()) ||
-                   !Objects.equals(gbif.getDoi(), curr.getDoi())
-        ) {
-          // we modify core metadata (title, description, contacts, version) via the dwc archive metadata
-          //gbif syncs only change one of the following
-          // - dwca access url
-          // - license
-          // - publisher (publishOrgKey)
-          // - homepage
-          // - doi
-          curr.setDataAccess(gbif.getDataAccess());
-          curr.setLicense(gbif.getLicense());
-          curr.setPublisher(gbif.getPublisher());
-          curr.setUrl(gbif.getUrl());
-          curr.setDoi(gbif.getDoi());
-          mapper.updateAll(curr);
-          updated++;
+          } else if (curr.has(Setting.GBIF_SYNC_LOCK) && curr.getBool(Setting.GBIF_SYNC_LOCK)) {
+            LOG.info("Dataset {} is locked for GBIF updates: {}", gbif.getKey(), gbif.getTitle());
+
+          } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
+                     !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
+                     !Objects.equals(gbif.getPublisher(), curr.getPublisher()) ||
+                     !Objects.equals(gbif.getUrl(), curr.getUrl()) ||
+                     !Objects.equals(gbif.getDoi(), curr.getDoi())
+          ) {
+            // we modify core metadata (title, description, contacts, version) via the dwc archive metadata
+            //gbif syncs only change one of the following
+            // - dwca access url
+            // - license
+            // - publisher (publishOrgKey)
+            // - homepage
+            // - doi
+            curr.setDataAccess(gbif.getDataAccess());
+            curr.setLicense(gbif.getLicense());
+            curr.setPublisher(gbif.getPublisher());
+            curr.setUrl(gbif.getUrl());
+            curr.setDoi(gbif.getDoi());
+            mapper.updateAll(curr);
+            updated++;
+          }
         }
       } catch (Exception e) {
         LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);

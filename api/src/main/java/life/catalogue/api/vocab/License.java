@@ -68,12 +68,10 @@ public enum License {
   }
 
   /**
-   * Indicates if a license is a concrete license (true) or an abstracted license (false) like
+   * Indicates if a license is a creative commons license (true) or some other license (false) like
    * UNSPECIFIED.
-   *
-   * @return the license if concrete or not
    */
-  public boolean isConcrete() {
+  public boolean isCreativeCommons() {
     return url != null;
   }
 
