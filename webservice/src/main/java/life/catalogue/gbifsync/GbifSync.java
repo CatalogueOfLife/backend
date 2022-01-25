@@ -53,15 +53,15 @@ public class GbifSync implements Managed {
   static class GbifSyncJob implements Runnable {
     private final Client client;
     private final SqlSessionFactory sessionFactory;
-    private final GbifConfig gbif;
+    private final GbifConfig cfg;
     private int created;
     private int updated;
     private int deleted;
     private DatasetMapper mapper;
     private DatasetPager pager;
     
-    public GbifSyncJob(GbifConfig gbif, Client client, SqlSessionFactory sessionFactory) {
-      this.gbif = gbif;
+    public GbifSyncJob(GbifConfig cfg, Client client, SqlSessionFactory sessionFactory) {
+      this.cfg = cfg;
       this.client = client;
       this.sessionFactory = sessionFactory;
     }
@@ -70,9 +70,9 @@ public class GbifSync implements Managed {
     public void run() {
       MDC.put(LoggingUtils.MDC_KEY_TASK, getClass().getSimpleName());
       try (SqlSession session = sessionFactory.openSession(true)) {
-        pager = new DatasetPager(client, gbif);
+        pager = new DatasetPager(client, cfg);
         mapper = session.getMapper(DatasetMapper.class);
-        if (gbif.insert) {
+        if (cfg.insert) {
           syncAll();
         } else {
           updateExisting();
@@ -89,7 +89,7 @@ public class GbifSync implements Managed {
     
     private void syncAll() throws Exception {
       final IntSet keys = new IntOpenHashSet();
-      LOG.info("Syncing all datasets from GBIF registry {}", gbif.api);
+      LOG.info("Syncing all datasets from GBIF registry {}", cfg.api);
       while (pager.hasNext()) {
         List<DatasetWithSettings> page = pager.next();
         LOG.debug("Received page " + pager.currPageNumber() + " with " + page.size() + " datasets from GBIF");
@@ -115,7 +115,7 @@ public class GbifSync implements Managed {
     }
     
     private void updateExisting() throws Exception {
-      LOG.info("Syncing existing datasets with GBIF registry {}", gbif.api);
+      LOG.info("Syncing existing datasets with GBIF registry {}", cfg.api);
       Page page = new Page(100);
       List<Dataset> datasets = null;
       while (datasets == null || !datasets.isEmpty()) {
