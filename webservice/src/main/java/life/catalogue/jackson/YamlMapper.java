@@ -87,8 +87,7 @@ public class YamlMapper {
     abstract String getName();
 
     @JsonIgnore
-    abstract String getOrcidAsUrlorcidAsUrl();
-
+    abstract String getOrcidAsUrl();
   }
 
   abstract class DatasetMixIn {
@@ -202,14 +201,6 @@ public class YamlMapper {
     @JsonProperty(value = "citation", access = JsonProperty.Access.READ_ONLY)
     abstract String getCitationText();
 
-//    @JsonProperty("issn")
-//    abstract String getIssn();
-//
-//    @JsonProperty("isbn")
-//    abstract String getIsbn();
-//
-//    @JsonProperty("url")
-//    abstract String getUrl();
   }
 
 }

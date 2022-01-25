@@ -48,7 +48,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setGeographicScope("North Africa");
     d.setContact(Agent.contact("Helpdesk", "info@mailinator.com"));
     d.setCreator(new ArrayList<>(List.of(
-      Agent.person("Roy", "Black"),
+      Agent.person("Roy", "Black", "roy@black.de", "0000-0003-4994-0653"),
       Agent.person("Gerhard", "Höllerich"),
       Agent.organisation("The Honky Tonks")
     )));

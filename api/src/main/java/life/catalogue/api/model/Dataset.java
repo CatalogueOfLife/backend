@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -114,6 +116,7 @@ public class Dataset extends DataEntity<Integer> {
 
   // human metadata
   private DOI doi;
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> identifier = new HashMap<>();
   @NotNull
   @NotBlank
