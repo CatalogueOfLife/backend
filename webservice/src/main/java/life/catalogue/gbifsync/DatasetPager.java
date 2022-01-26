@@ -1,35 +1,48 @@
 package life.catalogue.gbifsync;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import de.undercouch.citeproc.csl.CSLType;
 
+import life.catalogue.api.jackson.UUIDSerde;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.parser.*;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 /**
  *
  */
 public class DatasetPager {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetPager.class);
-  
+  private static final Pattern SUFFIX_KEY = Pattern.compile("^(.+)-(\\d+)$");
+  private static final Pattern domain = Pattern.compile("([^.]+)\\.[a-z]+$", Pattern.CASE_INSENSITIVE);
+
   private final Page page = new Page(100);
   private boolean hasNext = true;
   final WebTarget dataset;
@@ -239,11 +252,138 @@ public class DatasetPager {
                                                       && !Objects.equals(d.getPublisher(), a))
                                          .collect(Collectors.toList());
     d.setContributor(contributors);
-    d.setNotes(null);
+    d.setIdentifier(toIdentifier(g.key, g.identifiers));
+    d.setSource(toSource(g.bibliographicCitations));
+    d.setNotes(toNotes(g.comments));
     d.setIssued(g.pubDate);
     d.setCreated(LocalDateTime.now());
     LOG.debug("Dataset {} converted: {}", g.key, g.title);
     return d;
+  }
+
+  private List<Citation> toSource(List<GCitation> bibliographicCitations) {
+    if (bibliographicCitations == null || bibliographicCitations.isEmpty()) {
+      return null;
+    }
+    List<Citation> citations = new ArrayList<>();
+    for (var b : bibliographicCitations) {
+      if (!StringUtils.isBlank(b.identifier)) {
+        Citation c = new Citation();
+        c.setType(CSLType.BOOK);
+        c.setTitle(b.text);
+        c.setId(b.identifier);
+
+        if (DOI.isParsable(b.identifier)) {
+          var doi = DOI.parse(b.identifier).get();
+          c.setDoi(doi);
+        }
+        citations.add(c);
+      }
+    }
+    return citations;
+  }
+
+  static Map<String, String> toIdentifier(UUID uuid, List<GIdentifier> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return null;
+    }
+    // we enforce unique identifiers - there are often duploicates in GBIF
+    final Set<String> values = new HashSet<>();
+    final Map<String, String> map = new HashMap<>();
+    final Map<String, Integer> suffices = new HashMap<>();
+    for (GIdentifier id : ids) {
+      if (StringUtils.isBlank(id.type) || StringUtils.isBlank(id.identifier)) continue;
+
+      String key = null;
+      switch (id.type) {
+        case "DOI":
+          // normalize DOIs
+          Optional<DOI> doi = DOI.parse(id.identifier);
+          if (doi.isPresent()) {
+            id.identifier = doi.get().toString();
+            key = uniqueKey("DOI", map, suffices);
+          } else {
+            LOG.warn("Ignore bad DOI GBIF identifier {} found in dataset {}", id.identifier, uuid);
+          }
+          break;
+
+        case "URL":
+          // make sure we have some http(s)
+          if(!id.identifier.startsWith("http") && !id.identifier.startsWith("https")){
+            id.identifier = "http://" + id.identifier;
+          }
+          key = uniqueKey(extractDomain(id.identifier), map, suffices);
+          break;
+
+        case "UUID":
+          try {
+            // normalize UUIDs
+            UUID uid = UUIDSerde.from(id.identifier);
+            id.identifier = uid.toString();
+            key = uniqueKey("GBIF", map, suffices);
+
+          } catch (IllegalArgumentException e) {
+            LOG.warn("Ignore bad UUID GBIF identifier {} found in dataset {}", id.identifier, uuid);
+          }
+          break;
+
+        case "GBIF_PORTAL":
+          // we dont need those - they are prehistoric
+          continue;
+        default:
+          LOG.warn("Unknown GBIF identifier type {} found in dataset {}", id.type, uuid);
+      }
+
+      if (key != null) {
+        if (values.contains(id.identifier.toUpperCase())) {
+          LOG.debug("Ignore duplicate identifier {} of type {} found in dataset {}", id.identifier, id.type, uuid);
+          // reduce suffix if it was such a key
+          var m = SUFFIX_KEY.matcher(key);
+          if (m.find()) {
+            var origKey = m.group(1);
+            suffices.put(origKey, suffices.get(origKey)-1);
+          }
+        } else {
+          values.add(id.identifier.toUpperCase());
+          map.put(key, id.identifier);
+        }
+      }
+    }
+    return map;
+  }
+
+  static String uniqueKey(final String key, Map<String, String> map, Map<String, Integer> suffices) {
+    int num = suffices.getOrDefault(key, 2);
+    if (map.containsKey(key)) {
+      String key2 = key + "-" + num++;
+      suffices.put(key, num);
+      return key2;
+    } else {
+      return key;
+    }
+  }
+
+  @VisibleForTesting
+  protected static String extractDomain(String url) {
+    try {
+      URI uri = URI.create(url);
+      if (uri.getHost() != null) {
+        Matcher m = domain.matcher(uri.getHost());
+        if (m.find()) {
+          return m.group(1);
+        }
+      }
+    } catch (IllegalArgumentException e) {
+      LOG.info("Bad GBIF URL identifier {}", url);
+    }
+    return "URL";
+  }
+
+  static String toNotes(List<String> comments) {
+    if (comments == null || comments.isEmpty()) {
+      return null;
+    }
+    return String.join("; ", comments);
   }
 
   static List<Agent> byType(List<GAgent> contacts, String... type) {
@@ -291,6 +431,9 @@ public class DatasetPager {
     public FuzzyDate pubDate;
     public List<GEndpoint> endpoints;
     public List<GAgent> contacts;
+    public List<String> comments;
+    public List<GIdentifier> identifiers;
+    public List<GCitation> bibliographicCitations;
 
     public void setPubDate(String pubDate) {
       try {
@@ -300,9 +443,15 @@ public class DatasetPager {
       }
     }
   }
-  
+
+  static class GIdentifier {
+    public String type;
+    public String identifier;
+  }
+
   static class GCitation {
     public String text;
+    public String identifier;
     public String url;
   }
   
@@ -342,22 +491,23 @@ public class DatasetPager {
     public List<String> email;
     public List<String> phone;
     public List<GAgent> contacts;
+    public List<String> userId;
 
     public Agent toAgent(){
       Agent org = new Agent(null, lastName, firstName,
             null, coalesce(organization, title), null, city, province, CountryParser.PARSER.parseOrNull(country),
             firstEmail(), firstHomepage(), null);
-      if (contacts != null) {
-        for (var c : contacts) {
-          if (c.lastName != null || c.firstName != null || c.email != null) {
-            org.setFamily(c.lastName);
-            org.setGiven(c.firstName);
-            if (org.getEmail() != null) {
-              org.setEmail(c.firstEmail());
-            }
-          }
-        }
-      }
+      //if (contacts != null) {
+      //  for (var c : contacts) {
+      //    if (c.lastName != null || c.firstName != null || c.email != null) {
+      //      org.setFamily(c.lastName);
+      //      org.setGiven(c.firstName);
+      //      if (org.getEmail() != null) {
+      //        org.setEmail(c.firstEmail());
+      //      }
+      //    }
+      //  }
+      //}
       return org.getName() != null ? org : null;
     }
 

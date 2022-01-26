@@ -16,14 +16,28 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.junit.Assert.assertEquals;
+
 
 /**
  *
  */
-@Ignore("GBIF service needs to be mocked - this uses live services")
 public class DatasetPagerTest {
 
   @Test
+  public void extractDomain() throws Exception {
+    assertEquals("gbif", DatasetPager.extractDomain("http://gbif.org/dataset/23456"));
+    assertEquals("gbif", DatasetPager.extractDomain("http://www.gbif.org/dataset/23456"));
+    assertEquals("gbif", DatasetPager.extractDomain("https://www.gbif.org/dataset/23456"));
+    assertEquals("gbif", DatasetPager.extractDomain("ftp://www.gbif.org/dataset/23456"));
+    assertEquals("gbif", DatasetPager.extractDomain("https://api.dev.gbif.org/dataset/23456"));
+
+    assertEquals("URL", DatasetPager.extractDomain("gbif-org-dataset/23456"));
+    assertEquals("URL", DatasetPager.extractDomain("23456"));
+  }
+
+  @Test
+  @Ignore("GBIF service needs to be mocked - this uses live services")
   public void datasetPager() throws Exception {
     final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider(ApiModule.MAPPER, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
     ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
