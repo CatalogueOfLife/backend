@@ -4,10 +4,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.util.RegexUtils;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -177,6 +174,19 @@ public class Agent implements Comparable<Agent> {
     return names == null ? null : Arrays.stream(names)
                                         .map(Agent::parse)
                                         .collect(Collectors.toList());
+  }
+
+  private static final Pattern ORCID = Pattern.compile("^(?:https?://orcid.org/|orcid:)?(\\d{4}-\\d{4}-\\d{4}-\\d{4})\\s*$", Pattern.CASE_INSENSITIVE);
+
+  public static Optional<String> parseORCID(final String raw) {
+    if (!StringUtils.isBlank(raw)) {
+      // verify ORCID pattern
+      Matcher m = ORCID.matcher(raw);
+      if (m.find()) {
+        return Optional.of(m.group(1));
+      }
+    }
+    return Optional.empty();
   }
 
   public Agent() {

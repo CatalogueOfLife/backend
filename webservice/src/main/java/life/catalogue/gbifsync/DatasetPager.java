@@ -235,6 +235,8 @@ public class DatasetPager {
     d.setUrl(uri(g.homepage));
     d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.OTHER));
     d.setGeographicScope(coverage(g.geographicCoverages));
+    d.setTaxonomicScope(coverage(g.taxonomicCoverages));
+    d.setTemporalScope(coverage(g.temporalCoverages));
     // convert contact and authors based on contact type: https://github.com/gbif/gbif-api/blob/master/src/main/java/org/gbif/api/vocabulary/ContactType.java
     // Not mapped: PUBLISHER,DISTRIBUTOR,METADATA_AUTHOR,TECHNICAL_POINT_OF_CONTACT,OWNER,PROCESSOR,USER,PROGRAMMER,DATA_ADMINISTRATOR,SYSTEM_ADMINISTRATOR,HEAD_OF_DELEGATION,TEMPORARY_HEAD_OF_DELEGATION,ADDITIONAL_DELEGATE,TEMPORARY_DELEGATE,REGIONAL_NODE_REPRESENTATIVE,NODE_MANAGER,NODE_STAFF
     var contacts = byType(g.contacts, "POINT_OF_CONTACT", "ADMINISTRATIVE_POINT_OF_CONTACT");
@@ -402,10 +404,10 @@ public class DatasetPager {
   }
   
   static String coverage(List<GCoverage> coverages) {
-    return coverages == null ? null : coverages.stream()
+    return coverages == null ? null : StringUtils.trimToNull(coverages.stream()
         .filter(c -> c!= null && !StringUtils.isBlank(c.description))
         .map(c -> c.description)
-        .collect(Collectors.joining("; "));
+        .collect(Collectors.joining("; ")));
   }
   
   static class GResp {
@@ -425,8 +427,9 @@ public class DatasetPager {
     public String description;
     public String homepage;
     public GCitation citation;
+    public List<GCoverage> taxonomicCoverages;
     public List<GCoverage> geographicCoverages;
-    //public List<?> temporalCoverages;
+    public List<GCoverage> temporalCoverages;
     public String license;
     public FuzzyDate pubDate;
     public List<GEndpoint> endpoints;
@@ -494,21 +497,23 @@ public class DatasetPager {
     public List<String> userId;
 
     public Agent toAgent(){
-      Agent org = new Agent(null, lastName, firstName,
+      Agent org = new Agent(firstOrcid(), lastName, firstName,
             null, coalesce(organization, title), null, city, province, CountryParser.PARSER.parseOrNull(country),
             firstEmail(), firstHomepage(), null);
-      //if (contacts != null) {
-      //  for (var c : contacts) {
-      //    if (c.lastName != null || c.firstName != null || c.email != null) {
-      //      org.setFamily(c.lastName);
-      //      org.setGiven(c.firstName);
-      //      if (org.getEmail() != null) {
-      //        org.setEmail(c.firstEmail());
-      //      }
-      //    }
-      //  }
-      //}
       return org.getName() != null ? org : null;
+    }
+
+    String firstOrcid() {
+      if (userId != null) {
+        for (String uid : userId) {
+          // figure out if we have an ORCID !!!
+          var orcid = Agent.parseORCID(uid);
+          if (orcid.isPresent()) {
+            return orcid.get();
+          }
+        }
+      }
+      return null;
     }
 
     String firstHomepage() {

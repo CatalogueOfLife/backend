@@ -379,7 +379,6 @@ public class EmlParser {
   }
   
   static class EmlAgent {
-    private static final Pattern ORCID = Pattern.compile("^(?:https?://orcid.org/|orcid:)?(\\d{4}-\\d{4}-\\d{4}-\\d{4})\\s*$", Pattern.CASE_INSENSITIVE);
     public String role;
     public String onlineUrl;
     public String electronicMailAddress;
@@ -403,12 +402,7 @@ public class EmlParser {
         p.setFamily(surName);
         if (userId != null) {
           // verify ORCID pattern
-          Matcher m = ORCID.matcher(userId);
-          if (m.find()) {
-            p.setOrcid(m.group(1));
-          } else {
-            LOG.debug("UserID {} is not an ORCID", userId);
-          }
+          Agent.parseORCID(userId).ifPresent(p::setOrcid);
         }
         p.setDepartment(null);
         p.setOrganisation(organizationName);
