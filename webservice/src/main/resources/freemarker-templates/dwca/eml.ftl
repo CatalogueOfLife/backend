@@ -63,7 +63,7 @@
     <para>${description}</para>
   </abstract>
   </#if>
-  <#if license?? && license.isConcrete()>
+  <#if license?? && license.isCreativeCommons()>
   <intellectualRights>
     <para><ulink url="${license.url}"><citetitle>${license.title}</citetitle></ulink></para>
   </intellectualRights>
