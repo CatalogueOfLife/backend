@@ -26,8 +26,7 @@ public class GbifSyncTest {
   public void syncNow() {
     GbifConfig cfg = new GbifConfig();
     cfg.syncFrequency = 1;
-    cfg.insert = true;
-  
+
     final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider()
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     ClientConfig ccfg = new ClientConfig(jacksonJsonProvider);
@@ -35,7 +34,7 @@ public class GbifSyncTest {
     final Client client = ClientBuilder.newClient(ccfg);
     
     try {
-      GbifSync gbif = new GbifSync(cfg, PgSetupRule.getSqlSessionFactory(), client);
+      GbifSyncManager gbif = new GbifSyncManager(cfg, PgSetupRule.getSqlSessionFactory(), client);
       gbif.syncNow();
       
     } finally {

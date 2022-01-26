@@ -39,7 +39,7 @@ import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.exporter.ExportManager;
-import life.catalogue.gbifsync.GbifSync;
+import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
@@ -329,7 +329,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(ManagedUtils.stopOnly(cImporter));
 
     // gbif sync
-    GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyClient);
+    GbifSyncManager gbifSync = new GbifSyncManager(cfg.gbif, getSqlSessionFactory(), jerseyClient);
     env.lifecycle().manage(ManagedUtils.stopOnly(gbifSync));
 
     // assembly

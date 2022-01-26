@@ -6,14 +6,18 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
+import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.common.io.LineReader;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.gbifsync.GbifSync;
+import life.catalogue.gbifsync.GbifSyncJob;
+import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ContinuousImporter;
@@ -23,6 +27,8 @@ import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.RematchJob;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,14 +67,14 @@ public class AdminResource {
   private final IdMap idMap;
   private final ImportManager importManager;
   private final ContinuousImporter continuousImporter;
-  private final GbifSync gbifSync;
+  private final GbifSyncManager gbifSync;
   private final AssemblyCoordinator assembly;
   private final NameIndex namesIndex;
   private final JobExecutor exec;
   private final Validator validator;
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
-                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, GbifSync gbifSync,
+                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, GbifSyncManager gbifSync,
                        NameIndex namesIndex, JobExecutor executor, IdMap idMap, Validator validator) {
     this.factory = factory;
     this.assembly = assembly;
@@ -206,6 +212,24 @@ public class AdminResource {
   @Path("/counter-update")
   public BackgroundJob updateCounter(@Auth User user) {
     return runJob(new UsageCountJob(user, JobPriority.HIGH, factory));
+  }
+
+  @POST
+  @Path("/gbif-sync")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public BackgroundJob syncGBIF(List<UUID> keys, @Auth User user) {
+    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), factory, user.getKey(), keys == null ? null : new HashSet<>(keys));
+    return runJob(job);
+  }
+
+  @POST
+  @Path("/gbif-sync")
+  @Consumes(MediaType.TEXT_PLAIN)
+  public BackgroundJob syncGBIFText(InputStream keysAsText, @Auth User user) {
+    var lr = new LineReader(keysAsText);
+    var keys = IterUtils.setOf(lr, UUID::fromString);
+    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), factory, user.getKey(), keys);
+    return runJob(job);
   }
 
   @POST

@@ -70,7 +70,7 @@ public abstract class BackgroundJob implements Runnable {
       status = JobStatus.FINISHED;
       LOG.info("Finished {} job {}", getClass().getSimpleName(), key);
 
-    } catch (DatasetBlockedException e) {
+    } catch (BlockedException e) {
       status = JobStatus.BLOCKED;
       LOG.info("Blocked {} job {}", getClass().getSimpleName(), key);
       // rethrow - we want this to surface to the JobExecutor which handles rescheduling

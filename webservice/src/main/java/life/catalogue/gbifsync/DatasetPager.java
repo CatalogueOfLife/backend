@@ -171,6 +171,10 @@ public class DatasetPager {
   private DatasetWithSettings convert(GDataset g) {
     if (g.parentDatasetKey != null) {
       LOG.debug("Skip constituent dataset: {} - {}", g.key, g.title);
+      return null;
+    } else if (!"CHECKLIST".equalsIgnoreCase(g.type)) {
+      LOG.debug("Skip {} dataset: {} - {}", g.type, g.key, g.title);
+      return null;
     }
 
     DatasetWithSettings d = new DatasetWithSettings();
@@ -191,7 +195,7 @@ public class DatasetPager {
       return null;
     }
     // type
-    if (GbifSync.PLAZI_KEY.equals(d.getGbifPublisherKey())) {
+    if (GbifSyncManager.PLAZI_KEY.equals(d.getGbifPublisherKey())) {
       d.setType(DatasetType.ARTICLE);
     } else if (g.subtype != null) {
       switch (g.subtype) {
@@ -275,6 +279,7 @@ public class DatasetPager {
     public UUID installationKey;
     public UUID publishingOrganizationKey;
     public String doi;
+    public String type;
     public String subtype;
     public String title;
     public String description;

@@ -2,12 +2,11 @@ package life.catalogue.concurrent;
 
 import java.util.UUID;
 
-public class DatasetBlockedException extends RuntimeException {
+public class DatasetBlockedException extends BlockedException {
   public final int datasetKey;
-  public final UUID blockedBy;
 
   DatasetBlockedException(UUID blockedBy, int datasetKey) {
-    this.blockedBy = blockedBy;
+    super(blockedBy);
     this.datasetKey = datasetKey;
   }
 
