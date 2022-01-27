@@ -167,7 +167,7 @@ public class DwcaExporter extends ArchiveExporter {
     Name n = u.getName();
     writer.set(DwcTerm.scientificNameID, n.getId());
     writer.set(DwcTerm.scientificName, u.getLabel());
-    writer.set(DwcTerm.DwcTerm.scientificNameAuthorship, n.getAuthorship());
+    writer.set(DwcTerm.scientificNameAuthorship, n.getAuthorship());
     writer.set(DwcTerm.taxonRank, n.getRank());
     writer.set(DwcTerm.taxonomicStatus, u.getStatus());
     if (n.getPublishedInId() != null) {
