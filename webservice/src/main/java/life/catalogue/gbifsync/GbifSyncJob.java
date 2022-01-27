@@ -90,11 +90,13 @@ public class GbifSyncJob extends GlobalBlockingJob {
     LOG.info("Syncing all datasets from GBIF registry {}", cfg.api);
     while (pager.hasNext()) {
       List<DatasetWithSettings> page = pager.next();
-      LOG.debug("Received page " + pager.currPageNumber() + " with " + page.size() + " datasets from GBIF");
+      LOG.debug("Received page {} with {} datasets from GBIF", pager.currPageNumber(), page.size());
       for (DatasetWithSettings gbif : page) {
         DatasetWithSettings curr = getCurrent(gbif.getGbifKey());
-        sync(gbif, curr);
-        keys.add(gbif.getKey());
+        Integer datasetKey = sync(gbif, curr);
+        if (datasetKey != null) {
+          keys.add(datasetKey);
+        }
       }
     }
     // report datasets no longer in GBIF
@@ -107,7 +109,12 @@ public class GbifSyncJob extends GlobalBlockingJob {
     });
   }
 
-  private void sync(DatasetWithSettings gbif, DatasetWithSettings curr) {
+  /**
+   * @return the dataset key in CLB even if locked or null if it never was synced
+   */
+  private Integer sync(DatasetWithSettings gbif, DatasetWithSettings curr) {
+    // start out with the existing key if there is one
+    Integer key = curr == null ? null : curr.getKey();
     try {
       // a GBIF license is required
       if (gbif.getDataset().getLicense() == null || !gbif.getDataset().getLicense().isCreativeCommons()) {
@@ -122,6 +129,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
           mapper.create(gbif.getDataset());
           mapper.updateSettings(gbif.getKey(), gbif.getSettings(), Users.GBIF_SYNC);
           created++;
+          key = gbif.getKey();
           LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
 
         } else if (curr.has(Setting.GBIF_SYNC_LOCK) && curr.getBool(Setting.GBIF_SYNC_LOCK)) {
@@ -152,5 +160,6 @@ public class GbifSyncJob extends GlobalBlockingJob {
     } catch (Exception e) {
       LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
     }
+    return key;
   }
 }
