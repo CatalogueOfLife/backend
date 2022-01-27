@@ -62,6 +62,7 @@ public class EmlParser {
       boolean isDataset = false;
       boolean isProject = false;
       boolean isAdditionalMetadata = false;
+      boolean isBibliography = false;
       StringBuilder text = null;
       StringBuilder para = new StringBuilder();
       EmlAgent agent = new EmlAgent();
@@ -80,6 +81,11 @@ public class EmlParser {
                 break;
               case "additionalMetadata":
                 isAdditionalMetadata = true;
+                break;
+              case "bibliography":
+                if (isAdditionalMetadata) {
+                  isBibliography = true;
+                }
                 break;
               case "project":
                 isProject = true;
@@ -214,6 +220,10 @@ public class EmlParser {
                 case "generalTaxonomicCoverage":
                   d.setTaxonomicScope(text(text));
                   break;
+                case "temporalCoverage":
+                  // EML temporalCoverage provides a single date or date range - nothing we can easily incorporate!
+                  d.setTemporalScope(null);
+                  break;
                 case "creator":
                   agent.role = "CREATOR";
                   addAgent(agent, d.getDataset());
@@ -230,6 +240,10 @@ public class EmlParser {
                 case "personnel":
                   addAgent(agent, d.getDataset());
                   break;
+                case "additionalInfo":
+                  d.setNotes(para.toString());
+                  break;
+
               }
             }
             if (isAdditionalMetadata) {
@@ -251,24 +265,14 @@ public class EmlParser {
                   d.setVersion(text.toString());
                   break;
                 case "citation":
-                  Citation cite = new Citation();
-                  cite.setTitle(text.toString());
-                  d.getDataset().addSource(cite);
-                  if (identifier != null) {
-                    var opt = DOI.parse(identifier);
-                    if (opt.isPresent()) {
-                      cite.setDoi(opt.get());
-                      cite.setId(cite.getDoi().getDoiName());
-                    } else {
-                      try {
-                        URI link = URI.create(identifier);
-                        cite.setUrl(link.toString());
-                      } catch (IllegalArgumentException e) {
-                        LOG.debug("No URI identifier {}, place it in notes", identifier);
-                        cite.setNote(identifier);
-                      }
-                    }
+                  // we dont want to add the dataset citation, just the bibliography
+                  if (isBibliography) {
+                    Citation cite = Citation.create(text.toString(), identifier);
+                    d.getDataset().addSource(cite);
                   }
+                  break;
+                case "bibliography":
+                  isBibliography = false;
                   break;
               }
             }

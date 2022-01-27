@@ -94,7 +94,7 @@ public class EmlParserTest {
     assertEquals("Brouillet L.", d.getContact().toString());
     assertEquals("[Brouillet L.]", d.getCreator().toString());
     assertEquals("2017-12-18", d.getIssued().toString());
-    assertEquals(38, d.getSource().size());
+    assertEquals(37, d.getSource().size());
   }
   
   @Test

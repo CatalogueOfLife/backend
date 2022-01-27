@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.FuzzyDateCSLSerde;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -20,6 +21,8 @@ import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLName;
 import de.undercouch.citeproc.csl.CSLType;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Class with core CSL fields to represent common citations.
@@ -91,6 +94,32 @@ public class Citation {
   private String note;
   private String _citation; // cache field
   private String _citationText; // cache field
+
+  public static Citation create(String citation) {
+    Citation c = new Citation();
+    c.setTitle(citation);
+    c.setType(CSLType.BOOK);
+    return c;
+  }
+
+  public static Citation create(String citation, String identifier) {
+    Citation c = create(citation);
+    if (!StringUtils.isBlank(identifier)) {
+      var opt = DOI.parse(identifier);
+      if (opt.isPresent()) {
+        c.setDoi(opt.get());
+        c.setId(c.getDoi().getDoiName());
+      } else {
+        try {
+          URI link = URI.create(identifier);
+          c.setUrl(link.toString());
+        } catch (IllegalArgumentException e) {
+          c.setNote(identifier);
+        }
+      }
+    }
+    return c;
+  }
 
   public CSLItemData toCSL() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
