@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
+
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,60 +25,67 @@ import static life.catalogue.dw.jersey.exception.JsonExceptionMapperBase.jsonErr
 public class PersistenceExceptionMapper extends LoggingExceptionMapper<PersistenceException> {
   private static final Logger LOG = LoggerFactory.getLogger(PersistenceExceptionMapper.class);
   
-  private final static Pattern RELATION = Pattern.compile("relation \"[a-z_]+_([0-9]+)\" does not exist");
-  private final static Pattern UNIQUE = Pattern.compile("unique constraint \"([a-z]+)_");
-  private final static Pattern UNIQUE_DETAILS = Pattern.compile("Detail: Key \\(([a-z_-]+)\\)=\\((.*)\\) already exists");
+  private static final Pattern RELATION = Pattern.compile("relation \"[a-z_]+_([0-9]+)\" does not exist");
+  private static final Pattern UNIQUE = Pattern.compile("unique constraint \"([a-z]+)_");
+  private static final Pattern UNIQUE_DETAILS = Pattern.compile("Detail: Key \\(([a-z_-]+)\\)=\\((.*)\\) already exists");
+  public static final String CODE_UNIQUE = "23505";
+  public static final String CODE_NOT_FOUND = "42P01";
 
   @Override
   public Response toResponse(PersistenceException e) {
-    if (e.getCause() != null) {
-      if (e.getCause() instanceof PSQLException) {
-        PSQLException pe = (PSQLException) e.getCause();
-        if (pe.getSQLState() != null) {
-          // https://www.postgresql.org/docs/12/errcodes-appendix.html
-          if (pe.getSQLState().equals("42P01")) {
-            Matcher m = RELATION.matcher(pe.getMessage());
-            if (m.find()) {
-              int datasetKey = Integer.parseInt(m.group(1));
-              LOG.debug("Missing partition tables for dataset {}", datasetKey, pe);
-              return jsonErrorResponse(Response.Status.NOT_FOUND, "Dataset " + datasetKey + " does not exist");
-            }
-
-          } else if (pe.getSQLState().equals("23505")) {
-            Matcher m = UNIQUE.matcher(e.getCause().getMessage());
-            String entity = "Entity";
-            if (m.find()) {
-              entity = StringUtils.capitalize(m.group(1));
-
-              Matcher details = UNIQUE_DETAILS.matcher(e.getCause().getMessage());
-              if (details.find()) {
-                String field = details.group(1);
-                String value = details.group(2);
-                LOG.debug("{} with {}='{}' already exists", field, value, entity, pe);
-                return jsonErrorResponse(Response.Status.BAD_REQUEST, entity + " with "+field+"='" + value + "' already exists");
-              }
-            }
-            LOG.debug("{} already exists", entity, pe);
-            return jsonErrorResponse(Response.Status.BAD_REQUEST, entity + " already exists");
+    final Optional<String> pgCode = postgresErrorCode(e);
+    if (pgCode.isPresent()) {
+      PSQLException pe = (PSQLException) e.getCause();
+      switch (pgCode.get()) {
+        case CODE_NOT_FOUND:
+          Matcher m = RELATION.matcher(pe.getMessage());
+          if (m.find()) {
+            int datasetKey = Integer.parseInt(m.group(1));
+            LOG.debug("Missing partition tables for dataset {}", datasetKey, pe);
+            return jsonErrorResponse(Response.Status.NOT_FOUND, "Dataset " + datasetKey + " does not exist");
           }
+          break;
 
-          // All PgSql Error codes starting with 23 are constraint violations.
-          if (pe.getSQLState().startsWith("23")) {
-            LOG.warn("Postgres constraint violation", pe);
-            return jsonErrorResponse(Response.Status.BAD_REQUEST, "Database constraint violation", e.getMessage());
+        case CODE_UNIQUE:
+          m = UNIQUE.matcher(e.getCause().getMessage());
+          String entity = "Entity";
+          if (m.find()) {
+            entity = StringUtils.capitalize(m.group(1));
+
+            Matcher details = UNIQUE_DETAILS.matcher(e.getCause().getMessage());
+            if (details.find()) {
+              String field = details.group(1);
+              String value = details.group(2);
+              LOG.debug("{} with {}='{}' already exists", field, value, entity, pe);
+              return jsonErrorResponse(Response.Status.BAD_REQUEST, entity + " with "+field+"='" + value + "' already exists");
+            }
           }
-        }
+          LOG.debug("{} already exists", entity, pe);
+          return jsonErrorResponse(Response.Status.BAD_REQUEST, entity + " already exists");
+      }
+      // All PgSql Error codes starting with 23 are constraint violations.
+      if (pgCode.get().startsWith("23")) {
+        LOG.warn("Postgres constraint violation", pe);
+        return jsonErrorResponse(Response.Status.BAD_REQUEST, "Database constraint violation", e.getMessage());
       }
 
-      if (e.getCause() instanceof PSQLException) {
-        PSQLException pe2 = (PSQLException) e.getCause();
-        LOG.info("Postgres code {}", pe2.getSQLState());
-      }
-
-
+      // if we have reached here we face unhandled postgres errors - lets log them
+      LOG.warn("Unhandled Postgres error code {}: {}", pgCode.get(), pe.getMessage());
     }
-    
     return super.toResponse(e);
+  }
+
+  /**
+   * https://www.postgresql.org/docs/12/errcodes-appendix.html
+   */
+  public static Optional<String> postgresErrorCode(Exception e) {
+    if (e.getCause() instanceof PSQLException) {
+      PSQLException pe = (PSQLException) e.getCause();
+      if (pe.getSQLState() != null) {
+        return Optional.of(pe.getSQLState());
+      }
+    }
+    return Optional.empty();
   }
   
 }

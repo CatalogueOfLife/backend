@@ -16,6 +16,9 @@ import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 
+import life.catalogue.dw.jersey.exception.PersistenceExceptionMapper;
+
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -158,7 +161,14 @@ public class GbifSyncJob extends GlobalBlockingJob {
         }
       }
     } catch (Exception e) {
-      LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
+      // treat unique DOI constraints differently as we expect that to happen somtimes
+      var pgCode = PersistenceExceptionMapper.postgresErrorCode(e);
+      if (pgCode.isPresent() && pgCode.get().equalsIgnoreCase(PersistenceExceptionMapper.CODE_UNIQUE)) {
+        LOG.warn("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
+
+      } else {
+        LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
+      }
     }
     return key;
   }
