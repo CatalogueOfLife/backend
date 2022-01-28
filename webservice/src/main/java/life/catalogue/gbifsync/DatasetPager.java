@@ -381,11 +381,14 @@ public class DatasetPager {
     return "URL";
   }
 
-  static String toNotes(List<String> comments) {
+  static String toNotes(List<GComment> comments) {
     if (comments == null || comments.isEmpty()) {
       return null;
     }
-    return String.join("; ", comments);
+    return comments.stream()
+                   .filter(c -> !StringUtils.isBlank(c.content))
+                   .map(c -> c.content)
+                   .collect(Collectors.joining("; "));
   }
 
   static List<Agent> byType(List<GAgent> contacts, String... type) {
@@ -434,7 +437,7 @@ public class DatasetPager {
     public FuzzyDate pubDate;
     public List<GEndpoint> endpoints;
     public List<GAgent> contacts;
-    public List<String> comments;
+    public List<GComment> comments;
     public List<GIdentifier> identifiers;
     public List<GCitation> bibliographicCitations;
 
@@ -465,6 +468,12 @@ public class DatasetPager {
   static class GEndpoint {
     public String type;
     public String url;
+  }
+
+  static class GComment {
+    public String content;
+    public String createdBy;
+    public String modifiedBy;
   }
 
   static class GInstallation {
