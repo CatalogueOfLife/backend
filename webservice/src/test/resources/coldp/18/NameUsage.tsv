@@ -1,6 +1,18 @@
-ID	parentID	basionymID	scientificName	authorship	rank	genus	status	family	nameReferenceID
-232484-wcs			× Catyclia	J.M.H.Shaw	Genus	Catyclia	Accepted	Orchidaceae	R1138865
-192989-wcs	232484-wcs		× Sophrocyclia	Van den Berg & M.W.Chase	Genus		Synonym		R1205268
-376626-wcs		67321-wcs	× Catyclia intermedia	(F.E.L.Miranda) Van den Berg	Species	Catyclia	Accepted	Orchidaceae	R1138864
-67321-wcs	376626-wcs		× Encylaelia intermedia	F.E.L.Miranda	Species		Synonym		R1154824
-192990-wcs	376626-wcs	67321-wcs	× Sophrocyclia intermedia	(F.E.L.Miranda) Van den Berg & M.W.Chase	Species		Synonym		R1205267
+col:ID	col:parentID	col:basionymID	col:status	col:nameStatus	col:rank	col:scientificName	col:authorship	col:family	col:genus	col:nameRemarks	col:nameReferenceID
+232484-wcs			Accepted		Genus	× Catyclia	J.M.H.Shaw	Orchidaceae	Catyclia		R1138865
+192989-wcs	232484-wcs		Synonym		Genus	× Sophrocyclia	Van den Berg & M.W.Chase				R1205268
+376626-wcs		67321-wcs	Accepted		Species	× Catyclia intermedia	(F.E.L.Miranda) Van den Berg	Orchidaceae	Catyclia		R1138864
+67321-wcs	376626-wcs		Synonym		Species	× Encylaelia intermedia	F.E.L.Miranda				R1154824
+192990-wcs	376626-wcs	67321-wcs	Synonym		Species	× Sophrocyclia intermedia	(F.E.L.Miranda) Van den Berg & M.W.Chase				R1205267
+856651-az			Accepted		Genus	Hygrophila	R.Br.	Acanthaceae	Hygrophila		R6262
+621869-az	856651-az		synonym	Illegitimate	Genus	Adenosma	Nees			nom. illeg.	R50
+90371-wcs			Synonym		Species	Glochidion cinerascens	Miq.				R1220428
+153621-wcs		90371-wcs	synonym	Illegitimate	Species	Phyllanthus cinerascens	(Miq.) Müll.Arg.			nom. illeg.	R1221981
+380187-wcs			synonym	Illegitimate	Species	Pinus orientalis	Falk			nom. illeg.	R1227554
+64835-wcs			Synonym		Species	Drypetes crocea	Poit.				R1301250
+332691-wcs		64835-wcs	synonym	Invalid	Variety	Drypetes crocea var. genuina	(Poit.) Müll.Arg.			not validly publ.	R1301247
+704264-az			synonym	Orthographic	Species	Cassine congonha	A.St.-Hil.			orth. var.	R300753
+704338-az			Accepted		Species	Cassine peragua	L.	Celastraceae	Cassine		R300829
+704334-az	704338-az		synonym	Orthographic	Species	Cassine paragua	Mill.			orth. var.	R300823
+976403-az	976403-az		Local Biotype		Species	Rubus aculeolatus	P.J.Müll.				R738282
+983287-az	983287-az		Artificial Hybrid		Species	Rubus × loganobaccus	L.H.Bailey				R745117

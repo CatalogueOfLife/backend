@@ -452,9 +452,10 @@ public class NeoDb {
    */
   public void remove(Node n) {
     // first remove mapdb entries
-    Object removed = names().remove(n);
-    if (removed == null) {
-      removed = usages().remove(n);
+    if (n.hasLabel(Labels.NAME)) {
+      names().remove(n);
+    } else if (n.hasLabel(Labels.USAGE)) {
+      usages().remove(n);
     }
     // now remove all neo relations
     int counter = 0;
@@ -688,6 +689,11 @@ public class NeoDb {
   public void debug() {
     try {
       System.out.println("TextTree:\n" + PrinterUtils.textTree(getNeo()) + "\n");
+
+      System.out.println("\n\nNames:");
+      names().all().forEach(n -> System.out.println(n.getName()));
+      System.out.println("\n");
+
     } catch (Exception e) {
       e.printStackTrace();
     }

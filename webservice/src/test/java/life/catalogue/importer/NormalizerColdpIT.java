@@ -12,6 +12,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.dao.ParserConfigDao;
+import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
@@ -417,12 +418,24 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
   /**
    * https://github.com/CatalogueOfLife/testing/issues/177
+   * Also mark WCVP synonyms, illegitimate & invalid names with no parent accepted name as “bare names”
    */
   @Test
-  @Ignore
-  public void hybridGenera() throws Exception {
+  public void hybridGeneraWcvp() throws Exception {
     normalize(18);
     printTree();
-    assertTree();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      // a synonym with no parent!
+      // 704264-az			synonym	Orthographic	Species	Cassine congonha	A.St.-Hil.			orth. var.	R300753
+      assertNull(usageByID("704264-az"));
+      var nn = nameByID("704264-az");
+      printRelations(nn.node);
+      var n = nn.getName();
+      assertEquals(NomStatus.NOT_ESTABLISHED, n.getNomStatus());
+      assertEquals("Cassine congonha", n.getScientificName());
+    }
+    //assertTree();
   }
+
 }

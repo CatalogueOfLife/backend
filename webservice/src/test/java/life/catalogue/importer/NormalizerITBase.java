@@ -309,4 +309,10 @@ abstract class NormalizerITBase {
     store.debug();
   }
 
+  public void printRelations(Node n) throws Exception {
+    n.getRelationships().forEach(rel -> {
+      System.out.println(rel.getStartNodeId() + " --"+ rel.getType() + "-> " + rel.getEndNodeId());
+    });
+  }
+
 }
