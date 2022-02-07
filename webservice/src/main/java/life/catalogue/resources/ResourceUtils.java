@@ -1,7 +1,7 @@
 package life.catalogue.resources;
 
+import life.catalogue.api.exception.SynonymException;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.exporter.FmUtil;
 
 import java.io.IOException;
@@ -18,8 +18,8 @@ import freemarker.template.TemplateException;
 
 public class ResourceUtils {
 
-  public static void redirect(URI location) throws RedirectionException {
-    throw new RedirectionException(Response.Status.FOUND, location);
+  public static RedirectionException redirect(URI location) {
+    return new RedirectionException(Response.Status.FOUND, location);
   }
 
   public static Response streamFreemarker(Object data, String template, MediaType mediaType) {

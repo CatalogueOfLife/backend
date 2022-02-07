@@ -20,8 +20,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
 /**
- * Mapper dealing with methods returning the NameUsage interface, i.e. a name in the context of either a Taxon, TaxonVernacularUsage,
- * Synonym or BareName.
+ * Mapper dealing with methods returning the NameUsage interface, i.e. a name in the context of either a Taxon, Synonym or BareName.
  * <p>
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */

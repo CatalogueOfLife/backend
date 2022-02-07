@@ -11,8 +11,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * Mapper dealing with methods returning the NameUsage interface, i.e. a name in the context of either a Taxon, TaxonVernacularUsage,
- * Synonym or BareName.
+ * Mapper dealing only with Synonym usages.
  * <p>
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */

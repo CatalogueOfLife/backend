@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import freemarker.template.Template;
 
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.cache.LatestDatasetKeyCache;
@@ -15,6 +16,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.exporter.FmUtil;
 
 import java.io.*;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +24,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import life.catalogue.resources.ResourceUtils;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -63,6 +67,10 @@ public class PortalPageRenderer {
     return portalTemplateDir;
   }
 
+  /**
+   * @param id a COL checklist taxon or synonym ID. In case of synonyms redirect to the taxon page.
+   * @param env
+   */
   public Response renderTaxon(String id, Environment env) throws TemplateException, IOException {
     try {
       final int datasetKey = releaseKey(env);
@@ -98,6 +106,12 @@ public class PortalPageRenderer {
         }
         return render(env, PortalPage.TAXON, data);
       }
+
+    } catch (SynonymException e) {
+      // redirect to accepted taxon, e.g.
+      // https://www.catalogueoflife.org/data/taxon/4LQWB to /data/taxon/4LQWC
+      URI location = URI.create("/data/taxon/" + e.acceptedKey.getId());
+      throw ResourceUtils.redirect(location);
 
     } catch (NotFoundException e) {
       return render(env, PortalPage.NOT_FOUND, new HashMap<>());

@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
@@ -14,6 +15,7 @@ import org.apache.ibatis.transaction.Transaction;
 
 import org.gbif.nameparser.api.NameType;
 
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -71,7 +73,29 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
     return CatCopy.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
-  
+
+  /**
+   * Returns a taxon with the specified key or throws:
+   *  - a SynonymException in case the id belongs to a synonym
+   *  - a NotFoundException if the id is no name usage at all
+   */
+  @Override
+  public Taxon getOr404(DSID<String> key) {
+    try {
+      return super.getOr404(key);
+    } catch (NotFoundException e) {
+      // is it a synonym?
+      try (SqlSession session = factory.openSession()) {
+        SimpleName syn = session.getMapper(NameUsageMapper.class).getSimple(key);
+        if (syn != null) {
+          throw new SynonymException(key, syn.getParent());
+        }
+        // rethrow the original 404
+        throw e;
+      }
+    }
+  }
+
   public ResultPage<Taxon> listRoot(Integer datasetKey, Page page) {
     try (SqlSession session = factory.openSession(false)) {
       Page p = page == null ? new Page() : page;
@@ -118,88 +142,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       }
       return syn;
     }
-  }
-
-  /**
-   * TODO: TAKEN FROM NEODB - port to postgres !!!
-   * Sets the same name id for a given cluster of homotypic names derived from name relations and synonym[homotpic=true] relations.
-   * We first go thru all synonyms with the homotypic flag to determine the keys and then add all missing basionym nodes.
-   */
-  private void updateHomotypicNameKeys() {
-    /**
-    int counter = 0;
-    LOG.debug("Setting shared homotypic name keys");
-    try (Transaction tx = neo.beginTx()) {
-      // first homotypic synonym rels
-      for (Node syn : Iterators.loop(getNeo().findNodes(Labels.SYNONYM))) {
-        NeoName tsyn = nameByUsage(syn);
-        if (tsyn.homotypic) {
-          Relationship r = syn.getSingleRelationship(RelType.SYNONYM_OF, Direction.OUTGOING);
-          if (r == null) {
-            addIssues(tsyn, Issue.ACCEPTED_NAME_MISSING);
-            continue;
-          }
-          NeoName acc = nameByUsage(r.getEndNode());
-          String homoId;
-          if (acc.getName().getHomotypicNameId() == null) {
-            homoId = acc.getName().getId();
-            acc.getName().setHomotypicNameId(homoId);
-            names().update(acc);
-            counter++;
-          } else {
-            homoId = acc.getName().getHomotypicNameId();
-          }
-          tsyn.getName().setHomotypicNameId(homoId);
-          names().update(tsyn);
-        }
-      }
-      LOG.info("{} homotypic groups found via homotypic synonym relations", counter);
-
-      // now name relations, reuse keys if existing
-      counter = 0;
-      for (Node n : Iterators.loop(getNeo().findNodes(Labels.NAME))) {
-        // check if this node has a homotypic group already in which case we can skip it
-        NeoName start = names().objByNode(n);
-        if (start.getName().getHomotypicNameId() != null) {
-          continue;
-        }
-        // query homotypic group excluding start node
-        List<NeoName> group = Traversals.HOMOTYPIC_GROUP
-          .traverse(n)
-          .nodes()
-          .stream()
-          .map(names()::objByNode)
-          .collect(Collectors.toList());
-        if (!group.isEmpty()) {
-          // we have more than the starting node so we do process, add starting node too
-          group.add(start);
-          // determine existing or new key to be shared
-          String homoId = null;
-          for (NeoName t : group) {
-            if (t.getName().getHomotypicNameId() != null) {
-              if (homoId == null) {
-                homoId = t.getName().getHomotypicNameId();
-              } else if (!homoId.equals(t.getName().getHomotypicNameId())) {
-                LOG.warn("Several homotypic name keys found in the same homotypic name group for {}", NeoProperties.getScientificNameWithAuthor(n));
-              }
-            }
-          }
-          if (homoId == null) {
-            homoId = start.getName().getId();
-            counter++;
-          }
-          // update entire group with key
-          for (NeoName t : group) {
-            if (t.getName().getHomotypicNameId() == null) {
-              t.getName().setHomotypicNameId(homoId);
-              names().update(t);
-            }
-          }
-        }
-      }
-      LOG.info("{} additional homotypic groups found via name relations", counter);
-    }
-     */
   }
 
   public ResultPage<Taxon> getChildren(final DSID<String> key, Page page) {

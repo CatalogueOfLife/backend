@@ -184,6 +184,14 @@ public class DatasetSearchRequest {
     this.editor = editor;
   }
 
+  public Integer getReviewer() {
+    return reviewer;
+  }
+
+  public void setReviewer(Integer reviewer) {
+    this.reviewer = reviewer;
+  }
+
   public Integer getModifiedBy() {
     return modifiedBy;
   }
@@ -286,6 +294,7 @@ public class DatasetSearchRequest {
            && Objects.equals(hasSourceDataset, that.hasSourceDataset)
            && Objects.equals(gbifPublisherKey, that.gbifPublisherKey)
            && Objects.equals(editor, that.editor)
+           && Objects.equals(reviewer, that.reviewer)
            && Objects.equals(modifiedBy, that.modifiedBy)
            && Objects.equals(origin, that.origin)
            && Objects.equals(type, that.type)
@@ -299,6 +308,6 @@ public class DatasetSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, gbifPublisherKey, editor, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
+    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, gbifPublisherKey, editor, reviewer, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
   }
 }

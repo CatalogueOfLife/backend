@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -14,6 +15,7 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -47,19 +49,12 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Path("{id}")
   public Taxon get(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     var key = new DSIDValue<>(datasetKey, id);
-    Taxon obj = dao.get(key);
-    if (obj == null) {
-      // try with a synonym and issue a redirect
-      try (SqlSession session = dao.getFactory().openSession()) {
-        SimpleName syn = session.getMapper(NameUsageMapper.class).getSimple(key);
-        if (syn != null) {
-          ResourceUtils.redirect(URI.create("/dataset/"+datasetKey+"/taxon/" + syn.getParent()));
-        } else {
-          throw NotFoundException.notFound(Taxon.class, key);
-        }
-      }
+    try {
+      return dao.getOr404(key);
+    } catch (SynonymException e) {
+      URI location = URI.create("/dataset/"+e.acceptedKey.getDatasetKey()+"/taxon/" + e.acceptedKey.getId());
+      throw ResourceUtils.redirect(location);
     }
-    return obj;
   }
 
   @GET
