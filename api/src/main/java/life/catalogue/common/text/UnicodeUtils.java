@@ -1,54 +1,89 @@
 package life.catalogue.common.text;
 
+import it.unimi.dsi.fastutil.ints.Int2CharMap;
+
+import it.unimi.dsi.fastutil.ints.Int2CharMaps;
+
+import it.unimi.dsi.fastutil.ints.Int2CharOpenHashMap;
+
 import life.catalogue.common.io.LineReader;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.NameFormatter;
 
 import java.text.Normalizer;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 
 import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
 import it.unimi.dsi.fastutil.chars.CharSet;
 
+import org.checkerframework.checker.units.qual.A;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Utilities dealing with unicode strings
  */
 public class UnicodeUtils {
+  private static final Logger LOG = LoggerFactory.getLogger(UnicodeUtils.class);
+  private static final boolean DEBUG = false;
   // loads homoglyphs from resources taken from https://raw.githubusercontent.com/codebox/homoglyph/master/raw_data/chars.txt
-  private final static char[] HOMOGLYHPS;
-  private final static int HOMOGLYHPS_LENGTH;
-  private final static int HOMOGLYHPS_LOWEST_CP;
+  private static final Int2CharMap HOMOGLYHPS; // unicode codepoints as keys to avoid dealing with chars & surrogate pairs
+  private static final int HOMOGLYHPS_LOWEST_CP;
+  private static final int HOMOGLYHPS_HIGHEST_CP;
   static {
-    //TODO: load file into huge Pattern ???
     var lr = new LineReader(Resources.stream("unicode/homoglyphs.txt"));
-    CharSet homoglyphs = new CharOpenHashSet();
+    Int2CharMap homoglyphs = new Int2CharOpenHashMap();
+    final AtomicInteger minCP = new AtomicInteger(Integer.MAX_VALUE);
+    final AtomicInteger maxCP = new AtomicInteger(Integer.MIN_VALUE);
+    StringBuilder canonicals = new StringBuilder();
     for (String line : lr) {
+      // the canonical is never a surrogate pair
       char canonical = line.charAt(0);
       // ignore whitespace
       if (' ' == canonical) {
         continue;
       }
+      if (DEBUG) {
+        System.out.print(canonical + " ");
+        System.out.println((int)canonical);
+      }
+      canonicals.append(canonical);
 
       // ignore all ASCII chars from homoglyphs
-      line.substring(1).chars()
-          .filter(c -> c > 128)
+      final AtomicInteger counter = new AtomicInteger();
+      line.substring(1).codePoints()
+          // remove hybrid marker which we use often
+          .filter(cp -> cp > 128 && cp != NameFormatter.HYBRID_MARKER)
           .forEach(
-            c -> homoglyphs.add((char)c)
+            cp -> {
+              if (DEBUG) {
+                System.out.print("  ");
+                System.out.print(Character.toChars(cp));
+                System.out.print(" ");
+                System.out.print(cp);
+                System.out.println("  " + Character.getName(cp));
+              }
+              homoglyphs.put(cp, canonical);
+              minCP.set( Math.min(minCP.get(), cp) );
+              maxCP.set( Math.max(maxCP.get(), cp) );
+              counter.incrementAndGet();
+            }
           );
+      canonicals.append("[" + counter + "] ");
       if (lr.getRow() > 175 || 'ɸ' == canonical) {
         // skip all rare chars
         break;
       }
     }
-    // remove hybrid marker which we use often
-    homoglyphs.remove(NameFormatter.HYBRID_MARKER);
-
-    HOMOGLYHPS = homoglyphs.toCharArray();
-    HOMOGLYHPS_LENGTH = HOMOGLYHPS.length;
-    Arrays.sort(HOMOGLYHPS);
-    HOMOGLYHPS_LOWEST_CP = HOMOGLYHPS[0];
+    HOMOGLYHPS = Int2CharMaps.unmodifiable(homoglyphs);
+    HOMOGLYHPS_LOWEST_CP = minCP.get();
+    HOMOGLYHPS_HIGHEST_CP = maxCP.get();
+    LOG.info("Loaded known homoglyphs: {}", canonicals);
+    LOG.debug("Min homoglyph codepoint: {}", minCP);
+    LOG.debug("Max homoglyph codepoint: {}", maxCP);
   }
 
   /**
@@ -100,37 +135,45 @@ public class UnicodeUtils {
    * Returns true if there is at least on character which is a known homoglyph of a latin character.
    */
   public static boolean containsHomoglyphs(final CharSequence cs) {
+    return findHomoglyph(cs) >= 0;
+  }
+
+
+  /**
+   * Returns the unicode codepoint of the first character which is a known homoglyph of a latin character
+   * or -1 if none could be found.
+   */
+  public static int findHomoglyph(final CharSequence cs) {
     if (cs == null) {
-      return false;
+      return -1;
     }
-    // we use a modified StringUtils.containsAny method, skipping lower code point comparisons
-    // this is magnitudes faster than a regex or the regular StringUtils.containsAny method when using many homoglyph chars
-    // tested on a modern MacBook Pro with 1688 chars to run 10 million tests in 1.4s no matter if homoglyphs existed in the test string
-    final int csLength = cs.length();
-    final int csLast = csLength - 1;
-    final int searchLast = HOMOGLYHPS_LENGTH - 1;
-    for (int i = 0; i < csLength; i++) {
-      final char ch = cs.charAt(i);
-      // homoglyphs are never in the lower ascii code range!
-      if (ch >= HOMOGLYHPS_LOWEST_CP) {
-        for (int j = 0; j < HOMOGLYHPS_LENGTH; j++) {
-          if (HOMOGLYHPS[j] == ch) {
-            if (Character.isHighSurrogate(ch)) {
-              if (j == searchLast) {
-                // missing low surrogate, fine, like String.indexOf(String)
-                return true;
-              }
-              if (i < csLast && HOMOGLYHPS[j + 1] == cs.charAt(i + 1)) {
-                return true;
-              }
-            } else {
-              // ch is in the Basic Multilingual Plane
-              return true;
-            }
-          }
-        }
+    var iter = cs.codePoints().iterator();
+    while(iter.hasNext()) {
+      final int cp = iter.nextInt();
+      if (HOMOGLYHPS_LOWEST_CP <= cp && cp <= HOMOGLYHPS_HIGHEST_CP && HOMOGLYHPS.containsKey(cp)) {
+        return cp;
       }
     }
-    return false;
+    return -1;
+  }
+
+  /**
+   * Replaces all known homoglyphs with their canonical character.
+   */
+  public static String replaceHomoglyphs(final CharSequence cs) {
+    if (cs == null) {
+      return null;
+    }
+    StringBuilder sb = new StringBuilder();
+    var iter = cs.codePoints().iterator();
+    while(iter.hasNext()) {
+      final int cp = iter.nextInt();
+      if (HOMOGLYHPS_LOWEST_CP <= cp && cp <= HOMOGLYHPS_HIGHEST_CP && HOMOGLYHPS.containsKey(cp)) {
+        sb.append(HOMOGLYHPS.get(cp));
+      } else {
+        sb.appendCodePoint(cp);
+      }
+    }
+    return sb.toString();
   }
 }

@@ -384,6 +384,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // parsers
     j.register(new HomotypicGroupingResource());
+    j.register(new HomoglyphParserResource());
     j.register(new NameParserResource(getSqlSessionFactory()));
     j.register(new MetadataParserResource());
     j.register(new ParserResource<>());
