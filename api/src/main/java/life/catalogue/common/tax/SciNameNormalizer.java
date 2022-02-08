@@ -7,10 +7,16 @@ import static life.catalogue.common.text.StringUtils.foldToAscii;
 
 /**
  * A scientific name normalizer that replaces common misspellings and epithet gender changes.
+ * See http://people.hsc.edu/drjclassics/Latin/general_info_about_grammar/agreement.shtm
  */
 public class SciNameNormalizer {
-  
-  private static final Pattern suffix_a = Pattern.compile("(?:on|um|us|a)$"); // is->e
+  // honorifics: -i/-ae/-orum
+  // singular: us/er/i/o/um, a/ae/am
+  // plural: i/orum/is/os, ae/arum/is/as
+  // some latin ending (masculine/feminine, singular/plural, all cases)
+  private static final Pattern suffix_a = Pattern.compile("(?:arum|orum|us|er|um|on|ae|am|ei|is|os|as|i|o|a)$");
+  // tor/trix, e.g. viator / viatrix
+  private static final Pattern suffix_tor = Pattern.compile("trix$");
   private static final Pattern suffix_i = Pattern.compile("ei$");
   private static final Pattern i = Pattern.compile("(?<!\\b)[jyi]+");
   private static final Pattern trh = Pattern.compile("([gtr])h", Pattern.CASE_INSENSITIVE);
@@ -99,9 +105,6 @@ public class SciNameNormalizer {
     }
     // normalize frequent variations of i
     s = i.matcher(s).replaceAll("i");
-    if (stemming) {
-      s = suffix_i.matcher(s).replaceAll("i");
-    }
     // normalize frequent variations of t/r sometimes followed by an 'h'
     return trh.matcher(s).replaceAll("$1");
   }
@@ -111,6 +114,7 @@ public class SciNameNormalizer {
    */
   public static String stemEpithet(String epithet) {
     if (!hasContent(epithet)) return "";
+    epithet = suffix_tor.matcher(epithet).replaceFirst("tor");
     return suffix_a.matcher(epithet).replaceFirst("a");
   }
   
