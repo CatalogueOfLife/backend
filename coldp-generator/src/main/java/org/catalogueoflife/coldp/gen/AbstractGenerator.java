@@ -12,10 +12,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import org.apache.poi.ss.usermodel.Row;
+
 import org.gbif.dwc.terms.Term;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,32 +26,50 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 public abstract class AbstractGenerator implements Runnable {
   protected static Logger LOG = LoggerFactory.getLogger(AbstractGenerator.class);
   protected final GeneratorConfig cfg;
   protected final DownloadUtil download;
   private final boolean addMetadata;
   protected final Map<String, Object> metadata = new HashMap<>();
+  protected final String name;
   private final File dir; // working directory
+  protected final File src; // optional download
+  protected final URI srcUri;
   protected TermWriter writer;
   protected TermWriter refWriter;
   private int refCounter = 1;
   private final CloseableHttpClient hc;
 
-  public AbstractGenerator(GeneratorConfig cfg, boolean addMetadata) {
+  public AbstractGenerator(GeneratorConfig cfg, boolean addMetadata, @Nullable URI downloadUri) throws IOException {
     this.cfg = cfg;
     this.addMetadata = addMetadata;
     this.dir = cfg.archiveDir();
     dir.mkdirs();
+    name = getClass().getPackageName().replaceFirst(AbstractGenerator.class.getPackageName(), "");
+    src = new File("/tmp/" + name + ".src");
+    src.deleteOnExit();
     HttpClientBuilder htb = HttpClientBuilder.create();
     hc = htb.build();
-    download = new DownloadUtil(hc);
+    this.download = new DownloadUtil(hc);
+    this.srcUri = downloadUri;
   }
 
 
   @Override
   public void run() {
     try {
+      // get latest CSVs
+      if (!src.exists() && srcUri != null) {
+        LOG.info("Downloading latest data from {}", srcUri);
+        download.download(srcUri, src);
+      } else if (srcUri == null) {
+        LOG.warn("Reuse data from {}", src);
+      }
+
+      prepare();
       addData();
       if (writer != null) {
         writer.close();
@@ -75,6 +96,10 @@ public abstract class AbstractGenerator implements Runnable {
         throw new RuntimeException(e);
       }
     }
+  }
+
+  protected void prepare() throws IOException {
+    //nothing by default, override as needed
   }
 
   /**

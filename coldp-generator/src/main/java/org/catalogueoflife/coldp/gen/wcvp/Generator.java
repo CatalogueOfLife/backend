@@ -8,6 +8,7 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.CompressionUtil;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -17,9 +18,10 @@ import life.catalogue.common.io.TabReader;
 
 import org.apache.commons.lang3.StringUtils;
 import org.catalogueoflife.coldp.gen.AbstractGenerator;
+import org.catalogueoflife.coldp.gen.AbstractZipSrcGenerator;
 import org.catalogueoflife.coldp.gen.GeneratorConfig;
 
-public class Generator extends AbstractGenerator {
+public class Generator extends AbstractZipSrcGenerator {
   private static final URI DOWNLOAD = URI.create("https://storage.googleapis.com/kew-dev-backup/world_checklist_names_and_distribution_feb_21.zip");
 
   // plant_name_id|ipni_id|taxon_rank|taxon_status|family|genus_hybrid|genus|species_hybrid|species|infraspecific_rank|infraspecies|parenthetical_author|primary_author|publication_author|place_of_publication|volume_and_page|first_published|nomenclatural_remarks|geographic_area|lifeform_description|climate_description|taxon_name|taxon_authors|accepted_plant_name_id|basionym_plant_name_id|homotypic_synonym
@@ -55,29 +57,12 @@ public class Generator extends AbstractGenerator {
 
   private static final Pattern BRACKET_YEAR = Pattern.compile("\\(?([^()]+)\\)?");
 
-  public Generator(GeneratorConfig cfg) {
-    super(cfg, true);
+  public Generator(GeneratorConfig cfg) throws IOException {
+    super(cfg, true, DOWNLOAD);
   }
 
   @Override
   protected void addData() throws Exception {
-    // get latest CSVs
-    File zip = new File("/tmp/wcvp.zip");
-    if (!zip.exists()) {
-      LOG.info("Downloading latest data from {}", DOWNLOAD);
-      download.download(DOWNLOAD, zip);
-    } else {
-      LOG.warn("Reuse data from {}", zip);
-    }
-    // unzip
-    File srcDir = new File("/tmp/wcvp");
-    if (srcDir.exists()) {
-      org.apache.commons.io.FileUtils.cleanDirectory(srcDir);
-    } else {
-      srcDir.mkdirs();
-    }
-    CompressionUtil.unzipFile(srcDir, zip);
-
     // read & write core file
     initRefWriter(List.of(
       ColdpTerm.ID,

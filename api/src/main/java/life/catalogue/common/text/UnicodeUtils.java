@@ -1,25 +1,15 @@
 package life.catalogue.common.text;
 
-import it.unimi.dsi.fastutil.ints.Int2CharMap;
-
-import it.unimi.dsi.fastutil.ints.Int2CharMaps;
-
-import it.unimi.dsi.fastutil.ints.Int2CharOpenHashMap;
+import it.unimi.dsi.fastutil.ints.*;
 
 import life.catalogue.common.io.LineReader;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.NameFormatter;
 
 import java.text.Normalizer;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
-
-import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
-import it.unimi.dsi.fastutil.chars.CharSet;
-
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +19,31 @@ import org.slf4j.LoggerFactory;
 public class UnicodeUtils {
   private static final Logger LOG = LoggerFactory.getLogger(UnicodeUtils.class);
   private static final boolean DEBUG = false;
+  private static final IntSet DIACRITICS; // unicode codepoints as keys to avoid dealing with chars & surrogate pairs
+  private static final int DIACRITICS_LOWEST_CP;
+  private static final int DIACRITICS_HIGHEST_CP;
+  static {
+    IntSet diacritics = new IntOpenHashSet();
+    final AtomicInteger minCP = new AtomicInteger(Integer.MAX_VALUE);
+    final AtomicInteger maxCP = new AtomicInteger(Integer.MIN_VALUE);
+    "´˝` ̏ˆˇ˘ ̑¸¨· ̡ ̢ ̉ ̛ˉ˛ ˚˳῾᾿".codePoints()
+                                  .filter(cp -> cp != 32) // ignore whitespace - this is hard to remove from the input
+                                  .forEach(cp -> {
+      if (DEBUG) {
+        System.out.print(Character.toChars(cp));
+        System.out.print(" ");
+        System.out.print(cp);
+        System.out.println("  " + Character.getName(cp));
+      }
+      diacritics.add(cp);
+      minCP.set( Math.min(minCP.get(), cp) );
+      maxCP.set( Math.max(maxCP.get(), cp) );
+    });
+    DIACRITICS = IntSets.unmodifiable(diacritics);
+    DIACRITICS_LOWEST_CP = minCP.get();
+    DIACRITICS_HIGHEST_CP = maxCP.get();
+  }
+
   // loads homoglyphs from resources taken from https://raw.githubusercontent.com/codebox/homoglyph/master/raw_data/chars.txt
   private static final Int2CharMap HOMOGLYHPS; // unicode codepoints as keys to avoid dealing with chars & surrogate pairs
   private static final int HOMOGLYHPS_LOWEST_CP;
@@ -42,7 +57,7 @@ public class UnicodeUtils {
     for (String line : lr) {
       // the canonical is never a surrogate pair
       char canonical = line.charAt(0);
-      // ignore whitespace
+      // ignore all whitespace codepoints
       if (' ' == canonical) {
         continue;
       }
@@ -54,9 +69,26 @@ public class UnicodeUtils {
 
       // ignore all ASCII chars from homoglyphs
       final AtomicInteger counter = new AtomicInteger();
+      // ignore some frequently found quotation marks
+      // https://www.cl.cam.ac.uk/~mgk25/ucs/quotes.html
+      final IntSet ignore = new IntOpenHashSet();
+      "\u2018\u2019\u201C\u201D".codePoints().forEach(cp -> {
+        if (DEBUG) {
+          System.out.print("IGNORE ");
+          System.out.print(Character.toChars(cp));
+          System.out.print(" ");
+          System.out.print(cp);
+          System.out.println("  " + Character.getName(cp));
+        }
+        ignore.add(cp);
+      });
       line.substring(1).codePoints()
           // remove hybrid marker which we use often
-          .filter(cp -> cp > 128 && cp != NameFormatter.HYBRID_MARKER)
+          .filter(cp -> cp > 128
+                        && cp != NameFormatter.HYBRID_MARKER
+                        && !DIACRITICS.contains(cp)
+                        && !ignore.contains(cp)
+          )
           .forEach(
             cp -> {
               if (DEBUG) {
@@ -132,6 +164,14 @@ public class UnicodeUtils {
   }
 
   /**
+   * Returns true if there is at least one character which is a known standalone diacritic character.
+   * Diacritics combined with a letter, e.g. ö, é or ñ are not flagged!
+   */
+  public static boolean containsDiacritics(final CharSequence cs) {
+    return findDiacritics(cs) >= 0;
+  }
+
+  /**
    * Returns true if there is at least on character which is a known homoglyph of a latin character.
    */
   public static boolean containsHomoglyphs(final CharSequence cs) {
@@ -151,6 +191,24 @@ public class UnicodeUtils {
     while(iter.hasNext()) {
       final int cp = iter.nextInt();
       if (HOMOGLYHPS_LOWEST_CP <= cp && cp <= HOMOGLYHPS_HIGHEST_CP && HOMOGLYHPS.containsKey(cp)) {
+        return cp;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Returns the unicode codepoint of the first character which is a known homoglyph of a latin character
+   * or -1 if none could be found.
+   */
+  public static int findDiacritics(final CharSequence cs) {
+    if (cs == null) {
+      return -1;
+    }
+    var iter = cs.codePoints().iterator();
+    while(iter.hasNext()) {
+      final int cp = iter.nextInt();
+      if (DIACRITICS_LOWEST_CP <= cp && cp <= DIACRITICS_HIGHEST_CP && DIACRITICS.contains(cp)) {
         return cp;
       }
     }

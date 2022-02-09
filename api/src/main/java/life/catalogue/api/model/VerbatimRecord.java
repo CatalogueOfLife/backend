@@ -204,9 +204,12 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     return cleaned;
   }
 
-  private String flagHomoglyphs(String x) {
+  private String flagIssues(String x) {
     if (UnicodeUtils.containsHomoglyphs(x)) {
       issues.add(Issue.HOMOGLYPH_CHARACTERS);
+    }
+    if (UnicodeUtils.containsHomoglyphs(x)) {
+      issues.add(Issue.DIACRITIC_CHARACTERS);
     }
     return x;
   }
@@ -246,7 +249,7 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     checkNotNull(term, "term can't be null");
     String val = terms.get(term);
     if (val != null) {
-      return flagHomoglyphs(cleanInvisible(unescape(val)));
+      return flagIssues(cleanInvisible(unescape(val)));
     }
     return null;
   }

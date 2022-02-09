@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-02-09 add DIACRITIC_CHARACTERS issue
+```
+ALTER TYPE ISSUE ADD VALUE 'DIACRITIC_CHARACTERS';
+```
+
 ### 2022-02-09 add regex search to name index
 ```
 DROP INDEX names_index_lower_idx;

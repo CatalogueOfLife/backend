@@ -63,4 +63,12 @@ public class MapUtils {
   public static long sumValues(Map<?, ? extends Number> map) {
     return map.values().stream().mapToLong(Number::longValue).sum();
   }
+
+  public static <V, K> Map<V, K> invert(Map<K, V> map) {
+    Map<V, K> inv = new HashMap<>();
+    for (Map.Entry<K, V> entry : map.entrySet()) {
+      inv.put(entry.getValue(), entry.getKey());
+    }
+    return inv;
+  }
 }

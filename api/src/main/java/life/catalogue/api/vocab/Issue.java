@@ -383,6 +383,9 @@ public enum Issue {
   RELATED_NAME_MISSING(SPECIES_INTERACTION, Level.WARNING,
     "Species interaction without a related name."
     + "Neither relatedTaxonID nor relatedScientificName is given with a valid value."),
+
+  DIACRITIC_CHARACTERS(ANY, Level.WARNING,
+    "Seperate diacritic characters such as the acute, grave or circumflex, are present on their own. They should only exist in combination with a letter."),
   ;
 
   /**

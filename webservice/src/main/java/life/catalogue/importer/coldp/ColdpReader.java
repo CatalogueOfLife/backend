@@ -1,7 +1,9 @@
 package life.catalogue.importer.coldp;
 
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.io.PathUtils;
+import life.catalogue.common.tax.RankUtils;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.Schema;
 import life.catalogue.importer.NormalizationFailedException;
@@ -14,9 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,24 +65,9 @@ public class ColdpReader extends CsvReader {
 
   private ColdpReader(Path folder) throws IOException {
     super(folder, "col", "coldp");
-    detectMappedClassification(ColdpTerm.Taxon, ImmutableMap.<Term, Rank>builder()
-        .put(ColdpTerm.kingdom, Rank.KINGDOM)
-        .put(ColdpTerm.phylum, Rank.PHYLUM)
-        .put(ColdpTerm.subphylum, Rank.SUBPHYLUM)
-        .put(ColdpTerm.class_, Rank.CLASS)
-        .put(ColdpTerm.subclass, Rank.SUBCLASS)
-        .put(ColdpTerm.order, Rank.ORDER)
-        .put(ColdpTerm.suborder, Rank.SUBORDER)
-        .put(ColdpTerm.superfamily, Rank.SUPERFAMILY)
-        .put(ColdpTerm.family, Rank.FAMILY)
-        .put(ColdpTerm.subfamily, Rank.SUBFAMILY)
-        .put(ColdpTerm.tribe, Rank.TRIBE)
-        .put(ColdpTerm.subtribe, Rank.SUBTRIBE)
-        .put(ColdpTerm.genus, Rank.GENUS)
-        .put(ColdpTerm.subgenus, Rank.SUBGENUS)
-        .build()
+    detectMappedClassification(ColdpTerm.Taxon, RankUtils.RANK2COLDP.entrySet().stream()
+         .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey))
     );
-  
   }
 
   public static ColdpReader from(Path folder) throws IOException {

@@ -1,5 +1,10 @@
 package life.catalogue.common.tax;
 
+import com.google.common.collect.ImmutableMap;
+
+import life.catalogue.coldp.ColdpTerm;
+
+import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -12,6 +17,23 @@ import com.google.common.collect.Lists;
  */
 public class RankUtils {
   private static List<Rank> LINNEAN_RANKS_REVERSE = Lists.reverse(Rank.LINNEAN_RANKS);
+  public static Map<Rank, ColdpTerm> RANK2COLDP = Map.ofEntries(
+    Map.entry(Rank.KINGDOM, ColdpTerm.kingdom),
+    Map.entry(Rank.PHYLUM, ColdpTerm.phylum),
+    Map.entry(Rank.SUBPHYLUM, ColdpTerm.subphylum),
+    Map.entry(Rank.CLASS, ColdpTerm.class_),
+    Map.entry(Rank.SUBCLASS, ColdpTerm.subclass),
+    Map.entry(Rank.ORDER, ColdpTerm.order),
+    Map.entry(Rank.SUBORDER, ColdpTerm.suborder),
+    Map.entry(Rank.SUPERFAMILY, ColdpTerm.superfamily),
+    Map.entry(Rank.FAMILY, ColdpTerm.family),
+    Map.entry(Rank.SUBFAMILY, ColdpTerm.subfamily),
+    Map.entry(Rank.TRIBE, ColdpTerm.tribe),
+    Map.entry(Rank.SUBTRIBE, ColdpTerm.subtribe),
+    Map.entry(Rank.GENUS, ColdpTerm.genus),
+    Map.entry(Rank.SUBGENUS, ColdpTerm.subgenus),
+    Map.entry(Rank.SECTION, ColdpTerm.section)
+  );
 
   /**
    * @return a list of all ranks above or equal the given minimum rank.
@@ -75,6 +97,13 @@ public class RankUtils {
       LinkedList<Rank> rs = new LinkedList<>(ranks);
       Collections.sort(rs);
       return rs.getLast();
+    }
+    return null;
+  }
+
+  public static ColdpTerm toColTerm(Rank rank) {
+    if (rank != null) {
+      return RANK2COLDP.getOrDefault(rank, null);
     }
     return null;
   }
