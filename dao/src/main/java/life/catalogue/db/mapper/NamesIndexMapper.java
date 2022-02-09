@@ -1,9 +1,18 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.IndexName;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CRUD;
 
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
+
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
 
 /**
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be
@@ -30,4 +39,15 @@ public interface NamesIndexMapper extends CRUD<Integer, IndexName> {
    * Resets the primary key sequence to the next highest int or 1 if no records exist.
    */
   void updateSequence();
+
+  /**
+   * Query the names index with a regular expression pattern
+   * @param regex
+   * @param rank
+   * @param page
+   */
+  List<IndexName> listByRegex(@Param("regex") String regex,
+                              @Param("rank") Rank rank,
+                              @Param("page") Page page);
+
 }

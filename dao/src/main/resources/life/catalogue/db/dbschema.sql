@@ -740,6 +740,7 @@ CREATE TABLE dataset (
   ) STORED
 );
 
+CREATE INDEX ON dataset (gbif_key);
 CREATE INDEX ON dataset USING GIN (f_unaccent(title) gin_trgm_ops);
 CREATE INDEX ON dataset USING GIN (f_unaccent(alias) gin_trgm_ops);
 CREATE INDEX ON dataset USING GIN (doc);
@@ -869,6 +870,9 @@ CREATE TABLE dataset_import (
   PRIMARY KEY (dataset_key, attempt)
 );
 
+CREATE INDEX ON dataset_import (dataset_key);
+CREATE INDEX ON dataset_import (started);
+
 CREATE TABLE dataset_export (
   key UUID PRIMARY KEY,
   -- request
@@ -934,6 +938,10 @@ CREATE TABLE sector (
   UNIQUE (dataset_key, subject_dataset_key, subject_id),
   PRIMARY KEY (dataset_key, id)
 );
+
+CREATE index ON sector (dataset_key);
+CREATE index ON sector (dataset_key, subject_dataset_key, subject_id);
+CREATE index ON sector (dataset_key, target_id);
 
 CREATE TABLE sector_import (
   dataset_key INTEGER NOT NULL,
@@ -1009,6 +1017,8 @@ CREATE TABLE decision (
   PRIMARY KEY (dataset_key, id)
 );
 
+CREATE INDEX ON decision (dataset_key);
+
 CREATE TABLE estimate (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
@@ -1028,6 +1038,8 @@ CREATE TABLE estimate (
   note TEXT,
   PRIMARY KEY (dataset_key, id)
 );
+
+CREATE INDEX ON estimate (dataset_key);
 CREATE INDEX ON estimate (dataset_key, target_id);
 CREATE INDEX ON estimate (dataset_key, reference_id);
 
@@ -1164,7 +1176,7 @@ CREATE TABLE name (
 CREATE INDEX ON name (dataset_key, sector_key);
 CREATE INDEX ON name (dataset_key, verbatim_key);
 CREATE INDEX ON name (dataset_key, published_in_id);
-CREATE INDEX ON name (dataset_key, lower(scientific_name));
+CREATE INDEX ON name (dataset_key, scientific_name text_pattern_ops);
 CREATE INDEX ON name (dataset_key, scientific_name_normalized);
 
 
@@ -1638,19 +1650,6 @@ BEGIN
     RETURN (array_reverse(parents));
 END;
 $$ LANGUAGE plpgsql;
-
-
--- INDICES for non partitioned tables
-CREATE index ON dataset (gbif_key);
-CREATE index ON dataset_import (dataset_key);
-CREATE index ON dataset_import (started);
-CREATE index ON decision (dataset_key);
-CREATE index ON estimate (dataset_key);
-CREATE index ON estimate (dataset_key, target_id);
-CREATE INDEX ON names_index (lower(scientific_name));
-CREATE index ON sector (dataset_key);
-CREATE index ON sector (dataset_key, subject_dataset_key, subject_id);
-CREATE index ON sector (dataset_key, target_id);
 
 
 -- useful views

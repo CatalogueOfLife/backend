@@ -2,6 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
+import life.catalogue.common.util.RegexUtils;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
@@ -104,13 +105,7 @@ public class NameUsageResource {
                                                   @QueryParam("rank") Rank rank,
                                                   @Valid @BeanParam Page page,
                                                   @Context SqlSession session) {
-    Preconditions.checkArgument(regex != null && regex.length()>2, "Valid regex parameter of at least 3 characters is required");
-    try {
-      Pattern rx = Pattern.compile(regex);
-    } catch (PatternSyntaxException e) {
-      throw new IllegalArgumentException("Regex invalid", e);
-    }
-
+    RegexUtils.validatePattern(regex);
     Page p = page == null ? new Page() : page;
     return session.getMapper(NameUsageMapper.class).listByRegex(datasetKey, regex, status, rank, p);
   }

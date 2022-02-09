@@ -192,7 +192,7 @@
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
     WHERE u.dataset_key = #{datasetKey}
-      AND n.scientific_name ~ '${regex}'
+      AND n.scientific_name ~ '^${regex}'
     <if test="rank != null">
       AND n.rank = #{rank}::RANK
     </if>

@@ -33,6 +33,24 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
   }
 
   @Test
+  public void regex() {
+    var res = mapper().listByRegex(".", null, null);
+    assertEquals(4, res.size());
+
+    res = mapper().listByRegex("Abi", null, null);
+    assertEquals(4, res.size());
+
+    res = mapper().listByRegex(".*alb", null, null);
+    assertEquals(2, res.size());
+
+    res = mapper().listByRegex(".*ba[[:>:]]", null, null);
+    assertEquals(2, res.size());
+
+    res = mapper().listByRegex(".*a\\M", null, null);
+    assertEquals(2, res.size());
+  }
+
+  @Test
   public void count() {
     assertEquals(4, mapper().count());
   }

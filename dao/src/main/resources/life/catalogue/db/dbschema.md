@@ -11,6 +11,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-02-09 add regex search to name index
+```
+DROP INDEX names_index_lower_idx;
+DROP INDEX estimate_dataset_key_target_id_idx1
+CREATE INDEX ON name (dataset_key, scientific_name text_pattern_ops);
+```
+
 ### 2022-01-17 dataset partitioning without cascading deletes
 ```
 -- general table changes first

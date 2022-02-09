@@ -1,4 +1,4 @@
-package life.catalogue.common;
+package life.catalogue.common.util;
 
 public class ReflectUtils {
 

@@ -104,4 +104,14 @@
     SELECT setval('names_index_id_seq', (SELECT COALESCE(max(id),1) FROM names_index))
   </update>
 
+  <select id="listByRegex" parameterType="map" resultMap="nameResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE scientific_name ~ '^${regex}'
+    <if test="rank != null">
+      AND rank = #{rank}::RANK
+    </if>
+    ORDER BY scientific_name, id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
 </mapper>
