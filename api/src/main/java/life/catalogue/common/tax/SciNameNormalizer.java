@@ -7,17 +7,27 @@ import static life.catalogue.common.text.StringUtils.foldToAscii;
 
 /**
  * A scientific name normalizer that replaces common misspellings and epithet gender changes.
- * See http://people.hsc.edu/drjclassics/Latin/general_info_about_grammar/agreement.shtm
+ *
+ * Articles on nomenclature
+ * https://code.iczn.org/formation-and-treatment-of-names/article-31-species-group-names/
+ * http://dx.doi.org/10.11646/zootaxa.3710.5.1
+ *
+ * Latin resources
+ * https://www.nationalarchives.gov.uk/latin/stage-1-latin/resources/stage-1-latin-grammar-resource/adjectives/
+ * http://people.hsc.edu/drjclassics/Latin/general_info_about_grammar/agreement.shtm
  */
 public class SciNameNormalizer {
-  // honorifics: -i/-ae/-orum
+  // honorifics: -i/-ae/-orum, see https://code.iczn.org/formation-and-treatment-of-names/article-26-assumption-of-greek-or-latin-in-scientific-names/?frame=1
   // singular: us/er/i/o/um, a/ae/am
   // plural: i/orum/is/os, ae/arum/is/as
-  // some latin ending (masculine/feminine, singular/plural, all cases)
-  private static final Pattern suffix_a = Pattern.compile("(?:arum|orum|us|er|um|on|ae|am|ei|is|os|as|i|o|a)$");
+  private static final Pattern suffix_a = Pattern.compile("(?:arum|orum|us|um|ae|am|ei|is|os|as|i|o|a|e)$");
+  // cerifer, cerifera, ceriferum
+  private static final Pattern suffix_fger = Pattern.compile("([fg])er(?:a|um)$");
+  // most adjectives lose the ‘e’ when declined, some don't though, eg. liber
+  // pulcher, pulchra, pulchrum BUT liber, libera, liberum
+  private static final Pattern suffix_er = Pattern.compile("er$");
   // tor/trix, e.g. viator / viatrix
   private static final Pattern suffix_tor = Pattern.compile("trix$");
-  private static final Pattern suffix_i = Pattern.compile("ei$");
   private static final Pattern i = Pattern.compile("(?<!\\b)[jyi]+");
   private static final Pattern trh = Pattern.compile("([gtr])h", Pattern.CASE_INSENSITIVE);
   private static final Pattern removeRepeatedLetter = Pattern.compile("(\\p{L})\\1+");
@@ -115,6 +125,8 @@ public class SciNameNormalizer {
   public static String stemEpithet(String epithet) {
     if (!hasContent(epithet)) return "";
     epithet = suffix_tor.matcher(epithet).replaceFirst("tor");
+    epithet = suffix_fger.matcher(epithet).replaceFirst("$1ra"); // we also remove the "e" to match the next rule
+    epithet = suffix_er.matcher(epithet).replaceFirst("ra"); // there are some cases (e.g. liber) that do not lose the "e" - but we rather catch the majority of cases
     return suffix_a.matcher(epithet).replaceFirst("a");
   }
   

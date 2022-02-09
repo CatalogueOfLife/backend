@@ -102,12 +102,50 @@ public class SciNameNormalizerTest {
 
     assertEquals("alba", SciNameNormalizer.stemEpithet("alba"));
     assertEquals("alba", SciNameNormalizer.stemEpithet("albus"));
-    assertEquals("alba", SciNameNormalizer.stemEpithet("albon"));
     assertEquals("alba", SciNameNormalizer.stemEpithet("album"));
 
     assertEquals("dentata", SciNameNormalizer.stemEpithet("dentata"));
     assertEquals("dentata", SciNameNormalizer.stemEpithet("dentatus"));
     assertEquals("dentata", SciNameNormalizer.stemEpithet("dentatum"));
+
+    assertEquals("multa", SciNameNormalizer.stemEpithet("multi"));
+    assertEquals("multa", SciNameNormalizer.stemEpithet("multae"));
+    assertEquals("multa", SciNameNormalizer.stemEpithet("multa"));
+
+    assertEquals("facila", SciNameNormalizer.stemEpithet("facilis"));
+    assertEquals("facila", SciNameNormalizer.stemEpithet("facile"));
+
+    assertEquals("dulca", SciNameNormalizer.stemEpithet("dulcis"));
+    assertEquals("dulca", SciNameNormalizer.stemEpithet("dulce"));
+
+    assertEquals("virida", SciNameNormalizer.stemEpithet("viridis"));
+    assertEquals("virida", SciNameNormalizer.stemEpithet("viride"));
+
+    assertEquals("capensa", SciNameNormalizer.stemEpithet("capensis"));
+    assertEquals("capensa", SciNameNormalizer.stemEpithet("capense"));
+
+    assertEquals("lanigra", SciNameNormalizer.stemEpithet("laniger"));
+    assertEquals("lanigra", SciNameNormalizer.stemEpithet("lanigera"));
+    assertEquals("lanigra", SciNameNormalizer.stemEpithet("lanigerum"));
+
+    assertEquals("cerifra", SciNameNormalizer.stemEpithet("cerifer"));
+    assertEquals("cerifra", SciNameNormalizer.stemEpithet("cerifera"));
+    assertEquals("cerifra", SciNameNormalizer.stemEpithet("ceriferum"));
+
+    assertEquals("rubra", SciNameNormalizer.stemEpithet("ruber"));
+    assertEquals("rubra", SciNameNormalizer.stemEpithet("rubra"));
+
+    assertEquals("porifra", SciNameNormalizer.stemEpithet("porifera"));
+    assertEquals("porifra", SciNameNormalizer.stemEpithet("porifer"));
+    assertEquals("porifra", SciNameNormalizer.stemEpithet("poriferum"));
+
+    assertEquals("nigra", SciNameNormalizer.stemEpithet("niger"));
+    assertEquals("nigra", SciNameNormalizer.stemEpithet("nigra"));
+    assertEquals("nigra", SciNameNormalizer.stemEpithet("nigrum"));
+
+    assertEquals("pulchra", SciNameNormalizer.stemEpithet("pulcher")); // should we stem cher too?
+    assertEquals("pulchra", SciNameNormalizer.stemEpithet("pulchra"));
+    assertEquals("pulchra", SciNameNormalizer.stemEpithet("pulchrum"));
 
     assertEquals("muliebra", SciNameNormalizer.stemEpithet("muliebris"));
     assertEquals("muliebra", SciNameNormalizer.stemEpithet("muliebre"));
@@ -124,5 +162,19 @@ public class SciNameNormalizerTest {
     assertEquals("viator", SciNameNormalizer.stemEpithet("viatrix"));
     assertEquals("viator", SciNameNormalizer.stemEpithet("viator"));
     assertEquals("viatora", SciNameNormalizer.stemEpithet("viatoris"));
+
+    assertEquals("nevadensa", SciNameNormalizer.stemEpithet("nevadense"));
+    assertEquals("nevadensa", SciNameNormalizer.stemEpithet("nevadensis"));
+
+    assertEquals("orientala", SciNameNormalizer.stemEpithet("orientale"));
+    assertEquals("orientala", SciNameNormalizer.stemEpithet("orientalis"));
+
+    // UNCHANGED
+    assertEquals("ferox", SciNameNormalizer.stemEpithet("ferox"));
+    assertEquals("simplex", SciNameNormalizer.stemEpithet("simplex"));
+    assertEquals("elegans", SciNameNormalizer.stemEpithet("elegans"));
+    assertEquals("pubescens", SciNameNormalizer.stemEpithet("pubescens"));
+    // greek names stay as they are
+    assertEquals("albon", SciNameNormalizer.stemEpithet("albon"));
   }
 }
