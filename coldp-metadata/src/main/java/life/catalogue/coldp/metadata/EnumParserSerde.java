@@ -8,8 +8,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
-import life.catalogue.coldp.EnumParser;
-import life.catalogue.coldp.UnparsableException;
+import life.catalogue.parser.EnumParser;
+
+import life.catalogue.parser.UnparsableException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

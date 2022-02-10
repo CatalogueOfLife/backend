@@ -7,8 +7,6 @@ import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
-import life.catalogue.coldp.CountryParser;
-import life.catalogue.coldp.LicenseParser;
 import life.catalogue.common.date.FuzzyDate;
 
 import java.io.IOException;
@@ -30,6 +28,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import life.catalogue.parser.CountryParser;
+import life.catalogue.parser.LicenseParser;
 
 /**
  * ColDP metadata parser that falls back to EML if no YAML metadata is found.
