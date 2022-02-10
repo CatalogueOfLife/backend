@@ -310,7 +310,7 @@ SELECT
   CASE WHEN t.extinct THEN 1 ELSE 0 END AS is_extinct,
   0 AS has_preholocene,
   0 AS has_modern
-FROM name
+FROM name n
     JOIN name_usage t ON n.id=t.name_id AND t.dataset_key={{datasetKey}}
     LEFT JOIN __classification c  ON t.id=c.id
     LEFT JOIN __classification cs ON t.parent_id=cs.id
