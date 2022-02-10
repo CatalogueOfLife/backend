@@ -1,27 +1,29 @@
 package org.catalogueoflife.coldp.gen;
 
-import com.google.common.io.MoreFiles;
-
-import com.google.common.io.RecursiveDeleteOption;
-
+import life.catalogue.api.model.Citation;
+import life.catalogue.api.model.DOI;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.coldp.metadata.YamlMapper;
 import life.catalogue.common.io.*;
 import life.catalogue.common.text.SimpleTemplate;
 
-import org.apache.commons.io.FileUtils;
+import life.catalogue.doi.Resolver;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
-import org.apache.poi.ss.usermodel.Row;
-
 import org.gbif.dwc.terms.Term;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,7 @@ public abstract class AbstractGenerator implements Runnable {
   protected final DownloadUtil download;
   private final boolean addMetadata;
   protected final Map<String, Object> metadata = new HashMap<>();
+  protected final List<Citation> sources = new ArrayList<>();
   protected final String name;
   private final File dir; // working directory
   protected final File src; // optional download
@@ -42,6 +45,7 @@ public abstract class AbstractGenerator implements Runnable {
   protected TermWriter refWriter;
   private int refCounter = 1;
   private final CloseableHttpClient hc;
+  private final Resolver doiResolver;
 
   public AbstractGenerator(GeneratorConfig cfg, boolean addMetadata, @Nullable URI downloadUri) throws IOException {
     this.cfg = cfg;
@@ -55,6 +59,7 @@ public abstract class AbstractGenerator implements Runnable {
     hc = htb.build();
     this.download = new DownloadUtil(hc);
     this.srcUri = downloadUri;
+    doiResolver = new Resolver();
   }
 
 
@@ -145,6 +150,22 @@ public abstract class AbstractGenerator implements Runnable {
 
   protected void addMetadata() throws Exception {
     if (addMetadata) {
+      // do we have sources?
+      StringBuilder yaml = new StringBuilder();
+      if (!sources.isEmpty()) {
+        yaml.append("source: \n");
+        for (Citation src : sources) {
+          yaml.append(" - \n");
+          String citation = YamlMapper.MAPPER.writeValueAsString(src);
+          String indented = new BufferedReader(new StringReader(citation)).lines()
+                                                        .map(l -> "   " + l)
+                                                        .collect(Collectors.joining("\n"));
+          yaml.append(indented);
+          yaml.append("\n");
+        }
+      }
+      metadata.put("sources", yaml.toString());
+
       // use metadata to format
       String template = UTF8IoUtils.readString(Resources.stream(cfg.source+"/metadata.yaml"));
       try (var mw = UTF8IoUtils.writerFromFile(new File(dir, "metadata.yaml"))) {
@@ -153,4 +174,12 @@ public abstract class AbstractGenerator implements Runnable {
     }
   }
 
+  /**
+   * Adds a new source entry to the metadata map by resolving a DOI.
+   * @param doi
+   */
+  protected void addSource(DOI doi) throws IOException {
+    var data = doiResolver.resolve(doi);
+    sources.add(data);
+  }
 }

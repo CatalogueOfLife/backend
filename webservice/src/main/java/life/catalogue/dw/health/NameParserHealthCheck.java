@@ -7,7 +7,7 @@ import com.google.common.collect.Lists;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 
 import org.gbif.nameparser.api.Rank;
 

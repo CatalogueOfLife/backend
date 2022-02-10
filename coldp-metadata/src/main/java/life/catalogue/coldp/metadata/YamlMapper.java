@@ -1,23 +1,15 @@
-package life.catalogue.jackson;
-
-import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
-
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-
-import com.fasterxml.jackson.databind.node.TextNode;
+package life.catalogue.coldp.metadata;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.jackson.FuzzyDateCSLSerde;
 import life.catalogue.api.jackson.FuzzyDateISOSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
+import life.catalogue.coldp.CountryParser;
+import life.catalogue.coldp.LicenseParser;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.parser.CountryParser;
-import life.catalogue.parser.LicenseParser;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -26,12 +18,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

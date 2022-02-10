@@ -15,7 +15,7 @@ import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.*;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;

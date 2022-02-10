@@ -14,7 +14,7 @@ import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NamesIndexMapper;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;

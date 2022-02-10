@@ -46,7 +46,7 @@ import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
 import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.release.ReleaseManager;

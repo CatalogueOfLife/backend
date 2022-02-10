@@ -17,8 +17,8 @@ import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.parser.SafeParser;
-import life.catalogue.parser.TreatmentFormatParser;
+import life.catalogue.coldp.SafeParser;
+import life.catalogue.coldp.TreatmentFormatParser;
 import org.apache.commons.io.FilenameUtils;
 import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.dwc.terms.Term;
@@ -37,7 +37,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Optional;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 

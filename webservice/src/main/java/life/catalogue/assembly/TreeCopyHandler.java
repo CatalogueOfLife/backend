@@ -12,7 +12,7 @@ import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

@@ -10,8 +10,8 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.img.ImgConfig;
-import life.catalogue.parser.AreaParser;
-import life.catalogue.parser.UnparsableException;
+import life.catalogue.coldp.AreaParser;
+import life.catalogue.coldp.UnparsableException;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;

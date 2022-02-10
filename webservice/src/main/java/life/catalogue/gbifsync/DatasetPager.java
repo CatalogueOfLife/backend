@@ -10,7 +10,7 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.config.GbifConfig;
-import life.catalogue.parser.*;
+import life.catalogue.coldp.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;

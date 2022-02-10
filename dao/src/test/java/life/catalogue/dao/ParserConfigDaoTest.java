@@ -5,7 +5,7 @@ import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;

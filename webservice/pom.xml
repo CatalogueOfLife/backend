@@ -103,6 +103,10 @@
     </dependency>
     <dependency>
       <groupId>org.catalogueoflife</groupId>
+      <artifactId>coldp-metadata</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
       <artifactId>api</artifactId>
     </dependency>
     <dependency>

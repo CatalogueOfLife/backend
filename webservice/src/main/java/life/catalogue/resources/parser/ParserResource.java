@@ -1,6 +1,6 @@
 package life.catalogue.resources.parser;
 
-import life.catalogue.parser.*;
+import life.catalogue.coldp.*;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

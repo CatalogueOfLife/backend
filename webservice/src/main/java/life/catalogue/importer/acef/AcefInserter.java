@@ -13,7 +13,7 @@ import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.parser.*;
+import life.catalogue.coldp.*;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
@@ -25,7 +25,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.*;
 
 import static com.google.common.base.Strings.emptyToNull;

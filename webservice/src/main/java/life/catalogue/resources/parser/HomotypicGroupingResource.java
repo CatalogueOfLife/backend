@@ -7,7 +7,7 @@ import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.BasionymGroup;
 import life.catalogue.matching.authorship.BasionymSorter;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 
 import org.apache.commons.lang3.StringUtils;
 

@@ -14,10 +14,8 @@ import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.parser.*;
+import life.catalogue.coldp.*;
 import org.gbif.dwc.terms.Term;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static life.catalogue.parser.SafeParser.parse;
+import static life.catalogue.coldp.SafeParser.parse;
 
 /**
  * Interprets a verbatim ACEF record and transforms it into a name, taxon and unique references.

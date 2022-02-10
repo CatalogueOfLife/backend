@@ -13,9 +13,9 @@ import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.parser.EnumNote;
-import life.catalogue.parser.NomRelTypeParser;
-import life.catalogue.parser.SafeParser;
+import life.catalogue.coldp.EnumNote;
+import life.catalogue.coldp.NomRelTypeParser;
+import life.catalogue.coldp.SafeParser;
 
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;

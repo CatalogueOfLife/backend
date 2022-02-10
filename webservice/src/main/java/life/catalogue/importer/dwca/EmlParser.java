@@ -5,10 +5,10 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.parser.CountryParser;
-import life.catalogue.parser.DateParser;
-import life.catalogue.parser.LicenseParser;
-import life.catalogue.parser.SafeParser;
+import life.catalogue.coldp.CountryParser;
+import life.catalogue.coldp.DateParser;
+import life.catalogue.coldp.LicenseParser;
+import life.catalogue.coldp.SafeParser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +19,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 

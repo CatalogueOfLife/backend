@@ -9,13 +9,10 @@ import life.catalogue.db.NameProcessable;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.parser.NameParser;
-
-import org.apache.ibatis.transaction.Transaction;
+import life.catalogue.coldp.NameParser;
 
 import org.gbif.nameparser.api.NameType;
 
-import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;

@@ -1,4 +1,4 @@
-package life.catalogue.jackson;
+package life.catalogue.coldp.metadata;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -8,13 +8,12 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
-import life.catalogue.parser.EnumParser;
-import life.catalogue.parser.UnparsableException;
+import life.catalogue.coldp.EnumParser;
+import life.catalogue.coldp.UnparsableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class EnumParserSerde<T extends Enum<T>> {
   private static final Logger LOG = LoggerFactory.getLogger(EnumParserSerde.class);

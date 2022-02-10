@@ -1,18 +1,14 @@
 package life.catalogue.resources;
 
 import com.codahale.metrics.annotation.Timed;
-import com.google.common.base.Preconditions;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.util.RegexUtils;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 
-import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.NomCode;
@@ -21,8 +17,6 @@ import org.gbif.nameparser.api.Rank;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;

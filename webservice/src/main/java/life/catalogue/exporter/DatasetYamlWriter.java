@@ -1,8 +1,8 @@
 package life.catalogue.exporter;
 
 import life.catalogue.api.model.Dataset;
+import life.catalogue.coldp.metadata.YamlMapper;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.jackson.YamlMapper;
 
 import java.io.File;
 import java.io.IOException;

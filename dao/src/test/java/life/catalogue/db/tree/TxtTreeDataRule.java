@@ -10,7 +10,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 
 import java.io.IOException;
 import java.io.InputStream;

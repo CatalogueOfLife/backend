@@ -3,7 +3,7 @@ package life.catalogue.matching.authorship;
 import life.catalogue.api.model.Name;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.ParsedAuthorship;

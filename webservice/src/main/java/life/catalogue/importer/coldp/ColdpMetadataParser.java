@@ -4,26 +4,19 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.coldp.metadata.YamlMapper;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.importer.dwca.EmlParser;
-import life.catalogue.jackson.YamlMapper;
-import life.catalogue.parser.DateParser;
-import life.catalogue.parser.SafeParser;
-import life.catalogue.parser.UriParser;
+import life.catalogue.coldp.DateParser;
+import life.catalogue.coldp.SafeParser;
+import life.catalogue.coldp.UriParser;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.collect.ImmutableList;
 
 /**
  * ColDP metadata parser that falls back to EML if no YAML metadata is found.

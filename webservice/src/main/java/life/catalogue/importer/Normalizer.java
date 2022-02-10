@@ -26,7 +26,7 @@ import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.parser.NameParser;
+import life.catalogue.coldp.NameParser;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
