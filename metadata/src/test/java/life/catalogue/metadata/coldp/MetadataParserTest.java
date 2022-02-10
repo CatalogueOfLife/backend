@@ -27,7 +27,7 @@ public class MetadataParserTest {
 
   @Test
   public void coldpSpecs() throws Exception {
-    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(Resources.stream("coldp/0/metadata.yaml"));
+    Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(Resources.stream("metadata/coldpspecs.yaml"));
     DatasetWithSettings d = m.get();
 
     assertNull(d.getType());

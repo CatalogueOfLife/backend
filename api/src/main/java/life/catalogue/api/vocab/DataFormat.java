@@ -8,7 +8,7 @@ public enum DataFormat {
   /**
    * Darwin Core Archive
    */
-  DWCA("DwC-A", "Darwin Core Archive"),
+  DWCA("DwCA", "Darwin Core Archive"),
   
   /**
    * CoL Data Submission Format ("Annual Checklist Exchange Format")
