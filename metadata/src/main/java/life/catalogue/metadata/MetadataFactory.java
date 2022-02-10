@@ -33,6 +33,7 @@ public class MetadataFactory {
   /**
    * Reads any kind of metadata ChecklistBank understands, with preference on ColDP if multiple formats are available.
    * In case of parsing errors an empty optional is returned.
+   * @param dir the directory to look for suitable metadata files
    */
   public static Optional<DatasetWithSettings> readMetadata(Path dir) {
     for (String fn : METADATA_YAML_FILENAMES) {

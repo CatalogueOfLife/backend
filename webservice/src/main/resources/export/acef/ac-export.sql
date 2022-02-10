@@ -6,12 +6,12 @@ SET search_path TO exp{{datasetKey}},public;
 CREATE TABLE __coverage AS
     -- ATTACH MODE
     SELECT s.subject_dataset_key, subject_rank AS rank, subject_name AS name, array_to_string(array_remove(classification(3, target_id, true), 'Biota'), ' - ') AS classification
-    FROM sector s JOIN name_usage_{{datasetKey}} t ON s.target_id=t.id
+    FROM sector s JOIN name_usage t ON s.target_id=t.id AND t.dataset_key={{datasetKey}}
     WHERE s.mode='ATTACH' AND s.dataset_key={{datasetKey}}
   UNION ALL
     -- MERGE MODE
     SELECT s.subject_dataset_key, target_rank AS rank, target_name AS name, array_to_string(array_remove(classification(3, target_id, true), 'Biota'), ' - ') AS classification
-    FROM sector s JOIN name_usage_{{datasetKey}} t ON s.target_id=t.id
+    FROM sector s JOIN name_usage t ON s.target_id=t.id AND t.dataset_key={{datasetKey}}
     WHERE s.mode='UNION' AND s.dataset_key={{datasetKey}};
 
 CREATE TABLE __coverage2 AS
@@ -93,7 +93,7 @@ SELECT
 
 -- create reference int keys
 CREATE TABLE __ref_keys (key serial, id text UNIQUE);
-INSERT INTO __ref_keys (id) SELECT id FROM reference_{{datasetKey}};
+INSERT INTO __ref_keys (id) SELECT id FROM reference WHERE dataset_key={{datasetKey}};
 
 -- references
 COPY (
@@ -112,10 +112,10 @@ COPY (
     csl->>'container-title' AS source,
     coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id,
     r.id AS reference_code
-  FROM reference_{{datasetKey}} r
+  FROM reference r
     JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON r.sector_key=s.id AND s.dataset_key={{datasetKey}}
-
+  WHERE r.dataset_key={{datasetKey}}
 ) TO 'references.csv';
 
 
@@ -129,23 +129,23 @@ COPY (
     e.created AS inserted,
     e.modified AS updated
   FROM estimate e
-    LEFT JOIN reference_{{datasetKey}} r ON r.id=e.reference_id
-  WHERE e.target_id IS NOT NULL
+    LEFT JOIN reference r ON r.id=e.reference_id
+  WHERE r.dataset_key={{datasetKey}} AND e.target_id IS NOT NULL
 ) TO 'estimates.csv';
 
 
 -- create usage int keys using a reusable sequence
 CREATE SEQUENCE __record_id_seq START 1000;
 CREATE TABLE __tax_keys (key int PRIMARY KEY DEFAULT nextval('__record_id_seq'), id text UNIQUE);
-INSERT INTO __tax_keys (id) SELECT id FROM name_usage_{{datasetKey}};
+INSERT INTO __tax_keys (id) SELECT id FROM name_usage WHERE dataset_key={{datasetKey}};
 
 -- specialists aka scrutinizer
 CREATE TABLE __scrutinizer (key serial, dataset_key int, name text, unique(dataset_key, name));
 INSERT INTO __scrutinizer (name, dataset_key)
     SELECT DISTINCT t.scrutinizer, s.subject_dataset_key
-        FROM name_usage_{{datasetKey}} t
+        FROM name_usage t
             LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
-        WHERE t.scrutinizer IS NOT NULL;
+        WHERE t.scrutinizer IS NOT NULL AND t.dataset_key={{datasetKey}};
 COPY (
     SELECT key AS record_id, name AS specialist_name, null AS specialist_code, coalesce(dataset_key, {{datasetKey}}) AS database_id FROM __scrutinizer
 ) TO 'specialists.csv';
@@ -159,10 +159,10 @@ COPY (
         t.id AS name_code,
         unnest(t.environments) AS lifezone,
         coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id
-    FROM name_usage_{{datasetKey}} t
+    FROM name_usage t
         JOIN __tax_keys tk ON t.id=tk.id
         LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
-    WHERE t.environments IS NOT NULL
+    WHERE t.environments IS NOT NULL AND t.dataset_key={{datasetKey}}
 ) TO 'lifezone.csv';
 
 
@@ -183,11 +183,11 @@ WITH RECURSIVE tree AS(
         CASE WHEN n.rank='GENUS' THEN n.scientific_name ELSE NULL END AS genus,
         CASE WHEN n.rank='FAMILY' THEN t.id ELSE NULL END AS family_id,
         CASE WHEN n.rank='SPECIES' THEN t.id ELSE NULL END AS species_id
-    FROM name_usage_{{datasetKey}} t
+    FROM name_usage t
         JOIN __tax_keys tk ON t.id=tk.id
-        JOIN name_{{datasetKey}} n ON n.id=t.name_id
+        JOIN name n ON n.id=t.name_id AND n.dataset_key={{datasetKey}}
         LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
-    WHERE t.parent_id IS NULL AND NOT t.is_synonym
+    WHERE t.parent_id IS NULL AND NOT t.is_synonym AND t.dataset_key={{datasetKey}}
   UNION
     SELECT
         tk.key,
@@ -203,11 +203,12 @@ WITH RECURSIVE tree AS(
         CASE WHEN n.rank='GENUS' THEN n.scientific_name ELSE tree.genus END,
         CASE WHEN n.rank='FAMILY' THEN t.id ELSE tree.family_id END,
         CASE WHEN n.rank='SPECIES' THEN t.id ELSE tree.species_id END AS species_id
-    FROM name_usage_{{datasetKey}} t
+    FROM name_usage t
         JOIN __tax_keys tk ON t.id=tk.id
-        JOIN name_{{datasetKey}} n ON n.id=t.name_id
+        JOIN name n ON n.id=t.name_id AND n.dataset_key={{datasetKey}}
         LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
         JOIN tree ON (tree.id = t.parent_id) AND NOT t.is_synonym
+    WHERE t.dataset_key={{datasetKey}}
 )
 SELECT * FROM tree
 );
@@ -309,16 +310,15 @@ SELECT
   CASE WHEN t.extinct THEN 1 ELSE 0 END AS is_extinct,
   0 AS has_preholocene,
   0 AS has_modern
-FROM name_{{datasetKey}} n
-    JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
+FROM name
+    JOIN name_usage t ON n.id=t.name_id AND t.dataset_key={{datasetKey}}
     LEFT JOIN __classification c  ON t.id=c.id
     LEFT JOIN __classification cs ON t.parent_id=cs.id
     LEFT JOIN __classification cf ON c.family_id=cf.id
     LEFT JOIN __ranks r ON n.rank=r.key
     LEFT JOIN __scrutinizer sc ON t.scrutinizer=sc.name AND c.dataset_key=sc.dataset_key
     LEFT JOIN __tax_keys tk ON t.id=tk.id
-WHERE n.rank >= 'SPECIES'::rank
-
+WHERE n.rank >= 'SPECIES'::rank AND n.dataset_key={{datasetKey}}
 UNION
 -- empty genera, see https://github.com/Sp2000/colplus-backend/issues/637
 SELECT
@@ -347,15 +347,16 @@ SELECT
   CASE WHEN t.extinct THEN 1 ELSE 0 END AS is_extinct,
   0 AS has_preholocene,
   0 AS has_modern
-FROM name_{{datasetKey}} n
-    JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
-    LEFT JOIN name_usage_{{datasetKey}} tc ON tc.parent_id=t.id AND NOT t.is_synonym
+FROM name n
+    JOIN name_usage t ON n.id=t.name_id AND t.dataset_key={{datasetKey}}
+    LEFT JOIN name_usage tc ON tc.parent_id=t.id AND NOT t.is_synonym AND tc.dataset_key={{datasetKey}}
     LEFT JOIN __classification c  ON t.id=c.id
     LEFT JOIN __classification cf ON c.family_id=cf.id
     LEFT JOIN __scrutinizer sc ON t.scrutinizer=sc.name AND c.dataset_key=sc.dataset_key
     LEFT JOIN __tax_keys tk ON t.id=tk.id
 
-WHERE n.rank = 'GENUS'::rank
+WHERE n.dataset_key={{datasetKey}}
+    AND n.rank = 'GENUS'::rank
     AND NOT t.is_synonym
     AND tc.id IS NULL
 
@@ -375,11 +376,12 @@ COPY (
     coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id,
     NULL AS is_infraspecies,
     r.id as reference_code
-  FROM vernacular_name_{{datasetKey}} v
-    JOIN name_usage_{{datasetKey}} t ON t.id=v.taxon_id
-    LEFT JOIN reference_{{datasetKey}} r ON r.id=v.reference_id
+  FROM vernacular_name v
+    JOIN name_usage t ON t.id=v.taxon_id AND t.dataset_key={{datasetKey}}
+    LEFT JOIN reference r ON r.id=v.reference_id AND r.dataset_key={{datasetKey}}
     LEFT JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
+  WHERE v.dataset_key={{datasetKey}}
 ) TO 'common_names.csv';
 
 
@@ -391,10 +393,11 @@ COPY (
     d.gazetteer::text AS StandardInUse,
     initcap(d.status::text) AS DistributionStatus,
     coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id
-  FROM distribution_{{datasetKey}} d
-      JOIN name_usage_{{datasetKey}} t ON t.id=d.taxon_id
+  FROM distribution d
+      JOIN name_usage t ON t.id=d.taxon_id AND t.dataset_key={{datasetKey}}
       LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
       LEFT JOIN __country c ON c.code=d.area
+  WHERE d.dataset_key={{datasetKey}}
 ) TO 'distribution.csv';
 
 
@@ -406,11 +409,12 @@ COPY (
     rk.key AS reference_id,
     r.id AS reference_code,
     coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id
-  FROM name_{{datasetKey}} n
-    JOIN name_usage_{{datasetKey}} t ON t.name_id=n.id
-    JOIN reference_{{datasetKey}} r ON r.id=n.published_in_id
+  FROM name n
+    JOIN name_usage t ON t.name_id=n.id AND t.dataset_key={{datasetKey}}
+    JOIN reference r ON r.id=n.published_in_id AND r.dataset_key={{datasetKey}}
     JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON r.sector_key=s.id AND s.dataset_key={{datasetKey}}
+  WHERE n.dataset_key={{datasetKey}}
 
   UNION
 
@@ -421,8 +425,8 @@ COPY (
     r.id AS reference_code,
     coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id
   FROM
-    (SELECT id, UNNEST(reference_ids) AS rid FROM name_usage_{{datasetKey}}) u
-    JOIN reference_{{datasetKey}} r ON r.id=u.rid
+    (SELECT id, UNNEST(reference_ids) AS rid FROM name_usage WHERE dataset_key={{datasetKey}}) u
+    JOIN reference r ON r.id=u.rid AND r.dataset_key={{datasetKey}}
     JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON r.sector_key=s.id AND s.dataset_key={{datasetKey}}
 
