@@ -7,7 +7,7 @@ import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.cache.CacheFlush;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
-import life.catalogue.coldp.NameParser;
+import life.catalogue.parser.NameParser;
 import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;

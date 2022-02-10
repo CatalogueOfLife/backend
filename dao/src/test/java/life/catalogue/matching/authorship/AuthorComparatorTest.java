@@ -1,7 +1,7 @@
 package life.catalogue.matching.authorship;
 
 import life.catalogue.api.model.Name;
-import life.catalogue.coldp.NameParser;
+import life.catalogue.parser.NameParser;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
 

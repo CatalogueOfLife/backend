@@ -1,4 +1,4 @@
-package life.catalogue.coldp.metadata;
+package life.catalogue.metadata.coldp;
 
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.parser.EnumParser;

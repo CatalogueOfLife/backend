@@ -1,14 +1,12 @@
-package life.catalogue.importer.coldp;
+package life.catalogue.metadata.coldp;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.coldp.DateParser;
-import life.catalogue.coldp.SafeParser;
-import life.catalogue.coldp.UriParser;
-import life.catalogue.coldp.metadata.YamlMapper;
-import life.catalogue.dao.DaoUtils;
+import life.catalogue.parser.DateParser;
+import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.UriParser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +15,8 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectReader;
+
+import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 /**
  * ColDP metadata parser that falls back to EML if no YAML metadata is found.
@@ -39,12 +39,12 @@ public class ColdpMetadataParser {
 
     @Override
     public void setDescription(String description) {
-      super.setDescription(DaoUtils.stripHtml(description));
+      super.setDescription(stripHtml(description));
     }
 
     @Override
     public void setTitle(String title) {
-      super.setTitle(DaoUtils.stripHtml(title));
+      super.setTitle(stripHtml(title));
     }
 
     @JsonProperty("contact")

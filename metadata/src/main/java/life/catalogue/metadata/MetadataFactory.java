@@ -1,8 +1,8 @@
-package life.catalogue.importer;
+package life.catalogue.metadata;
 
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.importer.coldp.ColdpMetadataParser;
-import life.catalogue.importer.dwca.EmlParser;
+import life.catalogue.metadata.coldp.ColdpMetadataParser;
+import life.catalogue.metadata.eml.EmlParser;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+import org.jsoup.Jsoup;
+import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 /**
  * A delegating metadata factory for all supported metadata formats in COL CLB.
@@ -25,6 +27,9 @@ public class MetadataFactory {
   private static final List<String> METADATA_JSON_FILENAMES = ImmutableList.of("metadata.json");
   private static final List<String> EML_FILENAMES = ImmutableList.of("eml.xml", "metadata.xml");
 
+  public static String stripHtml(String x) {
+    return x == null ? null : Jsoup.parse(x).wholeText().trim();
+  }
 
   /**
    * Reads any kind of metadata ChecklistBank understands, with preference on ColDP if multiple formats are available.

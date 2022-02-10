@@ -2,7 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.coldp.NameParser;
+import life.catalogue.parser.NameParser;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.NameIndex;

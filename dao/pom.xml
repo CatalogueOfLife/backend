@@ -55,6 +55,10 @@
           <groupId>org.catalogueoflife</groupId>
           <artifactId>doi</artifactId>
         </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>metadata</artifactId>
+      </dependency>
         <dependency>
           <groupId>org.catalogueoflife</groupId>
           <artifactId>newick-io</artifactId>
@@ -99,10 +103,6 @@
       <dependency>
         <groupId>com.github.ben-manes.caffeine</groupId>
         <artifactId>caffeine</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>org.jsoup</groupId>
-        <artifactId>jsoup</artifactId>
       </dependency>
       <dependency>
           <groupId>org.simplejavamail</groupId>

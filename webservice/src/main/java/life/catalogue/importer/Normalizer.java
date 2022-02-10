@@ -2,7 +2,7 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.coldp.NameParser;
+import life.catalogue.parser.NameParser;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.tax.MisappliedNameMatcher;

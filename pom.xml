@@ -193,10 +193,10 @@
     <module>api</module>
     <module>dao</module>
     <module>doi</module>
+    <module>metadata</module>
     <module>parser</module>
     <module>webservice</module>
     <module>coldp</module>
-    <module>coldp-metadata</module>
     <module>coldp-generator</module>
   </modules>
 
@@ -221,7 +221,7 @@
       </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>
-        <artifactId>coldp-metadata</artifactId>
+        <artifactId>metadata</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

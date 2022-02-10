@@ -3,10 +3,10 @@ package org.catalogueoflife.coldp.gen;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.metadata.YamlMapper;
+import life.catalogue.metadata.coldp.YamlMapper;
 import life.catalogue.common.io.*;
 import life.catalogue.common.text.SimpleTemplate;
-import life.catalogue.doi.Resolver;
+import life.catalogue.metadata.coldp.DoiResolver;
 
 import org.gbif.dwc.terms.Term;
 
@@ -43,7 +43,7 @@ public abstract class AbstractGenerator implements Runnable {
   protected TermWriter refWriter;
   private int refCounter = 1;
   private final CloseableHttpClient hc;
-  private final Resolver doiResolver;
+  private final DoiResolver doiResolver;
 
   public AbstractGenerator(GeneratorConfig cfg, boolean addMetadata, @Nullable URI downloadUri) throws IOException {
     this.cfg = cfg;
@@ -57,7 +57,7 @@ public abstract class AbstractGenerator implements Runnable {
     hc = htb.build();
     this.download = new DownloadUtil(hc);
     this.srcUri = downloadUri;
-    doiResolver = new Resolver();
+    doiResolver = new DoiResolver();
   }
 
 

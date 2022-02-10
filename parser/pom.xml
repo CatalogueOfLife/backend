@@ -9,7 +9,7 @@
 
   <artifactId>parser</artifactId>
 
-  <name>COL parser module</name>
+  <name>COL parsers for enumerations and other controlled vocabularies</name>
 
     <dependencies>
         <!-- col -->

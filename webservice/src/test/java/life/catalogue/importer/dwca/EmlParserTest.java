@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import life.catalogue.metadata.eml.EmlParser;
 import org.junit.Test;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;

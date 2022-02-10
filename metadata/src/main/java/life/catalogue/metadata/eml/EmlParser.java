@@ -1,17 +1,12 @@
-package life.catalogue.importer.dwca;
+package life.catalogue.metadata.eml;
 
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.coldp.CountryParser;
-import life.catalogue.coldp.DateParser;
-import life.catalogue.coldp.LicenseParser;
-import life.catalogue.coldp.SafeParser;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
-import life.catalogue.dao.DaoUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,9 +25,17 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import life.catalogue.parser.CountryParser;
+import life.catalogue.parser.DateParser;
+import life.catalogue.parser.LicenseParser;
+
+import life.catalogue.parser.SafeParser;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 /**
  *
@@ -368,7 +371,7 @@ public class EmlParser {
   }
 
   private static String text(StringBuilder text) {
-    return text == null || text.length() < 1 ? null : StringUtils.trimToNull(DaoUtils.stripHtml(text.toString()));
+    return text == null || text.length() < 1 ? null : StringUtils.trimToNull(stripHtml(text.toString()));
   }
 
   private static Integer integer(StringBuilder text) {

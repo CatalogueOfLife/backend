@@ -5,7 +5,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.img.ImageService;
-import life.catalogue.importer.coldp.ColdpMetadataParser;
+import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.NotUniqueRuntimeException;

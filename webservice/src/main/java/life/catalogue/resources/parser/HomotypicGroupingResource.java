@@ -1,7 +1,7 @@
 package life.catalogue.resources.parser;
 
 import life.catalogue.api.model.Name;
-import life.catalogue.coldp.NameParser;
+import life.catalogue.parser.NameParser;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;

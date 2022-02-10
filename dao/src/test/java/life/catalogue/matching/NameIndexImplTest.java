@@ -7,7 +7,7 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
-import life.catalogue.coldp.NameParser;
+import life.catalogue.parser.NameParser;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;

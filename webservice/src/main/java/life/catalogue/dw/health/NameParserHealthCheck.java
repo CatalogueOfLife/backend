@@ -4,7 +4,7 @@ package life.catalogue.dw.health;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
-import life.catalogue.coldp.NameParser;
+import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Rank;
 

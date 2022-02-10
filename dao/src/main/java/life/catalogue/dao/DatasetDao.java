@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
 import com.google.common.eventbus.EventBus;
+import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   
@@ -127,10 +128,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         d.getContributor().removeIf(java.util.Objects::isNull);
       }
       if (d.getDescription() != null) {
-        d.setDescription(DaoUtils.stripHtml(d.getDescription()));
+        d.setDescription(stripHtml(d.getDescription()));
       }
       if (d.getTitle() != null) {
-        d.setTitle(DaoUtils.stripHtml(d.getTitle()));
+        d.setTitle(stripHtml(d.getTitle()));
       }
     }
   }

@@ -4,8 +4,8 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.MetadataFormat;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.importer.coldp.ColdpMetadataParser;
-import life.catalogue.importer.dwca.EmlParser;
+import life.catalogue.metadata.coldp.ColdpMetadataParser;
+import life.catalogue.metadata.eml.EmlParser;
 
 import java.io.IOException;
 import java.io.InputStream;

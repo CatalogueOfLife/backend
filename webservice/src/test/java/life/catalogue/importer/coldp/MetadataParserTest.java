@@ -10,6 +10,7 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.Resources;
 
+import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import org.gbif.nameparser.api.NomCode;
 
 import java.io.FileInputStream;
