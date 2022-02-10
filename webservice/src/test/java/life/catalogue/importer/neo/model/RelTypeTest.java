@@ -3,6 +3,7 @@ package life.catalogue.importer.neo.model;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.SpeciesInteractionType;
 import life.catalogue.api.vocab.TaxonConceptRelType;
+
 import org.junit.Ignore;
 import org.junit.Test;
 

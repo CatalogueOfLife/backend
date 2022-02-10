@@ -1,9 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.base.Charsets;
-
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.Taxon;
@@ -12,26 +8,21 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.dao.ParserConfigDao;
-import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 
-import life.catalogue.importer.neo.printer.PrinterUtils;
-
-import org.apache.commons.io.IOUtils;
-
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import org.junit.Ignore;
+import java.util.List;
+
 import org.junit.Test;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.Iterators;
 
-import java.io.InputStream;
-import java.util.List;
+import de.undercouch.citeproc.csl.CSLType;
 
 import static org.junit.Assert.*;
 

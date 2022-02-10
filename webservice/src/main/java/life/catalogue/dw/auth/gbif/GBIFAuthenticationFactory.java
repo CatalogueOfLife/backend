@@ -1,11 +1,12 @@
 package life.catalogue.dw.auth.gbif;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import life.catalogue.dw.auth.AuthenticationProvider;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  * Configuration for the GBIF IdentityService.

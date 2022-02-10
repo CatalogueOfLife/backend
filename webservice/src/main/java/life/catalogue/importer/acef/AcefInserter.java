@@ -1,6 +1,5 @@
 package life.catalogue.importer.acef;
 
-import com.google.common.base.Splitter;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
@@ -13,19 +12,25 @@ import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.coldp.*;
-import org.apache.commons.lang3.StringUtils;
+
+import life.catalogue.parser.*;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
-import org.neo4j.graphdb.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.*;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.StringUtils;
+import org.neo4j.graphdb.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Splitter;
 
 import static com.google.common.base.Strings.emptyToNull;
 
@@ -191,7 +196,7 @@ public class AcefInserter extends NeoCsvInserter {
     String refTypeRaw = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
     // we default to TaxAccRef, see https://github.com/Sp2000/colplus-repo/issues/33#issuecomment-500610124
     ReferenceTypeParser.ReferenceType refType = SafeParser.parse(ReferenceTypeParser.PARSER, refTypeRaw)
-        .orElse(ReferenceTypeParser.ReferenceType.TaxAccRef, Issue.REFTYPE_INVALID, rec);
+                                                          .orElse(ReferenceTypeParser.ReferenceType.TaxAccRef, Issue.REFTYPE_INVALID, rec);
     
     // lookup NeoTaxon and reference
     NeoUsage u = store.usages().objByID(taxonID);

@@ -6,10 +6,11 @@ import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.importer.neo.NeoDbUtils;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.Node;
 
 import java.util.Objects;
+
+import org.neo4j.graphdb.Label;
+import org.neo4j.graphdb.Node;
 
 /**
  * Simple wrapper to hold a neo4j node together with a name

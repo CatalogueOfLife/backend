@@ -1,15 +1,17 @@
 package life.catalogue.importer;
 
+import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.Rank;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Splitter;
-import org.gbif.dwc.terms.Term;
-import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Splitter;
 
 /**
  * Dataset archive settings specific to a dataset used by the normalizer,

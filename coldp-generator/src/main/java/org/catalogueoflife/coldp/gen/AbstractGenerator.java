@@ -6,11 +6,7 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.metadata.YamlMapper;
 import life.catalogue.common.io.*;
 import life.catalogue.common.text.SimpleTemplate;
-
 import life.catalogue.doi.Resolver;
-
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 
 import org.gbif.dwc.terms.Term;
 
@@ -25,10 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 public abstract class AbstractGenerator implements Runnable {
   protected static Logger LOG = LoggerFactory.getLogger(AbstractGenerator.class);

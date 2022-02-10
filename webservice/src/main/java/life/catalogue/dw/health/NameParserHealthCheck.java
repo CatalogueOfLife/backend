@@ -1,9 +1,6 @@
 package life.catalogue.dw.health;
 
 
-import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.Lists;
-
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
@@ -12,6 +9,9 @@ import life.catalogue.coldp.NameParser;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Optional;
+
+import com.codahale.metrics.health.HealthCheck;
+import com.google.common.collect.Lists;
 
 /**
  * Calls the name parser with a known binomial to check its health.

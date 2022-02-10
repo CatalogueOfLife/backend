@@ -1,21 +1,12 @@
 package life.catalogue.dw.jersey.filter;
 
-import com.google.common.base.Preconditions;
-
-import org.glassfish.jersey.server.ContainerRequest;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
+
+import com.google.common.base.Preconditions;
 
 @LegacyAPI
 public class DelayRequestFilter implements ContainerRequestFilter {

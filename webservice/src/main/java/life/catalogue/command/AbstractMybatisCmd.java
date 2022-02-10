@@ -1,48 +1,37 @@
 package life.catalogue.command;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.zaxxer.hikari.HikariDataSource;
-
-import io.dropwizard.client.DropwizardApacheConnector;
-import io.dropwizard.client.HttpClientBuilder;
-import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.setup.Bootstrap;
-
 import life.catalogue.WsServer;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.User;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.mapper.UserMapper;
-import life.catalogue.doi.service.UserAgentFilter;
-
 import life.catalogue.dw.jersey.ColJerseyBundle;
-
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.glassfish.jersey.CommonProperties;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.RequestEntityProcessing;
-import org.glassfish.jersey.client.spi.ConnectorProvider;
-import org.glassfish.jersey.logging.LoggingFeature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
+
+import javax.ws.rs.client.Client;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.glassfish.jersey.CommonProperties;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.RequestEntityProcessing;
+import org.glassfish.jersey.client.spi.ConnectorProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.zaxxer.hikari.HikariDataSource;
+
+import io.dropwizard.client.DropwizardApacheConnector;
+import io.dropwizard.client.HttpClientBuilder;
+import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.setup.Bootstrap;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractMybatisCmd.class);

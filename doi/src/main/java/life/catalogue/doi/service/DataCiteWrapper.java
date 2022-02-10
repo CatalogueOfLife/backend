@@ -1,12 +1,12 @@
 package life.catalogue.doi.service;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-
 import life.catalogue.api.model.DOI;
 import life.catalogue.doi.datacite.model.DoiAttributes;
 
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 @JsonTypeName(value = "data")
 @JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)

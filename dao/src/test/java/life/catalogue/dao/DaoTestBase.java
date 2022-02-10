@@ -5,15 +5,15 @@ import life.catalogue.api.model.DSIDValue;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 public abstract class DaoTestBase {
   

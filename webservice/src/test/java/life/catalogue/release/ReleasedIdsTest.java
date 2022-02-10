@@ -3,10 +3,11 @@ package life.catalogue.release;
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
+
+import org.junit.Ignore;
+import org.junit.Test;
 
 import static life.catalogue.release.ReleasedIds.ReleasedId;
 import static org.junit.Assert.assertEquals;

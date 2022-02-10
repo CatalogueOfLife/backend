@@ -1,7 +1,6 @@
 package life.catalogue.importer.coldp;
 
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.csv.CsvReader;
@@ -10,19 +9,20 @@ import life.catalogue.importer.NormalizationFailedException;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
-import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 /**

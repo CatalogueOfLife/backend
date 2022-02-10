@@ -1,15 +1,17 @@
 package life.catalogue.swagger;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.List;
+
+import javax.ws.rs.Consumes;
+
 import com.fasterxml.jackson.annotation.JsonView;
+
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.jaxrs2.Reader;
 import io.swagger.v3.jaxrs2.ResolvedParameter;
 import io.swagger.v3.oas.models.Operation;
-
-import javax.ws.rs.Consumes;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.List;
 
 /**
  * Modified reader that skip all parameters marked with the {@link Auth} interface which is provided by Dropwizard

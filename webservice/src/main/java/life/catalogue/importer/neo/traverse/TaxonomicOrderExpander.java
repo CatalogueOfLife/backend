@@ -1,15 +1,18 @@
 package life.catalogue.importer.neo.traverse;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Ordering;
 import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.model.RelType;
+
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.traversal.BranchState;
 
-import javax.annotation.Nullable;
-import java.util.List;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
 
 /**
  * depth first, rank then scientific name order based branching.

@@ -5,14 +5,14 @@ import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Setting;
 
 import java.util.List;
 
-import life.catalogue.api.vocab.Setting;
-
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  *

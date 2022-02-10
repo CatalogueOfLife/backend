@@ -1,7 +1,10 @@
 package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.admin.jobs.*;
+import life.catalogue.admin.jobs.IndexJob;
+import life.catalogue.admin.jobs.ReimportJob;
+import life.catalogue.admin.jobs.SectorCountJob;
+import life.catalogue.admin.jobs.UsageCountJob;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
@@ -14,7 +17,6 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.gbifsync.GbifSyncJob;
 import life.catalogue.gbifsync.GbifSyncManager;
@@ -22,9 +24,9 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
-import life.catalogue.resources.legacy.IdMap;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.RematchJob;
+import life.catalogue.resources.legacy.IdMap;
 
 import java.io.IOException;
 import java.io.InputStream;

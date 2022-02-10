@@ -7,7 +7,6 @@ import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.DuplicateDao;
-
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
@@ -21,7 +20,6 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;

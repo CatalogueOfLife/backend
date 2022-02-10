@@ -1,25 +1,28 @@
 package life.catalogue.command;
 
-import com.google.common.base.Preconditions;
-import com.zaxxer.hikari.HikariDataSource;
-import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+import com.zaxxer.hikari.HikariDataSource;
+
+import io.dropwizard.setup.Bootstrap;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 public class IndexCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(IndexCmd.class);

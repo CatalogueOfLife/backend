@@ -7,13 +7,15 @@ import life.catalogue.importer.RelationInserterBase;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.Optional;
+
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
 
 /**
  *

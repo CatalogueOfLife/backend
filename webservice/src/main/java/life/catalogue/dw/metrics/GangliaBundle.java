@@ -1,15 +1,16 @@
 package life.catalogue.dw.metrics;
 
 
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import info.ganglia.gmetric4j.gmetric.GMetric;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Bundle that sets up a ganglia reporter for dropwizard metrics.

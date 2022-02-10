@@ -6,19 +6,16 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPatchMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
+import life.catalogue.exporter.DatasetYamlWriter;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import life.catalogue.exporter.DatasetYamlWriter;
+import java.util.Map;
+import java.util.Objects;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

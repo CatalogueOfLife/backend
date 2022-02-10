@@ -1,19 +1,22 @@
 package life.catalogue.exporter;
 
-import com.google.common.collect.Lists;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
+import com.google.common.collect.Lists;
+
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 /**
  * Print an entire dataset in a nested SimpleName json array.

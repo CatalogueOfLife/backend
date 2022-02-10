@@ -1,18 +1,8 @@
 package life.catalogue.dw.jersey.provider;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +11,19 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Map;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.Provider;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * Dataset JSON body reader that understands the difference between an explicit property given with a nil value and a missing property.

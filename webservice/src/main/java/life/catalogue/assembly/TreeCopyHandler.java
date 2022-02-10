@@ -1,10 +1,5 @@
 package life.catalogue.assembly;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.CatCopy;
@@ -12,17 +7,26 @@ import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.coldp.NameParser;
+
+import org.gbif.nameparser.api.*;
+
+import java.util.*;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.Consumer;
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 

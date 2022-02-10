@@ -1,7 +1,6 @@
 package life.catalogue.coldp;
 
 import org.gbif.dwc.terms.AlternativeNames;
-import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.Term;
 
 import java.net.URI;

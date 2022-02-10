@@ -1,6 +1,7 @@
 package life.catalogue.parser;
 
 import life.catalogue.api.vocab.MediaType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -3,10 +3,11 @@ package life.catalogue.resources;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.db.TestDataRule;
-import org.junit.Rule;
-import org.junit.Test;
 
 import javax.ws.rs.core.GenericType;
+
+import org.junit.Rule;
+import org.junit.Test;
 
 import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;

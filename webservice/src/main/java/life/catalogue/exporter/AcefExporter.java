@@ -1,9 +1,5 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.Timer;
-import com.google.common.io.Files;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
@@ -12,19 +8,11 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.postgres.PgCopyUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.postgresql.jdbc.PgConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -32,12 +20,19 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.postgresql.jdbc.PgConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Timer;
+import com.google.common.io.Files;
 
 /**
  * Exporter for the old AC schema.

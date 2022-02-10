@@ -1,9 +1,9 @@
 package life.catalogue.api.vocab;
 
-import life.catalogue.api.search.FacetValue;
 import life.catalogue.common.text.CSVUtils;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**

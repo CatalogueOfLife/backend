@@ -7,6 +7,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

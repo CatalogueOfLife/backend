@@ -1,6 +1,5 @@
 package life.catalogue.resources;
 
-import life.catalogue.api.exception.SynonymException;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.exporter.FmUtil;
 

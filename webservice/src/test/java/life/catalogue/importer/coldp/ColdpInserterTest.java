@@ -1,43 +1,30 @@
 package life.catalogue.importer.coldp;
 
-import de.undercouch.citeproc.bibtex.BibTeXConverter;
-
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
-import life.catalogue.importer.dwca.DwcaReaderTest;
-import life.catalogue.importer.neo.model.NeoName;
-import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
 
-import org.apache.poi.ss.formula.functions.T;
-
-import org.gbif.dwc.terms.BibTexTerm;
-import org.gbif.nameparser.api.NomCode;
-
-import java.io.*;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-
 import org.gbif.nameparser.api.Rank;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.List;
+
 import org.jbibtex.BibTeXDatabase;
-import org.jbibtex.BibTeXEntry;
-import org.jbibtex.Key;
-import org.jbibtex.Value;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
-import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
+import de.undercouch.citeproc.bibtex.BibTeXConverter;
+import de.undercouch.citeproc.csl.CSLType;
+
 import static org.junit.Assert.*;
 
 public class ColdpInserterTest extends InserterBaseTest {

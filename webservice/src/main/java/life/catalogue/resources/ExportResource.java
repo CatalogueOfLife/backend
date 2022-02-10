@@ -1,14 +1,12 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DatasetExport;
-import life.catalogue.api.model.User;
-import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.User;
+import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
@@ -25,7 +23,7 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import scala.inline;
+import io.dropwizard.auth.Auth;
 
 @Path("/export")
 @Produces(MediaType.APPLICATION_JSON)

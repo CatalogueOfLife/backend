@@ -1,10 +1,11 @@
 package life.catalogue.importer.neo.model;
 
-import com.google.common.base.Joiner;
-import org.neo4j.graphdb.Label;
-
 import java.util.Arrays;
 import java.util.HashMap;
+
+import org.neo4j.graphdb.Label;
+
+import com.google.common.base.Joiner;
 
 public class PropLabel extends HashMap<String,Object> {
   private static final Joiner.MapJoiner PROP_JOINER = Joiner.on(", ").withKeyValueSeparator('=').useForNull("NULL");

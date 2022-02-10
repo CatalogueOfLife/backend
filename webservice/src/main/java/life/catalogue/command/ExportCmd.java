@@ -1,10 +1,5 @@
 package life.catalogue.command;
 
-import com.codahale.metrics.MetricRegistry;
-import com.google.common.eventbus.EventBus;
-
-import io.dropwizard.client.JerseyClientBuilder;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
@@ -14,33 +9,32 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.dao.*;
+import life.catalogue.dao.DatasetExportDao;
+import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.doi.service.DataCiteService;
+import life.catalogue.doi.service.DatasetConverter;
+import life.catalogue.doi.service.DoiService;
+import life.catalogue.dw.mail.MailBundle;
+import life.catalogue.exporter.ExportManager;
+import life.catalogue.img.ImageService;
+import life.catalogue.img.ImageServiceFS;
+import life.catalogue.release.ProjectRelease;
+import life.catalogue.release.PublicReleaseListener;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import life.catalogue.doi.service.DataCiteService;
-import life.catalogue.doi.service.DatasetConverter;
-import life.catalogue.doi.service.DoiService;
-import life.catalogue.dw.mail.MailBundle;
-
-import life.catalogue.exporter.ExportManager;
-
-import life.catalogue.img.ImageService;
-
-import life.catalogue.img.ImageServiceFS;
-
-import life.catalogue.release.ProjectRelease;
-import life.catalogue.release.PublicReleaseListener;
+import javax.validation.Validation;
+import javax.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 
-import net.sourceforge.argparse4j.inf.Subparser;
+import com.google.common.eventbus.EventBus;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * Command that exports a single dataset or all its releases if it is a project.

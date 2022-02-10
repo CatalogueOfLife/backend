@@ -1,20 +1,22 @@
 package life.catalogue.importer;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import io.dropwizard.lifecycle.Managed;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.concurrent.ExecutorUtils;
-import life.catalogue.config.ImporterConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.config.ImporterConfig;
 import life.catalogue.db.mapper.DatasetMapper;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+
+import io.dropwizard.lifecycle.Managed;
 
 
 /**

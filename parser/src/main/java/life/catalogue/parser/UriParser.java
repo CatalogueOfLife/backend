@@ -1,14 +1,15 @@
 package life.catalogue.parser;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
+import java.net.URI;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.util.Optional;
-import java.util.regex.Pattern;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Strings;
 
 /**
  * Greedy URL parser assuming HTTP URIs in case no schema was given.

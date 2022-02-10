@@ -9,7 +9,8 @@ import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.coldp.*;
+
+import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;

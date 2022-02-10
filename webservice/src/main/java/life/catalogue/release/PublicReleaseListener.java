@@ -1,30 +1,23 @@
 package life.catalogue.release;
 
-import com.google.common.eventbus.Subscribe;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DOI;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
-
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.dao.DatasetExportDao;
-
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiException;
 import life.catalogue.doi.service.DoiService;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +26,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.eventbus.Subscribe;
 
 
 /**

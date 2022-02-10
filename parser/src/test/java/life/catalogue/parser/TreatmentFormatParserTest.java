@@ -1,10 +1,12 @@
 package life.catalogue.parser;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.vocab.TreatmentFormat;
-import org.junit.Test;
 
 import java.util.List;
+
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 public class TreatmentFormatParserTest extends ParserTestBase<TreatmentFormat> {
   

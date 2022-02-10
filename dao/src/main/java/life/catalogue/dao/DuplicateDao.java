@@ -1,18 +1,15 @@
 package life.catalogue.dao;
 
-import com.google.common.base.Defaults;
-
-import com.google.common.collect.Streams;
-
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Duplicate;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.Synonym;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.tax.RankUtils;
 import life.catalogue.db.mapper.DuplicateMapper;
 
-import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -20,16 +17,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-
-import javax.annotation.Nullable;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 
 public class DuplicateDao {
   

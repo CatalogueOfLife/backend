@@ -1,9 +1,9 @@
 package life.catalogue.command;
 
-import org.junit.Test;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import org.junit.Test;
 
 import static life.catalogue.command.UpdMetricCmd.SectorAttempt;
 import static org.junit.Assert.assertEquals;

@@ -1,12 +1,15 @@
 package life.catalogue.cache;
 
-import com.google.common.eventbus.Subscribe;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.vocab.DatasetOrigin;
-import org.apache.http.impl.client.CloseableHttpClient;
+
+import java.net.URI;
 
 import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
+
+import org.apache.http.impl.client.CloseableHttpClient;
+
+import com.google.common.eventbus.Subscribe;
 
 
 /**

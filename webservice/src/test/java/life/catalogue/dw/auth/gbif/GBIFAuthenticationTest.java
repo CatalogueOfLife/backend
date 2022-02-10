@@ -4,12 +4,13 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.util.YamlUtils;
+
+import java.io.IOException;
+
 import org.apache.http.impl.client.HttpClients;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.IOException;
 
 public class GBIFAuthenticationTest {
   final GBIFAuthentication gbif;

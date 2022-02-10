@@ -8,6 +8,7 @@ import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DataCiteWrapper;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiException;
+import life.catalogue.dw.jersey.JerseyClientRule;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,8 +19,6 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.ws.rs.client.Client;
-
-import life.catalogue.dw.jersey.JerseyClientRule;
 
 import org.junit.*;
 

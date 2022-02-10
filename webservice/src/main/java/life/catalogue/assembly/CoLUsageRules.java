@@ -3,7 +3,9 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.NomStatus;
+
 import org.gbif.nameparser.api.NomCode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

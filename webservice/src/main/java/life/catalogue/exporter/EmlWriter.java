@@ -1,7 +1,5 @@
 package life.catalogue.exporter;
 
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.io.UTF8IoUtils;
 
@@ -9,6 +7,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 public class EmlWriter  {
 

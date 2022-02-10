@@ -10,20 +10,22 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+
+import org.apache.ibatis.session.SqlSession;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;

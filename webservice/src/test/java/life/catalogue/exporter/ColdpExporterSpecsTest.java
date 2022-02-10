@@ -1,31 +1,23 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.MetricRegistry;
-
 import life.catalogue.ApiUtils;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.CslData;
-import life.catalogue.api.model.CslDate;
-import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.PgImportRule;
 
-import org.apache.ibatis.session.SqlSession;
-
 import org.gbif.nameparser.api.NomCode;
 
-import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+
+import com.codahale.metrics.MetricRegistry;
 
 import static org.junit.Assert.assertTrue;
 

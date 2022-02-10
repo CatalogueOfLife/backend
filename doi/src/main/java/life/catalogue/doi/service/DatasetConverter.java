@@ -6,10 +6,6 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.doi.datacite.model.*;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,6 +15,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.core.UriBuilder;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Converts COL metadata into DataCite metadata.

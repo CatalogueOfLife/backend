@@ -1,11 +1,5 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.Timer;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.EstimateSearchRequest;
@@ -20,15 +14,8 @@ import life.catalogue.db.NameProcessable;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
-import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.gbif.dwc.terms.Term;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.UriBuilder;
+import org.gbif.dwc.terms.Term;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,6 +24,23 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.ws.rs.core.UriBuilder;
+
+import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Timer;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 public abstract class ArchiveExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(ArchiveExporter.class);

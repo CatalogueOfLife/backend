@@ -10,13 +10,13 @@ import life.catalogue.db.GlobalPageable;
 
 import java.util.List;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validator;
 
 /**
  * Generic CRUD DAO for keyed entities

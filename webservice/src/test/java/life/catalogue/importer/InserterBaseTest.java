@@ -1,20 +1,22 @@
 package life.catalogue.importer;
 
-import com.google.common.io.Files;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+
+import com.google.common.io.Files;
 
 public abstract class InserterBaseTest {
   protected DatasetWithSettings d;

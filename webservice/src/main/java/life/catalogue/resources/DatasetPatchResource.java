@@ -1,9 +1,9 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetPatchMapper;
 import life.catalogue.dw.auth.Roles;

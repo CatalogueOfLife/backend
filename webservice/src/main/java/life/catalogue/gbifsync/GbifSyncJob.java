@@ -1,33 +1,27 @@
 package life.catalogue.gbifsync;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.db.mapper.DatasetMapper;
-
 import life.catalogue.dw.jersey.exception.PersistenceExceptionMapper;
 
-import org.apache.ibatis.exceptions.PersistenceException;
+import java.util.*;
+
+import javax.ws.rs.client.Client;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
-import javax.ws.rs.client.Client;
-
-import java.util.*;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class GbifSyncJob extends GlobalBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(GbifSyncJob.class);

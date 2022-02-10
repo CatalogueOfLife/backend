@@ -2,11 +2,13 @@ package life.catalogue.dao;
 
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DoiChange;
-import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
@@ -21,28 +23,22 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

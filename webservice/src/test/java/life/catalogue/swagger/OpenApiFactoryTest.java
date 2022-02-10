@@ -1,13 +1,10 @@
 package life.catalogue.swagger;
 
-import io.dropwizard.setup.Environment;
-
 import life.catalogue.WsServerConfig;
 
 import org.junit.Test;
-import org.neo4j.cypher.internal.v3_4.functions.E;
 
-import static org.junit.Assert.*;
+import io.dropwizard.setup.Environment;
 
 public class OpenApiFactoryTest {
 

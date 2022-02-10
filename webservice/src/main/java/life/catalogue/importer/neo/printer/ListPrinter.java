@@ -2,11 +2,13 @@ package life.catalogue.importer.neo.printer;
 
 import life.catalogue.common.io.TabWriter;
 import life.catalogue.importer.neo.model.RankedUsage;
+
 import org.gbif.nameparser.api.Rank;
-import org.neo4j.graphdb.Node;
 
 import java.io.IOException;
 import java.io.Writer;
+
+import org.neo4j.graphdb.Node;
 
 /**
  * Dumps a normalizer db in a simple tab delimited format showing the following columns:

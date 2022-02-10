@@ -1,13 +1,14 @@
 package life.catalogue.dw.jersey.exception;
 
 
-import io.dropwizard.jersey.errors.ErrorMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.jersey.errors.ErrorMessage;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 

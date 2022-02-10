@@ -2,8 +2,6 @@ package life.catalogue.api.model;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class PageTest {
 
   @Test

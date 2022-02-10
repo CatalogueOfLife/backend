@@ -1,5 +1,7 @@
 package life.catalogue.dw.jersey.filter;
 
+import java.io.IOException;
+
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
@@ -7,7 +9,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 
 /**
  * Legacy API Filter to apply Accept header by looking at a "format" parameter

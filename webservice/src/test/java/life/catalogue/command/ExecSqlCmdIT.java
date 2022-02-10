@@ -1,8 +1,8 @@
 package life.catalogue.command;
 
-import org.junit.Test;
-
 import java.io.File;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 

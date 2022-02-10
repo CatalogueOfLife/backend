@@ -1,19 +1,23 @@
 package life.catalogue.importer.neo.traverse;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.google.common.collect.PeekingIterator;
 import life.catalogue.importer.neo.model.Labels;
 import life.catalogue.importer.neo.model.NeoProperties;
+
 import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.util.List;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
 
 /**
  * A utility class to iterate over nodes in taxonomic order and execute any number of StartEndHandler while walking.

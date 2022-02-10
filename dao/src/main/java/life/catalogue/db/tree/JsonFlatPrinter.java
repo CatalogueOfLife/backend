@@ -1,11 +1,8 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.dao.TaxonCounter;
-import life.catalogue.db.mapper.SectorMapper;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -15,8 +12,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 /**

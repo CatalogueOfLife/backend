@@ -1,7 +1,5 @@
 package life.catalogue.dao;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.NameMapper;
@@ -22,6 +20,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   

@@ -4,14 +4,14 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.NameMapperTest;
+
+import javax.ws.rs.ForbiddenException;
+
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.Rule;
 import org.junit.Test;
-
-import javax.ws.rs.ForbiddenException;
 
 import static life.catalogue.ApiUtils.*;
 import static org.junit.Assert.assertEquals;

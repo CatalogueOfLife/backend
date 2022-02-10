@@ -5,7 +5,7 @@ import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
-import life.catalogue.common.io.CompressionUtil;
+import life.catalogue.common.io.TabReader;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,10 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import life.catalogue.common.io.TabReader;
-
 import org.apache.commons.lang3.StringUtils;
-import org.catalogueoflife.coldp.gen.AbstractGenerator;
 import org.catalogueoflife.coldp.gen.AbstractZipSrcGenerator;
 import org.catalogueoflife.coldp.gen.GeneratorConfig;
 

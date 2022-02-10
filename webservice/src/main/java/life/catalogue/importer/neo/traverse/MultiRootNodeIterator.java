@@ -1,12 +1,13 @@
 package life.catalogue.importer.neo.traverse;
 
-import com.google.common.collect.Lists;
+import java.util.List;
+
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 
-import java.util.List;
+import com.google.common.collect.Lists;
 
 /**
  * Path iterator that traverses multiple start nodes in a given traversal description.

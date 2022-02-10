@@ -1,7 +1,8 @@
 package life.catalogue.dw.jersey.provider;
 
-import javax.ws.rs.ext.Provider;
 import java.time.LocalDate;
+
+import javax.ws.rs.ext.Provider;
 
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper

@@ -1,15 +1,17 @@
 package life.catalogue.importer.neo.model;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.SpeciesInteractionType;
 import life.catalogue.api.vocab.TaxonConceptRelType;
-import org.neo4j.graphdb.RelationshipType;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.neo4j.graphdb.RelationshipType;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 /**
  *

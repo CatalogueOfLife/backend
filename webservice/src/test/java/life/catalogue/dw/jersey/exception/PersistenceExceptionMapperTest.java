@@ -1,16 +1,16 @@
 package life.catalogue.dw.jersey.exception;
 
-import io.dropwizard.jersey.errors.ErrorMessage;
-
 import life.catalogue.api.model.*;
 import life.catalogue.db.mapper.*;
-import org.apache.ibatis.exceptions.PersistenceException;
-import org.junit.Ignore;
-import org.junit.Test;
+
+import java.util.UUID;
 
 import javax.ws.rs.core.Response;
 
-import java.util.UUID;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.junit.Test;
+
+import io.dropwizard.jersey.errors.ErrorMessage;
 
 import static org.junit.Assert.*;
 

@@ -4,8 +4,8 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.model.ParsedNameUsage;
-import life.catalogue.matching.NameIndex;
 import life.catalogue.coldp.NameParser;
+import life.catalogue.matching.NameIndex;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;

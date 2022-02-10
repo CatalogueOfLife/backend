@@ -11,11 +11,11 @@ import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 import life.catalogue.es.response.*;
 
-import javax.annotation.Nullable;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.

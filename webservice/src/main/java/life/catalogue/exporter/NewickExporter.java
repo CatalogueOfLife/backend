@@ -1,7 +1,5 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.Timer;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
@@ -16,6 +14,8 @@ import java.io.Writer;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Timer;
 
 public class NewickExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(NewickExporter.class);

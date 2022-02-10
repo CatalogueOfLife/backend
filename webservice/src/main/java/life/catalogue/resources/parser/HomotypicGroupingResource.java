@@ -1,27 +1,32 @@
 package life.catalogue.resources.parser;
 
 import life.catalogue.api.model.Name;
+import life.catalogue.coldp.NameParser;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.BasionymGroup;
 import life.catalogue.matching.authorship.BasionymSorter;
-import life.catalogue.coldp.NameParser;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/parser/homotypic")
 @Produces(MediaType.APPLICATION_JSON)

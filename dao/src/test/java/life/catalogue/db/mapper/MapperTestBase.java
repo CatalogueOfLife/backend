@@ -11,6 +11,9 @@ import life.catalogue.db.TestDataRule;
 
 import java.time.LocalDateTime;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.apache.ibatis.session.SqlSession;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
@@ -19,9 +22,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 
 import com.google.common.base.Preconditions;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 /**
  * A reusable base class for all mybatis mapper tests that takes care of postgres & mybatis.

@@ -2,6 +2,12 @@ package life.catalogue.dw.jersey.writers;
 
 import life.catalogue.dw.jersey.MoreMediaTypes;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+
 import javax.imageio.ImageIO;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -9,11 +15,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 
 @Produces({MoreMediaTypes.IMG_PNG})
 @Provider

@@ -1,36 +1,26 @@
 package life.catalogue.command;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.Partitioner;
-import life.catalogue.db.PgConfig;
-
-import java.io.File;
-import java.io.StringReader;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import life.catalogue.db.mapper.DatasetMapper;
-
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.jdbc.ScriptRunner;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.dropwizard.setup.Bootstrap;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 

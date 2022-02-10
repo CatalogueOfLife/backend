@@ -1,12 +1,14 @@
 package life.catalogue.parser;
 
-import com.google.common.collect.ImmutableMap;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  *

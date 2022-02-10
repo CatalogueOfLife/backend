@@ -3,14 +3,15 @@ package life.catalogue.importer.neo;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.NormalizerConfig;
-import org.mapdb.DBMaker;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ClosedByInterruptException;
+
+import org.mapdb.DBMaker;
+import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A factory for persistent & temporary, volatile neodb instances.

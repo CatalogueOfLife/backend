@@ -1,28 +1,23 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.MetricRegistry;
-
-import com.codahale.metrics.Timer;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.Users;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.dw.mail.MailConfig;
-import life.catalogue.img.ImageService;
 
-import org.apache.ibatis.session.SqlSessionFactory;
+import java.net.URI;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.net.URI;
+import com.codahale.metrics.MetricRegistry;
 
 public class EmailNotificationTest {
 

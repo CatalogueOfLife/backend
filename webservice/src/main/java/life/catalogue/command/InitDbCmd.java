@@ -1,49 +1,32 @@
 package life.catalogue.command;
 
-import com.google.common.collect.ImmutableMap;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.PathUtils;
-import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.dao.NameDao;
 import life.catalogue.dao.Partitioner;
-import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
-import life.catalogue.es.EsClientFactory;
-import life.catalogue.es.EsUtil;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import life.catalogue.matching.DatasetMatcher;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.postgres.IntSerial;
-import life.catalogue.postgres.PgCopyUtils;
-import net.sourceforge.argparse4j.inf.Namespace;
+
+import java.io.Reader;
+import java.sql.Connection;
+import java.sql.Statement;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
-import org.gbif.nameparser.api.NameType;
-import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.function.Function;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+import io.dropwizard.setup.Bootstrap;
+import net.sourceforge.argparse4j.inf.Namespace;
 
 /**
  * Command to initialise a new database schema.

@@ -1,10 +1,11 @@
 package life.catalogue.dw.auth;
 
 import life.catalogue.api.TestEntityGenerator;
-import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

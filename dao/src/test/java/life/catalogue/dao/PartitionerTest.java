@@ -1,20 +1,17 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.vocab.DatasetOrigin;
-
 import life.catalogue.db.PgSetupRule;
-
 import life.catalogue.db.TestDataRule;
+
+import java.sql.Connection;
+import java.util.Set;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.util.Set;
-
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 public class PartitionerTest {
 

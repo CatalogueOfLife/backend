@@ -1,17 +1,20 @@
 package life.catalogue.importer.neo;
 
-import com.google.common.base.Joiner;
 import life.catalogue.importer.neo.model.Labels;
 import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.RelType;
+
 import org.gbif.nameparser.api.Rank;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.function.Consumer;
+
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+
+import com.google.common.base.Joiner;
 
 /**
  * Dumps every Node and relation from neo into a Dot graphviz file.

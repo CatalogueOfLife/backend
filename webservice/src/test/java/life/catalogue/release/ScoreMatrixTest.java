@@ -3,12 +3,13 @@ package life.catalogue.release;
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

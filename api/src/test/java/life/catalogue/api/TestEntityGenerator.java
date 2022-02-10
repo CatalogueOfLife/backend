@@ -7,8 +7,6 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.ApiKryoPool;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 
@@ -16,6 +14,8 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.google.common.base.Splitter;

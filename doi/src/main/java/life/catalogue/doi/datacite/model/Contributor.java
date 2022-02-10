@@ -1,8 +1,8 @@
 package life.catalogue.doi.datacite.model;
 
-import javax.validation.constraints.NotNull;
-
 import java.util.Objects;
+
+import javax.validation.constraints.NotNull;
 
 public class Contributor extends Creator {
 

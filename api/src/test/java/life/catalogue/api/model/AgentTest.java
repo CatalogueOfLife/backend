@@ -5,8 +5,8 @@ import javax.validation.Validator;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static life.catalogue.api.model.Agent.person;
+import static org.junit.Assert.*;
 
 public class AgentTest {
 

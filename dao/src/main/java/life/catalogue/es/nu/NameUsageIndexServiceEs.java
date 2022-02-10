@@ -11,7 +11,10 @@ import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.NameUsageProcessor;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameUsageWrapperMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.*;
 
 import java.io.IOException;

@@ -3,6 +3,7 @@ package life.catalogue.importer.neo.printer;
 import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.traverse.StartEndHandler;
+
 import org.neo4j.graphdb.Node;
 
 abstract class BasePrinter implements StartEndHandler, TreePrinter {

@@ -6,14 +6,16 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 
 import java.util.List;
+
+import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 
 import static org.junit.Assert.*;
 

@@ -7,13 +7,13 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeDao;
 import life.catalogue.dw.auth.Roles;
 
+import org.gbif.nameparser.api.Rank;
+
 import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

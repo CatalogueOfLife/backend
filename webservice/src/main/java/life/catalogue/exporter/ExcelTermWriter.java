@@ -2,17 +2,18 @@ package life.catalogue.exporter;
 
 import life.catalogue.common.io.RowWriter;
 import life.catalogue.common.io.TermWriter;
+
+import org.gbif.dwc.terms.Term;
+
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.gbif.dwc.terms.Term;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
 
 public class ExcelTermWriter extends TermWriter {
   public static final int MAX_ROWS = 1048574; // IAE: Invalid row number (1048576) outside allowable range (0..1048575)

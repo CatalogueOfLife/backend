@@ -1,34 +1,32 @@
 package life.catalogue.parser;
 
-import com.esotericsoftware.minlog.Log;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.NomStatus;
 
-import org.checkerframework.checker.units.qual.A;
-
 import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.api.*;
-
 import org.gbif.nameparser.utils.NamedThreadFactory;
 
-import org.junit.After;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.LockSupport;
-import java.util.stream.IntStream;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import static org.junit.Assert.*;
 

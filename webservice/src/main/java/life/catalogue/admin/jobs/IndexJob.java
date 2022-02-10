@@ -1,13 +1,15 @@
 package life.catalogue.admin.jobs;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.es.NameUsageIndexService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class IndexJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(IndexJob.class);

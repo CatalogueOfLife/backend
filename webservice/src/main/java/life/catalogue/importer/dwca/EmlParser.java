@@ -1,14 +1,17 @@
 package life.catalogue.importer.dwca;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.Citation;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.io.CharsetDetectingStream;
-import life.catalogue.dao.DaoUtils;
 import life.catalogue.coldp.CountryParser;
 import life.catalogue.coldp.DateParser;
 import life.catalogue.coldp.LicenseParser;
 import life.catalogue.coldp.SafeParser;
+import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.io.CharsetDetectingStream;
+import life.catalogue.dao.DaoUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

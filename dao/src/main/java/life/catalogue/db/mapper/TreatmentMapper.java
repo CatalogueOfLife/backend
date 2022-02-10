@@ -3,9 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Treatment;
 import life.catalogue.db.CopyDataset;
-
 import life.catalogue.db.SectorProcessable;
-
 import life.catalogue.db.TempNameUsageRelated;
 
 import org.apache.ibatis.annotations.Param;

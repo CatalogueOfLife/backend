@@ -1,9 +1,10 @@
 package life.catalogue.parser;
 
-import com.google.common.collect.Lists;
+import java.util.List;
+
 import org.junit.Test;
 
-import java.util.List;
+import com.google.common.collect.Lists;
 
 /**
  *

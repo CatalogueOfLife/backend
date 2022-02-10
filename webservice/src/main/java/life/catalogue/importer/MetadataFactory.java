@@ -1,19 +1,19 @@
 package life.catalogue.importer;
 
-import com.google.common.collect.ImmutableList;
-
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.exporter.DatasetYamlWriter;
 import life.catalogue.importer.coldp.ColdpMetadataParser;
 import life.catalogue.importer.dwca.EmlParser;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * A delegating metadata factory for all supported metadata formats in COL CLB.

@@ -1,24 +1,19 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
-
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.User;
-import life.catalogue.db.tree.BaseDiffService;
 import life.catalogue.db.tree.DatasetDiffService;
 
-import org.apache.commons.lang3.NotImplementedException;
-import org.checkerframework.checker.units.qual.K;
-
 import org.gbif.nameparser.api.Rank;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+
+import io.dropwizard.auth.Auth;
 
 @Path("/dataset/{key}/diff")
 @SuppressWarnings("static-method")

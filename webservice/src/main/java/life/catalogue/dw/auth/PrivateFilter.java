@@ -1,12 +1,10 @@
 package life.catalogue.dw.auth;
 
-import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
-import it.unimi.dsi.fastutil.ints.Int2BooleanMaps;
-import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
+import java.io.IOException;
+import java.util.function.IntPredicate;
 
 import javax.annotation.Priority;
 import javax.ws.rs.ForbiddenException;
@@ -15,8 +13,13 @@ import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.SecurityContext;
-import java.io.IOException;
-import java.util.function.IntPredicate;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
+import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
+import it.unimi.dsi.fastutil.ints.Int2BooleanMaps;
+import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 
 /**
  * Avoids unprivileged access to private datasets. A user has to be at least a reviewer with read access to pass this filter.

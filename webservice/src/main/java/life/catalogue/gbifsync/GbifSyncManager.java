@@ -1,22 +1,23 @@
 package life.catalogue.gbifsync;
 
-import io.dropwizard.lifecycle.Managed;
-
 import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.GbifConfig;
 
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.utils.NamedThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.client.Client;
 
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.client.Client;
+
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.lifecycle.Managed;
 
 
 /**

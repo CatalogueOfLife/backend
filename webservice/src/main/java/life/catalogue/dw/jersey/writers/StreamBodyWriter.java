@@ -2,10 +2,12 @@ package life.catalogue.dw.jersey.writers;
 
 import life.catalogue.api.jackson.ApiModule;
 
-import life.catalogue.exporter.AcefExporter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -14,13 +16,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Writer that generates an JSON array based on any object stream

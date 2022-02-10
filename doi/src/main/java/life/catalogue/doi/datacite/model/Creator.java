@@ -1,7 +1,5 @@
 package life.catalogue.doi.datacite.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 import java.util.Objects;
 

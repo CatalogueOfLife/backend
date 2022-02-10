@@ -1,22 +1,23 @@
 package life.catalogue.dw.auth;
 
-import com.google.common.eventbus.Subscribe;
-import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.auth.AuthValueFactoryProvider;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.UserChanged;
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
-
 import life.catalogue.api.vocab.Users;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+
+import com.google.common.eventbus.Subscribe;
+
+import io.dropwizard.ConfiguredBundle;
+import io.dropwizard.auth.AuthValueFactoryProvider;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 
 /**
  * Wires up authentication against the GBIF registry and authorization based on CoL user roles.

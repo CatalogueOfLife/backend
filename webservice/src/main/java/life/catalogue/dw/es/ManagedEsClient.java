@@ -1,7 +1,8 @@
 package life.catalogue.dw.es;
 
-import io.dropwizard.lifecycle.Managed;
 import org.elasticsearch.client.RestClient;
+
+import io.dropwizard.lifecycle.Managed;
 
 public class ManagedEsClient implements Managed {
   

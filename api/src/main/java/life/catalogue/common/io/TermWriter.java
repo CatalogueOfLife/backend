@@ -1,15 +1,10 @@
 package life.catalogue.common.io;
 
 import life.catalogue.api.jackson.PermissiveEnumSerde;
-
 import life.catalogue.api.model.CslDate;
-
 import life.catalogue.api.model.CslName;
-
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
-
 import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.dwc.terms.Term;

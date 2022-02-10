@@ -1,6 +1,5 @@
 package life.catalogue.dw.jersey.writers;
 
-import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -18,10 +17,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-
-import com.fasterxml.jackson.databind.ObjectWriter;
-
-import de.undercouch.citeproc.csl.CSLItemData;
 
 /**
  * Writer that generates BibTeX for datasets.

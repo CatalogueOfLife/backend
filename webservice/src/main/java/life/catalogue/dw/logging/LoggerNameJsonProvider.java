@@ -1,11 +1,12 @@
 package life.catalogue.dw.logging;
 
-import ch.qos.logback.access.spi.IAccessEvent;
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonGenerator;
+
+import ch.qos.logback.access.spi.IAccessEvent;
 import net.logstash.logback.composite.AbstractFieldJsonProvider;
 import net.logstash.logback.composite.JsonWritingUtils;
-
-import java.io.IOException;
 
 public class LoggerNameJsonProvider extends AbstractFieldJsonProvider<IAccessEvent> {
 

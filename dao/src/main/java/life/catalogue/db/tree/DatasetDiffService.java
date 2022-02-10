@@ -8,6 +8,9 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,17 +21,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import life.catalogue.db.mapper.NameUsageMapper;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import com.google.common.collect.Lists;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 public class DatasetDiffService extends BaseDiffService<Integer> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDiffService.class);

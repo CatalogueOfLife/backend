@@ -4,10 +4,6 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.newick.SNode;
 import life.catalogue.dao.TaxonCounter;
 
-import org.catalogueoflife.newick.Node;
-
-import org.catalogueoflife.newick.SimpleNode;
-
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -18,7 +14,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.catalogueoflife.newick.NHXNode;
+import org.catalogueoflife.newick.Node;
+import org.catalogueoflife.newick.SimpleNode;
 
 /**
  * Print an entire dataset in the extended Newick format, listing the name, rank and id in the extended properties.

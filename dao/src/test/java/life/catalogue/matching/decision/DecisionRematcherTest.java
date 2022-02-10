@@ -14,13 +14,13 @@ import life.catalogue.es.NameUsageIndexService;
 
 import org.gbif.nameparser.api.Rank;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

@@ -1,18 +1,19 @@
 package life.catalogue.dw.jersey.exception;
 
-import io.dropwizard.jersey.errors.LoggingExceptionMapper;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
-
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 
 import static life.catalogue.dw.jersey.exception.JsonExceptionMapperBase.jsonErrorResponse;
 

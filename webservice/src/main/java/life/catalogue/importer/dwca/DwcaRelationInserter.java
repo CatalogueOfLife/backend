@@ -1,32 +1,35 @@
 package life.catalogue.importer.dwca;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.coldp.NameParser;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.*;
-import life.catalogue.coldp.NameParser;
+
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
-import org.neo4j.graphdb.Node;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.neo4j.graphdb.Node;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 /**
  *

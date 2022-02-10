@@ -18,14 +18,11 @@ package life.catalogue.doi.service;
 
 import life.catalogue.api.model.DOI;
 import life.catalogue.doi.datacite.model.DoiAttributes;
-import life.catalogue.doi.datacite.model.EventType;
+
+import java.net.URI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URI;
 
 public interface DoiService {
   Logger LOG = LoggerFactory.getLogger(DoiService.class);

@@ -4,12 +4,13 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest;
 
+import java.net.URI;
+import java.util.Collection;
+
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import java.net.URI;
-import java.util.Collection;
 
 import static org.glassfish.jersey.client.authentication.HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_PASSWORD;
 import static org.glassfish.jersey.client.authentication.HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_USERNAME;

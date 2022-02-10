@@ -5,21 +5,13 @@ import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.User;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.NameDao;
 import life.catalogue.doi.DoiUpdater;
-import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.validation.Validator;
 
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -27,6 +19,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+
+import javax.validation.Validator;
+
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReleaseManager {
   private static final Logger LOG = LoggerFactory.getLogger(ReleaseManager.class);

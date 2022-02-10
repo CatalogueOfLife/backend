@@ -1,32 +1,34 @@
 package life.catalogue.importer.reference;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
-
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.coldp.*;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.coldp.CSLTypeParser;
-import life.catalogue.coldp.DateParser;
-import life.catalogue.coldp.SafeParser;
-import life.catalogue.coldp.UnparsableException;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import life.catalogue.parser.CSLTypeParser;
+import life.catalogue.parser.DateParser;
+import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.UnparsableException;
+
 import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import de.undercouch.citeproc.csl.CSLType;
 
 import static life.catalogue.common.text.StringUtils.hasContent;
 

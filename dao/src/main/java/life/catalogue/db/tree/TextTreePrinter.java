@@ -1,25 +1,18 @@
 package life.catalogue.db.tree;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.dao.TaxonCounter;
-import life.catalogue.db.mapper.SectorMapper;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 /**

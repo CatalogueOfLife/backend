@@ -10,14 +10,15 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 
-import org.apache.ibatis.cursor.Cursor;
-
 import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.ibatis.cursor.Cursor;
 import org.junit.Before;
 import org.junit.Test;
 

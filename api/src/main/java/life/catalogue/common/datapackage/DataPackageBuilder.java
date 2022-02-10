@@ -1,7 +1,5 @@
 package life.catalogue.common.datapackage;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.datapackage.PackageDescriptor;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.*;
@@ -23,6 +21,8 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import de.undercouch.citeproc.csl.CSLType;
 
 public class DataPackageBuilder {
   private static final String MONOMIAL_PATTERN = "^[A-Z\\p{Lu}]\\p{L}+$";

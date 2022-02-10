@@ -1,6 +1,9 @@
 package life.catalogue.doi.service;
 
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.DOI;
+import life.catalogue.common.util.YamlUtils;
+import life.catalogue.doi.datacite.model.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -8,20 +11,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Feature;
-
-import life.catalogue.api.model.DOI;
-
-import life.catalogue.common.util.YamlUtils;
-
-import life.catalogue.doi.datacite.model.*;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;

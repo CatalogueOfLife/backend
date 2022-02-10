@@ -1,8 +1,5 @@
 package life.catalogue.importer.neo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
-import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
@@ -11,14 +8,19 @@ import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.neo.model.NeoNode;
 import life.catalogue.importer.neo.model.NodeMock;
 import life.catalogue.importer.neo.model.PropLabel;
+
+import java.util.Map;
+import java.util.stream.Stream;
+
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.stream.Stream;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
+import com.google.common.base.Preconditions;
 
 public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCRUDStore.class);

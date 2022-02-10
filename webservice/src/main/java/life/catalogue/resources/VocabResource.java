@@ -1,6 +1,5 @@
 package life.catalogue.resources;
 
-import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
@@ -9,9 +8,10 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
-import life.catalogue.img.ImgConfig;
 import life.catalogue.coldp.AreaParser;
+import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.coldp.UnparsableException;
+import life.catalogue.img.ImgConfig;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;

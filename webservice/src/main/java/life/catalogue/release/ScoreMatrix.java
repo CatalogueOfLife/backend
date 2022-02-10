@@ -1,15 +1,17 @@
 package life.catalogue.release;
 
-import it.unimi.dsi.fastutil.ints.*;
 import life.catalogue.api.model.SimpleNameWithNidx;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+
+import it.unimi.dsi.fastutil.ints.*;
 
 public class ScoreMatrix {
   private static final int DELETED_N = -1;

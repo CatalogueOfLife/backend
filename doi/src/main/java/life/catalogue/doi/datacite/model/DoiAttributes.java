@@ -1,14 +1,10 @@
 package life.catalogue.doi.datacite.model;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.util.ObjectUtils;
 
-import java.net.URI;
 import java.time.Year;
 import java.time.temporal.ChronoField;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

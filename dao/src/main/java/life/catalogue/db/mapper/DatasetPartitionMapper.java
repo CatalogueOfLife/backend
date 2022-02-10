@@ -3,16 +3,12 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.vocab.DatasetOrigin;
 
 import java.util.List;
-import java.util.Map;
-
-import life.catalogue.dao.Partitioner;
 
 import org.apache.ibatis.annotations.Param;
-
-import com.google.common.collect.Lists;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * Mapper with default methods to manage the lifetime of dataset based partitions

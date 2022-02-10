@@ -7,20 +7,19 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Deletes a sector, all its data and recursively deletes also all included, nested sectors!

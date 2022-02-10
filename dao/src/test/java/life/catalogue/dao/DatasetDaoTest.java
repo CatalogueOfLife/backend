@@ -2,7 +2,6 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetTest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
@@ -16,15 +15,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.ConstraintViolationException;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
-
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -3,8 +3,10 @@ package life.catalogue.release;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.text.CitationUtils;
@@ -20,19 +22,21 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.validation.Validator;
+import javax.ws.rs.core.UriBuilder;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import javax.validation.Validator;
-import javax.ws.rs.core.UriBuilder;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 public class ProjectRelease extends AbstractProjectCopy {
   public static Set<DataFormat> EXPORT_FORMATS = Set.of(DataFormat.TEXT_TREE, DataFormat.COLDP, DataFormat.DWCA, DataFormat.ACEF);

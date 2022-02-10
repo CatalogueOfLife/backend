@@ -5,11 +5,11 @@ import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.NameParser;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.coldp.NameParser;
 
 import org.gbif.nameparser.api.NameType;
 
@@ -18,6 +18,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import javax.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -29,8 +31,6 @@ import com.google.common.cache.LoadingCache;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-
-import javax.validation.Validator;
 
 public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);

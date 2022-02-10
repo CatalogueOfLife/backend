@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.apache.ibatis.session.SqlSession;
 import org.junit.After;
 import org.junit.Before;
@@ -27,9 +30,6 @@ import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import static java.util.stream.Collectors.toList;
 

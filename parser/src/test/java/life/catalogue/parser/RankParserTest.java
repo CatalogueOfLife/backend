@@ -1,10 +1,12 @@
 package life.catalogue.parser;
 
-import com.google.common.collect.Lists;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.util.List;
+
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 /**
  *

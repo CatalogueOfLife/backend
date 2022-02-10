@@ -1,15 +1,17 @@
 package life.catalogue.importer.neo.model;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.Node;
 
 import java.util.List;
 import java.util.Objects;
+
+import org.neo4j.graphdb.Label;
+import org.neo4j.graphdb.Node;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 /**
  * Simple wrapper to hold a normalizer node together with all data for a record

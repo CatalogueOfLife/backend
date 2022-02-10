@@ -1,11 +1,11 @@
 package life.catalogue.parser;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Parses doubles throwing UnparsableException in case the value is not empty but unparsable.

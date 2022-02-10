@@ -1,10 +1,10 @@
 package life.catalogue.cache;
 
+import java.util.Objects;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.util.Objects;
 
 public interface LatestDatasetKeyCache {
   void setSqlSessionFactory(SqlSessionFactory factory);

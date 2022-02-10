@@ -3,11 +3,11 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * A name without any associated name usage, i.e. no {@link Taxon} nor {@link Synonym}.

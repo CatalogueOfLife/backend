@@ -7,6 +7,7 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.coldp.NameParser;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -14,7 +15,6 @@ import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NamesIndexMapper;
-import life.catalogue.coldp.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;

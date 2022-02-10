@@ -7,13 +7,14 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.IdMapMapper;
+
+import java.io.IOException;
+import java.util.Map;
+
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import java.io.IOException;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 

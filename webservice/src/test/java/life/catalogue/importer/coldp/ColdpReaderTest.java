@@ -3,10 +3,11 @@ package life.catalogue.importer.coldp;
 import life.catalogue.coldp.ColdpTerm;
 
 import org.gbif.utils.file.FileUtils;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import java.nio.file.Paths;
+
+import org.junit.Ignore;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

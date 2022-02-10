@@ -1,18 +1,21 @@
 package life.catalogue.dw.auth;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 import life.catalogue.api.model.User;
 import life.catalogue.common.date.DateUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+
+import javax.crypto.SecretKey;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 
 public class JwtCodec {
   private static final Logger LOG = LoggerFactory.getLogger(JwtCodec.class);

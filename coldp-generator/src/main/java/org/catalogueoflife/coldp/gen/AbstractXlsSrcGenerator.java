@@ -1,13 +1,13 @@
 package org.catalogueoflife.coldp.gen;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.Locale;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.formula.FormulaParseException;
 import org.apache.poi.ss.usermodel.*;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.Locale;
 
 public abstract class AbstractXlsSrcGenerator extends AbstractGenerator {
   protected Workbook wb;

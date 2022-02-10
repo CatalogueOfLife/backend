@@ -1,7 +1,6 @@
 package life.catalogue.db;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Name;

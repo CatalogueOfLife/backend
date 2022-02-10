@@ -1,7 +1,7 @@
 package life.catalogue.api.model;
 
-import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.coldp.DwcUnofficialTerm;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;

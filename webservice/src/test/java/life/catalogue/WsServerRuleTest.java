@@ -1,8 +1,9 @@
  package life.catalogue;
 
-import io.dropwizard.testing.ResourceHelpers;
-import org.junit.ClassRule;
-import org.junit.Test;
+ import org.junit.ClassRule;
+ import org.junit.Test;
+
+ import io.dropwizard.testing.ResourceHelpers;
 
 public class WsServerRuleTest {
   

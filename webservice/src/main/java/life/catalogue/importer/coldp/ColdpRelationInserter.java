@@ -6,6 +6,7 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.RelationInserterBase;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
+
 import org.neo4j.graphdb.Node;
 
 /**

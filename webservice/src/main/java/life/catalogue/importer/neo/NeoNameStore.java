@@ -1,20 +1,22 @@
 package life.catalogue.importer.neo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
-import com.google.common.base.Preconditions;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.neo.model.NeoName;
-import org.apache.commons.lang3.ArrayUtils;
-import org.mapdb.DB;
-import org.mapdb.Serializer;
-import org.neo4j.graphdb.Node;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.mapdb.DB;
+import org.mapdb.Serializer;
+import org.neo4j.graphdb.Node;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
+import com.google.common.base.Preconditions;
 
 public class NeoNameStore extends NeoCRUDStore<NeoName> {
   

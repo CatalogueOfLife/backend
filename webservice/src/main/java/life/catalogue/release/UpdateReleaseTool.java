@@ -1,9 +1,5 @@
 package life.catalogue.release;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DOI;
@@ -32,6 +28,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.client.ClientConfig;
@@ -39,12 +40,10 @@ import org.glassfish.jersey.logging.LoggingFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.google.common.eventbus.EventBus;
 import com.zaxxer.hikari.HikariDataSource;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 
 public class UpdateReleaseTool implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(UpdateReleaseTool.class);

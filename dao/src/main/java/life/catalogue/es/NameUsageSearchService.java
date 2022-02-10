@@ -5,14 +5,12 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
-
-import java.util.Collections;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import life.catalogue.dao.TaxonCounter;
 
 import org.gbif.nameparser.api.Rank;
+
+import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

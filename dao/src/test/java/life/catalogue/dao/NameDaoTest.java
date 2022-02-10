@@ -14,10 +14,13 @@ import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 

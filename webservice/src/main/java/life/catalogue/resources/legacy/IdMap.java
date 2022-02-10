@@ -1,17 +1,9 @@
 package life.catalogue.resources.legacy;
 
-import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.common.func.ThrowingSupplier;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
-import org.apache.commons.io.FileUtils;
-import org.mapdb.DB;
-import org.mapdb.DBException;
-import org.mapdb.DBMaker;
-import org.mapdb.Serializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,6 +13,16 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import org.apache.commons.io.FileUtils;
+import org.mapdb.DB;
+import org.mapdb.DBException;
+import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.lifecycle.Managed;
 
 public class IdMap implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(IdMap.class);

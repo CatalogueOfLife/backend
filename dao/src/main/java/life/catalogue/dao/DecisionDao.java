@@ -11,14 +11,14 @@ import life.catalogue.es.NameUsageIndexService;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Validator;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-
-import javax.validation.Validator;
 
 public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, DecisionMapper> {
 

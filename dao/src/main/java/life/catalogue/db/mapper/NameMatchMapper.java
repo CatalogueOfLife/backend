@@ -5,10 +5,9 @@ import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.TempNameUsageRelated;
 
 import javax.annotation.Nullable;
-
-import life.catalogue.db.TempNameUsageRelated;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;

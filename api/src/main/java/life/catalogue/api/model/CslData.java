@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.undercouch.citeproc.csl.CSLType;
 
-import life.catalogue.api.util.ObjectUtils;
-
 /**
  * Official CSL variables as defined in
  * Appendix IV - Variables

@@ -1,8 +1,5 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.Timer;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -16,17 +13,22 @@ import life.catalogue.concurrent.JobPriority;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Timer;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 /**
  * Base class for all dataset exporter that blocks parallel exports for the same dataset

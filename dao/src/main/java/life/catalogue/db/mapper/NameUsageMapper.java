@@ -3,7 +3,6 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
-
 import life.catalogue.db.TempNameUsageRelated;
 
 import org.gbif.api.vocabulary.TaxonomicStatus;

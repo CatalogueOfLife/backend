@@ -1,15 +1,15 @@
 package life.catalogue.api.util;
 
+import life.catalogue.api.exception.NotFoundException;
+
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import life.catalogue.api.exception.NotFoundException;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-
-import javax.annotation.Nullable;
 
 /**
  *

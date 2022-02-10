@@ -8,9 +8,9 @@ import life.catalogue.db.GlobalPageable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
-
 import javax.annotation.Nullable;
+
+import org.apache.ibatis.annotations.Param;
 
 /**
  * Mapper for users.

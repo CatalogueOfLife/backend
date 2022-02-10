@@ -3,31 +3,23 @@ package life.catalogue.dao;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.postgres.AuthorshipNormFunc;
-import life.catalogue.postgres.PgCopyUtils;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.sql.Connection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-import org.postgresql.jdbc.PgConnection;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 import static org.junit.Assert.*;

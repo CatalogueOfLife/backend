@@ -1,8 +1,8 @@
 package life.catalogue.dw.jersey.exception;
 
-import io.dropwizard.jersey.errors.LoggingExceptionMapper;
-
 import javax.ws.rs.ext.Provider;
+
+import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 
 /**
  * Improves the last resort LoggingExceptionMapper to leave the original exception in the error message

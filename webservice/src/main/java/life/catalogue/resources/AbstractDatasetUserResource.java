@@ -1,15 +1,15 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
-
 import life.catalogue.api.model.User;
 import life.catalogue.dao.AuthorizationDao;
 import life.catalogue.dw.auth.Roles;
 
+import java.util.List;
+
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 
-import java.util.List;
+import io.dropwizard.auth.Auth;
 
 @SuppressWarnings("static-method")
 public class AbstractDatasetUserResource {

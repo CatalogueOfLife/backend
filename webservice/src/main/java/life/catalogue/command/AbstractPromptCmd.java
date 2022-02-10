@@ -1,20 +1,21 @@
 package life.catalogue.command;
 
+import life.catalogue.WsServerConfig;
+import life.catalogue.api.jackson.ApiModule;
+
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.setup.Bootstrap;
-import life.catalogue.WsServerConfig;
-import life.catalogue.api.jackson.ApiModule;
-
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Command to execute given SQL statements for each dataset partition.

@@ -2,16 +2,14 @@ package life.catalogue.db;
 
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.dao.Partitioner;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import life.catalogue.dao.Partitioner;
-
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.postgresql.jdbc.PgConnection;

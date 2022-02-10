@@ -1,11 +1,11 @@
 package life.catalogue.coldp;
 
-import org.junit.Test;
-
 import java.util.HashSet;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
 import static life.catalogue.coldp.ColdpTerm.*;
+import static org.junit.Assert.*;
 
 public class ColdpTermTest {
   @Test

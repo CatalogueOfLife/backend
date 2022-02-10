@@ -1,6 +1,5 @@
 package life.catalogue.assembly;
 
-import com.google.common.base.Charsets;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
@@ -17,21 +16,10 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.PgImportRule;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
-import org.apache.commons.io.IOUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
-import org.mockito.Mockito;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +29,20 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
+
+import com.google.common.base.Charsets;
 
 import static org.junit.Assert.*;
 

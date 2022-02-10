@@ -1,7 +1,6 @@
 package life.catalogue.doi.datacite.model;
 
 import life.catalogue.api.jackson.ApiModule;
-
 import life.catalogue.api.model.EnumValue;
 
 import org.junit.Test;

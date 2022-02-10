@@ -5,12 +5,14 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.*;
+
 import org.gbif.dwc.terms.Term;
+
+import javax.annotation.Nullable;
+
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 /**
  *

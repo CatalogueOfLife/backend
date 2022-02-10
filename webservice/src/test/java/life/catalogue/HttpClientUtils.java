@@ -1,5 +1,7 @@
  package life.catalogue;
 
+ import javax.net.ssl.SSLContext;
+
  import org.apache.http.config.Registry;
  import org.apache.http.config.RegistryBuilder;
  import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -11,8 +13,6 @@
  import org.apache.http.impl.client.CloseableHttpClient;
  import org.apache.http.impl.client.HttpClients;
  import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-
- import javax.net.ssl.SSLContext;
 
 public class HttpClientUtils {
   private static CloseableHttpClient client;

@@ -2,15 +2,11 @@ package org.catalogueoflife.coldp.gen;
 
 import life.catalogue.common.io.CompressionUtil;
 
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Locale;
+
+import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractZipSrcGenerator extends AbstractGenerator {
   protected final File srcDir; // working directory for

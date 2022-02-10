@@ -1,11 +1,9 @@
 package life.catalogue.config;
 
-import life.catalogue.api.vocab.DataFormat;
+import java.io.File;
+import java.time.LocalDateTime;
 
 import javax.validation.constraints.NotNull;
-import java.io.File;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  *

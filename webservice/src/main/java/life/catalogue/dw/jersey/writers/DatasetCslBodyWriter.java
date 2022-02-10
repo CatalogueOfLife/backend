@@ -1,14 +1,13 @@
 package life.catalogue.dw.jersey.writers;
 
-import com.fasterxml.jackson.databind.ObjectWriter;
-
-import de.undercouch.citeproc.csl.CSLItemData;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.common.csl.CslUtil;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.exporter.DatasetYamlWriter;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -17,10 +16,9 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+import de.undercouch.citeproc.csl.CSLItemData;
 
 /**
  * Writer that generates CSL-JSON for datasets.

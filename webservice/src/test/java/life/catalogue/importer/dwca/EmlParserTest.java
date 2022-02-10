@@ -5,12 +5,11 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.io.Resources;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-
-import life.catalogue.common.io.Resources;
 
 import org.junit.Test;
 

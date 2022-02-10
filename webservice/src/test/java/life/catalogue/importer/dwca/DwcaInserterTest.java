@@ -17,11 +17,9 @@ import org.gbif.nameparser.api.NomCode;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 

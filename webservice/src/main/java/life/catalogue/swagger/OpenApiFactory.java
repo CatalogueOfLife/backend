@@ -1,5 +1,14 @@
 package life.catalogue.swagger;
 
+import life.catalogue.WsServerConfig;
+import life.catalogue.common.io.Resources;
+import life.catalogue.common.util.YamlUtils;
+import life.catalogue.resources.DocsResource;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+
 import io.dropwizard.setup.Environment;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.jackson.ModelResolver;
@@ -11,15 +20,6 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
-
-import life.catalogue.WsServerConfig;
-import life.catalogue.common.io.Resources;
-import life.catalogue.common.util.YamlUtils;
-import life.catalogue.resources.DocsResource;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 
 public class OpenApiFactory {
   private OpenApiFactory(){};

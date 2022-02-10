@@ -1,16 +1,19 @@
 package life.catalogue.dw.jersey.provider;
 
-import com.google.common.base.Strings;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 import javax.ws.rs.ext.Provider;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
 
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper

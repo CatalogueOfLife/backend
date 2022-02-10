@@ -2,12 +2,10 @@ package life.catalogue.db.tree;
 
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.FileMetricsDatasetDao;
+import life.catalogue.db.TestDataRule;
 
-import java.awt.*;
 import java.io.File;
 import java.util.List;
-
-import life.catalogue.db.TestDataRule;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.time.StopWatch;

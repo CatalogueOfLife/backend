@@ -1,24 +1,20 @@
 package life.catalogue.command;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.Partitioner;
 
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.common.annotations.VisibleForTesting;
+
+import io.dropwizard.setup.Bootstrap;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * Command to add new partition tables for a given master table.

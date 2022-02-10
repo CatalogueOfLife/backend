@@ -1,7 +1,5 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.Timer;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
@@ -10,12 +8,14 @@ import life.catalogue.db.tree.DotPrinter;
 import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.img.ImageService;
 
+import java.io.File;
+import java.io.Writer;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.Writer;
+import com.codahale.metrics.Timer;
 
 public class DotExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(DotExporter.class);

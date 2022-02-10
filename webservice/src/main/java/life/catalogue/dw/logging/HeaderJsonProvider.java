@@ -1,13 +1,14 @@
 package life.catalogue.dw.logging;
 
-import ch.qos.logback.access.spi.IAccessEvent;
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonGenerator;
+
+import ch.qos.logback.access.spi.IAccessEvent;
 import net.logstash.logback.composite.AbstractFieldJsonProvider;
 import net.logstash.logback.composite.JsonWritingUtils;
 import net.logstash.logback.encoder.LogstashAccessEncoder;
 import net.logstash.logback.layout.LogstashAccessLayout;
-
-import java.io.IOException;
 
 public class HeaderJsonProvider extends AbstractFieldJsonProvider<IAccessEvent> {
   static final String[] STANDARD_HEADERS = new String[]{"Accept", "Origin"};

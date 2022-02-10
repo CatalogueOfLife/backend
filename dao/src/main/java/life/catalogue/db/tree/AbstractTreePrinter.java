@@ -5,7 +5,6 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.concurrent.UsageCounter;
-
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.mapper.NameUsageMapper;
 

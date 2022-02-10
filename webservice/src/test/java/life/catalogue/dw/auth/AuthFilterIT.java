@@ -1,9 +1,7 @@
 package life.catalogue.dw.auth;
 
 import life.catalogue.api.model.User;
-
 import life.catalogue.db.PgSetupRule;
-
 import life.catalogue.db.TestDataRule;
 
 import org.junit.ClassRule;
@@ -12,7 +10,8 @@ import org.junit.Test;
 
 import static life.catalogue.api.model.User.Role.ADMIN;
 import static life.catalogue.api.model.User.Role.EDITOR;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class AuthFilterIT {
 

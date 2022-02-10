@@ -1,17 +1,18 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-
 import life.catalogue.ApiUtils;
 import life.catalogue.WsServerConfig;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
+
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 
 public class ExporterTest {
 

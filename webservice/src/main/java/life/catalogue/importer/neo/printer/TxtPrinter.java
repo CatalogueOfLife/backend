@@ -3,12 +3,13 @@ package life.catalogue.importer.neo.printer;
 import life.catalogue.api.txtree.Tree;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.model.RelType;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.parboiled.common.StringUtils;
 
 import java.io.IOException;
 import java.io.Writer;
+
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.parboiled.common.StringUtils;
 
 /**
  * A handler that can be used with the TaxonWalker to print a neo4j taxonomy in a simple nested text structure.

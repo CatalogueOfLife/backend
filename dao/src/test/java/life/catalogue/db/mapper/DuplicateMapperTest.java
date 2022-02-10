@@ -4,32 +4,31 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.*;
-import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.MatchingMode;
+import life.catalogue.api.vocab.NameCategory;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.postgres.AuthorshipNormFunc;
-import life.catalogue.postgres.PgCopyUtils;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.sql.Connection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.apache.ibatis.session.SqlSession;
 import org.javers.common.collections.Lists;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-import org.postgresql.jdbc.PgConnection;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 import static org.junit.Assert.*;

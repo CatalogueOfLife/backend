@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.checkerframework.checker.units.qual.A;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;

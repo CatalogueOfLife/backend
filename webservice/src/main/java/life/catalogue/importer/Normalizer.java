@@ -1,14 +1,8 @@
 package life.catalogue.importer;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.NameParser;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.tax.MisappliedNameMatcher;
@@ -26,16 +20,9 @@ import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.coldp.NameParser;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.neo4j.graphdb.*;
-import org.neo4j.helpers.collection.Iterables;
-import org.neo4j.helpers.collection.Iterators;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.validation.Validator;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -47,6 +34,23 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import javax.validation.Validator;
+
+import org.neo4j.graphdb.*;
+import org.neo4j.helpers.collection.Iterables;
+import org.neo4j.helpers.collection.Iterators;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
+
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 
 /**
  *

@@ -1,12 +1,7 @@
 package life.catalogue.common.csl;
 
-import de.undercouch.citeproc.csl.CSLDate;
-import de.undercouch.citeproc.csl.CSLName;
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslName;
-import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Reference;
 
 import java.io.IOException;

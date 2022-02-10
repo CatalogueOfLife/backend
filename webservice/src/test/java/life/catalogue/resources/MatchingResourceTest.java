@@ -3,11 +3,13 @@ package life.catalogue.resources;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import javax.ws.rs.ServiceUnavailableException;
+
+import org.junit.Test;
 
 import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;

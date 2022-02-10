@@ -1,28 +1,31 @@
 package life.catalogue.importer.acef;
 
-import com.google.common.base.Strings;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.coldp.RankParser;
+import life.catalogue.coldp.SafeParser;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.NameValidator;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.coldp.RankParser;
-import life.catalogue.coldp.SafeParser;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
 
 /**
  * Interprets a verbatim ACEF record and transforms it into a name, taxon and unique references.

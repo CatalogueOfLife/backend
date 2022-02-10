@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.base.Preconditions;
-
 import org.apache.commons.lang3.ArrayUtils;
+
+import com.google.common.base.Preconditions;
 
 import static life.catalogue.es.ddl.ESDataType.KEYWORD;
 

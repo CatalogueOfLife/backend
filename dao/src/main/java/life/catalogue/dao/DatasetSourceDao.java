@@ -2,8 +2,6 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Setting;
-import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.mapper.*;
 
 import java.util.List;

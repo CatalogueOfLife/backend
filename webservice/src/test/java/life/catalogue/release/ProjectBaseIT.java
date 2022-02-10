@@ -15,15 +15,15 @@ import life.catalogue.matching.NameIndexFactory;
 
 import java.net.URI;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 
 import com.google.common.eventbus.EventBus;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import static org.mockito.Mockito.mock;
 

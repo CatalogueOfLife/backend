@@ -2,7 +2,9 @@ package life.catalogue.api.vocab;
 
 import life.catalogue.common.text.CSVUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**

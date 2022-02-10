@@ -1,6 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
@@ -14,18 +13,21 @@ import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
+
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-
-import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertTrue;
 

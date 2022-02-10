@@ -1,8 +1,5 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
@@ -14,13 +11,18 @@ import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
+
+import java.util.UUID;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.simplejavamail.api.mailer.Mailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.google.common.annotations.VisibleForTesting;
 
 public class ExportManager {
   private static final Logger LOG = LoggerFactory.getLogger(ExportManager.class);

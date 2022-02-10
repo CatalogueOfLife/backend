@@ -1,11 +1,7 @@
 package life.catalogue.resources.legacy;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.id.ShortUuid;
 import life.catalogue.common.text.StringUtils;
@@ -31,6 +27,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 
 import io.swagger.v3.oas.annotations.Hidden;
 

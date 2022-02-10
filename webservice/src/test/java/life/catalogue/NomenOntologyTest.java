@@ -1,6 +1,7 @@
 package life.catalogue;
 
 import life.catalogue.coldp.NomenOntology;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

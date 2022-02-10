@@ -1,19 +1,23 @@
 package life.catalogue.importer.neo.printer;
 
-import com.google.common.base.Function;
 import life.catalogue.importer.neo.DotProcessor;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.importer.neo.traverse.TreeWalker;
+
 import org.gbif.nameparser.api.Rank;
+
+import java.io.StringWriter;
+import java.io.Writer;
+
+import javax.annotation.Nullable;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
-import javax.annotation.Nullable;
-import java.io.StringWriter;
-import java.io.Writer;
+import com.google.common.base.Function;
 
 /**
  * Printing utilities for {@link NeoDb}s

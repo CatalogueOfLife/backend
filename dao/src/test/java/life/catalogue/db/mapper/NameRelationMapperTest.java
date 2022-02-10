@@ -6,12 +6,11 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.api.vocab.Users;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import life.catalogue.api.vocab.Users;
 
 import org.junit.Before;
 import org.junit.Test;

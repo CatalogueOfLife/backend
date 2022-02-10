@@ -1,13 +1,15 @@
 package life.catalogue.importer.neo.traverse;
 
 import life.catalogue.importer.neo.model.NeoProperties;
+
 import org.gbif.nameparser.api.Rank;
+
+import javax.annotation.Nullable;
+
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
-
-import javax.annotation.Nullable;
 
 /**
  * Includes only paths with taxon end nodes that have a related name node with a rank equal or above the threshold given.

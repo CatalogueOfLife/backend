@@ -8,17 +8,12 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.neo.ReferenceMapStore;
 
-import org.apache.poi.ss.formula.functions.T;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
-
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
 
 public class ReferenceFactoryTest {
   

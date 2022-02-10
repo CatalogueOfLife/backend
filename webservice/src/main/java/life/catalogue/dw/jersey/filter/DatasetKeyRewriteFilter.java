@@ -2,7 +2,6 @@ package life.catalogue.dw.jersey.filter;
 
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.cache.LatestDatasetKeyCache;
-import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.dao.DatasetInfoCache;

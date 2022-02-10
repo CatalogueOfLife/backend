@@ -1,14 +1,17 @@
 package life.catalogue.importer.neo;
 
-import com.esotericsoftware.kryo.Kryo;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.common.kryo.NullSerializer;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.NodeMock;
 import life.catalogue.importer.neo.model.RankedName;
+
 import org.neo4j.kernel.impl.core.NodeProxy;
+
+import com.esotericsoftware.kryo.Kryo;
+
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 
 /**

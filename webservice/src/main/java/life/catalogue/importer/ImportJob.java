@@ -1,17 +1,19 @@
 package life.catalogue.importer;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.vocab.*;
-import life.catalogue.concurrent.StartNotifier;
+import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.concurrent.StartNotifier;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DecisionDao;
@@ -23,18 +25,11 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.proxy.ArchiveDescriptor;
 import life.catalogue.importer.proxy.DistributedArchiveService;
+import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
-import life.catalogue.matching.NameIndex;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.validation.Validator;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +40,16 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import javax.validation.Validator;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Asynchronous import job that orchestrates the entire import process including download,

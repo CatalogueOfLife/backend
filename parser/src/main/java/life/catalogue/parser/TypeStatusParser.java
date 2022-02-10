@@ -1,8 +1,6 @@
 package life.catalogue.parser;
 
 import life.catalogue.api.vocab.TypeStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 

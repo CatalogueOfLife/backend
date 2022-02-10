@@ -1,48 +1,24 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.annotations.Hidden;
-
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.*;
-import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.assembly.AssemblyCoordinator;
-import life.catalogue.assembly.AssemblyState;
-import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.DatasetSourceDao;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ImgConfig;
-import life.catalogue.release.ReleaseManager;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
-import static life.catalogue.api.model.User.userkey;
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/image")
 @SuppressWarnings("static-method")

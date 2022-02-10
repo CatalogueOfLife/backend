@@ -2,9 +2,9 @@ package life.catalogue.doi.datacite.model;
 
 import life.catalogue.api.model.DOI;
 
-import javax.validation.constraints.NotNull;
-
 import java.util.Objects;
+
+import javax.validation.constraints.NotNull;
 
 public class RelatedIdentifier {
 

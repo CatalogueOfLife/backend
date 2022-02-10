@@ -1,12 +1,12 @@
 package life.catalogue;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.dropwizard.Configuration;
-import io.dropwizard.client.JerseyClientConfiguration;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.JobConfig;
-import life.catalogue.config.*;
+import life.catalogue.config.GbifConfig;
+import life.catalogue.config.ImporterConfig;
+import life.catalogue.config.NormalizerConfig;
+import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgDbConfig;
 import life.catalogue.doi.service.DoiConfig;
@@ -19,18 +19,24 @@ import life.catalogue.dw.metrics.GangliaBundleConfiguration;
 import life.catalogue.dw.metrics.GangliaConfiguration;
 import life.catalogue.es.EsConfig;
 import life.catalogue.img.ImgConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.Properties;
+import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.io.File;
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.Properties;
-import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.dropwizard.Configuration;
+import io.dropwizard.client.JerseyClientConfiguration;
 
 
 public class WsServerConfig extends Configuration implements CorsBundleConfiguration, GangliaBundleConfiguration, MailBundleConfig {

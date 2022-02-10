@@ -8,12 +8,12 @@ import life.catalogue.db.mapper.EstimateMapper;
 
 import java.util.List;
 
+import javax.validation.Validator;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.Validator;
 
 public class EstimateDao extends DatasetEntityDao<Integer, SpeciesEstimate, EstimateMapper> {
   

@@ -1,6 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.collect.Sets;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.ParserConfigDao;
@@ -9,20 +8,24 @@ import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.traverse.Traversals;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+
+import java.net.URI;
+import java.time.Year;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.Iterators;
 
-import java.net.URI;
-import java.time.Year;
-import java.util.List;
-import java.util.Set;
+import com.google.common.collect.Sets;
 
 import static org.junit.Assert.*;
 

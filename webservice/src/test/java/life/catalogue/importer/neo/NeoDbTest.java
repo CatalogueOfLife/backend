@@ -1,6 +1,5 @@
 package life.catalogue.importer.neo;
 
-import com.google.common.io.Files;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
@@ -12,17 +11,22 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
-import org.apache.commons.io.FileUtils;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.GbifTerm;
+
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
 import org.junit.*;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 
-import java.io.IOException;
+import com.google.common.io.Files;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 
 public class NeoDbTest {

@@ -3,9 +3,9 @@ package life.catalogue.resources.parser;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.coldp.NameParser;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.coldp.NameParser;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;

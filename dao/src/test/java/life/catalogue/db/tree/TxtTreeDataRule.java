@@ -7,10 +7,10 @@ import life.catalogue.api.txtree.TreeNode;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.coldp.NameParser;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
-import life.catalogue.coldp.NameParser;
 
 import java.io.IOException;
 import java.io.InputStream;

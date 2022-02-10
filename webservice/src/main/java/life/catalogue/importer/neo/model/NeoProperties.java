@@ -1,14 +1,16 @@
 package life.catalogue.importer.neo.model;
 
-import com.google.common.base.Strings;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Entity;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
+import com.google.common.base.Strings;
 
 /**
  * Property names of neo4j nodes and relations.

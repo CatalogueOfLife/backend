@@ -1,9 +1,5 @@
 package life.catalogue.portal;
 
-import com.google.common.base.Preconditions;
-
-import freemarker.template.Template;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
@@ -14,30 +10,29 @@ import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.exporter.FmUtil;
+import life.catalogue.resources.ResourceUtils;
 
 import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import life.catalogue.resources.ResourceUtils;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
-
-import freemarker.template.TemplateException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import com.google.common.base.Preconditions;
+
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 import static life.catalogue.api.util.ObjectUtils.checkFound;
 

@@ -1,12 +1,11 @@
 package life.catalogue.importer.coldp;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import de.undercouch.citeproc.bibtex.BibTeXConverter;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.coldp.SafeParser;
+import life.catalogue.coldp.TreatmentFormatParser;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.importer.NeoCsvInserter;
@@ -17,17 +16,10 @@ import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.coldp.SafeParser;
-import life.catalogue.coldp.TreatmentFormatParser;
-import org.apache.commons.io.FilenameUtils;
+
 import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
-import org.jbibtex.*;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,6 +29,18 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+
+import org.apache.commons.io.FilenameUtils;
+import org.jbibtex.*;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import de.undercouch.citeproc.bibtex.BibTeXConverter;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 

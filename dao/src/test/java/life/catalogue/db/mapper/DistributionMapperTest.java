@@ -7,13 +7,8 @@ import life.catalogue.api.vocab.AreaImpl;
 import life.catalogue.api.vocab.DistributionStatus;
 import life.catalogue.api.vocab.Gazetteer;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *

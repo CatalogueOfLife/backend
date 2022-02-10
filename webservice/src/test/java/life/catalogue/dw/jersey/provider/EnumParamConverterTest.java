@@ -1,6 +1,7 @@
 package life.catalogue.dw.jersey.provider;
 
 import life.catalogue.api.vocab.Issue;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

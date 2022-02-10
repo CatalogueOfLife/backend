@@ -1,7 +1,8 @@
 package life.catalogue.dw.mail;
 
-import com.codahale.metrics.health.HealthCheck;
 import org.simplejavamail.api.mailer.Mailer;
+
+import com.codahale.metrics.health.HealthCheck;
 
 public final class MailServerConnectionCheck extends HealthCheck {
   private final Mailer mailer;

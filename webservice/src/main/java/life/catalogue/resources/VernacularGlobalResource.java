@@ -3,11 +3,9 @@ package life.catalogue.resources;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.VernacularNameUsage;
-import life.catalogue.api.search.VernacularSearchRequest;
 import life.catalogue.db.mapper.VernacularNameMapper;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;

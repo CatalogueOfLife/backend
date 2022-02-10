@@ -1,7 +1,5 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -32,6 +30,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.undercouch.citeproc.csl.CSLItemData;

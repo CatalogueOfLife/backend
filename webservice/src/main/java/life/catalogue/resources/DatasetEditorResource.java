@@ -1,23 +1,9 @@
 package life.catalogue.resources;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.User;
 import life.catalogue.dao.AuthorizationDao;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.db.mapper.UserMapper;
-import life.catalogue.dw.auth.Roles;
 
-import java.util.List;
-
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.dropwizard.auth.Auth;
+import javax.ws.rs.Path;
 
 @Path("/dataset/{key}/editor")
 @SuppressWarnings("static-method")

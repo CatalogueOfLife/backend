@@ -1,8 +1,8 @@
 package life.catalogue.parser;
 
-import org.junit.Test;
-
 import java.util.Optional;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

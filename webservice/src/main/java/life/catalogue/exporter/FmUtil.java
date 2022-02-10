@@ -1,10 +1,10 @@
 package life.catalogue.exporter;
 
-import freemarker.template.*;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+
+import freemarker.template.*;
 
 public class FmUtil {
   public static final Version FREEMARKER_VERSION = Configuration.VERSION_2_3_28;

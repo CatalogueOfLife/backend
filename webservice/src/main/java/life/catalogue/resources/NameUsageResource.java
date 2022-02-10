@@ -16,8 +16,6 @@ import org.gbif.nameparser.api.Rank;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -30,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.annotation.Timed;
-import com.google.common.base.Preconditions;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")

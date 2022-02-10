@@ -2,9 +2,11 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.Resources;
-import life.catalogue.db.PgSetupRule;
 import life.catalogue.dao.TaxonCounter;
+import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -12,9 +14,6 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

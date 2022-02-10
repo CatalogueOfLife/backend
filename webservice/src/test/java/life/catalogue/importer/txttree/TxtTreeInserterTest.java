@@ -6,12 +6,14 @@ import life.catalogue.api.vocab.TxtTreeTerm;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.neo.model.NeoUsage;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 
 import java.io.IOException;
 import java.nio.file.Path;
+
+import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -1,15 +1,15 @@
 package life.catalogue.parser;
 
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.Area;
+import life.catalogue.api.vocab.AreaImpl;
+import life.catalogue.common.kryo.AreaSerializer;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import life.catalogue.common.kryo.AreaSerializer;
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.CharMatcher;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * A parser that tries to extract complex area information (actual area id with gazetteer its based on )

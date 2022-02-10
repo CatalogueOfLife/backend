@@ -1,14 +1,11 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.Timer;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.TermWriter;
 import life.catalogue.img.ImageService;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.dwc.Archive;
 import org.gbif.dwc.ArchiveField;
 import org.gbif.dwc.ArchiveFile;
@@ -20,17 +17,20 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.ws.rs.core.UriBuilder;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Timer;
 
 public class DwcaExporter extends ArchiveExporter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaExporter.class);

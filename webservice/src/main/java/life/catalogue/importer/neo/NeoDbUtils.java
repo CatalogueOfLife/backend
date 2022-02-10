@@ -1,15 +1,17 @@
 package life.catalogue.importer.neo;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Maps;
 import life.catalogue.api.model.Name;
 import life.catalogue.importer.neo.model.Labels;
 import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.RelType;
-import org.neo4j.graphdb.*;
 
 import java.util.Map;
+
+import org.neo4j.graphdb.*;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 
 /**
  * Static utils for the NeoDb class

@@ -18,21 +18,23 @@ package org.catalogueoflife.coldp.gen.ictv;
 import life.catalogue.api.model.DOI;
 import life.catalogue.coldp.ColdpTerm;
 
-import org.apache.commons.lang3.StringUtils;
-import org.catalogueoflife.coldp.gen.AbstractXlsSrcGenerator;
-import org.catalogueoflife.coldp.gen.GeneratorConfig;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.catalogueoflife.coldp.gen.AbstractXlsSrcGenerator;
+import org.catalogueoflife.coldp.gen.GeneratorConfig;
 
 import com.google.common.base.Strings;
-
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 
 public class Generator extends AbstractXlsSrcGenerator {
   // to be updated manually to current version !!!

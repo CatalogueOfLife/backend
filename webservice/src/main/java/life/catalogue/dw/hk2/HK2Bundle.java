@@ -1,7 +1,18 @@
 package life.catalogue.dw.hk2;
 
+import java.util.Collection;
+import java.util.stream.Stream;
+
+import org.eclipse.jetty.util.component.LifeCycle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.Binder;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.servlet.ServletProperties;
+
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.Lists;
+
 import io.dropwizard.Application;
 import io.dropwizard.Bundle;
 import io.dropwizard.ConfiguredBundle;
@@ -14,15 +25,6 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.eclipse.jetty.util.component.LifeCycle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.Binder;
-import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.servlet.ServletProperties;
-
-import java.util.Collection;
-import java.util.stream.Stream;
 
 import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.bind;
 

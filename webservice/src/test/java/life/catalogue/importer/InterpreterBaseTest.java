@@ -10,19 +10,21 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.ReferenceMapStore;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;

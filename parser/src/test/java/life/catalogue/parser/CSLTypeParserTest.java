@@ -1,14 +1,12 @@
 package life.catalogue.parser;
 
-import com.google.common.collect.Lists;
-
-import de.undercouch.citeproc.csl.CSLType;
+import java.util.List;
 
 import org.junit.Test;
 
-import java.util.List;
+import com.google.common.collect.Lists;
 
-import static org.junit.Assert.*;
+import de.undercouch.citeproc.csl.CSLType;
 
 public class CSLTypeParserTest extends ParserTestBase<CSLType> {
 

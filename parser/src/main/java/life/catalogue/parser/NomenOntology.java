@@ -1,21 +1,25 @@
 package life.catalogue.parser;
 
-import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.common.io.Resources;
-import org.gbif.nameparser.api.NomCode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+import org.gbif.nameparser.api.NomCode;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 public class NomenOntology {
   private static final Logger LOG = LoggerFactory.getLogger(NomenOntology.class);

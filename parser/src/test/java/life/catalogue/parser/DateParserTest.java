@@ -1,11 +1,8 @@
 package life.catalogue.parser;
 
-import com.google.common.collect.Lists;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.parser.DateParser.DateStringFilter;
 import life.catalogue.parser.DateParser.ParseSpec;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -17,6 +14,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 import static org.junit.Assert.*;
 

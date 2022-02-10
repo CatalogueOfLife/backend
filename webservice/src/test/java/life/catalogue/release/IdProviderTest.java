@@ -8,12 +8,14 @@ import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.*;
 
 import java.io.IOException;
 import java.util.*;
+
+import org.apache.ibatis.session.SqlSession;
+import org.junit.*;
 
 import static life.catalogue.api.vocab.TaxonomicStatus.*;
 import static org.gbif.nameparser.api.Rank.*;

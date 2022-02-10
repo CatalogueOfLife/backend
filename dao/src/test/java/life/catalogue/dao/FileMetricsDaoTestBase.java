@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 

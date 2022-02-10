@@ -2,11 +2,12 @@ package life.catalogue.dw.cors;
 
 import life.catalogue.api.util.ObjectUtils;
 
+import java.io.IOException;
+
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 
 /**
  * Handles CORS requests both preflight and simple (GET, POST or HEAD) CORS requests.

@@ -1,9 +1,13 @@
 package life.catalogue.importer;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.model.Media;
 import life.catalogue.api.vocab.MediaType;
+
+import java.net.URI;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.apache.tika.Tika;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
@@ -11,9 +15,8 @@ import org.apache.tika.mime.MimeTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.net.URI;
-import java.util.Set;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 
 public class MediaInterpreter {
   private static final Logger LOG = LoggerFactory.getLogger(MediaInterpreter.class);

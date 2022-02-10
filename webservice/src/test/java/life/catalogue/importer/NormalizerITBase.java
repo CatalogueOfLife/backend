@@ -1,9 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.io.Files;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
@@ -21,22 +17,10 @@ import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.After;
-import org.junit.Before;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
-import org.neo4j.graphdb.Relationship;
-
-import javax.annotation.Nullable;
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +30,24 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import javax.annotation.Nullable;
+import javax.validation.Validation;
+import javax.validation.Validator;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.NotFoundException;
+import org.neo4j.graphdb.Relationship;
+
+import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.io.Files;
 
 import static org.junit.Assert.*;
 

@@ -1,12 +1,9 @@
 package life.catalogue.csv;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
-import com.univocity.parsers.csv.CsvParserSettings;
 import life.catalogue.api.model.VerbatimRecord;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.utils.file.FileUtils;
-import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,6 +12,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import org.junit.Test;
+
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
+import com.univocity.parsers.csv.CsvParserSettings;
 
 import static org.junit.Assert.*;
 

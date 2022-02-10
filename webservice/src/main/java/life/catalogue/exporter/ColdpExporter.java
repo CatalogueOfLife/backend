@@ -1,7 +1,5 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.Timer;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
@@ -9,21 +7,22 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.img.ImageService;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.dwc.terms.Term;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Set;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Timer;
 
 public class ColdpExporter extends ArchiveExporter {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpExporter.class);

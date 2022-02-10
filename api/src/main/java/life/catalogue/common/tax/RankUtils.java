@@ -1,10 +1,7 @@
 package life.catalogue.common.tax;
 
-import com.google.common.collect.ImmutableMap;
-
 import life.catalogue.coldp.ColdpTerm;
 
-import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;

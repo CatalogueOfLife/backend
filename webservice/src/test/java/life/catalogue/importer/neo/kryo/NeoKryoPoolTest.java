@@ -1,9 +1,5 @@
 package life.catalogue.importer.neo.kryo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
@@ -11,12 +7,19 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.importer.neo.NeoKryoPool;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
+
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+
+import org.junit.Test;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertEquals;
 

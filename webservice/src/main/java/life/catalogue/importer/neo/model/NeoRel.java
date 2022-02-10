@@ -2,9 +2,10 @@ package life.catalogue.importer.neo.model;
 
 import life.catalogue.api.model.Referenced;
 import life.catalogue.api.model.VerbatimEntity;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.Objects;
+
+import org.apache.commons.lang3.NotImplementedException;
 
 public class NeoRel implements VerbatimEntity, Referenced {
   private Integer verbatimKey;

@@ -1,9 +1,5 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.MetricRegistry;
-
-import com.codahale.metrics.Timer;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
@@ -15,18 +11,17 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.img.ImageService;
-
 import life.catalogue.release.ProjectRelease;
-
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.jetbrains.annotations.Nullable;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
 
 import java.io.File;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+
+import com.codahale.metrics.MetricRegistry;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

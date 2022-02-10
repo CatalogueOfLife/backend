@@ -1,6 +1,7 @@
 package life.catalogue.importer.neo.model;
 
 import org.gbif.nameparser.api.Rank;
+
 import org.neo4j.graphdb.Node;
 
 public class RankedUsage extends RankedName {

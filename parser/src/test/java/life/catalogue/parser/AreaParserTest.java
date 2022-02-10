@@ -8,8 +8,6 @@ import java.util.Optional;
 
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
-
 import static org.junit.Assert.assertEquals;
 
 public class AreaParserTest extends ParserTestBase<Area> {

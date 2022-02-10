@@ -1,7 +1,5 @@
 package life.catalogue.doi;
 
-import de.undercouch.citeproc.csl.CSLItemData;
-
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
 
@@ -11,6 +9,9 @@ import life.catalogue.api.model.DOI;
 public class Resolver {
 
   public Citation resolve(DOI doi) {
-    return new Citation();
+    var c = new Citation();
+    c.setId(doi.getDoiName());
+    c.setDoi(doi);
+    return c;
   }
 }

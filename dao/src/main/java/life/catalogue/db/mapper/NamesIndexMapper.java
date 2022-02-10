@@ -2,17 +2,14 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CRUD;
 
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.cursor.Cursor;
-
-import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
 
 /**
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be

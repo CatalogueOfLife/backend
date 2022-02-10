@@ -1,18 +1,22 @@
 package life.catalogue.importer.neo.printer;
 
 
-import com.google.common.collect.Lists;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.neo.traverse.UsageRankEvaluator;
-import org.gbif.nameparser.api.Rank;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Relationship;
 
-import javax.annotation.Nullable;
+import org.gbif.nameparser.api.Rank;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Relationship;
+
+import com.google.common.collect.Lists;
 
 /**
  * Expects no pro parte relations in the walker!

@@ -1,10 +1,11 @@
 package life.catalogue.dw.logging;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import net.logstash.logback.appender.LogstashUdpSocketAppender;
 import net.logstash.logback.layout.LogstashLayout;
 

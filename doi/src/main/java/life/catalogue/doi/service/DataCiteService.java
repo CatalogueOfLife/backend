@@ -1,7 +1,5 @@
 package life.catalogue.doi.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DOI;
 import life.catalogue.common.id.IdConverter;
@@ -12,9 +10,6 @@ import life.catalogue.doi.datacite.model.EventType;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
-import java.time.Year;
-import java.time.temporal.ChronoField;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.NotFoundException;
@@ -32,6 +27,7 @@ import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
 
 public class DataCiteService implements DoiService {

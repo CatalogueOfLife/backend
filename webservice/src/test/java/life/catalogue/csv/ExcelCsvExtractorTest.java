@@ -1,7 +1,6 @@
 package life.catalogue.csv;
 
 import life.catalogue.common.io.Resources;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +8,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

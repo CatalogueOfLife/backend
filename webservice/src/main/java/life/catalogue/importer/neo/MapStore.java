@@ -1,12 +1,14 @@
 package life.catalogue.importer.neo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
 import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.importer.IdGenerator;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+
 import org.jetbrains.annotations.NotNull;
 import org.mapdb.DB;
 import org.mapdb.HTreeMap;
@@ -14,8 +16,8 @@ import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.function.BiConsumer;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 
 public class MapStore<T extends DatasetScopedEntity<String> & VerbatimEntity> implements Iterable<T>, AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(MapStore.class);

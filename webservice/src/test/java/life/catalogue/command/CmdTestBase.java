@@ -1,17 +1,7 @@
 package life.catalogue.command;
 
-import com.codahale.metrics.MetricRegistry;
-import com.google.common.io.Resources;
-import io.dropwizard.cli.Cli;
-import io.dropwizard.cli.Command;
-import io.dropwizard.logging.LoggingFactory;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.util.JarLocation;
 import life.catalogue.WsServer;
 import life.catalogue.WsServerConfig;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URL;
@@ -19,6 +9,17 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.io.Resources;
+
+import io.dropwizard.cli.Cli;
+import io.dropwizard.cli.Command;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.util.JarLocation;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

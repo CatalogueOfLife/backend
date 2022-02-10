@@ -1,12 +1,14 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.model.Name;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
 import javax.ws.rs.core.GenericType;
+
+import org.junit.Test;
 
 import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;

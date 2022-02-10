@@ -1,13 +1,14 @@
 package life.catalogue.resources.parser;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import life.catalogue.common.text.UnicodeUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Path("/parser/homoglyph")
 @Produces(MediaType.APPLICATION_JSON)

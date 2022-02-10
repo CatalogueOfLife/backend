@@ -1,5 +1,7 @@
 package life.catalogue.dw.jersey.filter;
 
+import java.io.IOException;
+
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -7,7 +9,6 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 
 /**
  * Filter that returns a 404 instead of 204 for null results with GET requests.

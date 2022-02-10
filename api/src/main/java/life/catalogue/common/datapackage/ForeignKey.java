@@ -1,6 +1,7 @@
 package life.catalogue.common.datapackage;
 
 import life.catalogue.coldp.ColdpTerm;
+
 import java.util.Objects;
 
 /**

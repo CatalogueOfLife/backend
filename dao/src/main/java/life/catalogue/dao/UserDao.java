@@ -1,7 +1,6 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.event.UserChanged;
-import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -11,7 +10,10 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;

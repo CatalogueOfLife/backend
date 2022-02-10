@@ -1,21 +1,21 @@
 package life.catalogue.release;
 
-import com.zaxxer.hikari.HikariDataSource;
-
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.dao.*;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.*;
+
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.regex.Pattern;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class UpdateAgentsTool implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(UpdateAgentsTool.class);

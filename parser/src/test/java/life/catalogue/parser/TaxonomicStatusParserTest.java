@@ -1,10 +1,12 @@
 package life.catalogue.parser;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.junit.Test;
 
 import java.util.List;
+
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 import static life.catalogue.api.vocab.TaxonomicStatus.*;
 

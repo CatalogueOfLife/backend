@@ -2,12 +2,13 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.ImportState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AssemblyState {
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyState.class);

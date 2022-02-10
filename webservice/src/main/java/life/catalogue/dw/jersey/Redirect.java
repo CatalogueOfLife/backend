@@ -1,7 +1,8 @@
 package life.catalogue.dw.jersey;
 
-import javax.ws.rs.core.Response;
 import java.net.URI;
+
+import javax.ws.rs.core.Response;
 
 /**
  *

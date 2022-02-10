@@ -1,12 +1,8 @@
 package life.catalogue.assembly;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.concurrent.ExecutorUtils;
-import life.catalogue.dao.DecisionDao;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
@@ -16,13 +12,8 @@ import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.NameIndex;
-import org.apache.ibatis.exceptions.PersistenceException;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.utils.NamedThreadFactory;
-import org.neo4j.helpers.collection.Iterables;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -33,6 +24,18 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.neo4j.helpers.collection.Iterables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+
+import io.dropwizard.lifecycle.Managed;
 
 public class AssemblyCoordinator implements Managed {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));

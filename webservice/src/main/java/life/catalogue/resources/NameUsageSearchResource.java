@@ -3,7 +3,10 @@ package life.catalogue.resources;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.search.*;
+import life.catalogue.api.search.NameUsageRequest;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.InvalidQueryException;
@@ -26,7 +29,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

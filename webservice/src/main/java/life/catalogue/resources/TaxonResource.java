@@ -4,7 +4,6 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.TaxonDao;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 
@@ -15,7 +14,6 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;

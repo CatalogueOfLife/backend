@@ -1,8 +1,8 @@
 package life.catalogue.dw.auth;
 
-import io.dropwizard.auth.Auth;
-import org.glassfish.jersey.server.internal.LocalizationMessages;
-import org.glassfish.jersey.server.model.AnnotatedMethod;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.Optional;
 
 import javax.annotation.Priority;
 import javax.ws.rs.NotAuthorizedException;
@@ -12,9 +12,11 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.FeatureContext;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.Optional;
+
+import org.glassfish.jersey.server.internal.LocalizationMessages;
+import org.glassfish.jersey.server.model.AnnotatedMethod;
+
+import io.dropwizard.auth.Auth;
 
 /**
  * Makes sure that if a non optional @Auth annotation exists the securit context is provided.

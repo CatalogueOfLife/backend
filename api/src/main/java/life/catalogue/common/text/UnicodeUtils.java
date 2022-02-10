@@ -1,7 +1,5 @@
 package life.catalogue.common.text;
 
-import it.unimi.dsi.fastutil.ints.*;
-
 import life.catalogue.common.io.LineReader;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.NameFormatter;
@@ -12,6 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.unimi.dsi.fastutil.ints.*;
 
 /**
  * Utilities dealing with unicode strings

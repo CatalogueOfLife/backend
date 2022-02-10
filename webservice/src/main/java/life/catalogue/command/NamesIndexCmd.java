@@ -1,26 +1,16 @@
 package life.catalogue.command;
 
-import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.WsServerConfig;
-import life.catalogue.concurrent.ExecutorUtils;
-import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.matching.DatasetMatcher;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.sql.Connection;
@@ -28,6 +18,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+
+import it.unimi.dsi.fastutil.ints.IntSet;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);

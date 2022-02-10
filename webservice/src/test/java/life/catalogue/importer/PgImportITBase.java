@@ -1,8 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.collect.Sets;
-import com.google.common.eventbus.EventBus;
-import com.google.common.io.Files;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.command.InitDbCmd;
@@ -12,7 +9,6 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -21,16 +17,8 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.model.RankedName;
 import life.catalogue.matching.NameIndexFactory;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.gbif.nameparser.api.Rank;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.net.URI;
@@ -38,6 +26,19 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+
+import com.google.common.eventbus.EventBus;
+import com.google.common.io.Files;
 
 import static org.junit.Assert.*;
 

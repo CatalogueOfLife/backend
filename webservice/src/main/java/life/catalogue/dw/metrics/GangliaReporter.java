@@ -1,15 +1,5 @@
 package life.catalogue.dw.metrics;
 
-import com.codahale.metrics.*;
-import com.google.common.annotations.VisibleForTesting;
-
-import info.ganglia.gmetric4j.gmetric.GMetric;
-import info.ganglia.gmetric4j.gmetric.GMetricSlope;
-import info.ganglia.gmetric4j.gmetric.GMetricType;
-import info.ganglia.gmetric4j.gmetric.GangliaException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +7,17 @@ import java.util.SortedMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.*;
+import com.google.common.annotations.VisibleForTesting;
+
+import info.ganglia.gmetric4j.gmetric.GMetric;
+import info.ganglia.gmetric4j.gmetric.GMetricSlope;
+import info.ganglia.gmetric4j.gmetric.GMetricType;
+import info.ganglia.gmetric4j.gmetric.GangliaException;
 
 import static com.codahale.metrics.MetricAttribute.*;
 import static com.codahale.metrics.MetricRegistry.name;

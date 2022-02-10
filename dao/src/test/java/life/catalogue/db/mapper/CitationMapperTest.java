@@ -4,13 +4,11 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
-
 import life.catalogue.api.model.DatasetTest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.db.TestDataRule;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

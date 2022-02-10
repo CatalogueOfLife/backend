@@ -1,9 +1,9 @@
 package life.catalogue.dw.jersey.filter;
 
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.Map;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -12,8 +12,11 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.ext.Provider;
-import java.net.URI;
-import java.util.Map;
+
+import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static java.util.Map.entry;
 /**
  * Filter that adds an Accept header based on a file suffix found in the URL path.

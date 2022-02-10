@@ -1,17 +1,19 @@
 package life.catalogue.admin.jobs;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
+
+import javax.validation.Validator;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.Validator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SectorCountJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(SectorCountJob.class);

@@ -1,7 +1,5 @@
 package life.catalogue.importer.neo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
@@ -9,13 +7,16 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.importer.reference.ReferenceStore;
 
+import java.util.Map;
+import java.util.function.BiConsumer;
+
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.function.BiConsumer;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 
 public class ReferenceMapStore extends MapStore<Reference> implements ReferenceStore {
     private static final Logger LOG = LoggerFactory.getLogger(ReferenceMapStore.class);

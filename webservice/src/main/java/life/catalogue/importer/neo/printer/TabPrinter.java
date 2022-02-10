@@ -1,16 +1,18 @@
 package life.catalogue.importer.neo.printer;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Sets;
 import life.catalogue.common.io.TabWriter;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.model.RelType;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Relationship;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Set;
+
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Relationship;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
 
 /**
  * Dumps a normalizer db in a simple tab delimited format used by the nub integration tests.

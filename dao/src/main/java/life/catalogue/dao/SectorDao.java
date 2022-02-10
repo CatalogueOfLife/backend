@@ -4,9 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.db.NameProcessable;
 import life.catalogue.db.SectorProcessable;
-import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 
@@ -15,16 +13,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.validation.Validator;
+
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.Validator;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @SuppressWarnings("unused")

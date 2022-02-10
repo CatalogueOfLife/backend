@@ -1,8 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.config.NormalizerConfig;
@@ -13,6 +10,24 @@ import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.RankedName;
 import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.matching.NameIndexFactory;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,24 +39,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.neo4j.graphdb.Transaction;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.Writer;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import com.google.common.base.Charsets;
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 
 import static org.junit.Assert.*;
 

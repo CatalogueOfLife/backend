@@ -1,9 +1,10 @@
 package life.catalogue.dw.auth;
 
 import life.catalogue.api.model.User;
-import org.apache.http.impl.client.CloseableHttpClient;
 
 import java.util.Optional;
+
+import org.apache.http.impl.client.CloseableHttpClient;
 
 public interface AuthenticationProvider {
   

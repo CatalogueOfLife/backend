@@ -1,8 +1,9 @@
 package life.catalogue.dw;
 
-import io.dropwizard.lifecycle.Managed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.lifecycle.Managed;
 
 public class ManagedUtils {
   private static final Logger LOG = LoggerFactory.getLogger(ManagedUtils.class);

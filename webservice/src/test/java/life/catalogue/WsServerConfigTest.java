@@ -1,24 +1,27 @@
  package life.catalogue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.configuration.ConfigurationSourceProvider;
-import io.dropwizard.configuration.YamlConfigurationFactory;
-import io.dropwizard.jackson.Jackson;
-import io.dropwizard.jersey.validation.Validators;
-import life.catalogue.common.io.Resources;
-import life.catalogue.dw.auth.map.MapAuthenticationFactory;
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
+ import life.catalogue.common.io.Resources;
+ import life.catalogue.dw.auth.map.MapAuthenticationFactory;
 
-import javax.validation.Validator;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.UUID;
+ import java.io.File;
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+ import javax.validation.Validator;
+
+ import org.assertj.core.api.Assertions;
+ import org.junit.Test;
+
+ import com.fasterxml.jackson.databind.ObjectMapper;
+
+ import io.dropwizard.configuration.ConfigurationSourceProvider;
+ import io.dropwizard.configuration.YamlConfigurationFactory;
+ import io.dropwizard.jackson.Jackson;
+ import io.dropwizard.jersey.validation.Validators;
+
+ import static org.junit.Assert.assertEquals;
+ import static org.junit.Assert.assertNotNull;
 
 public class WsServerConfigTest {
   

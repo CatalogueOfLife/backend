@@ -3,11 +3,10 @@ package life.catalogue.api.search;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.Issue;
 
-import javax.annotation.Nullable;
-
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.IntFunction;
+
+import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 

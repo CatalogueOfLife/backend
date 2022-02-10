@@ -1,6 +1,7 @@
 package life.catalogue.importer.proxy;
 
 import life.catalogue.api.vocab.DataFormat;
+
 import org.gbif.dwc.terms.Term;
 
 import java.util.List;

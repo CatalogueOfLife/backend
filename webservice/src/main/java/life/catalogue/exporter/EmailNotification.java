@@ -1,14 +1,19 @@
 package life.catalogue.exporter;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import freemarker.template.TemplateException;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.User;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.db.mapper.UserMapper;
+
+import java.io.IOException;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.simplejavamail.api.email.Email;
@@ -18,12 +23,9 @@ import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import com.google.common.annotations.VisibleForTesting;
 
-import java.io.IOException;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import freemarker.template.TemplateException;
 
 public class EmailNotification {
   private static final Logger LOG = LoggerFactory.getLogger(EmailNotification.class);

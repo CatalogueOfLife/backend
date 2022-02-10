@@ -1,6 +1,5 @@
 package life.catalogue.resources;
 
-import io.dropwizard.testing.ResourceHelpers;
 import life.catalogue.WsServerRule;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.User;
@@ -8,6 +7,8 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.AuthorizationDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
+
+import javax.ws.rs.client.WebTarget;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -17,9 +18,7 @@ import org.javers.core.diff.Diff;
 import org.junit.Before;
 import org.junit.ClassRule;
 
-import javax.ws.rs.client.WebTarget;
-
-import static org.mockito.Mockito.mock;
+import io.dropwizard.testing.ResourceHelpers;
 
 public class ResourceTestBase {
   

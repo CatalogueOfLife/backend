@@ -1,8 +1,9 @@
 package life.catalogue.dw.health;
 
 
-import com.codahale.metrics.health.HealthCheck;
 import life.catalogue.db.tree.BaseDiffService;
+
+import com.codahale.metrics.health.HealthCheck;
 
 /**
  * Calls the name parser with a known binomial to check its health.

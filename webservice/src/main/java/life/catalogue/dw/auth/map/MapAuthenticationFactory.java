@@ -1,17 +1,20 @@
 package life.catalogue.dw.auth.map;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.User;
 import life.catalogue.dw.auth.AuthenticationProvider;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
+
+import java.util.*;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.*;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Config based authentication provider that can be used for local tests or GBIF registry independent installations.

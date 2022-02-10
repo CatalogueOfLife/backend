@@ -2,16 +2,16 @@ package life.catalogue.resources.legacy;
 
 import life.catalogue.common.io.Resources;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 
 import static org.junit.Assert.*;
 

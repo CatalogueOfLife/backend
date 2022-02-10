@@ -1,12 +1,5 @@
 package life.catalogue.importer;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
@@ -17,12 +10,12 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.AssemblyCoordinator;
-import life.catalogue.common.io.PathUtils;
-import life.catalogue.concurrent.PBQThreadPoolExecutor;
-import life.catalogue.concurrent.StartNotifier;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.concurrent.PBQThreadPoolExecutor;
+import life.catalogue.concurrent.StartNotifier;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -30,17 +23,8 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.release.ReleaseManager;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.utils.NamedThreadFactory;
-import org.gbif.utils.file.FileUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import javax.validation.Validator;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +37,24 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.validation.Validator;
+
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+
+import io.dropwizard.lifecycle.Managed;
 
 /**
  * Manages import task scheduling, removing and listing

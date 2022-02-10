@@ -3,8 +3,6 @@ package org.catalogueoflife.coldp.gen;
 import java.io.File;
 import java.util.List;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.beust.jcommander.Parameter;

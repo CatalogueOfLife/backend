@@ -7,12 +7,9 @@ import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
-import life.catalogue.dw.jersey.exception.NotFoundExceptionMapper;
 import life.catalogue.dw.jersey.filter.*;
 import life.catalogue.dw.jersey.provider.EnumParamConverterProvider;
 import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
-
-import life.catalogue.portal.PortalPageRenderer;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

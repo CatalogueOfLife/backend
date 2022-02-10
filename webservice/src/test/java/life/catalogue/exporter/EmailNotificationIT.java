@@ -1,7 +1,5 @@
 package life.catalogue.exporter;
 
-import com.codahale.metrics.MetricRegistry;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
@@ -11,13 +9,16 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.mail.MailConfig;
 import life.catalogue.img.ImageService;
+
+import java.net.URI;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.net.URI;
-import java.util.concurrent.TimeUnit;
+import com.codahale.metrics.MetricRegistry;
 
 @Ignore("This actually sends mails. Requires GBIF server")
 public class EmailNotificationIT {

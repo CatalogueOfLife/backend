@@ -3,14 +3,13 @@ package life.catalogue.assembly;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameLink;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Test;
 
 import static life.catalogue.api.model.Sector.Mode;
 

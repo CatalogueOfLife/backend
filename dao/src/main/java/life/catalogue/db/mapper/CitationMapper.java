@@ -1,7 +1,6 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.Citation;
-import life.catalogue.api.model.Dataset;
 
 import java.util.List;
 

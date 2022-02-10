@@ -1,8 +1,5 @@
 package life.catalogue.importer;
 
-import com.codahale.metrics.MetricRegistry;
-import com.google.common.io.Files;
-import io.dropwizard.client.HttpClientBuilder;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.DatasetWithSettings;
@@ -14,13 +11,20 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.release.ReleaseManager;
+
+import org.gbif.nameparser.api.NomCode;
+
+import java.net.URI;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import javax.validation.Validator;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
-import org.gbif.nameparser.api.NomCode;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -28,11 +32,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.Validator;
+import com.codahale.metrics.MetricRegistry;
+import com.google.common.io.Files;
 
-import java.net.URI;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import io.dropwizard.client.HttpClientBuilder;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;

@@ -3,21 +3,19 @@ package life.catalogue.db.tree;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.dao.TaxonCounter;
-
 import life.catalogue.db.mapper.SectorMapper;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.Rank;
 
-import javax.annotation.Nullable;
-
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 public class PrinterFactory {
 

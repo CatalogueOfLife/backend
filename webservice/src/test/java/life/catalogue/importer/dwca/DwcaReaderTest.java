@@ -2,13 +2,15 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.common.io.PathUtils;
+
 import org.gbif.dwc.terms.*;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Ignore;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

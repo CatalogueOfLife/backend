@@ -1,14 +1,16 @@
 package life.catalogue.importer.neo.traverse;
 
-import com.google.common.collect.Ordering;
 import life.catalogue.importer.neo.model.NeoProperties;
+
+import java.util.Iterator;
+import java.util.List;
+
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
-import java.util.List;
+import com.google.common.collect.Ordering;
 
 /**
  * Path iterator that traverses multiple start nodes in a given traversal description.

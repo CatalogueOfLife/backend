@@ -10,14 +10,16 @@ import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.Query;
+
 import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import static life.catalogue.api.vocab.DataFormat.COLDP;
 import static org.junit.Assert.*;

@@ -1,6 +1,7 @@
 package life.catalogue.command;
 
 import life.catalogue.WsServer;
+
 import org.junit.Ignore;
 import org.junit.Test;
 

@@ -1,6 +1,5 @@
 package life.catalogue.assembly;
 
-import com.codahale.metrics.MetricRegistry;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.RequestScope;
@@ -17,16 +16,20 @@ import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
-import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.nameparser.api.Rank;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import com.codahale.metrics.MetricRegistry;
 
 public class AssemblyCoordinatorTest {
   @ClassRule

@@ -1,12 +1,13 @@
 package life.catalogue.dw.jersey.filter;
 
+import java.io.IOException;
+
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 
 /**
  * Filter that adds WWW-Authenticate headers in case we had an UNAUTHORIZED response.

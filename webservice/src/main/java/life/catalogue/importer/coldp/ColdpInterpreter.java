@@ -1,7 +1,5 @@
 package life.catalogue.importer.coldp;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
@@ -14,7 +12,9 @@ import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.coldp.*;
+
+import life.catalogue.parser.*;
+
 import org.gbif.dwc.terms.Term;
 
 import java.util.Collections;
@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 import static life.catalogue.coldp.SafeParser.parse;
 

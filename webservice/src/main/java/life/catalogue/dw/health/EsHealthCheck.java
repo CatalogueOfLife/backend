@@ -1,8 +1,6 @@
 package life.catalogue.dw.health;
 
 
-import com.codahale.metrics.health.HealthCheck;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.es.EsConfig;
 import life.catalogue.es.EsModule;
@@ -10,9 +8,13 @@ import life.catalogue.es.EsUtil;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.Query;
 import life.catalogue.es.query.TermQuery;
+
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
+
+import com.codahale.metrics.health.HealthCheck;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Contacts elastic search REST API to see if we are alive.

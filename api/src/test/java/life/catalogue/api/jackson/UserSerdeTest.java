@@ -1,14 +1,11 @@
 package life.catalogue.api.jackson;
 
 import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.Setting;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class UserSerdeTest extends SerdeTestBase<User> {
 

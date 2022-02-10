@@ -1,15 +1,15 @@
 package life.catalogue.dw.mail;
 
 
-import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import life.catalogue.dw.ManagedUtils;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.mailer.MailerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.ConfiguredBundle;
+import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 
 /**
  * Bundle that sets up a SMTP mailer.

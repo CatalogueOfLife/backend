@@ -1,18 +1,17 @@
 package life.catalogue.dw.auth;
 
-import com.google.common.io.BaseEncoding;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.User;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.jersey.exception.JsonExceptionMapperBase;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.Principal;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -23,13 +22,16 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.security.Principal;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.io.BaseEncoding;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 
 /**
  * Authenticates an CoL user via Basic or from an encoded Bearer JWT token

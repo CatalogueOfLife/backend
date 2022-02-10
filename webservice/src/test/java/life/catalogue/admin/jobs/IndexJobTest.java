@@ -14,7 +14,9 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+
 import org.gbif.nameparser.api.Rank;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;

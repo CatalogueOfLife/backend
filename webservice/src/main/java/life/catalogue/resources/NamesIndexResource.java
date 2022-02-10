@@ -1,15 +1,11 @@
 package life.catalogue.resources;
 
-import com.codahale.metrics.annotation.Timed;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.coldp.NameParser;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.coldp.NameParser;
-
-import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -23,8 +19,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.annotation.Timed;
 
 @Path("/nidx")
 @Produces(MediaType.APPLICATION_JSON)

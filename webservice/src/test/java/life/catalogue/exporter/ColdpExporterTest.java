@@ -10,6 +10,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.img.ImageService;
+
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;

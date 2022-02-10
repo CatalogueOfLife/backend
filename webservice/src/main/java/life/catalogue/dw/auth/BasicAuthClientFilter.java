@@ -1,14 +1,16 @@
 package life.catalogue.dw.auth;
 
 import life.catalogue.dw.auth.gbif.GBIFAuthentication;
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
-import java.io.IOException;
+
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Preemptive Basic Auth filter that accept dynamic credentials

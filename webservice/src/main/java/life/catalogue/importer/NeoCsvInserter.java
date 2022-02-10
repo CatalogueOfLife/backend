@@ -13,10 +13,8 @@ import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
+
 import org.gbif.dwc.terms.Term;
-import org.neo4j.graphdb.Node;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -26,6 +24,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import org.neo4j.graphdb.Node;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 

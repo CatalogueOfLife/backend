@@ -1,9 +1,5 @@
 package life.catalogue.importer.neo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.UnmodifiableIterator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
@@ -16,10 +12,28 @@ import life.catalogue.importer.neo.NodeBatchProcessor.BatchConsumer;
 import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.importer.neo.traverse.Traversals;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
+
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphalgo.LabelPropagationProc;
@@ -36,20 +50,10 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.UnmodifiableIterator;
 
 /**
  * A persistence mechanism for storing core taxonomy & names propLabel and relations in an embedded

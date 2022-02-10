@@ -1,23 +1,25 @@
 package life.catalogue.command;
 
-import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgConfig;
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
+
+import java.io.File;
+import java.io.StringReader;
+import java.sql.Connection;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-
-import java.io.File;
-import java.io.StringReader;
-import java.sql.Connection;
+import io.dropwizard.setup.Bootstrap;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * Command to execute given SQL statements for each dataset partition.

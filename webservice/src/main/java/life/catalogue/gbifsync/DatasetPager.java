@@ -1,7 +1,5 @@
 package life.catalogue.gbifsync;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.jackson.UUIDSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
@@ -10,7 +8,6 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.config.GbifConfig;
-import life.catalogue.coldp.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -25,6 +22,8 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import life.catalogue.parser.*;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +32,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
+import de.undercouch.citeproc.csl.CSLType;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 /**

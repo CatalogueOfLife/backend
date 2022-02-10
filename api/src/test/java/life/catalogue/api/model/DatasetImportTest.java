@@ -3,7 +3,6 @@ package life.catalogue.api.model;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.*;
-
 import life.catalogue.coldp.ColdpTerm;
 
 import org.gbif.dwc.terms.AcefTerm;
