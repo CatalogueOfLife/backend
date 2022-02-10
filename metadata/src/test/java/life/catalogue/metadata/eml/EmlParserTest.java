@@ -1,4 +1,4 @@
-package life.catalogue.importer.dwca;
+package life.catalogue.metadata.eml;
 
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import life.catalogue.metadata.eml.EmlParser;
 import org.junit.Test;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;

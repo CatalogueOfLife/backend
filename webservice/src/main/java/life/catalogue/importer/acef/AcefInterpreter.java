@@ -4,14 +4,14 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.coldp.RankParser;
-import life.catalogue.coldp.SafeParser;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.NameValidator;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
+import life.catalogue.parser.RankParser;
+import life.catalogue.parser.SafeParser;
 
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;

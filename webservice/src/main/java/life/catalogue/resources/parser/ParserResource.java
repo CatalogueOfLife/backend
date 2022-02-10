@@ -1,5 +1,7 @@
 package life.catalogue.resources.parser;
 
+import life.catalogue.parser.*;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,8 +16,6 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-
-import life.catalogue.parser.*;
 
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;

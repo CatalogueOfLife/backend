@@ -1,15 +1,13 @@
-package life.catalogue.exporter;
+package life.catalogue.metadata.eml;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetTest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.io.InputStreamUtils;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.DatasetMapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,10 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.junit.ClassRule;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -33,19 +28,11 @@ import static org.junit.Assert.assertFalse;
 
 public class EmlWriterTest {
 
-  @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
-
-  @Rule
-  public TestDataRule testDataRule = TestDataRule.apple();
-
   @Test
   public void eml() throws Exception {
     File f = File.createTempFile("col-eml", ".xml");
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-
-      Dataset d = dm.get(TestDataRule.APPLE.key);
+    try {
+      Dataset d = DatasetTest.generateTestDataset();
       d.setCreator(List.of(
         Agent.person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"),
         Agent.person("Fax", "Feier")
@@ -101,13 +88,13 @@ public class EmlWriterTest {
     FileUtils.cleanDirectory(dir);
     for (int key : keys) {
       try {
-        InputStream stream = new URL("http://api.catalogueoflife.org/dataset/"+key).openStream();
+        InputStream stream = new URL("http://api.catalogueoflife.org/dataset/" + key).openStream();
         String json = InputStreamUtils.readEntireStream(stream);
         Dataset d = ApiModule.MAPPER.readValue(json, Dataset.class);
         if (d == null) {
           System.out.println(String.format("\nNo dataset %s", key));
         } else {
-          File f = new File(dir,"eml-"+key+".xml");
+          File f = new File(dir, "eml-" + key + ".xml");
           System.out.println(String.format("\n***** %s JSON *****\n", key));
           System.out.println(json);
           System.out.println(String.format("\n***** %s EML *****\n", key));
@@ -115,7 +102,7 @@ public class EmlWriterTest {
           String eml = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
           System.out.println(eml);
         }
-      } catch (IOException e){
+      } catch (IOException e) {
         System.out.println(e);
       }
     }

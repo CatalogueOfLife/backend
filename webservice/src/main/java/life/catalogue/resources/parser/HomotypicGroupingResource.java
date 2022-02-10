@@ -1,13 +1,13 @@
 package life.catalogue.resources.parser;
 
 import life.catalogue.api.model.Name;
-import life.catalogue.parser.NameParser;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.BasionymGroup;
 import life.catalogue.matching.authorship.BasionymSorter;
+import life.catalogue.parser.NameParser;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

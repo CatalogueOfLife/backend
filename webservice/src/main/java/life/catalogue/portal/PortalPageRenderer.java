@@ -9,7 +9,7 @@ import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.exporter.FmUtil;
+import life.catalogue.metadata.FmUtil;
 import life.catalogue.resources.ResourceUtils;
 
 import java.io.*;

@@ -10,12 +10,11 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
-import org.jsoup.Jsoup;
-import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 /**
  * A delegating metadata factory for all supported metadata formats in COL CLB.

@@ -1,4 +1,4 @@
-package life.catalogue.exporter;
+package life.catalogue.metadata.coldp;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetTest;

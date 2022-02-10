@@ -1,4 +1,4 @@
-package life.catalogue.exporter;
+package life.catalogue.metadata;
 
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.text.StringUtils;

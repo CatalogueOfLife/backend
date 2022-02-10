@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
 import com.google.common.eventbus.EventBus;
+
 import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {

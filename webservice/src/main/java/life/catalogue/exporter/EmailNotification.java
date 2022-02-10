@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.User;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.metadata.FmUtil;
 
 import java.io.IOException;
 import java.util.UUID;

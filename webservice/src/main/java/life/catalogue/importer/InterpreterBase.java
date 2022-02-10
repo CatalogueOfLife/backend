@@ -9,7 +9,6 @@ import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
-
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
@@ -37,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
-import static life.catalogue.coldp.SafeParser.parse;
+import static life.catalogue.parser.SafeParser.parse;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**

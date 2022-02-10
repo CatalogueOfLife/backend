@@ -1,7 +1,8 @@
-package life.catalogue.exporter;
+package life.catalogue.metadata.eml;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.metadata.FmUtil;
 
 import java.io.File;
 import java.io.IOException;

@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.config.GbifConfig;
+import life.catalogue.parser.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -21,8 +22,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
-
-import life.catalogue.parser.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

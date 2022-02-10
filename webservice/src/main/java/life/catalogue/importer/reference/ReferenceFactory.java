@@ -3,21 +3,20 @@ package life.catalogue.importer.reference;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.coldp.*;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.parser.CSLTypeParser;
+import life.catalogue.parser.DateParser;
+import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.UnparsableException;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
-
-import life.catalogue.parser.CSLTypeParser;
-import life.catalogue.parser.DateParser;
-import life.catalogue.parser.SafeParser;
-import life.catalogue.parser.UnparsableException;
 
 import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;

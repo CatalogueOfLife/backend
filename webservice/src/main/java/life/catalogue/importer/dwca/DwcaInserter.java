@@ -6,11 +6,10 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
-import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.reference.ReferenceFactory;
-
+import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.eml.EmlParser;
 
 import org.gbif.dwc.terms.*;

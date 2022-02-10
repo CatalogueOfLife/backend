@@ -5,6 +5,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.metadata.FmUtil;
 
 import java.io.IOException;
 import java.io.Writer;

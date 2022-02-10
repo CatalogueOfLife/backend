@@ -5,7 +5,6 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.img.ImageService;
-import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.NotUniqueRuntimeException;
@@ -17,6 +16,7 @@ import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.metadata.coldp.ColdpMetadataParser;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;

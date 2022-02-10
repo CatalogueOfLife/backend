@@ -4,8 +4,6 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.SafeParser;
-import life.catalogue.coldp.TreatmentFormatParser;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.importer.NeoCsvInserter;
@@ -16,6 +14,8 @@ import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
+import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.TreatmentFormatParser;
 
 import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.dwc.terms.Term;

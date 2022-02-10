@@ -1,7 +1,7 @@
 package life.catalogue.dw.jersey.writers;
 
 import life.catalogue.api.model.Dataset;
-import life.catalogue.exporter.EmlWriter;
+import life.catalogue.metadata.eml.EmlWriter;
 
 import java.io.IOException;
 import java.io.OutputStream;

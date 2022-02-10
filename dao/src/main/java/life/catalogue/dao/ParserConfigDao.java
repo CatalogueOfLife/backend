@@ -6,8 +6,8 @@ import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.vocab.Origin;
-import life.catalogue.parser.NameParser;
 import life.catalogue.db.mapper.ParserConfigMapper;
+import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;

@@ -12,7 +12,6 @@ import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
-
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.AcefTerm;

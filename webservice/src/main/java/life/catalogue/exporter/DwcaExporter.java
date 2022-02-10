@@ -5,6 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.TermWriter;
 import life.catalogue.img.ImageService;
+import life.catalogue.metadata.eml.EmlWriter;
 
 import org.gbif.dwc.Archive;
 import org.gbif.dwc.ArchiveField;

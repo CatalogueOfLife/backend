@@ -1,7 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.exporter.FmUtil;
+import life.catalogue.metadata.FmUtil;
 
 import java.io.IOException;
 import java.io.Writer;

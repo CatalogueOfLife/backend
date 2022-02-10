@@ -22,6 +22,12 @@
       <artifactId>parser</artifactId>
     </dependency>
 
+    <!-- templating -->
+    <dependency>
+      <groupId>org.freemarker</groupId>
+      <artifactId>freemarker</artifactId>
+    </dependency>
+
     <!-- other -->
     <dependency>
       <groupId>org.jsoup</groupId>
@@ -53,6 +59,13 @@
       <artifactId>logback-classic</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
+      <artifactId>api</artifactId>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>

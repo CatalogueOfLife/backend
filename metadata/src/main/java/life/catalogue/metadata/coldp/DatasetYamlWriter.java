@@ -1,7 +1,6 @@
-package life.catalogue.exporter;
+package life.catalogue.metadata.coldp;
 
 import life.catalogue.api.model.Dataset;
-import life.catalogue.metadata.coldp.YamlMapper;
 import life.catalogue.common.io.UTF8IoUtils;
 
 import java.io.File;

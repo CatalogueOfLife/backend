@@ -2,7 +2,6 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.parser.NameParser;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.tax.MisappliedNameMatcher;
@@ -20,6 +19,7 @@ import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 import life.catalogue.matching.NameIndex;
+import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;

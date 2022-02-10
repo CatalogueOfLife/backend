@@ -7,6 +7,10 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
+import life.catalogue.parser.CountryParser;
+import life.catalogue.parser.DateParser;
+import life.catalogue.parser.LicenseParser;
+import life.catalogue.parser.SafeParser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,12 +28,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import life.catalogue.parser.CountryParser;
-import life.catalogue.parser.DateParser;
-import life.catalogue.parser.LicenseParser;
-
-import life.catalogue.parser.SafeParser;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

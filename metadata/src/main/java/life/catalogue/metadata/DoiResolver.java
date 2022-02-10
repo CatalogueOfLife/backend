@@ -1,4 +1,4 @@
-package life.catalogue.metadata.coldp;
+package life.catalogue.metadata;
 
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;

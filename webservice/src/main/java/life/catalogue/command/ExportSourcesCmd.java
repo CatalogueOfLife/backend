@@ -10,7 +10,7 @@ import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPatchMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
-import life.catalogue.exporter.DatasetYamlWriter;
+import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
 import java.io.File;
 import java.io.IOException;

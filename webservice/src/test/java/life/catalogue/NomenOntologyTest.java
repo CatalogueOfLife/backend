@@ -1,6 +1,6 @@
 package life.catalogue;
 
-import life.catalogue.coldp.NomenOntology;
+import life.catalogue.parser.NomenOntology;
 
 import org.junit.Test;
 

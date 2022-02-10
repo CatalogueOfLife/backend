@@ -9,6 +9,7 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.img.ImageService;
+import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
 import org.gbif.dwc.terms.Term;
 

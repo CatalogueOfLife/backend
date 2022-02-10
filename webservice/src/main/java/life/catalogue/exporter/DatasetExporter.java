@@ -13,6 +13,7 @@ import life.catalogue.concurrent.JobPriority;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
+import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
 import java.io.File;
 import java.io.IOException;

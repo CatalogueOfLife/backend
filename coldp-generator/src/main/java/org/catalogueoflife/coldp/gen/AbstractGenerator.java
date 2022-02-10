@@ -3,10 +3,10 @@ package org.catalogueoflife.coldp.gen;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.metadata.coldp.YamlMapper;
 import life.catalogue.common.io.*;
 import life.catalogue.common.text.SimpleTemplate;
-import life.catalogue.metadata.coldp.DoiResolver;
+import life.catalogue.metadata.DoiResolver;
+import life.catalogue.metadata.coldp.YamlMapper;
 
 import org.gbif.dwc.terms.Term;
 

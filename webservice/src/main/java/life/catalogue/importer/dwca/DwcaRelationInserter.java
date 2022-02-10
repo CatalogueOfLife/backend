@@ -6,13 +6,13 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.parser.NameParser;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.*;
+import life.catalogue.parser.NameParser;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;

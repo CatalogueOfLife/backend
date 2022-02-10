@@ -13,7 +13,6 @@ import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
-
 import life.catalogue.metadata.MetadataFactory;
 
 import org.gbif.dwc.terms.Term;

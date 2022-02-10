@@ -1,4 +1,4 @@
-package life.catalogue.exporter;
+package life.catalogue.metadata;
 
 import java.io.IOException;
 import java.io.StringWriter;

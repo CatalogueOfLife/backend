@@ -2,7 +2,7 @@ package life.catalogue.dw.jersey.writers;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.exporter.DatasetYamlWriter;
+import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
