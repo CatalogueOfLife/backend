@@ -20,7 +20,7 @@ public class SciNameNormalizer {
   // honorifics: -i/-ae/-orum, see https://code.iczn.org/formation-and-treatment-of-names/article-26-assumption-of-greek-or-latin-in-scientific-names/?frame=1
   // singular: us/er/i/o/um, a/ae/am
   // plural: i/orum/is/os, ae/arum/is/as
-  private static final Pattern suffix_a = Pattern.compile("(?:arum|orum|us|um|ae|am|ei|is|os|as|i|o|a|e)$");
+  private static final Pattern suffix_a = Pattern.compile("(?:arum|orum|us|um|ae|am|is|os|as|ei|i|o|a|e)$");
   // cerifer, cerifera, ceriferum
   private static final Pattern suffix_fger = Pattern.compile("([fg])er(?:a|um)$");
   // most adjectives lose the ‘e’ when declined, some don't though, eg. liber
@@ -107,14 +107,14 @@ public class SciNameNormalizer {
   }
   
   private static String normStrongly(String s, boolean stemming) {
+    // normalize frequent variations of i
+    s = i.matcher(s).replaceAll("i");
     // remove repeated letters→leters in binomials
     s = removeRepeatedLetter.matcher(s).replaceAll("$1");
     
     if (stemming) {
       s = stemEpithet(s);
     }
-    // normalize frequent variations of i
-    s = i.matcher(s).replaceAll("i");
     // normalize frequent variations of t/r sometimes followed by an 'h'
     return trh.matcher(s).replaceAll("$1");
   }

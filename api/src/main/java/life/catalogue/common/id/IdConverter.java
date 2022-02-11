@@ -65,6 +65,10 @@ public class IdConverter {
       char[] chars = id.toCharArray();
       int power = (int) Math.pow(radix, chars.length-1);
       for (char c : chars) {
+        // check if character is allowed
+        if (!ArrayUtils.contains(this.chars, c)) {
+          throw new IllegalArgumentException("Unsupported character "+c);
+        }
         num += values[c] * power;
         power = power / radix;
       }

@@ -8,7 +8,7 @@ import java.util.*;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class IdConverterTest {
 
@@ -21,6 +21,23 @@ public class IdConverterTest {
     for (int x : new int[]{3, 1010, 2298, 3450, 25000}) {
       System.out.println(IdConverter.LATIN29.encode(x));
     }
+  }
+
+  @Test
+  public void b12() {
+    assertEquals("9Z", IdConverter.LATIN29.encode(231));
+    assertEquals("B2", IdConverter.LATIN29.encode(232));
+    assertEquals("B3", IdConverter.LATIN29.encode(233));
+
+    int b1 = IdConverter.LATIN29.decode("B2");
+    int b2 = IdConverter.LATIN29.decode("B3");
+    assertNotEquals(b1, b2);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void b1() {
+    // 1 is not part of latin29
+    IdConverter.LATIN29.decode("B1");
   }
 
   @Test

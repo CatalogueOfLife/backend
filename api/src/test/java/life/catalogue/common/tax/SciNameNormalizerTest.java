@@ -35,11 +35,13 @@ public class SciNameNormalizerTest {
     assertEquals("Carex caioueta", SciNameNormalizer.normalize("Carex ×cayouettei"));
     assertEquals("Platanus hispanica", SciNameNormalizer.normalize("Platanus x hispanica"));
     // https://github.com/gbif/checklistbank/issues/7
-    assertEquals("Eragrostis browna", SciNameNormalizer.normalize("Eragrostis brownii"));
+    assertEquals(SciNameNormalizer.normalize("Eragrostis brownii"), SciNameNormalizer.normalize("Eragrostis brownei"));
     assertEquals("Eragrostis browna", SciNameNormalizer.normalize("Eragrostis brownei"));
     assertEquals("Theridion uhliga", SciNameNormalizer.normalize("Theridion uhlighi"));
     assertEquals("Theridion uhliga", SciNameNormalizer.normalize("Theridion uhliigi"));
 
+    assertEquals("Lynx rufus baila", SciNameNormalizer.normalize("Lynx rufus baileii"));
+    assertEquals("Lynx rufus baila", SciNameNormalizer.normalize("Lynx rufus baileyi"));
   }
 
   @Test

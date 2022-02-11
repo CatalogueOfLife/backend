@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
@@ -10,6 +11,10 @@ import life.catalogue.db.mapper.IdMapMapper;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import life.catalogue.db.mapper.NameMatchMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
@@ -66,11 +71,28 @@ public class IdProviderIT {
     provider.run();
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
+      // report
+      AtomicInteger maxID = new AtomicInteger();
+      num.processDataset(projectKey, null, null).forEach(nu -> {
+        System.out.print(nu);
+        var ni = nmm.get(nu).getName();
+        var id = idm.getUsage(projectKey, nu.getId());
+        System.out.println("  -> " + id + " nidx:" + ni);
+        int val = IdConverter.LATIN29.decode(id);
+        maxID.set(Math.max(val, maxID.get()));
+      });
+      // largest id issued is:
+      assertEquals("B6", IdConverter.LATIN29.encode(maxID.get()));
+
+      // assert
       assertEquals(25, idm.countUsage(projectKey));
       assertEquals("R", idm.getUsage(projectKey, "25"));
       // rufus -> rufa
-      //TODO: check why? Should this not be E ???
-      assertEquals("B4", idm.getUsage(projectKey, "14"));
+      // current 14 is synonym Felis rufa with parent Lynx rufus (13):
+      // release 13 contains Felis rufus as synonym B2 with parent Lynx rufus (D)
+      assertEquals("B2", idm.getUsage(projectKey, "14"));
       // baileyi -> baileii
       assertEquals("F", idm.getUsage(projectKey, "15"));
     }

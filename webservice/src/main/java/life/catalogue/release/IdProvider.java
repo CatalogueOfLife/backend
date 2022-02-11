@@ -1,6 +1,5 @@
 package life.catalogue.release;
 
-import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.ints.*;
 
 import life.catalogue.api.model.*;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntFunction;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -368,6 +366,7 @@ public class IdProvider {
         var rl = ReleasedId.create(sn, attempt);
         attempt2dataset.putIfAbsent(attempt, releaseDatasetKey);
         ids.add(rl);
+        LOG.debug("Add {} from {}/{}: {}", sn.getId(), attempt, releaseDatasetKey, sn);
       } catch (IllegalArgumentException e) {
         // expected for temp UUID, swallow
         stats.temporary.incrementAndGet();
