@@ -13,6 +13,7 @@ import life.catalogue.dw.auth.Roles;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.RolesAllowed;
@@ -66,10 +67,10 @@ public class UserResource {
 
   @GET
   @Path("/{key}")
-  public User get(@PathParam("key") Integer key, @Auth User admin) {
+  public User get(@PathParam("key") Integer key, @Auth Optional<User> admin) {
     User user = getUser(key);
-    // obfuscate email and personal things
-    if (!admin.isAdmin()) {
+    // obfuscate email and personal things if its not an admin
+    if (admin.isEmpty() || !admin.get().isAdmin()) {
       obfuscate(user);
     }
     return user;
