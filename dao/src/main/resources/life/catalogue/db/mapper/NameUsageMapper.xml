@@ -224,7 +224,7 @@
     FROM <include refid="FROM"/>
       JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
       JOIN names_index ni ON ni.id=nm.index_id
-    WHERE u.dataset_key = #{datasetKey} AND ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    WHERE u.dataset_key = #{datasetKey} AND (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
     ORDER BY u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -248,7 +248,7 @@
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
       JOIN names_index ni ON ni.id=nmo.index_id
-      JOIN name_match nm ON nm.index_id=ni.id OR nm.index_id=ni.canonical_id
+      JOIN name_match nm ON (nm.index_id=ni.id OR nm.index_id=ni.canonical_id)
     <!-- now join the related usages -->
     JOIN name n ON nm.name_id=n.id AND nm.dataset_key=n.dataset_key
     JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key

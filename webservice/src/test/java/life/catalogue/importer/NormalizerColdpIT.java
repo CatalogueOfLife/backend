@@ -426,7 +426,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals(NomStatus.NOT_ESTABLISHED, n.getNomStatus());
       assertEquals("Cassine congonha", n.getScientificName());
     }
-    //assertTree();
+    assertTree();
   }
 
 }

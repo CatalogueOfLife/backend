@@ -117,16 +117,19 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     res = mapper().listByRegex(testDataRule.testData.key, ".", TaxonomicStatus.ACCEPTED, Rank.GENUS, new Page());
     assertEquals(0, res.size());
 
-    res = mapper().listByRegex(testDataRule.testData.key, "fus", null, null, new Page());
-    assertEquals(2, res.size());
-
-    res = mapper().listByRegex(testDataRule.testData.key, "^La", null, null, new Page());
+    res = mapper().listByRegex(testDataRule.testData.key, ".*fu[ns]", null, null, new Page());
     assertEquals(3, res.size());
 
-    res = mapper().listByRegex(testDataRule.testData.key, "^[A-Za-z]+$", null, null, new Page());
-    assertEquals(0, res.size());
+    res = mapper().listByRegex(testDataRule.testData.key, ".*fus", null, null, new Page());
+    assertEquals(2, res.size());
 
-    res = mapper().listByRegex(testDataRule.testData.key, "^[A-Za-z]+\\s", null, null, new Page());
+    res = mapper().listByRegex(testDataRule.testData.key, "La", null, null, new Page());
+    assertEquals(3, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, ".+ .+tris$", null, null, new Page());
+    assertEquals(1, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, "[A-Za-z]+\\s", null, null, new Page());
     assertEquals(4, res.size());
   }
 
