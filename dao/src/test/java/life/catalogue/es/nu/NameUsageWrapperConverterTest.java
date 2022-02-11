@@ -64,7 +64,7 @@ public class NameUsageWrapperConverterTest {
   public void testNormalizeStrongly4() {
     String s = NameUsageWrapperConverter.normalizeStrongly("sylvestris");
     System.out.println(s);
-    assertEquals("silvestris", s);
+    assertEquals("silvestra", s);
   }
 
 }

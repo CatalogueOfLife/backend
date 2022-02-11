@@ -17,6 +17,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
@@ -412,6 +413,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
    * Also mark WCVP synonyms, illegitimate & invalid names with no parent accepted name as “bare names”
    */
   @Test
+  @Ignore("Work in progress")
   public void hybridGeneraWcvp() throws Exception {
     normalize(18);
     printTree();

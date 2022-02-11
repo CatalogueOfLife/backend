@@ -1,5 +1,7 @@
 package life.catalogue.release;
 
+import it.unimi.dsi.fastutil.ints.*;
+
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -8,11 +10,6 @@ import life.catalogue.common.id.IdConverter;
 import org.gbif.nameparser.api.Rank;
 
 import org.apache.commons.lang3.ArrayUtils;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * Tracks released ids incl historic releases.
@@ -72,7 +69,7 @@ public class ReleasedIds {
     return byId.containsKey(i);
   }
 
-  public void remove(int id) throws IllegalArgumentException {
+  public ReleasedId remove(int id) throws IllegalArgumentException {
     ReleasedId r = byId.remove(id);
     if (r != null) {
       ReleasedId[] rids = ArrayUtils.removeAllOccurences(byNxId.get(r.nxId), r);
@@ -82,16 +79,17 @@ public class ReleasedIds {
         byNxId.put(r.nxId, rids);
       }
     }
+    return r;
   }
 
   /**
    * @return IDs from the last (=max) attempt.
    */
-  public IntSet maxAttemptIds(){
-    IntSet ids = new IntOpenHashSet();
+  public Int2IntMap maxAttemptIds(){
+    Int2IntMap ids = new Int2IntOpenHashMap();
     for (ReleasedId rid : byId.values()) {
       if (rid.attempt == maxAttempt) {
-        ids.add(rid.id);
+        ids.put(rid.id, rid.attempt);
       }
     }
     return ids;

@@ -28,12 +28,6 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
   @Test // The basics
   public void test01() {
-
-    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetFilter(1);
-    query.setQ("abcde");
-    query.setFuzzy(true);
-
     Name n = new Name();
     n.setDatasetKey(1);
     n.setRank(Rank.SPECIES);
@@ -45,7 +39,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     n.setDatasetKey(1);
     n.setId("2");
     n.setRank(Rank.SUBSPECIES);
-    n.setSpecificEpithet("AbCdEfG"); // Just for peeking at scores
+    n.setSpecificEpithet("AbCdEf"); // Just for peeking at scores
     EsNameUsage doc2 = newDocument(n); // match 2
 
     n = new Name();
@@ -77,6 +71,12 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     EsNameUsage doc6 = newDocument(n); // match 4
 
     indexRaw(doc1, doc2, doc3, doc4, doc5, doc6);
+
+
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
+    query.setDatasetFilter(1);
+    query.setQ("abcde");
+    query.setFuzzy(true);
 
     NameUsageSuggestResponse response = suggest(query);
 
@@ -446,10 +446,6 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     response = suggest(query);
     assertMatch(response, doc1, doc2);
 
-    query.setQ("Tyrannosaurus re");
-    response = suggest(query);
-    assertMatch(response, doc1, doc2);
-
     query.setQ("altobrasiliensis");
     response = suggest(query);
     assertMatch(response, doc2);
@@ -613,12 +609,14 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
   private static boolean containsUsageIds(NameUsageSuggestResponse response, EsNameUsage... docs) {
     Set<String> expected = Arrays.stream(docs).map(EsNameUsage::getUsageId).collect(toSet());
     Set<String> actual = response.getSuggestions().stream().map(NameUsageSuggestion::getUsageId).collect(toSet());
+    actual.forEach(System.out::println);
     return expected.equals(actual);
   }
 
   private static void assertMatch(NameUsageSuggestResponse response, EsNameUsage... docs) {
     Set<String> expected = Arrays.stream(docs).map(EsNameUsage::getUsageId).collect(toSet());
     Set<String> actual = response.getSuggestions().stream().map(NameUsageSuggestion::getUsageId).collect(toSet());
+    actual.forEach(System.out::println);
     assertTrue(expected.equals(actual));
   }
 }

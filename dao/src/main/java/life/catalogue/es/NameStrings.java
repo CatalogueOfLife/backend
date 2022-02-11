@@ -47,11 +47,13 @@ public class NameStrings {
     } else if (name.getUninomial() != null) {
       genusOrMonomial = getStrings(name.getUninomial().toLowerCase(), normalizeWeakly(name.getUninomial()));
     }
+    // we used to use the strong normaliser to index species/infraspecific epithets...
+    // But that caused more problems than it helped...
     if (name.getSpecificEpithet() != null) {
-      specificEpithet = getStrings(name.getSpecificEpithet().toLowerCase(), normalizeStrongly(name.getSpecificEpithet()));
+      specificEpithet = getStrings(name.getSpecificEpithet().toLowerCase(), normalizeWeakly(name.getSpecificEpithet()));
     }
     if (name.getInfraspecificEpithet() != null) {
-      infraspecificEpithet = getStrings(name.getInfraspecificEpithet().toLowerCase(), normalizeStrongly(name.getInfraspecificEpithet()));
+      infraspecificEpithet = getStrings(name.getInfraspecificEpithet().toLowerCase(), normalizeWeakly(name.getInfraspecificEpithet()));
     }
   }
 
@@ -120,7 +122,8 @@ public class NameStrings {
   }
   
   private static String[] getStrings(String literal, String normalized) {
-    return (literal = literal.toLowerCase()).equals(normalized) ? new String[] {literal} : new String[] {literal, normalized};
+    literal = literal.toLowerCase();
+    return literal.equals(normalized) ? new String[] {literal} : new String[] {literal, normalized};
   }
 
 }

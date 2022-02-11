@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -89,6 +90,7 @@ public class QMatchingTest extends EsReadTestBase {
   }
 
   @Test
+  @Ignore("Bad use of ScinameNormalizer in indexing/querying")
   public void fuzzyAndPrefix() throws IOException {
     EsTestUtils.indexCrocodiles(this);
 
@@ -135,6 +137,7 @@ public class QMatchingTest extends EsReadTestBase {
   }
 
   @Test
+  @Ignore("Bad use of ScinameNormalizer in indexing/querying")
   public void fuzzyAndWholeWordsOnly() throws IOException {
     EsTestUtils.indexCrocodiles(this);
 

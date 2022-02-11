@@ -1,5 +1,8 @@
 package life.catalogue.release;
 
+import it.unimi.dsi.fastutil.Function;
+import it.unimi.dsi.fastutil.ints.*;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.VocabularyUtils;
@@ -24,6 +27,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntFunction;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -32,10 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
@@ -81,9 +81,9 @@ public class IdProvider {
   private final File reportDir;
   // id changes in this release
   private int reused = 0;
-  private IntSet resurrected = new IntOpenHashSet();
   private IntSet created = new IntOpenHashSet();
-  private IntSet deleted = new IntOpenHashSet();
+  private Int2IntMap deleted = new Int2IntOpenHashMap(); // keep release attempt for reporting!
+  private Int2IntMap resurrected = new Int2IntOpenHashMap(); // keep release attempt for reporting!
   private final SortedMap<String, List<InstableName>> unstable = new TreeMap<>();
   protected IdMapMapper idm;
   protected NameUsageMapper num;
@@ -153,10 +153,10 @@ public class IdProvider {
 
   public static class IdReport {
     public final IntSet created;
-    public final IntSet deleted;
-    public final IntSet resurrected;
+    public final Int2IntMap deleted;
+    public final Int2IntMap resurrected;
 
-    IdReport(IntSet created, IntSet deleted, IntSet resurrected) {
+    IdReport(IntSet created, Int2IntMap deleted, Int2IntMap resurrected) {
       this.created = created;
       this.deleted = deleted;
       this.resurrected = resurrected;
@@ -171,10 +171,10 @@ public class IdProvider {
     try {
       File dir = cfg.reportDir(projectKey, attempt);
       // read the following IDs from previous releases
-      reportFile(dir,"deleted.tsv", deleted, true, true);
-      reportFile(dir,"resurrected.tsv", resurrected, true, false);
+      reportFile(dir,"deleted.tsv", deleted.keySet(), deleted, true);
+      reportFile(dir,"resurrected.tsv", resurrected.keySet(), deleted, false);
       // read ID from this release & ID mapping
-      reportFile(dir,"created.tsv", created, false, false);
+      reportFile(dir,"created.tsv", created, id -> -1, false);
       // clear instable names, removing the ones with just deletions
       unstable.entrySet().removeIf(entry -> entry.getValue().parallelStream().allMatch(n -> n.del));
       try (Writer writer = UTF8IoUtils.writerFromFile(new File(dir, "unstable.txt"));
@@ -230,7 +230,7 @@ public class IdProvider {
     }
   }
 
-  private void reportFile(File dir, String filename, IntSet ids, boolean previousReleases, boolean deletion) throws IOException {
+  private void reportFile(File dir, String filename, IntSet ids, Int2IntFunction attemptLookup, boolean deletion) throws IOException {
     File f = new File(dir, filename);
     try(TabWriter tsv = TabWriter.fromFile(f);
         SqlSession session = factory.openSession(true)
@@ -239,23 +239,22 @@ public class IdProvider {
       LOG.info("Writing ID report for project release {}-{} of {} IDs to {}", projectKey, attempt, ids.size(), f);
       ids.intStream()
         .sorted()
-        .forEach(id -> reportId(id, previousReleases, tsv, deletion));
+        .forEach(id -> reportId(id, attemptLookup.get(id), tsv, deletion));
     }
   }
 
   /**
-   * @param isOld if true lookup the if from older releases, otherwise from the project using the id map table
+   * @param attempt if larger than 0 it was issued in an older release before, otherwise it is new and look it up in the project using the id map table
    * @param deletion
    */
-  private void reportId(int id, boolean isOld, TabWriter tsv, boolean deletion){
+  private void reportId(int id, int attempt, TabWriter tsv, boolean deletion){
     String ID = IdConverter.LATIN29.encode(id);
     SimpleName sn = null;
     DSID<String> key = null;
     try {
       int datasetKey = -1;
-      if (isOld) {
-        ReleasedId rid = this.ids.byId(id);
-        datasetKey = attempt2dataset.get(rid.attempt);
+      if (attempt>0) {
+        datasetKey = attempt2dataset.get(attempt);
         key = DSID.of(datasetKey, ID);
         sn = num.getSimple(key);
       } else {
@@ -267,8 +266,8 @@ public class IdProvider {
       }
 
       if (sn == null) {
-        if (isOld) {
-          LOG.warn("Old ID {}-{} [{}] reported without name usage", datasetKey, ID, id);
+        if (attempt>0) {
+          LOG.warn("Old ID {}-{} [{}] reported without name usage from attempt {}", datasetKey, ID, id, attempt);
         } else {
           LOG.warn("ID {} [{}] reported without name usage", ID, id);
         }
@@ -301,7 +300,7 @@ public class IdProvider {
       }
 
     } catch (IOException | RuntimeException e) {
-      LOG.error("Failed to report {}ID {}: {} [key={}, sn={}]", isOld ? "old ":"", id, ID, key, sn, e);
+      LOG.error("Failed to report {}ID {}: {} [key={}, sn={}]", attempt>0 ? "old ":"", id, ID, key, sn, e);
     }
   }
 
@@ -510,10 +509,10 @@ public class IdProvider {
     if (!ids.containsId(rm.rid.id)) {
       throw new IllegalArgumentException("Cannot release " + rm.rid.id + " which does not exist (anymore)");
     }
-    ids.remove(rm.rid.id);
+    var rid = ids.remove(rm.rid.id);
     rm.name.setCanonicalId(rm.rid.id);
     if (rm.rid.attempt < ids.getMaxAttempt()) {
-      resurrected.add(rm.rid.id);
+      resurrected.put(rm.rid.id, rm.rid.attempt);
     }
     scores.remove(rm);
   }
