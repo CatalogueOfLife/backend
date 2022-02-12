@@ -43,8 +43,9 @@ contact:
   email: info@ictvonline.org
   organisation: International Committee on Taxonomy of Viruses (ICTV)
 creator:
-  -
-    organisation: International Committee on Taxonomy of Viruses (ICTV)
+ -
+   organisation: International Committee on Taxonomy of Viruses (ICTV)
+{authors}
 license: CC-BY
 taxonomicScope: Viruses
 taxonomicScopeInEnglish: Viruses
@@ -53,3 +54,4 @@ confidence: 5
 completeness: 100
 url: https://talk.ictvonline.org/taxonomy/w/ictv-taxonomy
 logo: https://raw.githubusercontent.com/mdoering/checklist_builder/master/src/main/resources/ictv/ictv-logo.png
+{sources}

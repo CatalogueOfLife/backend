@@ -16,6 +16,7 @@ public class CslName {
   private String nonDroppingParticle;
   private String suffix;
   private Boolean isInstitution;
+  private String orcid; // at this stage we only use this for CrossRef, see DoiResolver!
 
   public CslName() {
   }
@@ -83,6 +84,14 @@ public class CslName {
     this.isInstitution = isInstitution;
   }
 
+  public String getOrcid() {
+    return orcid;
+  }
+
+  public void setOrcid(String orcid) {
+    this.orcid = orcid;
+  }
+
   public CSLName toCSL() {
     return new CSLName(getFamily(), getGiven(), getDroppingParticle(),
       getNonDroppingParticle(), getSuffix(), null, null,
@@ -100,11 +109,12 @@ public class CslName {
            && Objects.equals(droppingParticle, cslName.droppingParticle)
            && Objects.equals(nonDroppingParticle, cslName.nonDroppingParticle)
            && Objects.equals(suffix, cslName.suffix)
-           && Objects.equals(isInstitution, cslName.isInstitution);
+           && Objects.equals(isInstitution, cslName.isInstitution)
+           && Objects.equals(orcid, cslName.orcid);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(family, given, droppingParticle, nonDroppingParticle, suffix, isInstitution);
+    return Objects.hash(family, given, droppingParticle, nonDroppingParticle, suffix, isInstitution, orcid);
   }
 }

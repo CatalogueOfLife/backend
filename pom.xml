@@ -37,14 +37,14 @@
         by these BOMs (use the right versions):
 
         Main two Dropwizard BOMs:
-        https://github.com/dropwizard/dropwizard/blob/v2.0.21/dropwizard-bom/pom.xml
-        https://github.com/dropwizard/dropwizard/blob/v2.0.21/dropwizard-dependencies/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v2.0.28/dropwizard-bom/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v2.0.28/dropwizard-dependencies/pom.xml
 
         Which also imports the Jersey BOM: https://github.com/eclipse-ee4j/jersey/blob/2.33/bom/pom.xml
         and Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.10.5.20201202/pom.xml
 
         These BOMs manage dependency versions for many things including:
-        commons-lang3, guava, jersey, commons-text, servlet api, httpclient,
+        commons-lang3, caffeine, guava, jersey, commons-text, servlet api, httpclient,
         liquibase, freemarker, jetty, jackson, metrics, etc.
     -->
     <antlr.version>4.7.2</antlr.version>
@@ -55,7 +55,7 @@
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.19</commons-compress.version>
     <commons-io.version>2.11.0</commons-io.version>
-    <dropwizard.version>2.0.25</dropwizard.version>
+    <dropwizard.version>2.0.28</dropwizard.version>
     <dwc-api.version>1.35-SNAPSHOT</dwc-api.version>
     <dwca-io.version>2.11</dwca-io.version>
     <elasticsearch.version>7.4.2</elasticsearch.version>

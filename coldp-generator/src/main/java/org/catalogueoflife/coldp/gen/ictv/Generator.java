@@ -15,6 +15,8 @@
  */
 package org.catalogueoflife.coldp.gen.ictv;
 
+import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.DOI;
 import life.catalogue.coldp.ColdpTerm;
 
@@ -23,10 +25,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
@@ -44,7 +43,7 @@ public class Generator extends AbstractXlsSrcGenerator {
   // manually curated data
   private static final String ISSUED = "2021-05-18";
   private static final String VERSION = "2020.v1";
-  private static final DOI SOURCE = new DOI("10.1007", "s00705-021-05156-1");
+  private static final DOI SOURCE = new DOI("10.1007/s00705-021-05156-1");
   // SPREADSHEET FORMAT
   private static final int SHEET_IDX = 2;
   private static final int SKIP_ROWS = 1;
@@ -156,6 +155,12 @@ public class Generator extends AbstractXlsSrcGenerator {
   protected void addMetadata() throws Exception {
     //   Walker PJ, Siddell SG, Lefkowitz EJ, Mushegian AR, Adriaenssens EM, Alfenas-Zerbini P, Davison AJ, Dempsey DM, Dutilh BE, García ML, Harrach B, Harrison RL, Hendrickson RC, Junglen S, Knowles NJ, Krupovic M, Kuhn JH, Lambert AJ, Łobocka M, Nibert ML, Oksanen HM, Orton RJ, Robertson DL, Rubino L, Sabanadzovic S, Simmonds P, Smith DB, Suzuki N, Van Dooerslaer K, Vandamme AM, Varsani A, Zerbini FM. Changes to virus taxonomy and to the International Code of Virus Classification and Nomenclature ratified by the International Committee on Taxonomy of Viruses (2021). Arch Virol. 2021 Jul 6. doi: 10.1007/s00705-021-05156-1. PMID: 34231026.
     addSource(SOURCE);
+    // now also use authors of the source as dataset authors!
+    if (!sources.isEmpty()) {
+      asYaml(sources.get(0).getAuthor()).ifPresent(yaml -> {
+        metadata.put("authors", yaml);
+      });
+    }
     metadata.put("issued", ISSUED);
     metadata.put("version", VERSION);
     super.addMetadata();

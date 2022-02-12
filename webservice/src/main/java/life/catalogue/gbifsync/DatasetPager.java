@@ -1,8 +1,5 @@
 package life.catalogue.gbifsync;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
 import life.catalogue.api.jackson.UUIDSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
@@ -16,7 +13,6 @@ import life.catalogue.parser.*;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -30,6 +26,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.undercouch.citeproc.csl.CSLType;

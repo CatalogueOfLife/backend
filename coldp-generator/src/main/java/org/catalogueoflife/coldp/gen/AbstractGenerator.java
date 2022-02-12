@@ -1,5 +1,7 @@
 package org.catalogueoflife.coldp.gen;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
 import life.catalogue.coldp.ColdpTerm;
@@ -15,10 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -57,7 +56,7 @@ public abstract class AbstractGenerator implements Runnable {
     hc = htb.build();
     this.download = new DownloadUtil(hc);
     this.srcUri = downloadUri;
-    doiResolver = new DoiResolver();
+    doiResolver = new DoiResolver(hc);
   }
 
 
@@ -149,20 +148,9 @@ public abstract class AbstractGenerator implements Runnable {
   protected void addMetadata() throws Exception {
     if (addMetadata) {
       // do we have sources?
-      StringBuilder yaml = new StringBuilder();
-      if (!sources.isEmpty()) {
-        yaml.append("source: \n");
-        for (Citation src : sources) {
-          yaml.append(" - \n");
-          String citation = YamlMapper.MAPPER.writeValueAsString(src);
-          String indented = new BufferedReader(new StringReader(citation)).lines()
-                                                        .map(l -> "   " + l)
-                                                        .collect(Collectors.joining("\n"));
-          yaml.append(indented);
-          yaml.append("\n");
-        }
-      }
-      metadata.put("sources", yaml.toString());
+      asYaml(sources).ifPresent(yaml -> {
+        metadata.put("sources", "source: \n" + yaml);
+      });
 
       // use metadata to format
       String template = UTF8IoUtils.readString(Resources.stream(cfg.source+"/metadata.yaml"));
@@ -172,12 +160,28 @@ public abstract class AbstractGenerator implements Runnable {
     }
   }
 
+  protected Optional<String> asYaml(List<?> items) throws JsonProcessingException {
+    StringBuilder yaml = new StringBuilder();
+    for (Object item : items) {
+      yaml.append(" - \n");
+      String itemYaml = YamlMapper.MAPPER.writeValueAsString(item).replaceFirst("---\n", "").trim();
+      String indented = new BufferedReader(new StringReader(itemYaml)).lines()
+                                                                      .map(l -> "   " + l)
+                                                                      .collect(Collectors.joining("\n"));
+      yaml.append(indented);
+      yaml.append("\n");
+    }
+    return yaml.length()>0 ? Optional.of(yaml.toString()) : Optional.empty();
+  }
+
   /**
    * Adds a new source entry to the metadata map by resolving a DOI.
    * @param doi
    */
   protected void addSource(DOI doi) throws IOException {
     var data = doiResolver.resolve(doi);
-    sources.add(data);
+    if (data != null) {
+      sources.add(data);
+    }
   }
 }
