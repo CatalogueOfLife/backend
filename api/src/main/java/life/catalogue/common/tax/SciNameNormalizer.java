@@ -89,7 +89,7 @@ public class SciNameNormalizer {
       s = normStrongly(s, stemming);
       
     } else if (s.indexOf(' ') > 2) {
-      String[] parts = s.split(" ");
+      String[] parts = s.split(" +");
       StringBuilder sb = new StringBuilder();
       sb.append(parts[0]);
       for (int i = 1; i < parts.length; i++) {

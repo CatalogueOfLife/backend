@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class Misc {
+public class MiscTest {
 
   @Test // Apparently String.split does a trim-right, but not a trim-left
   public void testSplit() {

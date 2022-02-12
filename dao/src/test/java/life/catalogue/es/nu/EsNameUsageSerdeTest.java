@@ -24,9 +24,9 @@ import static org.junit.Assert.assertEquals;
  * Also separately tests serde for payload field, which contains the serialized NameUsageWrapper object. NB Can't extend
  * SerdeTestBase b/c it's specifically about (de)serialization to ES documents, which uses another ObjectMapper.
  */
-public class EsNameUsageSerde extends EsReadTestBase {
+public class EsNameUsageSerdeTest extends EsReadTestBase {
 
-  static Logger LOG = LoggerFactory.getLogger(EsNameUsageSerde.class);
+  static Logger LOG = LoggerFactory.getLogger(EsNameUsageSerdeTest.class);
 
   @Test
   public void testTaxon() throws IOException {

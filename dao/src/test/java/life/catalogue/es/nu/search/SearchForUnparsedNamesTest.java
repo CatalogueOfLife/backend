@@ -13,7 +13,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class Issue541_SearchForUnparsedNames extends EsReadTestBase {
+/**
+ * https://github.com/CatalogueOfLife/backend/issues/541
+ */
+public class SearchForUnparsedNamesTest extends EsReadTestBase {
 
   @Before
   public void before() {

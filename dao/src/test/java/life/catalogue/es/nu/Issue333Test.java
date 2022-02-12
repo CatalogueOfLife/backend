@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
  * going to ignore this issue for now and take it along in the redesign.
  */
 @Ignore
-public class Issue333 extends EsReadTestBase {
+public class Issue333Test extends EsReadTestBase {
 
   @Before
   public void before() {

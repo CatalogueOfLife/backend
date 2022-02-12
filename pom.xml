@@ -954,8 +954,6 @@
             <includes>
               <!-- include regular unit tests -->
               <include>**/*Test.java</include>
-              <!-- include test suites -->
-              <include>**/*TestSuite.java</include>
             </includes>
           </configuration>
         </plugin>

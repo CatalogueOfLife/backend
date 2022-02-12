@@ -48,18 +48,17 @@ public class NameUsageSearchHighlighterTest {
   }
 
   @Test
-  @Ignore("Bad use of ScinameNormalizer in indexing/querying")
   public void test2() {
     NameUsageWrapper nuw = malusSylvestris();
     createHighlighter("sylvestris").highlight(nuw);
-    assertEquals("Malus <em class='highlight'>sylvestris</em>", nuw.getUsage().getName().getScientificName());
+    assertEquals("Malus <em class='highlight'>sylvestr</em>is", nuw.getUsage().getName().getScientificName());
   }
 
   @Test
   public void test3() {
     NameUsageWrapper nuw = malusSylvestris();
     createHighlighter("ilvestri").highlight(nuw);
-    assertEquals("Malus s<em class='highlight'>ylvestri</em>s", nuw.getUsage().getName().getScientificName());
+    assertEquals("Malus s<em class='highlight'>ylvestr</em>is", nuw.getUsage().getName().getScientificName());
   }
 
 }

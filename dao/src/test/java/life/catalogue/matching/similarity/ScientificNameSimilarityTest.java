@@ -38,7 +38,7 @@ public class ScientificNameSimilarityTest {
     assertEquals(100d, sns.getSimilarity("Abies alba", "Abies alba"), 0.01d);
     assertEquals(100d, sns.getSimilarity("Abies alba", "Abies albus"), 0.01d);
     assertEquals(5d, sns.getSimilarity("Abies alba", "Abies olba"), 0.01d);
-    assertEquals(95d, sns.getSimilarity("Abies alba", "Abies alta"), 0.01d);
+    assertEquals(5d, sns.getSimilarity("Abies alba", "Abies alta"), 0.01d);
 
     assertEquals(100d, sns.getSimilarity("Abies ama", "Abies amus"), 0.01d);
     assertEquals(100d, sns.getSimilarity("Abies ama", "Abies amus"), 0.01d);

@@ -45,7 +45,7 @@ public class NameUsageWrapperConverterTest {
   public void testNormalizeStrongly1c() {
     String s = NameUsageWrapperConverter.normalizeStrongly("Larus fuscus fuscus");
     System.out.println(s);
-    assertEquals("larus fusc fusc", s);
+    assertEquals("larus fuscus fusc", s);
   }
 
   @Test

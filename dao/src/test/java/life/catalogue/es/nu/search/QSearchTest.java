@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
  * Tests with only a Q (search phrase) parameter.
  *
  */
-public class QSearchTests extends EsReadTestBase {
+public class QSearchTest extends EsReadTestBase {
 
   @Before
   public void before() {
