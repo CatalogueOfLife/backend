@@ -35,9 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -62,17 +61,11 @@ public abstract class ArchiveExporter extends DatasetExporter {
 
   ArchiveExporter(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(req, userKey, requiredFormat, true, factory, cfg, imageService, timer);
-    final DSID<String> rKey = DSID.of(datasetKey, null);
     logoUriBuilder = UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
-    this.refCache = CacheBuilder.newBuilder()
-      .maximumSize(1000)
-      .build(new CacheLoader<>() {
-        @Override
-        public String load(String key) throws Exception {
-          Reference r = session.getMapper(ReferenceMapper.class).get(rKey.id(key));
-          return r == null ? null : r.getCitation();
-        }
-      });
+    refCache = Caffeine.newBuilder()
+                       .maximumSize(10000)
+                       .build(this::lookupReference);
+
     if (req.isExcel()) {
       // we use SXSSF (Streaming Usermodel API) for low memory footprint
       // https://poi.apache.org/components/spreadsheet/how-to.html#sxssf
@@ -80,6 +73,11 @@ public abstract class ArchiveExporter extends DatasetExporter {
     } else {
       wb = null;
     }
+  }
+
+  private String lookupReference(String id) {
+    Reference r = session.getMapper(ReferenceMapper.class).get(DSID.of(datasetKey, id));
+    return r == null ? null : r.getCitation();
   }
 
   protected Integer sector2datasetKey(Integer sectorKey){

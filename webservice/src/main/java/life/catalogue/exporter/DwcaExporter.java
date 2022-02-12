@@ -24,8 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.ws.rs.core.UriBuilder;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -38,12 +36,10 @@ public class DwcaExporter extends ArchiveExporter {
   private static final String EML_FILENAME = "eml.xml";
   private TermWriter writer2;
   private final Archive arch = new Archive();
-  private final UriBuilder logoUriBuilder;
   private final AtomicInteger bareNameID = new AtomicInteger(1);
 
   public DwcaExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(DataFormat.DWCA, userKey, req, factory, cfg, imageService, timer);
-    logoUriBuilder = UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
   }
 
   @Override
@@ -172,7 +168,7 @@ public class DwcaExporter extends ArchiveExporter {
     writer.set(DwcTerm.taxonRank, n.getRank());
     writer.set(DwcTerm.taxonomicStatus, u.getStatus());
     if (n.getPublishedInId() != null) {
-      writer.set(DwcTerm.namePublishedIn, refCache.getUnchecked(n.getPublishedInId()));
+      writer.set(DwcTerm.namePublishedIn, refCache.get(n.getPublishedInId()));
     }
     if (n.getGenus() != null) {
       writer.set(DwcTerm.genericName, n.getGenus());
@@ -208,7 +204,7 @@ public class DwcaExporter extends ArchiveExporter {
         writer.set(DwcTerm.locationID, d.getArea().getGlobalId());
     }
     if (d.getReferenceId() != null) {
-      writer.set(DcTerm.source, refCache.getUnchecked(d.getReferenceId()));
+      writer.set(DcTerm.source, refCache.get(d.getReferenceId()));
     }
   }
 

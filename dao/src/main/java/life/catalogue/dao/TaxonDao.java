@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
@@ -27,7 +29,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.cache.LoadingCache;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -316,11 +317,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
         List<Reference> refs = rm.listByIds(taxon.getDatasetKey(), refIds);
         info.addReferences(refs);
       } else {
-        try {
-          info.setReferences(refCache.getAll(refIds));
-        } catch (ExecutionException e) {
-          throw new RuntimeException(e);
-        }
+        info.setReferences(refCache.getAll(refIds));
       }
     }
 

@@ -1,5 +1,8 @@
 package life.catalogue.gbifsync;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
 import life.catalogue.api.jackson.UUIDSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
@@ -28,9 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 import de.undercouch.citeproc.csl.CSLType;
 
@@ -60,42 +60,36 @@ public class DatasetPager {
         .queryParam("type", "CHECKLIST");
     organization = client.target(UriBuilder.fromUri(gbif.api).path("/organization/"));
     installation = client.target(UriBuilder.fromUri(gbif.api).path("/installation/"));
-    publisherCache = CacheBuilder.newBuilder()
-                                 .maximumSize(1000)
-                                 .build(new CacheLoader<UUID, Agent>() {
-                 @Override
-                 public Agent load(UUID key) throws Exception {
-                   WebTarget pubDetail = organization.path(key.toString());
-                   LOG.info("Retrieve organization {}", pubDetail.getUri());
-                   GAgent p = pubDetail.request()
-                                              .accept(MediaType.APPLICATION_JSON_TYPE)
-                                              .get(GAgent.class);
-                   return p.toAgent();
-                 }
-               }
-        );
-
-    hostCache = CacheBuilder.newBuilder()
-                            .maximumSize(1000)
-                            .build(new CacheLoader<UUID, Agent>() {
-                                    @Override
-                                    public Agent load(UUID key) throws Exception {
-                                      WebTarget insDetail = installation.path(key.toString());
-                                      LOG.info("Retrieve installation {}", insDetail.getUri());
-                                      GInstallation ins = insDetail.request()
-                                                                 .accept(MediaType.APPLICATION_JSON_TYPE)
-                                                                 .get(GInstallation.class);
-                                      if (ins != null && ins.organizationKey != null) {
-                                        var host = publisherCache.get(ins.organizationKey);
-                                        host.setNote("Host");
-                                        return host;
-                                      }
-                                      return null;
-                                    }
-                                  }
-                           );
-
+    publisherCache = Caffeine.newBuilder()
+                             .maximumSize(1000)
+                             .build(this::loadPublisher);
+    hostCache = Caffeine.newBuilder()
+                        .maximumSize(1000)
+                        .build(this::loadHost);
     LOG.info("Created dataset pager for {}", datasets.getUri());
+  }
+
+  private Agent loadPublisher(UUID key) {
+    WebTarget pubDetail = organization.path(key.toString());
+    LOG.info("Retrieve organization {}", pubDetail.getUri());
+    GAgent p = pubDetail.request()
+                        .accept(MediaType.APPLICATION_JSON_TYPE)
+                        .get(GAgent.class);
+    return p.toAgent();
+  }
+
+  private Agent loadHost(UUID key) {
+    WebTarget insDetail = installation.path(key.toString());
+    LOG.info("Retrieve installation {}", insDetail.getUri());
+    GInstallation ins = insDetail.request()
+                                 .accept(MediaType.APPLICATION_JSON_TYPE)
+                                 .get(GInstallation.class);
+    if (ins != null && ins.organizationKey != null) {
+      var host = publisherCache.get(ins.organizationKey);
+      host.setNote("Host");
+      return host;
+    }
+    return null;
   }
 
   <T> T getFirst(List<T> vals) {
@@ -119,24 +113,6 @@ public class DatasetPager {
     return 1 + page.getOffset() / page.getLimit();
   }
   
-  private Agent publisher(final UUID key) {
-    try {
-      return publisherCache.get(key);
-    } catch (ExecutionException e) {
-      LOG.error("Failed to retrieve publisher {} from cache", key, e);
-      throw new IllegalStateException(e);
-    }
-  }
-
-  private Agent host(final UUID key) {
-    try {
-      return hostCache.get(key);
-    } catch (ExecutionException e) {
-      LOG.error("Failed to retrieve host {} from cache", key, e);
-      throw new IllegalStateException(e);
-    }
-  }
-
   public DatasetWithSettings get(UUID gbifKey) {
     LOG.debug("retrieve {}", gbifKey);
     return dataset.path(gbifKey.toString())
@@ -193,8 +169,8 @@ public class DatasetPager {
     DatasetWithSettings d = new DatasetWithSettings();
     d.setGbifKey(g.key);
     d.setGbifPublisherKey(g.publishingOrganizationKey);
-    d.setPublisher(publisher(g.publishingOrganizationKey));
-    d.getDataset().addContributor(host(g.installationKey));
+    d.setPublisher(publisherCache.get(g.publishingOrganizationKey));
+    d.getDataset().addContributor(hostCache.get(g.installationKey));
     d.setTitle(g.title);
     d.setDescription(g.description);
     DOI.parse(g.doi).ifPresent(d::setDoi);
