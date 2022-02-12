@@ -131,6 +131,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       ScriptRunner runner = PgConfig.scriptRunner(c);
       runner.runScript(Resources.getResourceAsReader(SCHEMA_POST));
     }
+    LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");
   }
 
   private DatasetMatcher rematchDataset(int key, SqlSessionFactory factory, NameIndex ni){
