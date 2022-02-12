@@ -40,8 +40,13 @@ public class SciNameNormalizerTest {
     assertEquals("Theridion uhlig", SciNameNormalizer.normalize("Theridion uhlighi"));
     assertEquals("Theridion uhlig", SciNameNormalizer.normalize("Theridion uhliigi"));
 
-    assertEquals("Lynx rufus baile", SciNameNormalizer.normalize("Lynx rufus baileii"));
-    assertEquals("Lynx rufus baile", SciNameNormalizer.normalize("Lynx rufus baileyi"));
+    // all epithets of a trinomial should be stemmed
+    assertEquals("Lynx ruf baile", SciNameNormalizer.normalize("Lynx rufus baileii"));
+    assertEquals("Lynx ruf baile", SciNameNormalizer.normalize("Lynx rufus baileyi"));
+
+    assertEquals("Larus fusc fusc", SciNameNormalizer.normalize("Larus fuscus fusca"));
+    assertEquals("Eragrostis brown brown", SciNameNormalizer.normalize("Eragrostis brownei brownii"));
+    assertEquals("Larus fusc Miller", SciNameNormalizer.normalize("Larus fuscus Miller"));
   }
 
   @Test
@@ -94,7 +99,7 @@ public class SciNameNormalizerTest {
 
   @Test
   public void testNonAscii() throws Exception {
-    assertEquals("Cem Andrex", SciNameNormalizer.normalize("Çem Ándrexï"));
+    assertEquals("Cem Andrexi", SciNameNormalizer.normalize("Çem Ándrexï"));
     assertEquals("SOEZsoezY¥µAAAAAAAECEEEEIIIIDNOOOOOOUUUUYssaaaaaaaeceeeeiiiidnoooooouuuuyy", SciNameNormalizer.normalize("ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ"));
   }
 

@@ -69,14 +69,6 @@ public class SciNameNormalizer {
   }
   
   /**
-   * Normalizes and entire scientific name, keeping monomials or the first genus part rather unchanged,
-   * applying the more drastic normalization to the remainder of the name only.
-   */
-  public static String normalize(String s, boolean stemming) {
-    return normalize(s, false, stemming);
-  }
-  
-  /**
    * Normalizes an entire name string including monomials and genus parts of a name.
    */
   public static String normalizeAll(String s) {
@@ -97,8 +89,18 @@ public class SciNameNormalizer {
       s = normStrongly(s, stemming);
       
     } else if (s.indexOf(' ') > 2) {
-      String[] parts = s.split(" ", 2);
-      s = parts[0] + " " + normStrongly(parts[1], stemming);
+      String[] parts = s.split(" ");
+      StringBuilder sb = new StringBuilder();
+      sb.append(parts[0]);
+      for (int i = 1; i < parts.length; i++) {
+        sb.append(" ");
+        if (Character.isLowerCase(parts[i].charAt(0))) {
+          sb.append(normStrongly(parts[i], stemming));
+        } else {
+          sb.append(parts[i]);
+        }
+      }
+      s = sb.toString();
     }
     
     return s.trim();

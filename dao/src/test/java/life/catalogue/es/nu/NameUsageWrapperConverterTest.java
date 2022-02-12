@@ -32,20 +32,20 @@ public class NameUsageWrapperConverterTest {
   public void testNormalizeStrongly1a() {
     String s = NameUsageWrapperConverter.normalizeStrongly("Larus");
     System.out.println(s);
-    assertEquals("lara", s);
+    assertEquals("lar", s);
   }
 
   @Test
   public void testNormalizeStrongly1b() {
     String s = NameUsageWrapperConverter.normalizeStrongly("Larus fuscus");
-    assertEquals("larus fusca", s);
+    assertEquals("larus fusc", s);
   }
 
   @Test
   public void testNormalizeStrongly1c() {
     String s = NameUsageWrapperConverter.normalizeStrongly("Larus fuscus fuscus");
     System.out.println(s);
-    assertEquals("larus fuscus fusca", s);
+    assertEquals("larus fusc fusc", s);
   }
 
   @Test
@@ -64,7 +64,7 @@ public class NameUsageWrapperConverterTest {
   public void testNormalizeStrongly4() {
     String s = NameUsageWrapperConverter.normalizeStrongly("sylvestris");
     System.out.println(s);
-    assertEquals("silvestra", s);
+    assertEquals("silvestr", s);
   }
 
 }
