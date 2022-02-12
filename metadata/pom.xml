@@ -9,7 +9,8 @@
 
   <artifactId>metadata</artifactId>
 
-  <name>COL metadata module mapping various formats like ColDP and EML to the COL API</name>
+  <name>COL metadata</name>
+  <description>Metadata module mapping various formats like ColDP and EML to the COL API</description>
 
   <dependencies>
     <!-- col/gbif -->

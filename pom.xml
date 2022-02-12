@@ -10,7 +10,7 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>COL backend services</name>
+  <name>COL motherpom</name>
   <url>https://github.org/Sp2000/${project.artifactId}</url>
 
   <scm>

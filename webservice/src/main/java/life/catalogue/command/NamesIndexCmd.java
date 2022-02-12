@@ -115,8 +115,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
           return null;
         })
         .thenAccept(m -> {
-          LOG.info("Indexed {}/{} dataset {}. Total usages {} with {} not matching",
-            counter.incrementAndGet(), keys.size(), key, total.addAndGet(m.getTotal()), nomatch.addAndGet(m.getNomatch())
+          LOG.info("Matched dataset {} ({}/{}). Total usages {} with {} not matching",
+            key, counter.incrementAndGet(), keys.size(), total.addAndGet(m.getTotal()), nomatch.addAndGet(m.getNomatch())
           );
         });
     }
