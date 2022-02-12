@@ -6,7 +6,7 @@ import static life.catalogue.common.text.StringUtils.foldToAscii;
 
 
 /**
- * A scientific name normalizer that replaces common misspellings and epithet gender changes.
+ * A scientific name normalizer that replaces common misspellings and epithet gender changes by stemming.
  *
  * Articles on nomenclature
  * https://code.iczn.org/formation-and-treatment-of-names/article-31-species-group-names/
@@ -20,12 +20,10 @@ public class SciNameNormalizer {
   // honorifics: -i/-ae/-orum, see https://code.iczn.org/formation-and-treatment-of-names/article-26-assumption-of-greek-or-latin-in-scientific-names/?frame=1
   // singular: us/er/i/o/um, a/ae/am
   // plural: i/orum/is/os, ae/arum/is/as
-  private static final Pattern suffix_a = Pattern.compile("(?:arum|orum|us|um|ae|am|is|os|as|ei|i|o|a|e)$");
-  // cerifer, cerifera, ceriferum
-  private static final Pattern suffix_fger = Pattern.compile("([fg])er(?:a|um)$");
+  private static final Pattern suffix_a = Pattern.compile("(?:arum|orum|us|um|ae|am|is|os|as|[iey]?i|o|a|e)$");
   // most adjectives lose the ‘e’ when declined, some don't though, eg. liber
   // pulcher, pulchra, pulchrum BUT liber, libera, liberum
-  private static final Pattern suffix_er = Pattern.compile("er$");
+  private static final Pattern suffix_ra = Pattern.compile("(?<=[a-z][^aeiou])r(?:a|um)$");
   // tor/trix, e.g. viator / viatrix
   private static final Pattern suffix_tor = Pattern.compile("trix$");
   private static final Pattern i = Pattern.compile("(?<!\\b)[jyi]+");
@@ -107,27 +105,25 @@ public class SciNameNormalizer {
   }
   
   private static String normStrongly(String s, boolean stemming) {
+    if (stemming) {
+      s = stemEpithet(s);
+    }
     // normalize frequent variations of i
     s = i.matcher(s).replaceAll("i");
     // remove repeated letters→leters in binomials
     s = removeRepeatedLetter.matcher(s).replaceAll("$1");
-    
-    if (stemming) {
-      s = stemEpithet(s);
-    }
     // normalize frequent variations of t/r sometimes followed by an 'h'
     return trh.matcher(s).replaceAll("$1");
   }
   
   /**
-   * Does a stemming of a latin epithet and return the female version ending with 'a'.
+   * Does a stemming of a latin epithet removing any gender carrying suffix.
    */
   public static String stemEpithet(String epithet) {
     if (!hasContent(epithet)) return "";
     epithet = suffix_tor.matcher(epithet).replaceFirst("tor");
-    epithet = suffix_fger.matcher(epithet).replaceFirst("$1ra"); // we also remove the "e" to match the next rule
-    epithet = suffix_er.matcher(epithet).replaceFirst("ra"); // there are some cases (e.g. liber) that do not lose the "e" - but we rather catch the majority of cases
-    return suffix_a.matcher(epithet).replaceFirst("a");
+    epithet = suffix_ra.matcher(epithet).replaceFirst("er"); // there are some cases (e.g. liber) that do not lose the "e" - but we rather catch the majority of cases
+    return suffix_a.matcher(epithet).replaceFirst("");
   }
   
 }
