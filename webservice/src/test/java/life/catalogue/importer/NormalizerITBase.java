@@ -8,15 +8,14 @@ import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.NotUniqueRuntimeException;
-import life.catalogue.importer.neo.model.NeoName;
-import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.neo.model.RankedUsage;
-import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
@@ -30,6 +29,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.Validation;
@@ -39,10 +39,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
-import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.*;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -97,6 +94,22 @@ abstract class NormalizerITBase {
     String expected = IOUtils.toString(tree, Charsets.UTF_8).trim();
     String neotree = PrinterUtils.textTree(store.getNeo());
     assertEquals(expected, neotree);
+
+    // check also bare names if file exists
+    InputStream bareNamesFile = getClass().getResourceAsStream(resourceDir() + "/expected-barenames.txt");
+    if (bareNamesFile != null) {
+      expected = IOUtils.toString(bareNamesFile, Charsets.UTF_8).trim();
+
+      String bareNames;
+      try (Transaction tx = store.getNeo().beginTx()) {
+        bareNames = store.bareNameNodes()
+                         .map(NeoProperties::getRankedName)
+                         .map(RankedName::toString)
+                         .sorted()
+                         .collect(Collectors.joining("\n"));
+      }
+      assertEquals("Bare names not as expected", expected, bareNames);
+    }
   }
 
   public static Optional<NomCode> readDatasetCode(String resourceDir) {
@@ -200,14 +213,14 @@ abstract class NormalizerITBase {
   }
   
   public NeoUsage byName(String name, @Nullable String author) {
-    List<Node> usageNodes = store.usagesByName(name, author, null, true);
+    Set<Node> usageNodes = store.usagesByName(name, author, null, true);
     if (usageNodes.isEmpty()) {
       throw new NotFoundException();
     }
     if (usageNodes.size() > 1) {
       throw new NotUniqueRuntimeException("scientificName", name);
     }
-    return store.usageWithName(usageNodes.get(0));
+    return store.usageWithName(usageNodes.iterator().next());
   }
   
   public NeoUsage accepted(Node syn) {
@@ -288,11 +301,11 @@ abstract class NormalizerITBase {
   }
   
   public NeoUsage usageByName(Rank rank, String name) {
-    List<Node> usages = store.usagesByName(name, null, rank, true);
+    Set<Node> usages = store.usagesByName(name, null, rank, true);
     if (usages.size()!=1) {
       throw new IllegalStateException(usages.size() + " usage nodes matching " + rank + " " + name);
     }
-    return store.usageWithName(usages.get(0));
+    return store.usageWithName(usages.iterator().next());
   }
 
   public NeoName nameByID(String id) {

@@ -3,10 +3,7 @@ package life.catalogue.importer.neo;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.neo.model.NeoName;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -32,15 +29,15 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   }
   
   /**
-   * @return the matching name nodes with the scientificName
+   * @return the matching name nodes with the scientificName in a mutable set
    */
-  public List<Node> nodesByName(String scientificName) {
+  public HashSet<Node> nodesByName(String scientificName) {
     if (names.containsKey(scientificName)) {
       return Arrays.stream(names.get(scientificName))
           .mapToObj(neoDb::nodeById)
-          .collect(Collectors.toList());
+          .collect(Collectors.toCollection(HashSet::new));
     }
-    return Collections.emptyList();
+    return new HashSet<>();
   }
   
   @Override

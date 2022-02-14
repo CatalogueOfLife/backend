@@ -19,9 +19,7 @@ import org.gbif.nameparser.api.Rank;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -54,6 +52,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.UnmodifiableIterator;
+import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 
 /**
  * A persistence mechanism for storing core taxonomy & names propLabel and relations in an embedded
@@ -293,8 +292,16 @@ public class NeoDb {
     return result.columnAs("n");
   }
 
-  public List<Node> usagesByName(String scientificName, @Nullable String authorship, @Nullable Rank rank, boolean inclUnranked) {
-    List<Node> names = names().nodesByName(scientificName);
+  /**
+   * Retuns a list of usage nodes that have a matching scientific name, rank & authorship.
+   * A prefixed hybrid symbol will be ignored in both the query name and stored names.
+   */
+  public Set<Node> usagesByName(String scientificName, @Nullable String authorship, @Nullable Rank rank, boolean inclUnranked) {
+    Set<Node> names = names().nodesByName(scientificName);
+    if (scientificName.charAt(0) != HYBRID_MARKER) {
+      // try also to find the hybrid version of any monomial
+      names.addAll( names().nodesByName(HYBRID_MARKER + " " + scientificName));
+    }
     // filter ranks
     if (rank != null) {
       names.removeIf(n -> {
@@ -310,8 +317,8 @@ public class NeoDb {
     if (authorship != null) {
       names.removeIf(n -> !authorship.equalsIgnoreCase(NeoProperties.getAuthorship(n)));
     }
-  
-    List<Node> taxa = new ArrayList<>();
+
+    Set<Node> taxa = new HashSet<>();
     for (Node n : names) {
       taxa.addAll(usageNodesByName(n));
     }

@@ -413,7 +413,6 @@ public class NormalizerColdpIT extends NormalizerITBase {
    * Also mark WCVP synonyms, illegitimate & invalid names with no parent accepted name as “bare names”
    */
   @Test
-  @Ignore("Work in progress")
   public void hybridGeneraWcvp() throws Exception {
     normalize(18);
     printTree();

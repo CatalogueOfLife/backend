@@ -17,9 +17,7 @@ import life.catalogue.parser.NameParser;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -256,16 +254,16 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
         name -> store.createProvisionalUsageFromSource(createdOrigin, name, u, u.usage.getName().getRank()));
   }
   
-  private List<Node> usagesByNamesPreferAccepted(List<Node> nameNodes) {
+  private Set<Node> usagesByNamesPreferAccepted(Set<Node> nameNodes) {
     // convert to usages
-    List<Node> usageMatches = nameNodes.stream()
+    Set<Node> usageMatches = nameNodes.stream()
         .map(store::usageNodesByName)
         .flatMap(List::stream)
-        .collect(Collectors.toList());
+        .collect(Collectors.toSet());
   
     // if multiple matches remove non accepted names
     if (usageMatches.size() > 1) {
-      List<Node> accepted = new ArrayList<>();
+      Set<Node> accepted = new HashSet<>();
       for (Node u : usageMatches) {
         if (u.hasLabel(Labels.TAXON)) {
           accepted.add(u);
@@ -289,7 +287,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
         name.setRank(Rank.UNRANKED);
       }
       if (!name.getScientificName().equalsIgnoreCase(source.name)) {
-        List<Node> matches = store.names().nodesByName(name.getScientificName());
+        Set<Node> matches = store.names().nodesByName(name.getScientificName());
         // remove other authors, but allow names without authors
         if (!matches.isEmpty() && name.hasAuthorship()) {
           matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n))
@@ -313,7 +311,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
             // still multiple matches, pick first and log critical issue!
             v.addIssue(Issue.NAME_NOT_UNIQUE);
           }
-          return getByNode.apply(matches.get(0));
+          return getByNode.apply(matches.iterator().next());
         }
       }
     }
