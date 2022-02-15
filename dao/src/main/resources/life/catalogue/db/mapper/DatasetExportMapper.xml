@@ -115,24 +115,25 @@
   </update>
 
   <delete id="delete" parameterType="map">
-    UPDATE dataset_export SET deleted = now() WHERE key=#{key}
+    UPDATE dataset_export SET deleted = now()
+    WHERE deleted IS NULL AND key=#{key}
   </delete>
 
   <select id="processDataset" parameterType="map" resultMap="datasetExportResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE de.dataset_key = #{datasetKey}
+    WHERE de.deleted IS NULL AND de.dataset_key = #{datasetKey}
   </select>
 
   <delete id="deleteByDataset" parameterType="map">
     UPDATE dataset_export SET deleted = now()
-    WHERE de.dataset_key = #{datasetKey}
+    WHERE deleted IS NULL AND dataset_key = #{datasetKey}
   </delete>
 
 
   <sql id="WHERE">
     <where>
-      de.deleted IS NOT NULL
+      de.deleted IS NULL
       <if test="req.datasetKey != null">AND de.dataset_key = #{req.datasetKey}</if>
       <if test="req.createdBy != null">AND de.created_by = #{req.createdBy}</if>
       <if test="req.status != null and !req.status.isEmpty()">
