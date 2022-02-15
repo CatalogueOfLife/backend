@@ -34,16 +34,18 @@ public class TreeMapper2Test extends MapperTestBase<TreeMapper> {
   }
 
   @Test
-  public void root() {
+  public void rootChildren() {
     TreeMapper tm = mapper(TreeMapper.class);
     Page page = new Page(0, 100);
+    DSID<String> rootID = DSID.of(catKey, null);
+    DSID<String> trilobitaRootID = DSID.of(TRILOBITA, null);
     for (TreeNode.Type type : TreeNode.types()) {
-      List<TreeNode> root = noSectors(tm.root(catKey, type, catKey, true, page));
+      List<TreeNode> root = noSectors(tm.children(catKey, type, rootID, true, page));
       assertEquals(1, root.size());
       assertEquals("1", root.get(0).getId());
       assertEquals("Animalia", root.get(0).getName());
 
-      root = noSectors(tm.root(catKey, type, TRILOBITA, true, page));
+      root = noSectors(tm.children(catKey, type, trilobitaRootID, true, page));
       assertEquals(1, root.size());
       assertEquals("1", root.get(0).getId());
       assertEquals("Trilobita", root.get(0).getName());

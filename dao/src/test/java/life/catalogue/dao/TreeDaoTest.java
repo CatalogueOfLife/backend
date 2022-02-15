@@ -52,21 +52,23 @@ public class TreeDaoTest {
 
   @Test
   public void root() {
-    for (TreeNode.Type type : TreeNode.types()) {
-      ResultPage<TreeNode> root = noSectors(dao.root(catKey, catKey, true, null, type, PAGE));
-      assertEquals(1, root.size());
-      assertEquals("1", root.getResult().get(0).getId());
-      assertEquals("Animalia", root.getResult().get(0).getName());
+    for (boolean placeholder : List.of(false, true)) {
+      for (TreeNode.Type type : TreeNode.types()) {
+        ResultPage<TreeNode> root = noSectors(dao.root(catKey, catKey, placeholder, true, null, type, PAGE));
+        assertEquals(1, root.size());
+        assertEquals("1", root.getResult().get(0).getId());
+        assertEquals("Animalia", root.getResult().get(0).getName());
 
-      root = noSectors(dao.root(catKey, catKey, false, null, type, PAGE));
-      assertEquals(1, root.size());
-      assertEquals("1", root.getResult().get(0).getId());
-      assertEquals("Animalia", root.getResult().get(0).getName());
+        root = noSectors(dao.root(catKey, catKey, placeholder, false, null, type, PAGE));
+        assertEquals(1, root.size());
+        assertEquals("1", root.getResult().get(0).getId());
+        assertEquals("Animalia", root.getResult().get(0).getName());
 
-      root = noSectors(dao.root(TRILOBITA, catKey, true, null, type, PAGE));
-      assertEquals(1, root.size());
-      assertEquals("1", root.getResult().get(0).getId());
-      assertEquals("Trilobita", root.getResult().get(0).getName());
+        root = noSectors(dao.root(TRILOBITA, catKey, placeholder, true, null, type, PAGE));
+        assertEquals(1, root.size());
+        assertEquals("1", root.getResult().get(0).getId());
+        assertEquals("Trilobita", root.getResult().get(0).getName());
+      }
     }
   }
 

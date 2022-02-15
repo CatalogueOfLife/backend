@@ -26,24 +26,26 @@ public interface TreeMapper {
   TreeNode get(@Param("catalogueKey") int catalogueKey,
                @Nullable @Param("type") TreeNode.Type type,
                @Param("key") DSID<String> key);
-  
-  List<TreeNode> root(@Param("catalogueKey") int catalogueKey,
-                      @Nullable @Param("type") TreeNode.Type type,
-                      @Param("datasetKey") int datasetKey,
-                      @Param("extinct") boolean inclExtinct,
-                      @Param("page") Page page);
 
   List<TreeNode> classification(@Param("catalogueKey") int catalogueKey,
                                 @Param("type") TreeNode.Type type,
                                 @Param("key") DSID<String> key);
-  
+
+  /**
+   * Lists children or root taxa if the key id is just a datasetKey
+   * @param key the ID of the parent to list children or a DSID without an id to list the root taxa of a given dataset
+   */
   List<TreeNode> children(@Param("catalogueKey") int catalogueKey,
                           @Nullable @Param("type") TreeNode.Type type,
                           @Param("key") DSID<String> key,
-                          @Nullable @Param("rank") Rank rank,
                           @Param("extinct") boolean inclExtinct,
                           @Param("page") Page page);
 
+  /**
+   * Lists children or root taxa if the key id is just a datasetKey
+   * @param key the ID of the parent to list children or a DSID without an id to list the root taxa of a given dataset
+   * @param rank the rank. Use NULL for root taxa
+   */
   List<TreeNode> childrenWithPlaceholder(@Param("catalogueKey") int catalogueKey,
                                          @Nullable @Param("type") TreeNode.Type type,
                                          @Param("key") DSID<String> key,

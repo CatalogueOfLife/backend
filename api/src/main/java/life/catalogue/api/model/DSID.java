@@ -93,6 +93,14 @@ public interface DSID<K> extends DatasetScoped, Entity<DSID<K>> {
     return new DSIDValue<K>(datasetKey, id);
   }
 
+  /**
+   * A DSID with just a datasetKey and null as the id.
+   * Used for querying root taxa.
+   */
+  static <K> DSIDValue<K> root(int datasetKey) {
+    return new DSIDValue<K>(datasetKey, null);
+  }
+
   static <K> DSIDValue<K> colID(K id) {
     return new DSIDValue<K>(COL, id);
   }

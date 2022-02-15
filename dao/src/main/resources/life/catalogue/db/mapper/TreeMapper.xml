@@ -67,6 +67,11 @@
     <if test="!extinct">AND (t.extinct IS NULL OR NOT t.extinct)</if>
   </sql>
 
+  <sql id="equalsParent">
+    <if test="key.id==null">t.parent_id IS NULL</if>
+    <if test="key.id!=null">t.parent_id = #{key.id}</if>
+  </sql>
+
   <resultMap id="treeResultMap" type="life.catalogue.api.model.TreeNode$TreeNodeMybatis" autoMapping="true">
     <id property="id" column="id"/>
     <result property="datasetSectors" column="dataset_sectors"/>
@@ -84,19 +89,13 @@
     WHERE t.dataset_key=#{key.datasetKey} AND t.id = #{key.id}
   </select>
 
-  <select id="root" resultMap="treeResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    WHERE t.dataset_key=#{datasetKey} AND t.parent_id IS NULL AND NOT is_synonym <include refid="EXTINCT"/>
-    ORDER BY n.rank, n.scientific_name
-    <include refid="life.catalogue.db.Common.limit"/>
-  </select>
-
   <select id="children" resultMap="treeResultMap">
     <bind name="datasetKey" value="key.datasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id} AND NOT t.is_synonym <include refid="EXTINCT"/>
+    WHERE t.dataset_key=#{key.datasetKey}
+      AND <include refid="equalsParent"/>
+      AND NOT t.is_synonym <include refid="EXTINCT"/>
     ORDER BY n.rank, n.scientific_name
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -107,7 +106,9 @@
       SELECT n.rank
       FROM
       <include refid="FROM_USAGE"/>
-      WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id} AND NOT is_synonym <include refid="EXTINCT"/>
+      WHERE t.dataset_key=#{key.datasetKey}
+        AND <include refid="equalsParent"/>
+        AND NOT is_synonym <include refid="EXTINCT"/>
       <if test="rank!=null">
         AND n.rank > #{rank}::rank
       </if>
@@ -117,7 +118,9 @@
     SELECT
     <include refid="SELECT"/>
     FROM<include refid="FROM"/>, first
-    WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id} AND NOT t.is_synonym AND first.rank=n.rank <include refid="EXTINCT"/>
+    WHERE t.dataset_key=#{key.datasetKey}
+      AND <include refid="equalsParent"/>
+      AND NOT t.is_synonym AND first.rank=n.rank <include refid="EXTINCT"/>
     ORDER BY n.rank, n.scientific_name
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -141,7 +144,9 @@
   <select id="childrenRanks" resultType="Rank">
     SELECT DISTINCT n.rank
     FROM <include refid="FROM_USAGE"/>
-    WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id} AND NOT t.is_synonym
+    WHERE t.dataset_key=#{key.datasetKey}
+      AND <include refid="equalsParent"/>
+      AND NOT t.is_synonym
     <if test="rank != null">
       AND n.rank &lt;= #{rank}::rank
     </if>
@@ -154,7 +159,8 @@
     <if test="rank != null">
       JOIN name n ON n.dataset_key=#{key.datasetKey} AND t.name_id=n.id
     </if>
-    WHERE t.dataset_key=#{key.datasetKey} AND t.parent_id = #{key.id}
+    WHERE t.dataset_key=#{key.datasetKey}
+      AND <include refid="equalsParent"/>
     <if test="rank != null">
       AND n.rank > #{rank}::rank
     </if>

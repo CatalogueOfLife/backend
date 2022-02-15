@@ -141,15 +141,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       return syn;
     }
   }
-
-  public ResultPage<Taxon> getChildren(final DSID<String> key, Page page) {
-    try (SqlSession session = factory.openSession(false)) {
-      Page p = page == null ? new Page() : page;
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      List<Taxon> result = tm.children(key, null, p);
-      return new ResultPage<>(p, result, () -> tm.countChildren(key, true));
-    }
-  }
   
   public TaxonInfo getTaxonInfo(DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {

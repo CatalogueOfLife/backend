@@ -54,12 +54,6 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
       throw ResourceUtils.redirect(location);
     }
   }
-
-  @GET
-  @Path("{id}/children")
-  public ResultPage<Taxon> children(@PathParam("key") int datasetKey, @PathParam("id") String id, @Valid @BeanParam Page page) {
-    return dao.getChildren(DSID.of(datasetKey, id), page);
-  }
   
   @GET
   @Path("{id}/synonyms")
@@ -71,12 +65,6 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Path("{id}/classification")
   public List<SimpleName> classification(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(TaxonMapper.class).classificationSimple(DSID.of(datasetKey, id));
-  }
-
-  @GET
-  @Path("{id}/classification2")
-  public List<SimpleName> classification2(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return classification(datasetKey, id, session);
   }
 
   @GET

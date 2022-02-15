@@ -57,6 +57,11 @@
       LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
   </sql>
 
+  <sql id="equalsParent">
+    <if test="key.id==null">u.parent_id IS NULL</if>
+    <if test="key.id!=null">u.parent_id=#{key.id}</if>
+  </sql>
+
   <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
     <id property="id" column="id"/>
     <result property="environments" column="environments" typeHandler="life.catalogue.db.type.EnvironmentSetTypeHandler"/>
@@ -75,20 +80,26 @@
   </select>
 
   <select id="countChildren" resultType="integer">
-    SELECT count(*) FROM name_usage
-    WHERE dataset_key=#{key.datasetKey} AND parent_id=#{key.id} AND NOT is_synonym
+    SELECT count(*) FROM name_usage u
+    WHERE u.dataset_key=#{key.datasetKey}
+      AND <include refid="equalsParent"/>
+      AND NOT u.is_synonym
   </select>
 
   <select id="countChildrenWithRank" resultType="integer">
     SELECT count(*)
     FROM name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
-    WHERE u.dataset_key=#{key.datasetKey} AND u.parent_id=#{key.id} AND NOT u.is_synonym AND n.rank=#{rank}::rank
+    WHERE u.dataset_key=#{key.datasetKey}
+      AND <include refid="equalsParent"/>
+      AND NOT u.is_synonym AND n.rank=#{rank}::rank
   </select>
 
   <select id="countChildrenBelowRank" resultType="integer">
     SELECT count(*)
     FROM name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
-    WHERE u.dataset_key=#{key.datasetKey} AND u.parent_id=#{key.id} AND NOT u.is_synonym and n.rank > #{rank}::rank
+    WHERE u.dataset_key=#{key.datasetKey}
+      AND <include refid="equalsParent"/>
+      AND NOT u.is_synonym and n.rank > #{rank}::rank
   </select>
 
   <select id="countRoot" resultType="integer">

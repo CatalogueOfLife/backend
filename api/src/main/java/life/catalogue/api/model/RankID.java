@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.regex.Matcher;
@@ -11,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class RankID extends DSIDValue<String> {
   private static final Logger LOG = LoggerFactory.getLogger(RankID.class);
   private static final String INC_SEDIS = "--incertae-sedis--";
-  private static final Pattern ID_PATTERN = Pattern.compile("^(.+)"+INC_SEDIS+"([A-Z_]+)$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern ID_PATTERN = Pattern.compile("^(.*)"+INC_SEDIS+"([A-Z_]+)$", Pattern.CASE_INSENSITIVE);
 
   public static RankID parseID(DSID<String> id){
     if (id != null) {
@@ -25,9 +27,9 @@ public class RankID extends DSIDValue<String> {
       Matcher m = ID_PATTERN.matcher(id);
       if (m.find()) {
         try {
-          return new RankID(datasetKey, m.group(1), Rank.valueOf(m.group(2).toUpperCase()));
+          return new RankID(datasetKey, StringUtils.trimToNull(m.group(1)), Rank.valueOf(m.group(2).toUpperCase()));
         } catch (IllegalArgumentException e) {
-          LOG.warn("Bad incertae sedis ID " + id);
+          throw new IllegalArgumentException("Bad placeholder ID " + id, e);
         }
       }
     }
@@ -35,7 +37,7 @@ public class RankID extends DSIDValue<String> {
   }
 
   public static String buildID(String parentID, Rank rank) {
-    return parentID + INC_SEDIS + rank.name();
+    return (parentID==null ? "" : parentID) + INC_SEDIS + rank.name();
   }
 
   public Rank rank;

@@ -28,12 +28,12 @@ public class TreeDao {
     this.taxonCounter = taxonCounter;
   }
 
-  public ResultPage<TreeNode> root(int datasetKey, int catalogueKey, boolean extinct, Rank countBy, TreeNode.Type type, Page page) {
-    try (SqlSession session = factory.openSession()){
-      List<TreeNode> result = session.getMapper(TreeMapper.class).root(catalogueKey, type, datasetKey, extinct, page);
-      addCounts(null, countBy, result, false);
-      return new ResultPage<>(page, result, () -> session.getMapper(TaxonMapper.class).countRoot(datasetKey));
-    }
+  public ResultPage<TreeNode> root(int datasetKey, int projectKey, boolean placeholder, boolean inclExtinct, Rank countBy, TreeNode.Type type, Page page) {
+    return rootOrChildren(DSID.root(datasetKey), projectKey, placeholder, countBy, inclExtinct, type, page);
+  }
+
+  public ResultPage<TreeNode> children(final DSID<String> id, final int projectKey, final boolean placeholder, Rank countBy, boolean inclExtinct, final TreeNode.Type type, final Page page) {
+    return rootOrChildren(id, projectKey, placeholder, countBy, inclExtinct, type, page);
   }
 
   /**
@@ -135,16 +135,17 @@ public class TreeDao {
     return nodes;
   }
 
-  public ResultPage<TreeNode> children(final DSID<String> id, final int projectKey, final boolean placeholder, Rank countBy, boolean inclExtinct, final TreeNode.Type type, final Page page) {
+  private ResultPage<TreeNode> rootOrChildren(final DSID<String> id, final int projectKey, final boolean placeholder, Rank countBy, boolean inclExtinct, final TreeNode.Type type, final Page page) {
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
       final RankID parent = RankID.parseID(id);
-      final TreeNode tnParent = trm.get(projectKey, type, parent);
+      final TreeNode tnParent = parent.getId() == null ? null : trm.get(projectKey, type, parent);
+      final Integer sectorKey = tnParent == null ? null : tnParent.getSectorKey();
       List<TreeNode> result = placeholder ?
         trm.childrenWithPlaceholder(projectKey, type, parent, parent.rank, inclExtinct, page) :
-        trm.children(projectKey, type, parent, parent.rank, inclExtinct, page);
+        trm.children(projectKey, type, parent, inclExtinct, page);
       Supplier<Integer> countSupplier;
       if (placeholder && !result.isEmpty()) {
         countSupplier =  () -> tm.countChildrenWithRank(parent, result.get(0).getRank(), inclExtinct);
@@ -159,7 +160,7 @@ public class TreeDao {
         int lowerChildren = tm.countChildrenBelowRank(parent, firstResult.getRank(), inclExtinct);
         if (lowerChildren > 0) {
           List<Rank> placeholderParentRanks = trm.childrenRanks(parent, firstResult.getRank(), inclExtinct);
-          TreeNode placeHolder = placeholder(tnParent, firstResult, lowerChildren, placeholderParentRanks);
+          TreeNode placeHolder = placeholder(sectorKey, firstResult, lowerChildren, placeholderParentRanks);
           // does a placeholder sector exist with a matching placeholder rank?
           if (type == TreeNode.Type.SOURCE) {
             SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -174,7 +175,7 @@ public class TreeDao {
       // update parentID to use original input
       result.forEach(c -> c.setParentId(id.getId()));
       addPlaceholderSectors(projectKey, result, type, session);
-      updateSectorRootFlags(tnParent.getSectorKey(), result);
+      updateSectorRootFlags(sectorKey, result);
       addCounts(parent, countBy, result, true);
       return new ResultPage<>(page, result, countSupplier);
     }
@@ -206,10 +207,10 @@ public class TreeDao {
     return placeholder(parent.getDatasetKey(), parent.getSectorKey(), parent.getId(), parentPlaceholderRank, rank, 1);
   }
 
-  private static TreeNode placeholder(TreeNode parent, TreeNode sibling, int childCount, List<Rank> placeholderParentRanks){
+  private static TreeNode placeholder(@Nullable Integer sectorKey, TreeNode sibling, int childCount, List<Rank> placeholderParentRanks){
     Collections.sort(placeholderParentRanks);
     Rank placeholderParentRank = placeholderParentRanks.size() > 1 ? placeholderParentRanks.get(placeholderParentRanks.size() - 2) : null;
-    return placeholder(sibling.getDatasetKey(), parent.getSectorKey(), sibling.getParentId(), placeholderParentRank, sibling.getRank(), childCount);
+    return placeholder(sibling.getDatasetKey(), sectorKey, sibling.getParentId(), placeholderParentRank, sibling.getRank(), childCount);
   }
 
   /**
@@ -222,7 +223,7 @@ public class TreeDao {
    * @param rank rank of the placeholder to be generated
    * @param childCount number of direct children for this placeholder
    */
-  private static TreeNode placeholder(Integer datasetKey, Integer sectorKey, String parentID, @Nullable Rank parentPlaceholderRank, Rank rank, int childCount){
+  private static TreeNode placeholder(Integer datasetKey, @Nullable Integer sectorKey, @Nullable String parentID, @Nullable Rank parentPlaceholderRank, Rank rank, int childCount){
     TreeNode tn = new TreeNode.PlaceholderNode();
     tn.setDatasetKey(datasetKey);
     tn.setSectorKey(sectorKey);

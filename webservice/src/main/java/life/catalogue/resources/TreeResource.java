@@ -50,9 +50,10 @@ public class TreeResource {
                                    @QueryParam("type") TreeNode.Type type,
                                    @QueryParam("countBy") Rank countBy,
                                    @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
+                                   @QueryParam("insertPlaceholder") boolean placeholder,
                                    @QueryParam("limit") Integer limit,
                                    @QueryParam("offset") Integer offset) {
-    return tree.root(datasetKey, catalogueKey, inclExtinct, countBy, type, page(limit, offset));
+    return tree.root(datasetKey, catalogueKey, placeholder, inclExtinct, countBy, type, page(limit, offset));
   }
   
   @GET
