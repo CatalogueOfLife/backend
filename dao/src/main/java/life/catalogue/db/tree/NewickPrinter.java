@@ -76,7 +76,7 @@ public class NewickPrinter extends AbstractTreePrinter {
   }
 
   @Override
-  protected void close() throws IOException {
+  public void close() throws IOException {
     boolean first = true;
     for (var r : roots) {
       if (!first) {

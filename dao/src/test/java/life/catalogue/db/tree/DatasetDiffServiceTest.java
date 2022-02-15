@@ -5,10 +5,15 @@ import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.db.TestDataRule;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.time.StopWatch;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -51,16 +56,24 @@ public class DatasetDiffServiceTest extends BaseDiffServiceTest<Integer> {
   @Test
   public void diffItisNamesWithOther() throws Exception {
     var br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, null, 3, null, null, true);
-    String udiff = IOUtils.toString(br);
-    System.out.println(udiff);
-
-    Assert.assertTrue(udiff.startsWith("--- dataset_"));
+    assertDiffExists(br);
 
     // with root
     br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, List.of("t10", "t30"), 3, null, null, true);
-    udiff = IOUtils.toString(br);
-    System.out.println(udiff);
+    assertDiffExists(br);
 
+    // with parents & no rank
+    br = diffService.datasetNamesParentDiff(1, TestDataRule.TREE.key, List.of("t10", "t30"), 3, null, null, null, true);
+    assertDiffExists(br);
+
+    // with parents & rank given
+    br = diffService.datasetNamesParentDiff(1, TestDataRule.TREE.key, null, 3, null, Rank.FAMILY, null, true);
+    assertDiffExists(br);
+  }
+
+  private void assertDiffExists(Reader br) throws IOException {
+    var udiff = IOUtils.toString(br);
+    System.out.println(udiff);
     Assert.assertTrue(udiff.startsWith("--- dataset_"));
   }
 }

@@ -3,23 +3,21 @@ package life.catalogue.db.tree;
 import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.io.UnixCmdUtils;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
+import java.io.Writer;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -28,24 +26,25 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import javax.annotation.Nullable;
+
 public class DatasetDiffService extends BaseDiffService<Integer> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDiffService.class);
 
+  private final DatasetDao ddao;
   private final Set<Integer> userDiffs = ConcurrentHashMap.newKeySet();
 
   public DatasetDiffService(SqlSessionFactory factory, FileMetricsDatasetDao dao, int timeoutInSeconds) {
     super(dao, factory, timeoutInSeconds);
+    ddao = new DatasetDao(factory, null, null, null, null, null, null, null, null);
   }
 
   @Override
   int[] parseAttempts(Integer datasetKey, String attempts) {
-    return parseAttempts(attempts, new Supplier<List<? extends ImportAttempt>>() {
-      @Override
-      public List<? extends ImportAttempt> get() {
-        try (SqlSession session = factory.openSession(true)) {
-          return session.getMapper(DatasetImportMapper.class)
-              .list(datasetKey, Lists.newArrayList(ImportState.FINISHED), new Page(0, 2));
-        }
+    return parseAttempts(attempts, () -> {
+      try (SqlSession session = factory.openSession(true)) {
+        return session.getMapper(DatasetImportMapper.class)
+            .list(datasetKey, Lists.newArrayList(ImportState.FINISHED), new Page(0, 2));
       }
     });
   }
@@ -53,65 +52,82 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
   /**
    * Generates a names diff between the current version of any two datasets and optional roots to restrict to.
    */
-  public Reader datasetNamesDiff(int userKey, int key, List<String> root, int key2, List<String> root2, Rank lowestRank, boolean inclSynonyms) throws IOException {
-    if (key == key2) {
+  public Reader datasetNamesDiff(int userKey, int key1, List<String> root1, int key2, List<String> root2, Rank lowestRank, boolean inclSynonyms) throws IOException {
+    return datasetDiff(userKey, key1, root1, key2, root2, lowestRank, inclSynonyms,false, null);
+  }
+
+  public Reader datasetNamesParentDiff(int userKey, int key1, List<String> root1, int key2, List<String> root2, @Nullable Rank parentRank, Rank lowestRank, boolean inclSynonyms) throws IOException {
+    return datasetDiff(userKey, key1, root1, key2, root2, lowestRank, inclSynonyms, true, parentRank);
+  }
+
+  private Reader datasetDiff(int userKey,
+                             int key1, List<String> root1,
+                             int key2, List<String> root2,
+                             @Nullable Rank lowestRank, boolean inclSynonyms, boolean showParent, @Nullable Rank parentRank
+  ) throws IOException {
+    // preconditions
+    if (key1 == key2) {
       throw new IllegalArgumentException("Diffs need to be between different datasets");
     }
     if (userDiffs.contains(userKey)) {
       throw new TooManyRequestsException("Diffs need to be between different datasets");
     }
+    // throw a 404 early in case any of the datasets does not exist
+    ddao.getOr404(key1);
+    ddao.getOr404(key2);
 
+    // allow one concurrent diff per user
     try {
       userDiffs.add(userKey); // lock, we only allow a single diff per user
-      DatasetDao ddao = new DatasetDao(factory, null, null, null, null, null, null, null, null);
-      Dataset d1 = ddao.getOr404(key);
-      Dataset d2 = ddao.getOr404(key2);
-
-      return udiff(
-        sortedNamesFile(userKey, d1, root, lowestRank, inclSynonyms), label(key),
-        sortedNamesFile(userKey, d2, root2, lowestRank, inclSynonyms), label(key2),
-        0, false);
+      File f1 = printAndSort(key1, root1, lowestRank, inclSynonyms, showParent, parentRank);
+      File f2 = printAndSort(key2, root2, lowestRank, inclSynonyms, showParent, parentRank);
+      return udiff(f1, label(key1), f2, label(key2), 0, false);
 
     } finally {
       userDiffs.remove(userKey); // unlock
     }
   }
 
-  private File sortedNamesFile(int userKey, Dataset d, List<String> root, Rank lowestRank, boolean inclSynonyms) throws IOException {
-    List<SimpleName> names = new ArrayList<>();
-    try (SqlSession session = factory.openSession(true)) {
-      var num = session.getMapper(NameUsageMapper.class);
-      if (root != null) {
-        for (String taxonID : root) {
-          var u = num.getSimple(DSID.of(d.getKey(), taxonID));
-          if (u == null) throw new IllegalArgumentException("Taxon " + taxonID + " not existing in dataset " + d.getKey());
-          names.add(u);
-        }
+  private File printAndSort(int key, @Nullable List<String> roots, @Nullable Rank lowestRank, boolean inclSynonyms, boolean showParent, @Nullable Rank parentRank) throws IOException {
+    File f = createTempFile(key);
+    Writer w = UTF8IoUtils.writerFromFile(f);
+    // we need to support multiple roots which a TreePrinter does not deal with
+    // we will reuse the writer and append multiple trees if needed
+    if (roots == null) {
+      appendRoot(w, key, null, lowestRank, inclSynonyms, showParent, parentRank);
+    } else {
+      for (String r : roots) {
+        appendRoot(w, key, r, lowestRank, inclSynonyms, showParent, parentRank);
       }
-
-      File f = File.createTempFile("coldiff-src"+d.getKey()+"-", ".txt");
-      f.deleteOnExit();
-
-      try (FileMetricsDao.NamesWriter handler = new FileMetricsDao.NamesWriter(f, false)) {
-        if (names.isEmpty()) {
-          num.processTreeSimple(d.getKey(), null, null, null, lowestRank, inclSynonyms)
-             .forEach(sn -> handler.accept(sn.getLabel()));
-          LOG.info("Written {} name usages to diff file {} from dataset {}: {}", handler.counter, f, d.getKey(), d.getAliasOrTitle());
-
-        } else {
-          for (SimpleName start : names) {
-            num.processTreeSimple(d.getKey(), null, start.getId(), null, lowestRank, inclSynonyms)
-               .forEach(sn -> handler.accept(sn.getLabel()));
-            LOG.info("Written {} name usages to diff file {} for root {} from dataset {}: {}", handler.counter, f, start.getLabel(), d.getKey(), d.getAliasOrTitle());
-          }
-        }
-      }
-
-      // sort file!
-      UnixCmdUtils.sort(f);
-
-      return f;
     }
+    w.close();
+    // sort file
+    UnixCmdUtils.sort(f);
+    return f;
+  }
+
+  private void appendRoot(Writer w, int key, String root, Rank lowestRank, boolean inclSynonyms, boolean showParent, Rank parentRank) throws IOException {
+    NameParentPrinter printer = PrinterFactory.dataset(NameParentPrinter.class, key, root, inclSynonyms, lowestRank, factory, w);
+    try {
+      if (showParent) {
+        printer.setParentName(parentRank);
+      }
+      printer.print();
+      printer.close();
+    } finally {
+      printer.close();
+    }
+  }
+
+  private static File createTempFile(int datasetKey) {
+    File f;
+    try {
+      f = File.createTempFile("coldiff-src" + datasetKey + "-", ".txt");
+      f.deleteOnExit();
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to create temp diff file for dataset "+datasetKey, e);
+    }
+    return f;
   }
 
 }

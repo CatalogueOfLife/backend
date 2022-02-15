@@ -85,9 +85,13 @@ public abstract class FileMetricsDao<K> {
     LOG.info("Deleted all file metrics for {} {}", type, key);
   }
 
+  /**
+   * Writer that creates a UTF8 encoded file with consumed strings written as unmodified lines as they come in.
+   * Optionally compressed with gzip.
+   */
   public static class NamesWriter implements Consumer<String>, AutoCloseable {
     public int counter = 0;
-    private final File f;
+    protected final File f;
     private final BufferedWriter w;
     
     public NamesWriter(File f, boolean zip) {
@@ -111,11 +115,11 @@ public abstract class FileMetricsDao<K> {
     }
   
     @Override
-    public void accept(String id) {
+    public void accept(String name) {
       try {
-        if (id != null) {
+        if (name != null) {
           counter++;
-          w.append(id);
+          w.append(name);
           w.append('\n');
         }
       } catch (IOException e) {

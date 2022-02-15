@@ -24,7 +24,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 /**
  * Print an entire dataset in a nested way using start/end calls similar to SAX
  */
-public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
+public abstract class AbstractTreePrinter implements Consumer<SimpleName>, AutoCloseable {
   private final UsageCounter counter = new UsageCounter();
   protected final Writer writer;
   protected final int datasetKey;
@@ -37,7 +37,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
   protected final TaxonCounter taxonCounter;
   protected final SqlSessionFactory factory;
   protected SqlSession session;
-  private final LinkedList<SimpleName> parents = new LinkedList<>();
+  protected final LinkedList<SimpleName> parents = new LinkedList<>();
   protected int level = 0;
   protected int taxonCount;
   protected boolean exhausted;
@@ -129,7 +129,8 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
 
   protected abstract void end(SimpleName u) throws IOException;
 
-  protected void close() throws IOException {
+  @Override
+  public void close() throws IOException {
     writer.flush();
   }
 
