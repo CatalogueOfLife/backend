@@ -132,7 +132,8 @@
 
   <sql id="WHERE">
     <where>
-      <if test="req.datasetKey != null">de.dataset_key = #{req.datasetKey}</if>
+      de.deleted IS NOT NULL
+      <if test="req.datasetKey != null">AND de.dataset_key = #{req.datasetKey}</if>
       <if test="req.createdBy != null">AND de.created_by = #{req.createdBy}</if>
       <if test="req.status != null and !req.status.isEmpty()">
         AND de.status IN <foreach item="st" collection="req.status" open="(" separator="," close=")">#{st}::JOBSTATUS</foreach>

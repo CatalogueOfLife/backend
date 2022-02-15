@@ -49,7 +49,7 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
   }
 
   /**
-   * Returns the latest export which matches the request and has not failed or was canceled.
+   * Returns the latest export which matches the request and has not failed or was canceled or deleted.
    */
   public DatasetExport current(ExportRequest req) {
     var filter = new ExportSearchRequest(req);
