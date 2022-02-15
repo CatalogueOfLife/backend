@@ -55,19 +55,19 @@ public class DatasetDiffServiceTest extends BaseDiffServiceTest<Integer> {
 
   @Test
   public void diffItisNamesWithOther() throws Exception {
-    var br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, null, 3, null, null, true, false, null);
+    var br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, null, 3, null, null, true, true, false, null);
     assertDiffExists(br);
 
     // with root
-    br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, List.of("t10", "t30"), 3, null, null, true, false, null);
+    br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, List.of("t10", "t30"), 3, null, null, true, true, false, null);
     assertDiffExists(br);
 
     // with parents & no rank
-    br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, List.of("t10", "t30"), 3, null, null, true, true, null);
+    br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, List.of("t10", "t30"), 3, null, null, true, true, true, null);
     assertDiffExists(br);
 
     // with parents & rank given
-    br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, null, 3, null,null, true, true, Rank.FAMILY);
+    br = diffService.datasetNamesDiff(1, TestDataRule.TREE.key, null, 3, null,null, true, true, true, Rank.FAMILY);
     assertDiffExists(br);
   }
 

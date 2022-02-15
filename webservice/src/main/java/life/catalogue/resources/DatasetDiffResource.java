@@ -39,11 +39,12 @@ public class DatasetDiffResource extends AbstractDiffResource<Integer> {
                           @QueryParam("root") List<String> root,
                           @QueryParam("root2") List<String> root2,
                           @QueryParam("minRank") Rank lowestRank,
+                          @QueryParam("authorship") @DefaultValue("true") boolean inclAuthorship,
                           @QueryParam("synonyms") boolean inclSynonyms,
                           @QueryParam("showParent") boolean showParent,
                           @QueryParam("parentRank") Rank parentRank,
                           @Auth User user) throws IOException {
-    return service.datasetNamesDiff(user.getKey(), key, root, key2, root2, lowestRank, inclSynonyms, showParent, parentRank);
+    return service.datasetNamesDiff(user.getKey(), key, root, key2, root2, lowestRank, inclAuthorship, inclSynonyms, showParent, parentRank);
   }
 
 }

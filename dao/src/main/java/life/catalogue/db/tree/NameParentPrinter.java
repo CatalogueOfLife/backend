@@ -20,6 +20,7 @@ import java.util.Set;
  * Synonyms, if included, will always have the accepted name as the parent.
  */
 public class NameParentPrinter extends AbstractTreePrinter {
+  private boolean printAuthorship = true;
   private boolean printParent = false;
   private Rank parentName;
 
@@ -35,8 +36,16 @@ public class NameParentPrinter extends AbstractTreePrinter {
     this.parentName = parentName;
   }
 
+  public void setPrintAuthorship(boolean printAuthorship) {
+    this.printAuthorship = printAuthorship;
+  }
+
   protected void start(SimpleName u) throws IOException {
-    writer.append(u.getLabel());
+    if (printAuthorship) {
+      writer.append(u.getLabel());
+    } else {
+      writer.append(u.getName());
+    }
     if (printParent && !parents.isEmpty()) {
       SimpleName p = null;
       if (parentName == null || u.getStatus().isSynonym()) {
