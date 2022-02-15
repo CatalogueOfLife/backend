@@ -52,12 +52,9 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
   /**
    * Generates a names diff between the current version of any two datasets and optional roots to restrict to.
    */
-  public Reader datasetNamesDiff(int userKey, int key1, List<String> root1, int key2, List<String> root2, Rank lowestRank, boolean inclSynonyms) throws IOException {
-    return datasetDiff(userKey, key1, root1, key2, root2, lowestRank, inclSynonyms,false, null);
-  }
-
-  public Reader datasetNamesParentDiff(int userKey, int key1, List<String> root1, int key2, List<String> root2, @Nullable Rank parentRank, Rank lowestRank, boolean inclSynonyms) throws IOException {
-    return datasetDiff(userKey, key1, root1, key2, root2, lowestRank, inclSynonyms, true, parentRank);
+  public Reader datasetNamesDiff(int userKey, int key1, List<String> root1, int key2, List<String> root2,
+                                 Rank lowestRank, boolean inclSynonyms, boolean showParent, @Nullable Rank parentRank) throws IOException {
+    return datasetDiff(userKey, key1, root1, key2, root2, lowestRank, inclSynonyms,showParent, parentRank);
   }
 
   private Reader datasetDiff(int userKey,
