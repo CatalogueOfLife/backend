@@ -136,7 +136,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     } else {
       // parsing cannot fail, we have a pattern
       int attempt = Integer.parseInt(m.group(2));
-      releaseKey = cache.getReleaseAttempt(new ReleaseAttempt(projectKey, attempt));
+      releaseKey = cache.getReleaseByAttempt(projectKey, attempt);
     }
 
     if (releaseKey == null) {

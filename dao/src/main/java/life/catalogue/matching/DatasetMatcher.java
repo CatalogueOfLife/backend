@@ -2,6 +2,9 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.NameMatch;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.mapper.ArchivedNameMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 
@@ -25,6 +28,7 @@ public class DatasetMatcher {
   private int total = 0;
   private int updated = 0;
   private int nomatch = 0;
+  private int archived = 0;
   private int datasets = 0;
 
   public DatasetMatcher(SqlSessionFactory factory, NameIndex ni) {
@@ -41,6 +45,7 @@ public class DatasetMatcher {
     final int totalBefore = total;
     final int updatedBefore = updated;
     final int nomatchBefore = nomatch;
+    final int archivedBefore = archived;
 
     boolean update = false;
     try (SqlSession session = factory.openSession(false);
@@ -50,14 +55,21 @@ public class DatasetMatcher {
       NameMapper nm = session.getMapper(NameMapper.class);
 
       update = nmm.exists(datasetKey);
-      LOG.info("{} name matches for {}", update ? "Update" : "Create", datasetKey);
+      final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.MANAGED;
+      LOG.info("{} name matches for {}{}", update ? "Update" : "Create", isProject? "project ":"", datasetKey);
       nm.processDatasetWithNidx(datasetKey).forEach(h);
+      // also match archived names
+      if (isProject) {
+        final int totalBeforeArchive = total;
+        session.getMapper(ArchivedNameMapper.class).processDatasetWithNidx(datasetKey).forEach(h);
+        archived = archived + total - totalBeforeArchive;
+      }
     } catch (Exception e) {
       LOG.error("Failed to rematch dataset {}", datasetKey, e);
     } finally {
       datasets++;
-      LOG.info("{} {} name matches for {} names and {} not matching for dataset {}", update ? "Updated" : "Created",
-        updated-updatedBefore, total-totalBefore, nomatch-nomatchBefore, datasetKey);
+      LOG.info("{} {} name matches for {} names and {} not matching, {} being archived names, for dataset {}", update ? "Updated" : "Created",
+        updated-updatedBefore, total-totalBefore, nomatch-nomatchBefore, archived-archivedBefore, datasetKey);
     }
 
     try (SqlSession session = factory.openSession(false)) {

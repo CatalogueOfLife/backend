@@ -5,7 +5,9 @@ import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.db.mapper.ArchivedNameMapper;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.IdReportMapper;
 import life.catalogue.db.mapper.UsageNameID;
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.type.UuidTypeHandler;
@@ -149,6 +151,7 @@ public class MybatisFactory {
     registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
     registry.registerAlias("DuplicateMybatis", Duplicate.Mybatis.class);
     registry.registerAlias("NameWithNidx", NameMapper.NameWithNidx.class);
+    registry.registerAlias("ArchivedSimpleNameWithNidx", ArchivedNameMapper.ArchivedSimpleNameWithNidx.class);
   }
   
   private static void registerTypeHandlers(TypeHandlerRegistry registry) {

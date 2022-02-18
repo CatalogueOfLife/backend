@@ -131,22 +131,12 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     this.authorship = authorship;
   }
   
-  @JsonIgnore
-  public boolean hasCombinationAuthorship() {
-    return combinationAuthorship != null && !combinationAuthorship.isEmpty();
-  }
-
   public Authorship getCombinationAuthorship() {
     return combinationAuthorship;
   }
   
   public void setCombinationAuthorship(Authorship combinationAuthorship) {
     this.combinationAuthorship = combinationAuthorship;
-  }
-
-  @JsonIgnore
-  public boolean hasBasionymAuthorship() {
-    return basionymAuthorship != null && !basionymAuthorship.isEmpty();
   }
 
   public Authorship getBasionymAuthorship() {
@@ -164,11 +154,13 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   public void setSanctioningAuthor(String sanctioningAuthor) {
     this.sanctioningAuthor = sanctioningAuthor;
   }
-  
+
+  @Override
   public Rank getRank() {
     return rank;
   }
-  
+
+  @Override
   public void setRank(Rank rank) {
     this.rank = rank == null ? Rank.UNRANKED : rank;
   }
@@ -244,8 +236,9 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
    * @return true if any kind of authorship exists
    */
   @JsonIgnore
+  @Override
   public boolean hasAuthorship() {
-    return hasCombinationAuthorship() || hasBasionymAuthorship() || authorship != null;
+    return ScientificName.super.hasAuthorship() || authorship != null;
   }
 
   /**
@@ -274,6 +267,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     return getLabel(true);
   }
 
+  @Override
   @JsonIgnore
   public String getLabel() {
     return getLabel(false);

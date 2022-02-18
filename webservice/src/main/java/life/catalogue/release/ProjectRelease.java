@@ -100,7 +100,8 @@ public class ProjectRelease extends AbstractProjectCopy {
   void prepWork() throws Exception {
     if (settings.isEnabled(Setting.RELEASE_REMOVE_BARE_NAMES)) {
       LOG.info("Remove bare names from project {}", datasetKey);
-      nDao.deleteOrphans(datasetKey, null, user);
+      int num = nDao.deleteOrphans(datasetKey, null, user);
+      LOG.info("Removed {} bare names from project {}", num, datasetKey);
     }
 
     try (SqlSession session = factory.openSession(true)) {

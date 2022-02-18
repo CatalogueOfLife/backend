@@ -55,7 +55,7 @@ public class VerbatimResource {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
     Map<Term, String> terms = termFilter(uri.getQueryParameters());
     
-    return new ResultPage<VerbatimRecord>(page,
+    return new ResultPage<>(page,
         mapper.count(datasetKey, types, terms, termOp, issues, q),
         mapper.list(datasetKey, types, terms, termOp, issues, q, page)
     );

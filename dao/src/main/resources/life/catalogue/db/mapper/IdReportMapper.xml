@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.IdReportMapper">
+
+  <sql id="COLS">
+    id,
+    dataset_key,
+    type
+  </sql>
+
+  <sql id="PROPS">
+    #{id},
+    #{datasetKey},
+    #{type}::IDREPORTTYPE
+  </sql>
+
+  <!-- A mapping to Reference, mostly auto mapped -->
+  <resultMap id="reportResultMap" type="IdReportEntry" autoMapping="true">
+    <id property="id" column="id"/>
+  </resultMap>
+
+
+  <select id="get" parameterType="map" resultMap="reportResultMap">
+    SELECT <include refid="COLS"/>
+    FROM id_report
+    WHERE dataset_key=#{datasetKey} AND id=#{id}
+  </select>
+
+  <insert id="create" parameterType="IdReportEntry">
+    INSERT INTO id_report (<include refid="COLS"/>)
+    VALUES (<include refid="PROPS"/>)
+  </insert>
+
+  <delete id="deleteDataset" parameterType="map">
+    DELETE FROM id_report
+    WHERE dataset_key=#{datasetKey}
+  </delete>
+
+  <select id="processDataset" parameterType="map" resultMap="reportResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="COLS"/>
+    FROM id_report
+    WHERE dataset_key=#{datasetKey}
+  </select>
+
+  <select id="history" parameterType="map" resultMap="reportResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT id, dataset_key, type
+    FROM id_report i
+      JOIN dataset d ON d.key=i.dataset_key
+    WHERE i.id=#{id} AND d.source_key=#{projectKey} AND NOT d.private
+    ORDER BY d.key
+  </select>
+
+</mapper>

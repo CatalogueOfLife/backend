@@ -15,6 +15,8 @@ import org.apache.ibatis.cursor.Cursor;
 /**
  * WARNING !!!
  * Only SectorProcessable.deleteBySector is implemented, no other methods of SectorProcessable!!!
+ * We also store NameMatches for archived names of a project, as those names belong to the project and have unique ids not used any longer in the project itself.
+ * Processing a manage dataset therefore includes the matches of these archived names.
  */
 public interface NameMatchMapper extends CopyDataset, SectorProcessable<Integer>, TempNameUsageRelated {
 

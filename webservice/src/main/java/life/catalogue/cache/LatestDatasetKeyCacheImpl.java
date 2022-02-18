@@ -59,8 +59,8 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
 
   @Override
   @Nullable
-  public Integer getReleaseAttempt(@NonNull ReleaseAttempt key) {
-    return releaseAttempt.get(key);
+  public Integer getReleaseByAttempt(int projectKey, int attempt) {
+    return releaseAttempt.get(new ReleaseAttempt(projectKey, attempt));
   }
 
   @Override

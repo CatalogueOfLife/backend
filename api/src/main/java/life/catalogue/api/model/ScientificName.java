@@ -1,7 +1,10 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 public interface ScientificName {
 
@@ -9,10 +12,33 @@ public interface ScientificName {
 
   String getAuthorship();
 
+  Rank getRank();
+
+  void setRank(Rank rank);
+
   NomCode getCode();
 
   Authorship getCombinationAuthorship();
 
   Authorship getBasionymAuthorship();
 
+  String getLabel();
+
+  /**
+   * @return true if any kind of authorship exists
+   */
+  @JsonIgnore
+  default boolean hasAuthorship() {
+    return hasCombinationAuthorship() || hasBasionymAuthorship();
+  }
+
+  @JsonIgnore
+  default boolean hasCombinationAuthorship() {
+    return getCombinationAuthorship() != null && !getCombinationAuthorship().isEmpty();
+  }
+
+  @JsonIgnore
+  default boolean hasBasionymAuthorship() {
+    return getBasionymAuthorship() != null && !getBasionymAuthorship().isEmpty();
+  }
 }

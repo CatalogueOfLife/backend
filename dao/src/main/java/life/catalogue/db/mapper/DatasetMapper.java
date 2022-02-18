@@ -86,7 +86,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    *                Use -42 for admins and other roles that should always see all private datasets
    */
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey, @Param("page") Page page);
-  
+
+  /**
+   * List all releases of a project, including deleted ones.
+   */
+  List<Dataset> listReleases(@Param("projectKey") int projectKey);
+
   /**
    * @return list of all dataset keys which have not been deleted
    */

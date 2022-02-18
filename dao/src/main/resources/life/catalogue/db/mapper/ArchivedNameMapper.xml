@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.ArchivedNameMapper">
+
+  <sql id="COLS">
+    id,
+    n_id,
+    dataset_key,
+    <!-- Name mappings -->
+    n_rank,
+    n_candidatus,
+    n_notho,
+    n_code,
+    n_nom_status,
+    n_origin,
+    n_type,
+    n_scientific_name,
+    n_authorship,
+    n_uninomial,
+    n_genus,
+    n_infrageneric_epithet,
+    n_specific_epithet,
+    n_infraspecific_epithet,
+    n_cultivar_epithet,
+    n_basionym_authors,
+    n_basionym_ex_authors,
+    n_basionym_year,
+    n_combination_authors,
+    n_combination_ex_authors,
+    n_combination_year,
+    n_sanctioning_author,
+    n_published_in_id,
+    n_published_in_page,
+    n_nomenclatural_note,
+    n_unparsed,
+    n_remarks,
+    <!-- NameUsageBase -->
+    is_synonym,
+    extinct,
+    status,
+    origin,
+    parent_id,
+    name_phrase,
+    link,
+    remarks,
+    <!-- ArchivedNameUsage -->
+    according_to,
+    accepted_name,
+    basionym,
+    classification,
+    published_in,
+    first_release_key,
+    last_release_key
+  </sql>
+
+  <sql id="PROPS">
+    #{id},
+    #{name.id},
+    #{datasetKey},
+    <!-- Name mappings -->
+    #{name.rank}::RANK,
+    #{name.candidatus},
+    #{name.notho}::NAMEPART,
+    #{name.code}::NOMCODE,
+    #{name.nomStatus}::NOMSTATUS,
+    #{name.origin}::ORIGIN,
+    #{name.type}::NAMETYPE,
+    #{name.scientificName},
+    #{name.authorship},
+    #{name.uninomial},
+    #{name.genus},
+    #{name.infragenericEpithet},
+    #{name.specificEpithet},
+    #{name.infraspecificEpithet},
+    #{name.cultivarEpithet},
+    #{name.basionymAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{name.basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{name.basionymAuthorship.year},
+    #{name.combinationAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{name.combinationAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{name.combinationAuthorship.year},
+    #{name.sanctioningAuthor},
+    #{name.publishedInId},
+    #{name.publishedInPage},
+    #{name.nomenclaturalNote},
+    #{name.unparsed},
+    #{name.remarks},
+    <!-- NameUsageBase -->
+    #{synonym},
+    #{extinct},
+    #{status}::TAXONOMICSTATUS,
+    #{origin}::ORIGIN,
+    #{parentId},
+    #{namePhrase},
+    #{link},
+    #{remarks},
+    <!-- ArchivedNameUsage -->
+    #{accordingTo},
+    #{acceptedName},
+    #{basionym},
+    #{classification, typeHandler=life.catalogue.db.type2.SimpleNameArrayTypeHandler}::SIMPLE_NAME[],
+    #{publishedIn},
+    #{firstReleaseKey},
+    #{lastReleaseKey}
+  </sql>
+
+  <sql id="FROM">name_usage_archive u</sql>
+
+  <resultMap id="archivedNameResultMap" type="ArchivedNameUsage" autoMapping="true">
+    <id property="id" column="id"/>
+    <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+    <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
+  </resultMap>
+
+  <resultMap id="archivedNidxResultMap" type="NameWithNidx" autoMapping="true" extends="life.catalogue.db.mapper.NameMapper.nameResultMap">
+    <id property="id" column="id"/>
+  </resultMap>
+
+  <resultMap id="archivedSimpleResultMap" type="ArchivedSimpleNameWithNidx" autoMapping="true">
+    <id property="id" column="id"/>
+  </resultMap>
+
+
+  <select id="get" parameterType="map" resultMap="archivedNameResultMap">
+    SELECT <include refid="COLS"/>
+    FROM <include refid="FROM"/>
+    WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
+  </select>
+
+  <insert id="create" parameterType="ArchivedNameUsage">
+    INSERT INTO name_usage_archive (<include refid="COLS"/>)
+    VALUES (<include refid="PROPS"/>)
+  </insert>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM name_usage_archive
+    WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
+  </delete>
+
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM name_usage_archive
+    WHERE dataset_key=#{datasetKey}
+  </delete>
+
+  <select id="processDataset" parameterType="map" resultMap="archivedNameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="COLS"/>
+    FROM <include refid="FROM"/>
+    WHERE dataset_key=#{datasetKey}
+  </select>
+
+  <select id="processNxIds" parameterType="map" resultMap="archivedSimpleResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="COLS"/>
+    FROM <include refid="FROM"/>
+    WHERE dataset_key=#{datasetKey}
+  </select>
+
+  <select id="processDatasetWithNidx" parameterType="map" resultMap="archivedNidxResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="COLS"/>
+    FROM <include refid="FROM"/>
+    WHERE dataset_key=#{datasetKey}
+  </select>
+
+</mapper>

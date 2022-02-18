@@ -356,7 +356,6 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void reduceRedundantNameRels(NomRelType type) {
-    LOG.info("Remove redundant {} relations", type);
     RelType rt = RelType.from(type);
     final String query = String.format("MATCH (n:NAME)-[r1:%s]->(b:NAME)<-[r2:%s]-(n:NAME)", rt, rt) +
       "RETURN r1, r2 " +
@@ -382,7 +381,9 @@ public class Normalizer implements Callable<Boolean> {
       }
       tx.success();
     }
-    LOG.info("{} redundant {} relations removed", counter, type);
+    if (counter > 0) {
+      LOG.info("{} redundant {} relations removed", counter, type);
+    }
   }
 
   private void removeOrphanSynonyms() {

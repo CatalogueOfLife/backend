@@ -369,22 +369,12 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.link = link;
   }
 
-  @JsonIgnore
-  public boolean hasCombinationAuthorship() {
-    return combinationAuthorship != null && !combinationAuthorship.isEmpty();
-  }
-
   public Authorship getCombinationAuthorship() {
     return combinationAuthorship;
   }
   
   public void setCombinationAuthorship(Authorship combinationAuthorship) {
     this.combinationAuthorship = combinationAuthorship;
-  }
-
-  @JsonIgnore
-  public boolean hasBasionymAuthorship() {
-    return basionymAuthorship != null && !basionymAuthorship.isEmpty();
   }
 
   public Authorship getBasionymAuthorship() {
@@ -402,11 +392,13 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setSanctioningAuthor(String sanctioningAuthor) {
     this.sanctioningAuthor = sanctioningAuthor;
   }
-  
+
+  @Override
   public Rank getRank() {
     return rank;
   }
-  
+
+  @Override
   public void setRank(Rank rank) {
     this.rank = rank == null ? Rank.UNRANKED : rank;
   }
@@ -571,15 +563,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     }
     return null;
   }
-  
-  /**
-   * @return true if any kind of authorship exists
-   */
-  @JsonIgnore
-  public boolean hasAuthorship() {
-    return hasCombinationAuthorship() || hasBasionymAuthorship();
-  }
-  
+
   @JsonIgnore
   public boolean isAutonym() {
     return specificEpithet != null && specificEpithet.equals(infraspecificEpithet);
@@ -659,6 +643,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   }
 
   @JsonIgnore
+  @Override
   public String getLabel() {
     return getLabel(false);
   }

@@ -110,6 +110,12 @@ CREATE TYPE GAZETTEER AS ENUM (
   'TEXT'
 );
 
+CREATE TYPE IDREPORTTYPE AS ENUM (
+  'DELETED',
+  'RESURRECTED',
+  'CREATED'
+);
+
 CREATE TYPE IMPORTSTATE AS ENUM (
   'WAITING',
   'PREPARING',
@@ -1069,6 +1075,70 @@ CREATE TABLE names_index (
 );
 CREATE INDEX ON names_index (canonical_id);
 
+CREATE TABLE id_report (
+  id INTEGER NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  type IDREPORTTYPE NOT NULL,
+  PRIMARY KEY (dataset_key, id)
+);
+CREATE INDEX ON id_report (dataset_key);
+
+CREATE TABLE name_usage_archive (
+  id TEXT NOT NULL,
+  n_id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  -- shared with name table, keep manually in sync!
+  n_rank RANK NOT NULL,
+  n_candidatus BOOLEAN DEFAULT FALSE,
+  n_notho NAMEPART,
+  n_code NOMCODE,
+  n_nom_status NOMSTATUS,
+  n_origin ORIGIN NOT NULL,
+  n_type NAMETYPE NOT NULL,
+  n_scientific_name TEXT NOT NULL,
+  n_authorship TEXT,
+  n_uninomial TEXT,
+  n_genus TEXT,
+  n_infrageneric_epithet TEXT,
+  n_specific_epithet TEXT,
+  n_infraspecific_epithet TEXT,
+  n_cultivar_epithet TEXT,
+  n_basionym_authors TEXT[] DEFAULT '{}',
+  n_basionym_ex_authors TEXT[] DEFAULT '{}',
+  n_basionym_year TEXT,
+  n_combination_authors TEXT[] DEFAULT '{}',
+  n_combination_ex_authors TEXT[] DEFAULT '{}',
+  n_combination_year TEXT,
+  n_sanctioning_author TEXT,
+  n_published_in_id TEXT,
+  n_published_in_page TEXT,
+  n_nomenclatural_note TEXT,
+  n_unparsed TEXT,
+  n_remarks TEXT,
+  -- common with name_usage, keep in sync!
+  is_synonym BOOLEAN NOT NULL,
+  extinct BOOLEAN,
+  status TAXONOMICSTATUS NOT NULL,
+  origin ORIGIN NOT NULL,
+  parent_id TEXT,
+  name_phrase TEXT,
+  link TEXT,
+  remarks TEXT,
+  -- archive specifics, will be dropped from partitioned name table
+  according_to TEXT,
+  accepted_name TEXT,
+  basionym TEXT,
+  classification SIMPLE_NAME[],
+  published_in TEXT,
+  first_release_key INTEGER,
+  last_release_key INTEGER,
+
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key) REFERENCES dataset,
+  FOREIGN KEY (first_release_key) REFERENCES dataset,
+  FOREIGN KEY (last_release_key) REFERENCES dataset
+);
+
 
 --
 -- PARTITIONED DATA TABLES
@@ -1131,24 +1201,19 @@ CREATE INDEX ON reference USING GIN (dataset_key, doc);
 
 CREATE TABLE name (
   id TEXT NOT NULL,
-  candidatus BOOLEAN DEFAULT FALSE,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  -- shared with name_usage_archive, keep in sync!
   rank RANK NOT NULL,
+  candidatus BOOLEAN DEFAULT FALSE,
   notho NAMEPART,
   code NOMCODE,
   nom_status NOMSTATUS,
   origin ORIGIN NOT NULL,
   type NAMETYPE NOT NULL,
-  created_by INTEGER NOT NULL,
-  modified_by INTEGER NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   scientific_name TEXT NOT NULL,
-  scientific_name_normalized TEXT NOT NULL,
   authorship TEXT,
-  authorship_normalized TEXT[],
   uninomial TEXT,
   genus TEXT,
   infrageneric_epithet TEXT,
@@ -1164,10 +1229,18 @@ CREATE TABLE name (
   sanctioning_author TEXT,
   published_in_id TEXT,
   published_in_page TEXT,
-  link TEXT,
   nomenclatural_note TEXT,
   unparsed TEXT,
   remarks TEXT,
+  -- additions to name_usage_archive
+  link TEXT,
+  scientific_name_normalized TEXT NOT NULL,
+  authorship_normalized TEXT[],
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
@@ -1179,7 +1252,6 @@ CREATE INDEX ON name (dataset_key, verbatim_key);
 CREATE INDEX ON name (dataset_key, published_in_id);
 CREATE INDEX ON name (dataset_key, scientific_name text_pattern_ops);
 CREATE INDEX ON name (dataset_key, scientific_name_normalized);
-
 
 
 CREATE TABLE name_match (
@@ -1263,17 +1335,17 @@ CREATE TABLE name_usage (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  -- shared with name_usage_archive, keep in sync!
   is_synonym BOOLEAN NOT NULL,
   extinct BOOLEAN,
   status TAXONOMICSTATUS NOT NULL,
   origin ORIGIN NOT NULL,
-  created_by INTEGER NOT NULL,
-  modified_by INTEGER NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   parent_id TEXT,
   name_id TEXT NOT NULL,
   name_phrase TEXT,
+  link TEXT,
+  remarks TEXT,
+  -- additions to name_usage_archive
   according_to_id TEXT,
   scrutinizer TEXT,
   scrutinizer_date TEXT,
@@ -1281,8 +1353,10 @@ CREATE TABLE name_usage (
   temporal_range_start TEXT,
   temporal_range_end TEXT,
   environments ENVIRONMENT[] DEFAULT '{}',
-  link TEXT,
-  remarks TEXT,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   dataset_sectors JSONB,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,

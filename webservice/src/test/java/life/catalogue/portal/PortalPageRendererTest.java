@@ -37,7 +37,7 @@ public class PortalPageRendererTest {
     }
 
     @Override
-    public @Nullable Integer getReleaseAttempt(@NonNull ReleaseAttempt key) {
+    public @Nullable Integer getReleaseByAttempt(int project, int attempt) {
       return null;
     }
 

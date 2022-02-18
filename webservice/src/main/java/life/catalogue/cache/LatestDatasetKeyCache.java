@@ -13,7 +13,7 @@ public interface LatestDatasetKeyCache {
 
   @Nullable Integer getLatestReleaseCandidate(@NonNull Integer key);
 
-  @Nullable Integer getReleaseAttempt(@NonNull ReleaseAttempt key);
+  @Nullable Integer getReleaseByAttempt(int projectKey, int attempt);
 
   boolean isLatestRelease(int datasetKey);
 
