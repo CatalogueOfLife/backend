@@ -223,7 +223,8 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     
     // figure out if we need to create any implicit taxon
     Name origName = taxon.getName();
-    // do not create implicit names
+    // do only create implicit names if the name is parsed & not provisional
+    // see https://github.com/CatalogueOfLife/coldp/issues/45
     if (origName.isParsed() && !origName.isIndetermined() && !taxon.isProvisional()) {
       for (Rank r : implicitRanks) {
         if (parent.rank.higherThan(r) && r.higherThan(origName.getRank())) {

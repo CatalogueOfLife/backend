@@ -80,12 +80,12 @@ public class IdProviderTest {
       for (Map.Entry<Integer, List<SimpleNameWithNidx>> rel : prevIdsByAttempt.entrySet()) {
         int attempt = rel.getKey();
         int datasetKey = 1000 + attempt;
+        getDatasetAttemptMap().put(datasetKey, attempt);
         for (SimpleNameWithNidx sn : rel.getValue()) {
-          addReleaseId(datasetKey,attempt, sn, stats);
+          addReleaseId(datasetKey, sn, stats);
         }
       }
     }
-
   }
 
   @Test

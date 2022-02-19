@@ -3,6 +3,8 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 
+import life.catalogue.api.vocab.TaxonomicStatus;
+
 import org.gbif.nameparser.api.Rank;
 
 import org.junit.Test;
@@ -17,6 +19,13 @@ public class ArchivedNameMapperTest extends MapperTestBase<ArchivedNameMapper> {
 
   public ArchivedNameMapperTest() {
     super(ArchivedNameMapper.class);
+  }
+
+  @Test
+  public void build() throws Exception {
+    ArchivedNameUsage u = mapper().build(DSID.of(appleKey, "root-1"));
+    assertNotNull(u);
+    assertNotNull(u.getName());
   }
 
   @Test
@@ -45,13 +54,14 @@ public class ArchivedNameMapperTest extends MapperTestBase<ArchivedNameMapper> {
     ArchivedNameUsage u = new ArchivedNameUsage(t);
     u.setExtinct(true);
     u.setClassification(List.of(
+      new SimpleName("a", "Aster spicata", "Döring", Rank.SPECIES),
       new SimpleName("a", "Asteraceae", "Miller", Rank.FAMILY),
       new SimpleName("a2", "Asterales", Rank.ORDER),
       new SimpleName("m", "Magnifica", Rank.CLASS)
     ));
     u.setPublishedIn("published in sth");
-    u.setAcceptedName("accepted");
-    // clear unsopprted fields
+    u.setStatus(TaxonomicStatus.SYNONYM);
+    // clear unsupported fields
     TestEntityGenerator.setUserDate(u, null, null);
     TestEntityGenerator.setUserDate(u.getName(), null, null);
     return u;

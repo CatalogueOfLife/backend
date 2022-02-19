@@ -37,7 +37,6 @@
     n_unparsed,
     n_remarks,
     <!-- NameUsageBase -->
-    is_synonym,
     extinct,
     status,
     origin,
@@ -47,7 +46,6 @@
     remarks,
     <!-- ArchivedNameUsage -->
     according_to,
-    accepted_name,
     basionym,
     classification,
     published_in,
@@ -88,7 +86,6 @@
     #{name.unparsed},
     #{name.remarks},
     <!-- NameUsageBase -->
-    #{synonym},
     #{extinct},
     #{status}::TAXONOMICSTATUS,
     #{origin}::ORIGIN,
@@ -98,8 +95,7 @@
     #{remarks},
     <!-- ArchivedNameUsage -->
     #{accordingTo},
-    #{acceptedName},
-    #{basionym},
+    #{basionym, typeHandler=life.catalogue.db.type2.SimpleNameTypeHandler}::SIMPLE_NAME,
     #{classification, typeHandler=life.catalogue.db.type2.SimpleNameArrayTypeHandler}::SIMPLE_NAME[],
     #{publishedIn},
     #{firstReleaseKey},
@@ -124,6 +120,12 @@
 
 
   <select id="get" parameterType="map" resultMap="archivedNameResultMap">
+    SELECT <include refid="COLS"/>
+    FROM <include refid="FROM"/>
+    WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
+  </select>
+
+  <select id="build" parameterType="map" resultMap="archivedNameResultMap">
     SELECT <include refid="COLS"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}

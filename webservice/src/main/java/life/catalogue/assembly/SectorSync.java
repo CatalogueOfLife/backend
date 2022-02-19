@@ -207,8 +207,6 @@ public class SectorSync extends SectorRunnable {
         .map(ed -> ed.getSubject().getId())
         .collect(Collectors.toSet());
 
-    Map<String, TreeCopyHandler.Usage> usageIds;
-    Map<String, String> nameIds;
     try (SqlSession session = factory.openSession(false);
          TreeCopyHandler treeHandler = new TreeCopyHandler(decisions, factory, nameIndex, user, sector, state)
     ){

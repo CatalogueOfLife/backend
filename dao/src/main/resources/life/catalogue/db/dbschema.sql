@@ -1116,7 +1116,6 @@ CREATE TABLE name_usage_archive (
   n_unparsed TEXT,
   n_remarks TEXT,
   -- common with name_usage, keep in sync!
-  is_synonym BOOLEAN NOT NULL,
   extinct BOOLEAN,
   status TAXONOMICSTATUS NOT NULL,
   origin ORIGIN NOT NULL,
@@ -1126,8 +1125,7 @@ CREATE TABLE name_usage_archive (
   remarks TEXT,
   -- archive specifics, will be dropped from partitioned name table
   according_to TEXT,
-  accepted_name TEXT,
-  basionym TEXT,
+  basionym SIMPLE_NAME,
   classification SIMPLE_NAME[],
   published_in TEXT,
   first_release_key INTEGER,

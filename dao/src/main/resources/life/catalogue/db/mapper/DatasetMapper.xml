@@ -249,6 +249,13 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="listReleases" resultMap="datasetResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE d.origin='RELEASED' AND d.source_key=#{projectKey}
+    ORDER BY attempt, key
+  </select>
+
   <sql id="importable">
     d.deleted IS NULL
     AND d.origin = 'EXTERNAL'

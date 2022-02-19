@@ -251,7 +251,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         && old.getOrigin() == DatasetOrigin.RELEASED
         && old.getSourceKey().equals(Datasets.COL)
         && !old.isPrivat()
-        && old.getVersion().startsWith("Annual Checklist")
+        && old.getVersion().startsWith("Annual")
     ) {
       throw new IllegalArgumentException("You cannot delete public annual releases of the COL project");
     }
@@ -275,10 +275,20 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // remove source citations
     var cm = session.getMapper(CitationMapper.class);
     cm.delete(key);
-    // remove decisions, sectors, estimates, dataset patches
-    for (Class<DatasetProcessable<?>> mClass : new Class[]{SectorMapper.class, DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class}) {
+    // remove decisions, sectors, estimates, dataset patches, archived usages, name matches
+    for (Class<DatasetProcessable<?>> mClass : new Class[]{
+      SectorMapper.class, DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class, ArchivedNameMapper.class, NameMatchMapper.class
+    }) {
       LOG.info("Delete {}s for dataset {}", mClass.getSimpleName().substring(0, mClass.getSimpleName().length() - 6), key);
       session.getMapper(mClass).deleteByDataset(key);
+    }
+    // remove id reports only for private releases - we want to keep public releases forever to track ids!!!
+    if (old != null
+        && old.getOrigin() == DatasetOrigin.RELEASED
+        && old.isPrivat()
+    ) {
+      LOG.info("Delete id reports for private release {}", key);
+      session.getMapper(IdReportMapper.class).deleteByDataset(key);
     }
     // request DOI update/deletion for all source DOIs - they might be shared across releases so we cannot just delete them
     Set<DOI> dois = psm.listReleaseSources(key).stream()

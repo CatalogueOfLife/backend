@@ -1,20 +1,17 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
-import life.catalogue.db.mapper.IdMapMapper;
+import life.catalogue.db.mapper.*;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import life.catalogue.db.mapper.NameMatchMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
@@ -22,6 +19,7 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class IdProviderIT {
 
@@ -68,6 +66,11 @@ public class IdProviderIT {
 
   @Test
   public void run() throws Exception {
+    // verify archived names got loaded
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      assertNotNull( session.getMapper(ArchivedNameMapper.class).get(DSID.of(projectKey, "M")));
+    }
+
     provider.run();
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);

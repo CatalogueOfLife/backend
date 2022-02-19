@@ -363,6 +363,12 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         // update names index keys if we added data
         session.getMapper(NamesIndexMapper.class).updateSequence();
       }
+      copyGlobalTable(pgc, "name_usage_archive", ImmutableMap.of(
+        "origin", Origin.SOURCE,
+          "n_origin", Origin.SOURCE,
+          "n_type", NameType.SCIENTIFIC
+      ));
+      copyGlobalTable(pgc, "id_report");
       copyGlobalTable(pgc, "name_match");
 
       c.commit();
@@ -413,6 +419,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   private boolean copyGlobalTable(PgConnection pgc, String table) throws IOException, SQLException {
     return copyTable(pgc, table + ".csv", table, new HashMap<>(), Collections.EMPTY_MAP);
+  }
+
+  private boolean copyGlobalTable(PgConnection pgc, String table, Map<String, Object> defaults) throws IOException, SQLException {
+    return copyTable(pgc, table + ".csv", table, defaults, Collections.EMPTY_MAP);
   }
 
   private boolean copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults) throws IOException, SQLException {

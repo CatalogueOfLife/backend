@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.CopyDataset;
+import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TempNameUsageRelated;
 
@@ -18,14 +19,12 @@ import org.apache.ibatis.cursor.Cursor;
  * We also store NameMatches for archived names of a project, as those names belong to the project and have unique ids not used any longer in the project itself.
  * Processing a manage dataset therefore includes the matches of these archived names.
  */
-public interface NameMatchMapper extends CopyDataset, SectorProcessable<Integer>, TempNameUsageRelated {
+public interface NameMatchMapper extends CopyDataset, DatasetProcessable<NameMatch>, SectorProcessable<Integer>, TempNameUsageRelated {
 
   /**
    * @return true if at least one name match for the given dataset exists
    */
   boolean exists(@Param("datasetKey") int datasetKey);
-
-  int deleteByDataset(@Param("datasetKey") int datasetKey);
 
   /**
    * Removes all matches that have no related name record for the given dataset.

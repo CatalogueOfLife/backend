@@ -1,5 +1,8 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -13,9 +16,8 @@ import java.util.Objects;
  *
  */
 public class ArchivedNameUsage extends NameUsageBase {
-  private String acceptedName; // parentId holds the accepted name usage id
-  private String basionym;
-  private List<SimpleName> classification;
+  private SimpleName basionym;
+  private List<SimpleName> classification; // in case of synonyms the first entry is the accepted name
   private String publishedIn; // citation
   private Boolean extinct;
   private Integer firstReleaseKey; // release datasetKey
@@ -30,7 +32,6 @@ public class ArchivedNameUsage extends NameUsageBase {
 
   public ArchivedNameUsage(ArchivedNameUsage other) {
     super(other);
-    this.acceptedName = other.acceptedName;
     this.basionym = other.basionym;
     this.classification = other.classification;
     this.publishedIn = other.publishedIn;
@@ -39,19 +40,16 @@ public class ArchivedNameUsage extends NameUsageBase {
     this.lastReleaseKey = other.lastReleaseKey;
   }
 
-  public String getAcceptedName() {
-    return acceptedName;
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public SimpleName getAcceptedName() {
+    return getStatus().isSynonym() && !classification.isEmpty() ? classification.get(0) : null;
   }
 
-  public void setAcceptedName(String acceptedName) {
-    this.acceptedName = acceptedName;
-  }
-
-  public String getBasionym() {
+  public SimpleName getBasionym() {
     return basionym;
   }
 
-  public void setBasionym(String basionym) {
+  public void setBasionym(SimpleName basionym) {
     this.basionym = basionym;
   }
 
@@ -101,8 +99,7 @@ public class ArchivedNameUsage extends NameUsageBase {
     if (!(o instanceof ArchivedNameUsage)) return false;
     if (!super.equals(o)) return false;
     ArchivedNameUsage that = (ArchivedNameUsage) o;
-    return Objects.equals(acceptedName, that.acceptedName)
-           && Objects.equals(basionym, that.basionym)
+    return Objects.equals(basionym, that.basionym)
            && Objects.equals(classification, that.classification)
            && Objects.equals(publishedIn, that.publishedIn)
            && Objects.equals(extinct, that.extinct)
@@ -112,6 +109,6 @@ public class ArchivedNameUsage extends NameUsageBase {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), acceptedName, basionym, classification, publishedIn, extinct, firstReleaseKey, lastReleaseKey);
+    return Objects.hash(super.hashCode(), basionym, classification, publishedIn, extinct, firstReleaseKey, lastReleaseKey);
   }
 }

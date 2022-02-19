@@ -33,7 +33,7 @@
     VALUES (<include refid="PROPS"/>)
   </insert>
 
-  <delete id="deleteDataset" parameterType="map">
+  <delete id="deleteByDataset" parameterType="map">
     DELETE FROM id_report
     WHERE dataset_key=#{datasetKey}
   </delete>

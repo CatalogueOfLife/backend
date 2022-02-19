@@ -3,12 +3,10 @@ package life.catalogue.release;
 import it.unimi.dsi.fastutil.ints.*;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.IdReportType;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.collection.Int2IntBiMap;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.id.IdConverter;
@@ -16,7 +14,6 @@ import life.catalogue.common.io.TabWriter;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.*;
 import life.catalogue.release.ReleasedIds.ReleasedId;
 
@@ -412,6 +409,11 @@ public class IdProvider {
         stats.temporary.incrementAndGet();
       }
     }
+  }
+
+  @VisibleForTesting
+  protected Int2IntBiMap getDatasetAttemptMap(){
+    return dataset2attempt;
   }
 
   @VisibleForTesting

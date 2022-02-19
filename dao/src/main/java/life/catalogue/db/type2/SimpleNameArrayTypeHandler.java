@@ -12,7 +12,7 @@ import java.util.List;
 import org.postgresql.util.PGobject;
 
 /**
- * Complex simple_name PG Array type handler that only supports reads, but not writes.
+ * Complex simple_name PG Array type handler that only supports reads & writes.
  */
 public class SimpleNameArrayTypeHandler extends AbstractArrayTypeHandler<List<SimpleName>> {
 
