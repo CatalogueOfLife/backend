@@ -84,7 +84,7 @@ public class BareName implements NameUsage {
   @Override
   public void setAccordingTo(String accordingTo) {
     // log not throw if unexpected accordingTo is used
-    if (StringUtils.isBlank(accordingTo)) {
+    if (!StringUtils.isBlank(accordingTo)) {
       LOG.warn("Bare name with a usage accordingTo: {}", accordingTo);
     }
   }
@@ -97,7 +97,7 @@ public class BareName implements NameUsage {
   @Override
   public void setNamePhrase(String namePhrase) {
     // log not throw if unexpected namePhrase is used
-    if (StringUtils.isBlank(namePhrase)) {
+    if (!StringUtils.isBlank(namePhrase)) {
       LOG.warn("Bare name with a usage namePhrase: {}", namePhrase);
     }
   }
