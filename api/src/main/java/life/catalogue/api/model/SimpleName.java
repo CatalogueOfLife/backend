@@ -49,6 +49,25 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
     this.parent = other.parent;
   }
 
+  public SimpleName(Name n) {
+    this.id = n.getId();
+    this.name = n.getScientificName();
+    this.authorship = n.getAuthorship();
+    this.rank = n.getRank();
+    this.code = n.getCode();
+  }
+
+  public SimpleName(NameUsageBase u) {
+    this.id = u.getId();
+    this.name = u.getName().getScientificName();
+    this.authorship = u.getName().getAuthorship();
+    this.phrase = u.getNamePhrase();
+    this.rank = u.getRank();
+    this.code = u.getName().getCode();
+    this.status = u.getStatus();
+    this.parent = u.getParentId();
+  }
+
   public SimpleName(String id) {
     this.id = id;
   }

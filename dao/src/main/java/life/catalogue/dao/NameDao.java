@@ -78,6 +78,10 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   }
 
   public Name getBasionym(DSID<String> key) {
+    return getBasionym(factory, key);
+  }
+
+  public static Name getBasionym(SqlSessionFactory factory, DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
       NameRelationMapper rm = session.getMapper(NameRelationMapper.class);
       List<NameRelation> rels = rm.listByType(key, NomRelType.BASIONYM);

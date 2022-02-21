@@ -44,7 +44,14 @@
     WHERE dataset_key=#{datasetKey}
   </select>
 
-  <select id="history" parameterType="map" resultMap="reportResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+  <select id="first" parameterType="map" resultMap="reportResultMap">
+    SELECT i.id, i.dataset_key, i.type
+    FROM id_report i
+    JOIN dataset d ON d.key=i.dataset_key
+    WHERE i.id=#{id} AND d.source_key=#{projectKey} AND NOT d.private AND i.type='CREATED'
+  </select>
+
+  <select id="history" parameterType="map" resultMap="reportResultMap" resultOrdered="true">
     SELECT id, dataset_key, type
     FROM id_report i
       JOIN dataset d ON d.key=i.dataset_key
