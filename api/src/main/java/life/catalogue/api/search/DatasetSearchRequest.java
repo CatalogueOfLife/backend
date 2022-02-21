@@ -63,6 +63,12 @@ public class DatasetSearchRequest {
   private Integer hasSourceDataset;
 
   /**
+   * Filters datasets that either have or do not have a GBIF key.
+   */
+  @QueryParam("hasGbifKey")
+  private Boolean hasGbifKey;
+
+  /**
    * Filters datasets by their gbif Publisher UUID.
    */
   @QueryParam("gbifPublisherKey")
@@ -166,6 +172,14 @@ public class DatasetSearchRequest {
 
   public void setReleasedFrom(Integer releasedFrom) {
     this.releasedFrom = releasedFrom;
+  }
+
+  public Boolean getHasGbifKey() {
+    return hasGbifKey;
+  }
+
+  public void setHasGbifKey(Boolean hasGbifKey) {
+    this.hasGbifKey = hasGbifKey;
   }
 
   public UUID getGbifPublisherKey() {
@@ -292,6 +306,7 @@ public class DatasetSearchRequest {
            && Objects.equals(releasedFrom, that.releasedFrom)
            && Objects.equals(contributesTo, that.contributesTo)
            && Objects.equals(hasSourceDataset, that.hasSourceDataset)
+           && Objects.equals(hasGbifKey, that.hasGbifKey)
            && Objects.equals(gbifPublisherKey, that.gbifPublisherKey)
            && Objects.equals(editor, that.editor)
            && Objects.equals(reviewer, that.reviewer)
@@ -308,6 +323,6 @@ public class DatasetSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, gbifPublisherKey, editor, reviewer, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
+    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifPublisherKey, editor, reviewer, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
   }
 }
