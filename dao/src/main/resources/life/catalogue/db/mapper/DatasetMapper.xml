@@ -321,6 +321,13 @@
     LIMIT 1
   </select>
 
+  <select id="previousRelease" resultType="integer">
+    SELECT rel.key FROM dataset d JOIN dataset rel ON d.source_key=rel.source_key
+    WHERE d.key = #{key} AND rel.deleted IS NULL AND NOT rel.private
+    ORDER BY rel.created DESC
+    LIMIT 1 OFFSET 1
+  </select>
+
   <select id="releaseAttempt" resultType="integer">
     SELECT key FROM dataset
     WHERE source_key = #{key} AND deleted IS NULL AND attempt = #{attempt}

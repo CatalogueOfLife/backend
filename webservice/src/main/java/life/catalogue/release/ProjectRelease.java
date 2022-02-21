@@ -106,7 +106,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     try (SqlSession session = factory.openSession(true)) {
       // find previous public release needed for DOI management
-      final Integer prevReleaseKey = findPreviousRelease(datasetKey, session);
+      final Integer prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
       LOG.info("Last public release was {}", prevReleaseKey);
 
       // assign DOIs?
@@ -158,23 +158,6 @@ public class ProjectRelease extends AbstractProjectCopy {
     updateState(ImportState.MATCHING);
     IdProvider idProvider = new IdProvider(datasetKey, attempt, newDatasetKey, cfg.release, factory);
     idProvider.run();
-  }
-
-  /**
-   * This looks up the previous release by ignoring the latest releases and ignoring the very latest one.
-   * Private flags do not matter.
-   * @param datasetKey
-   * @param session
-   */
-  public static Integer findPreviousRelease(int datasetKey, SqlSession session){
-    DatasetMapper dm = session.getMapper(DatasetMapper.class);
-    DatasetSearchRequest req = new DatasetSearchRequest();
-    req.setPrivat(true);
-    req.setReleasedFrom(datasetKey);
-    req.setSortBy(DatasetSearchRequest.SortBy.CREATED);
-
-    var releases = dm.search(req, DatasetMapper.MAGIC_ADMIN_USER_KEY, new Page(0, 2));
-    return releases.size() < 2 ? null : releases.get(1).getKey();
   }
 
   /**

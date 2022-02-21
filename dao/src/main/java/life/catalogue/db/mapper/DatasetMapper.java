@@ -19,6 +19,8 @@ import org.apache.ibatis.cursor.Cursor;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import org.apache.ibatis.session.SqlSession;
+
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset>, DatasetAgentMapper {
   int MAGIC_ADMIN_USER_KEY = -42;
 
@@ -131,6 +133,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @return dataset key of the latest release or null if no release exists
    */
   Integer latestRelease(@Param("key") int key, @Param("public") boolean publicOnly);
+
+  /**
+   * This looks up the public release just before the given one, ignoring any intermediate private releases.
+   * @param key release dataset key
+   */
+  Integer previousRelease(@Param("key") int key);
 
   /**
    * Looks up the dataset key of a specific release attempt

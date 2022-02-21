@@ -111,10 +111,11 @@ public class DoiUpdater {
    */
   private void update(DOI doi, int datasetKey) {
     try (SqlSession session = factory.openSession()) {
-      Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
+      var dm = session.getMapper(DatasetMapper.class);
+      Dataset d = dm.get(datasetKey);
       d.setDoi(doi); // make sure we don't accidently update some other DOI
       boolean latest = datasetKeyCache.isLatestRelease(datasetKey);
-      final Integer prevReleaseKey = ProjectRelease.findPreviousRelease(datasetKey, session);
+      final Integer prevReleaseKey = dm.previousRelease(datasetKey);
       var attr = buildReleaseMetadata(d.getSourceKey(), latest, d, prevReleaseKey);
       update(attr);
     }

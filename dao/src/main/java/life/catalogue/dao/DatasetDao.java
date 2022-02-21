@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.model.*;
@@ -86,6 +88,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * For testing only!!!
    * THis is using mocks and misses real functionality, but simplifies the construction of the core dao.
    */
+  @VisibleForTesting
   public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
     this(factory, downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
   }

@@ -69,7 +69,7 @@ public class PublicReleaseListener {
     ) {
       Integer lastReleaseKey;
       try (SqlSession session = factory.openSession(true)) {
-        lastReleaseKey = ProjectRelease.findPreviousRelease(event.old.getSourceKey(), session);
+        lastReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(event.old.getKey());
       }
       LOG.info("Publish release {} {} by user {}. Last public release was {}", event.obj.getKey(), event.obj.getAliasOrTitle(), event.obj.getModifiedBy(), lastReleaseKey);
       // publish DOI if exists

@@ -34,7 +34,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected final NameUsageIndexService indexService;
   protected final Validator validator;
   protected final int user;
-  protected final int datasetKey;
+  protected final int datasetKey; // projectKey
   protected final int attempt;
   protected final DatasetImport metrics;
   protected final String actionName;

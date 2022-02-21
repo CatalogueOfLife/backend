@@ -1,10 +1,14 @@
 package life.catalogue.release;
 
+import com.google.common.eventbus.EventBus;
+
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.ReleaseConfig;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
@@ -17,13 +21,18 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
+import life.catalogue.doi.service.DatasetConverter;
+import life.catalogue.doi.service.DoiService;
+import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ImageService;
+
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class ProjectReleaseIT extends ProjectBaseIT {
 
@@ -96,6 +105,17 @@ public class ProjectReleaseIT extends ProjectBaseIT {
       DatasetImportDao diDao = new DatasetImportDao(release.factory, new File("/tmp"));
       DatasetImport imp = diDao.getLast(projectKey);
       assertEquals(25, imp.getUsagesCount());
+
+      // also test publishing the release
+      var bus = new EventBus();
+      DatasetDao ddao = new DatasetDao(release.factory, null, ImageService.passThru(), diDao, null,
+        NameUsageIndexService.passThru(), null, bus, validator);
+      bus.register(new PublicReleaseListener(new WsServerConfig(), release.factory, null, DoiService.passThru(), null));
+      var rel = ddao.get(release.newDatasetKey);
+      assertTrue(rel.isPrivat());
+      rel.setPrivat(false);
+      ddao.update(rel, release.user);
+      System.out.println("Published release " + rel.getKey());
     }
   }
 
