@@ -60,8 +60,6 @@ jwtKey: 3254e6rftgbzg6tz73254e6rftgbzg6tz73254e6rftgbzg6tz7
 img:
   repo: ${img.repo}
   archive: ${img.repo}/archive
-release:
-  since: 2020-12-01T01:01:01
 metricsRepo: ${metrics.repo}
 mail:
   from: download@catalogueoflife.org
