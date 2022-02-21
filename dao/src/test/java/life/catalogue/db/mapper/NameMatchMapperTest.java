@@ -18,7 +18,6 @@ import static org.junit.Assert.assertNull;
  */
 public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
 
-  private NameMatchMapper nameMapper;
   private int datasetKey;
 
   public NameMatchMapperTest() {
@@ -27,7 +26,6 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
   
   @Before
   public void initMappers() {
-    nameMapper = testDataRule.getMapper(NameMatchMapper.class);
     datasetKey = testDataRule.testData.key;
   }
 
@@ -74,10 +72,6 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
     n = nm.getWithNidx(NAME1);
     assertEquals(MatchType.NONE, n.namesIndexType);
     assertNull(n.namesIndexId);
-  }
-
-  private static Name newAcceptedName(String scientificName) {
-    return newName(DATASET11.getKey(), scientificName.toLowerCase().replace(' ', '-'), scientificName);
   }
   
 }

@@ -731,9 +731,12 @@ CREATE TABLE dataset (
   doc tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
       setweight(to_tsvector('simple2', coalesce(title,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(doi, '')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(key::text, '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(issn, '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(identifier::text, '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(agent_str(creator), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(publisher), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(version, '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(description,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(geographic_scope,'')), 'C') ||
@@ -741,8 +744,7 @@ CREATE TABLE dataset (
       setweight(to_tsvector('simple2', coalesce(temporal_scope,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(agent_str(contact), '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(agent_str(editor), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(publisher), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(contributor), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(contributor), '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
   ) STORED
 );
@@ -1138,6 +1140,29 @@ CREATE TABLE name_usage_archive (
 );
 
 
+CREATE TABLE name_match (
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  index_id INTEGER NOT NULL REFERENCES names_index,
+  name_id TEXT NOT NULL,
+  type MATCHTYPE,
+  PRIMARY KEY (dataset_key, name_id)
+);
+CREATE INDEX ON name_match (dataset_key, sector_key);
+CREATE INDEX ON name_match (dataset_key, index_id);
+CREATE INDEX ON name_match (index_id);
+
+CREATE TABLE name_usage_archive_match (
+  dataset_key INTEGER NOT NULL,
+  index_id INTEGER NOT NULL REFERENCES names_index,
+  usage_id TEXT NOT NULL,
+  type MATCHTYPE,
+  PRIMARY KEY (dataset_key, usage_id)
+);
+CREATE INDEX ON name_match (dataset_key, index_id);
+CREATE INDEX ON name_match (index_id);
+
+
 --
 -- PARTITIONED DATA TABLES
 --
@@ -1251,18 +1276,6 @@ CREATE INDEX ON name (dataset_key, published_in_id);
 CREATE INDEX ON name (dataset_key, scientific_name text_pattern_ops);
 CREATE INDEX ON name (dataset_key, scientific_name_normalized);
 
-
-CREATE TABLE name_match (
-  dataset_key INTEGER NOT NULL,
-  sector_key INTEGER,
-  type MATCHTYPE,
-  index_id INTEGER NOT NULL REFERENCES names_index,
-  name_id TEXT NOT NULL,
-  PRIMARY KEY (dataset_key, name_id)
-);
-CREATE INDEX ON name_match (dataset_key, sector_key);
-CREATE INDEX ON name_match (dataset_key, index_id);
-CREATE INDEX ON name_match (index_id);
 
 CREATE TABLE name_rel (
   id INTEGER NOT NULL,

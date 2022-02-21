@@ -102,8 +102,6 @@
     #{lastReleaseKey}
   </sql>
 
-  <sql id="FROM">name_usage_archive u</sql>
-
   <resultMap id="archivedNameResultMap" type="ArchivedNameUsage" autoMapping="true">
     <id property="id" column="id"/>
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
@@ -121,14 +119,13 @@
 
   <select id="get" parameterType="map" resultMap="archivedNameResultMap">
     SELECT <include refid="COLS"/>
-    FROM <include refid="FROM"/>
+    FROM name_usage_archive
     WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
   </select>
 
-  <select id="build" parameterType="map" resultMap="archivedNameResultMap">
-    SELECT <include refid="COLS"/>
-    FROM <include refid="FROM"/>
-    WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
+  <select id="listProjects" resultType="integer">
+    SELECT DISTINCT dataset_key
+    FROM name_usage_archive
   </select>
 
   <insert id="create" parameterType="ArchivedNameUsage">
@@ -148,20 +145,70 @@
 
   <select id="processDataset" parameterType="map" resultMap="archivedNameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="COLS"/>
-    FROM <include refid="FROM"/>
+    FROM name_usage_archive
     WHERE dataset_key=#{datasetKey}
   </select>
 
-  <select id="processNxIds" parameterType="map" resultMap="archivedSimpleResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="COLS"/>
-    FROM <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey}
+  <select id="processArchivedUsages" parameterType="map" resultMap="archivedSimpleResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT u.id,
+      u.last_release_key,
+      u.n_scientific_name AS name,
+      u.n_authorship AS authorship,
+      u.name_phrase AS phrase,
+      u.n_rank AS rank,
+      u.n_code AS code,
+      u.status,
+      u.classification[1].name AS parent,
+      ni.canonical_id,
+      ni.id AS namesIndexId,
+      m.type AS namesIndexMatchType
+    FROM name_usage_archive u
+      LEFT JOIN name_usage_archive_match m ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
+      LEFT JOIN names_index ni ON m.index_id=ni.id
+    WHERE u.dataset_key=#{datasetKey}
+    ORDER BY ni.canonical_id, ni.id
   </select>
 
-  <select id="processDatasetWithNidx" parameterType="map" resultMap="archivedNidxResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="COLS"/>
-    FROM <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey}
+  <select id="processArchivedNames" parameterType="map" resultMap="archivedNidxResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT
+      u.id AS id,
+      u.dataset_key,
+      <!-- Name mappings -->
+      u.n_rank AS rank,
+      u.n_candidatus AS candidatus,
+      u.n_notho AS notho,
+      u.n_code AS code,
+      u.n_nom_status AS nom_status,
+      u.n_origin AS origin,
+      u.n_type AS type,
+      u.n_scientific_name AS scientific_name,
+      u.n_authorship AS authorship,
+      u.n_uninomial AS uninomial,
+      u.n_genus AS genus,
+      u.n_infrageneric_epithet AS infrageneric_epithet,
+      u.n_specific_epithet AS specific_epithet,
+      u.n_infraspecific_epithet AS infraspecific_epithet,
+      u.n_cultivar_epithet AS cultivar_epithet,
+      u.n_basionym_authors AS basionym_authors,
+      u.n_basionym_ex_authors AS basionym_ex_authors,
+      u.n_basionym_year AS basionym_year,
+      u.n_combination_authors AS combination_authors,
+      u.n_combination_ex_authors AS combination_ex_authors,
+      u.n_combination_year AS combination_year,
+      u.n_sanctioning_author AS sanctioning_author,
+      u.n_published_in_id AS published_in_id,
+      u.n_published_in_page AS published_in_page,
+      u.n_nomenclatural_note AS nomenclatural_note,
+      u.n_unparsed AS unparsed,
+      u.n_remarks AS remarks,
+      <!-- name match -->
+      ni.id AS namesIndexId,
+      m.type AS namesIndexType
+
+    FROM name_usage_archive u
+      LEFT JOIN name_usage_archive_match m ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
+      LEFT JOIN names_index ni ON m.index_id=ni.id
+    WHERE u.dataset_key=#{datasetKey}
   </select>
 
 </mapper>

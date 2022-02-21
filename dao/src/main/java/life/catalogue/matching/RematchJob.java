@@ -1,9 +1,12 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.model.Dataset;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dao.DaoUtils;
 
 import java.util.Arrays;
+
+import life.catalogue.db.mapper.ArchivedNameMapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -28,6 +31,9 @@ public class RematchJob extends BackgroundJob {
     // load dataset keys to rematch
     try (SqlSession session = factory.openSession(true)) {
       IntSet keys = DaoUtils.listDatasetWithNames(session);
+      keys.addAll(
+        session.getMapper(ArchivedNameMapper.class).listProjects()
+      );
       return new RematchJob(userKey, factory, ni, keys.toIntArray());
     }
   }

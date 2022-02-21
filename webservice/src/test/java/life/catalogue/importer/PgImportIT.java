@@ -11,6 +11,7 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.File;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
@@ -547,8 +548,8 @@ public class PgImportIT extends PgImportITBase {
   public void testExternalManually() throws Exception {
     dataset.setType(DatasetType.TAXONOMIC);
 
-    //normalizeAndImportArchive(new File("/Users/markus/Downloads/dataset-1049.zip"), COLDP);
-    normalizeAndImport(URI.create("https://github.com/CatalogueOfLife/data-col-hierarchy/archive/master.zip"), COLDP);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/legumes-coldp.zip"), COLDP);
+    //normalizeAndImport(URI.create("https://github.com/CatalogueOfLife/data-col-hierarchy/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/162.tar.gz"), ACEF);
     //normalizeAndImportArchive(new File("/Users/markus/Downloads/export.zip"), COLDP);

@@ -11,6 +11,8 @@ import org.gbif.nameparser.api.Rank;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.util.stream.Collectors;
+
 /**
  * Tracks released ids incl historic releases.
  * Each ID is only represented by the most recent, i.e. highest release attempt.
@@ -67,6 +69,12 @@ public class ReleasedIds {
 
   public boolean containsId(int i) {
     return byId.containsKey(i);
+  }
+
+  public void log() {
+    System.out.println(
+      byId.keySet().stream().sorted().map(String::valueOf).collect(Collectors.joining(" "))
+    );
   }
 
   public ReleasedId remove(int id) throws IllegalArgumentException {

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.ArchivedNameUsageMatchMapper">
+
+  <resultMap id="nameMatchResultMap" type="NameMatch" autoMapping="true">
+    <result property="type" column="type"/>
+    <association property="name" javaType="IndexName" resultMap="life.catalogue.db.mapper.NamesIndexMapper.nameResultMap"/>
+  </resultMap>
+
+
+  <select id="get" resultMap="nameMatchResultMap">
+    SELECT nm.type, <include refid="life.catalogue.db.mapper.NamesIndexMapper.SELECT"/>
+    FROM name_usage_archive_match nm LEFT JOIN names_index n ON n.id=nm.index_id
+    WHERE nm.dataset_key = #{key.datasetKey} AND nm.usage_id = #{key.id}
+  </select>
+
+  <select id="processIndexIds" resultType="Integer">
+    SELECT DISTINCT index_id
+    FROM name_usage_archive_match
+    WHERE dataset_key = #{datasetKey}
+  </select>
+
+  <delete id="deleteOrphaned" parameterType="map">
+    DELETE FROM name_usage_archive_match nm
+    WHERE dataset_key=#{datasetKey} AND NOT EXISTS (
+      SELECT NULL FROM name_usage_archive n
+      WHERE n.dataset_key=#{datasetKey} AND n.id = nm.usage_id
+    )
+  </delete>
+
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM name_usage_archive_match
+    WHERE dataset_key=#{datasetKey}
+  </delete>
+
+  <insert id="create" parameterType="map" useGeneratedKeys="false">
+    INSERT INTO name_usage_archive_match (dataset_key,type,index_id,usage_id)
+    VALUES (#{key.datasetKey}, #{type}::MATCHTYPE, #{nidx}, #{key.id})
+  </insert>
+
+  <update id="update" parameterType="map">
+    UPDATE name_usage_archive_match SET (type,index_id) = (#{type}::MATCHTYPE, #{nidx})
+    WHERE dataset_key=#{key.datasetKey} AND usage_id = #{key.id}
+  </update>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM name_usage_archive_match
+    WHERE dataset_key=#{key.datasetKey} AND usage_id = #{key.id}
+  </delete>
+
+  <select id="count" resultType="integer">
+    SELECT count(*)
+    FROM name_usage_archive_match nm JOIN names_index ni ON ni.id=nm.index_id
+    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    <if test="datasetKey != null">
+      AND nm.dataset_key = #{datasetKey}
+    </if>
+  </select>
+
+  <update id="truncate">
+    TRUNCATE name_usage_archive_match
+  </update>
+</mapper>

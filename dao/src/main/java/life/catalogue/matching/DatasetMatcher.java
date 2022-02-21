@@ -5,6 +5,7 @@ import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.ArchivedNameMapper;
+import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 
@@ -49,7 +50,8 @@ public class DatasetMatcher {
 
     boolean update = false;
     try (SqlSession session = factory.openSession(false);
-         BulkMatchHandler h = new BulkMatchHandler(datasetKey, allowInserts)
+         BulkMatchHandler hn = new BulkMatchHandlerNames(datasetKey, allowInserts);
+         BulkMatchHandler hu = new BulkMatchHandlerArchivedUsages(datasetKey, allowInserts)
     ) {
       NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
@@ -57,11 +59,11 @@ public class DatasetMatcher {
       update = nmm.exists(datasetKey);
       final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.MANAGED;
       LOG.info("{} name matches for {}{}", update ? "Update" : "Create", isProject? "project ":"", datasetKey);
-      nm.processDatasetWithNidx(datasetKey).forEach(h);
+      nm.processDatasetWithNidx(datasetKey).forEach(hn);
       // also match archived names
       if (isProject) {
         final int totalBeforeArchive = total;
-        session.getMapper(ArchivedNameMapper.class).processDatasetWithNidx(datasetKey).forEach(h);
+        session.getMapper(ArchivedNameMapper.class).processArchivedNames(datasetKey).forEach(hu);
         archived = archived + total - totalBeforeArchive;
       }
     } catch (Exception e) {
@@ -74,10 +76,13 @@ public class DatasetMatcher {
 
     try (SqlSession session = factory.openSession(false)) {
       if (update) {
-        NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
-        int del = nmm.deleteOrphaned(datasetKey);
+        int del = session.getMapper(NameMatchMapper.class).deleteOrphaned(datasetKey);
         if (del > 0) {
           LOG.info("Removed {} orphaned name matches for {}", del, datasetKey);
+        }
+        del = session.getMapper(ArchivedNameUsageMatchMapper.class).deleteOrphaned(datasetKey);
+        if (del > 0) {
+          LOG.info("Removed {} orphaned name archive matches for {}", del, datasetKey);
         }
       }
     }
@@ -99,11 +104,48 @@ public class DatasetMatcher {
     return datasets;
   }
 
-  class BulkMatchHandler implements Consumer<NameMapper.NameWithNidx>, AutoCloseable {
+  class BulkMatchHandlerNames extends BulkMatchHandler {
+    NameMatchMapper nmm;
+    BulkMatchHandlerNames(int datasetKey, boolean allowInserts) {
+      super(datasetKey, allowInserts);
+      nmm = batchSession.getMapper(NameMatchMapper.class);
+    }
+
+    @Override
+    void persist(NameMapper.NameWithNidx n, NameMatch m, Integer oldId, Integer newKey) {
+      if (oldId == null) {
+        nmm.create(n, n.getSectorKey(), newKey, m.getType());
+      } else if (newKey != null){
+        nmm.update(n, newKey, m.getType());
+      } else {
+        nmm.delete(n);
+      }
+    }
+  }
+
+  class BulkMatchHandlerArchivedUsages extends BulkMatchHandler {
+    ArchivedNameUsageMatchMapper nmm;
+    BulkMatchHandlerArchivedUsages(int datasetKey, boolean allowInserts) {
+      super(datasetKey, allowInserts);
+      nmm = batchSession.getMapper(ArchivedNameUsageMatchMapper.class);
+    }
+
+    @Override
+    void persist(NameMapper.NameWithNidx n, NameMatch m, Integer oldId, Integer newKey) {
+      if (oldId == null) {
+        nmm.create(n, newKey, m.getType());
+      } else if (newKey != null){
+        nmm.update(n, newKey, m.getType());
+      } else {
+        nmm.delete(n);
+      }
+    }
+  }
+
+  abstract class BulkMatchHandler implements Consumer<NameMapper.NameWithNidx>, AutoCloseable {
     private final int datasetKey;
     private final boolean allowInserts;
-    private final SqlSession batchSession;
-    private final NameMatchMapper nm;
+    final SqlSession batchSession;
     private int _total = 0;
     private int _updated = 0;
     private int _nomatch = 0;
@@ -112,7 +154,6 @@ public class DatasetMatcher {
       this.datasetKey = datasetKey;
       this.allowInserts = allowInserts;
       this.batchSession = factory.openSession(ExecutorType.BATCH, false);
-      this.nm = batchSession.getMapper(NameMatchMapper.class);
     }
   
     @Override
@@ -129,19 +170,15 @@ public class DatasetMatcher {
       }
       Integer newKey = m.hasMatch() ? m.getName().getKey() : null;
       if (!Objects.equals(oldId, newKey)) {
-        if (oldId == null) {
-          nm.create(n, n.getSectorKey(), newKey, m.getType());
-        } else if (newKey != null){
-          nm.update(n, newKey, m.getType());
-        } else {
-          nm.delete(n);
-        }
+        persist(n, m, oldId, newKey);
         if (_updated++ % 10000 == 0) {
           batchSession.commit();
           LOG.debug("Updated {} name matches for {} names with {} no matches for dataset {}", _updated, _total, _nomatch, datasetKey);
         }
       }
     }
+
+    abstract void persist(NameMapper.NameWithNidx n, NameMatch m, Integer oldId, Integer newKey);
 
     @Override
     public void close() throws Exception {

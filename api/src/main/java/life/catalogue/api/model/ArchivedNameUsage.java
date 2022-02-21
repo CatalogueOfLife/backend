@@ -45,6 +45,11 @@ public class ArchivedNameUsage extends NameUsageBase {
     return getStatus().isSynonym() && !classification.isEmpty() ? classification.get(0) : null;
   }
 
+  @JsonIgnore
+  public SimpleName getParent() {
+    return classification.isEmpty() ? null : classification.get(0);
+  }
+
   public SimpleName getBasionym() {
     return basionym;
   }

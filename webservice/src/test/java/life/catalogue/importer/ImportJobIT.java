@@ -121,7 +121,7 @@ public class ImportJobIT {
     fail("Import Error");
   }
 
-  private void setupNrun(DataFormat format, String access){
+  private void setupAndRun(DataFormat format, String access){
     URI archive = Resources.uri(access);
     d = new DatasetWithSettings();
     d.setType(DatasetType.OTHER);
@@ -145,7 +145,7 @@ public class ImportJobIT {
   @Test
   @Ignore("require github raw to always work")
   public void proxy() {
-    setupNrun(DataFormat.PROXY, "proxy/1011.yaml");
+    setupAndRun(DataFormat.PROXY, "proxy/1011.yaml");
     job.run();
   }
 }

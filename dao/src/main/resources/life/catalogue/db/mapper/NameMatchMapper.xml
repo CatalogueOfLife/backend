@@ -45,10 +45,8 @@
 
   <delete id="deleteOrphaned" parameterType="map">
     DELETE FROM name_match nm
-    WHERE dataset_key=#{datasetKey}
-    AND NOT EXISTS (
-      SELECT NULL
-      FROM name n
+    WHERE dataset_key=#{datasetKey} AND NOT EXISTS (
+      SELECT NULL FROM name n
       WHERE n.dataset_key=#{datasetKey} AND n.id = nm.name_id
     )
   </delete>

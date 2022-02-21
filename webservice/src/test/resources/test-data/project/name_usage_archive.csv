@@ -1,6 +1,6 @@
-dataset_key,id,parent_id,status,n_id,n_rank,n_scientific_name,n_uninomial,n_genus,n_specific_epithet,n_infraspecific_epithet,first_release_key,last_release_key,classification
-3,M,L,SYNONYM,21,GENUS,Alopsis,Alopsis,,,,,,"{""(L,GENUS,Canis,)"",""(6,FAMILY,Canidae,)"",""(5,ORDER,Carnivora,)"",""(4,CLASS,Mammalia,)"",""(3,PHYLUM,Chordata,)""}"
-3,N,L,SYNONYM,22,GENUS,Lupulus,Lupulus,,,,,,"{""(L,GENUS,Canis,)"",""(6,FAMILY,Canidae,)"",""(5,ORDER,Carnivora,)"",""(4,CLASS,Mammalia,)"",""(3,PHYLUM,Chordata,)""}"
+dataset_key,last_release_key,id,parent_id,status,n_id,n_rank,n_scientific_name,n_uninomial,n_genus,n_specific_epithet,n_infraspecific_epithet,classification
+3,12,M,L,SYNONYM,21,GENUS,Alopsis,Alopsis,,,,"{""(L,GENUS,Canis,)"",""(6,FAMILY,Canidae,)"",""(5,ORDER,Carnivora,)"",""(4,CLASS,Mammalia,)"",""(3,PHYLUM,Chordata,)""}"
+3,12,N,L,SYNONYM,22,GENUS,Lupulus,Lupulus,,,,"{""(L,GENUS,Canis,)"",""(6,FAMILY,Canidae,)"",""(5,ORDER,Carnivora,)"",""(4,CLASS,Mammalia,)"",""(3,PHYLUM,Chordata,)""}"
 
 
 

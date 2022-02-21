@@ -7,7 +7,8 @@ import life.catalogue.db.*;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
-import org.checkerframework.checker.units.qual.K;
+
+import java.util.List;
 
 /**
  * Mapper for archived names of a project. Dataset keys are expected to always be MANAGED, never releases.
@@ -15,17 +16,20 @@ import org.checkerframework.checker.units.qual.K;
 public interface ArchivedNameMapper extends CRUD<DSID<String>, ArchivedNameUsage>, DatasetProcessable<ArchivedNameUsage> {
 
   /**
-   * Builds a new name usage instance from an existing, released usage.
-   * @param key the released usage key
+   * List all project keys that have some archived names.
    */
-  ArchivedNameUsage build(@Param("key") DSID<String> key);
+  List<Integer> listProjects();
 
   /**
    * Iterate over all archived names ordered by their canonical names index id.
    */
-  Cursor<ArchivedSimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
+  Cursor<ArchivedSimpleNameWithNidx> processArchivedUsages(@Param("datasetKey") int datasetKey);
 
-  Cursor<NameMapper.NameWithNidx> processDatasetWithNidx(@Param("datasetKey") int datasetKey);
+  /**
+   * Process all archived name usages as Name instances with names index match infos.
+   * Not the "Name" key is exceptionally a usage key!
+   */
+  Cursor<NameMapper.NameWithNidx> processArchivedNames(@Param("datasetKey") int datasetKey);
 
 
   class ArchivedSimpleNameWithNidx extends SimpleNameWithNidx {

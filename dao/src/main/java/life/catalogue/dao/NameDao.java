@@ -60,7 +60,7 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
     // create name match
     NameMatch m = nameIndex.match(n, true, false);
     if (m.hasMatch()) {
-      session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNameKey(), m.getType());
+      session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNameKey(),m.getType());
     }
     return true;
   }
@@ -70,7 +70,7 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
     // update name match
     NameMatch m = nameIndex.match(n, true, false);
     if (m.hasMatch()) {
-      session.getMapper(NameMatchMapper.class).update(n, m.getNameKey(), m.getType());
+      session.getMapper(NameMatchMapper.class).update(n,m.getNameKey(), m.getType());
     } else {
       session.getMapper(NameMatchMapper.class).delete(n);
     }

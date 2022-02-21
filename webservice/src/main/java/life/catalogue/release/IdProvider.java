@@ -387,9 +387,11 @@ public class IdProvider {
 
       // also include the archived names if they have not been processed before yet
       final int sizeBefore = ids.size();
-      session.getMapper(ArchivedNameMapper.class).processNxIds(projectKey)
+      ids.log();
+      session.getMapper(ArchivedNameMapper.class).processArchivedUsages(projectKey)
              .forEach(sn -> addReleaseId(sn.getLastReleaseKey(), sn, stats));
       LOG.info("Read {} from archived names. Adding {} previously used ids to a total of {}", stats, ids.size() - sizeBefore, ids.size());
+      ids.log();
     }
   }
 

@@ -26,7 +26,6 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
           .thenComparing(SimpleName::getStatus, nullSafeEnumComparator);
 
   private String id;
-
   @NotNull
   private String name;
   private String authorship;
