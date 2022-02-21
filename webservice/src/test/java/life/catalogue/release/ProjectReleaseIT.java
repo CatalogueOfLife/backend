@@ -71,7 +71,6 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
   @Test
   public void release() throws Exception {
-
     ProjectRelease release = buildRelease();
     Map.of(1, "9999", // pref ID out of sequence range
       17, "A",
