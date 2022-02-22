@@ -19,7 +19,7 @@ public class IdConverterTest {
   @Test
   @Ignore
   public void writeMappingFile() throws IOException {
-    File f = new File("idmap.txt");
+    File f = new File("latin29.txt");
     try (Writer w = UTF8IoUtils.writerFromFile(f)) {
       int id = -1;
       while(id++ < 10000000) {

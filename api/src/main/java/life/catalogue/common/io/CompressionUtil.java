@@ -80,8 +80,7 @@ public class CompressionUtil {
    */
   public static List<File> ungzipFile(File directory, File zipFile) throws IOException {
     List<File> files = new ArrayList<File>();
-    TarArchiveInputStream in = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(zipFile)));
-    try {
+    try (TarArchiveInputStream in = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(zipFile)))){
       TarArchiveEntry entry;
       while ((entry = in.getNextTarEntry()) != null) {
         if (entry.isDirectory()) {
@@ -99,17 +98,11 @@ public class CompressionUtil {
           continue;
         }
         LOG.debug("Extracting file: {} to: {}", entry.getName(), targetFile.getAbsolutePath());
-        FileOutputStream out = new FileOutputStream(targetFile);
-        try {
+        try (FileOutputStream out = new FileOutputStream(targetFile)){
           IOUtils.copy(in, out);
-          out.close();
-        } finally {
-          IOUtils.closeQuietly(out);
         }
         files.add(targetFile);
       }
-    } finally {
-      in.close();
     }
     return files;
   }
@@ -128,33 +121,22 @@ public class CompressionUtil {
   public static List<File> ungzipFile(File directory, File zipFile, boolean isTarred) throws IOException {
     if (isTarred) return ungzipFile(directory, zipFile);
     
-    List<File> files = new ArrayList<File>();
-    GZIPInputStream in = null;
-    BufferedOutputStream dest = null;
-    try {
-      in = new GZIPInputStream(new FileInputStream(zipFile));
-      
-      // assume that the gzip filename is the filename + .gz
-      String unzippedName = zipFile.getName().substring(0, zipFile.getName().lastIndexOf("."));
-      File outputFile = new File(directory, unzippedName);
+    List<File> files = new ArrayList<>();
+    // assume that the gzip filename is the filename + .gz
+    String unzippedName = zipFile.getName().substring(0, zipFile.getName().lastIndexOf("."));
+    File outputFile = new File(directory, unzippedName);
+
+    try (GZIPInputStream in = new GZIPInputStream(new FileInputStream(zipFile));
+         BufferedOutputStream dest = new BufferedOutputStream(new FileOutputStream(outputFile), BUFFER);
+    ){
       LOG.debug("Extracting file: {} to: {}", unzippedName, outputFile.getAbsolutePath());
-      FileOutputStream fos = new FileOutputStream(outputFile);
-      
-      dest = new BufferedOutputStream(fos, BUFFER);
       int count;
       byte[] data = new byte[BUFFER];
       while ((count = in.read(data, 0, BUFFER)) != -1) {
         dest.write(data, 0, count);
       }
       files.add(outputFile);
-    } finally {
-      if (in != null) in.close();
-      if (dest != null) {
-        dest.flush();
-        dest.close();
-      }
     }
-    
     return files;
   }
   
@@ -200,28 +182,27 @@ public class CompressionUtil {
     if (files.isEmpty()) {
       LOG.info("no files to zip.");
     } else {
-      try {
-        BufferedInputStream origin = null;
+      try (
         FileOutputStream dest = new FileOutputStream(zipFile);
         ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+      ) {
         // out.setMethod(ZipOutputStream.DEFLATED);
         byte[] data = new byte[BUFFER];
         for (File f : files) {
           LOG.debug("Adding file {} to archive", f);
-          FileInputStream fi = new FileInputStream(f);
-          origin = new BufferedInputStream(fi, BUFFER);
-          
-          String zipPath = StringUtils.removeStart(f.getAbsolutePath(), rootContext.getAbsolutePath() + File.separator);
-          ZipEntry entry = new ZipEntry(zipPath);
-          out.putNextEntry(entry);
-          int count;
-          while ((count = origin.read(data, 0, BUFFER)) != -1) {
-            out.write(data, 0, count);
+          try (FileInputStream fi = new FileInputStream(f);
+               BufferedInputStream origin = new BufferedInputStream(fi, BUFFER)
+          ) {
+            String zipPath = StringUtils.removeStart(f.getAbsolutePath(), rootContext.getAbsolutePath() + File.separator);
+            ZipEntry entry = new ZipEntry(zipPath);
+            out.putNextEntry(entry);
+            int count;
+            while ((count = origin.read(data, 0, BUFFER)) != -1) {
+              out.write(data, 0, count);
+            }
           }
-          origin.close();
         }
         out.finish();
-        out.close();
       } catch (IOException e) {
         LOG.error("IOException while zipping files: {}", files);
         throw e;
@@ -242,39 +223,39 @@ public class CompressionUtil {
    * @return a list of all created files and directories extracted to target directory
    */
   public static List<File> unzipFile(File directory, File zipFile) throws IOException {
-    LOG.debug("Unzipping archive " + zipFile.getName() + " into directory: " + directory.getAbsolutePath());
-    ZipFile zf = new ZipFile(zipFile);
-    Enumeration<? extends ZipEntry> entries = zf.entries();
-    while (entries.hasMoreElements()) {
-      ZipEntry entry = entries.nextElement();
-      // ignore resource fork directories and subfiles
-      if (entry.getName().toUpperCase().contains(APPLE_RESOURCE_FORK)) {
-        LOG.debug("Ignoring resource fork file: " + entry.getName());
-      }
-      // ignore directories and hidden directories (e.g. .svn) (based on flag)
-      else if (entry.isDirectory()) {
-        if (isHiddenFile(new File(entry.getName()))) {
-          LOG.debug("Ignoring hidden directory: " + entry.getName());
-        } else {
-          new File(directory, entry.getName()).mkdir();
+    LOG.debug("Unzipping archive {} into directory: {}", zipFile.getName(), directory.getAbsolutePath());
+    try (ZipFile zf = new ZipFile(zipFile)) {
+      Enumeration<? extends ZipEntry> entries = zf.entries();
+      while (entries.hasMoreElements()) {
+        ZipEntry entry = entries.nextElement();
+        // ignore resource fork directories and subfiles
+        if (entry.getName().toUpperCase().contains(APPLE_RESOURCE_FORK)) {
+          LOG.debug("Ignoring resource fork file: {}", entry.getName());
         }
-      }
-      // ignore hidden files
-      else {
-        if (isHiddenFile(new File(entry.getName()))) {
-          LOG.debug("Ignoring hidden file: " + entry.getName());
-        } else {
-          File targetFile = new File(directory, entry.getName());
-          // ensure parent folder always exists, and extract file
-          targetFile.getParentFile().mkdirs();
-          extractFile(zf, entry, targetFile);
+        // ignore directories and hidden directories (e.g. .svn) (based on flag)
+        else if (entry.isDirectory()) {
+          if (isHiddenFile(new File(entry.getName()))) {
+            LOG.debug("Ignoring hidden directory: {}", entry.getName());
+          } else {
+            new File(directory, entry.getName()).mkdir();
+          }
+        }
+        // ignore hidden files
+        else {
+          if (isHiddenFile(new File(entry.getName()))) {
+            LOG.debug("Ignoring hidden file: {}", entry.getName());
+          } else {
+            File targetFile = new File(directory, entry.getName());
+            // ensure parent folder always exists, and extract file
+            targetFile.getParentFile().mkdirs();
+            extractFile(zf, entry, targetFile);
+          }
         }
       }
     }
-    zf.close();
     // remove the wrapping root directory and flatten structure
     removeRootDirectory(directory);
-    return (directory.listFiles() == null) ? new ArrayList<File>() : Arrays.asList(directory.listFiles());
+    return (directory.listFiles() == null) ? new ArrayList<>() : Arrays.asList(directory.listFiles());
   }
   
   /**
@@ -296,7 +277,7 @@ public class CompressionUtil {
    */
   private static void removeRootDirectory(File directory) {
     File[] rootFiles = directory.listFiles((FileFilter) HiddenFileFilter.VISIBLE);
-    if (rootFiles.length == 1) {
+    if (rootFiles != null && rootFiles.length == 1) {
       File root = rootFiles[0];
       if (root.isDirectory()) {
         LOG.debug("Removing single root folder {} found in decompressed archive", root.getAbsoluteFile());
@@ -317,18 +298,13 @@ public class CompressionUtil {
    * @param targetFile destination file to extract to
    */
   private static void extractFile(ZipFile zf, ZipEntry entry, File targetFile) {
-    try {
+    try (InputStream in = zf.getInputStream(entry);
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(targetFile))
+    ){
       LOG.debug("Extracting file: {} to: {}", entry.getName(), targetFile.getAbsolutePath());
-      InputStream in = zf.getInputStream(entry);
-      OutputStream out = new BufferedOutputStream(new FileOutputStream(targetFile));
-      try {
-        IOUtils.copy(zf.getInputStream(entry), out);
-      } finally {
-        in.close();
-        out.close();
-      }
+      IOUtils.copy(in, out);
     } catch (IOException e) {
-      LOG.error("File could not be extraced: " + e.getMessage(), e);
+      LOG.error("File could not be extraced: {}", e.getMessage(), e);
     }
   }
   
