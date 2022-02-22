@@ -40,6 +40,13 @@ public class ArchivedNameUsage extends NameUsageBase {
     this.lastReleaseKey = other.lastReleaseKey;
   }
 
+  /**
+   * Expose flag for clients to tell archived usages easily apart from others
+   */
+  public boolean isArchived() {
+    return true;
+  }
+
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public SimpleName getAcceptedName() {
     return getStatus().isSynonym() && !classification.isEmpty() ? classification.get(0) : null;
