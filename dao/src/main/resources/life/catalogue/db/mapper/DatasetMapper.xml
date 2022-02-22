@@ -262,7 +262,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.origin='RELEASED' AND d.source_key=#{projectKey}
-    ORDER BY attempt, key
+    ORDER BY d.created, d.key
   </select>
 
   <sql id="importable">

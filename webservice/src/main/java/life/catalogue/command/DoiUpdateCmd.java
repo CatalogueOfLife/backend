@@ -86,16 +86,17 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       // update project DOI
       Dataset project = dm.get(key);
       final var latestReleaseKey = dm.latestRelease(d.getKey(), true);
-      // modify project metadata for better DOI metadata
-      project.setIssued(new FuzzyDate(project.getCreated()));
+      // add issued data if missing - important for DataCite
+      if (project.getIssued() == null) {
+        project.setIssued(new FuzzyDate(project.getCreated()));
+      }
       updateReleaseOrProject(project, false, null, null);
-      // list all releases in chronological order
-      var req = new DatasetSearchRequest();
-      req.setReleasedFrom(key);
-      req.setPrivat(true);
-      req.setSortByReverseCreated();
+      // list all releases in chronological order, starting with the very first release
       DOI prev = null;
-      for (Dataset release : dm.search(req, userKey, new Page(Page.MAX_LIMIT))) {
+      for (Dataset release : dm.listReleases(key)) {
+        // ignore private releases, only public ones have a DOI
+        if (release.isPrivat()) continue;
+
         final boolean isLatest = Objects.equals(latestReleaseKey, release.getKey());
         updateReleaseOrProject(release, isLatest, project.getDoi(), prev);
         if (release.getDoi() != null) {
