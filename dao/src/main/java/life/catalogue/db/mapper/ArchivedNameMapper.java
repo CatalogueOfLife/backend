@@ -16,6 +16,11 @@ import java.util.List;
 public interface ArchivedNameMapper extends CRUD<DSID<String>, ArchivedNameUsage>, DatasetProcessable<ArchivedNameUsage> {
 
   /**
+   * @return number of archived usages for a given project.
+   */
+  int count(@Param("datasetKey") int datasetKey);
+
+  /**
    * List all project keys that have some archived names.
    */
   List<Integer> listProjects();

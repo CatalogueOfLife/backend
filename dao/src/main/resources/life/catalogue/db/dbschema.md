@@ -134,44 +134,72 @@ CREATE TABLE idr.ids (
 INSERT INTO idr.ids (dataset_key,id) 
 SELECT d.key, u.id
 FROM dataset d JOIN name_usage u ON d.key=u.dataset_key
-WHERE d.source_key=3 AND d.deleted IS NULL;
+WHERE d.origin='RELEASED' AND d.deleted IS NULL;
 CREATE INDEX ON idr.ids (id);
 
--- list releases
-SELECT key, attempt FROM dataset WHERE source_key=3 AND deleted IS NULL;
+-- track releases in sequential order
+CREATE TABLE idr.releases (
+	key int PRIMARY KEY,
+	first boolean,
+	seq serial,
+	attempt int,
+	project_key int
+);
+INSERT INTO idr.releases (project_key,key,attempt,first)
+SELECT p.key AS project_key, r.key AS release_key, r.attempt, (
+  SELECT r.key = min(key) FROM dataset 
+  WHERE origin='RELEASED' AND deleted IS NULL AND source_key=p.key
+)  
+FROM dataset p JOIN dataset r ON r.source_key=p.key 
+WHERE p.origin='MANAGED' AND r.origin='RELEASED' AND r.deleted IS NULL
+ORDER BY p.key, r.created;
 
--- for first release
+-- insert all first releases
 INSERT INTO id_report (type,dataset_key,id) 
-SELECT 'CREATED', id1.dataset_key, map.idnum
-FROM idr.ids id1 JOIN latin29 map ON map.id=id1.id 
-WHERE id1.dataset_key=12;
+SELECT 'CREATED', i.dataset_key, map.idnum
+FROM idr.releases r 
+  JOIN idr.ids i ON i.dataset_key=r.key 
+  JOIN latin29 map ON map.id=i.id  
+WHERE r.first;
 
--- repeat for each release thereafter, replacing these 2 dataset keys:
--- 13=next release key
--- 12=last release key
+-- now each event type for all subsequent releases
+-- DELETED
 INSERT INTO id_report (type,dataset_key,id) 
-SELECT 'DELETED', 13, map.idnum
-FROM idr.ids id JOIN latin29 map ON map.id=id.id 
-WHERE id.dataset_key=12 AND NOT EXISTS (
-  SELECT NULL FROM idr.ids id2
-  WHERE id.id = id2.id AND id2.dataset_key=13
+SELECT 'DELETED', i.dataset_key, map.idnum
+FROM idr.releases r1 
+  JOIN idr.releases r2 ON r1.project_key=r2.project_key AND r2.seq=r1.seq+1    
+  JOIN idr.ids i ON i.dataset_key=r2.key 
+  JOIN latin29 map ON map.id=i.id   
+WHERE NOT EXISTS (
+  SELECT NULL FROM idr.ids prev
+  WHERE prev.id = i.id AND prev.dataset_key=r1.key
 );
 
+-- RESURRECTED
 INSERT INTO id_report (type,dataset_key,id) 
-SELECT 'RESURRECTED', id.dataset_key, map.idnum
-FROM idr.ids id JOIN latin29 map ON map.id=id.id 
-WHERE id.dataset_key=13 AND EXISTS (
-  SELECT NULL FROM idr.ids id2
-  WHERE id2.id=id.id AND id2.dataset_key<12
+SELECT 'RESURRECTED', i.dataset_key, map.idnum
+FROM idr.releases r
+  JOIN idr.ids i ON i.dataset_key=r.key 
+  JOIN latin29 map ON map.id=i.id   
+WHERE NOT r.first AND EXISTS (
+  SELECT NULL 
+  FROM idr.ids prev
+    JOIN idr.releases prev_r ON prev_r.key=prev.dataset_key    
+  WHERE prev.id=i.id AND prev_r.project_key=r.project_key AND prev_r.seq<r.seq
   LIMIT 1
 );
 
+-- CREATED
 INSERT INTO id_report (type,dataset_key,id) 
-SELECT 'CREATED', id.dataset_key, map.idnum
-FROM idr.ids id JOIN latin29 map ON map.id=id.id 
-WHERE id.dataset_key=13 AND NOT EXISTS (
-  SELECT NULL FROM idr.ids id2
-  WHERE id2.id=id.id AND id2.dataset_key<13
+SELECT 'CREATED', i.dataset_key, map.idnum
+FROM idr.releases r
+  JOIN idr.ids i ON i.dataset_key=r.key 
+  JOIN latin29 map ON map.id=i.id    
+WHERE NOT r.first AND NOT EXISTS (
+  SELECT NULL 
+  FROM idr.ids prev
+    JOIN idr.releases prev_r ON prev_r.key=prev.dataset_key    
+  WHERE prev.id=i.id AND prev_r.project_key=r.project_key AND prev_r.seq<r.seq
   LIMIT 1
 );
 
