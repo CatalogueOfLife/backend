@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.common.util.RegexUtils;
+import life.catalogue.db.mapper.ArchivedNameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
@@ -71,7 +72,13 @@ public class NameUsageResource {
   @GET
   @Path("{id}")
   public NameUsageBase get(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(NameUsageMapper.class).get(DSID.of(datasetKey, id));
+    var key = DSID.of(datasetKey, id);
+    NameUsageBase u = session.getMapper(NameUsageMapper.class).get(key);
+    if (u == null) {
+      // try name usage archive
+      u = session.getMapper(ArchivedNameMapper.class).get(key);
+    }
+    return u;
   }
 
   @GET

@@ -2,15 +2,34 @@ package life.catalogue.common.id;
 
 import life.catalogue.common.io.UTF8IoUtils;
 
-import java.io.BufferedWriter;
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class IdConverterTest {
+
+  /**
+   * Generates a mapping file between integer keys and their latin29 value used for stable ids in releases.
+   * This file is supposed to be included in the postgres database, but because of its size is not bundled with the jars.
+   */
+  @Test
+  @Ignore
+  public void writeMappingFile() throws IOException {
+    File f = new File("idmap.txt");
+    try (Writer w = UTF8IoUtils.writerFromFile(f)) {
+      int id = -1;
+      while(id++ < 10000000) {
+        w.append(String.valueOf(id));
+        w.append("\t");
+        w.append(IdConverter.LATIN29.encode(id));
+        w.append("\n");
+      }
+    }
+  }
 
   @Test
   public void issueExamples() {
