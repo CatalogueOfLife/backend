@@ -575,31 +575,16 @@ public class IdProvider {
    * This can happen due to real homonyms, erroneous duplicates in the data
    * or potentially extensive pro parte synonyms as we have now for some genera like Achorutini Börner, C, 1901.
    *
-   * We should avoid a major status change from accepted/synonym.
-   * Require an ID change if the status changes even if the name is the same.
-   *
-   * For synonyms the ID is tied to the accepted name.
-   * Change the synonym ID in case the accepted parent changes.
-   * This helps to deal with ids for pro parte synonyms.
+   * For synonyms we evaluate the accepted name.
+   * This helps with sticky ids for pro parte synonyms.
    *
    * @return zero for no match, positive for a match. The higher the better!
    */
   private int matchScore(SimpleNameWithNidx n, ReleasedId r) {
     var dsid = DSID.of(dataset2attempt.getKey(r.attempt), r.id());
-    if (n.getStatus() != null && r.status != null && n.getStatus().isSynonym() != r.status.isSynonym()) {
-      // major status difference, no match
-      return 0;
-    }
     // only one is a misapplied name - never match to anything else
     if (!Objects.equals(n.getStatus(), r.status) && (n.getStatus()==MISAPPLIED || r.status==MISAPPLIED) ) {
       return 0;
-    }
-
-    if (n.getStatus() != null && n.getStatus().isSynonym()) {
-      // block synonyms with different accepted names aka parent
-      if (!StringUtils.equalsIgnoreCase(n.getParent(), r.parent)) {
-        return 0;
-      }
     }
 
     int score = 1;
@@ -610,6 +595,13 @@ public class IdProvider {
     // rank
     if (Objects.equals(n.getRank(), r.rank)) {
       score += 10;
+    }
+    // parent for synonyms
+    if (n.getStatus() != null && n.getStatus().isSynonym()) {
+      // block synonyms with different accepted names aka parent
+      if (StringUtils.equalsIgnoreCase(n.getParent(), r.parent)) {
+        score += 6;
+      }
     }
     // match type
     score += matchTypeScore(n.getNamesIndexMatchType());

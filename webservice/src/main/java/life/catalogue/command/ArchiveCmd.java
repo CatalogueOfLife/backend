@@ -62,6 +62,8 @@ public class ArchiveCmd extends AbstractMybatisCmd {
 
   @Override
   void execute() throws Exception {
+    archiver = new ArchivedNameUsageFactory(factory);
+
     Integer projectKey = ns.get(ARG_KEY);
     if (projectKey != null) {
       archiver.rebuildProject(projectKey);
