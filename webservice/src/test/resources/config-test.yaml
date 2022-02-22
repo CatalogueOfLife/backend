@@ -65,3 +65,8 @@ mail:
   from: download@catalogueoflife.org
   fromName: COL Downloads
   replyTo: download@catalogueoflife.org
+doi:
+  api: "https://api.test.datacite.org"
+  prefix: ${datacite.prefix}
+  username: ${datacite.username}
+  password: ${datacite.password}

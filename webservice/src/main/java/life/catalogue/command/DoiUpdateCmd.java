@@ -3,10 +3,7 @@ package life.catalogue.command;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.model.User;
-import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
@@ -49,7 +46,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   private int sourcePublished = 0;
 
   public DoiUpdateCmd() {
-    super("updDoi", true, "Update all project, release and release source DOIs for the given project dataset key");
+    super("doi", true, "Update all project, release and release source DOIs for the given project dataset key");
   }
 
   @Override
@@ -74,7 +71,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     UserDao udao = new UserDao(factory, new EventBus(), validator);
     converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
 
-    try (SqlSession session = factory.openSession()) {
+    try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       key = ns.getInt(ARG_KEY);
       Dataset d = dm.get(key);
@@ -85,12 +82,10 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       }
       // update project DOI
       Dataset project = dm.get(key);
+      LOG.info("Update all DOIs for releases of project {}: {}", key, project.getTitle());
       final var latestReleaseKey = dm.latestRelease(d.getKey(), true);
-      // add issued data if missing - important for DataCite
-      if (project.getIssued() == null) {
-        project.setIssued(new FuzzyDate(project.getCreated()));
-      }
-      updateReleaseOrProject(project, false, null, null);
+      LOG.info("Latest release of project {} is {}", key, latestReleaseKey);
+      updateReleaseOrProject(project, false, null, null, dm);
       // list all releases in chronological order, starting with the very first release
       DOI prev = null;
       for (Dataset release : dm.listReleases(key)) {
@@ -98,7 +93,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         if (release.isPrivat()) continue;
 
         final boolean isLatest = Objects.equals(latestReleaseKey, release.getKey());
-        updateReleaseOrProject(release, isLatest, project.getDoi(), prev);
+        updateReleaseOrProject(release, isLatest, project.getDoi(), prev, dm);
         if (release.getDoi() != null) {
           updateReleaseSources(release, isLatest);
           prev = release.getDoi();
@@ -107,16 +102,24 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     }
   }
 
-  private void updateReleaseOrProject(Dataset release, boolean isLatest, @Nullable DOI project, @Nullable DOI prev) {
+  private void updateReleaseOrProject(Dataset release, boolean isLatest, @Nullable DOI project, @Nullable DOI prev, DatasetMapper dm) {
     DOI doi = release.getDoi();
     try {
       if (doi == null) {
         // issue a new DOI!
         doi = doiService.fromDataset(release.getKey());
+        release.setDoi(doi);
+        dm.update(release); // persist doi
         var attr = converter.release(release, isLatest, project, prev);
         LOG.info("Issue new DOI {} for release {}", doi, release.getKey());
-        doiService.create(attr);
-        releaseCreated++;
+        try {
+          doiService.create(attr);
+          releaseCreated++;
+        } catch (DoiException e) {
+          LOG.info("Failed to create DOI {} for release {}. Try to do an update instead", doi, release.getKey(), e);
+          doiService.update(attr);
+          releaseUpdated++;
+        }
 
       } else {
         var data = doiService.resolve(doi);

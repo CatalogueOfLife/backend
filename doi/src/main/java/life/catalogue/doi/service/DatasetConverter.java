@@ -4,6 +4,7 @@ import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.doi.datacite.model.*;
 
 import java.net.URI;
@@ -120,14 +121,17 @@ public class DatasetConverter {
       attr.setPublisher(d.getPublisher().getName());
     } else {
       // this is required !!!
-      LOG.warn("No required publisher given, use COL instead");
+      LOG.info("No required publisher given, use COL instead");
       attr.setPublisher("Catalogue of Life");
     }
     // PublicationYear
     if (d.getIssued() != null) {
       attr.setPublicationYear(d.getIssued().getYear());
+      // add issued data if missing - important for DataCite
+    } else if (d.getCreated() != null) {
+      attr.setPublicationYear(d.getCreated().getYear());
     } else {
-      LOG.warn("No release date given. Use today instead");
+      LOG.warn("No issued or created date given. Use today instead");
       attr.setPublicationYear(LocalDate.now().getYear());
     }
     // version
@@ -136,10 +140,10 @@ public class DatasetConverter {
     if (d.getCreator() != null && !d.getCreator().isEmpty()) {
       attr.setCreators(toCreators(d.getCreator()));
     } else if (d.getEditor() != null && !d.getEditor().isEmpty()) {
-      LOG.warn("No authors given. Use dataset editors instead");
+      LOG.info("No authors given. Use dataset editors instead");
       attr.setCreators(toCreators(d.getEditor()));
     } else {
-      LOG.warn("No authors given. Use dataset creator instead");
+      LOG.info("No authors given. Use dataset creator instead");
       User user = userByID.apply(d.getCreatedBy());
       Creator creator;
       if (user.getLastname() != null) {
