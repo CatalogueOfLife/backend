@@ -125,7 +125,7 @@
 
   <select id="count" resultType="integer">
     SELECT count(*) FROM name_usage_archive
-    WHERE dataset_key=#{key.datasetKey}
+    WHERE dataset_key=#{datasetKey}
   </select>
 
   <select id="listProjects" resultType="integer">

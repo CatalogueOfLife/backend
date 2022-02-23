@@ -210,11 +210,11 @@ public abstract class NameUsageRequest {
   }
 
   public void addFilter(NameUsageSearchParameter param, Iterable<?> values) {
-    values.forEach((s) -> addFilter(param, s == null ? IS_NULL : s.toString()));
+    values.forEach(v -> addFilter(param, v == null ? IS_NULL : v.toString()));
   }
 
   public void addFilter(NameUsageSearchParameter param, Object... values) {
-    Arrays.stream(values).forEach((v) -> addFilter(param, v == null ? IS_NULL : v.toString()));
+    Arrays.stream(values).forEach(v -> addFilter(param, v == null ? IS_NULL : v.toString()));
   }
 
   public void setDatasetFilter(int datasetKey) {

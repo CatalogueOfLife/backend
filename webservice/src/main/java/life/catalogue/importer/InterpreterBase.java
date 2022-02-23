@@ -335,7 +335,7 @@ public class InterpreterBase {
   protected Boolean bool(VerbatimRecord v, Term... terms) {
     return parse(BooleanParser.PARSER, v.getFirst(terms)).orNull();
   }
-  
+
   private static String lowercaseEpithet(String epithet, IssueContainer issues) {
     if (epithet != null && !epithet.equals(epithet.toLowerCase())) {
       issues.addIssue(Issue.UPPERCASE_EPITHET);

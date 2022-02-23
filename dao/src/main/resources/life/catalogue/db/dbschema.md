@@ -142,6 +142,7 @@ SELECT d.key, u.id
 FROM dataset d JOIN name_usage u ON d.key=u.dataset_key
 WHERE d.origin='RELEASED' AND d.deleted IS NULL;
 CREATE INDEX ON idr.ids (id);
+CREATE INDEX ON idr.ids (dataset_key);
 
 -- track releases in sequential order
 CREATE TABLE idr.releases (
@@ -171,29 +172,31 @@ WHERE r.first;
 -- now each event type for all subsequent releases
 -- DELETED
 INSERT INTO id_report (type,dataset_key,id) 
-SELECT 'DELETED', i.dataset_key, map.idnum
+SELECT 'DELETED', r2.key, map.idnum
 FROM idr.releases r1 
   JOIN idr.releases r2 ON r1.project_key=r2.project_key AND r2.seq=r1.seq+1    
-  JOIN idr.ids i ON i.dataset_key=r2.key 
+  JOIN idr.ids i ON i.dataset_key=r1.key 
   JOIN latin29 map ON map.id=i.id   
 WHERE NOT EXISTS (
   SELECT NULL FROM idr.ids prev
-  WHERE prev.id = i.id AND prev.dataset_key=r1.key
+  WHERE prev.id = i.id AND prev.dataset_key=r2.key
 );
 
 -- RESURRECTED
 INSERT INTO id_report (type,dataset_key,id) 
 SELECT 'RESURRECTED', i.dataset_key, map.idnum
 FROM idr.releases r
+  JOIN idr.releases rp ON rp.project_key=r.project_key AND rp.seq=r.seq-1    
   JOIN idr.ids i ON i.dataset_key=r.key 
   JOIN latin29 map ON map.id=i.id   
-WHERE NOT r.first AND EXISTS (
+  LEFT JOIN idr.ids ip ON ip.dataset_key=rp.key AND ip.id=i.id 
+WHERE NOT r.first AND ip.id IS NULL AND EXISTS (
   SELECT NULL 
   FROM idr.ids prev
     JOIN idr.releases prev_r ON prev_r.key=prev.dataset_key    
   WHERE prev.id=i.id AND prev_r.project_key=r.project_key AND prev_r.seq<r.seq
   LIMIT 1
-);
+) ;
 
 -- CREATED
 INSERT INTO id_report (type,dataset_key,id) 
@@ -208,10 +211,14 @@ WHERE NOT r.first AND NOT EXISTS (
   WHERE prev.id=i.id AND prev_r.project_key=r.project_key AND prev_r.seq<r.seq
   LIMIT 1
 );
+```
 
+With id reports in place you can now run the Migration tool.
+Finally the temp schema can be dropped:
+
+```
 DROP SCHEMA idr;
 ```
-With id reports in place you can now run the Migration tool.
 
 ### 2022-02-09 add DIACRITIC_CHARACTERS issue
 ```
