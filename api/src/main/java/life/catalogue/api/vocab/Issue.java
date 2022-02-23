@@ -386,6 +386,12 @@ public enum Issue {
 
   DIACRITIC_CHARACTERS(ANY, Level.WARNING,
     "Seperate diacritic characters such as the acute, grave or circumflex, are present on their own. They should only exist in combination with a letter."),
+
+  MULTI_WORD_MONOMIAL(NAME, Level.WARNING,
+    "At least one monomial of the parsed name contains multiple words."),
+
+  WRONG_MONOMIAL_CASE(NAME, Level.WARNING,
+    "At least one monomial of the parsed name in not using title case."),
   ;
 
   /**

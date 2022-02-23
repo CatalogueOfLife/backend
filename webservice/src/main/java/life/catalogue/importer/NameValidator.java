@@ -1,13 +1,23 @@
 package life.catalogue.importer;
 
+import com.google.common.base.CaseFormat;
+
+import com.google.common.collect.Lists;
+
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 
+import life.catalogue.common.tax.NameFormatter;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Case;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -131,21 +141,43 @@ public class NameValidator {
       LOG.info("Missing specific epithet in infraspecific name {}", n.toStringComplete());
       issues.addIssue(Issue.INCONSISTENT_NAME);
     }
-    
+    // monomials expected as 1 word in Title case
+    for (String x : Lists.newArrayList(n.getUninomial(), n.getGenus(), n.getInfragenericEpithet())) {
+      if (x != null) {
+        if (isMultiWord(x)) {
+          issues.addIssue(Issue.MULTI_WORD_MONOMIAL);
+        }
+        if (x.length() > 1 && !x.equals(x.substring(0,1).toUpperCase() + x.substring(1).toLowerCase())) {
+          issues.addIssue(Issue.WRONG_MONOMIAL_CASE);
+        }
+      }
+    }
+    // epithet expected as 1 lower case word
+    for (String x : Lists.newArrayList(n.getSpecificEpithet(), n.getInfraspecificEpithet())) {
+      if (x != null) {
+        if (isMultiWord(x)) {
+          issues.addIssue(Issue.MULTI_WORD_EPITHET);
+        }
+        if (!x.equals(x.toLowerCase())) {
+          issues.addIssue(Issue.UPPERCASE_EPITHET);
+        }
+      }
+    }
+
     // look for truncated authorship
     if (hasUnmatchedBrackets(n.getAuthorship())) {
       issues.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
     }
     
-    // verify epithets
-    for (String epithet : n.nameParts()) {
+    // verify name parts
+    for (String part : n.nameParts()) {
       // no whitespace
-      if (WHITE.matcher(epithet).find()) {
+      if (WHITE.matcher(part).find()) {
         LOG.info("Name part contains whitespace {}", n.toStringComplete());
         issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
       }
       // non ascii chars
-      if (NON_LETTER.matcher(epithet).find()) {
+      if (NON_LETTER.matcher(part).find()) {
         LOG.info("Name part contains non ASCII letters {}", n.toStringComplete());
         issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
       }
@@ -189,5 +221,12 @@ public class NameValidator {
         }
       }
     }
+  }
+
+  /**
+   * Checks if a string is composed of multiple words delimited by space.
+   */
+  public static boolean isMultiWord(String x) {
+    return x != null && x.contains(" ");
   }
 }

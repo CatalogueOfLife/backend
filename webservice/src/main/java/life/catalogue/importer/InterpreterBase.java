@@ -335,20 +335,11 @@ public class InterpreterBase {
   protected Boolean bool(VerbatimRecord v, Term... terms) {
     return parse(BooleanParser.PARSER, v.getFirst(terms)).orNull();
   }
-
-  private static boolean hasNoSpace(String x) {
-    return x == null || !x.contains(" ");
-  }
   
   private static String lowercaseEpithet(String epithet, IssueContainer issues) {
-    if (epithet != null) {
-      if (epithet.trim().contains(" ")) {
-        issues.addIssue(Issue.MULTI_WORD_EPITHET);
-        
-      } else if (!epithet.equals(epithet.toLowerCase())) {
-        issues.addIssue(Issue.UPPERCASE_EPITHET);
-        return epithet.toLowerCase();
-      }
+    if (epithet != null && !epithet.equals(epithet.toLowerCase())) {
+      issues.addIssue(Issue.UPPERCASE_EPITHET);
+      return epithet.trim().toLowerCase();
     }
     return trimToNull(epithet);
   }

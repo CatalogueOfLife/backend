@@ -13,6 +13,12 @@ and done it manually. So we can as well log changes here.
 
 ### 2022-02-22 names archive
 ```
+ALTER TYPE ISSUE ADD VALUE 'MULTI_WORD_MONOMIAL';
+ALTER TYPE ISSUE ADD VALUE 'WRONG_MONOMIAL_CASE';
+```
+
+### 2022-02-22 names archive
+```
 CREATE TYPE IDREPORTTYPE AS ENUM (
   'DELETED',
   'RESURRECTED',

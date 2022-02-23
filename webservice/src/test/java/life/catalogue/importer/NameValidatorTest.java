@@ -28,7 +28,17 @@ public class NameValidatorTest {
       }
     }
   }
-  
+
+  @Test
+  public void isMultiWord() throws Exception {
+    assertFalse(NameValidator.isMultiWord("Abies"));
+    assertFalse(NameValidator.isMultiWord("alba"));
+
+    assertTrue(NameValidator.isMultiWord("a alba"));
+    assertTrue(NameValidator.isMultiWord("Abies alba"));
+    assertTrue(NameValidator.isMultiWord("× Abies")); // the hybrid marker should be removed in a parsed name!
+  }
+
   @Test
   public void nonLetterPattern() throws Exception {
     assertFalse(NameValidator.NON_LETTER.matcher("").find());
@@ -158,5 +168,26 @@ public class NameValidatorTest {
     
     n.setInfraspecificEpithet("for sythi");
     verify(n, Issue.UNUSUAL_NAME_CHARACTERS);
+  }
+
+  @Test
+  public void epithets() throws Exception {
+    Name n = new Name();
+    n.setType(NameType.SCIENTIFIC);
+
+    n.setUninomial("Marmorana");
+    verify(n);
+
+    n.setUninomial("Marmorana magna");
+    verify(n, Issue.MULTI_WORD_MONOMIAL);
+
+    n.setUninomial("MARMORANA");
+    verify(n, Issue.WRONG_MONOMIAL_CASE);
+
+    n.setUninomial("marmorana");
+    verify(n, Issue.WRONG_MONOMIAL_CASE);
+
+    n.setUninomial("mArmorana");
+    verify(n, Issue.WRONG_MONOMIAL_CASE);
   }
 }
