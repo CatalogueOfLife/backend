@@ -79,6 +79,10 @@ public class ArchivedNameUsageFactory {
           } else if (r.getType() == IdReportType.DELETED) {
             var oldKey = DSID.of(previousKey, id);
             var u = num.get(oldKey);
+            if (u == null) {
+              LOG.warn("Cannot archive missing name usage {}, deleted from dataset {}", oldKey, releaseKey);
+              continue;
+            }
             // assemble archived usage
             ArchivedNameUsage au = new ArchivedNameUsage(u);
             // basionym
