@@ -322,10 +322,15 @@
   </select>
 
   <select id="previousRelease" resultType="integer">
-    SELECT rel.key FROM dataset d JOIN dataset rel ON d.source_key=rel.source_key
-    WHERE d.key = #{key} AND rel.deleted IS NULL AND NOT rel.private
-    ORDER BY rel.created DESC
-    LIMIT 1 OFFSET 1
+    SELECT prev.key FROM dataset r JOIN dataset prev ON prev.source_key=r.source_key
+    WHERE r.key = #{key}
+      AND prev.deleted IS NULL
+      AND NOT prev.private
+      AND prev.origin=r.origin
+      AND prev.key != r.key
+      AND prev.created &lt; r.created
+    ORDER BY prev.created DESC
+    LIMIT 1
   </select>
 
   <select id="releaseAttempt" resultType="integer">
