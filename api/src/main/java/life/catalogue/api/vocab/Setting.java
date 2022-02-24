@@ -81,12 +81,15 @@ public enum Setting {
   RELEASE_REMOVE_BARE_NAMES(Boolean.class, MANAGED),
 
   /**
+   * If true a release will prepare exports for the entire release in all common formats.
+   */
+  RELEASE_PREPARE_DOWNLOADS(Boolean.class, MANAGED),
+
+  /**
    * Number of first authors from a project/release to use for the container authors of a source chapter-in-a-book citation.
    * If not given all authors are used.
    */
   SOURCE_MAX_CONTAINER_AUTHORS(Integer.class, MANAGED, RELEASED),
-
-  DATA_FORMAT(DataFormat.class, EXTERNAL, MANAGED),
 
   /**
    * In continuous import mode the frequency the dataset is scheduled for imports.
@@ -94,6 +97,8 @@ public enum Setting {
   IMPORT_FREQUENCY(Frequency.class, EXTERNAL),
 
   DATA_ACCESS(URI.class, EXTERNAL),
+
+  DATA_FORMAT(DataFormat.class, EXTERNAL, MANAGED),
 
   /**
    * Project defaults to be used for the sector.entities property

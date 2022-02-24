@@ -201,12 +201,15 @@ public class ProjectRelease extends AbstractProjectCopy {
       VarnishUtils.ban(client, colseo); // flush also /colseo which also points to latest releases
     }
     // kick off exports
-    for (DataFormat df : EXPORT_FORMATS) {
-      ExportRequest req = new ExportRequest();
-      req.setDatasetKey(newDatasetKey);
-      req.setFormat(df);
-      req.setExcel(false);
-      exportManager.submit(req, user);
+    if (settings.isEnabled(Setting.RELEASE_PREPARE_DOWNLOADS)) {
+      LOG.info("Prepare exports for release {}", newDatasetKey);
+      for (DataFormat df : EXPORT_FORMATS) {
+        ExportRequest req = new ExportRequest();
+        req.setDatasetKey(newDatasetKey);
+        req.setFormat(df);
+        req.setExcel(false);
+        exportManager.submit(req, user);
+      }
     }
   }
 
