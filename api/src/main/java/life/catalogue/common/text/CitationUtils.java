@@ -1,5 +1,8 @@
 package life.catalogue.common.text;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -9,6 +12,7 @@ import life.catalogue.common.date.FuzzyDate;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -19,6 +23,57 @@ public class CitationUtils {
 
     public DatasetWrapper(Dataset dataset) {
       d = dataset;
+    }
+
+    public Integer getCreatedBy() {
+      return d.getCreatedBy();
+    }
+
+    public Integer getModifiedBy() {
+      return d.getModifiedBy();
+    }
+
+    public Integer getAttempt() {
+      return d.getAttempt();
+    }
+
+    public Integer getContainerKey() {
+      return d.getContainerKey();
+    }
+
+    public String getContainerTitle() {
+      return d.getContainerTitle();
+    }
+
+    public List<Agent> getContainerCreator() {
+      return d.getContainerCreator();
+    }
+
+    @JsonProperty("private")
+    public boolean isPrivat() {
+      return d.isPrivat();
+    }
+
+    public LocalDateTime getImported() {
+      return d.getImported();
+    }
+
+    public LocalDateTime getDeleted() {
+      return d.getDeleted();
+    }
+
+    public Map<String, String> getIdentifier() {
+      return d.getIdentifier();
+    }
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public String getCitation() {
+      return d.getCitation();
+    }
+
+    @JsonIgnore
+    public String getCitationText() {
+      return d.getCitationText();
     }
 
     public Integer getKey() {

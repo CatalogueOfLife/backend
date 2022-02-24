@@ -46,6 +46,25 @@ public class CitationUtilsTest {
     assertEquals("Miller F., Miller F., Miller F. (eds.)", CitationUtils.concatEditors(people(3)));
   }
 
+  @Test
+  public void attempt() throws Exception {
+    Dataset d = new Dataset();
+    d.setAttempt(3);
+    d.setKey(1010);
+    d.setAlias("fish");
+    d.setTitle("FishBase");
+    d.setVersion("v2.0");
+    d.setEditor(people("Rainer", "Froese", "David", "Pauly"));
+    d.setIssued(FuzzyDate.of("2019-07-13"));
+
+    assertEquals("vv2.0",
+      CitationUtils.fromTemplate(d,"v{version}")
+    );
+
+    assertEquals("SID3",
+      CitationUtils.fromTemplate(d,"SID{attempt}")
+    );
+  }
 
   @Test
   public void buildSourceCitation() throws Exception {
