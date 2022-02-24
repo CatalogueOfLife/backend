@@ -262,17 +262,17 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
     if (old != null && old.getOrigin() == DatasetOrigin.MANAGED) {
       // This is a recursive project delete.
-      Set<Integer> releases = listReleaseKeys(key, user, mapper);
+      List<Dataset> releases = mapper.listReleases(key);
       LOG.warn("Deleting project {} with all its {} releases", key, releases.size());
 
       // Simplify the DOI updates by deleting ALL DOIs for ALL releases and ALL sources at the beginning
       LOG.warn("Request deletion of all DOIs from project {}", key);
       postDoiDeletionForSources(psm, key);
       // cascade to releases first before we remove the mother project dataset
-      for (int rk : releases) {
-        LOG.info("Deleting release {} of project {}", rk, key);
-        postDoiDeletionForSources(psm, rk);
-        delete(rk, user);
+      for (var d : releases) {
+        LOG.info("Deleting release {} of project {}", d.getKey(), key);
+        postDoiDeletionForSources(psm, d.getKey());
+        delete(d.getKey(), user);
       }
     }
     // remove source citations
@@ -328,22 +328,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     // trigger DOI update at the very end for the now removed sources!
     dois.forEach(doi -> bus.post(DoiChange.change(doi)));
-  }
-
-  private Set<Integer> listReleaseKeys(int projectKey, int user, DatasetMapper mapper) {
-    Set<Integer> releases = new HashSet<>();
-    DatasetSearchRequest req = new DatasetSearchRequest();
-    req.setReleasedFrom(projectKey);
-    List<Dataset> resp;
-    Page p = new Page(0, 1000);
-    do {
-      resp = mapper.search(req, user, new Page());
-      for (Dataset r : resp) {
-        releases.add(r.getKey());
-      }
-      p.next();
-    } while (resp.size() == p.getLimit());
-    return releases;
   }
 
   @Override

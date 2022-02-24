@@ -178,7 +178,7 @@
     FROM <include refid="FROM_SIMPLE"/>
       JOIN idmap_name_usage_${key.datasetKey} idmap ON idmap.id=u.id
       LEFT JOIN idmap_name_usage_${key.datasetKey} idp ON idp.id=u.parent_id
-    WHERE idmap.id2 = #{key.id}
+    WHERE u.dataset_key = #{key.datasetKey} AND idmap.id2 = #{key.id}
   </select>
 
   <select id="exists" resultType="boolean">

@@ -186,6 +186,7 @@ public class IdProvider {
 
   protected void report() {
     // store reports in postgres
+    LOG.info("Persisting ID reports for project release {}-{}", projectKey, attempt);
     persistReport(IdReportType.DELETED, deleted.keySet());
     persistReport(IdReportType.RESURRECTED, resurrected.keySet());
     persistReport(IdReportType.CREATED, created);

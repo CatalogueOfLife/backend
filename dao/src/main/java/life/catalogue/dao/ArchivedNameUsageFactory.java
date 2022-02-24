@@ -59,6 +59,11 @@ public class ArchivedNameUsageFactory {
     try (SqlSession session = factory.openSession(true);
          SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)
     ) {
+      if (!session.getMapper(NameMapper.class).hasData(releaseKey)) {
+        LOG.info("Release {} has id reports, but no data to archive", releaseKey);
+        return counter;
+      }
+
       var idm = session.getMapper(IdReportMapper.class);
       var tm = session.getMapper(TaxonMapper.class);
       var rm = session.getMapper(ReferenceMapper.class);
