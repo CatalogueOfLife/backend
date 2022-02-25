@@ -115,28 +115,32 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         try {
           doiService.create(attr);
           releaseCreated++;
+          doiService.publish(doi);
+          releasePublished++;
         } catch (DoiException e) {
           LOG.info("Failed to create DOI {} for release {}. Try to do an update instead", doi, release.getKey(), e);
-          doiService.update(attr);
-          releaseUpdated++;
+          updateDOI(doi, release, isLatest, project, prev);
         }
 
       } else {
-        var data = doiService.resolve(doi);
-        var attr = converter.release(release, isLatest, project, prev);
-        LOG.info("Update DOI {} for release {}", doi, release.getKey());
-        doiService.update(attr);
-        releaseUpdated++;
-        if (!release.isPrivat() && data.getState() != DoiState.FINDABLE) {
-          LOG.info("Publish DOI {} for release {}", doi, release.getKey());
-          doiService.publish(doi);
-          releasePublished++;
-        }
+        updateDOI(doi, release, isLatest, project, prev);
       }
     } catch (DoiException e) {
       LOG.error("Error updating DOIs for release {} with DOI {}", release.getKey(), doi, e);
     } finally {
       LOG.info("Total releases created={}, updated={}, published={}. Total sources updated={}, published={}", releaseCreated, releaseUpdated, releasePublished,  sourceUpdated, sourcePublished);
+    }
+  }
+
+  private void updateDOI(DOI doi, Dataset release, boolean isLatest, @Nullable DOI project, @Nullable DOI prev) throws DoiException {
+    var data = doiService.resolve(doi);
+    var attr = converter.release(release, isLatest, project, prev);
+    LOG.info("Update DOI {} for release {}", doi, release.getKey());
+    doiService.update(attr);
+    releaseUpdated++;
+    if (!release.isPrivat() && data.getState() != DoiState.FINDABLE) {
+      doiService.publish(doi);
+      releasePublished++;
     }
   }
 
