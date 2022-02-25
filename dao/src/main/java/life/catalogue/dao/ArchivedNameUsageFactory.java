@@ -90,6 +90,8 @@ public class ArchivedNameUsageFactory {
             }
             // assemble archived usage
             ArchivedNameUsage au = new ArchivedNameUsage(u);
+            // archived usages belong to project, not release!
+            au.setDatasetKey(projectKey);
             // basionym
             var bas = NameDao.getBasionym(factory, oldKey);
             if (bas != null) {

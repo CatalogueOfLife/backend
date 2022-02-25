@@ -2,9 +2,11 @@ package life.catalogue.doi.service;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DOI;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.doi.datacite.model.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashSet;
@@ -35,6 +37,7 @@ public class DataCiteServiceIT {
 
   DataCiteService service;
   DataCiteService prodReadService;
+  Client client;
 
   Set<DOI> dois = new HashSet<>();
 
@@ -54,7 +57,7 @@ public class DataCiteServiceIT {
     //Feature logFeature = new LoggingFeature(LOG, Level.INFO, null, null);
     //cfg.register(logFeature);
 
-    final Client client = ClientBuilder.newClient(cfg);
+    client = ClientBuilder.newClient(cfg);
 
     DoiConfig doiCfg = YamlUtils.read(DoiConfig.class, "/datacite.yaml");
     service = new DataCiteService(doiCfg, client);
@@ -186,6 +189,33 @@ public class DataCiteServiceIT {
     service.create(attr);
     service.publish(doi);
     return doi;
+  }
+
+  @Test
+  @Ignore("can be used to manually publish dois from a list")
+  public void publishList() throws Exception {
+    DoiConfig cfg = new DoiConfig();
+    cfg.api = "https://api.datacite.org";
+    cfg.prefix = "10.48580";
+    cfg.username = "GBIF.COL";
+    cfg.password = "Dose6Cedar=prompter";
+    service = new DataCiteService(cfg, client);
+
+    File src = new File("/Users/markus/Downloads/dois.txt");
+    UTF8IoUtils.readerFromFile(src).lines().forEach(line -> {
+      try {
+        DOI doi = new DOI(line);
+        var data = service.resolve(doi);
+        System.out.println("DOI "+doi+" state: " + data.getState());
+        System.out.println("  Location: "+data.getUrl());
+        if (data.getState() != DoiState.FINDABLE) {
+          System.out.println("  publish "+doi);
+          service.publish(doi);
+        }
+      } catch (DoiException e) {
+        e.printStackTrace();
+      }
+    });
   }
 
   @Test
