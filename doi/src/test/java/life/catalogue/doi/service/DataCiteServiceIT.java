@@ -196,9 +196,9 @@ public class DataCiteServiceIT {
   public void publishList() throws Exception {
     DoiConfig cfg = new DoiConfig();
     cfg.api = "https://api.datacite.org";
-    cfg.prefix = "10.48580";
-    cfg.username = "GBIF.COL";
-    cfg.password = "Dose6Cedar=prompter";
+    cfg.prefix = "10.xxx";
+    cfg.username = "";
+    cfg.password = "";
     service = new DataCiteService(cfg, client);
 
     File src = new File("/Users/markus/Downloads/dois.txt");
