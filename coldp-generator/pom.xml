@@ -98,6 +98,11 @@
       <groupId>org.apache.poi</groupId>
       <artifactId>poi</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.github.scribejava</groupId>
+      <artifactId>scribejava-apis</artifactId>
+    </dependency>
+
     <!-- templating -->
     <dependency>
       <groupId>com.beust</groupId>

@@ -44,6 +44,10 @@ public abstract class AbstractGenerator implements Runnable {
   private final CloseableHttpClient hc;
   private final DoiResolver doiResolver;
 
+  public AbstractGenerator(GeneratorConfig cfg, boolean addMetadata) throws IOException {
+    this(cfg, addMetadata, null);
+  }
+
   public AbstractGenerator(GeneratorConfig cfg, boolean addMetadata, @Nullable URI downloadUri) throws IOException {
     this.cfg = cfg;
     this.addMetadata = addMetadata;

@@ -90,6 +90,7 @@
     <poi.version>5.1.0</poi.version>
     <postgresql.version>42.3.1</postgresql.version>
     <pgjdbc-ng.version>0.8.4</pgjdbc-ng.version>
+    <scribejava.version>8.3.1</scribejava.version>
     <simple-mail.version>6.6.1</simple-mail.version>
     <stax2.version>4.2</stax2.version>
     <text-tree.version>1.0.0</text-tree.version>
@@ -440,6 +441,13 @@
         <artifactId>jjwt-jackson</artifactId>
         <version>${jjwt.version}</version>
         <scope>runtime</scope>
+      </dependency>
+
+      <!-- OAuth -->
+      <dependency>
+        <groupId>com.github.scribejava</groupId>
+        <artifactId>scribejava-apis</artifactId>
+        <version>${scribejava.version}</version>
       </dependency>
 
       <!-- GBIF -->

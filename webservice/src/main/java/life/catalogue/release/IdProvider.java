@@ -347,10 +347,7 @@ public class IdProvider {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.listReleases(projectKey).forEach(d -> {
-        if (d.getKey() != releaseDatasetKey) {
-          if (d.getAttempt() == null) {
-            throw new IllegalStateException("Dataset " + d.getKey() + " has no release attempt");
-          }
+        if (d.getKey() != releaseDatasetKey && d.getAttempt() != null) {
           dataset2attempt.put(d.getKey(), d.getAttempt());
         }
       });
