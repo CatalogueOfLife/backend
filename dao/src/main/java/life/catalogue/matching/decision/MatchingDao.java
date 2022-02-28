@@ -60,7 +60,11 @@ public class MatchingDao {
         } else {
           parent = nMapper.getByUsage(datasetKey, t.getParentId());
         }
-        if (parent == null || !name.getParent().equalsIgnoreCase(parent.getScientificName())) {
+        if (parent == null || (
+          // we sometimes have the parent ID or the name in the request - thisshould probably fixed elsewhere,
+          // but we need to be graceful to allow both
+          !name.getParent().equalsIgnoreCase(parent.getScientificName()) && !name.getParent().equalsIgnoreCase(t.getParentId())
+        )) {
           continue;
         }
       }
