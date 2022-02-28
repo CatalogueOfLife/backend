@@ -90,7 +90,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey, @Param("page") Page page);
 
   /**
-   * List all releases of a project, including deleted ones.
+   * List all releases of a project, including deleted and private ones.
    */
   List<Dataset> listReleases(@Param("projectKey") int projectKey);
 

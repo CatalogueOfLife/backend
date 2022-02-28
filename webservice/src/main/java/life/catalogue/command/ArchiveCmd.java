@@ -1,41 +1,17 @@
 package life.catalogue.command;
 
-import com.google.common.eventbus.EventBus;
-
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.dao.ArchivedNameUsageFactory;
-import life.catalogue.dao.DatasetExportDao;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.UserDao;
+import life.catalogue.dao.NameUsageArchiver;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.doi.service.DataCiteService;
-import life.catalogue.doi.service.DatasetConverter;
-import life.catalogue.doi.service.DoiService;
-import life.catalogue.dw.mail.MailBundle;
-import life.catalogue.exporter.ExportManager;
-import life.catalogue.img.ImageService;
-import life.catalogue.img.ImageServiceFS;
-import life.catalogue.release.ProjectRelease;
-import life.catalogue.release.PublicReleaseListener;
 
 import net.sourceforge.argparse4j.inf.Subparser;
 
 import org.apache.ibatis.session.SqlSession;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Command that rebuilds the name usage archive for one or all projects.
@@ -43,7 +19,7 @@ import java.util.stream.Collectors;
 public class ArchiveCmd extends AbstractMybatisCmd {
   private static final String ARG_KEY = "key";
 
-  private ArchivedNameUsageFactory archiver;
+  private NameUsageArchiver archiver;
 
   public ArchiveCmd() {
     super("archive", true, "Archive name usages for a single or all projects.");
@@ -62,7 +38,7 @@ public class ArchiveCmd extends AbstractMybatisCmd {
 
   @Override
   void execute() throws Exception {
-    archiver = new ArchivedNameUsageFactory(factory);
+    archiver = new NameUsageArchiver(factory);
 
     Integer projectKey = ns.get(ARG_KEY);
     if (projectKey != null) {

@@ -12,11 +12,11 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ArchivedNameUsageFactory {
-  private static final Logger LOG = LoggerFactory.getLogger(ArchivedNameUsageFactory.class);
+public class NameUsageArchiver {
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageArchiver.class);
   private final SqlSessionFactory factory;
 
-  public ArchivedNameUsageFactory(SqlSessionFactory factory) {
+  public NameUsageArchiver(SqlSessionFactory factory) {
     this.factory = factory;
   }
 
@@ -42,15 +42,21 @@ public class ArchivedNameUsageFactory {
       }
       // finally allow the rebuild for each release
       for (var d : dm.listReleases(projectKey)) {
-        buildRelease(projectKey, d.getKey());
+        if (d.isPrivat()) {
+          LOG.info("Ignore private release {}", d.getKey());
+        } else if (d.hasDeletedDate()) {
+          LOG.info("Ignore deleted release {}", d.getKey());
+        } else {
+          buildRelease(projectKey, d.getKey());
+        }
       }
     }
   }
 
   /**
    * Creates and removes archived usages according to the existing id reports.
-   * @param projectKey valid project key - not verified
-   * @param releaseKey valid release key - not verified
+   * @param projectKey valid project key - not verified, must be existing
+   * @param releaseKey valid release key - not verified, must not be deleted or private!
    * @return number of archived usages
    */
   public int buildRelease(int projectKey, int releaseKey) {

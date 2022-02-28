@@ -7,13 +7,10 @@ import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.IdReportType;
-import life.catalogue.common.id.IdConverter;
 import life.catalogue.common.io.PathUtils;
-import life.catalogue.dao.ArchivedNameUsageFactory;
+import life.catalogue.dao.NameUsageArchiver;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetSourceDao;
-import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiException;
@@ -28,7 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -52,7 +48,7 @@ public class PublicReleaseListener {
   private final DatasetExportDao dao;
   private final DoiService doiService;
   private final DatasetConverter converter;
-  private final ArchivedNameUsageFactory archiver;
+  private final NameUsageArchiver archiver;
 
   public PublicReleaseListener(WsServerConfig cfg, SqlSessionFactory factory, DatasetExportDao dao, DoiService doiService, DatasetConverter converter) {
     this.cfg = cfg;
@@ -60,7 +56,7 @@ public class PublicReleaseListener {
     this.dao = dao;
     this.doiService = doiService;
     this.converter = converter;
-    this.archiver = new ArchivedNameUsageFactory(factory);
+    this.archiver = new NameUsageArchiver(factory);
   }
 
   @Subscribe
