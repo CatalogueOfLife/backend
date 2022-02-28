@@ -90,7 +90,7 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
     Writer w = UTF8IoUtils.writerFromFile(f);
     // we need to support multiple roots which a TreePrinter does not deal with
     // we will reuse the writer and append multiple trees if needed
-    if (roots == null) {
+    if (roots == null || roots.isEmpty()) {
       appendRoot(w, key, null, lowestRank, inclAuthorship, inclSynonyms, showParent, parentRank);
     } else {
       for (String r : roots) {

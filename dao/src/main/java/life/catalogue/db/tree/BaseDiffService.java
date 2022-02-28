@@ -156,6 +156,7 @@ public abstract class BaseDiffService<K> {
   private String input(File f, boolean unzip) {
     return unzip ? String.format("<(gunzip -c %s)", f.getAbsolutePath()) : f.getAbsolutePath();
   }
+
   protected BufferedReader udiff(File f1, String label1, File f2, String label2, int context, boolean unzip) {
     try {
       String cmd = String.format("export LC_CTYPE=en_US.UTF-8; diff --label %s --label %s -B -d -U %s %s %s",

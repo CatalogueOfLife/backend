@@ -17,7 +17,8 @@
     <logger name="life.catalogue.csv" level="INFO"/>
     <logger name="life.catalogue.common.io" level="INFO"/>
     <logger name="life.catalogue.doi" level="INFO"/>
-    <logger name="life.catalogue.release" level="DEBUG"/>
+    <logger name="life.catalogue.release" level="INFO"/>
+    <logger name="life.catalogue.db.tree" level="INFO"/>
     <logger name="org.apache.http" level="INFO"/>
 
   <!--

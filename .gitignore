@@ -8,6 +8,7 @@ dao/dataset/
 webservice/graphs/
 webservice/localhost/
 webservice/config-*.yaml
+webservice/**/ManualLiveDebugging.java
 
 **/.DS_Store
 **/.project
