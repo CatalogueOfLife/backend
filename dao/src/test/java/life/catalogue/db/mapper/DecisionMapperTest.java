@@ -129,6 +129,12 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
   }
 
   @Test
+  public void listProjectKeys(){
+    // just test valid sql rather than expected outcomes
+    mapper().listProjectKeys(appleKey);
+  }
+
+  @Test
   public void process(){
     // processing
     CountHandler handler = new CountHandler();

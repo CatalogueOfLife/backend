@@ -228,7 +228,7 @@ public class ImportJob implements Runnable {
     return false;
   }
 
-  private void importDataset() throws Exception {
+  private void  importDataset() throws Exception {
     di = dao.createWaiting(datasetKey, this, req.createdBy);
     LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
     LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
@@ -259,9 +259,14 @@ public class ImportJob implements Runnable {
 
         if (rematchDecisions()) {
           updateState(ImportState.MATCHING);
-          LOG.info("Updating sector and decision subjects for dataset {}", datasetKey);
-          DecisionRematcher.match(decisionDao, new DecisionRematchRequest(datasetKey, false), req.createdBy);
-          SectorRematcher.match(sDao, new SectorRematchRequest(datasetKey, false), req.createdBy);
+          LOG.info("Rematching all decisions from any project for subject dataset {}", datasetKey);
+          for (Integer projectKey : decisionDao.listProjects(datasetKey)) {
+            DecisionRematcher.match(decisionDao, new DecisionRematchRequest(projectKey, datasetKey, false), req.createdBy);
+          }
+          LOG.info("Rematching all sectors from any project for subject dataset {}", datasetKey);
+          for (Integer projectKey : sDao.listProjects(datasetKey)) {
+            SectorRematcher.match(sDao, new SectorRematchRequest(projectKey, datasetKey, false), req.createdBy);
+          }
         }
 
         LOG.info("Dataset import {} completed in {}", datasetKey,

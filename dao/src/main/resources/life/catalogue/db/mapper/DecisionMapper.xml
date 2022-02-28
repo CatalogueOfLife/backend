@@ -219,6 +219,12 @@
     </if>
   </select>
 
+  <select id="listProjectKeys" parameterType="map" resultType="integer">
+    SELECT DISTINCT x.dataset_key
+    FROM decision x JOIN dataset d ON d.key=x.dataset_key
+    WHERE d.origin='MANAGED' AND x.subject_dataset_key = #{subjectDatasetKey}
+  </select>
+
   <insert id="copyDataset" parameterType="map">
     INSERT INTO decision (id, dataset_key, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
     SELECT id, #{newDatasetKey}, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by

@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
+import java.util.List;
+
 public interface DecisionMapper extends BaseDecisionMapper<EditorialDecision, DecisionSearchRequest> {
 
   EditorialDecision getBySubject(@Param("datasetKey") int datasetKey,
@@ -21,5 +23,12 @@ public interface DecisionMapper extends BaseDecisionMapper<EditorialDecision, De
    */
   Cursor<EditorialDecision> processDecisions(@Nullable @Param("datasetKey") Integer datasetKey,
                                 @Param("subjectDatasetKey") int subjectDatasetKey);
+
+  /**
+   * List all distinct project dataset keys that have at least one decision on the given subject dataset key.
+   * This will only return dataset keys of MANAGED projects, not RELEASED datasets.
+   * @param subjectDatasetKey the decision subjects datasetKey
+   */
+  List<Integer> listProjectKeys(@Param("subjectDatasetKey") int subjectDatasetKey);
 
 }

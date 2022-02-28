@@ -43,6 +43,15 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
+  /**
+   * Lists all projects that have at least one decision on the given subject dataset key.
+   */
+  public List<Integer> listProjects(Integer subjectDatasetKey) {
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(DecisionMapper.class).listProjectKeys(subjectDatasetKey);
+    }
+  }
+
   static void validate(SectorSearchRequest req) {
     if (req.isWithoutData() && req.getDatasetKey() == null) {
       throw new IllegalArgumentException("DatasetKey must be given if withoutData filter is requested");

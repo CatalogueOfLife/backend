@@ -265,6 +265,12 @@
     <include refid="WHERE"/>
   </select>
 
+  <select id="listProjectKeys" parameterType="map" resultType="integer">
+    SELECT DISTINCT x.dataset_key
+    FROM sector x JOIN dataset d ON d.key=x.dataset_key
+    WHERE d.origin='MANAGED' AND x.subject_dataset_key = #{subjectDatasetKey}
+  </select>
+
   <select id="search" resultMap="sectorResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

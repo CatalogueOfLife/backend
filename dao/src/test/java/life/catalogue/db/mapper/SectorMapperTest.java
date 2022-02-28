@@ -208,4 +208,11 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     mapper().processDataset(Datasets.COL).forEach(handler);
     assertEquals(0, handler.counter.size());
   }
+
+  @Test
+  public void listProjectKeys(){
+    // just test valid sql rather than expected outcomes
+    mapper().listProjectKeys(appleKey);
+  }
+
 }

@@ -9,7 +9,9 @@ import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.es.NameUsageIndexService;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Validator;
 
@@ -38,6 +40,15 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
       DecisionMapper mapper = session.getMapper(DecisionMapper.class);
       List<EditorialDecision> result = mapper.search(request, p);
       return new ResultPage<>(p, result, () -> mapper.countSearch(request));
+    }
+  }
+
+  /**
+   * Lists all projects that have at least one decision on the given subject dataset key.
+   */
+  public List<Integer> listProjects(Integer subjectDatasetKey) {
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(DecisionMapper.class).listProjectKeys(subjectDatasetKey);
     }
   }
 
