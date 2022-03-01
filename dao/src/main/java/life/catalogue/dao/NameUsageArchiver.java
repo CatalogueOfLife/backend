@@ -41,15 +41,19 @@ public class NameUsageArchiver {
         throw new IllegalArgumentException("Project "+projectKey+" already contains "+count+" archived name usages");
       }
       // finally allow the rebuild for each release
-      for (var d : dm.listReleases(projectKey)) {
+      var datasets = dm.listReleases(projectKey);
+      int archived = 0;
+      LOG.info("Archiving name usages for {} releases of project {}", datasets.size(), projectKey);
+      for (var d : datasets) {
         if (d.isPrivat()) {
           LOG.info("Ignore private release {}", d.getKey());
         } else if (d.hasDeletedDate()) {
           LOG.info("Ignore deleted release {}", d.getKey());
         } else {
-          buildRelease(projectKey, d.getKey());
+          archived += archiveRelease(projectKey, d.getKey());
         }
       }
+      LOG.info("Archived {} name usages for project {}", archived, projectKey);
     }
   }
 
@@ -57,9 +61,9 @@ public class NameUsageArchiver {
    * Creates and removes archived usages according to the existing id reports.
    * @param projectKey valid project key - not verified, must be existing
    * @param releaseKey valid release key - not verified, must not be deleted or private!
-   * @return number of archived usages
+   * @return number of archived usages, i.e. newly archived - resurrected ones
    */
-  public int buildRelease(int projectKey, int releaseKey) {
+  public int archiveRelease(int projectKey, int releaseKey) {
     int counter = 0;
     int delCounter = 0;
     try (SqlSession session = factory.openSession(true);
@@ -67,7 +71,7 @@ public class NameUsageArchiver {
     ) {
       if (!session.getMapper(NameMapper.class).hasData(releaseKey)) {
         LOG.info("Release {} has id reports, but no data to archive", releaseKey);
-        return counter;
+        return 0;
       }
 
       var idm = session.getMapper(IdReportMapper.class);
@@ -76,8 +80,12 @@ public class NameUsageArchiver {
       var num = session.getMapper(NameUsageMapper.class);
       var anm = batchSession.getMapper(ArchivedNameMapper.class);
       Integer previousKey = session.getMapper(DatasetMapper.class).previousRelease(releaseKey);
-      LOG.info("Rebuilding names archive from id reports for release {} from project {} with previous release {}", releaseKey, projectKey, previousKey);
+      if (previousKey == null) {
+        LOG.info("Ignoring first release {} from project {}", releaseKey, projectKey);
+        return 0;
+      }
 
+      LOG.info("Rebuilding names archive from id reports for release {} from project {} with previous release {}", releaseKey, projectKey, previousKey);
       final DSID<String> archiveKey = DSID.root(projectKey);
       for (IdReportEntry r : idm.processDataset(releaseKey)) {
         if (r.getType() != IdReportType.CREATED) {
@@ -143,7 +151,7 @@ public class NameUsageArchiver {
       LOG.info("Copied {} name usages into the project archive {} as their stable IDs were deleted in release {}.", counter, projectKey, releaseKey);
       LOG.info("Deleted {} resurrected name usages from the project archive {}.", delCounter, projectKey);
     }
-    return counter;
+    return counter - delCounter;
   }
 
 }

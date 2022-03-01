@@ -78,7 +78,7 @@ public class PublicReleaseListener {
        * For deleted ids a new entry in the names archive needs to be created.
        * For resurrected ids we need to remove them from the archive.
        */
-      archiver.buildRelease(event.obj.getSourceKey(), event.obj.getKey());
+      archiver.archiveRelease(event.obj.getSourceKey(), event.obj.getKey());
 
       // COL specifics
       if (Datasets.COL == event.obj.getSourceKey()) {
