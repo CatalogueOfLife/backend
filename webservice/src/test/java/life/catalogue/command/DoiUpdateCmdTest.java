@@ -15,7 +15,7 @@ public class DoiUpdateCmdTest extends CmdTestBase {
   
   @Test
   public void testInitCmd() throws Exception {
-    assertTrue(run("doi", "--prompt", "0", "--user", "test", "--key", "3").isEmpty());
+    assertTrue(run("doi", "--prompt", "0", "--user", "tester", "--key", "3").isEmpty());
   }
 
 }
