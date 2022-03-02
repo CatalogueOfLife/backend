@@ -4,8 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.TaxonDao;
-import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
+import life.catalogue.db.mapper.*;
 
 import java.net.URI;
 import java.util.List;
@@ -75,6 +74,36 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
       throw NotFoundException.notFound(Taxon.class, datasetKey, id);
     }
     return info;
+  }
+
+  @GET
+  @Path("{id}/vernacular")
+  public List<VernacularName> vernacular(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(VernacularNameMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  }
+
+  @GET
+  @Path("{id}/distribution")
+  public List<Distribution> distribution(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(DistributionMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  }
+
+  @GET
+  @Path("{id}/media")
+  public List<Media> media(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(MediaMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  }
+
+  @GET
+  @Path("{id}/interaction")
+  public List<SpeciesInteraction> interaction(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(SpeciesInteractionMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  }
+
+  @GET
+  @Path("{id}/relation")
+  public List<TaxonConceptRelation> relations(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(TaxonConceptRelationMapper.class).listByTaxon(DSID.of(datasetKey, id));
   }
 
   @GET
