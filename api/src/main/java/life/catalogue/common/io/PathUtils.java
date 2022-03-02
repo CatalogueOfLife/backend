@@ -121,7 +121,7 @@ public class PathUtils {
    * Creates a new symlink to a given file/folder, deleting any previously existing link that might exist.
    */
   public static void symlink(Path link, Path target) throws IOException {
-    if (Files.exists(link)) {
+    if (Files.isSymbolicLink(link)) {
       Files.delete(link);
     }
     Files.createSymbolicLink(link, target);

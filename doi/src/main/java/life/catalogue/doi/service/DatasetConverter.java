@@ -11,6 +11,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -159,12 +160,14 @@ public class DatasetConverter {
     if (d.getContributor() != null) {
       contribs.addAll(d.getContributor().stream()
                              .map(a -> agent2Contributor(a, null))
+                             .filter(Objects::nonNull)
                              .collect(Collectors.toList())
       );
     }
     if (d.getEditor() != null) {
       contribs.addAll(d.getEditor().stream()
                              .map(a -> agent2Contributor(a, ContributorType.EDITOR))
+                             .filter(Objects::nonNull)
                              .collect(Collectors.toList())
       );
     }
@@ -221,7 +224,7 @@ public class DatasetConverter {
     return agents.stream()
                  .map(a -> {
                    if (a.isPerson()) {
-                     Creator c = new Creator(a.getGiven(), a.getFamily(), a.getOrcid());
+                     Creator c = new Creator(StringUtils.trimToNull(a.getGiven()), StringUtils.trimToNull(a.getFamily()), StringUtils.trimToNull(a.getOrcid()));
                      addAffiliation(c, a);
                      return c;
                    }
@@ -250,7 +253,7 @@ public class DatasetConverter {
       }
     }
     if (a.isPerson()) {
-      Contributor c = new Contributor(a.getGiven(), a.getFamily(), a.getOrcid(), type);
+      Contributor c = new Contributor(StringUtils.trimToNull(a.getGiven()), StringUtils.trimToNull(a.getFamily()), StringUtils.trimToNull(a.getOrcid()), type);
       addAffiliation(c, a);
       return c;
     }

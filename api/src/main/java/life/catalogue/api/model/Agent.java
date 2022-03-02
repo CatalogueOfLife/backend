@@ -237,12 +237,12 @@ public class Agent implements Comparable<Agent> {
 
   @JsonIgnore
   public boolean isPerson(){
-    return family != null || given != null;
+    return !StringUtils.isBlank(family) || !StringUtils.isBlank(given);
   }
 
   @JsonIgnore
   public boolean isOrganisation(){
-    return organisation != null || department != null;
+    return !StringUtils.isBlank(organisation) || !StringUtils.isBlank(department);
   }
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -283,13 +283,13 @@ public class Agent implements Comparable<Agent> {
   public CSLName toCSL() {
     if (isPerson()) {
       return new CSLNameBuilder()
-        .given(given)
-        .family(family)
+        .given(StringUtils.trimToNull(given))
+        .family(StringUtils.trimToNull(family))
         .isInstitution(false)
         .build();
     } else if (isOrganisation()) {
       return new CSLNameBuilder()
-        .family(organisation)
+        .family(StringUtils.trimToNull(organisation))
         .isInstitution(true)
         .build();
     }
@@ -300,12 +300,12 @@ public class Agent implements Comparable<Agent> {
     CslName n = null;
     if (isPerson()) {
       n = new CslName();
-      n.setGiven(given);
-      n.setFamily(family);
+      n.setGiven(StringUtils.trimToNull(given));
+      n.setFamily(StringUtils.trimToNull(family));
       n.setIsInstitution(false);
     } else if (isOrganisation()) {
       n = new CslName();
-      n.setFamily(family);
+      n.setFamily(StringUtils.trimToNull(family));
       n.setIsInstitution(true);
     }
     return n;
