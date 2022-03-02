@@ -84,7 +84,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, false, null, Collections.emptyMap());
   public final static TestData APPLE = new TestData("apple", 11, 2, 2, 3, 11, 12);
   public final static TestData FISH = new TestData("fish", 100, 2, 4, 3, 100, 101, 102);
-  public final static TestData TREE = new TestData("tree", 11, 1, 2, 3, 11);
+  public final static TestData TREE = new TestData("tree", 11, 1, 2, 3, 11, 12);
   public final static TestData TREE2 = new TestData("tree2", 11, 1, 2, 3, 11);
   public final static TestData DRAFT = new TestData("draft", 3, 1, 2, 3);
   public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, 3);
