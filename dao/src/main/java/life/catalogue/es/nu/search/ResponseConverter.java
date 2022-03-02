@@ -94,7 +94,7 @@ class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, Name
 
   private static Set<FacetValue<?>> convert(NameUsageSearchParameter param, EsFacet esFacet) {
     if (param == NameUsageSearchParameter.DATASET_KEY) {
-      return createIntBuckets(esFacet, DatasetInfoCache.CACHE.titles::get);
+      return createIntBuckets(esFacet, DatasetInfoCache.CACHE.labels::get);
     } else if (param.type() == Integer.class) {
       return createIntBuckets(esFacet);
     } else if (param.type() == UUID.class) {

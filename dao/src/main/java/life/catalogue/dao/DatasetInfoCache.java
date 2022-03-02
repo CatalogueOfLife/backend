@@ -34,10 +34,11 @@ public class DatasetInfoCache {
 
   private SqlSessionFactory factory;
   private final Map<Integer, DatasetInfo> infos = new ConcurrentHashMap<>();
-  public final LoadingCache<Integer, String> titles = Caffeine.newBuilder()
+  // label = dataset title + version
+  public final LoadingCache<Integer, String> labels = Caffeine.newBuilder()
                                                               .maximumSize(10000)
                                                               .expireAfterWrite(24, TimeUnit.HOURS)
-                                                              .build(this::lookupTitle);
+                                                              .build(this::buildLabel);
 
   public final static DatasetInfoCache CACHE = new DatasetInfoCache();
 
@@ -47,7 +48,7 @@ public class DatasetInfoCache {
     this.factory = factory;
   }
 
-  private String lookupTitle(int key) {
+  private String buildLabel(int key) {
     if (factory == null) {
       LOG.warn("No session factory created, cannot lookup dataset title for key {}", key);
 
@@ -55,7 +56,7 @@ public class DatasetInfoCache {
       try (SqlSession session = factory.openSession()) {
         var d = session.getMapper(DatasetMapper.class).get(key);
         if (d != null) {
-          return d.getTitle();
+          return d.getLabel();
         }
       }
     }

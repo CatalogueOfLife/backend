@@ -406,6 +406,17 @@ public class Dataset extends DataEntity<Integer> {
     this.title = title;
   }
 
+  public String getLabel() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(title);
+    if (version != null) {
+      sb.append(" (");
+      sb.append(version);
+      sb.append(")");
+    }
+    return sb.toString();
+  }
+
   public String getDescription() {
     return description;
   }
