@@ -1024,6 +1024,7 @@ CREATE TABLE decision (
   temporal_range_end TEXT,
   name JSONB,
   note TEXT,
+  CHECK (dataset_key != subject_dataset_key),
   UNIQUE (dataset_key, subject_dataset_key, subject_id),
   PRIMARY KEY (dataset_key, id)
 );

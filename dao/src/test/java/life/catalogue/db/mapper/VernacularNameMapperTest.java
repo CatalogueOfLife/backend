@@ -57,6 +57,10 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
     commit();
     List<VernacularNameUsage> resp = mapper().searchAll("adler", null, new Page());
     assertEquals(2, resp.size());
+
+    // work with spaces and quotes
+    mapper().searchAll("grüner adler", null, new Page());
+    mapper().searchAll("adler's", null, new Page());
   }
 
   VernacularName insert(String name, String lang) {

@@ -118,7 +118,8 @@
     FROM vernacular_name vn
     <where>
       <if test="q != null">
-        vn.doc @@ to_tsquery('${q}')
+        <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
+        vn.doc @@ plainto_tsquery('simple2', $Grtz5$%${q}%$Grtz5$)
       </if>
       <if test="lang != null">
         AND vn.language = #{lang}
