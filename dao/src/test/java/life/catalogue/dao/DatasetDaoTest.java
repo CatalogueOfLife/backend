@@ -45,6 +45,26 @@ public class DatasetDaoTest extends DaoTestBase {
   }
 
   @Test
+  public void keygen() throws Exception {
+    DatasetDao.KeyGenerator gen = new DatasetDao.KeyGenerator(10, 8, 10);
+    assertEquals(9, gen.nextExternalKey());
+    assertEquals(11, gen.nextExternalKey());
+    assertEquals(12, gen.nextExternalKey());
+    assertEquals(13, gen.nextExternalKey());
+    assertEquals(14, gen.nextExternalKey());
+    assertEquals(15, gen.nextExternalKey());
+    assertEquals(16, gen.nextExternalKey());
+    assertEquals(17, gen.nextExternalKey());
+    assertEquals(18, gen.nextExternalKey());
+    assertEquals(19, gen.nextExternalKey());
+    assertEquals(21, gen.nextExternalKey());
+    assertEquals(22, gen.nextExternalKey());
+
+    assertEquals(20, gen.nextProjectKey());
+    assertEquals(30, gen.nextProjectKey());
+  }
+
+  @Test
   public void roundtrip() throws Exception {
     Dataset d1 = DatasetMapperTest.create();
     d1.setSource(List.of(

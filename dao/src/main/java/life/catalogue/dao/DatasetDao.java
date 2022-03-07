@@ -74,10 +74,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final DatasetExportDao exportDao;
   private final NameUsageIndexService indexService;
   private final EventBus bus;
-  // key generators for datasets that live on the shared default partition or in a dedicated partition table - depends on origin
-  private final int keyProjectMod;
-  private final AtomicInteger keyGenExternal = new AtomicInteger();
-  private final AtomicInteger keyGenProject = new AtomicInteger();
+  private final KeyGenerator keyGenerator;
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
@@ -101,20 +98,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.indexService = indexService;
     this.bus = bus;
     // load existing max keys
-    this.keyProjectMod = keyProjectMod;
-    try (SqlSession session = factory.openSession(true)) {
-      var dm = session.getMapper(DatasetMapper.class);
-      keyGenExternal.set(maxKey(dm,false));
-      keyGenProject.set(maxKey(dm, true));
-    }
-  }
-
-  private int maxKey(DatasetMapper dm, boolean project) {
-    Integer max = dm.getMaxKey(keyProjectMod, project);
-    if (max == null) {
-      return project ? keyProjectMod : 1;
-    }
-    return max;
+    this.keyGenerator = new KeyGenerator(keyProjectMod, factory);
   }
 
   /**
@@ -124,6 +108,61 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   @VisibleForTesting
   public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
     this(3, factory, downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
+  }
+
+  public static class KeyGenerator {
+    private final int keyProjectMod;
+    private final AtomicInteger keyGenExternal;
+    private final AtomicInteger keyGenProject;
+
+    public KeyGenerator(int keyProjectMod, SqlSessionFactory factory) {
+      this.keyProjectMod = keyProjectMod;
+      try (SqlSession session = factory.openSession(true)) {
+        var dm = session.getMapper(DatasetMapper.class);
+        keyGenExternal = new AtomicInteger(maxKey(dm,false));
+        keyGenProject = new AtomicInteger(maxKey(dm, true));
+      }
+    }
+
+    private int maxKey(DatasetMapper dm, boolean project) {
+      Integer max = dm.getMaxKey(keyProjectMod, project);
+      if (max == null) {
+        return project ? keyProjectMod : 1;
+      }
+      return max;
+    }
+
+    public KeyGenerator(int keyProjectMod, int maxExternal, int maxProject) {
+      this.keyProjectMod = keyProjectMod;
+      this.keyGenExternal = new AtomicInteger(maxExternal);
+      this.keyGenProject = new AtomicInteger(maxProject);
+    }
+
+    public void setMax(int maxExternal, int maxProject) {
+      this.keyGenExternal.set(maxExternal);
+      this.keyGenProject.set(maxProject);
+    }
+
+    public int nextExternalKey() {
+      if (keyGenExternal.incrementAndGet() % keyProjectMod == 0) {
+        // in case we hit a project key use the next one
+        keyGenExternal.incrementAndGet();
+      }
+      return keyGenExternal.get();
+    }
+
+    public int nextProjectKey() {
+      return keyGenProject.addAndGet(keyProjectMod);
+    }
+
+    public int setKey(Dataset d) {
+      if (d.getOrigin().isManagedOrRelease()) {
+        d.setKey(nextProjectKey());
+      } else {
+        d.setKey(nextExternalKey());
+      }
+      return d.getKey();
+    }
   }
 
   private void sanitize(Dataset d) {
@@ -388,15 +427,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // apply some defaults for required fields
     sanitize(obj);
     // generate key depending on origin!
-    if (obj.getOrigin().isManagedOrRelease()) {
-      obj.setKey(keyGenProject.addAndGet(keyProjectMod));
-    } else {
-      if (keyGenExternal.incrementAndGet() % keyProjectMod == 0) {
-        // in case we hit a project key use next
-        keyGenExternal.incrementAndGet();
-      }
-      obj.setKey(keyGenExternal.get());
-    }
+    keyGenerator.setKey(obj);
     return super.create(obj, user);
   }
 

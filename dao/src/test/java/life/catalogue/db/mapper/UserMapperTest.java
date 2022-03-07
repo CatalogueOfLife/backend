@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import life.catalogue.dao.DatasetDao;
+
 import org.apache.ibatis.binding.BindingException;
 import org.junit.Test;
 
@@ -21,6 +23,8 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import static org.junit.Assert.*;
 
 public class UserMapperTest extends MapperTestBase<UserMapper> {
+
+  final DatasetDao.KeyGenerator gen = new DatasetDao.KeyGenerator(10, 12, 10);
 
   public UserMapperTest() {
     super(UserMapper.class);
@@ -95,11 +99,13 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
 
     Dataset d1 = TestEntityGenerator.newDataset("all");
     d1.applyUser(Users.TESTER);
+    gen.setKey(d1);
     dm.create(d1);
     dm.updateEditors(d1.getKey(), new IntOpenHashSet(all), Users.TESTER);
 
     Dataset d2 = TestEntityGenerator.newDataset("even");
     d2.applyUser(Users.TESTER);
+    gen.setKey(d2);
     dm.create(d2);
     dm.updateEditors(d2.getKey(), new IntOpenHashSet(even), Users.TESTER);
 

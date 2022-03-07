@@ -7,6 +7,8 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 
+import life.catalogue.dao.DatasetDao;
+
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
@@ -18,6 +20,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -26,6 +29,8 @@ import static org.junit.Assert.*;
  *
  */
 public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMapper> {
+
+  static final DatasetDao.KeyGenerator gen = new DatasetDao.KeyGenerator(10, 12, 10);
 
   public DatasetMapperTest() {
     super(DatasetMapper.class);
@@ -38,11 +43,12 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   public static Dataset populate(Dataset d) {
+    d.setKey(gen.nextExternalKey());
+    d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setGbifKey(UUID.randomUUID());
     d.setGbifPublisherKey(UUID.randomUUID());
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.TAXONOMIC);
-    d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setTitle(RandomUtils.randomLatinString(80));
     d.setDescription(RandomUtils.randomLatinString(500));
     d.setLicense(License.CC0);
@@ -65,6 +71,11 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // we dont add source citations as the DatasetMapper does not persist them
     // this is done in the DAO only and should be tested there!
     return d;
+  }
+
+  @Before
+  public void initKeyGen() throws Exception {
+    gen.setMax(12, 10);
   }
 
   @Test
@@ -342,7 +353,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   public void list() throws Exception {
     List<Dataset> ds = createExpected();
     for (Dataset d : ds) {
-      if (d.getKey() == null) {
+      if (d.getKey() > 12) {
         mapper().create(d);
       }
       // dont compare created stamps
@@ -376,7 +387,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     List<Dataset> ds = createExpected();
     int withURL = 0;
     for (Dataset d : ds) {
-      if (d.getKey() == null) {
+      if (d.getKey() > 12) {
         mapper().create(d);
         // we need a URL to be considered for imports
         if (withURL++ < 3) {
@@ -586,6 +597,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // create another catalogue to test non draft sectors
     Dataset cat = TestEntityGenerator.newDataset("cat2");
     TestEntityGenerator.setUser(cat);
+    gen.setKey(cat);
     mapper(DatasetMapper.class).create(cat);
     mapper(DatasetPartitionMapper.class).createManagedSequences(cat.getKey());
     // new sectors
@@ -646,6 +658,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);
+    ds.setKey(gen.nextProjectKey());
     ds.setContact(Agent.person("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
     ds.setEditor(List.of(
       Agent.person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),
