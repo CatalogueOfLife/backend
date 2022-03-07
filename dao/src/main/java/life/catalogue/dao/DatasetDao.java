@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -61,11 +62,15 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final DatasetExportDao exportDao;
   private final NameUsageIndexService indexService;
   private final EventBus bus;
+  // key generators for datasets that live on the shared default partition or in a dedicated partition table - depends on origin
+  private final int keyMod;
+  private final AtomicInteger keyGenExternal = new AtomicInteger();
+  private final AtomicInteger keyGenProject = new AtomicInteger();
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
    */
-  public DatasetDao(SqlSessionFactory factory,
+  public DatasetDao(int keyMod, SqlSessionFactory factory,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
@@ -82,6 +87,21 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.exportDao = exportDao;
     this.indexService = indexService;
     this.bus = bus;
+    // load existing max keys
+    this.keyMod = keyMod;
+    try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      keyGenExternal.set(maxKey(dm,false));
+      keyGenProject.set(maxKey(dm, true));
+    }
+  }
+
+  private int maxKey(DatasetMapper dm, boolean project) {
+    Integer max = dm.getMaxKey(keyMod, project);
+    if (max == null) {
+      return project ? keyMod : 1;
+    }
+    return max;
   }
 
   /**
@@ -89,8 +109,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * THis is using mocks and misses real functionality, but simplifies the construction of the core dao.
    */
   @VisibleForTesting
-  public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
-    this(factory, downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
+  public DatasetDao(int keyMod, SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
+    this(keyMod, factory, downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
   }
 
   private void sanitize(Dataset d) {
@@ -351,6 +371,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   public Integer create(Dataset obj, int user) {
     // apply some defaults for required fields
     sanitize(obj);
+    // generate key depending on origin!
+    if (obj.getOrigin().isManagedOrRelease()) {
+      obj.setKey(keyGenProject.incrementAndGet());
+    } else {
+      obj.setKey(keyGenExternal.incrementAndGet());
+    }
     return super.create(obj, user);
   }
 

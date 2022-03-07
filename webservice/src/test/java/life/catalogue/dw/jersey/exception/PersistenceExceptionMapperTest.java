@@ -61,8 +61,8 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
     try {
       Dataset d = DatasetMapperTest.create();
       d.setKey(999);
-      mapper(DatasetMapper.class).createWithKey(d);
-      mapper(DatasetMapper.class).createWithKey(d);
+      mapper(DatasetMapper.class).create(d);
+      mapper(DatasetMapper.class).create(d);
       commit();
 
     } catch (PersistenceException e) {

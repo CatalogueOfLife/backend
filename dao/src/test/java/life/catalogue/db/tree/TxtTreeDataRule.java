@@ -84,7 +84,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       d = TestEntityGenerator.newDataset("Tree " + datasetKey);
       d.setKey(datasetKey);
       d.applyUser(Users.TESTER);
-      dm.createWithKey(d);
+      dm.create(d);
     }
     session.commit();
   }

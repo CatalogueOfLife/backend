@@ -50,7 +50,7 @@
     <antlr.version>4.7.2</antlr.version>
     <asm.version></asm.version>
     <assertj.version>3.11.1</assertj.version>
-    <citeproc.version>3.0.0-alpha.3</citeproc.version>
+    <citeproc.version>3.0.0-alpha.6</citeproc.version>
     <citeproc-styles.version>2.0.0</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.19</commons-compress.version>

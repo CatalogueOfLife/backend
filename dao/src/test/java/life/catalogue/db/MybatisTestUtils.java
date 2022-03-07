@@ -81,7 +81,7 @@ public class MybatisTestUtils {
     d.setOrigin(origin);
     d.setKey(key);
     d.applyUser(TestEntityGenerator.USER_USER);
-    session.getMapper(DatasetMapper.class).createWithKey(d);
+    session.getMapper(DatasetMapper.class).create(d);
     partition(session, key);
     session.getMapper(DatasetPartitionMapper.class).createManagedSequences(key);
     return d;

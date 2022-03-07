@@ -96,6 +96,7 @@ public class ColdpExporter extends ArchiveExporter {
     writer.set(ColdpTerm.scientificName, n.getScientificName());
     writer.set(ColdpTerm.authorship, n.getAuthorship());
     writer.set(ColdpTerm.rank, n.getRank());
+    writer.set(ColdpTerm.notho, n.getNotho());
     writer.set(ColdpTerm.uninomial, n.getUninomial());
     writer.set(ColdpTerm.genericName, n.getGenus());
     writer.set(ColdpTerm.infragenericEpithet, n.getInfragenericEpithet());

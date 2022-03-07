@@ -91,7 +91,6 @@ public class CslUtil {
       data.getCitationLabel() == null &&
       data.getCollectionNumber() == null &&
       data.getCollectionTitle() == null &&
-      data.getCollectionTitleShort() == null &&
       data.getContainerTitle() == null &&
       data.getContainerTitleShort() == null &&
       data.getDimensions() == null &&

@@ -21,6 +21,11 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 
 import org.apache.ibatis.session.SqlSession;
 
+/**
+ * The dataset mappers create method expects the key to be provided.
+ * This is done to allow for semantics so keys can be assigned to a different "modulus" series
+ * to represent datasets that live on their own partition vs datasets that share the default partition.
+ */
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset>, DatasetAgentMapper {
   int MAGIC_ADMIN_USER_KEY = -42;
 
@@ -30,9 +35,6 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
     create(d.getDataset());
     updateSettings(d.getKey(), d.getSettings(), d.getDataset().getModifiedBy());
   }
-
-  // for tests only !!!
-  void createWithKey(Dataset d);
 
   DatasetSettings getSettings(@Param("key") int key);
 
@@ -161,5 +163,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   Integer lastImportAttempt(@Param("key") int datasetKey);
   
   int updateLastImport(@Param("key") int key, @Param("attempt") int attempt);
+
+  /**
+   * @param modulus the modulus to test for the given remainder. Use 1 to get the alltime maximum. 2 or others for certain series.
+   * @param isZero if true selects maximum where the remainder is zero, otherwise max where remainder is not zero
+   * @return the maximum key used which has the given modulus or NULL if no key was used at all
+   */
+  Integer getMaxKey(@Param("mod") int modulus, @Param("zero") boolean isZero);
 
 }

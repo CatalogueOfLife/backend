@@ -345,6 +345,11 @@
     WHERE key = #{key}
   </select>
 
+  <select id="getMaxKey" parameterType="map" resultType="integer">
+    SELECT max(key) FROM dataset
+    WHERE key % #{mod} <if test="zero">=</if><if test="!zero">!=</if> 0
+  </select>
+
   <select id="getByGBIF" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
@@ -359,20 +364,14 @@
 
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, created, modified, acl_editor)
-    VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now(),
+    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, created, modified, acl_editor)
+    VALUES (#{key},<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now(),
       <if test="sourceKey != null">NULL</if>
       <if test="sourceKey == null">
         <if test="createdBy &lt; 100">NULL</if>
         <if test="createdBy &gt;= 100">array[#{createdBy}::int]</if>
       </if>
     )
-  </insert>
-
-  <!--  makes sure to add creator to editors -->
-  <insert id="createWithKey" parameterType="Dataset" useGeneratedKeys="false">
-    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, acl_editor, created, modified)
-    VALUES (#{key},<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
   <select id="getSettings" resultMap="settingsResultMap">

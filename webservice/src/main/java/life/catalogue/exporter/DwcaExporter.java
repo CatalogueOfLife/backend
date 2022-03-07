@@ -3,6 +3,7 @@ package life.catalogue.exporter;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.TermWriter;
 import life.catalogue.img.ImageService;
 import life.catalogue.metadata.eml.EmlWriter;
@@ -84,6 +85,7 @@ public class DwcaExporter extends ArchiveExporter {
           DwcTerm.taxonRank,
           DwcTerm.scientificName,
           DwcTerm.scientificNameAuthorship,
+          ColdpTerm.notho,
           DwcTerm.genericName,
           DwcTerm.infragenericEpithet,
           DwcTerm.specificEpithet,
@@ -166,6 +168,7 @@ public class DwcaExporter extends ArchiveExporter {
     writer.set(DwcTerm.scientificName, u.getLabel());
     writer.set(DwcTerm.scientificNameAuthorship, n.getAuthorship());
     writer.set(DwcTerm.taxonRank, n.getRank());
+    writer.set(ColdpTerm.notho, n.getNotho());
     writer.set(DwcTerm.taxonomicStatus, u.getStatus());
     if (n.getPublishedInId() != null) {
       writer.set(DwcTerm.namePublishedIn, refCache.get(n.getPublishedInId()));
