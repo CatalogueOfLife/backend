@@ -59,13 +59,13 @@ public class ImportManagerLiveTest {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
+
   @Rule
   public TestDataRule testDataRule = TestDataRule.empty();
-  
+
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
-  
+
   private static WsServerConfig provideConfig() {
     WsServerConfig cfg = new WsServerConfig();
     cfg.gbif.syncFrequency = 0;
@@ -122,7 +122,7 @@ public class ImportManagerLiveTest {
     d.setDataAccess(URI.create("http://rs.gbif.org/datasets/dsmz.zip"));
     d.setCreatedBy(TestDataRule.TEST_USER.getKey());
     d.setModifiedBy(TestDataRule.TEST_USER.getKey());
-  
+    testDataRule.getKeyGenerator().setKey(d.getDataset());
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true) ) {
       session.getMapper(DatasetMapper.class).createAll(d);
       session.commit();

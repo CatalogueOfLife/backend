@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -65,6 +66,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final TestData testData;
   private SqlSession session;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
+  public final DatasetDao.KeyGenerator keyGenerator;
 
   /**
    * NONE does wipe all data so every test starts with an empty db.
@@ -194,6 +196,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private TestDataRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
     this.testData = testData;
     this.sqlSessionFactorySupplier = sqlSessionFactorySupplier;
+    keyGenerator = new DatasetDao.KeyGenerator(10, sqlSessionFactorySupplier.get());
   }
 
   public TestDataRule(TestData testData) {
@@ -210,6 +213,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public SqlSession getSqlSession() {
     return session;
+  }
+
+  public DatasetDao.KeyGenerator getKeyGenerator() {
+    return keyGenerator;
   }
 
   @Override

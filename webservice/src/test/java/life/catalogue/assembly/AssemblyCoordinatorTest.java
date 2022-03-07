@@ -68,6 +68,7 @@ public class AssemblyCoordinatorTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       final DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = DatasetMapperTest.create();
+      testDataRule.getKeyGenerator().setKey(d);
       dm.create(d);
       
       final SectorMapper sm = session.getMapper(SectorMapper.class);
