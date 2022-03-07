@@ -1,12 +1,7 @@
 package life.catalogue.command;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import io.dropwizard.setup.Bootstrap;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.dao.Partitioner;
-
 import life.catalogue.db.mapper.DatasetMapper;
 
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -17,10 +12,6 @@ import net.sourceforge.argparse4j.inf.Subparser;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Command that removed and recreates the check constraint for all default partitions
