@@ -30,17 +30,11 @@ public class PgConfig extends PgDbConfig {
   public int port = 5432;
 
   /**
-   * Partitions used for the default HASH based partition of external datasets.
-   */
-  @Min(2)
-  public int partitions = 2;
-
-  /**
    * Ratio of datasets that live on the default partition (external) to datasets living on dedicated tables (managed, released).
    * It is used to generate new dataset keys so the dataset origin of new datasets can be predicted by the key.
    */
   @Min(2)
-  public int partitionRatio = partitions + 1;
+  public int defaultPartitionRatio = 100;
 
   @Min(1)
   public int maximumPoolSize = 8;

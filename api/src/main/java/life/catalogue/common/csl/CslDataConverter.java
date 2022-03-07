@@ -71,7 +71,6 @@ public class CslDataConverter {
       src.getCitationLabel(),
       src.getCollectionNumber(),
       src.getCollectionTitle(),
-      null,
       src.getContainerTitle(),
       src.getContainerTitleShort(),
       src.getDimensions(),

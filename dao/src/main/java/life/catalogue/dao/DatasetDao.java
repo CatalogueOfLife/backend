@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -50,6 +49,19 @@ import com.google.common.eventbus.EventBus;
 
 import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
+/**
+ * A DAO for datasets that orchestrates the needs for partitioning tables and removing dataset remains
+ * in other areas, e.g. exports, import metrics, images.
+ *
+ * The Partitioning of CLB is dataset key based and differs between EXTERNAL datasets that live on the default partition
+ * and MANAGED & RELEASED datasets that live on their own, dedicated partition.
+ * When a new non external dataset is created, new tables need to be created and finally attached to the main tables.
+ * Without a pre-existing constraint on the default partition to not include these dataset keys, postgres has to scan all default partiotions
+ * which takes several minutes with a fully indexed checklistbank.
+ *
+ * To avoid this we generate dataset keys in the DAO with a predefined ratio keyProjectMod of datasets living on the dedicated vs default partitions.
+ * On startup we load the current max keys from the database.
+ */
 public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   
   @SuppressWarnings("unused")
@@ -63,14 +75,15 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final NameUsageIndexService indexService;
   private final EventBus bus;
   // key generators for datasets that live on the shared default partition or in a dedicated partition table - depends on origin
-  private final int keyMod;
+  private final int keyProjectMod;
   private final AtomicInteger keyGenExternal = new AtomicInteger();
   private final AtomicInteger keyGenProject = new AtomicInteger();
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
+   * @param keyProjectMod ratio for generated dataset keys of project datasets vs external ones
    */
-  public DatasetDao(int keyMod, SqlSessionFactory factory,
+  public DatasetDao(int keyProjectMod, SqlSessionFactory factory,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
@@ -88,7 +101,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.indexService = indexService;
     this.bus = bus;
     // load existing max keys
-    this.keyMod = keyMod;
+    this.keyProjectMod = keyProjectMod;
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       keyGenExternal.set(maxKey(dm,false));
@@ -97,9 +110,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   private int maxKey(DatasetMapper dm, boolean project) {
-    Integer max = dm.getMaxKey(keyMod, project);
+    Integer max = dm.getMaxKey(keyProjectMod, project);
     if (max == null) {
-      return project ? keyMod : 1;
+      return project ? keyProjectMod : 1;
     }
     return max;
   }
@@ -109,12 +122,15 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * THis is using mocks and misses real functionality, but simplifies the construction of the core dao.
    */
   @VisibleForTesting
-  public DatasetDao(int keyMod, SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
-    this(keyMod, factory, downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
+  public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
+    this(3, factory, downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
   }
 
   private void sanitize(Dataset d) {
     if (d != null) {
+      if (d.getOrigin() == null) {
+        throw new IllegalArgumentException("origin is required");
+      }
       if (d.getType() == null) {
         d.setType(DatasetType.OTHER);
       }
@@ -373,9 +389,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     sanitize(obj);
     // generate key depending on origin!
     if (obj.getOrigin().isManagedOrRelease()) {
-      obj.setKey(keyGenProject.incrementAndGet());
+      obj.setKey(keyGenProject.addAndGet(keyProjectMod));
     } else {
-      obj.setKey(keyGenExternal.incrementAndGet());
+      if (keyGenExternal.incrementAndGet() % keyProjectMod == 0) {
+        // in case we hit a project key use next
+        keyGenExternal.incrementAndGet();
+      }
+      obj.setKey(keyGenExternal.get());
     }
     return super.create(obj, user);
   }

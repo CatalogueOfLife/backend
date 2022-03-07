@@ -111,4 +111,12 @@
     WHERE table_name = #{t} AND column_name NOT IN('doc')
   </select>
 
+  <update id="dropDatasetKeyCheck" parameterType="map">
+    ALTER TABLE ${table}_default DROP CONSTRAINT ${table}_default_dataset_key_no_project_check
+  </update>
+
+  <update id="addDatasetKeyCheck" parameterType="map">
+    ALTER TABLE ${table}_default ADD CONSTRAINT ${table}_default_dataset_key_no_project_check CHECK ((dataset_key &lt;= ${max}) OR (dataset_key % ${ratio} != 0))
+  </update>
+
 </mapper>

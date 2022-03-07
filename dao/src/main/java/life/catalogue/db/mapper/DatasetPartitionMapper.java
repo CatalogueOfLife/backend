@@ -270,4 +270,18 @@ public interface DatasetPartitionMapper {
    * Return the list of columns for a given table igoring "doc" columns
    */
   List<String> columns(@Param("t") String table);
+
+  /**
+   * @param max maximum current dataset key
+   * @param ratio new ratio for project vs external datasets
+   */
+  default void updateDatasetKeyChecks(int max, int ratio) {
+    TABLES.forEach(t -> dropDatasetKeyCheck(t));
+    TABLES.forEach(t -> addDatasetKeyCheck(t, max, ratio));
+  }
+
+  void dropDatasetKeyCheck(@Param("table") String table);
+
+  void addDatasetKeyCheck(@Param("table") String table, @Param("max") Integer max, @Param("ratio") Integer ratio);
+
 }

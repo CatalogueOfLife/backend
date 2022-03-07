@@ -34,6 +34,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
 public class RepartitionCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(RepartitionCmd.class);
   private static final String ARG_NUMBERS = "num";
+  private int partitions;
 
   public RepartitionCmd() {
     super("repartition", false,"Repartition data tables");
@@ -41,10 +42,7 @@ public class RepartitionCmd extends AbstractMybatisCmd {
   
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
-    return describeCmd(cfg);
-  }
-  private String describeCmd(WsServerConfig cfg) {
-    return String.format("Repartition the default, hashed data tables to %s partitions in database %s on %s.\n", cfg.db.partitions, cfg.db.database, cfg.db.host);
+    return String.format("Repartition the default, hashed data tables to %s partitions in database %s on %s.\n", getPartitionConfig(namespace), cfg.db.database, cfg.db.host);
   }
 
   @Override
@@ -57,13 +55,18 @@ public class RepartitionCmd extends AbstractMybatisCmd {
              .help("Number of partitions to create");
   }
 
+  private int getPartitionConfig(Namespace ns){
+    Integer p = ns.getInt(ARG_NUMBERS);
+    if (p == null || p < 1) {
+      throw new IllegalArgumentException("There needs to be at least one partition");
+    }
+    return p;
+  }
+
   @Override
   void execute() throws Exception {
-    if (ns.getInt(ARG_NUMBERS) != null) {
-      cfg.db.partitions = ns.getInt(ARG_NUMBERS);
-      Preconditions.checkArgument(cfg.db.partitions > 0, "Needs at least one partition");
-    }
-    System.out.println(describeCmd(cfg));
+    partitions = getPartitionConfig(ns);
+    System.out.println(describeCmd(ns, cfg));
 
     // current suffices for external datasets
     final Set<String> existing = new HashSet<>();
@@ -106,8 +109,8 @@ public class RepartitionCmd extends AbstractMybatisCmd {
       if (createDefault) {
         LOG.info("Create new default partitions");
       }
-      LOG.info("Create "+cfg.db.partitions+" new default subpartitions");
-      dpm.createDefaultPartitions(cfg.db.partitions, createDefault);
+      LOG.info("Create "+partitions+" new default subpartitions");
+      dpm.createDefaultPartitions(partitions, createDefault);
       session.commit();
 
       LOG.info("Copy data to new partitions");

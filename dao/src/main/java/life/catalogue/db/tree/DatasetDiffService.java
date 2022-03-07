@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.io.UnixCmdUtils;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
 
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 
 import javax.annotation.Nullable;
+import javax.validation.Validator;
 
 public class DatasetDiffService extends BaseDiffService<Integer> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDiffService.class);
@@ -36,7 +38,8 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
 
   public DatasetDiffService(SqlSessionFactory factory, FileMetricsDatasetDao dao, int timeoutInSeconds) {
     super(dao, factory, timeoutInSeconds);
-    ddao = new DatasetDao(factory, null, null, null, null, null, null, null, null);
+    // we only use ddao.getOr404()
+    ddao = new DatasetDao(factory, null, null, null);
   }
 
   @Override

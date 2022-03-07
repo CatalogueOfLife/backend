@@ -145,6 +145,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new DoiUpdateCmd());
     bootstrap.addCommand(new RepartitionCmd());
     bootstrap.addCommand(new ArchiveCmd());
+    bootstrap.addCommand(new UpdDatasetRatioCmd());
   }
 
   @Override
@@ -280,7 +281,7 @@ public class WsServer extends Application<WsServerConfig> {
     // daos
     AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), bus);
     DatasetExportDao exdao = new DatasetExportDao(cfg.exportDir, getSqlSessionFactory(), bus, validator);
-    DatasetDao ddao = new DatasetDao(cfg.db.partitionRatio, getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
+    DatasetDao ddao = new DatasetDao(cfg.db.defaultPartitionRatio, getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);

@@ -103,6 +103,7 @@ public class SectorDaoTest extends DaoTestBase {
     Dataset d = TestEntityGenerator.newDataset("grr");
     try (SqlSession session = factory().openSession(true)) {
       // create a dataset which is not managed
+      d.setKey(999);
       d.setOrigin(DatasetOrigin.EXTERNAL);
       d.applyUser(Users.TESTER);
       session.getMapper(DatasetMapper.class).create(d);

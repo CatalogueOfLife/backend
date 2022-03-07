@@ -11,6 +11,23 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-03-07 dataset keys based on origin
+The dataset key based partitioning differs between external datasets that live on the default partition
+and managed & released datasets that live on their own, dedicated partition.
+When a new non external dataset is created, new tables need to be created and finally attached to the main tables.
+For this to happen quick the default partition needs to have a check constraint that excludes those expected new keys.
+```
+-- find out the current maximum dataset key to replace $MAX below:
+-- replace $RATIO with the configured dataset ratio in db.defaultPartitionRatio 
+SELECT max(key) FROM dataset;
+ALTER TABLE verbatim_default ADD CONSTRAINT verbatim_default_dataset_key_check CHECK ((dataset_key <= $MAX) OR (dataset_key % $RATIO != 0));
+ALTER TABLE verbatim_default ADD CONSTRAINT verbatim_default_dataset_key_check CHECK ((dataset_key <= $MAX) OR (dataset_key % $RATIO != 0));
+ALTER TABLE verbatim_default ADD CONSTRAINT verbatim_default_dataset_key_check CHECK ((dataset_key <= $MAX) OR (dataset_key % $RATIO != 0));
+ALTER TABLE verbatim_default ADD CONSTRAINT verbatim_default_dataset_key_check CHECK ((dataset_key <= $MAX) OR (dataset_key % $RATIO != 0));
+ALTER TABLE verbatim_default ADD CONSTRAINT verbatim_default_dataset_key_check CHECK ((dataset_key <= $MAX) OR (dataset_key % $RATIO != 0));
+ALTER TABLE verbatim_default ADD CONSTRAINT verbatim_default_dataset_key_check CHECK ((dataset_key <= $MAX) OR (dataset_key % $RATIO != 0));
+```
+
 ### 2022-02-22 names archive
 ```
 ALTER TYPE ISSUE ADD VALUE 'MULTI_WORD_MONOMIAL';

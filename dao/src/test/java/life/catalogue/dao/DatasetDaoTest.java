@@ -33,7 +33,7 @@ public class DatasetDaoTest extends DaoTestBase {
   public void init() {
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     DatasetExportDao exDao = new DatasetExportDao(new File("/tmp/exports"), PgSetupRule.getSqlSessionFactory(), new EventBus(), validator);
-    dao = new DatasetDao(factory(),
+    dao = new DatasetDao(3, factory(),
       null,
       ImageService.passThru(),
       diDao, exDao,
@@ -60,7 +60,7 @@ public class DatasetDaoTest extends DaoTestBase {
     assertEquals(d1, d2);
   }
 
-  @Test(expected = ConstraintViolationException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void invalid() throws Exception {
     Dataset d = DatasetMapperTest.create();
     d.setOrigin(null);

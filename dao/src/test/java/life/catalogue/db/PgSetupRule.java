@@ -106,7 +106,7 @@ public class PgSetupRule extends ExternalResource {
       con.commit();
     }
     setupMybatis(cfg);
-    Partitioner.createDefaultPartitions(sqlSessionFactory, cfg.partitions);
+    Partitioner.createDefaultPartitions(sqlSessionFactory, 2);
   }
 
   @Override

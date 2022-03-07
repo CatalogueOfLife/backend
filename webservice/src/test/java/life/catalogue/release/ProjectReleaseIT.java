@@ -108,7 +108,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
       // also test publishing the release
       var bus = new EventBus();
-      DatasetDao ddao = new DatasetDao(release.factory, null, ImageService.passThru(), diDao, null,
+      DatasetDao ddao = new DatasetDao(3, release.factory, null, ImageService.passThru(), diDao, null,
         NameUsageIndexService.passThru(), null, bus, validator);
       bus.register(new PublicReleaseListener(new WsServerConfig(), release.factory, null, DoiService.passThru(), null));
       var rel = ddao.get(release.newDatasetKey);

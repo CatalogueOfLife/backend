@@ -87,7 +87,7 @@ public class ImportManagerDebugging {
     SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao, validator);
     DecisionDao dDao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
     var diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    DatasetDao datasetDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null,diDao, validator);
+    DatasetDao datasetDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, diDao, validator);
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),

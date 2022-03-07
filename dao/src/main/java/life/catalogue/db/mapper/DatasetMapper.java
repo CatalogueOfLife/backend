@@ -23,8 +23,7 @@ import org.apache.ibatis.session.SqlSession;
 
 /**
  * The dataset mappers create method expects the key to be provided.
- * This is done to allow for semantics so keys can be assigned to a different "modulus" series
- * to represent datasets that live on their own partition vs datasets that share the default partition.
+ * Unless you know exactly what you are doing please use the DatasetDAO to create, modify or delete datasets.
  */
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset>, DatasetAgentMapper {
   int MAGIC_ADMIN_USER_KEY = -42;
