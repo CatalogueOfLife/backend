@@ -117,10 +117,21 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     public KeyGenerator(int keyProjectMod, SqlSessionFactory factory) {
       this.keyProjectMod = keyProjectMod;
+      this.keyGenExternal = new AtomicInteger(0);
+      this.keyGenProject = new AtomicInteger(0);
+      setMax(factory);
+    }
+
+    public KeyGenerator(int keyProjectMod, int maxExternal, int maxProject) {
+      this.keyProjectMod = keyProjectMod;
+      this.keyGenExternal = new AtomicInteger(maxExternal);
+      this.keyGenProject = new AtomicInteger(maxProject);
+    }
+
+    public void setMax(SqlSessionFactory factory) {
       try (SqlSession session = factory.openSession(true)) {
         var dm = session.getMapper(DatasetMapper.class);
-        keyGenExternal = new AtomicInteger(maxKey(dm,false));
-        keyGenProject = new AtomicInteger(maxKey(dm, true));
+        setMax(maxKey(dm,false), maxKey(dm,true));
       }
     }
 
@@ -132,15 +143,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       return max;
     }
 
-    public KeyGenerator(int keyProjectMod, int maxExternal, int maxProject) {
-      this.keyProjectMod = keyProjectMod;
-      this.keyGenExternal = new AtomicInteger(maxExternal);
-      this.keyGenProject = new AtomicInteger(maxProject);
-    }
-
     public void setMax(int maxExternal, int maxProject) {
       this.keyGenExternal.set(maxExternal);
       this.keyGenProject.set(maxProject);
+      LOG.info("Set dataset key generator to {} for external and {} for others", keyGenExternal.get(), keyGenProject.get());
     }
 
     public int nextExternalKey() {

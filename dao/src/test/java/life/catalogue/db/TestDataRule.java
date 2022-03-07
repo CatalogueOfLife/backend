@@ -196,7 +196,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private TestDataRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
     this.testData = testData;
     this.sqlSessionFactorySupplier = sqlSessionFactorySupplier;
-    keyGenerator = new DatasetDao.KeyGenerator(10, sqlSessionFactorySupplier.get());
+    keyGenerator = new DatasetDao.KeyGenerator(10, 0, 0);
   }
 
   public TestDataRule(TestData testData) {
@@ -221,6 +221,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   @Override
   protected void before() throws Throwable {
+    keyGenerator.setMax(sqlSessionFactorySupplier.get());
     LOG.info("Loading {} test data", testData);
     initSession();
     if (testData != KEEP) {

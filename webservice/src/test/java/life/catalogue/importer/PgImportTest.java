@@ -82,9 +82,11 @@ public class PgImportTest {
   public void duplicateAlias() throws Exception {
     Dataset d = TestEntityGenerator.setUser(TestEntityGenerator.newDataset("first"));
     d.setAlias("first");
+    testDataRule.getKeyGenerator().setKey(d);
 
     Dataset d2 = TestEntityGenerator.setUser(TestEntityGenerator.newDataset("second"));
     d2.setAlias("second");
+    testDataRule.getKeyGenerator().setKey(d2);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.create(d);
