@@ -57,8 +57,8 @@ public class UserResource {
   }
 
   @GET
-  public ResultPage<User> search(@QueryParam("q") String q, @Valid @BeanParam Page page, @Auth User admin) {
-    ResultPage<User> users = dao.search(q, page);
+  public ResultPage<User> search(@QueryParam("q") String q, @QueryParam("role") User.Role role, @Valid @BeanParam Page page, @Auth User admin) {
+    ResultPage<User> users = dao.search(q, role, page);
     if (!admin.isAdmin()) {
       users.forEach(UserResource::obfuscate);
     }

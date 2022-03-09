@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import life.catalogue.dao.DatasetDao;
@@ -42,28 +43,38 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     for (int x = 1; x<=20; x++) {
       User u = createTestEntity();
       u.setUsername("user"+x);
+      if (x < 3) {
+        u.setRoles(Set.of(User.Role.ADMIN));
+      }
+      if (x >= 10) {
+        u.setRoles(Set.of(User.Role.REVIEWER));
+      }
       if (x % 2 == 0) {
         u.setFirstname(john);
       }
+
       mapper().create(u);
       userKeys.add(u.getKey());
     }
     commit();
 
     Page page = new Page(0, 100);
-    assertEquals(0, mapper().search("Peter", page).size());
-    assertEquals(10, mapper().search(john, page).size());
-    assertEquals(1, mapper().search("13", page).size());
-    assertEquals(1, mapper().search("user13", page).size());
-    assertEquals(20, mapper().search("user", page).size());
-    assertEquals(11, mapper().search("user1", page).size());
-    assertEquals(2, mapper().search("user2", page).size());
-    assertEquals(26, mapper().search("", page).size());
-    mapper().search("", page).forEach(u -> {
+    assertEquals(0, mapper().search("Peter", null, page).size());
+    assertEquals(10, mapper().search(john, null, page).size());
+    assertEquals(1, mapper().search("13", null, page).size());
+    assertEquals(1, mapper().search("user13", null, page).size());
+    assertEquals(20, mapper().search("user", null, page).size());
+    assertEquals(11, mapper().search("user1", null, page).size());
+    assertEquals(2, mapper().search("user2", null, page).size());
+    assertEquals(26, mapper().search("", null, page).size());
+    mapper().search("", null, page).forEach(u -> {
       assertNotNull(u.getKey());
       assertNotNull(u.getUsername());
       assertNotNull(u.getCreated());
     });
+    assertEquals(8, mapper().search("", User.Role.EDITOR, page).size());
+    assertEquals(18, mapper().search("", User.Role.REVIEWER, page).size());
+    assertEquals(11, mapper().search("", User.Role.ADMIN, page).size());
     // last login persistency
     var login = mapper().getByUsername("user8");
     final var now = LocalDateTime.now();
@@ -71,7 +82,7 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     mapper().update(login);
     commit();
 
-    mapper().search("user8", page).forEach(u -> {
+    mapper().search("user8", null, page).forEach(u -> {
       assertNotNull(u.getKey());
       assertNotNull(u.getUsername());
       assertNotNull(u.getCreated());

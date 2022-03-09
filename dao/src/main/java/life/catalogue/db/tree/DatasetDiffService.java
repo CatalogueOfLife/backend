@@ -7,8 +7,11 @@ import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.io.UnixCmdUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.EntityDao;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
+
+import life.catalogue.db.mapper.DatasetMapper;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -33,13 +36,13 @@ import javax.validation.Validator;
 public class DatasetDiffService extends BaseDiffService<Integer> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDiffService.class);
 
-  private final DatasetDao ddao;
+  // we only use ddao.getOr404()
+  private final EntityDao<Integer, Dataset, DatasetMapper> ddao;
   private final Set<Integer> userDiffs = ConcurrentHashMap.newKeySet();
 
   public DatasetDiffService(SqlSessionFactory factory, FileMetricsDatasetDao dao, int timeoutInSeconds) {
     super(dao, factory, timeoutInSeconds);
-    // we only use ddao.getOr404()
-    ddao = new DatasetDao(factory, null, null, null);
+    ddao = new EntityDao<>(false, factory, Dataset.class, DatasetMapper.class, null);
   }
 
   @Override

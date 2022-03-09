@@ -37,12 +37,12 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
     this.bus = bus;
   }
 
-  public ResultPage<User> search(@Nullable final String q, @Nullable Page page) {
+  public ResultPage<User> search(@Nullable final String q, @Nullable final User.Role role, @Nullable Page page) {
     page = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()){
       UserMapper um = session.getMapper(mapperClass);
-      List<User> result = um.search(q, defaultPage(page));
-      return new ResultPage<>(page, result, () -> um.searchCount(q));
+      List<User> result = um.search(q, role, defaultPage(page));
+      return new ResultPage<>(page, result, () -> um.searchCount(q, role));
     }
   }
 

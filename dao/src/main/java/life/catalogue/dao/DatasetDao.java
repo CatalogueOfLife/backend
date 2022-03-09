@@ -116,9 +116,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     private final AtomicInteger keyGenProject;
 
     public KeyGenerator(int keyProjectMod, SqlSessionFactory factory) {
-      this.keyProjectMod = keyProjectMod;
-      this.keyGenExternal = new AtomicInteger(0);
-      this.keyGenProject = new AtomicInteger(0);
+      this(keyProjectMod, 0, 0);
       setMax(factory);
     }
 

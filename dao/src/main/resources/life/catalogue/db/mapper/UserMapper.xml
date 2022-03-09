@@ -56,11 +56,12 @@
   </sql>
 
   <sql id="WHERE">
-    u.username ILIKE '%${q}%'
-    OR u.firstname ILIKE '%${q}%'
-    OR u.lastname ILIKE '%${q}%'
-    OR u.email ILIKE '%${q}%'
-    OR u.orcid ILIKE '%${q}%'
+    ( u.username ILIKE '%${q}%'
+      OR u.firstname ILIKE '%${q}%'
+      OR u.lastname ILIKE '%${q}%'
+      OR u.email ILIKE '%${q}%'
+      OR u.orcid ILIKE '%${q}%'
+    ) <if test="role != null">AND '${role}'=ANY(u.roles)</if>
   </sql>
 
   <resultMap id="userResultMap" type="User" autoMapping="true">

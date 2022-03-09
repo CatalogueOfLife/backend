@@ -36,9 +36,9 @@ public interface UserMapper extends CRUD<Integer, User>, GlobalPageable<User> {
    * @param query string for a like search
    * @return public user infos
    */
-  List<User> search(@Param("q") String query, @Param("page") Page page);
+  List<User> search(@Param("q") String query, @Param("role") User.Role role, @Param("page") Page page);
 
-  int searchCount(@Param("q") String query);
+  int searchCount(@Param("q") String query, @Param("role") User.Role role);
 
   /**
    * Lists all editors for a given dataset with their public information only
