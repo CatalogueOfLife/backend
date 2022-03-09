@@ -11,6 +11,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-03-09 new higher ranks
+```
+ALTER TYPE RANK ADD VALUE 'PARVPHYLUM' AFTER 'INFRAPHYLUM';
+ALTER TYPE RANK ADD VALUE 'MICROPHYLUM' AFTER 'PARVPHYLUM';
+ALTER TYPE RANK ADD VALUE 'NANOPHYLUM' AFTER 'MICROPHYLUM';
+ALTER TYPE RANK ADD VALUE 'GIGACLASS' AFTER 'NANOPHYLUM';
+ALTER TYPE RANK ADD VALUE 'MEGACLASS' AFTER 'GIGACLASS';
+ALTER TYPE RANK ADD VALUE 'MEGACOHORT' BEFORE 'SUPERCOHORT';
+```
+
 ### 2022-03-07 dataset keys based on origin
 The dataset key based partitioning differs between external datasets that live on the default partition
 and managed & released datasets that live on their own, dedicated partition.
