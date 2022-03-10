@@ -48,6 +48,7 @@ import com.google.common.base.Objects;
 import com.google.common.eventbus.EventBus;
 
 import static life.catalogue.metadata.MetadataFactory.stripHtml;
+import static life.catalogue.common.util.PrimitiveUtils.intDefault;
 
 /**
  * A DAO for datasets that orchestrates the needs for partitioning tables and removing dataset remains
@@ -78,9 +79,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
-   * @param keyProjectMod ratio for generated dataset keys of project datasets vs external ones
+   * @param minExternalDatasetKey The lowest dataset key to use for new external datasets.
    */
-  public DatasetDao(int keyProjectMod, SqlSessionFactory factory,
+  public DatasetDao(int minExternalDatasetKey, SqlSessionFactory factory,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
@@ -98,7 +99,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.indexService = indexService;
     this.bus = bus;
     // load existing max keys
-    this.keyGenerator = new KeyGenerator(keyProjectMod, factory);
+    this.keyGenerator = new KeyGenerator(minExternalDatasetKey, factory);
   }
 
   /**
@@ -111,17 +112,17 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   public static class KeyGenerator {
-    private final int keyProjectMod;
+    private final int minExternalDatasetKey;
     private final AtomicInteger keyGenExternal;
     private final AtomicInteger keyGenProject;
 
-    public KeyGenerator(int keyProjectMod, SqlSessionFactory factory) {
-      this(keyProjectMod, 0, 0);
+    public KeyGenerator(int minExternalDatasetKey, SqlSessionFactory factory) {
+      this(minExternalDatasetKey, 0, 0);
       setMax(factory);
     }
 
-    public KeyGenerator(int keyProjectMod, int maxExternal, int maxProject) {
-      this.keyProjectMod = keyProjectMod;
+    public KeyGenerator(int minExternalDatasetKey, int maxExternal, int maxProject) {
+      this.minExternalDatasetKey = minExternalDatasetKey;
       this.keyGenExternal = new AtomicInteger(maxExternal);
       this.keyGenProject = new AtomicInteger(maxProject);
     }
@@ -129,16 +130,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     public void setMax(SqlSessionFactory factory) {
       try (SqlSession session = factory.openSession(true)) {
         var dm = session.getMapper(DatasetMapper.class);
-        setMax(maxKey(dm,false), maxKey(dm,true));
+        int ext = intDefault(dm.getMaxKey(null), minExternalDatasetKey);
+        int proj = intDefault(dm.getMaxKey(minExternalDatasetKey), 10);
+        setMax(ext, proj);
       }
-    }
-
-    private int maxKey(DatasetMapper dm, boolean project) {
-      Integer max = dm.getMaxKey(keyProjectMod, project);
-      if (max == null) {
-        return project ? keyProjectMod : 1;
-      }
-      return max;
     }
 
     public void setMax(int maxExternal, int maxProject) {
@@ -148,15 +143,18 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
 
     public int nextExternalKey() {
-      if (keyGenExternal.incrementAndGet() % keyProjectMod == 0) {
-        // in case we hit a project key use the next one
-        keyGenExternal.incrementAndGet();
-      }
-      return keyGenExternal.get();
+      return keyGenExternal.incrementAndGet();
     }
 
     public int nextProjectKey() {
-      return keyGenProject.addAndGet(keyProjectMod);
+      int key = keyGenProject.incrementAndGet();
+      if (key >= minExternalDatasetKey) {
+        throw new IllegalStateException("Project key range used up. Please reconfigure minExternalDatasetKey");
+      }
+      if (minExternalDatasetKey - key < 100) {
+        LOG.warn("Project key range running low, only {} left. Please reconfigure minExternalDatasetKey", minExternalDatasetKey - key);
+      }
+      return key;
     }
 
     public int setKey(Dataset d) {

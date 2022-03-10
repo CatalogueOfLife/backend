@@ -437,27 +437,12 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
   @Test
   public void getMaxKey() throws Exception {
-    assertEquals(12, (int) mapper().getMaxKey(1, true));
-    assertEquals(12, (int) mapper().getMaxKey(2, true));
-    assertEquals(12, (int) mapper().getMaxKey(3, true));
-    assertEquals(12, (int) mapper().getMaxKey(4, true));
-    assertNull(mapper().getMaxKey(5, true));
-    assertEquals(12, (int) mapper().getMaxKey(6, true));
-    assertNull(mapper().getMaxKey(7, true));
-    assertEquals(11, (int) mapper().getMaxKey(11, true));
-    assertEquals(12, (int) mapper().getMaxKey(12, true));
-    assertNull(mapper().getMaxKey(13, true));
-
-    assertNull(mapper().getMaxKey(1, false));
-    assertEquals(11, (int) mapper().getMaxKey(2, false));
-    assertEquals(11, (int) mapper().getMaxKey(3, false));
-    assertEquals(11, (int) mapper().getMaxKey(4, false));
-    assertEquals(12, (int) mapper().getMaxKey(5, false));
-    assertEquals(11, (int) mapper().getMaxKey(6, false));
-    assertEquals(12, (int) mapper().getMaxKey(7, false));
-    assertEquals(12, (int) mapper().getMaxKey(11, false));
-    assertEquals(11, (int) mapper().getMaxKey(12, false));
-    assertEquals(12, (int) mapper().getMaxKey(13, false));
+    // 3, 11, 12
+    assertEquals(12, (int) mapper().getMaxKey(null));
+    assertEquals(12, (int) mapper().getMaxKey(20));
+    assertEquals(11, (int) mapper().getMaxKey(12));
+    assertEquals(3, (int) mapper().getMaxKey(10));
+    assertEquals(3, (int) mapper().getMaxKey(5));
   }
 
   @Test

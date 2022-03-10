@@ -347,7 +347,9 @@
 
   <select id="getMaxKey" parameterType="map" resultType="integer">
     SELECT max(key) FROM dataset
-    WHERE key % #{mod} <if test="zero">=</if><if test="!zero">!=</if> 0
+    <if test="limit">
+      WHERE key &lt; #{limit}
+    </if>
   </select>
 
   <select id="getByGBIF" resultMap="datasetResultMap">

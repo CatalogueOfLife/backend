@@ -116,7 +116,7 @@
   </update>
 
   <update id="addDatasetKeyCheck" parameterType="map">
-    ALTER TABLE ${table}_default ADD CONSTRAINT ${table}_default_dataset_key_no_project_check CHECK ((dataset_key &lt;= ${max}) OR (dataset_key % ${ratio} != 0))
+    ALTER TABLE ${table}_default ADD CONSTRAINT ${table}_default_dataset_key_no_project_check CHECK (dataset_key &lt; ${below} OR dataset_key &gt; ${beyond})
   </update>
 
 </mapper>

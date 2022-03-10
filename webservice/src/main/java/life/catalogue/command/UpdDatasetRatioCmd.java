@@ -13,16 +13,18 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static life.catalogue.common.util.PrimitiveUtils.intDefault;
+
 /**
- * Command that removed and recreates the check constraint for all default partitions
- * using the configured dataset ratio between projects and external datasets.
+ * Command that removes and recreates the check constraint for all default partitions
+ * using the configured minExternalDatasetKey.
  */
 public class UpdDatasetRatioCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(UpdDatasetRatioCmd.class);
-  private static final String ARG = "ratio";
+  private static final String ARG = "min";
 
   public UpdDatasetRatioCmd() {
-    super("datasetRatio", false,"Updating dataset key check constraints for default tables");
+    super("updDatasetKeyCheck", false,"Updating dataset key check constraints for default tables");
   }
   
   @Override
@@ -32,18 +34,17 @@ public class UpdDatasetRatioCmd extends AbstractMybatisCmd {
     subparser.addArgument("--" + ARG)
         .dest(ARG)
         .type(Integer.class)
-        .setDefault(100)
         .required(true)
-        .help("Ratio of number of managed & released datasets and external datasets.");
+        .help("The lowest dataset key to use for new external datasets.");
   }
 
   @Override
   void execute() throws Exception {
-    Integer ratio = ns.getInt(ARG);
+    int min = ns.getInt(ARG);
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      int max = dm.getMaxKey(1, true);
-      session.getMapper(DatasetPartitionMapper.class).updateDatasetKeyChecks(max, ratio);
+      int proj = intDefault(dm.getMaxKey(min), 10);
+      session.getMapper(DatasetPartitionMapper.class).updateDatasetKeyChecks(proj, min);
     }
   }
 

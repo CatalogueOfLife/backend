@@ -272,16 +272,16 @@ public interface DatasetPartitionMapper {
   List<String> columns(@Param("t") String table);
 
   /**
-   * @param max maximum current dataset key
-   * @param ratio new ratio for project vs external datasets
+   * Removes and recreates dataset key check contraints on all default tables
+   * with a check that all keys are either below or beyond a given value.
    */
-  default void updateDatasetKeyChecks(int max, int ratio) {
-    TABLES.forEach(t -> dropDatasetKeyCheck(t));
-    TABLES.forEach(t -> addDatasetKeyCheck(t, max, ratio));
+  default void updateDatasetKeyChecks(int below, int beyond) {
+    TABLES.forEach(this::dropDatasetKeyCheck);
+    TABLES.forEach(t -> addDatasetKeyCheck(t, below, beyond));
   }
 
   void dropDatasetKeyCheck(@Param("table") String table);
 
-  void addDatasetKeyCheck(@Param("table") String table, @Param("max") Integer max, @Param("ratio") Integer ratio);
+  void addDatasetKeyCheck(@Param("table") String table, @Param("below") int below, @Param("beyond") int beyond);
 
 }

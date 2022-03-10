@@ -164,10 +164,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   int updateLastImport(@Param("key") int key, @Param("attempt") int attempt);
 
   /**
-   * @param modulus the modulus to test for the given remainder. Use 1 to get the alltime maximum. 2 or others for certain series.
-   * @param isZero if true selects maximum where the remainder is zero, otherwise max where remainder is not zero
-   * @return the maximum key used which has the given modulus or NULL if no key was used at all
+   * @param limit optional limit to consider when looking for the maximum. If null the global maximum is returned, if existing the maximum key below the given imit
    */
-  Integer getMaxKey(@Param("mod") int modulus, @Param("zero") boolean isZero);
+  Integer getMaxKey(@Param("limit") Integer limit);
 
 }

@@ -46,22 +46,25 @@ public class DatasetDaoTest extends DaoTestBase {
 
   @Test
   public void keygen() throws Exception {
-    DatasetDao.KeyGenerator gen = new DatasetDao.KeyGenerator(10, 8, 10);
-    assertEquals(9, gen.nextExternalKey());
-    assertEquals(11, gen.nextExternalKey());
-    assertEquals(12, gen.nextExternalKey());
-    assertEquals(13, gen.nextExternalKey());
-    assertEquals(14, gen.nextExternalKey());
-    assertEquals(15, gen.nextExternalKey());
-    assertEquals(16, gen.nextExternalKey());
-    assertEquals(17, gen.nextExternalKey());
-    assertEquals(18, gen.nextExternalKey());
-    assertEquals(19, gen.nextExternalKey());
-    assertEquals(21, gen.nextExternalKey());
-    assertEquals(22, gen.nextExternalKey());
+    DatasetDao.KeyGenerator gen = new DatasetDao.KeyGenerator(100, 108, 3);
+    assertEquals(109, gen.nextExternalKey());
+    assertEquals(110, gen.nextExternalKey());
+    assertEquals(111, gen.nextExternalKey());
+    assertEquals(112, gen.nextExternalKey());
 
-    assertEquals(20, gen.nextProjectKey());
-    assertEquals(30, gen.nextProjectKey());
+    assertEquals(4, gen.nextProjectKey());
+    assertEquals(5, gen.nextProjectKey());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void keygenThrow() throws Exception {
+    DatasetDao.KeyGenerator gen = new DatasetDao.KeyGenerator(100, 108, 98);
+    assertEquals(109, gen.nextExternalKey());
+    assertEquals(110, gen.nextExternalKey());
+    assertEquals(111, gen.nextExternalKey());
+
+    assertEquals(99, gen.nextProjectKey());
+    gen.nextProjectKey();
   }
 
   @Test

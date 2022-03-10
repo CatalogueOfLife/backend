@@ -30,11 +30,12 @@ public class PgConfig extends PgDbConfig {
   public int port = 5432;
 
   /**
-   * Ratio of datasets that live on the default partition (external) to datasets living on dedicated tables (managed, released).
-   * It is used to generate new dataset keys so the dataset origin of new datasets can be predicted by the key.
+   * The lowest dataset key to use for new external datasets.
+   * This should match the check constraint on the default table partitions e.g.
+   * CHECK dataset_key < 100 OR dataset_key >= 1000
    */
-  @Min(2)
-  public int defaultPartitionRatio = 100;
+  @Min(100)
+  public int minExternalDatasetKey = 1000;
 
   @Min(1)
   public int maximumPoolSize = 8;
