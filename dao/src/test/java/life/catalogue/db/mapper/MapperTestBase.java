@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
@@ -31,15 +32,17 @@ public abstract class MapperTestBase<M> {
   static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   private final Class<M> mapperClazz;
   protected final static int appleKey = TestDataRule.APPLE.key;
+  protected static final DatasetDao.KeyGenerator datasetKeyGen = new DatasetDao.KeyGenerator(100, 100, 20);
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
+
   @Rule
   public final TestDataRule testDataRule;
-  
+
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
+
 
   public MapperTestBase() {
     this(null, TestDataRule.empty());
@@ -52,6 +55,7 @@ public abstract class MapperTestBase<M> {
   public MapperTestBase(Class<M> mapperClazz, TestDataRule testDataRule) {
     this.mapperClazz = mapperClazz;
     this.testDataRule = testDataRule;
+    datasetKeyGen.setMax(100, testDataRule.testData.maxDatasetKey());
   }
   
   public M mapper() {

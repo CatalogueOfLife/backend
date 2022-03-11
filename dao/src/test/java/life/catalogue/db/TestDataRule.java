@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.common.util.PrimitiveUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -135,6 +136,13 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       }
     }
 
+    public int maxDatasetKey() {
+      if (datasetKeys.isEmpty()) {
+        return PrimitiveUtils.intDefault(key, 1);
+      }
+      return Math.max(key, Collections.max(datasetKeys));
+    }
+
     @Override
     public String toString() {
       return name + " ("+ key +")";
@@ -196,7 +204,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private TestDataRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
     this.testData = testData;
     this.sqlSessionFactorySupplier = sqlSessionFactorySupplier;
-    keyGenerator = new DatasetDao.KeyGenerator(10, 0, 0);
+    keyGenerator = new DatasetDao.KeyGenerator(100, 100, testData.maxDatasetKey());
   }
 
   public TestDataRule(TestData testData) {
@@ -221,7 +229,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   @Override
   protected void before() throws Throwable {
-    keyGenerator.setMax(sqlSessionFactorySupplier.get());
     LOG.info("Loading {} test data", testData);
     initSession();
     if (testData != KEEP) {

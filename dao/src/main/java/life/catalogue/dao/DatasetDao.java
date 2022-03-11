@@ -112,7 +112,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   public static class KeyGenerator {
-    private final int minExternalDatasetKey;
+    public final int minExternalDatasetKey;
     private final AtomicInteger keyGenExternal;
     private final AtomicInteger keyGenProject;
 

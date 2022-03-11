@@ -126,6 +126,9 @@ public class DatasetSourceDao {
     // current attempt of the imported dataset
     private Integer latestAttempt;
     private Integer latestUsagesCount;
+    // MD5 hash for the imported archive & latest archive in CLB
+    private String md5;
+    private String latestMd5;
 
     public Integer getLatestAttempt() {
       return latestAttempt;
@@ -142,6 +145,22 @@ public class DatasetSourceDao {
     public void setLatestUsagesCount(Integer latestUsagesCount) {
       this.latestUsagesCount = latestUsagesCount;
     }
+
+    public String getMd5() {
+      return md5;
+    }
+
+    public void setMd5(String md5) {
+      this.md5 = md5;
+    }
+
+    public String getLatestMd5() {
+      return latestMd5;
+    }
+
+    public void setLatestMd5(String latestMd5) {
+      this.latestMd5 = latestMd5;
+    }
   }
 
   public ImportMetrics projectSourceMetrics(int datasetKey, int sourceKey) {
@@ -157,7 +176,10 @@ public class DatasetSourceDao {
       var source = session.getMapper(DatasetMapper.class).getOrThrow(sourceKey, Dataset.class);
       metrics.setLatestAttempt(source.getAttempt());
       metrics.setLatestUsagesCount(source.getSize());
+      var latestImport = session.getMapper(DatasetImportMapper.class).get(sourceKey, source.getAttempt());
+      metrics.setLatestMd5(latestImport.getMd5());
 
+      // aggregate metrics based on sector syncs/imports
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       AtomicInteger sectorCounter = new AtomicInteger(0);
       // a release? use mother project in that case

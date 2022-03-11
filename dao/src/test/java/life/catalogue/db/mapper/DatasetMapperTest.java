@@ -7,8 +7,6 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 
-import life.catalogue.dao.DatasetDao;
-
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
@@ -30,8 +28,6 @@ import static org.junit.Assert.*;
  */
 public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMapper> {
 
-  static final DatasetDao.KeyGenerator gen = new DatasetDao.KeyGenerator(10, 12, 10);
-
   public DatasetMapperTest() {
     super(DatasetMapper.class);
   }
@@ -43,7 +39,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   public static Dataset populate(Dataset d) {
-    d.setKey(gen.nextExternalKey());
+    d.setKey(datasetKeyGen.nextExternalKey());
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setGbifKey(UUID.randomUUID());
     d.setGbifPublisherKey(UUID.randomUUID());
@@ -71,11 +67,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // we dont add source citations as the DatasetMapper does not persist them
     // this is done in the DAO only and should be tested there!
     return d;
-  }
-
-  @Before
-  public void initKeyGen() throws Exception {
-    gen.setMax(12, 10);
   }
 
   @Test
@@ -582,7 +573,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // create another catalogue to test non draft sectors
     Dataset cat = TestEntityGenerator.newDataset("cat2");
     TestEntityGenerator.setUser(cat);
-    gen.setKey(cat);
+    datasetKeyGen.setKey(cat);
     mapper(DatasetMapper.class).create(cat);
     mapper(DatasetPartitionMapper.class).createManagedSequences(cat.getKey());
     // new sectors
@@ -643,7 +634,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);
-    ds.setKey(gen.nextProjectKey());
+    ds.setKey(datasetKeyGen.nextProjectKey());
     ds.setContact(Agent.person("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
     ds.setEditor(List.of(
       Agent.person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),

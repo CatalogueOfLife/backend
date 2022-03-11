@@ -69,7 +69,7 @@ abstract class SectorRunnable implements Runnable {
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     this.sectorKey = sectorKey;
-    // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
+    // check for existence and datasetKey - we will load the real thing for processing only when we get executed!
     sector = loadSector(false);
     this.subjectDatasetKey = sector.getSubjectDatasetKey();
     try (SqlSession session = factory.openSession(true)) {
