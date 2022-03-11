@@ -69,8 +69,17 @@ abstract class SectorRunnable implements Runnable {
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     this.sectorKey = sectorKey;
+
+    // create new sync metrics instance
+    state = new SectorImport();
+    state.setSectorKey(sectorKey.getId());
+    state.setDatasetKey(sectorKey.getDatasetKey());
+    state.setJob(getClass().getSimpleName());
+    state.setState(ImportState.WAITING);
+    state.setCreatedBy(user.getKey());
+
     // check for existence and datasetKey - we will load the real thing for processing only when we get executed!
-    sector = loadSector(false);
+    sector = loadSectorAndUpdateDatasetImport(false);
     this.subjectDatasetKey = sector.getSubjectDatasetKey();
     try (SqlSession session = factory.openSession(true)) {
       // make sure the target catalogue is MANAGED and not RELEASED!
@@ -90,12 +99,7 @@ abstract class SectorRunnable implements Runnable {
           }
         }
       }
-      state = new SectorImport();
-      state.setSectorKey(sectorKey.getId());
-      state.setDatasetKey(sectorKey.getDatasetKey());
-      state.setJob(getClass().getSimpleName());
-      state.setState(ImportState.WAITING);
-      state.setCreatedBy(user.getKey());
+      // finally create the sync metrics record with a new attempt
       session.getMapper(SectorImportMapper.class).create(state);
     }
   }
@@ -152,7 +156,7 @@ abstract class SectorRunnable implements Runnable {
 
   void init() throws Exception {
     // load latest version of the sector again to get the latest target ids
-    sector = loadSector(validateSector);
+    sector = loadSectorAndUpdateDatasetImport(validateSector);
     if (sector.getMode() == Sector.Mode.MERGE) {
       //TODO: https://github.com/Sp2000/colplus-backend/issues/509
       throw new NotImplementedException("Sector merging not implemented yet");
@@ -163,7 +167,7 @@ abstract class SectorRunnable implements Runnable {
     checkIfCancelled();
   }
   
-  private Sector loadSector(boolean validate) {
+  private Sector loadSectorAndUpdateDatasetImport(boolean validate) {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       Sector s = sm.get(sectorKey);
@@ -215,6 +219,12 @@ abstract class SectorRunnable implements Runnable {
           throw new IllegalArgumentException(msg, e);
         }
       }
+      // load current dataset import
+      var datasetImport = session.getMapper(DatasetImportMapper.class).last(subjectDatasetKey);
+      if (datasetImport != null) {
+        state.setDatasetAttempt(datasetImport.getAttempt());
+      }
+
       return s;
     }
   }

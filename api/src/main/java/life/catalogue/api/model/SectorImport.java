@@ -9,6 +9,7 @@ import com.google.common.collect.EvictingQueue;
 public class SectorImport extends ImportMetrics implements SectorEntity {
 
   private Integer sectorKey;
+  private Integer datasetAttempt;
 
   private final Queue<String> warnings = EvictingQueue.create(25);
   
@@ -33,23 +34,30 @@ public class SectorImport extends ImportMetrics implements SectorEntity {
     this.sectorKey = sectorKey;
   }
 
+  public Integer getDatasetAttempt() {
+    return datasetAttempt;
+  }
+
+  public void setDatasetAttempt(Integer datasetAttempt) {
+    this.datasetAttempt = datasetAttempt;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof SectorImport)) return false;
     if (!super.equals(o)) return false;
     SectorImport that = (SectorImport) o;
-    return sectorKey == that.sectorKey &&
-        // EvictingQueue has no equals method implemented
-        // for equality this hardly matters, so we just compare the sizes
-        warnings.size() == that.warnings.size();
+    return Objects.equals(sectorKey, that.sectorKey)
+           && Objects.equals(datasetAttempt, that.datasetAttempt)
+           && Objects.equals(warnings, that.warnings);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, warnings);
+    return Objects.hash(super.hashCode(), sectorKey, datasetAttempt, warnings);
   }
-  
+
   @Override
   public String attempt() {
     return getSectorKey() + "#" + getAttempt();

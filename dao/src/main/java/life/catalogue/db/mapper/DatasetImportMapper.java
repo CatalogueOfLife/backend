@@ -23,6 +23,11 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   DatasetImport get(@Param("key") int datasetKey, @Param("attempt") int attempt);
 
   /**
+   * Returns just the MD5 hash of the dataset archive used for the given import attempt.
+   */
+  String getMD5(@Param("key") int datasetKey, @Param("attempt") int attempt);
+
+  /**
    * @param datasetKey
    * @return Return last import attempt for given dataset or null
    */

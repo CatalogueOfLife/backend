@@ -17,4 +17,13 @@ public class DatasetProjectSourceDaoTest extends DaoTestBase {
       System.out.println(d.getTitle());
     });
   }
+
+  @Test
+  public void projectSourceMetrics() {
+    DatasetSourceDao dao = new DatasetSourceDao(factory());
+    dao.projectSourceMetrics(3, 100);
+    dao.projectSourceMetrics(3, 101);
+    dao.projectSourceMetrics(3, 102);
+  }
+
 }

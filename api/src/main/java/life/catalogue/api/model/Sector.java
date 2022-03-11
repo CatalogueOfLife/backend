@@ -30,7 +30,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private String originalSubjectId;
   private Mode mode = Sector.Mode.ATTACH;
   private Integer syncAttempt;
-  private Integer datasetImportAttempt;
+  private Integer datasetAttempt;
   private NomCode code;
   private Rank placeholderRank;
   private Set<Rank> ranks;
@@ -69,7 +69,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.originalSubjectId = other.originalSubjectId;
     this.mode = other.mode;
     this.syncAttempt = other.syncAttempt;
-    this.datasetImportAttempt = other.datasetImportAttempt;
+    this.datasetAttempt = other.datasetAttempt;
     this.code = other.code;
     this.placeholderRank = other.placeholderRank;
     this.ranks = other.ranks == null ? null : EnumSet.copyOf(other.ranks);
@@ -139,12 +139,12 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.syncAttempt = syncAttempt;
   }
 
-  public Integer getDatasetImportAttempt() {
-    return datasetImportAttempt;
+  public Integer getDatasetAttempt() {
+    return datasetAttempt;
   }
 
-  public void setDatasetImportAttempt(Integer datasetImportAttempt) {
-    this.datasetImportAttempt = datasetImportAttempt;
+  public void setDatasetAttempt(Integer datasetAttempt) {
+    this.datasetAttempt = datasetAttempt;
   }
 
   public NomCode getCode() {
@@ -201,22 +201,22 @@ public class Sector extends DatasetScopedEntity<Integer> {
     if (!super.equals(o)) return false;
     Sector sector = (Sector) o;
     return Objects.equals(target, sector.target) &&
-      Objects.equals(subjectDatasetKey, sector.subjectDatasetKey) &&
-      Objects.equals(subject, sector.subject) &&
-      Objects.equals(originalSubjectId, sector.originalSubjectId) &&
+           Objects.equals(subjectDatasetKey, sector.subjectDatasetKey) &&
+           Objects.equals(subject, sector.subject) &&
+           Objects.equals(originalSubjectId, sector.originalSubjectId) &&
       mode == sector.mode &&
-      Objects.equals(syncAttempt, sector.syncAttempt) &&
-      Objects.equals(datasetImportAttempt, sector.datasetImportAttempt) &&
+           Objects.equals(syncAttempt, sector.syncAttempt) &&
+           Objects.equals(datasetAttempt, sector.datasetAttempt) &&
       code == sector.code &&
       placeholderRank == sector.placeholderRank &&
-      Objects.equals(ranks, sector.ranks) &&
-      Objects.equals(entities, sector.entities) &&
-      Objects.equals(note, sector.note);
+           Objects.equals(ranks, sector.ranks) &&
+           Objects.equals(entities, sector.entities) &&
+           Objects.equals(note, sector.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, mode, syncAttempt, datasetImportAttempt, code, placeholderRank, ranks, entities, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, mode, syncAttempt, datasetAttempt, code, placeholderRank, ranks, entities, note);
   }
 
   @Override

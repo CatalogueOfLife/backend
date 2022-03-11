@@ -964,6 +964,7 @@ CREATE TABLE sector_import (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER NOT NULL,
   attempt INTEGER NOT NULL,
+  dataset_attempt INTEGER,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
   created_by INTEGER NOT NULL,

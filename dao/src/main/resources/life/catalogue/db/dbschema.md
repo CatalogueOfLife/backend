@@ -11,6 +11,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-03-11 dataset attempt stored with sector import 
+```
+ALTER TABLE sector_import ADD COLUMN dataset_attempt INTEGER;
+--TODO: update dataset_attempt in existing imports
+```
+
 ### 2022-03-09 new higher ranks
 ```
 ALTER TYPE RANK ADD VALUE 'PARVPHYLUM' AFTER 'INFRAPHYLUM';

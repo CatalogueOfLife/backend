@@ -9,6 +9,7 @@
     si.dataset_key,
     si.sector_key,
     si.attempt,
+    si.dataset_attempt,
     si.warnings,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value="si."/>
@@ -68,8 +69,7 @@
   </resultMap>
 
   <select id="get" resultMap="sectorImportResultMap">
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     FROM sector_import si
     WHERE dataset_key=#{key.datasetKey} AND sector_key=#{key.id} AND attempt=#{attempt}
   </select>

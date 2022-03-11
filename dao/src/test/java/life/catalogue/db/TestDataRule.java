@@ -137,10 +137,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     }
 
     public int maxDatasetKey() {
+      int keyInt = PrimitiveUtils.intDefault(key, 1);
       if (datasetKeys.isEmpty()) {
-        return PrimitiveUtils.intDefault(key, 1);
+        return keyInt;
       }
-      return Math.max(key, Collections.max(datasetKeys));
+      return Math.max(keyInt, Collections.max(datasetKeys));
     }
 
     @Override

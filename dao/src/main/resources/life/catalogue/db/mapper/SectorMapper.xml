@@ -8,6 +8,7 @@
     s.id,
     s.dataset_key,
     s.sync_attempt,
+    s.dataset_attempt,
     s.subject_dataset_key,
     s.original_subject_id,
     s.subject_id,

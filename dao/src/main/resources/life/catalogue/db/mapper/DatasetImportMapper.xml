@@ -178,6 +178,12 @@
     WHERE di.dataset_key=#{key} AND di.attempt=#{attempt}
   </select>
 
+  <select id="getMD5" resultType="string">
+    SELECT md5
+    FROM <include refid="FROM"/>
+    WHERE di.dataset_key=#{key} AND di.attempt=#{attempt}
+  </select>
+
   <select id="last" resultMap="datasetImportResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
