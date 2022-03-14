@@ -10,7 +10,12 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
+
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +36,12 @@ public abstract class CmdTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(CmdTestBase.class);
   protected final File cfg;
   private final Supplier<Command> cmdSupply;
+
+  @ClassRule
+  public static PgSetupRule pgSetupRule = new PgSetupRule();
+
+  @Rule
+  public final TestDataRule testDataRule = TestDataRule.empty();
 
   private Cli cli;
   
