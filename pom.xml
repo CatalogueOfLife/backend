@@ -198,7 +198,6 @@
     <module>parser</module>
     <module>webservice</module>
     <module>coldp</module>
-    <module>coldp-generator</module>
   </modules>
 
   <distributionManagement>
