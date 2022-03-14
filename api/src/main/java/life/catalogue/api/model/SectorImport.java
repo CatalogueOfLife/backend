@@ -1,18 +1,17 @@
 package life.catalogue.api.model;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 
 import com.google.common.collect.EvictingQueue;
 
 public class SectorImport extends ImportMetrics implements SectorEntity {
+  private static final int MAX_WARN_SIZE = 25;
 
   private Integer sectorKey;
   private Integer datasetAttempt;
 
-  private final Queue<String> warnings = EvictingQueue.create(25);
-  
+  private final List<String> warnings = new ArrayList<>();
+
   public Collection<String> getWarnings() {
     return warnings;
   }
@@ -20,10 +19,16 @@ public class SectorImport extends ImportMetrics implements SectorEntity {
   public void setWarnings(Collection<String> warnings) {
     this.warnings.clear();
     this.warnings.addAll(warnings);
+    // keep list to max
+    if (this.warnings.size() > MAX_WARN_SIZE) {
+      this.warnings.subList(MAX_WARN_SIZE, this.warnings.size()).clear();
+    }
   }
   
   public void addWarning(String warning) {
-    warnings.add(warning);
+    if (warnings.size() < MAX_WARN_SIZE) {
+      warnings.add(warning);
+    }
   }
 
   public Integer getSectorKey() {

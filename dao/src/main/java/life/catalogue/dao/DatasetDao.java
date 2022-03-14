@@ -108,7 +108,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    */
   @VisibleForTesting
   public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
-    this(3, factory, downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
+    this(100, factory, downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
   }
 
   public static class KeyGenerator {

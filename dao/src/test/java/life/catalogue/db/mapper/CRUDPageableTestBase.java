@@ -27,8 +27,6 @@ import static org.junit.Assert.assertEquals;
 abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M extends CRUD<DSID<K>, T> & DatasetPageable<T> & DatasetProcessable<T>>
     extends CRUDTestBase<DSID<K>, T, M> {
 
-  final DatasetDao.KeyGenerator gen = new DatasetDao.KeyGenerator(10, 12, 10);
-
   public CRUDPageableTestBase(Class<M> mapperClazz) {
     super(mapperClazz);
   }
@@ -39,7 +37,7 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
     d.setType(DatasetType.TAXONOMIC);
     d.setOrigin(DatasetOrigin.MANAGED);
     d.applyUser(Users.TESTER);
-    gen.setKey(d);
+    testDataRule.getKeyGenerator().setKey(d);
     mapper(DatasetMapper.class).create(d);
     Partitioner.partition(PgSetupRule.getSqlSessionFactory(), d.getKey(), d.getOrigin());
     return d.getKey();

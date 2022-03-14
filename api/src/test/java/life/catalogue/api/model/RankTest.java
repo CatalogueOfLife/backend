@@ -16,12 +16,12 @@ public class RankTest {
    */
   @Test
   public void warnOnOrdinalChange() {
-    assertEquals(91, Rank.values().length);
+    assertEquals(97, Rank.values().length);
     assertEquals(4, Rank.KINGDOM.ordinal());
-    assertEquals(45, Rank.FAMILY.ordinal());
-    assertEquals(53, Rank.GENUS.ordinal());
-    assertEquals(64, Rank.SPECIES.ordinal());
-    assertEquals(67, Rank.SUBSPECIES.ordinal());
-    assertEquals(90, Rank.UNRANKED.ordinal());
+    assertEquals(51, Rank.FAMILY.ordinal());
+    assertEquals(59, Rank.GENUS.ordinal());
+    assertEquals(70, Rank.SPECIES.ordinal());
+    assertEquals(73, Rank.SUBSPECIES.ordinal());
+    assertEquals(96, Rank.UNRANKED.ordinal());
   }
 }

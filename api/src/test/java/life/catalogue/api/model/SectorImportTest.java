@@ -21,11 +21,21 @@ public class SectorImportTest {
     assertNotEquals(si1, si2);
   
     si2.addWarning("fghj2");
-    // we only compare warning sizes, not content!!!
-    assertEquals(si1, si2);
+    assertNotEquals(si1, si2);
     
     si1.addWarning("fghj2");
     si2.addWarning("fghj");
+    // wrong order
+    assertNotEquals(si1, si2);
+
+    si1.getWarnings().clear();
+    si2.getWarnings().clear();
+    assertEquals(si1, si2);
+
+    si1.addWarning("fghj");
+    si1.addWarning("fghj2");
+    si2.addWarning("fghj");
+    si2.addWarning("fghj2");
     assertEquals(si1, si2);
   }
 }
