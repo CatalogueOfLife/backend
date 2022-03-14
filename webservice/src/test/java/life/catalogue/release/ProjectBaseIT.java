@@ -3,6 +3,7 @@ package life.catalogue.release;
 import life.catalogue.HttpClientUtils;
 import life.catalogue.WsServerConfig;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
+import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.doi.DoiUpdater;
@@ -19,6 +20,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -61,7 +63,7 @@ public abstract class ProjectBaseIT {
     DoiUpdater doiUpdater = new DoiUpdater(PgSetupRule.getSqlSessionFactory(), doiService, lrCache, converter);
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    dDao = new DatasetDao(3, PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus, validator);
+    dDao = new DatasetDao(100, PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus, validator);
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     eDao = new EstimateDao(PgSetupRule.getSqlSessionFactory(), validator);
     nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
