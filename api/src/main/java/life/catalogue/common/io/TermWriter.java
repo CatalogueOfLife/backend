@@ -115,14 +115,21 @@ public abstract class TermWriter implements AutoCloseable {
   }
 
   /**
-   * Concatenates values with pipes
+   * Concatenates values with comma
    */
   public void set(Term term, Collection<?> value) {
+    set(term, value, ",");
+  }
+
+  /**
+   * Concatenates values with given delimiter
+   */
+  public void set(Term term, Collection<?> value, String delimiter) {
     if (value != null && !value.isEmpty()) {
       set(term, value.stream()
-        .map(Object::toString)
-        .filter(StringUtils::isNotBlank)
-        .collect(Collectors.joining("|"))
+                     .map(Object::toString)
+                     .filter(StringUtils::isNotBlank)
+                     .collect(Collectors.joining(delimiter))
       );
     }
   }
