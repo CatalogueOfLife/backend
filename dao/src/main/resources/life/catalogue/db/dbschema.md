@@ -36,6 +36,10 @@ ALTER TABLE s_sync ADD PRIMARY KEY (dataset_key, sector_key, attempt);
 UPDATE sector_import i SET dataset_attempt=s.dataset_attempt 
 FROM s_sync s
 WHERE s.dataset_key=i.dataset_key AND s.sector_key=i.sector_key AND s.attempt=i.attempt;
+
+DROP TABLE s_sync;
+DROP TABLE s_sector;
+DROP TABLE s_source_attempts;
 ```
 
 ### 2022-03-09 new higher ranks
