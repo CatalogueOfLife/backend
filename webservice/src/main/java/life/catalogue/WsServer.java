@@ -331,7 +331,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(ManagedUtils.stopOnly(cImporter));
 
     // gbif sync
-    GbifSyncManager gbifSync = new GbifSyncManager(cfg.gbif, getSqlSessionFactory(), jerseyClient);
+    GbifSyncManager gbifSync = new GbifSyncManager(cfg.gbif, ddao, getSqlSessionFactory(), jerseyClient);
     env.lifecycle().manage(ManagedUtils.stopOnly(gbifSync));
 
     // assembly
@@ -349,7 +349,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
-      importManager, gbifSync, ni, executor, idMap, validator));
+      importManager, ddao, gbifSync, ni, executor, idMap, validator));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetEditorResource(adao));

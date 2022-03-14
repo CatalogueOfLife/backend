@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.GbifConfig;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.jersey.exception.PersistenceExceptionMapper;
 
@@ -27,6 +28,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(GbifSyncJob.class);
   private final Client client;
   private final SqlSessionFactory sessionFactory;
+  private final DatasetDao ddao;
   private final GbifConfig cfg;
   private Set<UUID> keys;
   private int created;
@@ -35,14 +37,15 @@ public class GbifSyncJob extends GlobalBlockingJob {
   private DatasetMapper mapper;
   private DatasetPager pager;
 
-  public GbifSyncJob(GbifConfig cfg, Client client, SqlSessionFactory sessionFactory, int userKey) {
-    this(cfg, client, sessionFactory, userKey, Collections.emptySet());
+  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey) {
+    this(cfg, client, ddao, sessionFactory, userKey, Collections.emptySet());
   }
 
-  public GbifSyncJob(GbifConfig cfg, Client client, SqlSessionFactory sessionFactory, int userKey, Set<UUID> keys) {
+  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, Set<UUID> keys) {
     super(userKey, JobPriority.HIGH);
     this.cfg = cfg;
     this.client = client;
+    this.ddao = ddao;
     this.sessionFactory = sessionFactory;
     this.keys = keys == null ? new HashSet<>() : keys;
   }
@@ -123,7 +126,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
           // create new dataset
           gbif.setCreatedBy(Users.GBIF_SYNC);
           gbif.setModifiedBy(Users.GBIF_SYNC);
-          mapper.create(gbif.getDataset());
+          ddao.create(gbif.getDataset(), Users.GBIF_SYNC);
           mapper.updateSettings(gbif.getKey(), gbif.getSettings(), Users.GBIF_SYNC);
           created++;
           key = gbif.getKey();

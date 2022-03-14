@@ -15,6 +15,7 @@ import life.catalogue.common.io.LineReader;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.es.NameUsageIndexService;
@@ -74,11 +75,13 @@ public class AdminResource {
   private final NameIndex namesIndex;
   private final JobExecutor exec;
   private final Validator validator;
+  private final DatasetDao ddao;
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
-                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, GbifSyncManager gbifSync,
+                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
                        NameIndex namesIndex, JobExecutor executor, IdMap idMap, Validator validator) {
     this.factory = factory;
+    this.ddao = ddao;
     this.assembly = assembly;
     this.imgService = imgService;
     this.ni = ni;
@@ -220,7 +223,7 @@ public class AdminResource {
   @Path("/gbif-sync")
   @Consumes(MediaType.APPLICATION_JSON)
   public BackgroundJob syncGBIF(List<UUID> keys, @Auth User user) {
-    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), factory, user.getKey(), keys == null ? null : new HashSet<>(keys));
+    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), keys == null ? null : new HashSet<>(keys));
     return runJob(job);
   }
 
@@ -230,7 +233,7 @@ public class AdminResource {
   public BackgroundJob syncGBIFText(InputStream keysAsText, @Auth User user) {
     var lr = new LineReader(keysAsText);
     var keys = IterUtils.setOf(lr, UUID::fromString);
-    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), factory, user.getKey(), keys);
+    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), keys);
     return runJob(job);
   }
 

@@ -4,6 +4,8 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.GbifConfig;
 
+import life.catalogue.dao.DatasetDao;
+
 import org.gbif.nameparser.utils.NamedThreadFactory;
 
 import java.util.UUID;
@@ -31,11 +33,13 @@ public class GbifSyncManager implements Managed {
   private ScheduledExecutorService scheduler;
   private GbifSyncJob job;
   private final GbifConfig cfg;
+  private final DatasetDao ddao;
   private final SqlSessionFactory sessionFactory;
   private final Client client;
   
-  public GbifSyncManager(GbifConfig gbif, SqlSessionFactory sessionFactory, Client client) {
+  public GbifSyncManager(GbifConfig gbif, DatasetDao ddao, SqlSessionFactory sessionFactory, Client client) {
     this.cfg = gbif;
+    this.ddao = ddao;
     this.sessionFactory = sessionFactory;
     this.client = client;
   }
@@ -45,7 +49,7 @@ public class GbifSyncManager implements Managed {
   }
   
   public void syncNow() {
-    Runnable job = new GbifSyncJob(cfg, client, sessionFactory, Users.GBIF_SYNC);
+    Runnable job = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC);
     job.run();
   }
 
@@ -60,7 +64,7 @@ public class GbifSyncManager implements Managed {
           new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
       );
       LOG.info("Enable GBIF registry sync job every {} hours", cfg.syncFrequency);
-      job = new GbifSyncJob(cfg, client, sessionFactory, Users.GBIF_SYNC);
+      job = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC);
       scheduler.scheduleAtFixedRate(job, 0, cfg.syncFrequency, TimeUnit.HOURS);
    
     } else {
