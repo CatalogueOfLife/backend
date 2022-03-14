@@ -14,7 +14,28 @@ and done it manually. So we can as well log changes here.
 ### 2022-03-11 dataset attempt stored with sector import 
 ```
 ALTER TABLE sector_import ADD COLUMN dataset_attempt INTEGER;
---TODO: update dataset_attempt in existing imports
+
+-- update dataset_attempt in existing imports
+CREATE TABLE s_source_attempts as SELECT dataset_key as source_key, attempt, finished, state 
+FROM dataset_import di 
+WHERE job='ImportJob' and state ='FINISHED';
+ALTER TABLE s_source_attempts ADD PRIMARY KEY (source_key, attempt);
+
+CREATE TABLE s_sector AS SELECT DISTINCT p.key as project_key, subject_dataset_key AS source_key, s.id AS sector_key 
+FROM sector s JOIN dataset d on d.key=s.dataset_key LEFT JOIN dataset p on p.key=coalesce(d.source_key,d.key) ORDER BY 1,2,3;
+ALTER TABLE s_sector ADD PRIMARY KEY (project_key, sector_key);
+
+CREATE TABLE s_sync AS SELECT si.dataset_key,si.sector_key,si.attempt,si.state,si.finished, s.source_key, max(a.attempt) as dataset_attempt
+FROM sector_import si 
+ LEFT JOIN s_sector s ON s.sector_key=si.sector_key AND s.project_key=si.dataset_key
+ LEFT JOIN s_source_attempts a ON s.source_key=a.source_key AND a.finished < si.started 
+WHERE job='SectorSync'
+GROUP BY 1,2,3,4,5,6;
+ALTER TABLE s_sync ADD PRIMARY KEY (dataset_key, sector_key, attempt);
+
+UPDATE sector_import i SET dataset_attempt=s.dataset_attempt 
+FROM s_sync s
+WHERE s.dataset_key=i.dataset_key AND s.sector_key=i.sector_key AND s.attempt=i.attempt;
 ```
 
 ### 2022-03-09 new higher ranks
