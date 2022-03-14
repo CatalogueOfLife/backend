@@ -109,9 +109,8 @@
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">
-    DELETE FROM sector_import si
-    USING sector s
-    WHERE si.sector_key=s.id AND s.dataset_key=#{datasetKey}
+    DELETE FROM sector_import
+    WHERE dataset_key=#{datasetKey}
   </delete>
 
   <select id="countBareName" resultType="integer">
