@@ -46,6 +46,10 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
   ExecutorService exec;
   private final boolean jersey;
 
+  public AbstractMybatisCmd(String name, String description) {
+    this(name, false, description);
+  }
+
   public AbstractMybatisCmd(String name, boolean initJersey, String description) {
     super(name, description);
     this.jersey = initJersey;

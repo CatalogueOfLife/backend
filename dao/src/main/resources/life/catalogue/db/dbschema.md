@@ -37,6 +37,9 @@ UPDATE sector_import i SET dataset_attempt=s.dataset_attempt
 FROM s_sync s
 WHERE s.dataset_key=i.dataset_key AND s.sector_key=i.sector_key AND s.attempt=i.attempt;
 
+-- check syncs without dataset_attempt
+SELECT dataset_key, sector_key, attempt, job, state, started from sector_import WHERE dataset_attempt IS NULL ORDER BY 1,2,3;
+
 DROP TABLE s_sync;
 DROP TABLE s_sector;
 DROP TABLE s_source_attempts;

@@ -50,7 +50,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   private final SqlSessionFactory factory;
   private final NameUsageProcessor processor;
 
-  @VisibleForTesting
   public NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
     this.client = client;
     this.esConfig = esConfig;

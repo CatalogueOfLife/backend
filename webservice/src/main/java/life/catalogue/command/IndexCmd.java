@@ -24,7 +24,7 @@ import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
-public class IndexCmd extends AbstractPromptCmd {
+public class IndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(IndexCmd.class);
 
   private static final String ARG_KEY = "key";
@@ -80,35 +80,32 @@ public class IndexCmd extends AbstractPromptCmd {
   }
 
   @Override
-  public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
+  void execute() throws Exception {
     try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
-      try (HikariDataSource dataSource = cfg.db.pool()) {
-        SqlSessionFactory factory = MybatisFactory.configure(dataSource, "indexAllCmd");
-        NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
-        if (namespace.getInt(ARG_THREADS) != null) {
-          cfg.es.indexingThreads = namespace.getInt(ARG_THREADS);
-          Preconditions.checkArgument(cfg.es.indexingThreads > 0, "Needs at least one indexing thread");
-        }
-        if (namespace.getBoolean(ARG_ALL)) {
-          svc.indexAll();
+      NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
+      if (ns.getInt(ARG_THREADS) != null) {
+        cfg.es.indexingThreads = ns.getInt(ARG_THREADS);
+        Preconditions.checkArgument(cfg.es.indexingThreads > 0, "Needs at least one indexing thread");
+      }
+      if (ns.getBoolean(ARG_ALL)) {
+        svc.indexAll();
 
-        } else if(namespace.getList(ARG_KEY) != null) {
-          List<Integer> keys = namespace.getList(ARG_KEY);
-          LOG.info("Start sequential indexing of {} datasets", keys.size());
-          Set<String> failed = new HashSet<>();
-          for (Integer key : keys) {
-            try {
-              svc.indexDataset(key);
-            } catch (RuntimeException e) {
-              failed.add(key.toString());
-              LOG.error("Failed to index dataset {}", key, e);
-            }
+      } else if (ns.getList(ARG_KEY) != null) {
+        List<Integer> keys = ns.getList(ARG_KEY);
+        LOG.info("Start sequential indexing of {} datasets", keys.size());
+        Set<String> failed = new HashSet<>();
+        for (Integer key : keys) {
+          try {
+            svc.indexDataset(key);
+          } catch (RuntimeException e) {
+            failed.add(key.toString());
+            LOG.error("Failed to index dataset {}", key, e);
           }
-          LOG.info("Finished indexing {} datasets. Failed: {}", keys.size(), String.join(", ", failed));
-
-        } else {
-          System.out.println("No indexing argument given. See help for options");
         }
+        LOG.info("Finished indexing {} datasets. Failed: {}", keys.size(), String.join(", ", failed));
+
+      } else {
+        System.out.println("No indexing argument given. See help for options");
       }
     }
   }
