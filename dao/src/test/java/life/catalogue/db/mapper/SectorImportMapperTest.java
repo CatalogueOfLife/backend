@@ -59,6 +59,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     d.setDatasetKey(s.getDatasetKey());
     d.setSectorKey(s.getId());
     d.setAttempt(attempts++);
+    d.setDatasetAttempt(73);
     d.addWarning("warning 1");
     d.addWarning("warning 2");
     return d;

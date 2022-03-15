@@ -20,6 +20,7 @@
     state,
     dataset_key,
     sector_key,
+    dataset_attempt,
     warnings,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value=""/>
@@ -30,6 +31,7 @@
     #{imp.state}::IMPORTSTATE,
     #{imp.datasetKey},
     #{imp.sectorKey},
+    #{imp.datasetAttempt},
     #{imp.warnings, typeHandler=life.catalogue.db.type2.StringCollectionArrayTypeHandler},
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsProps"/>
   </sql>
