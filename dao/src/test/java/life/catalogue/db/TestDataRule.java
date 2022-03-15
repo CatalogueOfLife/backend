@@ -66,6 +66,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public final TestData testData;
   private SqlSession session;
+  private boolean skipAfter = false;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
   public final DatasetDao.KeyGenerator keyGenerator;
 
@@ -249,22 +250,28 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   @Override
   protected void after() {
-    session.close();
+    if (!skipAfter) {
+      session.close();
 
-    try (SqlSession session = sqlSessionFactorySupplier.get().openSession(false)) {
-      LOG.info("remove managed sequences not bound to a table");
-      DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-      for (Dataset d : session.getMapper(DatasetMapper.class).process(null)) {
-        LOG.debug("Remove managed sequences for dataset {}", d.getKey());
-        pm.deleteManagedSequences(d.getKey());
+      try (SqlSession session = sqlSessionFactorySupplier.get().openSession(false)) {
+        LOG.info("remove managed sequences not bound to a table");
+        DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
+        for (Dataset d : session.getMapper(DatasetMapper.class).process(null)) {
+          LOG.debug("Remove managed sequences for dataset {}", d.getKey());
+          pm.deleteManagedSequences(d.getKey());
+        }
+        session.commit();
       }
-      session.commit();
     }
   }
 
   @Override
   public void close() {
     after();
+  }
+
+  public void skipAfter() {
+    this.skipAfter = true;
   }
 
   public void initSession() {
