@@ -130,7 +130,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     public void setMax(SqlSessionFactory factory) {
       try (SqlSession session = factory.openSession(true)) {
         var dm = session.getMapper(DatasetMapper.class);
-        int ext = intDefault(dm.getMaxKey(null), minExternalDatasetKey);
+        int ext = Math.max(minExternalDatasetKey, intDefault(dm.getMaxKey(null), 0));
         int proj = intDefault(dm.getMaxKey(minExternalDatasetKey), 10);
         setMax(ext, proj);
       }

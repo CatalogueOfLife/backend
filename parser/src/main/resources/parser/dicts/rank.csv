@@ -30,7 +30,7 @@ agglom,SPECIES_AGGREGATE
 aggr,SPECIES_AGGREGATE
 aggregate,SPECIES_AGGREGATE
 agregate,SPECIES_AGGREGATE
-alliance
+alliance,UNRANKED
 alpha,INFRASPECIFIC_NAME
 ap,INFRASUBSPECIFIC_NAME
 art,SPECIES
@@ -66,6 +66,7 @@ especies,SPECIES
 f,FORM
 fam,FAMILY
 familia,FAMILY
+familie,FAMILY
 familyclade,FAMILY
 fm,FAMILY
 fma,FORM
@@ -107,6 +108,7 @@ kingdomclade,KINGDOM
 kl,CLASS
 kla,CLASS
 klasse,CLASS
+königreich,KINGDOM
 legio,LEGION
 lysotype,PHAGOVAR
 megaorder,MAGNORDER
@@ -151,7 +153,6 @@ phylumdivision,PHYLUM
 physiological type,BIOVAR
 prol,PROLES
 prolata,PROLES
-pseudovar
 race,PROLES
 reg,KINGDOM
 regn,KINGDOM
@@ -232,8 +233,8 @@ superregnum,SUPERKINGDOM
 superser,SUPERSERIES
 supersp,SPECIES_AGGREGATE
 superspecies,SPECIES_AGGREGATE
-supersubtrib
-supersubtribe
+supersubtrib,SUPRAGENERIC_NAME
+supersubtribe,SUPRAGENERIC_NAME
 supertrib,SUPERTRIBE
 suprasect,SUPRAGENERIC_NAME
 susbp,SUBSPECIES
