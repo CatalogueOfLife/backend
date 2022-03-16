@@ -1,5 +1,7 @@
 package life.catalogue.db.mapper;
 
+import com.google.common.collect.Iterables;
+
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchingMode;
@@ -29,8 +31,16 @@ public interface DuplicateMapper {
                                  @Param("codeDifferent") Boolean codeDifferent,
                                  @Param("page") Page page);
   
-  List<Duplicate.UsageDecision> namesByIds(@Param("datasetKey") int datasetKey, @Param("ids") Collection<String> ids);
-
+  /**
+   * @param ids usage ids to return usage decisions for
+   */
+  default List<Duplicate.UsageDecision> namesByIds(@Param("datasetKey") int datasetKey, Collection<String> ids) {
+    createIdTable();
+    Iterables.partition(ids, 10000).forEach(this::insertTableIdBatch);
+    var res = namesByTableIds(datasetKey);
+    dropIdTable();
+    return res;
+  }
 
   /**
    * See DuplicateDao for parameter descriptions...
@@ -54,6 +64,26 @@ public interface DuplicateMapper {
   /**
    * @param ids usage ids to return usage decisions for
    */
-  List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("projectKey") Integer projectKey, @Param("ids") Collection<String> ids);
+  default List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("projectKey") Integer projectKey, Collection<String> ids) {
+    createIdTable();
+    Iterables.partition(ids, 10000).forEach(this::insertTableIdBatch);
+    var res = usagesByTableIds(datasetKey, projectKey);
+    dropIdTable();
+    return res;
+  }
 
+  //
+  // INTERNAL METHODS _ DONT USE
+  //
+
+  @Deprecated
+  List<Duplicate.UsageDecision> namesByTableIds(@Param("datasetKey") int datasetKey);
+  @Deprecated
+  List<Duplicate.UsageDecision> usagesByTableIds(@Param("datasetKey") int datasetKey, @Param("projectKey") Integer projectKey);
+  @Deprecated
+  void createIdTable();
+  @Deprecated
+  void dropIdTable();
+  @Deprecated
+  void insertTableIdBatch(@Param("ids") Collection<String> ids);
 }

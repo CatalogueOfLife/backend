@@ -1,5 +1,7 @@
 package life.catalogue.db.mapper;
 
+import com.google.common.collect.Iterables;
+
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.EditorialDecision;
@@ -8,6 +10,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.collection.IterUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 
@@ -17,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.ibatis.session.SqlSession;
 import org.javers.common.collections.Lists;
@@ -61,7 +66,8 @@ public class DuplicateMapperTest {
   
   @Test
   public void usagesWithDecisions() {
-    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Datasets.COL, Lists.immutableListOf("45", "46"));
+    List<String> ids = Lists.immutableListOf("55", "46");
+    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Datasets.COL, ids);
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
@@ -78,13 +84,14 @@ public class DuplicateMapperTest {
     d1.setMode(EditorialDecision.Mode.UPDATE);
     dm.create(d1);
     
-    res = mapper.usagesByIds(datasetKey, Datasets.COL, Lists.immutableListOf("45", "46"));
+    res = mapper.usagesByIds(datasetKey, Datasets.COL, ids);
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
     }
 
-    res = mapper.usagesByIds(datasetKey, Datasets.COL, Lists.immutableListOf("45"));
+    ids = Lists.immutableListOf("45");
+    res = mapper.usagesByIds(datasetKey, Datasets.COL, ids);
     EditorialDecision d = res.get(0).getDecision();
     assertNotNull(d);
     assertNotNull(d.getKey());
@@ -100,13 +107,22 @@ public class DuplicateMapperTest {
 
   @Test
   public void usagesByIds() {
-    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Datasets.COL, Lists.immutableListOf("55", "46"));
-    assertEquals(2, res.size());
-    for (Duplicate.UsageDecision u : res) {
-      assertFalse(u.getClassification().isEmpty());
-      assertNull(u.getDecision());
-      assertNotNull(u.getUsage());
+    List<String> ids = Lists.immutableListOf("55", "46");
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      var dm = session.getMapper(DuplicateMapper.class);
+      List<Duplicate.UsageDecision> res = dm.usagesByIds(datasetKey, Datasets.COL, ids);
+      assertEquals(2, res.size());
+      for (Duplicate.UsageDecision u : res) {
+        assertFalse(u.getClassification().isEmpty());
+        assertNull(u.getDecision());
+        assertNotNull(u.getUsage());
+      }
+
+      // test with larger number of parameter ids than postgres 32767 limit
+      ids = IntStream.range(1, 50000).boxed().map(String::valueOf).collect(Collectors.toList());
+      res = dm.usagesByIds(datasetKey, Datasets.COL, ids);
     }
+
   }
   
   @Test
