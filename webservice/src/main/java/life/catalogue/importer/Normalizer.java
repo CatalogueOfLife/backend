@@ -217,25 +217,27 @@ public class Normalizer implements Callable<Boolean> {
 
         if (ru.rank.isSpeciesOrBelow()) {
           NeoName nn = store.names().objByNode(ru.nameNode);
+          Name nnn = nn.getName();
           Node gn = Traversals.parentWithRankOf(ru.usageNode, Rank.GENUS);
           if (gn != null) {
-            NeoName g = store.nameByUsage(gn);
+            Name g = store.nameByUsage(gn).getName();
             // does the genus name match up?
-            if (nn.getName().isParsed() && g.getName().isParsed() && !Objects.equals(nn.getName().getGenus(), g.getName().getUninomial())) {
-              store.addIssues(nn.getName(), Issue.PARENT_NAME_MISMATCH);
+            if (nnn.isParsed() && g.isParsed() && !Objects.equals(nnn.getGenus(), g.getUninomial())) {
+              store.addIssues(nnn, Issue.PARENT_NAME_MISMATCH);
             }
             // compare combination authorship years if existing
-            if (nn.getName().getCombinationAuthorship().getYear() != null && g.getName().getCombinationAuthorship().getYear() != null) {
-              if (isBefore(nn.getName().getCombinationAuthorship().getYear(), g.getName().getCombinationAuthorship().getYear())) {
-                store.addIssues(nn.getName(), Issue.PUBLISHED_BEFORE_GENUS);
+            if (nnn.getCombinationAuthorship() != null && nnn.getCombinationAuthorship().getYear() != null
+                && g.getCombinationAuthorship() != null && g.getCombinationAuthorship().getYear() != null) {
+              if (isBefore(nnn.getCombinationAuthorship().getYear(), g.getCombinationAuthorship().getYear())) {
+                store.addIssues(nnn, Issue.PUBLISHED_BEFORE_GENUS);
               }
 
-            } else if (nn.getName().getPublishedInId() != null && g.getName().getPublishedInId() != null) {
+            } else if (nnn.getPublishedInId() != null && g.getPublishedInId() != null) {
               // compare publication years if existing
-              Reference spr = store.references().get(nn.getName().getPublishedInId());
-              Reference gr = store.references().get(g.getName().getPublishedInId());
+              Reference spr = store.references().get(nnn.getPublishedInId());
+              Reference gr = store.references().get(g.getPublishedInId());
               if (spr.getYear() != null && gr.getYear() != null && spr.getYear() < gr.getYear()) {
-                store.addIssues(nn.getName(), Issue.PUBLISHED_BEFORE_GENUS);
+                store.addIssues(nnn, Issue.PUBLISHED_BEFORE_GENUS);
               }
             }
           }
@@ -244,7 +246,7 @@ public class Normalizer implements Callable<Boolean> {
           if (ru.rank.isInfraspecific()) {
             Node sp = Traversals.parentWithRankOf(ru.usageNode, Rank.SPECIES);
             if (sp == null) {
-              store.addIssues(nn.getName(), Issue.PARENT_SPECIES_MISSING);
+              store.addIssues(nnn, Issue.PARENT_SPECIES_MISSING);
             }
           }
         }
