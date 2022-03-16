@@ -84,7 +84,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     setKey(key);
   }
 
-    @Override
+  @Override
   public Integer getKey() {
     return key;
   }

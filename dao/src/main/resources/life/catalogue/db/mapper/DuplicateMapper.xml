@@ -26,6 +26,9 @@
   </resultMap>
 
   <select id="namesByIds" resultMap="nameDecisionResultMap">
+    CREATE TEMPORARY TABLE duplicate_ids ON COMMIT DROP
+    AS VALUES <foreach collection="ids" item="id" separator=",">(#{id})</foreach>;
+
     SELECT
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
       <property name="alias" value="n"/>
@@ -34,11 +37,15 @@
     ,
     coalesce(parseInt(n.combination_year), r.year) AS n_publishedInYear
     FROM name n
-    LEFT JOIN reference r ON n.published_in_id=r.id AND n.dataset_key=r.dataset_key
-    WHERE n.dataset_key=#{datasetKey} AND n.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
+      JOIN duplicate_ids i ON i.column1=n.id
+      LEFT JOIN reference r ON n.published_in_id=r.id AND n.dataset_key=r.dataset_key
+    WHERE n.dataset_key=#{datasetKey}
   </select>
 
   <select id="usagesByIds" resultMap="usageDecisionResultMap">
+    CREATE TEMPORARY TABLE duplicate_ids ON COMMIT DROP
+    AS VALUES <foreach collection="ids" item="id" separator=",">(#{id})</foreach>;
+
     SELECT
     u.is_synonym,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
@@ -67,13 +74,13 @@
       <property name="prefix" value="ed_"/>
     </include>
     FROM name_usage u
+      JOIN duplicate_ids i ON i.column1=u.id
       JOIN name n ON n.dataset_key=#{datasetKey} AND u.name_id=n.id
       LEFT JOIN name_usage a ON a.dataset_key=#{datasetKey} AND u.parent_id=a.id AND u.is_synonym
       LEFT JOIN name an ON an.dataset_key=#{datasetKey} AND a.name_id=an.id
       LEFT JOIN reference r ON r.dataset_key=#{datasetKey} AND n.published_in_id=r.id
       LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.subject_dataset_key=#{datasetKey} AND ed.dataset_key=#{projectKey}
     WHERE u.dataset_key=#{datasetKey}
-      AND u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
   </select>
 
   <sql id="keyCol">
