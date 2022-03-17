@@ -14,7 +14,7 @@ import org.apache.ibatis.session.SqlSession;
 import java.util.*;
 
 /**
- * Command that rebuilds the name usage archive for one or all projects.
+ * Command that rebuilds the name usage archive for one or all projects based on existing id reports.
  */
 public class ArchiveCmd extends AbstractMybatisCmd {
   private static final String ARG_KEY = "key";

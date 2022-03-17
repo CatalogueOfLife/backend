@@ -12,6 +12,11 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Service that builds the name usage archive for projects based on their existing id_reports.
+ * It requires an empty archive. If you want to rebuild an existing archive please manually delete the existing archive records first.
+ * This guarantees that no existing archive is deleted or overwritten accidently by this tool.
+ */
 public class NameUsageArchiver {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageArchiver.class);
   private final SqlSessionFactory factory;
