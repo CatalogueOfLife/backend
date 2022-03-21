@@ -42,9 +42,9 @@ public class NameDaoTest extends DaoTestBase {
     Name n = TestEntityGenerator.newName("n2");
     dao.create(n, Users.IMPORTER);
 
-    NameMapper.NameWithNidx nidx = mapper(NameMapper.class).getWithNidx(n);
-    assertEquals(MatchType.VARIANT, nidx.namesIndexType);
-    assertEquals(match.getKey(), nidx.namesIndexId);
+    Name nidx = mapper(NameMapper.class).get(n);
+    assertEquals(MatchType.VARIANT, nidx.getNamesIndexType());
+    assertEquals(match.getKey(), nidx.getNamesIndexId());
   }
 
   @Test

@@ -57,8 +57,8 @@ public class ArchivedNameMapperTest extends MapperTestBase<ArchivedNameMapper> {
     mapper().processArchivedNames(999).forEach(o -> fail("should never reach here"));
     mapper().processArchivedNames(3).forEach(n -> {
       assertEquals(orig.getId(), n.getId()); // we expose usage ids only and use those in the archived match table too
-      assertEquals(nidx.getKey(), n.namesIndexId);
-      assertEquals(MatchType.EXACT, n.namesIndexType);
+      assertEquals(nidx.getKey(), n.getNamesIndexId());
+      assertEquals(MatchType.EXACT, n.getNamesIndexType());
       assertEquals(orig.getName().getRank(), n.getRank());
       assertEquals(orig.getName().getCode(), n.getCode());
       assertEquals(orig.getName().getScientificName(), n.getScientificName());

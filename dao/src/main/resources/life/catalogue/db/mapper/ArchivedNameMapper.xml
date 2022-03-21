@@ -108,10 +108,6 @@
     <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
   </resultMap>
 
-  <resultMap id="archivedNidxResultMap" type="NameWithNidx" autoMapping="true" extends="life.catalogue.db.mapper.NameMapper.nameResultMap">
-    <id property="id" column="id"/>
-  </resultMap>
-
   <resultMap id="archivedSimpleResultMap" type="ArchivedSimpleNameWithNidx" autoMapping="true">
     <id property="id" column="id"/>
   </resultMap>
@@ -174,7 +170,7 @@
     ORDER BY ni.canonical_id, ni.id
   </select>
 
-  <select id="processArchivedNames" parameterType="map" resultMap="archivedNidxResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+  <select id="processArchivedNames" parameterType="map" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT
       u.id AS id,
       u.dataset_key,

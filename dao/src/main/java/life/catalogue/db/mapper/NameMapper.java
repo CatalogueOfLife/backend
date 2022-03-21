@@ -58,12 +58,6 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
                                  @Nullable @Param("sectorKey") Integer sectorKey);
 
   /**
-   * Iterates over all names of a given dataset that have been modified since the given time and processes them with the supplied handler.
-   */
-  Cursor<Name> processSince(@Param("datasetKey") int datasetKey,
-                    @Param("since") LocalDateTime since);
-
-  /**
    * Returns the list of names published in the same reference.
    */
   List<Name> listByReference(@Param("datasetKey") int datasetKey, @Param("refId") String publishedInId);
@@ -91,17 +85,5 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   List<Name> listOrphans(@Param("datasetKey") int datasetKey,
                          @Param("before") @Nullable LocalDateTime before,
                          @Param("page") Page page);
-
-  class NameWithNidx extends Name {
-    public Integer namesIndexId;
-    public MatchType namesIndexType;
-  }
-
-  Cursor<NameWithNidx> processDatasetWithNidx(@Param("datasetKey") int datasetKey);
-
-  /**
-   * Same as regular get, but includes a names index mapping
-   */
-  NameWithNidx getWithNidx(DSID<String> key);
 
 }

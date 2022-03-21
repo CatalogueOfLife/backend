@@ -195,5 +195,11 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   private static Name newAcceptedName(String scientificName) {
     return newName(DATASET11.getKey(), scientificName.toLowerCase().replace(' ', '-'), scientificName);
   }
-  
+
+  @Override
+  Name removeDbCreatedProps(Name obj) {
+    obj.setNamesIndexId(null);
+    obj.setNamesIndexType(null);
+    return super.removeDbCreatedProps(obj);
+  }
 }

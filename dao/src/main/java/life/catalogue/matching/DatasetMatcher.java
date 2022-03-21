@@ -1,6 +1,7 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.model.IndexName;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
@@ -59,7 +60,7 @@ public class DatasetMatcher {
       update = nmm.exists(datasetKey);
       final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.MANAGED;
       LOG.info("{} name matches for {}{}", update ? "Update" : "Create", isProject? "project ":"", datasetKey);
-      nm.processDatasetWithNidx(datasetKey).forEach(hn);
+      nm.processDataset(datasetKey).forEach(hn);
       // also match archived names
       if (isProject) {
         final int totalBeforeArchive = total;
@@ -112,7 +113,7 @@ public class DatasetMatcher {
     }
 
     @Override
-    void persist(NameMapper.NameWithNidx n, NameMatch m, Integer oldId, Integer newKey) {
+    void persist(Name n, NameMatch m, Integer oldId, Integer newKey) {
       if (oldId == null) {
         nmm.create(n, n.getSectorKey(), newKey, m.getType());
       } else if (newKey != null){
@@ -131,7 +132,7 @@ public class DatasetMatcher {
     }
 
     @Override
-    void persist(NameMapper.NameWithNidx n, NameMatch m, Integer oldId, Integer newKey) {
+    void persist(Name n, NameMatch m, Integer oldId, Integer newKey) {
       if (oldId == null) {
         nmm.create(n, newKey, m.getType());
       } else if (newKey != null){
@@ -142,7 +143,7 @@ public class DatasetMatcher {
     }
   }
 
-  abstract class BulkMatchHandler implements Consumer<NameMapper.NameWithNidx>, AutoCloseable {
+  abstract class BulkMatchHandler implements Consumer<Name>, AutoCloseable {
     private final int datasetKey;
     private final boolean allowInserts;
     final SqlSession batchSession;
@@ -157,9 +158,9 @@ public class DatasetMatcher {
     }
   
     @Override
-    public void accept(NameMapper.NameWithNidx n) {
+    public void accept(Name n) {
       _total++;
-      Integer oldId = n.namesIndexId;
+      Integer oldId = n.getNamesIndexId();
       NameMatch m = ni.match(n, allowInserts, false);
       if (!m.hasMatch()) {
         _nomatch++;
@@ -178,7 +179,7 @@ public class DatasetMatcher {
       }
     }
 
-    abstract void persist(NameMapper.NameWithNidx n, NameMatch m, Integer oldId, Integer newKey);
+    abstract void persist(Name n, NameMatch m, Integer oldId, Integer newKey);
 
     @Override
     public void close() throws Exception {

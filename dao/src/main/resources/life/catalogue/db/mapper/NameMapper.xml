@@ -47,9 +47,23 @@
     ${alias}.modified_by AS ${prefix}modified_by
   </sql>
 
+  <sql id="nameColsNidx">
+    <include refid="life.catalogue.db.mapper.NameMapper.nameCols"/>,
+    ${aliasNI}.index_id AS ${prefix}namesIndexId,
+    coalesce(${aliasNI}.type,'NONE') AS ${prefix}namesIndexType
+  </sql>
+
   <sql id="SELECT">
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
       <property name="alias" value="n"/>
+      <property name="prefix" value=""/>
+    </include>
+  </sql>
+
+  <sql id="SELECT_NIDX">
+    <include refid="life.catalogue.db.mapper.NameMapper.nameColsNidx">
+      <property name="alias" value="n"/>
+      <property name="aliasNI" value="nm"/>
       <property name="prefix" value=""/>
     </include>
   </sql>
@@ -140,6 +154,8 @@
 
   <sql id="FROM">name n</sql>
 
+  <sql id="FROM_NIDX">name n LEFT JOIN name_match nm ON nm.dataset_key=n.dataset_key AND nm.name_id=n.id</sql>
+
   <!-- A mapping to Name, mostly auto mapped -->
   <resultMap id="nameResultMap" type="Name" autoMapping="true">
     <id property="id" column="id"/>
@@ -154,8 +170,6 @@
       <result property="year" column="basionym_year"/>
     </association>
   </resultMap>
-
-  <resultMap id="nameIdxResultMap" type="NameWithNidx" autoMapping="true" extends="nameResultMap" />
 
   <select id="count" resultType="integer">
     SELECT count(*) FROM name WHERE dataset_key=#{datasetKey}
@@ -172,7 +186,7 @@
   <select id="list" resultMap="nameResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey}
+    WHERE n.dataset_key=#{datasetKey}
     ORDER BY id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -180,19 +194,19 @@
   <select id="listByReference" resultMap="nameResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey} AND n.published_in_id = #{refId}
+    WHERE n.dataset_key=#{datasetKey} AND n.published_in_id = #{refId}
     ORDER BY id
   </select>
 
   <select id="get" resultMap="nameResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    WHERE dataset_key=#{key.datasetKey} AND n.id = #{key.id}
+    SELECT <include refid="SELECT_NIDX"/>
+    FROM <include refid="FROM_NIDX"/>
+    WHERE n.dataset_key=#{key.datasetKey} AND n.id = #{key.id}
   </select>
 
   <select id="getByUsage" resultMap="nameResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
+    SELECT <include refid="SELECT_NIDX"/>
+    FROM <include refid="FROM_NIDX"/>
       JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
     WHERE u.dataset_key=#{datasetKey} AND u.id = #{usageId}
   </select>
@@ -200,14 +214,14 @@
   <select id="listByIds" resultMap="nameResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey} AND n.id IN
+    WHERE n.dataset_key=#{datasetKey} AND n.id IN
     <foreach item="k" collection="ids" open="(" separator="," close=")">#{k}</foreach>
   </select>
 
   <select id="ambiguousRankNameIds" resultType="string">
     SELECT id
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey} AND rank = ANY(ambiguousRanks())
+    WHERE n.dataset_key=#{datasetKey} AND rank = ANY(ambiguousRanks())
     <if test="sectorKey">
       AND sector_key = #{sectorKey}
     </if>
@@ -216,7 +230,7 @@
   <select id="processNameStrings" resultType="String">
     SELECT concat_ws(' ', scientific_name, authorship)
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey}
+    WHERE n.dataset_key=#{datasetKey}
     <if test="sectorKey != null">
       AND sector_key = #{sectorKey}
     </if>
@@ -224,7 +238,7 @@
   </select>
 
   <select id="indexGroup" resultMap="nameResultMap">
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT_NIDX"/>
     FROM name_match nm
       JOIN name n ON n.id=nm.name_id AND n.dataset_key=nm.dataset_key
     WHERE nm.index_id = #{id}
@@ -311,30 +325,10 @@
   </delete>
 
   <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
+    SELECT <include refid="SELECT_NIDX"/>
+    FROM <include refid="FROM_NIDX"/>
     WHERE n.dataset_key = #{datasetKey}
     ORDER BY rank, scientific_name
-  </select>
-
-  <select id="processSince" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    WHERE n.dataset_key = #{datasetKey}
-      AND modified &gt; #{since}
-  </select>
-
-  <select id="processDatasetWithNidx" parameterType="map" resultMap="nameIdxResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT"/>, nm.index_id AS namesIndexId, nm.type AS namesIndexType
-    FROM <include refid="FROM"/> LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
-    WHERE n.dataset_key = #{datasetKey}
-    ORDER BY rank, scientific_name
-  </select>
-
-  <select id="getWithNidx" parameterType="map" resultMap="nameIdxResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT"/>, nm.index_id AS namesIndexId, coalesce(nm.type,'NONE') AS namesIndexType
-    FROM <include refid="FROM"/> LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{key.datasetKey}
-    WHERE n.dataset_key = #{key.datasetKey} AND n.id = #{key.id}
   </select>
 
   <delete id="deleteByTemp" parameterType="map">

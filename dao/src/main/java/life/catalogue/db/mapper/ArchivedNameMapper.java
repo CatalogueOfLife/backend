@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.ArchivedNameUsage;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.db.*;
 
@@ -34,7 +35,7 @@ public interface ArchivedNameMapper extends CRUD<DSID<String>, ArchivedNameUsage
    * Process all archived name usages as Name instances with names index match infos.
    * Not the "Name" key is exceptionally a usage key!
    */
-  Cursor<NameMapper.NameWithNidx> processArchivedNames(@Param("datasetKey") int datasetKey);
+  Cursor<Name> processArchivedNames(@Param("datasetKey") int datasetKey);
 
 
   class ArchivedSimpleNameWithNidx extends SimpleNameWithNidx {

@@ -55,23 +55,23 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
     NameMapper nm = mapper(NameMapper.class);
     Integer nidx = 1;
     mapper().update(NAME1, nidx, MatchType.EXACT);
-    NameMapper.NameWithNidx n = nm.getWithNidx(NAME1);
-    assertEquals(MatchType.EXACT, n.namesIndexType);
-    assertEquals(nidx, n.namesIndexId);
+    Name n = nm.get(NAME1);
+    assertEquals(MatchType.EXACT, n.getNamesIndexType());
+    assertEquals(nidx, n.getNamesIndexId());
 
     IndexName in = new IndexName(TestEntityGenerator.NAME4);
     mapper(NamesIndexMapper.class).create(in);
     nidx = in.getKey();
 
     mapper().update(NAME1, nidx, MatchType.CANONICAL);
-    n = nm.getWithNidx(NAME1);
-    assertEquals(MatchType.CANONICAL, n.namesIndexType);
-    assertEquals(nidx, n.namesIndexId);
+    n = nm.get(NAME1);
+    assertEquals(MatchType.CANONICAL, n.getNamesIndexType());
+    assertEquals(nidx, n.getNamesIndexId());
 
     mapper().delete(NAME1);
-    n = nm.getWithNidx(NAME1);
-    assertEquals(MatchType.NONE, n.namesIndexType);
-    assertNull(n.namesIndexId);
+    n = nm.get(NAME1);
+    assertEquals(MatchType.NONE, n.getNamesIndexType());
+    assertNull(n.getNamesIndexId());
   }
   
 }
