@@ -2,6 +2,7 @@ package life.catalogue.resources.parser;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.QuerySearchRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.dw.auth.Roles;
@@ -150,9 +151,10 @@ public class NameParserResource {
   @GET
   public Optional<PNIssue> parseGet(@QueryParam("code") NomCode code,
                                     @QueryParam("rank") Rank rank,
-                                    @QueryParam("name") String name,
+                                    @QueryParam("q") String name,
+                                    @QueryParam("name") String name2, // legacy parameter
                                     @QueryParam("authorship") String authorship) {
-    return parse(new CRName(code, rank, name, authorship));
+    return parse(new CRName(code, rank, ObjectUtils.coalesce(name, name2), authorship));
   }
   
   /**
