@@ -43,8 +43,11 @@ public class UpdDatasetKeyCheckCmd extends AbstractMybatisCmd {
     int min = ns.getInt(ARG);
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      int proj = intDefault(dm.getMaxKey(min), 10);
-      session.getMapper(DatasetPartitionMapper.class).updateDatasetKeyChecks(proj, min);
+
+      int ext = Math.max(min, intDefault(dm.getMaxKey(null), 0));
+      int proj = intDefault(dm.getMaxKey(ext), 10);
+      LOG.info("Add external dataset key constraints on the default partitions < {} OR > {}", proj, ext);
+      session.getMapper(DatasetPartitionMapper.class).updateDatasetKeyChecks(proj, ext);
     }
   }
 
