@@ -63,19 +63,19 @@ For this to happen quick the default partition needs to have a check constraint 
 ```
 -- find out the current maximum dataset key to replace $MAX below:
 SELECT max(key) FROM dataset;
-
-ALTER TABLE verbatim_default ADD CONSTRAINT verbatim_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE reference_default ADD CONSTRAINT reference_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE name_default ADD CONSTRAINT name_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE name_rel_default ADD CONSTRAINT name_rel_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE type_material_default ADD CONSTRAINT type_material_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE name_usage_default ADD CONSTRAINT name_usage_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE taxon_concept_rel_default ADD CONSTRAINT taxon_concept_rel_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE species_interaction_default ADD CONSTRAINT species_interaction_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE distribution_default ADD CONSTRAINT distribution_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE media_default ADD CONSTRAINT media_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE treatment_default ADD CONSTRAINT treatment_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
-ALTER TABLE vernacular_name_default ADD CONSTRAINT vernacular_name_default_dataset_key_no_project_check CHECK ((dataset_key <= $MAX) OR (dataset_key % 100 != 0));
+-- gives 9812 ON PROD 22th March 2022. With config minExternalDatasetKey: 20000 this then becomes: 
+ALTER TABLE verbatim_default ADD CONSTRAINT verbatim_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE reference_default ADD CONSTRAINT reference_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE name_default ADD CONSTRAINT name_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE name_rel_default ADD CONSTRAINT name_rel_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE type_material_default ADD CONSTRAINT type_material_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE name_usage_default ADD CONSTRAINT name_usage_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE taxon_concept_rel_default ADD CONSTRAINT taxon_concept_rel_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE species_interaction_default ADD CONSTRAINT species_interaction_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE distribution_default ADD CONSTRAINT distribution_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE media_default ADD CONSTRAINT media_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE treatment_default ADD CONSTRAINT treatment_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
+ALTER TABLE vernacular_name_default ADD CONSTRAINT vernacular_name_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
 ```
 
 ### 2022-02-22 names archive

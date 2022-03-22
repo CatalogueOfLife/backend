@@ -19,11 +19,11 @@ import static life.catalogue.common.util.PrimitiveUtils.intDefault;
  * Command that removes and recreates the check constraint for all default partitions
  * using the configured minExternalDatasetKey.
  */
-public class UpdDatasetRatioCmd extends AbstractMybatisCmd {
-  private static final Logger LOG = LoggerFactory.getLogger(UpdDatasetRatioCmd.class);
+public class UpdDatasetKeyCheckCmd extends AbstractMybatisCmd {
+  private static final Logger LOG = LoggerFactory.getLogger(UpdDatasetKeyCheckCmd.class);
   private static final String ARG = "min";
 
-  public UpdDatasetRatioCmd() {
+  public UpdDatasetKeyCheckCmd() {
     super("updDatasetKeyCheck", false,"Updating dataset key check constraints for default tables");
   }
   

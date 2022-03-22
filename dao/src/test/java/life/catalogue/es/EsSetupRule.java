@@ -20,7 +20,7 @@ import com.google.common.base.Joiner;
 public class EsSetupRule extends ExternalResource {
 
   // required version of elastic to work against - will be verified
-  private static final int[] ES_VERSION = new int[] {7};
+  private static final int[] ES_VERSION = new int[] {8};
 
   /**
    * Dataset key used by default for tests.
@@ -35,9 +35,9 @@ public class EsSetupRule extends ExternalResource {
   private RestClient client;
 
   public EsSetupRule() {
-    String esVersion = System.getenv("COLPLUS_REQUIRED_ES_VERSION");
+    String esVersion = System.getenv("REQUIRED_ES_VERSION");
     if (esVersion == null) {
-      esVersion = System.getProperty("COLPLUS_REQUIRED_ES_VERSION");
+      esVersion = System.getProperty("REQUIRED_ES_VERSION");
       if (esVersion == null) {
         esVersion = Joiner.on(".").join(ArrayUtils.toObject(ES_VERSION));
       }
