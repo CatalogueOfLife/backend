@@ -154,22 +154,10 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   }
 
   private String getIndexHeader() {
-    String fmt;
-    if (EsServerVersion.getInstance(client).is(7)) {
-      fmt = "{\"index\":{\"_index\":\"%s\"}}%n";
-    } else {
-      fmt = "{\"index\":{\"_index\":\"%s\",\"_type\":\"_doc\"}}%n";
-    }
-    return String.format(fmt, index);
+    return String.format("{\"index\":{\"_index\":\"%s\"}}%n", index);
   }
 
   private String getUpdateHeader(String id) {
-    String fmt;
-    if (EsServerVersion.getInstance(client).is(7)) {
-      fmt = "{\"update\":{\"_id\":\"%s\",\"_index\":\"%s\"}}%n";
-    } else {
-      fmt = "{\"update\":{\"_id\":\"%s\",\"_index\":\"%s\",\"_type\":\"_doc\"}}%n";
-    }
-    return String.format(fmt, id, index);
+    return String.format("{\"update\":{\"_id\":\"%s\",\"_index\":\"%s\"}}%n", id, index);
   }
 }

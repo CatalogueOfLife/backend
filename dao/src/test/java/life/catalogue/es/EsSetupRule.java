@@ -52,12 +52,7 @@ public class EsSetupRule extends ExternalResource {
     LOG.info("Connecting to Elasticsearch on {}:{}", cfg.hosts, cfg.ports);
     // connect and verify version
     client = new EsClientFactory(cfg).createClient();
-    EsServerVersion v = EsServerVersion.getInstance(client);
-    if (!v.is(esVersion)) {
-      throw new IllegalStateException("Elasticsearch is running the wrong version " + v.getVersionString() +
-          ". Expecting " + Joiner.on(".").join(ArrayUtils.toObject(esVersion)));
-    }
-    LOG.info("Using Elasticsearch {} on {}:{}", v.getVersionString(), cfg.hosts, cfg.ports);
+    LOG.info("Using Elasticsearch on {}:{}", cfg.hosts, cfg.ports);
   }
 
   /**
