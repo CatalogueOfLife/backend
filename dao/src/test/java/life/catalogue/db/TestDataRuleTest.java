@@ -34,7 +34,6 @@ public class TestDataRuleTest {
       TestDataRule.TREE,
       TestDataRule.DRAFT,
       TestDataRule.DRAFT_WITH_SECTORS,
-      TestDataRule.DATASETS,
       NamesIndexMapperTest.NIDX
     );
     return list.stream().map(t -> new Object[]{t}).collect(Collectors.toList());
@@ -82,8 +81,6 @@ public class TestDataRuleTest {
     System.out.println(count);
 
     if(data.equals(TestDataRule.KEEP)) {
-      assertEquals(0, count);
-    } else if(data.equals(TestDataRule.DATASETS)) {
       assertEquals(0, count);
     } else if(data.equals(TestDataRule.APPLE)) {
       assertEquals(4, count);

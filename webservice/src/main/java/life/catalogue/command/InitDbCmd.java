@@ -4,15 +4,20 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.PathUtils;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.Reader;
 import java.sql.Connection;
 import java.sql.Statement;
+
+import net.sourceforge.argparse4j.inf.Subparser;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
@@ -33,22 +38,29 @@ import net.sourceforge.argparse4j.inf.Namespace;
  */
 public class InitDbCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbCmd.class);
+  private static final String ARG_DATASET = "dataset";
 
   public InitDbCmd() {
     super("initdb", "Initialises a new database schema");
   }
-  
+
+  @Override
+  public void configure(Subparser subparser) {
+    super.configure(subparser);
+    subparser.addArgument("--"+ ARG_DATASET, "-d")
+             .dest(ARG_DATASET)
+             .type(String.class)
+             .required(false)
+             .help("CSV file for the dataset table with postgres columns as headers");
+  }
+
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
     return String.format("Initialising database %s on %s.\n", cfg.db.database, cfg.db.host);
   }
 
   @Override
-  public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
-    execute(cfg);
-  }
-  
-  public static void execute(WsServerConfig cfg) throws Exception {
+  public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace ns, WsServerConfig cfg) throws Exception {
     LOG.info("Starting database initialisation with admin connection {}", cfg.adminDb);
     try (Connection con = cfg.db.connect(cfg.adminDb);
          Statement st = con.createStatement()
@@ -70,8 +82,15 @@ public class InitDbCmd extends AbstractPromptCmd {
       exec(InitDbUtils.SCHEMA_FILE, runner, con, Resources.getResourceAsReader(InitDbUtils.SCHEMA_FILE));
       // add common data
       exec(InitDbUtils.DATA_FILE, runner, con, Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
-      // register known datasets
-      InitDbUtils.insertDatasets(InitDbUtils.toPgConnection(con));
+      // optionally insert datasets if given
+      String fn = ns.getString(ARG_DATASET);
+      if (fn != null) {
+        File f = new File(fn);
+        if (!f.exists()){
+          throw new IllegalArgumentException("CSV file " + f.getAbsolutePath() + " does not exist");
+        }
+        InitDbUtils.insertDatasets(InitDbUtils.toPgConnection(con), new FileInputStream(f));
+      }
     }
     
     // cleanup names index

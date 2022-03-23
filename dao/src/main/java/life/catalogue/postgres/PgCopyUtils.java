@@ -52,12 +52,22 @@ public class PgCopyUtils {
                           Map<String, Object> defaults,
                           Map<String, Function<String[], String>> funcs,
                           String nullValue) throws IOException, SQLException {
+    return copy(con, table, PgCopyUtils.class.getResourceAsStream(resourceName), defaults, funcs, nullValue);
+  }
+
+  /**
+   * @param csv input stream of CSV file with header rows being the column names in the postgres table
+   */
+  public static long copy(PgConnection con, String table, InputStream csv,
+                          Map<String, Object> defaults,
+                          Map<String, Function<String[], String>> funcs,
+                          String nullValue) throws IOException, SQLException {
     con.setAutoCommit(false);
     CopyManager copy = ((PGConnection)con).getCopyAPI();
     con.commit();
-  
-    LOG.info("Copy {} to table {}", resourceName, table);
-    HeadlessStream in = new HeadlessStream(PgCopyUtils.class.getResourceAsStream(resourceName), defaults, funcs);
+
+    LOG.info("Copy to table {}", table);
+    HeadlessStream in = new HeadlessStream(csv, defaults, funcs);
     // use quotes to avoid problems with reserved words, e.g. group
     String header = HEADER_JOINER.join(in.header.stream().map(h -> "\"" + h + "\"").collect(Collectors.toList()));
     long cnt = copy.copyIn("COPY " + table + "(" + header + ") FROM STDOUT WITH CSV NULL '"+nullValue+"'", in);

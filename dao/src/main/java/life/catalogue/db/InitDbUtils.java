@@ -3,7 +3,9 @@ package life.catalogue.db;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.postgres.PgCopyUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -19,7 +21,6 @@ public class InitDbUtils {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbUtils.class);
   public static final String SCHEMA_FILE = "life/catalogue/db/dbschema.sql";
   public static final String DATA_FILE = "life/catalogue/db/data.sql";
-  public static final String DATASETS_FILE = "/life/catalogue/db/dataset.csv";
 
   public static PgConnection toPgConnection(Connection c) throws SQLException {
     PgConnection pgc;
@@ -32,12 +33,12 @@ public class InitDbUtils {
     return pgc;
   }
 
-  public static void insertDatasets(PgConnection pgc) throws SQLException, IOException {
+  public static void insertDatasets(PgConnection pgc, InputStream csv) throws SQLException, IOException {
     LOG.info("Insert known datasets");
-    PgCopyUtils.copy(pgc, "dataset", DATASETS_FILE, ImmutableMap.<String, Object>builder()
+    PgCopyUtils.copy(pgc, "dataset", csv, ImmutableMap.<String, Object>builder()
       .put("created_by", Users.DB_INIT)
       .put("modified_by", Users.DB_INIT)
-      .build());
+      .build(), null, "");
     try (Statement st = pgc.createStatement()) {
       st.execute("SELECT setval('dataset_key_seq', (SELECT max(key) FROM dataset))");
       pgc.commit();

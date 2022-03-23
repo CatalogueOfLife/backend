@@ -73,19 +73,18 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   /**
    * NONE does wipe all data so every test starts with an empty db.
    */
-  public final static TestData EMPTY = new TestData("empty", null, null, null, true, false, null, Collections.emptyMap(),3);
+  public final static TestData EMPTY = new TestData("empty", null, null, null, true, null, Collections.emptyMap(),3);
   /**
    * KEEP keeps existing data and does not wipe or create anything new. Can be used with class based data loading rules, e.g. TxtTreeDataRule
    */
-  public final static TestData KEEP = new TestData("keep", null, null, null, true, false, null, Collections.emptyMap(),3);
+  public final static TestData KEEP = new TestData("keep", null, null, null, true, null, Collections.emptyMap(),3);
   /**
    * Inits the datasets table with real col data from colplus-repo
    * The dataset.csv file was generated as a dump from production with psql:
    *
    * \copy (SELECT key,type,gbif_key,gbif_publisher_key,license,issued,confidence,completeness,origin,title,alias,description,version,geographic_scope,taxonomic_scope,url,logo,notes,settings,source_key,contact,creator,editor,publisher,contributor FROM dataset WHERE not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
    */
-  public final static TestData DATASETS = new TestData("datasets", null, null, null, false, true, null, Collections.emptyMap());
-  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, false, null, Collections.emptyMap());
+  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, null, Collections.emptyMap());
   public final static TestData APPLE = new TestData("apple", 11, 2, 2, 3, 11, 12);
   public final static TestData FISH = new TestData("fish", 100, 2, 4, 3, 100, 101, 102);
   public final static TestData TREE = new TestData("tree", 11, 1, 2, 3, 11, 12);
@@ -102,7 +101,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     final Integer taxStatusColumn;
     final Function<String[], String> authorshipNormalizer;
     final Map<String, Map<String, Object>> defaultValues;
-    private final boolean datasets;
     private final boolean none;
 
     public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Integer... datasetKeys) {
@@ -110,14 +108,14 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     }
 
     public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Function<String[], String> authorshipNormalizer, Integer... datasetKeys) {
-      this(name, key, sciNameColumn, taxStatusColumn, false, false, authorshipNormalizer, Collections.emptyMap(), datasetKeys);
+      this(name, key, sciNameColumn, taxStatusColumn, false, authorshipNormalizer, Collections.emptyMap(), datasetKeys);
     }
 
     public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
-      this(name, key, sciNameColumn, taxStatusColumn, false, false, null, defaultValues, datasetKeys);
+      this(name, key, sciNameColumn, taxStatusColumn, false, null, defaultValues, datasetKeys);
     }
 
-    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, boolean initAllDatasets, Function<String[], String> authorshipNormalizer, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
+    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, Function<String[], String> authorshipNormalizer, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
       this.name = name;
       this.key = key;
       this.sciNameColumn = sciNameColumn;
@@ -128,7 +126,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         this.datasetKeys = ImmutableSet.copyOf(datasetKeys);
       }
       this.none = none;
-      this.datasets = initAllDatasets;
       this.defaultValues = defaultValues;
       if (authorshipNormalizer != null) {
         this.authorshipNormalizer = authorshipNormalizer;
@@ -191,16 +188,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     return new TestDataRule(DRAFT_WITH_SECTORS);
   }
 
-  public static TestDataRule datasets() {
-    return new TestDataRule(DATASETS);
-  }
-
   public static TestDataRule datasetMix() {
     return new TestDataRule(DATASET_MIX);
-  }
-
-  public static TestDataRule datasets(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(DATASETS, () -> sqlSessionFactory);
   }
 
   private TestDataRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
@@ -346,13 +335,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
       try (Connection c = sqlSessionFactorySupplier.get().openSession(false).getConnection()) {
         PgConnection pgc = InitDbUtils.toPgConnection(c);
-        if (!testData.datasets) {
-            for (int key : testData.datasetKeys) {
-              copyDataset(pgc, key);
-              c.commit();
-            }
-            runner.runScript(Resources.getResourceAsReader("test-data/sequences.sql"));
-          }
+        for (int key : testData.datasetKeys) {
+          copyDataset(pgc, key);
+          c.commit();
+        }
+        runner.runScript(Resources.getResourceAsReader("test-data/sequences.sql"));
       }
     }
     session.commit();
@@ -372,12 +359,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       runner.setSendFullScript(true);
       runner.runScript(Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
 
-      if (testData.datasets) {
-        // register known datasets
-        InitDbUtils.insertDatasets(pgc);
-      } else {
-        copyGlobalTable(pgc, "dataset");
-      }
+      copyGlobalTable(pgc, "dataset");
       copyGlobalTable(pgc, "dataset_import");
       copyGlobalTable(pgc, "dataset_patch");
       copyGlobalTable(pgc, "dataset_archive");

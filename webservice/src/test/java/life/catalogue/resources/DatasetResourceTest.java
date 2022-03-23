@@ -29,7 +29,7 @@ public class DatasetResourceTest extends ResourceTestBase {
   static GenericType<ResultPage<Dataset>> RESULT_PAGE = new GenericType<ResultPage<Dataset>>() {};
   
   @Rule
-  public TestDataRule testDataRule = TestDataRule.datasets(RULE.getSqlSessionFactory());
+  public TestDataRule testDataRule = TestDataRule.datasetMix();
 
   public DatasetResourceTest() {
     super("/dataset");
