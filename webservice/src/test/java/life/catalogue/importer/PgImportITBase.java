@@ -7,6 +7,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.*;
+import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NameMapper;
@@ -83,8 +84,7 @@ public class PgImportITBase {
     dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 
     if (fullInit) {
-      InitDbCmd.setupColPartition(testDataRule.getSqlSession());
-      testDataRule.commit();
+      InitDbUtils.createNonDefaultPartitions(PgSetupRule.getSqlSessionFactory());
     }
     sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory(), validator);
     ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);

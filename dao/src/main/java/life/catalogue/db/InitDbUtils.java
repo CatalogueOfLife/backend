@@ -1,6 +1,11 @@
 package life.catalogue.db;
 
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.dao.Partitioner;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.postgres.PgCopyUtils;
 
 import java.io.File;
@@ -10,12 +15,16 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.pool.HikariProxyConnection;
+
+import static life.catalogue.common.util.PrimitiveUtils.intDefault;
 
 public class InitDbUtils {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbUtils.class);
@@ -44,4 +53,29 @@ public class InitDbUtils {
       pgc.commit();
     }
   }
+
+  public static void updateDatasetKeyConstraints(SqlSessionFactory factory, int minExternalDatasetKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+
+      int next = Math.max(minExternalDatasetKey, intDefault(dm.getMaxKey(null), 1));
+      int previous = intDefault(dm.getMaxKey(next), 10);
+      LOG.info("Add external dataset key constraints on the default partitions < {} OR > {}", previous, next);
+      session.getMapper(DatasetPartitionMapper.class).updateDatasetKeyChecks(previous, next);
+    }
+  }
+
+  public static void createNonDefaultPartitions(SqlSessionFactory factory) {
+    // add project partitions & dataset key constraints
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      for (DatasetOrigin o : DatasetOrigin.values()) {
+        for (var dk : dm.keys(o)) {
+          Partitioner.partition(session, dk, o);
+          Partitioner.attach(session, dk, o);
+        }
+      }
+    }
+  }
+
 }

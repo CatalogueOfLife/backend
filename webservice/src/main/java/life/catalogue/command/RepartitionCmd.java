@@ -33,7 +33,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
  */
 public class RepartitionCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(RepartitionCmd.class);
-  private static final String ARG_NUMBERS = "num";
+  static final String ARG_NUMBERS = "num";
   private int partitions;
 
   public RepartitionCmd() {
@@ -45,17 +45,21 @@ public class RepartitionCmd extends AbstractMybatisCmd {
     return String.format("Repartition the default, hashed data tables to %s partitions in database %s on %s.\n", getPartitionConfig(namespace), cfg.db.database, cfg.db.host);
   }
 
-  @Override
-  public void configure(Subparser subparser) {
-    super.configure(subparser);
+  static void configurePartitionNumber(Subparser subparser) {
     subparser.addArgument("--"+ ARG_NUMBERS)
              .dest(ARG_NUMBERS)
              .type(Integer.class)
-             .required(false)
+             .required(true)
              .help("Number of partitions to create");
   }
 
-  private int getPartitionConfig(Namespace ns){
+  @Override
+  public void configure(Subparser subparser) {
+    super.configure(subparser);
+    configurePartitionNumber(subparser);
+  }
+
+  static int getPartitionConfig(Namespace ns){
     Integer p = ns.getInt(ARG_NUMBERS);
     if (p == null || p < 1) {
       throw new IllegalArgumentException("There needs to be at least one partition");

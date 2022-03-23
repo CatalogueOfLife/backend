@@ -20,7 +20,7 @@ public class InitDbCmdTest extends CmdTestBase {
     // we need to close all db connections for a db init to work!
     testDataRule.skipAfter();
     pgSetupRule.after();
-    assertTrue(run("initdb", "--prompt", "0").isEmpty());
+    assertTrue(run("initdb", "--prompt", "0", "--num", "3").isEmpty());
   }
 
 }

@@ -9,6 +9,7 @@ import life.catalogue.dao.Partitioner;
 import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import java.io.File;
@@ -33,6 +34,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 
+import static life.catalogue.common.util.PrimitiveUtils.intDefault;
+
 /**
  * Command to initialise a new database schema.
  */
@@ -52,6 +55,7 @@ public class InitDbCmd extends AbstractPromptCmd {
              .type(String.class)
              .required(false)
              .help("CSV file for the dataset table with postgres columns as headers");
+    RepartitionCmd.configurePartitionNumber(subparser);
   }
 
   @Override
@@ -61,7 +65,8 @@ public class InitDbCmd extends AbstractPromptCmd {
 
   @Override
   public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace ns, WsServerConfig cfg) throws Exception {
-    LOG.info("Starting database initialisation with admin connection {}", cfg.adminDb);
+    int partitions = RepartitionCmd.getPartitionConfig(ns);
+    LOG.info("Starting database initialisation with {} default partitions and admin connection {}", partitions, cfg.adminDb);
     try (Connection con = cfg.db.connect(cfg.adminDb);
          Statement st = con.createStatement()
     ) {
@@ -121,27 +126,19 @@ public class InitDbCmd extends AbstractPromptCmd {
       FileUtils.cleanDirectory(cfg.metricsRepo);
     }
 
-    // create managed partitions
+    // create managed & default partitions
     HikariConfig hikari = cfg.db.hikariConfig();
     try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
       // configure single mybatis session factory
       final SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
-    
-      // add col dataset and partitions
-      try (SqlSession session = factory.openSession()) {
-        setupColPartition(session);
-        session.getMapper(DatasetPartitionMapper.class).createManagedSequences(Datasets.COL);
-        session.commit();
-      }
+      // default partitions
+      Partitioner.createDefaultPartitions(factory, partitions);
+      InitDbUtils.updateDatasetKeyConstraints(factory, cfg.db.minExternalDatasetKey);
+      // add project partitions & dataset key constraints
+      InitDbUtils.createNonDefaultPartitions(factory);
     }
   }
 
-  public static void setupColPartition(SqlSession session) {
-    Partitioner.partition(session, Datasets.COL, DatasetOrigin.MANAGED);
-    Partitioner.attach(session, Datasets.COL, DatasetOrigin.MANAGED);
-    session.commit();
-  }
-  
   public static void exec(String name, ScriptRunner runner, Connection con, Reader reader) {
     try {
       LOG.info("Executing {}", name);

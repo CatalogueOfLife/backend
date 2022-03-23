@@ -112,7 +112,7 @@
   </select>
 
   <update id="dropDatasetKeyCheck" parameterType="map">
-    ALTER TABLE ${table}_default DROP CONSTRAINT ${table}_default_dataset_key_no_project_check
+    ALTER TABLE ${table}_default DROP CONSTRAINT IF EXISTS ${table}_default_dataset_key_no_project_check
   </update>
 
   <update id="addDatasetKeyCheck" parameterType="map">
