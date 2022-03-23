@@ -121,10 +121,14 @@
     <!-- default maven properties to define the postgres server for running tests.
     To use a different server please activate a personal profile -->
     <db.host>localhost</db.host>
-    <db.database>colplus</db.database>
     <db.port>5432</db.port>
+    <db.database>col</db.database>
     <db.user>postgres</db.user>
     <db.password>postgres</db.password>
+    <!-- user with admin rights that can connect to another database just to drop and recreate the above one. For tests only -->
+    <admindb.database>postgres</admindb.database>
+    <admindb.user>postgres</admindb.user>
+    <admindb.password>postgres</admindb.password>
     <!-- default to a local instance -->
     <es.hosts>localhost</es.hosts>
     <es.ports>9200</es.ports>
