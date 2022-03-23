@@ -22,8 +22,9 @@
       <property name="prefix" value=""/>
     </include>,
     r.citation AS according_to,
-    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+    <include refid="life.catalogue.db.mapper.NameMapper.nameColsNidx">
       <property name="alias" value="n"/>
+      <property name="aliasNI" value="nm"/>
       <property name="prefix" value="n_"/>
     </include>,
     (SELECT count(*) FROM name_usage WHERE dataset_key=u.dataset_key AND parent_id=u.id) AS child_count
@@ -54,6 +55,7 @@
   <sql id="FROM">
     name_usage u
       JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+      LEFT JOIN name_match nm ON nm.dataset_key=n.dataset_key AND nm.name_id=n.id
       LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
   </sql>
 

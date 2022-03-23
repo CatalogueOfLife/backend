@@ -4,6 +4,8 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 
+import life.catalogue.api.vocab.MatchType;
+
 import org.gbif.nameparser.api.*;
 
 import java.util.regex.Matcher;
@@ -22,7 +24,18 @@ public class NameTest extends SerdeTestBase<Name> {
   public NameTest() {
     super(Name.class);
   }
-  
+
+  static public void assertEqualsWithoutNidx(Name expected, Name actual){
+    clearNidx(expected);
+    clearNidx(actual);
+    assertEquals(expected, actual);
+  }
+
+  static void clearNidx(Name n) {
+    n.setNamesIndexType(MatchType.NONE);
+    n.setNamesIndexId(null);
+  }
+
   @Override
   public Name genTestValue() throws Exception {
     Name n = TestEntityGenerator.newName();

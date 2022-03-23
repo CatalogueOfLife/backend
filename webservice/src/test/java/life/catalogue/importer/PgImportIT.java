@@ -12,7 +12,6 @@ import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
-import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

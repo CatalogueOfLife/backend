@@ -52,7 +52,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private Integer verbatimKey;
 
   private Integer namesIndexId;
-  private MatchType namesIndexType;
+  private MatchType namesIndexType = MatchType.NONE; // mybatis sets this to none if no match exists, so make this the default
 
   /**
    * Entire canonical name string with a rank marker for infragenerics and infraspecfics, but
