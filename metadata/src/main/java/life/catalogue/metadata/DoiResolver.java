@@ -26,12 +26,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A CrossRef DOI resolver that can return citation metadata for most (all?) DOIs.
+ * Crossref apparently transforms requests to use their v1 API which sometimes is down: https://status.crossref.org
  */
 public class DoiResolver {
   private static final Logger LOG = LoggerFactory.getLogger(DoiResolver.class);
   private static final String CSL_TYPE = "application/vnd.citationstyles.csl+json";
   private CloseableHttpClient http;
   private ObjectReader reader;
+
   public DoiResolver(CloseableHttpClient http) {
     this.http = http;
     reader = ApiModule.MAPPER.readerFor(CrossRefCitation.class);

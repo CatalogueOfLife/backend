@@ -8,12 +8,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.junit.Assert.*;
 
+@Ignore("The underlying crossref service is rather unreliable")
 public class DoiResolverIT {
 
   static CloseableHttpClient http;
@@ -38,7 +40,6 @@ public class DoiResolverIT {
     assertEquals("Archives of Virology", cit.getContainerTitle());
     assertEquals(CSLType.ARTICLE_JOURNAL, cit.getType());
     assertNotNull(cit.getAuthor().get(0).getOrcid());
-
   }
 
   @Test
