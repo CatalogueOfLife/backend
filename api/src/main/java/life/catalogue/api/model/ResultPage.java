@@ -60,7 +60,7 @@ public class ResultPage<T> extends Page implements Iterable<T> {
   }
   
   public boolean isEmpty() {
-    return result != null && result.isEmpty();
+    return result == null || result.isEmpty();
   }
   
   @Override

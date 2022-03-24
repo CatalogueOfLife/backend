@@ -40,28 +40,23 @@ public class DatasetResourceTest extends ResourceTestBase {
   public void list() {
     Page page = new Page(0,10);
     ResultPage<Dataset> resp = userCreds(applyPage(base, page)).get(RESULT_PAGE);
-    
-    assertEquals(10, resp.size());
-    assertTrue(resp.getTotal() > 200);
+
+    // 7 public, 2 private ones
+    assertEquals(7, resp.size());
     for (Dataset d : resp) {
       assertNotNull(d);
     }
   
-    DatasetSearchRequest req = DatasetSearchRequest.byQuery("Catalogue");
+    DatasetSearchRequest req = DatasetSearchRequest.byQuery("My project");
     req.setSortBy(DatasetSearchRequest.SortBy.TITLE);
     resp = userCreds(applySearch(base, req, page)).get(RESULT_PAGE);
   
-    assertEquals(10, resp.size());
-    assertEquals("A World Catalogue of Centipedes (Chilopoda) for the Web", resp.getResult().get(0).getTitle());
+    assertEquals(4, resp.size());
+    assertEquals("My project", resp.getResult().get(0).getTitle());
   
     req.setLicense(List.of(License.CC0));
     resp = userCreds(applySearch(base, req, page)).get(RESULT_PAGE);
-  
-    for (Dataset d : resp.getResult()) {
-      assertEquals(License.CC0, d.getLicense());
-    }
-    assertEquals(5, resp.size());
-    assertEquals("Catalogue of Craneflies of the World", resp.getResult().get(0).getTitle());
+    assertTrue(resp.isEmpty());
   }
   
   @Test
@@ -100,16 +95,16 @@ public class DatasetResourceTest extends ResourceTestBase {
   
   @Test
   public void delete() {
-    Response resp = editorCreds(base.path("2035")).delete();
+    Response resp = editorCreds(base.path("1008")).delete();
     // no permission!
     assertEquals(403, resp.getStatus());
 
-    addUserPermission("editor", 2035);
+    addUserPermission("editor", 1008);
 
-    resp = editorCreds(base.path("2035")).delete();
+    resp = editorCreds(base.path("1008")).delete();
     assertEquals(204, resp.getStatus());
 
-    Dataset d = userCreds(base.path("2035")).get(Dataset.class);
+    Dataset d = userCreds(base.path("1008")).get(Dataset.class);
     assertNotNull(d.getDeleted());
   }
 

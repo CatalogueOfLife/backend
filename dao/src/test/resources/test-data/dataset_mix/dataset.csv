@@ -6,3 +6,4 @@ key,origin,source_key,private,attempt,type,title,created_by,modified_by,created
 14,RELEASED,10,true,4,OTHER,My project - June,100,100,2018-06-01
 20,EXTERNAL,,false,,OTHER,External dataset 1,100,100,2019-01-03
 21,EXTERNAL,,true,,OTHER,External dataset 2,100,100,2019-01-05
+1008,EXTERNAL,,false,,OTHER,The Reptile Database,100,100,2019-01-05

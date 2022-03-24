@@ -2,6 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.TestDataRule;
 
@@ -39,6 +40,8 @@ public class TaxonResourceTest extends ResourceTestBase {
     RULE.startNamesIndex();
     Taxon t = createTaxon();
     t.setId( adminCreds(base).post(json(t), String.class) );
+    t.getName().setNamesIndexId(5);
+    t.getName().setNamesIndexType(MatchType.EXACT);
 
     Taxon t2 = userCreds(base.path(t.getId())).get(Taxon.class);
     assertNotNull(t2);
