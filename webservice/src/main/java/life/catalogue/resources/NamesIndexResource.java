@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import io.dropwizard.auth.Auth;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
@@ -66,13 +68,14 @@ public class NamesIndexResource {
   @GET
   @Timed
   @Path("pattern")
-  public List<IndexName> searchByRegex(@QueryParam("regex") String regex,
+  public List<IndexName> searchByRegex(@QueryParam("q") String regex,
+                                       @QueryParam("canonical") @DefaultValue("true") boolean canonical,
                                        @QueryParam("rank") Rank rank,
                                        @Valid @BeanParam Page page,
                                        @Context SqlSession session) {
     RegexUtils.validatePattern(regex);
     Page p = page == null ? new Page() : page;
-    return session.getMapper(NamesIndexMapper.class).listByRegex(regex, rank, p);
+    return session.getMapper(NamesIndexMapper.class).listByRegex(regex, canonical, rank, p);
   }
 
   static Name name(String name, String authorship, Rank rank, NomCode code) {

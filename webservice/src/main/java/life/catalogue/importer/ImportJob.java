@@ -117,8 +117,8 @@ public class ImportJob implements Runnable {
     if (dataset.getOrigin() == DatasetOrigin.RELEASED) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be imported");
       
-    } else if (!req.upload && dataset.getOrigin() == DatasetOrigin.EXTERNAL && !dataset.has(Setting.DATA_ACCESS)) {
-      throw new IllegalArgumentException("Dataset " + datasetKey + " is external but lacks a data access URL");
+    } else if (!req.upload && !dataset.has(Setting.DATA_ACCESS) && !cfg.normalizer.source(dataset.getKey()).exists()) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a data access URL and has never been imported before");
     }
   }
   

@@ -111,6 +111,9 @@
     <if test="rank != null">
       AND rank = #{rank}::RANK
     </if>
+    <if test="canonical">
+      AND id = canonical_id
+    </if>
     ORDER BY scientific_name, id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>

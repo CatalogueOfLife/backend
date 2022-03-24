@@ -11,6 +11,9 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.QueryParam;
+
 /**
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be
  * used to point to the name itself
@@ -44,6 +47,7 @@ public interface NamesIndexMapper extends CRUD<Integer, IndexName> {
    * @param page
    */
   List<IndexName> listByRegex(@Param("regex") String regex,
+                              @Param("canonical") boolean canonical,
                               @Param("rank") Rank rank,
                               @Param("page") Page page);
 
