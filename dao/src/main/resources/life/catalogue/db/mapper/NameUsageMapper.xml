@@ -30,8 +30,9 @@
       <property name="prefix" value=""/>
     </include>,
     r.citation AS according_to,
-    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+    <include refid="life.catalogue.db.mapper.NameMapper.nameColsNidx">
       <property name="alias" value="n"/>
+      <property name="aliasNI" value="nm"/>
       <property name="prefix" value="n_"/>
     </include>
     ,
@@ -40,8 +41,9 @@
       <property name="prefix" value="a_"/>
     </include>,
     ar.citation AS a_according_to,
-    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+    <include refid="life.catalogue.db.mapper.NameMapper.nameColsNidx">
       <property name="alias" value="an"/>
+      <property name="aliasNI" value="anm"/>
       <property name="prefix" value="a_n_"/>
     </include>
   </sql>
@@ -114,11 +116,17 @@
     name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id
   </sql>
 
-  <sql id="FROM">
+  <sql id="FROM_NO_ACCEPTED">
     name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+    LEFT JOIN name_match nm ON nm.dataset_key=n.dataset_key AND nm.name_id=n.id
     LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
+  </sql>
+
+  <sql id="FROM">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_NO_ACCEPTED"/>
     LEFT JOIN name_usage a ON a.dataset_key=u.dataset_key AND a.id=u.parent_id AND u.is_synonym
     LEFT JOIN name an ON an.dataset_key=u.dataset_key AND an.id=a.name_id
+    LEFT JOIN name_match anm ON anm.dataset_key=an.dataset_key AND anm.name_id=an.id
     LEFT JOIN reference ar ON ar.dataset_key=u.dataset_key AND ar.id=a.according_to_id
   </sql>
 
@@ -258,6 +266,7 @@
     LEFT JOIN reference r ON r.id=u.according_to_id AND r.dataset_key=u.dataset_key
     LEFT JOIN name_usage a ON a.id=u.parent_id AND u.is_synonym AND a.dataset_key=u.dataset_key
     LEFT JOIN name an ON a.name_id=an.id AND an.dataset_key=u.dataset_key
+    LEFT JOIN name_match anm ON anm.dataset_key=an.dataset_key AND anm.name_id=an.id
     LEFT JOIN reference ar ON ar.id=a.according_to_id AND ar.dataset_key=u.dataset_key
     WHERE orig.dataset_key=#{key.datasetKey} AND orig.id=#{key.id}
       AND (u.dataset_key!=#{key.datasetKey} OR u.id!=#{key.id})

@@ -204,6 +204,12 @@
     WHERE n.dataset_key=#{key.datasetKey} AND n.id = #{key.id}
   </select>
 
+  <select id="getNameIdByUsage" resultType="String">
+    SELECT n.id
+    FROM name n JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
+    WHERE u.dataset_key=#{datasetKey} AND u.id = #{usageId}
+  </select>
+
   <select id="getByUsage" resultMap="nameResultMap">
     SELECT <include refid="SELECT_NIDX"/>
     FROM <include refid="FROM_NIDX"/>

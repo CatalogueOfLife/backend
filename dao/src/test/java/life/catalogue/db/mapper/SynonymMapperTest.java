@@ -20,9 +20,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/**
- *
- */
 public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, SynonymMapper> {
   
   private NameDao nameDao;

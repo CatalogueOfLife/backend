@@ -3,7 +3,12 @@ package life.catalogue.api.model;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.SerdeTestBase;
 
+import life.catalogue.api.vocab.TaxonomicStatus;
+
 import org.junit.Test;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -34,10 +39,20 @@ public class SynonymyTest extends SerdeTestBase<Synonymy> {
   @Test
   public void size() throws Exception {
     Synonymy s = new Synonymy();
-    s.addHeterotypicGroup(TestEntityGenerator.newNames(4));
-    s.addHeterotypicGroup(TestEntityGenerator.newNames(1));
-    s.addHeterotypicGroup(TestEntityGenerator.newNames(8));
+    s.getHeterotypic().addAll(synonyms(3, TaxonomicStatus.SYNONYM));
+    s.getHeterotypic().addAll(synonyms(1, TaxonomicStatus.AMBIGUOUS_SYNONYM));
+    s.getMisapplied().addAll(synonyms(1, TaxonomicStatus.MISAPPLIED));
+    s.getHomotypic().addAll(synonyms(8, TaxonomicStatus.SYNONYM));
     assertEquals(13, s.size());
+  }
+
+  List<Synonym> synonyms(int num, TaxonomicStatus status) {
+    return TestEntityGenerator.newNames(num).stream().map(n -> {
+      var s = new Synonym();
+      s.setName(n);
+      s.setStatus(status);
+      return s;
+    }).collect(Collectors.toList());
   }
   
 }

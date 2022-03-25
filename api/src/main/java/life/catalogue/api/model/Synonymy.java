@@ -6,76 +6,57 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * A taxonomic synonymy list, ordering names in homotypic groups.
- * All synonym names excluding misapplied names can be iterated over.
+ * A simple wrapper to hold homotypic & heterotypic synonyms separately.
  */
-public class Synonymy implements Iterable<Name> {
-  private final List<Name> homotypic = new ArrayList<>();
-  private final List<List<Name>> heterotypic = new ArrayList<>();
-  private final List<NameUsageBase> misapplied = new ArrayList<>();
+public class Synonymy implements Iterable<Synonym> {
+  private final List<Synonym> homotypic = new ArrayList<>();
+  private final List<Synonym> heterotypic = new ArrayList<>();
+  private final List<Synonym> misapplied = new ArrayList<>();
   
   @JsonIgnore
   public boolean isEmpty() {
     return homotypic.isEmpty() && heterotypic.isEmpty() && misapplied.isEmpty();
   }
-  
-  public List<Name> getHomotypic() {
+
+  public List<Synonym> getHomotypic() {
     return homotypic;
   }
 
-  public void addHomotypic(Name name) {
-    this.homotypic.add(name);
-  }
-
-  public List<List<Name>> getHeterotypic() {
+  public List<Synonym> getHeterotypic() {
     return heterotypic;
   }
-  
-  public List<NameUsageBase> getMisapplied() {
+
+  public List<Synonym> getMisapplied() {
     return misapplied;
   }
-  
-  public void addMisapplied(NameUsageBase misapplied) {
-    this.misapplied.add(misapplied);
+
+  @Override
+  public Iterator<Synonym> iterator() {
+    return Stream.concat(
+      homotypic.stream(),
+      Stream.concat(
+        heterotypic.stream(),
+        misapplied.stream()
+      )
+    ).iterator();
   }
-  
-  /**
-   * Adds a new homotypic group of names to the heterotypic synonyms
-   *
-   * @param synonyms
-   */
-  public void addHeterotypicGroup(List<Name> synonyms) {
-    this.heterotypic.add(synonyms);
-  }
-  
+
   public int size() {
-    return homotypic.size()
-        + misapplied.size()
-        + heterotypic.stream()
-        .mapToInt(List::size)
-        .sum();
+    return homotypic.size() + heterotypic.size() + misapplied.size();
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof Synonymy)) return false;
     Synonymy synonymy = (Synonymy) o;
-    return Objects.equals(homotypic, synonymy.homotypic) &&
-        Objects.equals(heterotypic, synonymy.heterotypic) &&
-        Objects.equals(misapplied, synonymy.misapplied);
+    return Objects.equals(homotypic, synonymy.homotypic)
+           && Objects.equals(heterotypic, synonymy.heterotypic)
+           && Objects.equals(misapplied, synonymy.misapplied);
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hash(homotypic, heterotypic, misapplied);
-  }
-  
-  @Override
-  public Iterator<Name> iterator() {
-    return Stream.concat(
-        homotypic.stream(),
-        heterotypic.stream().flatMap(Collection::stream)
-    ).iterator();
   }
 }

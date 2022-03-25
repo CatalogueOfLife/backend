@@ -179,7 +179,7 @@ public class TaxonDaoTest extends DaoTestBase {
 
       // at this stage we have 3 explicit synonym relations linking to 3 more names in their homotypic group by name relations alone
       synonymy = tDao.getSynonymy(acc);
-      assertEquals(6, synonymy.size());
+      assertEquals(3, synonymy.size());
       assertEquals(0, synonymy.getHomotypic().size());
       assertEquals(3, synonymy.getHeterotypic().size());
       assertEquals(0, synonymy.getMisapplied().size());
@@ -190,12 +190,12 @@ public class TaxonDaoTest extends DaoTestBase {
       session.commit();
 
       synonymy = tDao.getSynonymy(acc);
-      assertEquals(7, synonymy.size());
+      assertEquals(4, synonymy.size());
       assertEquals(0, synonymy.getHomotypic().size());
       assertEquals(3, synonymy.getHeterotypic().size());
       assertEquals(1, synonymy.getMisapplied().size());
 
-      // add the remaining homotypic names also as synonyms to make sure this doesnt matter
+      // add the remaining homotypic names also as synonyms to make sure this doesn't matter
       syn.setStatus(TaxonomicStatus.SYNONYM);
       sm.create(newSyn(syn, syn21));
       sm.create(newSyn(syn, syn22));
@@ -205,8 +205,7 @@ public class TaxonDaoTest extends DaoTestBase {
       synonymy = tDao.getSynonymy(acc);
       assertEquals(7, synonymy.size());
       assertEquals(0, synonymy.getHomotypic().size());
-      // still the same number of heterotypic synonym groups
-      assertEquals(3, synonymy.getHeterotypic().size());
+      assertEquals(6, synonymy.getHeterotypic().size());
       assertEquals(1, synonymy.getMisapplied().size());
       
       synonymy = tDao.getSynonymy(TAXON2);

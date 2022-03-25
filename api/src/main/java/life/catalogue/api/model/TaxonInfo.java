@@ -12,7 +12,7 @@ public class TaxonInfo {
   private Taxon taxon;
   private Treatment treatment;
   private VerbatimSource source;
-  private List<Synonym> synonyms;
+  private Synonymy synonyms;
   private List<Distribution> distributions;
   private List<VernacularName> vernacularNames;
   private List<Media> media;
@@ -69,14 +69,14 @@ public class TaxonInfo {
     this.source = source;
   }
 
-  public List<Synonym> getSynonyms() {
+  public Synonymy getSynonyms() {
     return synonyms;
   }
-  
-  public void setSynonyms(List<Synonym> synonyms) {
+
+  public void setSynonyms(Synonymy synonyms) {
     this.synonyms = synonyms;
   }
-  
+
   public List<VernacularName> getVernacularNames() {
     return vernacularNames;
   }

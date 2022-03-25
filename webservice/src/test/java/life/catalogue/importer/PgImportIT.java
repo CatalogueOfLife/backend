@@ -32,7 +32,6 @@ import static org.junit.Assert.*;
 /**
  *
  */
-@Ignore
 public class PgImportIT extends PgImportITBase {
 
   @Test

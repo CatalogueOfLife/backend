@@ -17,28 +17,37 @@
   </sql>
 
   <sql id="SELECT">
-    <include refid="life.catalogue.db.mapper.SynonymMapper.synCols">
-      <property name="alias" value="u"/>
-      <property name="prefix" value=""/>
-    </include>,
-    r.citation AS according_to,
-    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
-      <property name="alias" value="n"/>
-      <property name="prefix" value="n_"/>
-    </include>,
+    <include refid="SELECT_NO_ACCEPTED"/>,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="a"/>
       <property name="prefix" value="a_"/>
     </include>,
     ar.citation AS a_according_to,
-    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+    <include refid="life.catalogue.db.mapper.NameMapper.nameColsNidx">
       <property name="alias" value="an"/>
+      <property name="aliasNI" value="anm"/>
       <property name="prefix" value="a_n_"/>
+    </include>
+  </sql>
+
+  <sql id="SELECT_NO_ACCEPTED">
+    <include refid="life.catalogue.db.mapper.SynonymMapper.synCols">
+      <property name="alias" value="u"/>
+      <property name="prefix" value=""/>
+    </include>,
+    r.citation AS according_to,
+    <include refid="life.catalogue.db.mapper.NameMapper.nameColsNidx">
+      <property name="alias" value="n"/>
+      <property name="aliasNI" value="nm"/>
+      <property name="prefix" value="n_"/>
     </include>
   </sql>
 
   <sql id="FROM">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
+  </sql>
+  <sql id="FROM_NO_ACCEPTED">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_NO_ACCEPTED"/>
   </sql>
 
 
@@ -50,8 +59,8 @@
 
 
   <select id="listByTaxon" resultMap="synonymResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
+    SELECT <include refid="SELECT_NO_ACCEPTED"/>
+    FROM <include refid="FROM_NO_ACCEPTED"/>
     WHERE u.dataset_key=#{datasetKey} AND u.parent_id = #{taxonId} AND u.is_synonym
     ORDER BY u.status, n.scientific_name
   </select>

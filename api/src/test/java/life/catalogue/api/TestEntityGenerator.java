@@ -14,6 +14,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -478,10 +479,17 @@ public class TestEntityGenerator {
 
   public static Synonymy newSynonymy() {
     Synonymy s = new Synonymy();
-    s.addHeterotypicGroup(newNames(1 + RND.nextInt(3)));
+    s.getHomotypic().addAll(newNames(1 + RND.nextInt(3)).stream().map(TestEntityGenerator::synonym).collect(Collectors.toList()));
     while (RND.nextBoolean() || RND.nextBoolean()) {
-      s.addHeterotypicGroup(newNames(1 + RND.nextInt(6)));
+      s.getHeterotypic().addAll(newNames(1 + RND.nextInt(6)).stream().map(TestEntityGenerator::synonym).collect(Collectors.toList()));
     }
+    return s;
+  }
+
+  private static Synonym synonym(Name n) {
+    var s = new Synonym();
+    s.setName(n);
+    s.setStatus(TaxonomicStatus.SYNONYM);
     return s;
   }
 

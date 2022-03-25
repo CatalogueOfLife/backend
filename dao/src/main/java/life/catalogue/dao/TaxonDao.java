@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
@@ -107,35 +108,33 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
    */
   public Synonymy getSynonymy(Taxon taxon) {
-    return getSynonymy(taxon.getDatasetKey(), taxon.getId());
+    return getSynonymy(taxon.getDatasetKey(), taxon.getId(), taxon.getName().getId());
   }
-  
+
   /**
    * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
    */
-  public Synonymy getSynonymy(int datasetKey, String taxonId) {
+  public Synonymy getSynonymy(int datasetKey, String taxonId, @Nullable String nameId) {
     try (SqlSession session = factory.openSession(false)) {
       NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
-      NameMapper nm = session.getMapper(NameMapper.class);
       SynonymMapper sm = session.getMapper(SynonymMapper.class);
+      // load accepted name id if unknown
+      if (nameId == null) {
+        NameMapper nm = session.getMapper(NameMapper.class);
+        nameId = nm.getNameIdByUsage(datasetKey, taxonId);
+      }
 
-      Name accName = nm.getByUsage(datasetKey, taxonId);
       Synonymy syn = new Synonymy();
-      Set<String> visited = new HashSet<>();
-      // add all homotypic names
-      syn.getHomotypic().addAll(nameDao.homotypicGroup(accName));
-      syn.getHomotypic().stream().map(Name::getId).forEach(visited::add);
+      var homotypicNamesIds = nrm.listRelatedNameIDs(DSID.of(datasetKey, nameId), NomRelType.HOMOTYPIC_RELATIONS);
 
       // now go through synonym usages and add to misapplied, heterotypic or skip if seen before
       for (Synonym s : sm.listByTaxon(datasetKey, taxonId)) {
         if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
-          syn.addMisapplied(s);
-        } else if (!visited.contains(s.getName().getId())) {
-          List<Name> group = new ArrayList<>();
-          group.add(s.getName());
-          group.addAll(nameDao.homotypicGroup(s.getName()));
-          syn.addHeterotypicGroup(group);
-          group.stream().map(Name::getId).forEach(visited::add);
+          syn.getMisapplied().add(s);
+        } else if (homotypicNamesIds.contains(s.getName().getId())) {
+          syn.getHomotypic().add(s);
+        } else {
+          syn.getHeterotypic().add(s);
         }
       }
       return syn;
@@ -155,7 +154,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     }
   }
 
-  public static TaxonInfo getTaxonInfo(final SqlSession session, final Taxon taxon) {
+  public TaxonInfo getTaxonInfo(final SqlSession session, final Taxon taxon) {
     // main taxon object
     if (taxon == null) {
       return null;
@@ -167,7 +166,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     return info;
   }
 
-  public static void fillTaxonInfo(final SqlSession session, final TaxonInfo info,
+  public void fillTaxonInfo(final SqlSession session, final TaxonInfo info,
                                    LoadingCache<String, Reference> refCache,
                                    boolean loadSource,
                                    boolean loadSynonyms,
@@ -189,8 +188,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
     // synonyms
     if (loadSynonyms) {
-      SynonymMapper sm = session.getMapper(SynonymMapper.class);
-      info.setSynonyms(sm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+      var syns = getSynonymy(taxon);
+      info.setSynonyms(syns);
       info.getSynonyms().forEach(s -> {
         refIds.add(s.getName().getPublishedInId());
         refIds.addAll(s.getReferenceIds());
