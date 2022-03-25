@@ -11,6 +11,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-03-25 missing names index indices for pattern search
+```
+CREATE INDEX ON names_index (scientific_name);
+CREATE INDEX ON names_index (scientific_name) WHERE id = canonical_id;
+```
+
 ### 2022-03-11 dataset attempt stored with sector import 
 ```
 ALTER TABLE sector_import ADD COLUMN dataset_attempt INTEGER;

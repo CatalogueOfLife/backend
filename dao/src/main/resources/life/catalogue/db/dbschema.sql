@@ -1086,6 +1086,9 @@ CREATE TABLE names_index (
   remarks TEXT
 );
 CREATE INDEX ON names_index (canonical_id);
+CREATE INDEX ON names_index (scientific_name);
+CREATE INDEX ON names_index (scientific_name) WHERE id = canonical_id;
+
 
 CREATE TABLE id_report (
   id INTEGER NOT NULL,
