@@ -86,12 +86,12 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
 
 <#if info.synonyms?has_content>
   "alternateName": [
-     <#list info.synonyms as s>
+     <#list info.synonyms.all() as s>
       "${s.label}"<#sep>,</#sep>
      </#list>
   ],
   "alternateScientificName": [
-    <#list info.synonyms as s>
+    <#list info.synonyms.all() as s>
     {
       "@type": "TaxonName",
       "name": "${s.name.scientificName}",

@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,15 +31,20 @@ public class Synonymy implements Iterable<Synonym> {
     return misapplied;
   }
 
-  @Override
-  public Iterator<Synonym> iterator() {
+  @JsonIgnore
+  public List<Synonym> all() {
     return Stream.concat(
       homotypic.stream(),
       Stream.concat(
         heterotypic.stream(),
         misapplied.stream()
       )
-    ).iterator();
+    ).collect(Collectors.toList());
+  }
+
+  @Override
+  public Iterator<Synonym> iterator() {
+    return all().iterator();
   }
 
   public int size() {

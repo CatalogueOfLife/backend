@@ -346,7 +346,7 @@ public class PgImportIT extends PgImportITBase {
       Synonymy syn = tdao.getSynonymy(annua);
       assertEquals(4, syn.size());
       assertEquals(0, syn.getMisapplied().size());
-      assertEquals(2, syn.getHeterotypic().size());
+      assertEquals(3, syn.getHeterotypic().size());
       assertEquals(1, syn.getHomotypic().size());
 
       NameRelationMapper relMapper = session.getMapper(NameRelationMapper.class);
