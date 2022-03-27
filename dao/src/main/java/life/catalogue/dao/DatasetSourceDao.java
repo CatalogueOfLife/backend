@@ -242,13 +242,15 @@ public class DatasetSourceDao {
   }
 
   private void add(SourceMetrics m, SectorImport si) {
-    m.add(si);
-    // track attempts & md5
-    if (si.getDatasetAttempt() != null) {
-      m.datasetAttempt.add(si.getDatasetAttempt());
-      var md5 = md5s.get(DSID.of(m.getSourceKey(), si.getDatasetAttempt()));
-      if (md5 != null) {
-        m.datasetMd5.add(md5);
+    if (si != null) {
+      m.add(si);
+      // track attempts & md5
+      if (si.getDatasetAttempt() != null) {
+        m.datasetAttempt.add(si.getDatasetAttempt());
+        var md5 = md5s.get(DSID.of(m.getSourceKey(), si.getDatasetAttempt()));
+        if (md5 != null) {
+          m.datasetMd5.add(md5);
+        }
       }
     }
   }
