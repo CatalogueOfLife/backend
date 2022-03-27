@@ -27,6 +27,7 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
  */
 public class Partitioner {
   private static final Logger LOG = LoggerFactory.getLogger(Partitioner.class);
+  private static final Pattern TABLE_PATTERN = Pattern.compile("name_(.+)$");
 
   /**
    * @return list of all dataset suffices for which a name data partition exists - no matter if attached or not.
@@ -37,31 +38,30 @@ public class Partitioner {
     ) {
       Set<String> suffices = new HashSet<>();
       st.execute("select table_name from information_schema.tables where table_schema='public' and (table_name ~* '^name_\\d+' OR table_name ~* '^name_mod\\d+')");
-      ResultSet rs = st.getResultSet();
 
-      Pattern TABLE = Pattern.compile("name_(.+)$");
-      while (rs.next()) {
-        String tbl = rs.getString(1);
-        Matcher m = TABLE.matcher(tbl);
-        if (m.find()) {
-          if (origin != null) {
-            try {
-              int key = Integer.parseInt(m.group(1));
-              originStmt.execute("select origin from dataset where key = "+key + " AND origin='"+origin.name()+"'::datasetorigin");
-              if (!originStmt.getResultSet().next()) {
-                // no matching origin
-                continue;
-              }
-            } catch (NumberFormatException e) {
-              if (origin != DatasetOrigin.EXTERNAL) {
-                continue;
+      try (ResultSet rs = st.getResultSet()) {
+        while (rs.next()) {
+          String tbl = rs.getString(1);
+          Matcher m = TABLE_PATTERN.matcher(tbl);
+          if (m.find()) {
+            if (origin != null) {
+              try {
+                int key = Integer.parseInt(m.group(1));
+                originStmt.execute("select origin from dataset where key = "+key + " AND origin='"+origin.name()+"'::datasetorigin");
+                if (!originStmt.getResultSet().next()) {
+                  // no matching origin
+                  continue;
+                }
+              } catch (NumberFormatException e) {
+                if (origin != DatasetOrigin.EXTERNAL) {
+                  continue;
+                }
               }
             }
+            suffices.add( m.group(1) );
           }
-          suffices.add( m.group(1) );
         }
       }
-      rs.close();
       LOG.info("Found {} existing name partition tables", suffices.size());
       return suffices;
     }
@@ -72,19 +72,15 @@ public class Partitioner {
    */
   public static boolean isAttached(Connection con, String table) throws SQLException {
     boolean exists = false;
-    ResultSet rs = null;
     try (Statement st = con.createStatement()) {
       st.execute("SELECT EXISTS (SELECT child.relname"
                  + "  FROM pg_inherits JOIN pg_class parent ON pg_inherits.inhparent = parent.oid"
                  + "  JOIN pg_class child ON pg_inherits.inhrelid   = child.oid"
                  + "  WHERE child.relname='" + table + "')");
-      rs = st.getResultSet();
-      if (rs.next()) {
-        exists = rs.getBoolean(1);
-      }
-    } finally {
-      if (rs != null) {
-        rs.close();
+      try (ResultSet rs = st.getResultSet()) {
+        if (rs.next()) {
+          exists = rs.getBoolean(1);
+        }
       }
     }
     return exists;

@@ -26,7 +26,7 @@ public class DelayRequestFilter implements ContainerRequestFilter {
     try {
       TimeUnit.MILLISECONDS.sleep(delay);
     } catch (InterruptedException e) {
-      // just continue
+      Thread.currentThread().interrupt();
     }
   }
 }

@@ -250,7 +250,7 @@ public class DatasetPager {
         c.setId(b.identifier);
 
         if (DOI.isParsable(b.identifier)) {
-          var doi = DOI.parse(b.identifier).get();
+          var doi = DOI.parse(b.identifier).orElse(null);
           c.setDoi(doi);
         }
         citations.add(c);
