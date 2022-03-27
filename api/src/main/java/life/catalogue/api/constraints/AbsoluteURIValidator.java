@@ -15,10 +15,10 @@ public class AbsoluteURIValidator implements ConstraintValidator<AbsoluteURI, UR
     if (uri == null) {
       return true;
     }
+    return isAbsolut(uri);
+  }
 
-    if (uri.getScheme() == null || uri.getHost() == null) {
-      return false;
-    }
-    return true;
+  public static boolean isAbsolut(URI uri) {
+    return uri.getScheme() != null && uri.getHost() != null;
   }
 }

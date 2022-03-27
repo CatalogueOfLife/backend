@@ -1,5 +1,6 @@
 package life.catalogue.metadata.eml;
 
+import life.catalogue.api.constraints.AbsoluteURIValidator;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.Dataset;
@@ -140,7 +141,15 @@ public class EmlParser {
                 break;
               case "url":
                 try {
-                  url = URI.create(text.toString());
+                  var str = text.toString();
+                  if (!StringUtils.isBlank(str)) {
+                    url = URI.create(str.trim());
+                    // require absolute URLs
+                    if (!AbsoluteURIValidator.isAbsolut(url)) {
+                      LOG.debug("Remove relative URL {}", url);
+                      url = null;
+                    }
+                  }
                 } catch (IllegalArgumentException e) {
                   LOG.warn("Invalid URL {}", text.toString());
                   url = null;

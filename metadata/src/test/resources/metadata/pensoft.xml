@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:md="eml://ecoinformatics.org/methods-2.1.1" xmlns:proj="eml://ecoinformatics.org/project-2.1.1" xmlns:d="eml://ecoinformatics.org/dataset-2.1.1" xmlns:res="eml://ecoinformatics.org/resource-2.1.1" xmlns:dc="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.0.1/eml.xsd" packageId="10.3897/BDJ.9.e70141" system="https://bdj.pensoft.net/" scope="system" xml:lang="eng">
+  <dataset>
+    <title xml:lang="eng"> Two new species of Erythroneurini from China (Hemiptera, Cicadellidae, Typhlocybinae)</title>
+    <creator>
+      <individualName>
+        <givenName>Xiao</givenName>
+        <surName>Yang</surName>
+      </individualName>
+      <organizationName>School of Karst Science, Guizhou Normal University / State Key Laboratory Cultivation Base for Guizhou Karst Mountain Ecology Environment of China</organizationName>
+      <positionName>Mr</positionName>
+      <address>
+        <city>Guiyang, Guizhou, 550001</city>
+        <country>China</country>
+      </address>
+      <electronicMailAddress>18883784145@163.com</electronicMailAddress>
+    </creator>
+    <metadataProvider>
+      <individualName>
+        <givenName>Xiao</givenName>
+        <surName>Yang</surName>
+      </individualName>
+      <organizationName>School of Karst Science, Guizhou Normal University / State Key Laboratory Cultivation Base for Guizhou Karst Mountain Ecology Environment of China</organizationName>
+      <positionName>Mr</positionName>
+      <address>
+        <city>Guiyang, Guizhou, 550001</city>
+        <country>China</country>
+      </address>
+      <electronicMailAddress>18883784145@163.com</electronicMailAddress>
+    </metadataProvider>
+    <pubDate>2021-08-25</pubDate>
+    <language>eng</language>
+    <abstract>
+      <para> The leafhopper genus Empoascanara was established by Distant (1918). So far, 81 species of the genus Empoascanara have been reported, most of which are distributed in Afrotropical or Oriental or Australian regions. The leafhopper genus Kapsa was established by Dworakowska (1972) and mainly distributed in the Orient or Australia.Two new species of the leafhopper tribe Erythroneurini from Guizhou province, China, Empoascanara dichotomus sp. nov. and Kapsa sinuose sp. nov. are described and illustrated. Two keys to distinguish the Chinese species of the genus are given.</para>
+    </abstract>
+    <intellectualRights>
+      <para>This work is licensed under a <ulink url="http://creativecommons.org/licenses/by/4.0/legalcode"><citetitle>Creative Commons Attribution (CC-BY) 4.0 License</citetitle></ulink>.</para>
+    </intellectualRights>
+    <distribution scope="document">
+      <online>
+        <url function="information">10.3897/BDJ.9.e70141</url>
+      </online>
+    </distribution>
+    <contact>
+      <individualName>
+        <givenName>Xiao</givenName>
+        <surName>Yang</surName>
+      </individualName>
+      <organizationName>School of Karst Science, Guizhou Normal University / State Key Laboratory Cultivation Base for Guizhou Karst Mountain Ecology Environment of China</organizationName>
+      <positionName>Mr</positionName>
+      <address>
+        <city>Guiyang, Guizhou, 550001</city>
+        <country>China</country>
+      </address>
+      <electronicMailAddress>18883784145@163.com</electronicMailAddress>
+    </contact>
+  </dataset>
+  <additionalMetadata>
+    <metadata>
+      <gbif>
+        <dateStamp>2021-08-25</dateStamp>
+        <hierarchyLevel>dataset</hierarchyLevel>
+        <citation identifier="Citation Identifier">Yang X, Luo G, Song Y (2021) Two new species of Erythroneurini from China (Hemiptera, Cicadellidae, Typhlocybinae). Biodiversity Data Journal 9: e70141. https://doi.org/10.3897/BDJ.9.e70141</citation>
+      </gbif>
+    </metadata>
+  </additionalMetadata>
+</eml:eml>

@@ -27,6 +27,14 @@ public class EmlParserTest {
   }
 
   @Test
+  public void pensoft() throws Exception {
+    Optional<DatasetWithSettings> m = EmlParser.parse(Resources.stream("metadata/pensoft.xml"));
+    Dataset d = m.get().getDataset();
+    // relative path - bad DOI
+    assertNull(d.getUrl());
+  }
+
+  @Test
   public void plazi() throws Exception {
     Optional<DatasetWithSettings> m = EmlParser.parse(Resources.stream("metadata/plazi.xml"));
     Dataset d = m.get().getDataset();
