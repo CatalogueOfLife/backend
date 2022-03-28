@@ -44,6 +44,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final String YEAR = "[12][0-9][0-9][0-9?]";
   private static final Pattern COMMA_BEFORE_YEAR = Pattern.compile("(?<!,)\\s+("+YEAR+")");
   private static final Pattern COMMA_AT_END = Pattern.compile("\\s*[,;:]\\s*$");
+  private static final Pattern NO_CHARS = Pattern.compile("^[^a-zA-Z0-9]+$");
   private static final Pattern NORM_WHITESPACE = Pattern.compile("(?:\\\\[nr]|\\s)+");
 
   private static final Map<String, Issue> WARN_TO_ISSUE = ImmutableMap.<String, Issue>builder()
@@ -145,7 +146,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
         removeEpithetIssues(ic);
         ic.getIssues().forEach(v::addIssue);
 
-        // use original authorship string but normalize whitespace
+        // use original authorship string but normalize whitespace and remove taxonomic notes, e.g. misapplication
         pnu.getName().setAuthorship( normalizeAuthorship(authorship, pnAuthorship.getTaxonomicNote()) );
 
       } else {
@@ -194,11 +195,14 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       Matcher m = noteP.matcher(authorship);
       if (m.find()) {
         name = m.replaceFirst("$1 $2");
+        // remove completely if no chars are left
+        if (NO_CHARS.matcher(name).find()) {
+          return null;
+        }
         // remove final comma
         name = COMMA_AT_END.matcher(name).replaceFirst("");
       }
     }
-
     // normalise different usages of ampersand, and, et &amp; to always use &
     name = NORM_AND.matcher(name).replaceAll(" & ");
     name = NORM_ET_AL.matcher(name).replaceAll("et al.");
@@ -209,7 +213,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       name = m.replaceFirst(", $1");
     }
 
-    // capitalize Anonumous author
+    // capitalize Anonymous author
     m = NORM_ANON.matcher(name);
     if (m.find()) {
       name = m.replaceFirst("Anon.");
