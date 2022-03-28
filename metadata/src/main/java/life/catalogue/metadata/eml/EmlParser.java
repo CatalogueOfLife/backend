@@ -140,20 +140,7 @@ public class EmlParser {
                 para.append(text);
                 break;
               case "url":
-                try {
-                  var str = text.toString();
-                  if (!StringUtils.isBlank(str)) {
-                    url = URI.create(str.trim());
-                    // require absolute URLs
-                    if (!AbsoluteURIValidator.isAbsolut(url)) {
-                      LOG.debug("Remove relative URL {}", url);
-                      url = null;
-                    }
-                  }
-                } catch (IllegalArgumentException e) {
-                  LOG.warn("Invalid URL {}", text.toString());
-                  url = null;
-                }
+                url = getAbsoluteUri(text);
                 break;
               case "intellectualRights":
                 if (url != null) {
@@ -261,11 +248,7 @@ public class EmlParser {
             if (isAdditionalMetadata) {
               switch (parser.getLocalName()) {
                 case "resourceLogoUrl":
-                  try {
-                    d.setLogo(URI.create(text.toString()));
-                  } catch (IllegalArgumentException e) {
-                    LOG.warn("Invalid logo URL {}", text);
-                  }
+                  d.setLogo(getAbsoluteUri(text));
                   break;
                 case "confidence":
                   d.setConfidence(integer(text));
@@ -309,6 +292,27 @@ public class EmlParser {
       
     }
     return Optional.empty();
+  }
+
+  private static URI getAbsoluteUri(StringBuilder text) {
+    URI url = null;
+    if (text != null && text.length() > 1) {
+      try {
+        var str = text.toString();
+        if (!StringUtils.isBlank(str)) {
+          url = URI.create(str.trim());
+          // require absolute URLs
+          if (!AbsoluteURIValidator.isAbsolut(url)) {
+            LOG.debug("Remove relative URL {}", url);
+            url = null;
+          }
+        }
+      } catch (IllegalArgumentException e) {
+        LOG.warn("Invalid URL {}", text);
+        url = null;
+      }
+    }
+    return url;
   }
 
   private static void consolidate(DatasetWithSettings ds){
