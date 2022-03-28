@@ -392,6 +392,9 @@ public enum Issue {
 
   WRONG_MONOMIAL_CASE(NAME, Level.WARNING,
     "At least one monomial of the parsed name in not using title case."),
+
+  AUTHORSHIP_REMOVED(NAME, Level.WARNING,
+    "The interpreted authorship was removed because it was not considered appropriate."),
   ;
 
   /**

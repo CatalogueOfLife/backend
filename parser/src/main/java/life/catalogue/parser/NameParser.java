@@ -61,6 +61,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       .put(Warnings.XML_TAGS, Issue.ESCAPED_CHARACTERS)
       .put(Warnings.BLACKLISTED_EPITHET, Issue.BLACKLISTED_EPITHET)
       .put(Warnings.NOMENCLATURAL_REFERENCE, Issue.CONTAINS_REFERENCE)
+      .put(Warnings.AUTHORSHIP_REMOVED, Issue.AUTHORSHIP_REMOVED)
       .build();
 
   private Timer timer;

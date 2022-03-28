@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-03-28 new issue
+```
+ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_REMOVED';
+```
+
 ### 2022-03-25 missing names index indices for pattern search
 ```
 CREATE INDEX ON names_index (scientific_name);

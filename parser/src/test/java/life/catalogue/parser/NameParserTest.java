@@ -4,6 +4,7 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 
 import org.gbif.nameparser.NameParserGBIF;
@@ -264,6 +265,19 @@ public class NameParserTest {
     assertName("Mollusca not assigned", "Mollusca not assigned", NameType.PLACEHOLDER)
         .nothingElse();
   }
+
+  @Test
+  public void flagBadAuthorship() throws Exception {
+    assertName("Cynoglossus aurolineatus Not applicable", "Cynoglossus aurolineatus", NameType.SCIENTIFIC)
+      .species("Cynoglossus", "aurolineatus")
+      .issue(Issue.AUTHORSHIP_REMOVED)
+      .nothingElse();
+
+    assertName("Asellus major Not given", "Asellus major", NameType.SCIENTIFIC)
+      .species("Asellus", "major")
+      .issue(Issue.AUTHORSHIP_REMOVED)
+      .nothingElse();
+  }
   
   /**
    * Expect empty results for nothing or whitespace
@@ -452,13 +466,15 @@ public class NameParserTest {
   }
   
   static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname, NameType type) throws UnparsableException {
-    ParsedNameUsage n = NameParser.PARSER.parse(rawName, rank, code, IssueContainer.VOID).get();
+    var issues = new IssueContainer.Simple();
+    ParsedNameUsage n = NameParser.PARSER.parse(rawName, rank, code, issues).get();
     assertEquals(sciname, n.getName().getScientificName());
-    return new NameAssertion(n.getName()).type(type);
+    return new NameAssertion(n.getName(), issues).type(type);
   }
 
   static class NameAssertion {
     private final Name n;
+    private final IssueContainer issues;
     private Set<NP> tested = Sets.newHashSet();
     
     private enum NP {
@@ -477,8 +493,9 @@ public class NameParserTest {
       REMARKS
     }
     
-    public NameAssertion(Name n) {
+    public NameAssertion(Name n, IssueContainer issues) {
       this.n = n;
+      this.issues = issues;
     }
     
     void nothingElse() {
@@ -539,7 +556,17 @@ public class NameParserTest {
       }
       return this;
     }
-    
+
+    NameAssertion issue(Issue issue) {
+      assertTrue(this.issues.hasIssue(issue));
+      return this;
+    }
+
+    NameAssertion noIssue(Issue issue) {
+      assertFalse(this.issues.hasIssue(issue));
+      return this;
+    }
+
     NameAssertion monomial(String monomial, Rank rank) {
       assertEquals(monomial, n.getUninomial());
       assertNull(n.getGenus());
