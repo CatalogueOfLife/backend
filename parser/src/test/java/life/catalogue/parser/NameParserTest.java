@@ -91,7 +91,9 @@ public class NameParserTest {
 
   @Test
   public void normalizeAuthorship() throws Exception {
+    // https://github.com/CatalogueOfLife/backend/issues/1067
     assertNull(NameParser.normalizeAuthorship("(non Snyder, 1904)", "non Snyder, 1904"));
+    assertNull(NameParser.normalizeAuthorship("( non Snyder, 1904 )", "(non Snyder, 1904)"));
 
     assertEquals("(Huteret ali)", NameParser.normalizeAuthorship("(Huteret ali)", null));
     assertEquals("(Huter et al.) P. D. Sell & Whitehead", NameParser.normalizeAuthorship("(Huter et al.) P. D. Sell & Whitehead", null));
