@@ -55,13 +55,14 @@ import com.univocity.parsers.csv.CsvParserSettings;
  * - NULL and \N values are considered null
  * - Whitespace including control characters is trimmed and collapsed to a single space
  * <p>
- * It forms the basis for reading both DWC and ACEF files.
+ * It forms the basis for reading ColDP, DWC and ACEF files.
  */
 public class CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(CsvReader.class);
   protected static final CsvParserSettings CSV = new CsvParserSettings();
+  private static final CharMatcher SPACE_MATCHER = CharMatcher.whitespace().or(CharMatcher.javaIsoControl());
   public static final String LOGO_FILENAME = "logo.png";
-  private static Term UNKNOWN_TERM = TermFactory.instance().findTerm("void", false);
+  private static final Term UNKNOWN_TERM = TermFactory.instance().findTerm("void", false);
   static {
     CSV.detectFormatAutomatically();
     // try with tabs as default if autoconfig fails
@@ -664,12 +665,12 @@ public class CsvReader {
       return Stream.empty();
     }
   }
-  
+
   private static String clean(String x) {
     if (Strings.isNullOrEmpty(x) || NULL_PATTERN.matcher(x).find()) {
       return null;
     }
-    return Strings.emptyToNull(CharMatcher.javaIsoControl().trimAndCollapseFrom(x, ' ').trim());
+    return Strings.emptyToNull(SPACE_MATCHER.trimAndCollapseFrom(x, ' ').trim());
   }
   
   private static boolean isAllNull(String[] row) {

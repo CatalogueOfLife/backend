@@ -92,6 +92,13 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void testByNidx() throws Exception {
+    // does not do proper test but run the query to make sure the SQL is not wrong
+    var res = mapper().listByNamesIndexID(testDataRule.testData.key, 3, new Page());
+    res = mapper().listByNamesIndexIDGlobal(3, new Page());
+  }
+
+  @Test
   public void listRelated() throws Exception {
     var results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), null, null);
     assertEquals(1, results.size());

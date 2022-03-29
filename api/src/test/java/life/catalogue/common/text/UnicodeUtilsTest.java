@@ -69,6 +69,9 @@ public class UnicodeUtilsTest {
     assertTrue(UnicodeUtils.containsHomoglyphs(input2));
     assertEquals(120515, UnicodeUtils.findHomoglyph(input2));
 
+    // no dashes
+    assertFalse(UnicodeUtils.containsHomoglyphs("A word like e-mail uses a hyphen. Dashes denote a sub-clause or aside – like this – where they are more significant than commas but less than brackets. British usage prefers an en-dash, but Americans typically use an em-dash without spaces—like this."));
+
     // hybrid marker is fine in out domain!
     assertFalse(UnicodeUtils.containsHomoglyphs("Abies × Picea"));
 

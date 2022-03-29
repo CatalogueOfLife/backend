@@ -38,9 +38,9 @@ public class JwtCodec {
     JwtBuilder builder = Jwts.builder()
         .setId(UUID.randomUUID().toString())
         .setIssuer(ISSUER)
-        .setIssuedAt(DateUtils.toDate(now))
+        .setIssuedAt(DateUtils.asDate(now))
         .setSubject(user.getUsername())
-        .setExpiration(DateUtils.toDate(now.plus(EXPIRE_IN_HOURS, ChronoUnit.HOURS)))
+        .setExpiration(DateUtils.asDate(now.plus(EXPIRE_IN_HOURS, ChronoUnit.HOURS)))
         .signWith(key);
     return builder.compact();
   }

@@ -1,5 +1,7 @@
 package life.catalogue.common.text;
 
+import it.unimi.dsi.fastutil.chars.CharSet;
+
 import life.catalogue.common.io.LineReader;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.NameFormatter;
@@ -49,6 +51,8 @@ public class UnicodeUtils {
   private static final int HOMOGLYHPS_LOWEST_CP;
   private static final int HOMOGLYHPS_HIGHEST_CP;
   static {
+    // canonicals to be ignored from the homoglyph list
+    final CharSet ignoredCanonicals = CharSet.of(' ', '\'', '-', '﹘');
     var lr = new LineReader(Resources.stream("unicode/homoglyphs.txt"));
     Int2CharMap homoglyphs = new Int2CharOpenHashMap();
     final AtomicInteger minCP = new AtomicInteger(Integer.MAX_VALUE);
@@ -58,7 +62,7 @@ public class UnicodeUtils {
       // the canonical is never a surrogate pair
       char canonical = line.charAt(0);
       // ignore all whitespace codepoints
-      if (' ' == canonical) {
+      if (ignoredCanonicals.contains(canonical)) {
         continue;
       }
       if (DEBUG) {

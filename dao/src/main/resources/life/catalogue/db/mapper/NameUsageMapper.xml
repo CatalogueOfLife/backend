@@ -122,12 +122,16 @@
     LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
   </sql>
 
+  <sql id="FROM_ACCEPTED">
+    LEFT JOIN name_usage a ON a.id=u.parent_id AND u.is_synonym AND a.dataset_key=u.dataset_key
+    LEFT JOIN name an ON a.name_id=an.id AND an.dataset_key=u.dataset_key
+    LEFT JOIN name_match anm ON anm.dataset_key=an.dataset_key AND anm.name_id=an.id
+    LEFT JOIN reference ar ON ar.id=a.according_to_id AND ar.dataset_key=u.dataset_key
+  </sql>
+
   <sql id="FROM">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_NO_ACCEPTED"/>
-    LEFT JOIN name_usage a ON a.dataset_key=u.dataset_key AND a.id=u.parent_id AND u.is_synonym
-    LEFT JOIN name an ON an.dataset_key=u.dataset_key AND an.id=a.name_id
-    LEFT JOIN name_match anm ON anm.dataset_key=an.dataset_key AND anm.name_id=an.id
-    LEFT JOIN reference ar ON ar.dataset_key=u.dataset_key AND ar.id=a.according_to_id
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_ACCEPTED"/>
   </sql>
 
   <resultMap id="usageResultMap" type="NameUsageBase" autoMapping="true">
@@ -230,7 +234,6 @@
   <select id="listByNamesIndexID" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-      JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
       JOIN names_index ni ON ni.id=nm.index_id
     WHERE u.dataset_key = #{datasetKey} AND (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
     ORDER BY u.id
@@ -239,13 +242,12 @@
 
   <select id="listByNamesIndexIDGlobal" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
-    FROM name_usage u JOIN name n ON n.id=u.name_id AND n.dataset_key=u.dataset_key
+    FROM name_usage u
+      JOIN name n ON n.id=u.name_id AND n.dataset_key=u.dataset_key
       LEFT JOIN reference r ON r.id=u.according_to_id AND r.dataset_key=u.dataset_key
-      LEFT JOIN name_usage a ON a.id=u.parent_id AND u.is_synonym AND a.dataset_key=u.dataset_key
-      LEFT JOIN name an ON a.name_id=an.id AND an.dataset_key=u.dataset_key
-      LEFT JOIN reference ar ON ar.id=a.according_to_id AND ar.dataset_key=u.dataset_key
       JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=u.dataset_key
       JOIN names_index ni ON ni.id=nm.index_id
+      <include refid="FROM_ACCEPTED"/>
     WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
     ORDER BY u.id
     <include refid="life.catalogue.db.Common.limit"/>
@@ -260,14 +262,11 @@
     <!-- now join the related usages -->
     JOIN name n ON nm.name_id=n.id AND nm.dataset_key=n.dataset_key
     JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
+    LEFT JOIN reference r ON r.id=u.according_to_id AND r.dataset_key=u.dataset_key
     <if test="publisherKey != null">
       JOIN dataset d ON d.key=u.dataset_key
     </if>
-    LEFT JOIN reference r ON r.id=u.according_to_id AND r.dataset_key=u.dataset_key
-    LEFT JOIN name_usage a ON a.id=u.parent_id AND u.is_synonym AND a.dataset_key=u.dataset_key
-    LEFT JOIN name an ON a.name_id=an.id AND an.dataset_key=u.dataset_key
-    LEFT JOIN name_match anm ON anm.dataset_key=an.dataset_key AND anm.name_id=an.id
-    LEFT JOIN reference ar ON ar.id=a.according_to_id AND ar.dataset_key=u.dataset_key
+    <include refid="FROM_ACCEPTED"/>
     WHERE orig.dataset_key=#{key.datasetKey} AND orig.id=#{key.id}
       AND (u.dataset_key!=#{key.datasetKey} OR u.id!=#{key.id})
     <if test="datasetKeys != null and !datasetKeys.isEmpty()">

@@ -76,7 +76,7 @@ public class IdentityService {
     if (cache.containsKey(username)) {
       return cache.get(username);
     }
-    // try to load from DB - if its not there the user has never logged in before and sth is wrong
+    // try to load from DB - if it's not there the user has never logged in before and sth is wrong
     try (SqlSession session = sqlSessionFactory.openSession()) {
       User user = session.getMapper(UserMapper.class).getByUsername(username);
       if (user == null) {

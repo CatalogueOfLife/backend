@@ -89,6 +89,7 @@
     <newick-io.version>1.0-SNAPSHOT</newick-io.version>
     <poi.version>5.1.0</poi.version>
     <postgresql.version>42.3.3</postgresql.version>
+    <scribejava.version>8.3.1</scribejava.version>
     <simple-mail.version>6.6.1</simple-mail.version>
     <stax2.version>4.2</stax2.version>
     <text-tree.version>1.0.0</text-tree.version>
@@ -104,7 +105,7 @@
     <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
     <jaxb2_commons.version>0.12.0</jaxb2_commons.version>
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
-    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+    <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
     <maven-git-commit-id-plugin.version>4.0.4</maven-git-commit-id-plugin.version>
@@ -757,19 +758,7 @@
           <version>${maven-compiler-plugin.version}</version>
           <configuration>
             <release>${java.version}</release>
-            <showDeprecation>true</showDeprecation>
             <showWarnings>true</showWarnings>
-            <compilerArgs>
-              <arg>-XDcompilePolicy=simple</arg>
-              <arg>-Xplugin:ErrorProne -XepAllErrorsAsWarnings</arg>
-            </compilerArgs>
-            <annotationProcessorPaths>
-              <path>
-                <groupId>com.google.errorprone</groupId>
-                <artifactId>error_prone_core</artifactId>
-                <version>2.9.0</version>
-              </path>
-            </annotationProcessorPaths>
           </configuration>
         </plugin>
         <plugin>

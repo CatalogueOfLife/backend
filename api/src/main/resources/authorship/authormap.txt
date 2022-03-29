@@ -4523,9 +4523,9 @@ Troll	Wilhelm Troll 	W Troll
 Trotter	Alessandro Trotter 	A Trotter
 Troupin	Georges M.D.J. Troupin 	G M Troupin
 Trumbull	James Hammond Trumbull 	J H Trumbull
-Tschermak	Erich von Tschermak–Seysenegg 	E von Tschermak–Seysenegg
-Tscherm.–Seys.	Erich von Tschermak–Seysenegg 	E von Tschermak–Seysenegg
-Tscherm.–Woess	Elizabeth Tschermak–Woess 	E Tschermak–Woess
+Tschermak	Erich von Tschermak-Seysenegg 	E von Tschermak-Seysenegg
+Tscherm.-Seys.	Erich von Tschermak-Seysenegg 	E von Tschermak-Seysenegg
+Tscherm.-Woess	Elizabeth Tschermak-Woess 	E Tschermak-Woess
 Tsiang	Ying Tsiang 	Y Tsiang
 T.S.Nayar	T.S. Nayar 	T Nayar
 T.S.Palmer	Theodore Sherman Palmer 	T S Palmer

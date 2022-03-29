@@ -177,7 +177,7 @@ public class ColdpReader extends CsvReader {
       require(ColdpTerm.VernacularName, ColdpTerm.name);
       require(ColdpTerm.Media, ColdpTerm.url);
   
-      if (hasSchema(ColdpTerm.Synonym)) {
+      if (hasSchema(ColdpTerm.Synonym) || hasSchema(ColdpTerm.NameUsage)) {
         mappingFlags.setAcceptedNameMapped(true);
       } else {
         LOG.warn("No Synonyms mapped!");

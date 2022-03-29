@@ -13,6 +13,7 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
@@ -87,6 +88,91 @@ public class NormalizerColdpIT extends NormalizerITBase {
         }
       });
   
+      store.references().forEach(r -> {
+        assertNotNull(r.getId());
+        assertNotNull(r.getCitation());
+        if (r.getId().equals("greene1895")) {
+          assertNull(r.getCsl().getTitle());
+          assertNotNull(r.getCsl().getContainerTitle());
+        } else if (r.getId().equals("rel")) {
+          assertNull(r.getCsl().getTitle());
+          assertNull(r.getCsl().getContainerTitle());
+        } else {
+          assertNotNull(r.getCsl().getTitle());
+        }
+        if (r.getCsl().getType() == CSLType.ARTICLE_JOURNAL) {
+          assertNotNull(r.getCsl().getContainerTitle());
+        }
+      });
+
+      t = usageByNameID("1001c");
+      assertFalse(t.isSynonym());
+      assertEquals("1001c", t.getId());
+
+      assertEquals(3, store.typeMaterial().size());
+
+      t = usageByID("10");
+      assertEquals(2, t.estimates.size());
+    }
+  }
+
+  @Test
+  @Ignore("work in progress")
+  public void testExcelMites() throws Exception {
+    normalizeExcel("Torotrogla_villosa.xlsx", NomCode.ZOOLOGICAL);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage t = usageByID("1922");
+      assertFalse(t.isSynonym());
+      assertEquals("Picobia villosa Hancock, 1895", t.usage.getName().getLabel());
+      assertEquals(1895, (int) t.usage.getName().getPublishedInYear());
+      assertEquals("384", t.usage.getName().getPublishedInPage());
+      assertEquals("Angaben zu locality, deposition und host entnommen 97000593", t.usage.getRemarks());
+      assertEquals("Angaben zu locality, deposition und host entnommen 97000593", t.usage.getRemarks());
+
+
+      t = usageByNameID("1006-s3");
+      assertTrue(t.isSynonym());
+      assertEquals("1006-1006-s3", t.getId());
+      assertEquals("1006-s3", t.usage.getName().getId());
+      assertEquals("Leonida taraxacoida Vill.", t.usage.getName().getLabel());
+
+      List<NameRelation> rels = store.nameRelations(t.nameNode);
+      assertEquals(1, rels.size());
+      assertEquals(NomRelType.BASIONYM, rels.get(0).getType());
+
+      t = accepted(t.node);
+      assertFalse(t.isSynonym());
+      assertEquals("1006", t.getId());
+      assertEquals("Leontodon taraxacoides (Vill.) Mérat", t.usage.getName().getLabel());
+
+      parents(t.node, "102", "30", "20", "10", "1");
+
+      store.names().all().forEach(n -> {
+        VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
+        assertNotNull(v);
+        if (n.getName().getId().equals("cult")){
+          assertEquals(1, v.getIssues().size());
+          assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
+        } else if (n.getName().getId().equals("fake")){
+          assertEquals(1, v.getIssues().size());
+          assertTrue(v.hasIssue(Issue.PARENT_SPECIES_MISSING));
+        } else {
+          assertEquals(0, v.getIssues().size());
+        }
+      });
+
+      store.usages().all().forEach(u -> {
+        VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+        assertNotNull(v);
+        if (u.getId().equals("fake")) {
+          assertEquals(1, v.getIssues().size());
+          assertTrue(v.hasIssue(Issue.PARTIAL_DATE));
+        } else {
+          assertTrue(v.getIssues().isEmpty());
+        }
+      });
+
       store.references().forEach(r -> {
         assertNotNull(r.getId());
         assertNotNull(r.getCitation());

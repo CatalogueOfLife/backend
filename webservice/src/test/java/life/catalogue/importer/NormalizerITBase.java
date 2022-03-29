@@ -3,7 +3,10 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.common.io.InputStreamUtils;
+import life.catalogue.common.io.PathUtils;
 import life.catalogue.config.NormalizerConfig;
+import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
@@ -14,6 +17,8 @@ import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
+
+import life.catalogue.resources.ResourceUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -84,7 +89,14 @@ abstract class NormalizerITBase {
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
   }
-  
+
+  public void normalizeExcel(String filename, NomCode code) throws Exception {
+    InputStream xls = getClass().getResourceAsStream("/xls/"+filename);
+    Path dir = java.nio.file.Files.createTempDirectory("col-gsd");
+    ExcelCsvExtractor.extract(xls, dir.toFile());
+    normalize(dir, code);
+  }
+
   public void normalize(int datasetKey) throws Exception {
     normalize(datasetKey, null);
   }
