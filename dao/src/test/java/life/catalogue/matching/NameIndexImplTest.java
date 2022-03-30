@@ -154,6 +154,46 @@ public class NameIndexImplTest {
   }
 
   /**
+   * Try to add the same name again and multiple names with the same key
+   */
+  @Test
+  public void normalizeRank() throws Exception {
+    assertEquals(Rank.SUPRAGENERIC_NAME, NameIndexImpl.normRank(Rank.KINGDOM));
+    assertEquals(Rank.SUPRAGENERIC_NAME, NameIndexImpl.normRank(Rank.ORDER));
+    assertEquals(Rank.SUPRAGENERIC_NAME, NameIndexImpl.normRank(Rank.PARVCLASS));
+    assertEquals(Rank.SUPRAGENERIC_NAME, NameIndexImpl.normRank(Rank.SUBCLASS));
+    assertEquals(Rank.SUPRAGENERIC_NAME, NameIndexImpl.normRank(Rank.SUPRAGENERIC_NAME));
+
+    assertEquals(Rank.FAMILY, NameIndexImpl.normRank(Rank.FAMILY));
+    assertEquals(Rank.FAMILY, NameIndexImpl.normRank(Rank.SUPERFAMILY));
+    assertEquals(Rank.FAMILY, NameIndexImpl.normRank(Rank.INFRAFAMILY));
+    assertEquals(Rank.FAMILY, NameIndexImpl.normRank(Rank.TRIBE));
+
+    assertEquals(Rank.GENUS, NameIndexImpl.normRank(Rank.GENUS));
+    assertEquals(Rank.GENUS, NameIndexImpl.normRank(Rank.SUBGENUS));
+    assertEquals(Rank.GENUS, NameIndexImpl.normRank(Rank.SECTION));
+    assertEquals(Rank.GENUS, NameIndexImpl.normRank(Rank.SERIES));
+
+    assertEquals(Rank.SPECIES, NameIndexImpl.normRank(Rank.SPECIES));
+    assertEquals(Rank.SPECIES, NameIndexImpl.normRank(Rank.SPECIES_AGGREGATE));
+
+    assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.SUBSPECIES));
+    assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.INFRASPECIFIC_NAME));
+    assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.CULTIVAR_GROUP));
+
+    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.VARIETY));
+    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.FORM));
+    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.SUBFORM));
+    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.SUBVARIETY));
+    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.CULTIVAR));
+    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.FORMA_SPECIALIS));
+
+    assertEquals(Rank.UNRANKED, NameIndexImpl.normRank(Rank.UNRANKED));
+    assertEquals(Rank.UNRANKED, NameIndexImpl.normRank(Rank.OTHER));
+    assertEquals(Rank.UNRANKED, NameIndexImpl.normRank(null));
+  }
+
+  /**
    * match the same name over and over again to make sure we never insert duplicates
    */
   @Test

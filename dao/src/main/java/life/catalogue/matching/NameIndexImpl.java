@@ -120,8 +120,21 @@ public class NameIndexImpl implements NameIndex {
     return store.byCanonical(key);
   }
 
+  /**
+   * Normalize to just 7 rank buckets:
+   *
+   * SUPRAGENERIC_NAME for anything above the family group, i.e. suprafamily
+   * FAMILY for any family group name MEGAFAMILY - INFRATRIBE
+   * GENUS for genus group names GENUS - INFRAGENERIC_NAME
+   * SPECIES for SPECIES_AGGREGATE - SPECIES
+   * SUBSPECIES for INFRASPECIFIC_NAME - CONVARIETY
+   * VARIETY for INFRASUBSPECIFIC_NAME - STRAIN
+   * UNRANKED
+   * @param r
+   * @return
+   */
   static Rank normRank(Rank r) {
-    if (r == null || r == Rank.OTHER) {
+    if (r == null || r == Rank.OTHER || r == Rank.UNRANKED) {
       return Rank.UNRANKED;
 
     } else if (r.isFamilyGroup()) {
@@ -133,16 +146,16 @@ public class NameIndexImpl implements NameIndex {
     } else if (r.isSuprageneric()) {
       return Rank.SUPRAGENERIC_NAME;
 
-    } else if (r == Rank.SPECIES_AGGREGATE) {
+    } else if (r == Rank.SPECIES_AGGREGATE || r == Rank.SPECIES) {
       return Rank.SPECIES;
 
-    } else if (r == Rank.INFRASPECIFIC_NAME) {
-      return Rank.SUBSPECIES;
-
-    } else if (r == Rank.INFRASUBSPECIFIC_NAME) {
+    } else if (r.ordinal() >= Rank.INFRASUBSPECIFIC_NAME.ordinal()) {
       return Rank.VARIETY;
+
+    } else if (r.ordinal() >= Rank.INFRASPECIFIC_NAME.ordinal()) {
+      return Rank.SUBSPECIES;
     }
-    return r;
+    return Rank.UNRANKED;
   }
 
   /**

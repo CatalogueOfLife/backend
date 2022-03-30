@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -97,8 +98,7 @@ public class PublicReleaseListener {
     LOG.info("Publish all draft source DOIs for COL release {}: {}", release.getKey(), release.getVersion());
     DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger published = new AtomicInteger(0);
-    try (SqlSession session = factory.openSession(true)) {
-      DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
+    try {
       dao.list(release.getKey(), release, false).forEach(d -> {
         if (d.getDoi() == null) {
           LOG.error("COL source {} {} without a DOI", d.getKey(), d.getAlias());
@@ -113,14 +113,17 @@ public class PublicReleaseListener {
           }
         }
       });
+      LOG.info("Published {} draft source DOIs for COL release {}: {}", published, release.getKey(), release.getVersion());
+
+    } catch (RuntimeException e) {
+      LOG.error("Failed to publish {} draft source DOIs for COL release {}: {}", published, release.getKey(), release.getVersion(), e);
     }
-    LOG.info("Published {} draft source DOIs for COL release {}: {}", published, release.getKey(), release.getVersion());
   }
 
   /**
    * Change DOI metadata for last release to point to CLB, not life.catalogue.portal
    */
-  void updateColDoiUrls(Dataset release) {
+  private void updateColDoiUrls(Dataset release) {
     try (SqlSession session = factory.openSession()) {
       Integer lastReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(release.getKey());
       if (lastReleaseKey != null) {
@@ -148,7 +151,7 @@ public class PublicReleaseListener {
         LOG.info("No previous release before {}", release.getKey());
       }
     } catch (RuntimeException e) {
-      LOG.error("Error updating previous DOIs", e);
+      LOG.error("Error updating previous DOIs for COL release {}: {}", release.getKey(), release.getVersion(), e);
     }
   }
 
@@ -160,27 +163,13 @@ public class PublicReleaseListener {
         LOG.error("Updated COL release {} is missing a release date", datasetKey);
         return;
       }
-      var resp = dao.list(ExportSearchRequest.fullDataset(datasetKey), new Page(0, 10));
+      var resp = dao.list(ExportSearchRequest.fullDataset(datasetKey), new Page(0, 20));
       Set<DataFormat> done = new HashSet<>();
       for (DatasetExport exp : resp.getResult()) {
         if (!done.contains(exp.getRequest().getFormat())) {
           DataFormat df = exp.getRequest().getFormat();
           done.add(df);
-          File target = colDownloadFile(cfg.release.colDownloadDir, dataset, df);
-          File source = cfg.downloadFile(exp.getKey());
-          if (source.exists()) {
-            try {
-              FileUtils.copyFile(source, target);
-              if (symLinkLatest) {
-                File symlink = colLatestFile(cfg.release.colDownloadDir, df);
-                PathUtils.symlink(symlink, target);
-              }
-            } catch (IOException e) {
-              LOG.error("Failed to copy COL {} export {} to {}", df, source, target, e);
-            }
-          } else {
-            LOG.warn("COL {} export {} does not exist at expected location {}", df, exp.getKey(), source);
-          }
+          copyExportToColDownload(dataset, df, exp.getKey(), symLinkLatest);
         }
       }
       if (symLinkLatest && dataset.getAttempt() != null) {
@@ -193,6 +182,24 @@ public class PublicReleaseListener {
           LOG.error("Failed to symlink latest release logs", e);
         }
       }
+    }
+  }
+
+  public void copyExportToColDownload(Dataset dataset, DataFormat df, UUID exportKey, boolean symLinkLatest) {
+    File target = colDownloadFile(cfg.release.colDownloadDir, dataset, df);
+    File source = cfg.downloadFile(exportKey);
+    if (source.exists()) {
+      try {
+        FileUtils.copyFile(source, target);
+        if (symLinkLatest) {
+          File symlink = colLatestFile(cfg.release.colDownloadDir, df);
+          PathUtils.symlink(symlink, target);
+        }
+      } catch (IOException e) {
+        LOG.error("Failed to copy COL {} export {} to {}", df, source, target, e);
+      }
+    } else {
+      LOG.warn("COL {} export {} does not exist at expected location {}", df, exportKey, source);
     }
   }
 

@@ -1,5 +1,7 @@
 package life.catalogue.command;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
@@ -50,8 +52,18 @@ public class ExportCmd extends AbstractMybatisCmd {
   private final MailBundle mail = new MailBundle();
   private PublicReleaseListener copy;
   private Set<DataFormat> formats;
-  private Set<UUID> exports;
+  private final Map<Integer, List<ExpFormat>> exportsByDatasetKey = new HashMap<>();
   private boolean force;
+
+  static class ExpFormat {
+    final UUID key;
+    final DataFormat format;
+
+    ExpFormat(UUID key, DataFormat format) {
+      this.key = key;
+      this.format = format;
+    }
+  }
 
   public ExportCmd() {
     super("export", true, "Export a single dataset or all its releases if it is a project.");
@@ -85,8 +97,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       .help("Export format to use. Defaults to all");
   }
 
-  @Override
-  void execute() throws Exception {
+  private void init() throws Exception {
     DataFormat df = ns.get(ARG_FORMAT);
     if (df != null) {
       formats = Set.of(df);
@@ -102,8 +113,29 @@ public class ExportCmd extends AbstractMybatisCmd {
       System.out.printf("Enforce new exports\n");
     }
 
+    EventBus bus = new EventBus();
+    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    mail.run(cfg, null);
+    exec = new JobExecutor(cfg.job, mail.getMailer());
+    final ImageService imageService = new ImageServiceFS(cfg.img);
+    final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, bus, validator);
+    manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao, new DatasetImportDao(factory, cfg.metricsRepo), metrics);
+    UserDao udao = new UserDao(factory, bus, validator);
+    DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
+    DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
+    copy = new PublicReleaseListener(cfg, factory, exportDao, doiService, converter);
+  }
+
+  @Override
+  void execute() throws Exception {
+    if (userKey == null) {
+      throw new IllegalArgumentException("--user argument required");
+    }
+    init();
+
     Dataset d;
     List<Dataset> datasets;
+    Integer latestReleaseKey = null;
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       d = dm.get(ns.getInt(ARG_KEY));
@@ -111,19 +143,8 @@ public class ExportCmd extends AbstractMybatisCmd {
         throw NotFoundException.notFound(Dataset.class, ns.getInt(ARG_KEY));
       }
 
-      EventBus bus = new EventBus();
-      Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-      mail.run(cfg, null);
-      exec = new JobExecutor(cfg.job, mail.getMailer());
-      final ImageService imageService = new ImageServiceFS(cfg.img);
-      final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, bus, validator);
-      manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao, new DatasetImportDao(factory, cfg.metricsRepo), metrics);
-      UserDao udao = new UserDao(factory, bus, validator);
-      DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
-      DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-      copy = new PublicReleaseListener(cfg, factory, exportDao, doiService, converter);
-
       if (d.getOrigin() == DatasetOrigin.MANAGED) {
+        latestReleaseKey = dm.latestRelease(d.getKey(), true);
         boolean inclPrivate = ns.getBoolean(ARG_PRIVATE);
         DatasetSearchRequest req = new DatasetSearchRequest();
         req.setReleasedFrom(d.getKey());
@@ -151,10 +172,12 @@ public class ExportCmd extends AbstractMybatisCmd {
       exec.close();
     }
 
-    // move exports to COL download dir?
     if (d.getKey() == Datasets.COL || Objects.equals(Datasets.COL, d.getSourceKey())) {
+      System.out.println("Move exports to COL download dir");
       for (Dataset de : datasets) {
-        copy.copyExportsToColDownload(de, false);
+        for (var exp : exportsByDatasetKey.get(de.getKey())) {
+          copy.copyExportToColDownload(de, exp.format, exp.key, Objects.equals(latestReleaseKey, de.getKey()));
+        }
       }
     }
   }
@@ -162,12 +185,12 @@ public class ExportCmd extends AbstractMybatisCmd {
   void export(Dataset d) {
     System.out.printf("Export %s %s from %s\n", d.getOrigin(), d.getKey(), d.getIssued());
 
-    ExportRequest req = new ExportRequest();
-    req.setForce(force);
     for (DataFormat df : formats) {
-      req.setFormat(df);
+      ExportRequest req = new ExportRequest(d.getKey(), df);
+      req.setForce(force);
       UUID key = manager.submit(req, userKey);
-      exports.add(key);
+      exportsByDatasetKey.putIfAbsent(d.getKey(), new ArrayList<>());
+      exportsByDatasetKey.get(d.getKey()).add(new ExpFormat(key, df));
       System.out.printf("  scheduled %s export %s\n", df, key);
     }
   }
