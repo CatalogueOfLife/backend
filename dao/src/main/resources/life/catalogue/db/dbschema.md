@@ -11,6 +11,22 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-03-30 changed dataset types
+```
+ALTER TABLE dataset ALTER COLUMN type TYPE text;
+DROP TYPE DATASETTYPE;
+CREATE TYPE DATASETTYPE AS ENUM (
+  'NOMENCLATURAL',
+  'TAXONOMIC',
+  'PHYLOGENETIC',
+  'ARTICLE',
+  'LEGAL',
+  'THEMATIC',
+  'OTHER'
+);
+ALTER TABLE dataset ALTER COLUMN type TYPE DATASETTYPE USING type::DATASETTYPE;
+```
+
 ### 2022-03-28 new issue
 ```
 ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_REMOVED';

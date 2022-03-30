@@ -11,10 +11,15 @@ public enum DatasetType {
   NOMENCLATURAL,
   
   /**
-   * A taxonomic checklist, a global species database (GSD).
+   * A checklist with some taxonomic assertion. Can be global or regional and does not have to be complete.
    */
   TAXONOMIC,
-  
+
+  /**
+   * A taxonomic checklist with the primary focus on producing a phylogenetic tree.
+   */
+  PHYLOGENETIC,
+
   /**
    * A dataset representing taxonomic treatments of a single scientific article.
    * Mostly published through Plazi or Pensoft at this stage.
@@ -23,19 +28,12 @@ public enum DatasetType {
   ARTICLE,
   
   /**
-   * A list of names uploaded for personal use.
+   * A checklist which is part of some legal document.
    */
-  PERSONAL,
-  
+  LEGAL,
+
   /**
-   * A taxonomic checklist focussed on providing OTU identifier backed by sequences,
-   * usually mixed with classic Linnean classifications.
-   * Subtype of TAXONOMIC.
-   */
-  OTU,
-  
-  /**
-   * A dataset focussed on a specific theme like invasiveness, keys, etc.
+   * A dataset focussed on a specific theme like red lists, invasiveness, keys, traits, species interactions, etc.
    */
   THEMATIC,
   

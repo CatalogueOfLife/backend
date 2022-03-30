@@ -56,7 +56,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //sourceID,
   parentID,
   sequenceIndex(Integer.class),
-  branchLength(Number.class),
+  branchLength(Double.class),
   basionymID("originalNameID"),
   status(Enum.class),
   provisional(Boolean.class),

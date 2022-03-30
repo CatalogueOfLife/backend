@@ -32,6 +32,7 @@ public class DataPackageBuilder {
     String.class, Field.TYPE_STRING,
     Integer.class, Field.TYPE_INTEGER,
     Double.class, Field.TYPE_NUMBER,
+    Number.class, Field.TYPE_NUMBER,
     Year.class, Field.TYPE_YEAR,
     Date.class, Field.TYPE_DATE,
     LocalDateTime.class, Field.TYPE_DATETIME,
