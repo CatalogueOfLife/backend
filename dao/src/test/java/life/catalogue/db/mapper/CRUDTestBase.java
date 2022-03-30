@@ -2,7 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DataEntity;
-import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.TestDataRule;
 

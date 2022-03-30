@@ -3,18 +3,11 @@ package life.catalogue.command;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.db.InitDbUtils;
-import life.catalogue.db.mapper.DatasetMapper;
 
-import life.catalogue.db.mapper.DatasetPartitionMapper;
-
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-
-import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static life.catalogue.common.util.PrimitiveUtils.intDefault;
+import net.sourceforge.argparse4j.inf.Namespace;
 
 /**
  * Command that removes and recreates the check constraint for all default partitions

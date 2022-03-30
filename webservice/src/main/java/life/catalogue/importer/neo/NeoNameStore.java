@@ -3,7 +3,9 @@ package life.catalogue.importer.neo;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.neo.model.NeoName;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;

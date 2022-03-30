@@ -1,16 +1,14 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.exception.TooManyRequestsException;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.io.UnixCmdUtils;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.EntityDao;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
-
 import life.catalogue.db.mapper.DatasetMapper;
 
 import org.gbif.nameparser.api.Rank;
@@ -23,15 +21,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-
-import javax.annotation.Nullable;
-import javax.validation.Validator;
 
 public class DatasetDiffService extends BaseDiffService<Integer> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDiffService.class);

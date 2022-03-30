@@ -4,8 +4,9 @@ import life.catalogue.api.model.IdReportEntry;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static life.catalogue.api.vocab.IdReportType.*;
+import static life.catalogue.api.vocab.IdReportType.CREATED;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class IdReportMapperTest extends MapperTestBase<IdReportMapper> {
 

@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
@@ -15,8 +14,6 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.validation.ConstraintViolationException;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -1,6 +1,5 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.ArchivedNameUsage;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IndexName;
@@ -9,9 +8,7 @@ import life.catalogue.api.vocab.MatchType;
 import org.junit.Before;
 import org.junit.Test;
 
-import static life.catalogue.api.TestEntityGenerator.NAME1;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  *

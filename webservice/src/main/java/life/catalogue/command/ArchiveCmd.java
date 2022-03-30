@@ -7,11 +7,11 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.NameUsageArchiver;
 import life.catalogue.db.mapper.DatasetMapper;
 
-import net.sourceforge.argparse4j.inf.Subparser;
+import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 
-import java.util.*;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * Command that rebuilds the name usage archive for one or all projects based on existing id reports.

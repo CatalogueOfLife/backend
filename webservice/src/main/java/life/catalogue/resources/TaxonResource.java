@@ -9,7 +9,6 @@ import life.catalogue.db.mapper.*;
 import java.net.URI;
 import java.util.List;
 
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;

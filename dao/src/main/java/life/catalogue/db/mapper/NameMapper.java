@@ -3,7 +3,6 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.*;
 
 import org.gbif.nameparser.api.Rank;

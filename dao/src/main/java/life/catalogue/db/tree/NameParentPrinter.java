@@ -1,16 +1,17 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.dao.TaxonCounter;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.Rank;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * Print all names with their parent name into a text file, one into each line.

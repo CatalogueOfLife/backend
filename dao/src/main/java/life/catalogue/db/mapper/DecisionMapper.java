@@ -3,12 +3,12 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.search.DecisionSearchRequest;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
-
-import java.util.List;
 
 public interface DecisionMapper extends BaseDecisionMapper<EditorialDecision, DecisionSearchRequest> {
 

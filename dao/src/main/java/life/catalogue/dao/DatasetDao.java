@@ -1,7 +1,5 @@
 package life.catalogue.dao;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.model.*;
@@ -44,11 +42,12 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.eventbus.EventBus;
 
-import static life.catalogue.metadata.MetadataFactory.stripHtml;
 import static life.catalogue.common.util.PrimitiveUtils.intDefault;
+import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 /**
  * A DAO for datasets that orchestrates the needs for partitioning tables and removing dataset remains

@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import life.catalogue.dao.DatasetDao;
-
 import org.apache.ibatis.binding.BindingException;
 import org.junit.Test;
 

@@ -9,7 +9,7 @@ import life.catalogue.api.vocab.MatchType;
 import org.junit.Before;
 import org.junit.Test;
 
-import static life.catalogue.api.TestEntityGenerator.*;
+import static life.catalogue.api.TestEntityGenerator.NAME1;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 

@@ -1,16 +1,11 @@
 package life.catalogue.command;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.PathUtils;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,12 +13,9 @@ import java.io.Reader;
 import java.sql.Connection;
 import java.sql.Statement;
 
-import net.sourceforge.argparse4j.inf.Subparser;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +25,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
-
-import static life.catalogue.common.util.PrimitiveUtils.intDefault;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * Command to initialise a new database schema.

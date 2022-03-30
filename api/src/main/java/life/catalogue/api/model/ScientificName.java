@@ -1,10 +1,10 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface ScientificName {
 

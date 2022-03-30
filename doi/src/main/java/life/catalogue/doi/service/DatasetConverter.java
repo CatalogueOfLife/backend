@@ -4,7 +4,6 @@ import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
-import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.doi.datacite.model.*;
 
 import java.net.URI;

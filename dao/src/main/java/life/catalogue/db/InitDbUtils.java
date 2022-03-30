@@ -1,14 +1,12 @@
 package life.catalogue.db;
 
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.postgres.PgCopyUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;

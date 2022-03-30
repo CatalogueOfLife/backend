@@ -1,8 +1,10 @@
 package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.*;
-import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.model.DOI;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;

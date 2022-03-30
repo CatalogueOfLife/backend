@@ -1,7 +1,5 @@
 package life.catalogue.release;
 
-import it.unimi.dsi.fastutil.ints.*;
-
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -9,9 +7,14 @@ import life.catalogue.common.id.IdConverter;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.stream.Collectors;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 /**
  * Tracks released ids incl historic releases.

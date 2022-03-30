@@ -1,7 +1,5 @@
 package life.catalogue.release;
 
-import it.unimi.dsi.fastutil.ints.*;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.IdReportType;
@@ -17,8 +15,6 @@ import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.*;
 import life.catalogue.release.ReleasedIds.ReleasedId;
 
-import org.apache.ibatis.session.ExecutorType;
-
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
@@ -27,6 +23,7 @@ import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -34,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 

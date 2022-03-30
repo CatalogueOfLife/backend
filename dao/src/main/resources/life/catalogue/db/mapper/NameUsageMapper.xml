@@ -231,25 +231,28 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <sql id="FROM_NIDX">
+    names_index ni
+      JOIN name_match nm ON nm.index_id=ni.id
+      JOIN name n ON n.dataset_key=nm.dataset_key AND n.id=nm.name_id
+      JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=n.id
+      LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
+    <include refid="FROM_ACCEPTED"/>
+  </sql>
+
   <select id="listByNamesIndexID" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-      JOIN names_index ni ON ni.id=nm.index_id
-    WHERE u.dataset_key = #{datasetKey} AND (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
-    ORDER BY u.id
+    FROM <include refid="FROM_NIDX"/>
+    WHERE nm.dataset_key = #{datasetKey} AND (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
+    ORDER BY ni.id, u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="listByNamesIndexIDGlobal" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
-    FROM name_usage u
-      JOIN name n ON n.id=u.name_id AND n.dataset_key=u.dataset_key
-      LEFT JOIN reference r ON r.id=u.according_to_id AND r.dataset_key=u.dataset_key
-      JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=u.dataset_key
-      JOIN names_index ni ON ni.id=nm.index_id
-      <include refid="FROM_ACCEPTED"/>
+    FROM <include refid="FROM_NIDX"/>
     WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
-    ORDER BY u.id
+    ORDER BY ni.id, nm.dataset_key, u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 

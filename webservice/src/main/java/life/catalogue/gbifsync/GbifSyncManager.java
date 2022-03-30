@@ -3,7 +3,6 @@ package life.catalogue.gbifsync;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.GbifConfig;
-
 import life.catalogue.dao.DatasetDao;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;

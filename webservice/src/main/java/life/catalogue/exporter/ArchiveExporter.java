@@ -112,6 +112,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
 
   @Override
   protected void exportMetadata() throws IOException {
+    LOG.info("Prepare export metadata");
     // add CLB logo URL if missing
     if (dataset.getLogo() == null && imageService.datasetLogoExists(dataset.getKey())) {
       dataset.setLogo(logoUriBuilder.build(dataset.getKey()));
@@ -139,11 +140,13 @@ public abstract class ArchiveExporter extends DatasetExporter {
         }
         // create source entry in dataset
         dataset.addSource(src.toCitation());
+        LOG.info("Write source metadata");
         writeSourceMetadata(src);
       }
     }
 
     // main dataset metadata
+    LOG.info("Write metadata");
     writeMetadata(dataset);
   }
 

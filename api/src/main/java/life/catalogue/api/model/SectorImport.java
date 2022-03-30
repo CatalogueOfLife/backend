@@ -1,8 +1,9 @@
 package life.catalogue.api.model;
 
-import java.util.*;
-
-import com.google.common.collect.EvictingQueue;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 public class SectorImport extends ImportMetrics implements SectorEntity {
   private static final int MAX_WARN_SIZE = 25;

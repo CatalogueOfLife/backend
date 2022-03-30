@@ -1,7 +1,6 @@
 package life.catalogue.config;
 
 import java.io.File;
-import java.time.LocalDateTime;
 
 import javax.validation.constraints.NotNull;
 

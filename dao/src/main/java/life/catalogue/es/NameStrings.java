@@ -8,7 +8,6 @@ import java.util.Objects;
 
 import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
 import static life.catalogue.es.ddl.Analyzer.SCINAME_IGNORE_CASE;
-import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeStrongly;
 import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
 
 /**

@@ -1,7 +1,5 @@
 package life.catalogue.db.mapper;
 
-import com.google.common.collect.Iterables;
-
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchingMode;
@@ -15,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
+
+import com.google.common.collect.Iterables;
 
 public interface DuplicateMapper {
 

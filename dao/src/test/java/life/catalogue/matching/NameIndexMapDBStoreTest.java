@@ -11,8 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mapdb.DBMaker;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class NameIndexMapDBStoreTest {
   AtomicInteger keyGen = new AtomicInteger();
@@ -69,6 +68,17 @@ public class NameIndexMapDBStoreTest {
   }
 
   @Test
+  public void get() throws Exception {
+    addName("b", 10, 10); // the canonical itself
+    addName("b", 12, 10);
+    addName("b", 13, 10);
+
+    assertNotNullProps(db.get(10));
+    assertNotNullProps(db.get(12));
+    assertNotNullProps(db.get(13));
+  }
+
+  @Test
   public void byCanonical() throws Exception {
     addNameList("a", 4);
 
@@ -78,7 +88,9 @@ public class NameIndexMapDBStoreTest {
     assertEquals(7, db.count());
 
     assertNull(db.byCanonical(1));
-    assertEquals(2, db.byCanonical(10).size());
+    var res = db.byCanonical(10);
+    assertEquals(2, res.size());
+    assertNotNullProps(res);
   }
 
   private void addName(String key, int id) {
@@ -98,6 +110,19 @@ public class NameIndexMapDBStoreTest {
       n.setKey(keyGen.incrementAndGet());
       db.add(key, n);
     }
+  }
+
+  private void assertNotNullProps(Iterable<IndexName> ns){
+    for (var n : ns) {
+      assertNotNullProps(n);
+    }
+  }
+
+  private void assertNotNullProps(IndexName n){
+    assertNotNull(n.getKey());
+    assertNotNull(n.getCanonicalId());
+    assertNotNull(n.getScientificName());
+    assertNotNull(n.getRank());
   }
 
   @Test

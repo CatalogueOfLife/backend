@@ -4,6 +4,8 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.db.TestDataRule;
 
+import org.gbif.nameparser.api.Rank;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -11,9 +13,6 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.time.StopWatch;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.Assert;
 import org.junit.Test;
 

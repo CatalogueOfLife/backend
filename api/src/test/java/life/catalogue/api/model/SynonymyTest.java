@@ -2,13 +2,12 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.SerdeTestBase;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
-
-import org.junit.Test;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

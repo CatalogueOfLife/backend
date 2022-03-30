@@ -13,7 +13,6 @@ import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiException;
 import life.catalogue.doi.service.DoiService;
-import life.catalogue.release.ProjectRelease;
 
 import java.net.URI;
 import java.util.Set;

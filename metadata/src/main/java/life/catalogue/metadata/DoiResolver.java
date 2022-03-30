@@ -1,28 +1,22 @@
 package life.catalogue.metadata;
 
-import com.fasterxml.jackson.databind.ObjectReader;
-
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
+import life.catalogue.parser.CSLTypeParser;
 
 import java.io.IOException;
 import java.util.List;
 
-import life.catalogue.metadata.eml.EmlParser;
-
-import life.catalogue.parser.CSLTypeParser;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectReader;
 
 /**
  * A CrossRef DOI resolver that can return citation metadata for most (all?) DOIs.

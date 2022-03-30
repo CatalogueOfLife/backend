@@ -2,13 +2,17 @@ package life.catalogue.common.id;
 
 import life.catalogue.common.io.UTF8IoUtils;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class IdConverterTest {
 

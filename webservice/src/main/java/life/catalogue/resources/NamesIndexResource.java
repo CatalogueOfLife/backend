@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;

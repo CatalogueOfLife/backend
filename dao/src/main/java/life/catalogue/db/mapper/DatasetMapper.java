@@ -19,8 +19,6 @@ import org.apache.ibatis.cursor.Cursor;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
 
-import org.apache.ibatis.session.SqlSession;
-
 /**
  * The dataset mappers create method expects the key to be provided.
  * Unless you know exactly what you are doing please use the DatasetDAO to create, modify or delete datasets.

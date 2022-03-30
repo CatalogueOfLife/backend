@@ -3,7 +3,6 @@ package life.catalogue.api.model;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
-
 import life.catalogue.api.vocab.MatchType;
 
 import org.gbif.nameparser.api.*;

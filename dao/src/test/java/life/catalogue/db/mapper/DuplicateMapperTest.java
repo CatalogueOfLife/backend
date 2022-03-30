@@ -1,7 +1,5 @@
 package life.catalogue.db.mapper;
 
-import com.google.common.collect.Iterables;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.EditorialDecision;
@@ -10,13 +8,11 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.collection.IterUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

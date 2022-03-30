@@ -7,7 +7,6 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;

@@ -1,7 +1,10 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.es.*;
+import life.catalogue.es.EsException;
+import life.catalogue.es.EsModule;
+import life.catalogue.es.EsNameUsage;
+import life.catalogue.es.EsUtil;
 
 import java.io.IOException;
 import java.text.DecimalFormat;

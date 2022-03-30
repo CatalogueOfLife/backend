@@ -24,30 +24,45 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
     final AtomicInteger counter = new AtomicInteger();
     mapper().processAll().forEach(n -> {
       counter.incrementAndGet();
-      assertNotNull(n.getKey());
-      assertNotNull(n.getCanonicalId());
-      assertNotNull(n.getScientificName());
-      assertNotNull(n.getRank());
+      assertNotNullProps(n);
     });
     assertEquals(4, counter.get());
+  }
+
+  private void assertNotNullProps(Iterable<IndexName> ns){
+    for (var n : ns) {
+      assertNotNullProps(n);
+    }
+  }
+
+  private void assertNotNullProps(IndexName n){
+    assertNotNull(n.getKey());
+    assertNotNull(n.getCanonicalId());
+    assertNotNull(n.getScientificName());
+    assertNotNull(n.getRank());
   }
 
   @Test
   public void regex() {
     var res = mapper().listByRegex(".", false,null, null);
     assertEquals(4, res.size());
+    assertNotNullProps(res);
 
     res = mapper().listByRegex("Abi", false,null, null);
     assertEquals(4, res.size());
+    assertNotNullProps(res);
 
     res = mapper().listByRegex(".*alb", false,null, null);
     assertEquals(2, res.size());
+    assertNotNullProps(res);
 
     res = mapper().listByRegex(".*ba[[:>:]]", false,null, null);
     assertEquals(2, res.size());
+    assertNotNullProps(res);
 
     res = mapper().listByRegex(".*a\\M", false,null, null);
     assertEquals(2, res.size());
+    assertNotNullProps(res);
   }
 
   @Test
@@ -78,6 +93,7 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
 
     IndexName n = mapper().get(n1.getKey());
     assertEquals(n.getKey(), n.getCanonicalId());
+    assertNotNullProps(n);
 
     IndexName n2 = createTestEntity(1);
     n2.setCanonicalId(n1.getKey());
@@ -85,6 +101,7 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
 
     n = mapper().get(n2.getKey());
     assertEquals(n1.getKey(), n.getCanonicalId());
+    assertNotNullProps(n);
   }
 
   @Override

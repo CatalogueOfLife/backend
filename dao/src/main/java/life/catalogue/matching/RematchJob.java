@@ -1,12 +1,10 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.Dataset;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dao.DaoUtils;
+import life.catalogue.db.mapper.ArchivedNameMapper;
 
 import java.util.Arrays;
-
-import life.catalogue.db.mapper.ArchivedNameMapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

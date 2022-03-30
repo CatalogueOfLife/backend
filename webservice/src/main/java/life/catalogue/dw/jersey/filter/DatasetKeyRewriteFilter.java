@@ -26,8 +26,6 @@ import javax.ws.rs.core.UriBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static life.catalogue.cache.LatestDatasetKeyCacheImpl.ReleaseAttempt;
-
 /**
  * Filter that parses dataset keys given as path or query parameters
  * and rewrites them if needed to support conventions to refer to

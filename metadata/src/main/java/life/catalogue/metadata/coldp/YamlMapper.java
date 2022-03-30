@@ -142,6 +142,10 @@ public class YamlMapper {
 
     @JsonIgnore
     abstract Integer getModifiedBy();
+
+    @JsonIgnore
+    abstract String getLabel();
+
   }
 
   abstract class CitationMixIn {
