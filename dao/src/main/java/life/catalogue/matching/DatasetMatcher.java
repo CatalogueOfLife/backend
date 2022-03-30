@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Rematches an entire dataset, using 2 separate db connections for read & write
+ * In case of projects being matched it will also match any archived name usages.
  */
 public class DatasetMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetMatcher.class);

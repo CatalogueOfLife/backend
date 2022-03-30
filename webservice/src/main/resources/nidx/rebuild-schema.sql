@@ -1,5 +1,6 @@
 DROP SCHEMA IF EXISTS nidx CASCADE;
 CREATE SCHEMA nidx;
+CREATE TABLE nidx.name_usage_archive_match (LIKE public.name_usage_archive_match INCLUDING DEFAULTS);
 CREATE TABLE nidx.name_match (LIKE public.name_match INCLUDING DEFAULTS);
 CREATE TABLE nidx.names_index (LIKE public.names_index INCLUDING DEFAULTS);
 CREATE SEQUENCE nidx.names_index_id_seq START 1;

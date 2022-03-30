@@ -1173,8 +1173,8 @@ CREATE TABLE name_usage_archive_match (
   type MATCHTYPE,
   PRIMARY KEY (dataset_key, usage_id)
 );
-CREATE INDEX ON name_match (dataset_key, index_id);
-CREATE INDEX ON name_match (index_id);
+CREATE INDEX ON name_usage_archive_match (dataset_key, index_id);
+CREATE INDEX ON name_usage_archive_match (index_id);
 
 
 --

@@ -85,7 +85,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     }
     LOG.warn("Rebuilt names index and rematch all datasets with data in pg schema {} with {} threads", BUILD_SCHEMA, threads);
 
-    // use a factory that changes the default pg search_path to "build" so we don't interfere with the index current live
+    // use a factory that changes the default pg search_path to "nidx" so we don't interfere with the index currently live
     factory = new SqlSessionFactoryWithPath(factory, BUILD_SCHEMA);
 
     LOG.info("Prepare pg schema {}", BUILD_SCHEMA);
