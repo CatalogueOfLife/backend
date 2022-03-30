@@ -284,9 +284,8 @@ public class NameIndexImpl implements NameIndex {
     return score;
   }
 
-  @VisibleForTesting
-  protected IndexName getCanonical(ScientificName name) {
-    List<IndexName> matches = store.get(key(name));
+  private IndexName getCanonical(String key) {
+    List<IndexName> matches = store.get(key);
     // make sure name has no authorship and code is matching if it was part of the "query"
     matches.removeIf(IndexName::hasAuthorship);
     // just in case we have multiple results make sure to have a stable return by selecting the lowest, i.e. oldes key
@@ -352,32 +351,37 @@ public class NameIndexImpl implements NameIndex {
 
       name.setCreatedBy(Users.MATCHER);
       name.setModifiedBy(Users.MATCHER);
-      if (name.hasAuthorship()) {
-        // make sure there exists a canonical name without authorship already
-        IndexName canonical = getCanonical(name);
-        if (canonical == null) {
-          // insert new canonical
-          canonical = new IndexName();
-          canonical.setScientificName(name.getScientificName());
-          canonical.setRank(name.getRank());
-          canonical.setCode(name.getCode());
-          canonical.setUninomial(name.getUninomial());
-          canonical.setGenus(name.getGenus());
-          canonical.setSpecificEpithet(name.getSpecificEpithet());
-          canonical.setInfragenericEpithet(name.getInfragenericEpithet());
-          canonical.setInfraspecificEpithet(name.getInfraspecificEpithet());
-          canonical.setCultivarEpithet(name.getCultivarEpithet());
-          canonical.setCreatedBy(Users.MATCHER);
-          canonical.setModifiedBy(Users.MATCHER);
-          createCanonical(nim, key, canonical);
-        }
-        name.setCanonicalId(canonical.getKey());
-        nim.create(name);
-        store.add(key, name);
 
-      } else {
-        createCanonical(nim, key, name);
+      addThreadSafe(key, name, nim);
+    }
+  }
+
+  private void addThreadSafe(final String key, IndexName name, NamesIndexMapper nim) {
+    if (name.hasAuthorship()) {
+      // make sure there exists a canonical name without authorship already
+      IndexName canonical = getCanonical(key);
+      if (canonical == null) {
+        // insert new canonical
+        canonical = new IndexName();
+        canonical.setScientificName(name.getScientificName());
+        canonical.setRank(name.getRank());
+        canonical.setCode(name.getCode());
+        canonical.setUninomial(name.getUninomial());
+        canonical.setGenus(name.getGenus());
+        canonical.setSpecificEpithet(name.getSpecificEpithet());
+        canonical.setInfragenericEpithet(name.getInfragenericEpithet());
+        canonical.setInfraspecificEpithet(name.getInfraspecificEpithet());
+        canonical.setCultivarEpithet(name.getCultivarEpithet());
+        canonical.setCreatedBy(Users.MATCHER);
+        canonical.setModifiedBy(Users.MATCHER);
+        createCanonical(nim, key, canonical);
       }
+      name.setCanonicalId(canonical.getKey());
+      nim.create(name);
+      store.add(key, name);
+
+    } else {
+      createCanonical(nim, key, name);
     }
   }
 

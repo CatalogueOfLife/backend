@@ -36,9 +36,9 @@ public class NameIndexMapDBStore implements NameIndexStore {
   private final DBMaker.Maker dbMaker;
   private final Pool<Kryo> pool;
   private DB db;
-  private Map<String, int[]> names;
-  private Map<Integer, IndexName> keys;
-  private Map<Integer, int[]> canonical;
+  private Map<Integer, IndexName> keys; // main nidx instances by their key
+  private Map<String, int[]> names; // group of same names by their canonical name key
+  private Map<Integer, int[]> canonical; // canonical group of names by canonicalID
 
   /**
    * We use a separate kryo pool for the names index to avoid too often changes to the serialisation format
@@ -185,14 +185,14 @@ public class NameIndexMapDBStore implements NameIndexStore {
 
     keys.put(name.getKey(), name);
 
-    // update names
+    // update names group
     int[] group;
     if (names.containsKey(key)) {
       group = names.get(key);
       // remove previous version if it already existed.
-      final int index = ArrayUtils.indexOf(group, name.getKey());
-      if (index != ArrayUtils.INDEX_NOT_FOUND) {
-        group = ArrayUtils.remove(group, index);
+      final int pos = ArrayUtils.indexOf(group, name.getKey());
+      if (pos != ArrayUtils.INDEX_NOT_FOUND) {
+        group = ArrayUtils.remove(group, pos);
       }
       group = ArrayUtils.add(group, name.getKey());
     } else {
