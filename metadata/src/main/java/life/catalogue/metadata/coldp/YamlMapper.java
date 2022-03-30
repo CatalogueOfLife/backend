@@ -74,6 +74,8 @@ public class YamlMapper {
       ctxt.setMixInAnnotations(Agent.class, AgentMixIn.class);
       ctxt.setMixInAnnotations(Dataset.class, DatasetMixIn.class);
       ctxt.setMixInAnnotations(Citation.class, CitationMixIn.class);
+      ctxt.setMixInAnnotations(CslName.class, CslNameMixIn.class);
+
     }
   }
 
@@ -83,6 +85,11 @@ public class YamlMapper {
 
     @JsonIgnore
     abstract String getOrcidAsUrl();
+  }
+
+  abstract class CslNameMixIn {
+    @JsonIgnore
+    abstract Boolean getIsInstitution();
   }
 
   abstract class DatasetMixIn {

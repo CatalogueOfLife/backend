@@ -140,7 +140,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
         }
         // create source entry in dataset
         dataset.addSource(src.toCitation());
-        LOG.info("Write source metadata");
+        LOG.info("Write source metadata for {}: {}", src.getKey(), src.getTitle());
         writeSourceMetadata(src);
       }
     }
