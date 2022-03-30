@@ -213,7 +213,10 @@ public class NameIndexMapDBStore implements NameIndexStore {
   }
 
   void check(IndexName n){
-    Preconditions.checkNotNull(n.getKey());
+    Preconditions.checkNotNull(n.getKey(), "key required");
+    Preconditions.checkNotNull(n.getCanonicalId(), "canonicalID required");
+    Preconditions.checkNotNull(n.getRank(), "rank required");
+    Preconditions.checkNotNull(n.getScientificName(), "scientificName required");
   }
 
   private void avail() throws UnavailableException {

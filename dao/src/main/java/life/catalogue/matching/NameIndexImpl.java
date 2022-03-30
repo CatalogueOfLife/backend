@@ -111,7 +111,8 @@ public class NameIndexImpl implements NameIndex {
 
   @Override
   public IndexName get(Integer key) {
-    return store.get(key);
+    var n = store.get(key);
+    return n;
   }
 
   @Override
@@ -355,15 +356,24 @@ public class NameIndexImpl implements NameIndex {
           canonical.setCultivarEpithet(name.getCultivarEpithet());
           canonical.setCreatedBy(Users.MATCHER);
           canonical.setModifiedBy(Users.MATCHER);
-          nim.create(canonical);
-          store.add(key, canonical);
+          createCanonical(nim, key, canonical);
         }
         name.setCanonicalId(canonical.getKey());
+        nim.create(name);
+        store.add(key, name);
+
+      } else {
+        createCanonical(nim, key, name);
       }
-      // insert into postgres assigning a key
-      nim.create(name);
-      store.add(key, name);
     }
+  }
+
+  private void createCanonical(NamesIndexMapper nim, String key, IndexName cn){
+    // mybatis default canonicalID to the newly created key in the database...
+    nim.create(cn);
+    // ... but the instance is not updated automatically
+    cn.setCanonicalId(cn.getKey());
+    store.add(key, cn);
   }
 
   /**
