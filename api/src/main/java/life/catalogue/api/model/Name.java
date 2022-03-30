@@ -166,7 +166,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private URI link;
 
   /**
-   * Nomenclatural notes found in the authorship
+   * Exact nomenclatural notes found in the status, authorship or publishedIn
    */
   private String nomenclaturalNote;
 

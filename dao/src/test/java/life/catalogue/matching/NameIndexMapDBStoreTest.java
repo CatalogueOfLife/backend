@@ -94,7 +94,7 @@ public class NameIndexMapDBStoreTest {
   }
 
   private void addName(String key, int id) {
-    addName(key, id, null);
+    addName(key, id, id);
   }
 
   private void addName(String key, int id, Integer canonicalID) {
@@ -108,6 +108,7 @@ public class NameIndexMapDBStoreTest {
     for (int idx = 0; idx<size; idx++) {
       IndexName n = new IndexName(TestEntityGenerator.newName());
       n.setKey(keyGen.incrementAndGet());
+      n.setCanonicalId(n.getKey());
       db.add(key, n);
     }
   }
