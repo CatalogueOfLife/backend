@@ -23,7 +23,7 @@ public class DatasetSearchRequest {
     KEY,
     ALIAS,
     TITLE,
-    AUTHORS,
+    CREATOR,
     RELEVANCE,
     CREATED,
     MODIFIED,

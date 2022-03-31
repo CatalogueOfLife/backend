@@ -486,7 +486,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
           assertEquals("Bad ordering by " + by, d1, datasets.get(1).getKey());
           assertEquals("Bad ordering by " + by, d3, datasets.get(2).getKey());
           break;
-        case AUTHORS:
+        case CREATOR:
           assertEquals("Bad ordering by " + by, d3, datasets.get(0).getKey());
           assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
           assertEquals("Bad ordering by " + by, d1, datasets.get(2).getKey());
@@ -519,7 +519,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
           assertEquals("Bad ordering by " + by, d1, datasets.get(1).getKey());
           assertEquals("Bad ordering by " + by, d2, datasets.get(2).getKey());
           break;
-        case AUTHORS:
+        case CREATOR:
           assertEquals("Bad ordering by " + by, d1, datasets.get(0).getKey());
           assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
           assertEquals("Bad ordering by " + by, d3, datasets.get(2).getKey());

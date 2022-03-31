@@ -227,7 +227,7 @@
             ${req.sortBy.name().toLowerCase()}
             <bind name="rev" value="!req.reverse"/>
           </when>
-          <when test="sortBy == 'AUTHORS'">
+          <when test="sortBy == 'CREATOR'">
             lower((d.editor[1]).family),
             lower((d.creator[1]).family)
           </when>
