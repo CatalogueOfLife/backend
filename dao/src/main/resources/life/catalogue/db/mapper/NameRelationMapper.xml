@@ -107,25 +107,30 @@
   </select>
 
   <select id="listRelatedNameIDs" resultType="string">
-    WITH RECURSIVE graph (id, rid, ids) AS (
+    WITH RECURSIVE graph (nid, path) AS (
 
-    SELECT name_id, related_name_id, ARRAY[id]
+    (SELECT name_id, ARRAY[related_name_id, name_id]
       FROM name_rel
-      WHERE dataset_key = #{key.datasetKey}
+      WHERE dataset_key = #{key.datasetKey} AND related_name_id = #{key.id}
         AND type IN <foreach item="t" collection="types" open="(" separator="," close=")">'${t.name()}'::NOMRELTYPE</foreach>
-        AND (related_name_id = #{key.id} OR name_id = #{key.id})
+    UNION
+      SELECT related_name_id, ARRAY[name_id, related_name_id]
+      FROM name_rel
+      WHERE dataset_key = #{key.datasetKey} AND name_id = #{key.id}
+        AND type IN <foreach item="t" collection="types" open="(" separator="," close=")">'${t.name()}'::NOMRELTYPE</foreach>
+    )
 
     UNION
 
-    SELECT name_id, related_name_id, array_append(graph.ids, nr.id)
+    SELECT CASE g.nid WHEN nr.name_id THEN nr.related_name_id ELSE nr.name_id END,
+      array_append(g.path, CASE g.nid WHEN nr.name_id THEN nr.related_name_id ELSE nr.name_id END)
     FROM name_rel nr
-      INNER JOIN graph ON (graph.rid = nr.name_id OR graph.rid = nr.related_name_id OR graph.id = nr.name_id OR graph.id = nr.related_name_id)
-      WHERE nr.dataset_key = #{key.datasetKey}
-        AND nr.type IN <foreach item="t" collection="types" open="(" separator="," close=")">'${t.name()}'::NOMRELTYPE</foreach>
-        AND nr.id != ALL(graph.ids)
-        AND array_length(graph.ids,1) &lt; 5
-    )
-    SELECT DISTINCT unnest(array[id,rid]) FROM graph
+      INNER JOIN graph g ON (g.nid = nr.name_id AND nr.related_name_id != ALL(g.path)) OR (g.nid = nr.related_name_id AND nr.name_id != ALL(g.path))
+    WHERE nr.dataset_key = #{key.datasetKey}
+      AND nr.type IN <foreach item="t" collection="types" open="(" separator="," close=")">'${t.name()}'::NOMRELTYPE</foreach>
+      AND array_length(g.path,1) &lt; 100
+
+    ) SELECT DISTINCT nid FROM graph
   </select>
 
   <insert id="create" parameterType="NameRelation" useGeneratedKeys="true" keyProperty="id">

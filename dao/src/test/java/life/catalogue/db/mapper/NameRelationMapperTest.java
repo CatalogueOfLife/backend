@@ -133,10 +133,9 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
     commit();
 
     // NB We have one pre-inserted (apple.sql) NameAct record associated with NAME2 and 3
-    var h1 = Set.of("n1", "n2", "n3", "n4");
-    assertEquals(h1, Set.copyOf(mapper().listRelatedNameIDs(DSID.of(n.getDatasetKey(), "n1"), NomRelType.HOMOTYPIC_RELATIONS)));
-    assertEquals(h1, Set.copyOf(mapper().listRelatedNameIDs(DSID.of(n.getDatasetKey(), "n2"), NomRelType.HOMOTYPIC_RELATIONS)));
-    assertEquals(Set.of("n5", "n6"), Set.copyOf(mapper().listRelatedNameIDs(DSID.of(n.getDatasetKey(), "n5"), NomRelType.HOMOTYPIC_RELATIONS)));
+    assertEquals(Set.of("n2", "n3", "n4"), Set.copyOf(mapper().listRelatedNameIDs(DSID.of(n.getDatasetKey(), "n1"), NomRelType.HOMOTYPIC_RELATIONS)));
+    assertEquals(Set.of("n1", "n3", "n4"), Set.copyOf(mapper().listRelatedNameIDs(DSID.of(n.getDatasetKey(), "n2"), NomRelType.HOMOTYPIC_RELATIONS)));
+    assertEquals(Set.of("n6"), Set.copyOf(mapper().listRelatedNameIDs(DSID.of(n.getDatasetKey(), "n5"), NomRelType.HOMOTYPIC_RELATIONS)));
     assertEquals(Collections.emptySet(), Set.copyOf(mapper().listRelatedNameIDs(DSID.of(n.getDatasetKey(), "n7"), NomRelType.HOMOTYPIC_RELATIONS)));
   }
 
