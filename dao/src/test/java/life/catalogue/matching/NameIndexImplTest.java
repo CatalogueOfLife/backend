@@ -21,7 +21,9 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -180,17 +182,21 @@ public class NameIndexImplTest {
     assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.SUBSPECIES));
     assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.INFRASPECIFIC_NAME));
     assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.CULTIVAR_GROUP));
-
-    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.VARIETY));
-    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.FORM));
-    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.SUBFORM));
-    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.SUBVARIETY));
-    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.CULTIVAR));
-    assertEquals(Rank.VARIETY, NameIndexImpl.normRank(Rank.FORMA_SPECIALIS));
+    assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.VARIETY));
+    assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.FORM));
+    assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.SUBFORM));
+    assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.SUBVARIETY));
+    assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.CULTIVAR));
+    assertEquals(Rank.SUBSPECIES, NameIndexImpl.normRank(Rank.FORMA_SPECIALIS));
 
     assertEquals(Rank.UNRANKED, NameIndexImpl.normRank(Rank.UNRANKED));
     assertEquals(Rank.UNRANKED, NameIndexImpl.normRank(Rank.OTHER));
     assertEquals(Rank.UNRANKED, NameIndexImpl.normRank(null));
+
+    // make sure we never get an IAE
+    for (Rank r : Rank.values()) {
+      assertNotNull(NameIndexImpl.normRank(r));
+    }
   }
 
   /**
@@ -254,21 +260,34 @@ public class NameIndexImplTest {
     setupMemory(true);
     assertEquals(0, ni.size());
 
-    Name n = new Name();
-    n.setScientificName("Abies alba");
-    n.setGenus("Abies");
-    n.setSpecificEpithet("alba");
-    n.setAuthorship("Mill.");
-    n.setCombinationAuthorship(Authorship.authors("Mill."));
-    n.setRank(Rank.SPECIES);
-    n.setType(NameType.SCIENTIFIC);
+    Name n1 = new Name();
+    n1.setScientificName("Abies alba");
+    n1.setGenus("Abies");
+    n1.setSpecificEpithet("alba");
+    n1.setAuthorship("Mill.");
+    n1.setCombinationAuthorship(Authorship.authors("Mill."));
+    n1.setRank(Rank.SPECIES);
+    n1.setType(NameType.SCIENTIFIC);
 
+    Name n2 = new Name(n1);
+    n2.setSpecificEpithet("albus");
+    n1.setScientificName("Abies albus");
+
+    Name n3 = new Name(n1);
+    n3.setAuthorship(null);
+    n3.setCombinationAuthorship(null);
+
+    Name n4 = new Name(n1);
+    n4.setRank(Rank.SPECIES_AGGREGATE);
+
+    final List<Name> rawNames = List.of(n1, n2, n3, n4);
     final AtomicInteger counter = new AtomicInteger(0);
     ExecutorService exec = Executors.newFixedThreadPool(12, new NamedThreadFactory("test-matcher"));
 
     final int repeat = 1000;
     StopWatch watch = StopWatch.createStarted();
     for (int x=0; x<repeat; x++) {
+      Name n = rawNames.get(x % rawNames.size());
       CompletableFuture.supplyAsync(() -> {
         counter.incrementAndGet();
         return ni.match(n, true, true);
@@ -282,7 +301,11 @@ public class NameIndexImplTest {
         assertEquals(MatchType.EXACT, m.getType());
         final Integer idx = m.getName().getKey();
         final Integer cidx = m.getName().getCanonicalId();
-        assertNotEquals(idx, cidx);
+        if (n.hasAuthorship()) {
+          assertNotEquals(idx, cidx);
+        } else {
+          assertEquals(idx, cidx);
+        }
         assertEquals(2, ni.size());
       });
     }
@@ -292,6 +315,7 @@ public class NameIndexImplTest {
 
     assertEquals(repeat, counter.get());
     assertEquals(2, ni.size());
+    assertCanonicalAbiesAlba();
   }
 
   @Test
@@ -299,9 +323,19 @@ public class NameIndexImplTest {
     setupMemory(true);
     ni.add(create("Abies", "alba", null, "Miller"));
     assertEquals(2, ni.size());
+    assertCanonicalAbiesAlba();
+  }
 
+  public void assertCanonicalAbiesAlba() throws Exception {
     IndexName n1 = ni.get(1);
+    assertTrue(n1.isCanonical());
     IndexName n2 = ni.get(2);
+    assertNotEquals(n1, n2);
+    assertEquals(n1.getCanonicalId(), n2.getCanonicalId());
+    assertEquals(n1.getKey(), n2.getCanonicalId());
+    var group = ni.byCanonical(n1.getCanonicalId());
+    assertEquals(1, group.size());
+    assertEquals(n2, group.iterator().next());
   }
 
   @Test

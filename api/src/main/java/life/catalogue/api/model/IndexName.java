@@ -46,6 +46,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   }
 
   public IndexName(IndexName other) {
+    super(other);
     this.key = other.key;
     this.canonicalId = other.canonicalId;
     this.scientificName = other.scientificName;

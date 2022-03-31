@@ -11,6 +11,9 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * NameIndex definition for different implementations.
+ */
 public interface NameIndex extends Managed, AutoCloseable {
   
   Logger LOG = LoggerFactory.getLogger(NameIndex.class);
@@ -31,7 +34,7 @@ public interface NameIndex extends Managed, AutoCloseable {
   IndexName get(Integer key);
 
   /**
-   * List all index names for a given canonical name key
+   * List all index names for a given canonical name key, but not the canonical name itself!
    */
   Collection<IndexName> byCanonical(Integer key);
 
@@ -43,14 +46,16 @@ public interface NameIndex extends Managed, AutoCloseable {
   int size();
   
   /**
-   * Adds a name to the index, generating a new key and potentially inserting a canonical name record too.
+   * Adds a new name to the index, generating a new key and potentially inserting a canonical name record too.
+   * It will add a new IndexName even if it exists already.
+   * In most cases the {@link #match(Name, boolean, boolean)}match method should be the preferred way to include only new names
    *
    * @param name
    */
   void add(IndexName name);
   
   /**
-   * Adds a batch of names to the index
+   * Adds a batch of names to the index, see {@link #add(IndexName)} for details.
    */
   default void addAll(Collection<IndexName> names) {
     LOG.info("Adding {} names", names.size());

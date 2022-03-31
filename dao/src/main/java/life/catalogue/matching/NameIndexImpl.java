@@ -18,6 +18,7 @@ import life.catalogue.matching.authorship.AuthorComparator;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -121,20 +122,17 @@ public class NameIndexImpl implements NameIndex {
   }
 
   /**
-   * Normalize to just 7 rank buckets:
+   * Normalize to just a few rank buckets:
    *
-   * SUPRAGENERIC_NAME for anything above the family group, i.e. suprafamily
-   * FAMILY for any family group name MEGAFAMILY - INFRATRIBE
-   * GENUS for genus group names GENUS - INFRAGENERIC_NAME
-   * SPECIES for SPECIES_AGGREGATE - SPECIES
-   * SUBSPECIES for INFRASPECIFIC_NAME - CONVARIETY
-   * VARIETY for INFRASUBSPECIFIC_NAME - STRAIN
+   * SUPRAGENERIC_NAME for anything above the family group, maybe label as "SUPRAFAMILY" in UI)
+   * FAMILY for any family group monomials MEGAFAMILY-INFRATRIBE
+   * GENUS for genus group monomials GENUS-INFRAGENERIC_NAME
+   * SPECIES for binomials SPECIES_AGGREGATE-SPECIES
+   * SUBSPECIES for trinomials INFRASPECIFIC_NAME-STRAIN
    * UNRANKED
-   * @param r
-   * @return
    */
-  static Rank normRank(Rank r) {
-    if (r == null || r == Rank.OTHER || r == Rank.UNRANKED) {
+  public static Rank normRank(Rank r) {
+    if (r == null || r.otherOrUnranked()) {
       return Rank.UNRANKED;
 
     } else if (r.isFamilyGroup()) {
@@ -149,13 +147,11 @@ public class NameIndexImpl implements NameIndex {
     } else if (r == Rank.SPECIES_AGGREGATE || r == Rank.SPECIES) {
       return Rank.SPECIES;
 
-    } else if (r.ordinal() >= Rank.INFRASUBSPECIFIC_NAME.ordinal()) {
-      return Rank.VARIETY;
-
-    } else if (r.ordinal() >= Rank.INFRASPECIFIC_NAME.ordinal()) {
+    } else if (r.isInfraspecific()) {
       return Rank.SUBSPECIES;
     }
-    return Rank.UNRANKED;
+    // should never reach here
+    throw new IllegalArgumentException("Unknown rank " + r);
   }
 
   /**
@@ -341,6 +337,10 @@ public class NameIndexImpl implements NameIndex {
     return match2;
   }
 
+  /**
+   * Adds a new IndexName to the index, even if it exists already.
+   * This method is not thread safe!
+   */
   @Override
   public void add(IndexName name) {
     final String key = key(name);
@@ -350,38 +350,36 @@ public class NameIndexImpl implements NameIndex {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
 
       name.setCreatedBy(Users.MATCHER);
+      name.setCreated(LocalDateTime.now());
       name.setModifiedBy(Users.MATCHER);
+      name.setModified(LocalDateTime.now());
 
-      addThreadSafe(key, name, nim);
-    }
-  }
+      if (name.hasAuthorship()) {
+        // make sure there exists a canonical name without authorship already
+        IndexName canonical = getCanonical(key);
+        if (canonical == null) {
+          // insert new canonical
+          canonical = new IndexName();
+          canonical.setScientificName(name.getScientificName());
+          canonical.setRank(name.getRank());
+          canonical.setCode(name.getCode());
+          canonical.setUninomial(name.getUninomial());
+          canonical.setGenus(name.getGenus());
+          canonical.setSpecificEpithet(name.getSpecificEpithet());
+          canonical.setInfragenericEpithet(name.getInfragenericEpithet());
+          canonical.setInfraspecificEpithet(name.getInfraspecificEpithet());
+          canonical.setCultivarEpithet(name.getCultivarEpithet());
+          canonical.setCreatedBy(Users.MATCHER);
+          canonical.setModifiedBy(Users.MATCHER);
+          createCanonical(nim, key, canonical);
+        }
+        name.setCanonicalId(canonical.getKey());
+        nim.create(name);
+        store.add(key, name);
 
-  private void addThreadSafe(final String key, IndexName name, NamesIndexMapper nim) {
-    if (name.hasAuthorship()) {
-      // make sure there exists a canonical name without authorship already
-      IndexName canonical = getCanonical(key);
-      if (canonical == null) {
-        // insert new canonical
-        canonical = new IndexName();
-        canonical.setScientificName(name.getScientificName());
-        canonical.setRank(name.getRank());
-        canonical.setCode(name.getCode());
-        canonical.setUninomial(name.getUninomial());
-        canonical.setGenus(name.getGenus());
-        canonical.setSpecificEpithet(name.getSpecificEpithet());
-        canonical.setInfragenericEpithet(name.getInfragenericEpithet());
-        canonical.setInfraspecificEpithet(name.getInfraspecificEpithet());
-        canonical.setCultivarEpithet(name.getCultivarEpithet());
-        canonical.setCreatedBy(Users.MATCHER);
-        canonical.setModifiedBy(Users.MATCHER);
-        createCanonical(nim, key, canonical);
+      } else {
+        createCanonical(nim, key, name);
       }
-      name.setCanonicalId(canonical.getKey());
-      nim.create(name);
-      store.add(key, name);
-
-    } else {
-      createCanonical(nim, key, name);
     }
   }
 
