@@ -123,6 +123,7 @@
       WHERE nr.dataset_key = #{key.datasetKey}
         AND nr.type IN <foreach item="t" collection="types" open="(" separator="," close=")">'${t.name()}'::NOMRELTYPE</foreach>
         AND nr.id != ALL(graph.ids)
+        AND array_length(graph.ids,1) &lt; 5
     )
     SELECT DISTINCT unnest(array[id,rid]) FROM graph
   </select>

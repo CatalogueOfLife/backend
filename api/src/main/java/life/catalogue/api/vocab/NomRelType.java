@@ -104,7 +104,7 @@ public enum NomRelType {
   HOMOTYPIC(true, null, null,
     "A relation indicating two homotypic names, i.e. objective or nomenclatural synonymy, but not further specifying why."),
   
-  TYPE(true, null, null,
+  TYPE(null, null, null,
     "This name is the type name (species/genus) for the related higher ranked name. " +
       "The name should be the original combination, i.e. basionym, if subsequent recombinations exist.");
 
