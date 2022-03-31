@@ -56,10 +56,9 @@ public class InitDbUtils {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
 
-      int next = Math.max(minExternalDatasetKey, intDefault(dm.getMaxKey(null), 1));
-      int previous = intDefault(dm.getMaxKey(next), 10);
-      LOG.info("Add external dataset key constraints on the default partitions < {} OR > {}", previous, next);
-      session.getMapper(DatasetPartitionMapper.class).updateDatasetKeyChecks(previous, next);
+      int previous = intDefault(dm.getMaxKey(minExternalDatasetKey), 10);
+      LOG.info("Add external dataset key constraints on the default partitions < {} OR > {}", previous, minExternalDatasetKey);
+      session.getMapper(DatasetPartitionMapper.class).updateDatasetKeyChecks(previous, minExternalDatasetKey);
     }
   }
 

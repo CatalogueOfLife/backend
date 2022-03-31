@@ -14,7 +14,6 @@ import net.sourceforge.argparse4j.inf.Namespace;
  * using the configured minExternalDatasetKey.
  */
 public class UpdDatasetKeyCheckCmd extends AbstractMybatisCmd {
-  private static final Logger LOG = LoggerFactory.getLogger(UpdDatasetKeyCheckCmd.class);
 
   public UpdDatasetKeyCheckCmd() {
     super("updDatasetKeyCheck", false,"Updating dataset key check constraints for default tables");
@@ -27,7 +26,7 @@ public class UpdDatasetKeyCheckCmd extends AbstractMybatisCmd {
 
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
-    return String.format("Updating dataset key check constraints for default tables in database %s on %s.", cfg.db.database, cfg.db.host);
+    return String.format("Updating dataset key check constraints for default tables with minExternalDatasetKey=%s in database %s on %s", cfg.db.minExternalDatasetKey, cfg.db.database, cfg.db.host);
   }
 
 }
