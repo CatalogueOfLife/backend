@@ -251,6 +251,37 @@ public class NameIndexImplTest {
     assertEquals(3, ni.size());
   }
 
+  @Test
+  public void infraspecifics() throws Exception {
+    setupMemory(true);
+    assertEquals(0, ni.size());
+
+    Name n1 = new Name();
+    n1.setScientificName("Abies alba alba");
+    n1.setGenus("Abies");
+    n1.setSpecificEpithet("alba");
+    n1.setInfraspecificEpithet("alba");
+    n1.setAuthorship("Mill.");
+    n1.setCombinationAuthorship(Authorship.authors("Mill."));
+    n1.setRank(Rank.SUBSPECIES);
+    n1.setType(NameType.SCIENTIFIC);
+
+    NameMatch m1 = ni.match(n1, true, true);
+    assertEquals(MatchType.EXACT, m1.getType());
+    assertEquals(n1.getScientificName(), m1.getName().getScientificName());
+
+    Name n2 = new Name(n1);
+    n2.setRank(Rank.VARIETY);
+    NameMatch m2 = ni.match(n2, true, true);
+    assertEquals(MatchType.EXACT, m2.getType());
+    assertEquals(m1.getNameKey(), m2.getNameKey());
+
+    Name n3 = new Name(n1);
+    n3.setRank(Rank.FORM);
+    NameMatch m3 = ni.match(n3, true, true);
+    assertEquals(MatchType.EXACT, m3.getType());
+    assertEquals(m1.getNameKey(), m3.getNameKey());
+  }
 
   /**
    * Try to add the same name concurrently, making sure we never get duplicates in the index
