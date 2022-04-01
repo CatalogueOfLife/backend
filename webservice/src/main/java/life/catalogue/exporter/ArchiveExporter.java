@@ -56,7 +56,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
   protected NameRelationMapper nameRelMapper;
   protected SqlSession session;
   protected TermWriter writer;
-  protected final DSID<String> key = DSID.of(datasetKey, "");
+  protected final DSID<String> entityKey = DSID.of(datasetKey, "");
   private final SXSSFWorkbook wb;
 
   ArchiveExporter(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
@@ -114,39 +114,42 @@ public abstract class ArchiveExporter extends DatasetExporter {
   protected void exportMetadata() throws IOException {
     LOG.info("Prepare export metadata");
     // add CLB logo URL if missing
-    if (dataset.getLogo() == null && imageService.datasetLogoExists(dataset.getKey())) {
-      dataset.setLogo(logoUriBuilder.build(dataset.getKey()));
+    if (imageService.datasetLogoExists(dataset.getKey())) {
+      if (dataset.getLogo() == null) {
+        dataset.setLogo(logoUriBuilder.build(dataset.getKey()));
+      }
+      // include logo image file
+      LOG.info("Copy logo");
+      imageService.copyDatasetLogo(datasetKey, new File(tmpDir, LOGO_FILENAME));
     }
-
-    // include logo image file
-    imageService.copyDatasetLogo(datasetKey, new File(tmpDir, LOGO_FILENAME));
 
     try (SqlSession session = factory.openSession(false)) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
 
       // extract unique source datasets if sectors were given
       Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
+      LOG.info("Prepare metadata for {} sources from {} sectors in export {}", sourceKeys.size(), sector2datasetKeys.size(), getKey());
       // for releases and projects also include an EML for each source dataset as defined by all sectors
-      for (Integer key : sourceKeys) {
+      for (Integer sk : sourceKeys) {
         Dataset src = null;
         if (DatasetOrigin.MANAGED == dataset.getOrigin()) {
-          src = psm.getProjectSource(key, datasetKey);
+          src = psm.getProjectSource(sk, datasetKey);
         } else if (DatasetOrigin.RELEASED == dataset.getOrigin()) {
-          src = psm.getReleaseSource(key, datasetKey);
+          src = psm.getReleaseSource(sk, datasetKey);
         }
         if (src == null) {
-          LOG.warn("Skip missing dataset {} for archive metadata", key);
-          return;
+          LOG.warn("Skip missing source dataset {} for archive metadata", sk);
+        } else {
+          // create source entry in dataset
+          dataset.addSource(src.toCitation());
+          LOG.info("Write source metadata for {}: {}", src.getKey(), src.getTitle());
+          writeSourceMetadata(src);
         }
-        // create source entry in dataset
-        dataset.addSource(src.toCitation());
-        LOG.info("Write source metadata for {}: {}", src.getKey(), src.getTitle());
-        writeSourceMetadata(src);
       }
     }
 
     // main dataset metadata
-    LOG.info("Write metadata");
+    LOG.info("Write metadata for export {}", getKey());
     writeMetadata(dataset);
   }
 
@@ -277,7 +280,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
         } else {
           refIDs.remove(null); // can happen
           for (String id : refIDs) {
-            var ref = rm.get(key.id(id));
+            var ref = rm.get(entityKey.id(id));
             if (ref != null) {
               write(ref);
               writer.next();
@@ -306,7 +309,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
           });
         } else {
           for (String id : taxonIDs) {
-            for (T x : exm.listByTaxon(key.id(id))) {
+            for (T x : exm.listByTaxon(entityKey.id(id))) {
               trackRefId(x);
               consumer.accept(id, x);
               this.writer.next();
@@ -340,7 +343,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
             });
           } else {
             for (String id : nameIDs) {
-              for (T x : mapper.listByName(key.id(id))) {
+              for (T x : mapper.listByName(entityKey.id(id))) {
                 trackRefId(x);
                 consumer.accept(x);
                 writer.next();
@@ -375,7 +378,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
             });
           } else {
             for (String id : taxonIDs) {
-              for (T x : mapper.listByTaxon(key.id(id))) {
+              for (T x : mapper.listByTaxon(entityKey.id(id))) {
                 trackRefId(x);
                 consumer.accept(x);
                 writer.next();
