@@ -361,11 +361,18 @@ public class InterpreterBase {
     final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
     Rank rank = Rank.UNRANKED;
+    boolean explicitRank = false;
     // we only parse ranks given with more than one char. c or g alone can be very ambiguous, see https://github.com/CatalogueOfLife/data/issues/302
     if (vrank != null && (vrank.length()>1 || vrank.equals("f") || vrank.equals("v"))) {
       try {
         // use advanced rank parser that takes the code into account!
-        rank = RankParser.PARSER.parse(code, vrank).orElse(Rank.UNRANKED);
+        var parsedRank = RankParser.PARSER.parse(code, vrank);
+        if (parsedRank.isPresent()) {
+          explicitRank = true;
+          rank = parsedRank.get();
+        } else {
+          rank = Rank.UNRANKED;
+        }
       } catch (UnparsableException e) {
         v.addIssue(Issue.RANK_INVALID);
         rank = Rank.OTHER;
@@ -416,7 +423,7 @@ public class InterpreterBase {
       }
 
       // infer the rank in case it was not given explicitly
-      if (rank.otherOrUnranked() && vrank == null) {
+      if (!explicitRank && rank.otherOrUnranked() && vrank == null) {
         atom.setRank(RankUtils.inferRank(atom));
       }
       atom.rebuildScientificName();
@@ -489,7 +496,7 @@ public class InterpreterBase {
     pnu.getName().setNomStatus(life.catalogue.api.util.ObjectUtils.coalesce(status, statusAuthorship));
 
     // assign best rank
-    if (rank.notOtherOrUnranked() || pnu.getName().getRank() == null) {
+    if (rank.notOtherOrUnranked() || explicitRank || pnu.getName().getRank() == null) {
       // TODO: check ACEF ranks...
       pnu.getName().setRank(rank);
     }

@@ -226,6 +226,18 @@ public class InterpreterBaseTest {
     assertNull(pnu.get().getTaxonomicNote());
     n = pnu.get().getName();
     assertFalse(v.hasIssues());
+
+    // explicit unranked should stay: https://github.com/CatalogueOfLife/backend/issues/1136
+    pnu = ib.interpretName(true, "1", "no rank", "cellular organisms", null,
+      null, null, null, null, null, null, null, null, null, null, v);
+    n = pnu.get().getName();
+    assertEquals("Cellular organisms", n.getScientificName());
+    assertEquals(Rank.UNRANKED, n.getRank());
+    assertEquals("Cellular", n.getGenus());
+    assertEquals("organisms", n.getSpecificEpithet());
+    assertNull(n.getAuthorship());
+    assertTrue(n.getCombinationAuthorship().isEmpty());
+    assertNull(n.getCombinationAuthorship().getYear());
   }
 
   @Test
