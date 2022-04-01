@@ -64,6 +64,9 @@
           </otherwise>
         </choose>
       </if>
+      <if test="term != null">
+        AND v.terms ?? '${term}'
+      </if>
       <if test="issues != null and !issues.isEmpty()">
         AND v.issues @>
         <foreach item="issue" index="index" collection="issues" open="array[" separator="," close="]">'${issue.name()}'::ISSUE</foreach>
@@ -83,7 +86,7 @@
     SELECT coalesce(
     (SELECT
     <choose>
-      <when test="q != null or (terms != null and !terms.isEmpty()) or (issues != null and !issues.isEmpty()) or (types != null and !types.isEmpty())">
+      <when test="q != null or term != null or (terms != null and !terms.isEmpty()) or (issues != null and !issues.isEmpty()) or (types != null and !types.isEmpty())">
         count(*)
         FROM
         <include refid="FROM"/>

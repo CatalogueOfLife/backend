@@ -112,6 +112,8 @@ public class PathUtils {
 
   /**
    * Creates a new symlink to a given file/folder, deleting any previously existing link that might exist.
+   * @param link the symlink file to create
+   * @param target  the real file to link to
    */
   public static void symlink(File link, File target) throws IOException {
     symlink(link.toPath(), target.toPath());
@@ -119,6 +121,8 @@ public class PathUtils {
 
   /**
    * Creates a new symlink to a given file/folder, deleting any previously existing link that might exist.
+   * @param link the symlink file to create
+   * @param target  the real file to link to
    */
   public static void symlink(Path link, Path target) throws IOException {
     if (Files.isSymbolicLink(link)) {

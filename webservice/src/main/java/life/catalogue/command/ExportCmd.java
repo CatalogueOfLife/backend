@@ -173,7 +173,7 @@ public class ExportCmd extends AbstractMybatisCmd {
     }
 
     if (d.getKey() == Datasets.COL || Objects.equals(Datasets.COL, d.getSourceKey())) {
-      System.out.println("Move exports to COL download dir");
+      System.out.println("Move exports to COL download dir " + cfg.release.colDownloadDir);
       for (Dataset de : datasets) {
         for (var exp : exportsByDatasetKey.get(de.getKey())) {
           copy.copyExportToColDownload(de, exp.format, exp.key, Objects.equals(latestReleaseKey, de.getKey()));

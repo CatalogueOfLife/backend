@@ -46,18 +46,18 @@ public class VerbatimResource {
   @GET
   public ResultPage<VerbatimRecord> list(@PathParam("key") int datasetKey,
                                          @QueryParam("type") List<Term> types,
+                                         @QueryParam("term") Term term,
                                          @QueryParam("termOp") @DefaultValue("AND") LogicalOperator termOp,
                                          @QueryParam("issue") List<Issue> issues,
                                          @QueryParam("q") String q,
                                          @Valid @BeanParam Page page,
                                          @Context UriInfo uri,
                                          @Context SqlSession session) {
-    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
     Map<Term, String> terms = termFilter(uri.getQueryParameters());
-    
+    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
     return new ResultPage<>(page,
-        mapper.count(datasetKey, types, terms, termOp, issues, q),
-        mapper.list(datasetKey, types, terms, termOp, issues, q, page)
+        mapper.count(datasetKey, types, terms, termOp, term, issues, q),
+        mapper.list(datasetKey, types, terms, termOp, term, issues, q, page)
     );
   }
   

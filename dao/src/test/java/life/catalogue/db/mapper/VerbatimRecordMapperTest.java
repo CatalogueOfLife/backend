@@ -6,6 +6,7 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 
 import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 
@@ -50,51 +51,53 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
   @Test
   public void list() {
     assertEquals(0, mapper().list(TAXON1.getDatasetKey(), null, null, AND,
-        List.of(Issue.ACCEPTED_ID_INVALID),null,
+        null, List.of(Issue.ACCEPTED_ID_INVALID),null,
         new Page()).size());
   
     assertEquals(1, mapper().list(TAXON1.getDatasetKey(), null, null, AND,
-        List.of(Issue.ID_NOT_UNIQUE), null,
+      null, List.of(Issue.ID_NOT_UNIQUE), null,
         new Page()).size());
   
     insertTestData();
   
-    assertEquals(8, mapper().list(TAXON1.getDatasetKey(), null, null, AND,null, null, new Page()).size());
-    assertEquals(2, mapper().list(TAXON1.getDatasetKey(), null, null, AND,null, "abies", new Page()).size());
-    assertEquals(2, mapper().list(TAXON1.getDatasetKey(), null, null, AND,null, "t1", new Page()).size());
-    assertEquals(1, mapper().list(TAXON1.getDatasetKey(), null, null, AND,null, "alpina", new Page()).size());
+    assertEquals(8, mapper().list(TAXON1.getDatasetKey(), null, null, AND, null, null, null, new Page()).size());
+    assertEquals(2, mapper().list(TAXON1.getDatasetKey(), null, null, AND, null, null, "abies", new Page()).size());
+    assertEquals(2, mapper().list(TAXON1.getDatasetKey(), null, null, AND, null, null, "t1", new Page()).size());
+    assertEquals(1, mapper().list(TAXON1.getDatasetKey(), null, null, AND, null, null, "alpina", new Page()).size());
   }
   
   @Test
   public void count() {
     // count apples. rely on import metrics for quick counts so derive them first
     generateDatasetImport(DATASET11.getKey());
-    assertEquals(5, mapper().count(datasetKey, null, null, AND,null, null));
-    assertEquals(3, mapper().count(datasetKey, List.of(AcefTerm.AcceptedSpecies), null, AND,null, null));
-    assertEquals(0, mapper().count(datasetKey, List.of(AcefTerm.AcceptedInfraSpecificTaxa), null, AND,null, null));
+    assertEquals(5, mapper().count(datasetKey, null, null, AND, null, null, null));
+    assertEquals(3, mapper().count(datasetKey, List.of(AcefTerm.AcceptedSpecies), null, AND, null, null, null));
+    assertEquals(0, mapper().count(datasetKey, List.of(AcefTerm.AcceptedInfraSpecificTaxa), null, AND, null, null, null));
   
     insertTestData();
-    assertEquals(8, mapper().count(datasetKey, null, null, AND,null, null));
-    assertEquals(2, mapper().count(datasetKey, List.of(AcefTerm.AcceptedInfraSpecificTaxa), new HashMap<>(), AND, new ArrayList<>(), null));
-    assertEquals(1, mapper().count(datasetKey, List.of(AcefTerm.AcceptedInfraSpecificTaxa), ImmutableMap.of(DwcTerm.genus, "Abies"), AND, null, null));
-    assertEquals(2, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), AND, null, null));
-    assertEquals(1, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), AND, List.of(Issue.BASIONYM_ID_INVALID), null));
+    assertEquals(8, mapper().count(datasetKey, null, null, AND, null, null, null));
+    assertEquals(2, mapper().count(datasetKey, List.of(AcefTerm.AcceptedInfraSpecificTaxa), new HashMap<>(), AND, null, new ArrayList<>(), null));
+    assertEquals(1, mapper().count(datasetKey, List.of(AcefTerm.AcceptedInfraSpecificTaxa), ImmutableMap.of(DwcTerm.genus, "Abies"), AND, null, null, null));
+    assertEquals(2, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), AND, null, null, null));
+    assertEquals(1, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), AND, null, List.of(Issue.BASIONYM_ID_INVALID), null));
     assertEquals(0, mapper().count(datasetKey, null, ImmutableMap.of(
         AcefTerm.InfraSpeciesEpithet, "alpina",
         AcefTerm.AcceptedTaxonID, "t1"
-    ), AND, null, null));
+    ), AND, null, null, null));
     assertEquals(2, mapper().count(datasetKey, null, ImmutableMap.of(
         AcefTerm.InfraSpeciesEpithet, "alpina",
         AcefTerm.AcceptedTaxonID, "t1"
-    ), OR, null, null));
+    ), OR, null, null, null));
     assertEquals(1, mapper().count(datasetKey, null, ImmutableMap.of(
         AcefTerm.InfraSpeciesEpithet, "alpina",
         AcefTerm.AcceptedTaxonID, "t2"
-    ), AND, null, null));
+    ), AND, null, null, null));
     assertEquals(1, mapper().count(datasetKey, null, ImmutableMap.of(
         AcefTerm.InfraSpeciesEpithet, "alpina",
         AcefTerm.AcceptedTaxonID, "t2"
-    ), OR, null, null));
+    ), OR, null, null, null));
+
+    assertEquals(0, mapper().count(datasetKey, null, null, AND, DcTerm.date, null, null));
   }
   
   private void insertTestData() {

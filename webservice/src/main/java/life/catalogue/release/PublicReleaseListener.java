@@ -190,9 +190,11 @@ public class PublicReleaseListener {
     File source = cfg.downloadFile(exportKey);
     if (source.exists()) {
       try {
+        LOG.info("Copy COL {} export {} to {}", df, exportKey, target);
         FileUtils.copyFile(source, target);
         if (symLinkLatest) {
           File symlink = colLatestFile(cfg.release.colDownloadDir, df);
+          LOG.info("Symlink COL {} export {} at {} to {}", df, exportKey, target, symlink);
           PathUtils.symlink(symlink, target);
         }
       } catch (IOException e) {
