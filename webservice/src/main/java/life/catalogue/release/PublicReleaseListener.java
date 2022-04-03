@@ -207,11 +207,11 @@ public class PublicReleaseListener {
 
   public static File colDownloadFile(File colDownloadDir, Dataset dataset, DataFormat format) {
     String iso = DateTimeFormatter.ISO_DATE.format(dataset.getIssued().getDate());
-    return new File(colDownloadDir, "monthly/" + iso + "_" + format.getName().toLowerCase() + ".zip");
+    return new File(colDownloadDir, "monthly/" + iso + "_" + format.getFilename() + ".zip");
   }
 
   public static File colLatestFile(File colDownloadDir, DataFormat format) {
-    return new File(colDownloadDir, "latest_" + format.getName().toLowerCase() + ".zip");
+    return new File(colDownloadDir, "latest_" + format.getFilename() + ".zip");
   }
 
 }

@@ -116,7 +116,7 @@ public class DatasetExportResource {
       }
     }
 
-    throw new NotFoundException(key, format == null ? "original" : format.getName().toLowerCase() + " archive for dataset " + key + " not found");
+    throw new NotFoundException(key, format == null ? "original" : format.getName() + " archive for dataset " + key + " not found");
   }
 
   public static class ExportQueryParams {
