@@ -10,6 +10,8 @@ import life.catalogue.db.mapper.DatasetMapper;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import life.catalogue.dw.ManagedExtended;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -28,7 +30,7 @@ import io.dropwizard.lifecycle.Managed;
  * - never imported datasets first
  * - the datasets configured indexing frequency
  */
-public class ContinuousImporter implements Managed {
+public class ContinuousImporter implements ManagedExtended {
   private static final Logger LOG = LoggerFactory.getLogger(ContinuousImporter.class);
   private static final String THREAD_NAME = "continuous-importer";
   private static final int WAIT_TIME_IN_HOURS = 1;
@@ -119,7 +121,8 @@ public class ContinuousImporter implements Managed {
       return datasets;
     }
   }
-  
+
+  @Override
   public boolean hasStarted() {
     return job != null && job.running;
   }

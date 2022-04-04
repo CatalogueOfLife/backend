@@ -19,6 +19,7 @@ import life.catalogue.concurrent.StartNotifier;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.dw.ManagedExtended;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
@@ -59,7 +60,7 @@ import io.dropwizard.lifecycle.Managed;
 /**
  * Manages import task scheduling, removing and listing
  */
-public class ImportManager implements Managed {
+public class ImportManager implements ManagedExtended {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
   public static final String THREAD_NAME = "dataset-importer";
   static final Comparator<DatasetImport> DI_STARTED_COMPARATOR = Comparator.comparing(DatasetImport::getStarted);
@@ -503,6 +504,7 @@ public class ImportManager implements Managed {
     }
   }
 
+  @Override
   public boolean hasStarted() {
     return exec != null;
   }

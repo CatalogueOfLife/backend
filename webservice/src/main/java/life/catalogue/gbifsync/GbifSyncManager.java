@@ -5,6 +5,8 @@ import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
 
+import life.catalogue.dw.ManagedExtended;
+
 import org.gbif.nameparser.utils.NamedThreadFactory;
 
 import java.util.UUID;
@@ -24,7 +26,7 @@ import io.dropwizard.lifecycle.Managed;
 /**
  * Syncs datasets from the GBIF registry
  */
-public class GbifSyncManager implements Managed {
+public class GbifSyncManager implements ManagedExtended {
   private static final Logger LOG = LoggerFactory.getLogger(GbifSyncManager.class);
   private static final String THREAD_NAME = "gbif-sync";
   public static final UUID PLAZI_KEY = UUID.fromString("7ce8aef0-9e92-11dc-8738-b8a03c50a862");
@@ -43,6 +45,7 @@ public class GbifSyncManager implements Managed {
     this.client = client;
   }
 
+  @Override
   public boolean hasStarted() {
     return job != null;
   }

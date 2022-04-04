@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.IndexJob;
 import life.catalogue.admin.jobs.ReimportJob;
@@ -17,6 +19,7 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.dw.ManagedExtended;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.gbifsync.GbifSyncJob;
@@ -53,6 +56,7 @@ import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
 
 @Path("/admin")
+@Hidden
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed({Roles.ADMIN})
 public class AdminResource {
@@ -148,53 +152,87 @@ public class AdminResource {
   
   @PUT
   @Path("/settings")
-  public synchronized void setSettings(ServerSettings back) throws Exception {
+  public synchronized void setSettings(ServerSettings s) throws Exception {
     ServerSettings curr = getSettings();
 
-    if (back.maintenance != null && curr.maintenance != back.maintenance) {
-      LOG.info("Set maintenance mode={}", back.maintenance);
-      curr.maintenance = back.maintenance;
+    if (s.maintenance != null && curr.maintenance != s.maintenance) {
+      LOG.info("Set maintenance mode={}", s.maintenance);
+      curr.maintenance = s.maintenance;
     }
 
-    if (back.gbifSync != null && curr.gbifSync != back.gbifSync) {
+    if (s.gbifSync != null && curr.gbifSync != s.gbifSync) {
       if (cfg.gbif.syncFrequency < 1) {
-        // we started the server with no syncing, give it a reasonable default in hours
+        // we configured the server with no syncing, give it a reasonable default in hours
         cfg.gbif.syncFrequency = 6;
       }
-      LOG.info("Set GBIF Sync to active={}", back.gbifSync);
-      startStopManaged(gbifSync, back.gbifSync);
+      LOG.info("Set GBIF Sync to active={}", s.gbifSync);
+      startStopManaged(gbifSync, s.gbifSync);
     }
     
-    if (back.scheduler != null && curr.scheduler != back.scheduler) {
+    if (s.scheduler != null && curr.scheduler != s.scheduler) {
       if (cfg.importer.continousImportPolling < 1) {
-        // we started the server with no polling, give it a reasonable default
+        // we configured the server with no polling, give it a reasonable default
         cfg.importer.continousImportPolling = 10;
       }
-      LOG.info("Set continuous importer to active={}", back.scheduler);
-      startStopManaged(continuousImporter, back.scheduler);
+      LOG.info("Set continuous importer to active={}", s.scheduler);
+      startStopManaged(continuousImporter, s.scheduler);
     }
 
-    if (back.importer != null && curr.importer != back.importer) {
-      if (back.importerThreads != null && back.importerThreads > 0) {
-        cfg.importer.threads = back.importerThreads;
+    if (s.importer != null && curr.importer != s.importer) {
+      if (s.importerThreads != null && s.importerThreads > 0) {
+        cfg.importer.threads = s.importerThreads;
       }
-      LOG.info("Set import manager with {} threads & names index to active={}", cfg.importer.threads, back.importer);
+      LOG.info("Set import manager with {} threads & names index to active={}", cfg.importer.threads, s.importer);
       // order is important
-      if (back.importer) {
-        namesIndex.start();
-        importManager.start();
-        idMap.start();
+      if (s.importer) {
+        startImporter();
       } else {
-        importManager.stop();
-        namesIndex.stop();
-        idMap.stop();
+        stopImporter();
       }
     }
   }
-  
-  private static void startStopManaged(Managed m, boolean start) throws Exception {
+
+  private void startImporter() throws Exception {
+    if (!importManager.hasStarted()) {
+      namesIndex.start();
+      importManager.start();
+      idMap.start();
+    }
+  }
+
+  private void stopImporter() throws Exception {
+    namesIndex.stop();
+    importManager.stop();
+    idMap.stop();
+  }
+
+  /**
+   * Start all managed objects as configured
+   */
+  @PUT
+  @Path("/settings/start")
+  public synchronized void startAllServices() throws Exception {
+    startStopManaged(gbifSync, true);
+    startStopManaged(continuousImporter, true);
+    startImporter();
+  }
+
+  /**
+   * Stop all services
+   */
+  @PUT
+  @Path("/settings/stop")
+  public synchronized void stopAllServices() throws Exception {
+    startStopManaged(gbifSync, false);
+    startStopManaged(continuousImporter, false);
+    stopImporter();
+  }
+
+  private static void startStopManaged(ManagedExtended m, boolean start) throws Exception {
     if (start) {
-      m.start();
+      if (!m.hasStarted()) {
+        m.start();
+      }
     } else {
       m.stop();
     }
