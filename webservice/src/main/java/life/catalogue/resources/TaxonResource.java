@@ -1,12 +1,10 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.*;
 
-import java.net.URI;
 import java.util.List;
 
 import javax.ws.rs.*;
@@ -45,12 +43,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Path("{id}")
   public Taxon get(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     var key = new DSIDValue<>(datasetKey, id);
-    try {
-      return dao.getOr404(key);
-    } catch (SynonymException e) {
-      URI location = URI.create("/dataset/"+e.acceptedKey.getDatasetKey()+"/taxon/" + e.acceptedKey.getId());
-      throw ResourceUtils.redirect(location);
-    }
+    return dao.getOr404(key);
   }
   
   @GET
