@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  *
  */
-public interface NameUsage extends DSID<String>, VerbatimEntity, RankedID {
+public interface NameUsage extends DSID<String>, VerbatimEntity, RankedID, Remarkable {
 
   String getLabel();
 
@@ -60,7 +60,4 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, RankedID {
     return getStatus() == null || getStatus().isBareName();
   }
 
-  String getRemarks();
-  
-  void setRemarks(String remarks);
 }

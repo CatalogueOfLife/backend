@@ -10,7 +10,7 @@ public class SynonymException extends NotFoundException{
   public final DSID<String> acceptedKey;
 
   public SynonymException(DSID<String> key, String acceptedKey) {
-    super(key, NotFoundException.createMessage(Taxon.class, key.concat()));
+    super(key, "Synonym " + key + " is not a taxon. Use it's accepted ID instead: " + acceptedKey);
     this.acceptedKey = DSID.of(key.getDatasetKey(), acceptedKey);
   }
 }

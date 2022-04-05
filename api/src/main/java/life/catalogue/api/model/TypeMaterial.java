@@ -8,10 +8,12 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Type material should only be associated with the original name, not with a recombination.
  */
-public class TypeMaterial extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, Referenced {
+public class TypeMaterial extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, Referenced, Remarkable {
 
   private Integer sectorKey;
   private Integer verbatimKey;
@@ -197,10 +199,12 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
     this.link = link;
   }
 
+  @Override
   public String getRemarks() {
     return remarks;
   }
 
+  @Override
   public void setRemarks(String remarks) {
     this.remarks = remarks;
   }

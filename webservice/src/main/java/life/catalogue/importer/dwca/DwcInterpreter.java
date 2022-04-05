@@ -1,10 +1,8 @@
 package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Gazetteer;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
@@ -13,13 +11,12 @@ import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.parser.EnumNote;
-import life.catalogue.parser.NomRelTypeParser;
-import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.DwcaTerm;
+import org.gbif.dwc.terms.GbifTerm;
 
 import java.util.Collections;
 import java.util.List;
@@ -188,5 +185,47 @@ public class DwcInterpreter extends InterpreterBase {
     }
     return opt;
   }
-  
+
+  /**
+   * Converts occurrences with type status to TypeMaterial instances
+   */
+  Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
+    if (rec.hasTerm(DwcTerm.typeStatus)) {
+      TypeMaterial m = new TypeMaterial();
+      m.setId(rec.getRaw(DwcTerm.occurrenceID));
+      m.setNameId(rec.getRaw(DwcTerm.taxonID));
+      m.setCitation(rec.get(GbifTerm.verbatimLabel));
+      m.setStatus(SafeParser.parse(TypeStatusParser.PARSER, rec.get(DwcTerm.typeStatus)).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec));
+      m.setLocality(rec.get(DwcTerm.locality));
+      m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(DwcTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
+      try {
+        Optional<CoordParser.LatLon> coord = CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLatitude), rec.get(DwcTerm.decimalLongitude));
+        if (coord.isPresent()) {
+          m.setLatitude(coord.get().lat);
+          m.setLongitude(coord.get().lon);
+        }
+      } catch (UnparsableException e) {
+        rec.addIssue(Issue.LAT_LON_INVALID);
+      }
+      if (rec.hasAny(DwcTerm.maximumElevationInMeters, DwcTerm.minimumElevationInMeters)) {
+        var min = integer(rec, Issue.ALTITUDE_INVALID, DwcTerm.minimumElevationInMeters);
+        var max = integer(rec, Issue.ALTITUDE_INVALID, DwcTerm.maximumElevationInMeters);
+        if (min != null && max != null) {
+          m.setAltitude((min + (max-min)/2));
+        } else {
+          m.setAltitude(ObjectUtils.coalesce(min, max));
+        }
+      }
+      m.setHost(null);
+      m.setDate(rec.get(DwcTerm.eventDate));
+      m.setCollector(rec.get(DwcTerm.recordedBy));
+      m.setLink(uri(rec, Issue.URL_INVALID, DcTerm.references));
+      // pool other infos in remarks
+      m.addRemarks(rec.get(DwcTerm.individualCount));
+      m.addRemarks(rec.get(DwcTerm.sex));
+      setReference(m, rec);
+      return Optional.of(m);
+    }
+    return Optional.empty();
+  }
 }

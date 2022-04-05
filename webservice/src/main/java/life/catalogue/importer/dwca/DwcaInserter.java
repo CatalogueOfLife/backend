@@ -3,6 +3,7 @@ package life.catalogue.importer.dwca;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
@@ -58,7 +59,7 @@ public class DwcaInserter extends NeoCsvInserter {
     //);
 
     // TODO: read occurrence extension and create type material
-    // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
+    // http://rs.gbif.org/extension/gbif/1.0/occurrence.xml
     //updateEntities(reader, DwcTerm.Taxon,
     //    inter::interpret,
     //    u -> store.createNameAndUsage(u) != null
@@ -71,6 +72,10 @@ public class DwcaInserter extends NeoCsvInserter {
         DwcUnofficialTerm.relatedNameUsageID,
         Issue.NAME_ID_INVALID,
       true
+    );
+
+    interpretTypeMaterial(reader, ColdpTerm.TypeMaterial,
+      inter::interpretTypeMaterial
     );
 
     insertTaxonEntities(reader, GbifTerm.Distribution,
