@@ -2,6 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.db.mapper.ArchivedNameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
@@ -11,7 +12,6 @@ import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
 
-import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;

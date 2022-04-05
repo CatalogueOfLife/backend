@@ -407,8 +407,8 @@ public class TestEntityGenerator {
     n.setNomStatus(NomStatus.ACCEPTABLE);
     n.setNomenclaturalNote("nom.illeg.");
     n.setUnparsed("debnnj$&%%");
-    n.addRemark("my first note");
-    n.addRemark("my second note");
+    n.addRemarks("my first note");
+    n.addRemarks("my second note");
 
     n.rebuildScientificName();
     n.rebuildAuthorship();

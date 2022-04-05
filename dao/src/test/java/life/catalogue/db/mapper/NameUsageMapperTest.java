@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.PgSetupRule;
@@ -10,7 +11,6 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 
-import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
@@ -89,6 +89,16 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertEquals(t.getName().getRank(), sn.getRank());
     assertEquals(t.getName().getScientificName(), sn.getName());
     assertEquals(t.getName().getAuthorship(), sn.getAuthorship());
+  }
+
+  @Test
+  public void findSimple() throws Exception {
+    var results = mapper().findSimple(testDataRule.testData.key, null, TaxonomicStatus.ACCEPTED, Rank.SPECIES, "Malus sylvestris");
+    assertEquals(1, results.size());
+
+    assertTrue(mapper().findSimple(testDataRule.testData.key, 13, TaxonomicStatus.ACCEPTED, Rank.SPECIES, "Malus sylvestris").isEmpty());
+    assertTrue(mapper().findSimple(199, null, TaxonomicStatus.ACCEPTED, Rank.SPECIES, "Malus sylvestris").isEmpty());
+    assertTrue(mapper().findSimple(testDataRule.testData.key, null, TaxonomicStatus.ACCEPTED, Rank.GENUS, "Malus sylvestris").isEmpty());
   }
 
   @Test

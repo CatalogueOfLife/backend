@@ -51,6 +51,8 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final ReferenceMapper rm;
   private final TaxonMapper tm;
   private final NameMapper nm;
+  // for reading only:
+  private final NameUsageMapper num;
   private int sCounter = 0;
   private int tCounter = 0;
   private final Usage target;
@@ -91,6 +93,8 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     rm = batchSession.getMapper(ReferenceMapper.class);
     tm = batchSession.getMapper(TaxonMapper.class);
     nm = batchSession.getMapper(NameMapper.class);
+    // for reading only
+    num = session.getMapper(NameUsageMapper.class);
     // load target taxon
     Taxon t = tm.get(sector.getTargetAsDSID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
@@ -179,6 +183,9 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       this.rank = rank;
       this.status = status;
     }
+    Usage(SimpleName sn) {
+      this(sn.getId(), sn.getRank(), sn.getStatus());
+    }
   }
   private static class RanKnName {
     final Rank rank;
@@ -216,7 +223,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
    *  - provisional names
    *  - indetermined names, i.e. a species with no specific epithet given
    *
-   * @return the parent, either as supplied or the new one if imlicit taxa were created
+   * @return the parent, either as supplied or the new one if implicit taxa were created
    */
   private Usage createImplicit(Usage parent, Taxon taxon) {
     List<Rank> neededRanks = new ArrayList<>();
@@ -231,13 +238,13 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
           neededRanks.add(r);
         }
       }
-  
+      // now see if we have copied such a name already - avoid creating duplicates: https://github.com/CatalogueOfLife/testing/issues/189
       for (Rank r : neededRanks) {
         Name n = new Name();
         n.setCode(origName.getCode());
         if (r == Rank.GENUS) {
           n.setUninomial(origName.getGenus());
-        
+
         } else if (r == Rank.SUBGENUS) {
           if (origName.getInfragenericEpithet() == null) {
             continue;
@@ -266,7 +273,14 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
           parent = implicits.get(rnn);
           continue;
         }
-  
+        // did we sync the name before in the same sector?
+        parent = findInSector(rnn);
+        if (parent != null) {
+          LOG.debug("Found implicit {} {} in sector {}", r, origName.getScientificName(), sector);
+          implicits.put(rnn, parent);
+          continue;
+        }
+        // finally, create missing implicit name
         DatasetEntityDao.newKey(n);
         n.setDatasetKey(catalogueKey);
         n.setOrigin(Origin.IMPLICIT_NAME);
@@ -286,13 +300,23 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         t.setStatus(TaxonomicStatus.ACCEPTED);
         t.applyUser(user);
         tm.create(t);
-  
+
         parent = usage(t);
         //reuse implicit names...
         implicits.put(new RanKnName(n.getRank(), n.getScientificName()), parent);
       }
     }
     return parent;
+  }
+
+  private Usage findInSector(RanKnName rnn) {
+    // we need to commit the batch session to see the recent inserts
+    batchSession.commit();
+    var matches = num.findSimple(catalogueKey, sector.getKey().getId(), TaxonomicStatus.ACCEPTED, rnn.rank, rnn.name);
+    if (!matches.isEmpty()) {
+      return new Usage(matches.get(0));
+    }
+    return null;
   }
 
   @Override

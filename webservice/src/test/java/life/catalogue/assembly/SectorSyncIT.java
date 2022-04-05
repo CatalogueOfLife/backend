@@ -60,7 +60,7 @@ public class SectorSyncIT {
   final static PgImportRule importRule = PgImportRule.create(
     NomCode.BOTANICAL,
       DataFormat.ACEF,  1,
-      DataFormat.COLDP, 0,
+      DataFormat.COLDP, 0, 22,
     NomCode.ZOOLOGICAL,
       DataFormat.ACEF,  5, 6, 11,
       DataFormat.COLDP, 2, 4, 14,
@@ -266,6 +266,22 @@ public class SectorSyncIT {
 
     syncAll();
     assertTree("cat14b.txt");
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/testing/issues/189
+   */
+  @Test
+  public void wcvpInfraspecies() throws Exception {
+    print(Datasets.COL);
+    print(datasetKey(22, DataFormat.COLDP));
+
+    NameUsageBase src = getByName(datasetKey(22, DataFormat.COLDP), Rank.FAMILY, "Acoraceae");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    createSector(Sector.Mode.ATTACH, src, trg);
+
+    syncAll();
+    assertTree("cat22.txt");
   }
 
   @Test

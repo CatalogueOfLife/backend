@@ -185,6 +185,23 @@
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
+  <select id="findSimple" resultMap="simpleResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.dataset_key = #{datasetKey}
+      AND n.scientific_name = #{name}
+    <if test="sectorKey != null">
+      AND u.sector_key = #{sectorKey}
+    </if>
+    <if test="rank != null">
+      AND n.rank = #{rank}::RANK
+    </if>
+    <if test="status != null">
+      AND u.status = #{status}::TAXONOMICSTATUS
+    </if>
+  </select>
+
+
   <select id="getSimpleByIdMap" resultMap="simpleResultMap">
     SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, coalesce(idp.id2, u.parent_id) AS parent_id
     FROM <include refid="FROM_SIMPLE"/>
@@ -482,6 +499,9 @@
     SELECT * FROM x
     <if test="depthFirst">
       ORDER BY x.path
+    </if>
+    <if test="!depthFirst">
+      ORDER BY x.n_rank
     </if>
   </select>
 

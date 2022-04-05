@@ -1,11 +1,11 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TempNameUsageRelated;
 
-import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collection;
@@ -33,6 +33,13 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @return
    */
   SimpleName getSimple(@Param("key") DSID<String> key);
+
+  List<SimpleName> findSimple(@Param("datasetKey") int datasetKey,
+                              @Param("sectorKey") Integer sectorKey,
+                              @Param("status") TaxonomicStatus status,
+                              @Param("rank") Rank rank,
+                              @Param("name") String name
+  );
 
   /**
    * Retrieves a simple name usage from a project by using the stable usage ID
