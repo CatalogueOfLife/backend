@@ -4,13 +4,13 @@ import life.catalogue.api.vocab.EstimateType;
 
 import java.util.Objects;
 
-public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements VerbatimEntity, Referenced {
+public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements VerbatimEntity, Referenced, Remarkable {
   private Integer verbatimKey;
   private SimpleNameLink target;
   private Integer estimate;
   private EstimateType type = EstimateType.SPECIES_LIVING;
   private String referenceId;
-  private String note;
+  private String remarks;
 
   public SpeciesEstimate() {
   }
@@ -22,7 +22,7 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements Ver
     this.estimate = other.estimate;
     this.type = other.type;
     this.referenceId = other.referenceId;
-    this.note = other.note;
+    this.remarks = other.remarks;
   }
 
   @Override
@@ -42,13 +42,15 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements Ver
   public void setTarget(SimpleNameLink target) {
     this.target = target;
   }
-  
-  public String getNote() {
-    return note;
+
+  @Override
+  public String getRemarks() {
+    return remarks;
   }
-  
-  public void setNote(String note) {
-    this.note = note;
+
+  @Override
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
   }
   
   public Integer getEstimate() {
@@ -86,12 +88,12 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements Ver
         Objects.equals(estimate, that.estimate) &&
         type == that.type &&
         Objects.equals(referenceId, that.referenceId) &&
-        Objects.equals(note, that.note);
+        Objects.equals(remarks, that.remarks);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, target, estimate, type, referenceId, note);
+    return Objects.hash(super.hashCode(), verbatimKey, target, estimate, type, referenceId, remarks);
   }
   
   @Override

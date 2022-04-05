@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 /**
  * Simplified citation class linked to an optional serial container.
  */
-public class Reference extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity {
+public class Reference extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, Remarkable {
   
   private Integer sectorKey;
   private Integer verbatimKey;
@@ -76,11 +76,13 @@ public class Reference extends DatasetScopedEntity<String> implements VerbatimEn
   public void setYear(Integer year) {
     this.year = year;
   }
-  
+
+  @Override
   public String getRemarks() {
     return remarks;
   }
-  
+
+  @Override
   public void setRemarks(String remarks) {
     this.remarks = remarks;
   }

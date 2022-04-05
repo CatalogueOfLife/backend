@@ -40,7 +40,7 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
  * The {@link #getAuthorship()} on the other hand contains the original value and is unaltered for parsed names.
  * It is only reconstructed for record that did not contain the authorship separately from the bare scientific name.
  */
-public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, LinneanName, ScientificName {
+public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, LinneanName, ScientificName, Remarkable {
 
   private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?( .+)?$");
   // matches only uninomials or binomials without any authorship
@@ -525,21 +525,17 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setNotho(NamePart notho) {
     this.notho = notho;
   }
-  
+
+  @Override
   public String getRemarks() {
     return remarks;
   }
-  
+
+  @Override
   public void setRemarks(String remarks) {
     this.remarks = remarks;
   }
-  
-  public void addRemark(String remark) {
-    if (!StringUtils.isBlank(remark)) {
-      this.remarks = remarks == null ? remark.trim() : remarks + ". " + remark.trim();
-    }
-  }
-  
+
   public NameType getType() {
     return type;
   }

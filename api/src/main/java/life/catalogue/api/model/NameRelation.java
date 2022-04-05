@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * A nomenclatural name relation between two names pointing back in time from the nameId to the relatedNameId.
  */
-public class NameRelation extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity {
+public class NameRelation extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity, Remarkable {
   private Integer datasetKey;
   private Integer sectorKey;
   private Integer verbatimKey;
@@ -83,11 +83,13 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Sector
   public void setReferenceId(String referenceId) {
     this.referenceId = referenceId;
   }
-  
+
+  @Override
   public String getRemarks() {
     return remarks;
   }
-  
+
+  @Override
   public void setRemarks(String remarks) {
     this.remarks = remarks;
   }

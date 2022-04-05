@@ -265,7 +265,7 @@ public class ColdpExporter extends ArchiveExporter {
       writer.set(ColdpTerm.estimate, est.getEstimate());
       writer.set(ColdpTerm.type, est.getType());
       writer.set(ColdpTerm.referenceID, est.getReferenceId());
-      writer.set(ColdpTerm.remarks, est.getNote());
+      writer.set(ColdpTerm.remarks, est.getRemarks());
     }
   }
 

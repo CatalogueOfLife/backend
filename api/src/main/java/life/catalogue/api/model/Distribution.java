@@ -8,13 +8,14 @@ import java.util.Objects;
 /**
  *
  */
-public class Distribution extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity {
+public class Distribution extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity, Remarkable {
 
   private Integer sectorKey;
   private Integer verbatimKey;
   private Area area;
   private DistributionStatus status;
   private String referenceId;
+  private String remarks;
 
   @Override
   public Integer getSectorKey() {
@@ -61,26 +62,36 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Sector
   public void setReferenceId(String referenceId) {
     this.referenceId = referenceId;
   }
-  
-  
+
+  @Override
+  public String getRemarks() {
+    return remarks;
+  }
+
+  @Override
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof Distribution)) return false;
     if (!super.equals(o)) return false;
     Distribution that = (Distribution) o;
-    return Objects.equals(sectorKey, that.sectorKey) &&
-        Objects.equals(verbatimKey, that.verbatimKey) &&
-        Objects.equals(area, that.area) &&
-        status == that.status &&
-        Objects.equals(referenceId, that.referenceId);
+    return Objects.equals(sectorKey, that.sectorKey)
+           && Objects.equals(verbatimKey, that.verbatimKey)
+           && Objects.equals(area, that.area)
+           && status == that.status
+           && Objects.equals(referenceId, that.referenceId)
+           && Objects.equals(remarks, that.remarks);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, area, status, referenceId);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, area, status, referenceId, remarks);
   }
-  
+
   @Override
   public String toString() {
     return status == null ? "Unknown" : status + " in:" + area;

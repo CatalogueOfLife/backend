@@ -259,7 +259,7 @@ public class ColdpInterpreter extends InterpreterBase {
         est.setType(SafeParser.parse(EstimateTypeParser.PARSER, rec.get(ColdpTerm.type))
           .orElse(EstimateType.SPECIES_LIVING, Issue.ESTIMATE_TYPE_INVALID, rec));
         setReference(est, rec);
-        est.setNote(rec.get(ColdpTerm.remarks));
+        est.setRemarks(rec.get(ColdpTerm.remarks));
         return Lists.newArrayList(est);
 
       } else {

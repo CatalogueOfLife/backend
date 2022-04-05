@@ -12,11 +12,15 @@ public interface Remarkable {
   void setRemarks(String remarks);
 
   default void addRemarks(String remarks) {
+    addRemarks(remarks, ';');
+  }
+
+  default void addRemarks(String remarks, char delim) {
     if (!StringUtils.isBlank(remarks)) {
       if (getRemarks() == null) {
         setRemarks(remarks.trim());
       } else {
-        setRemarks(getRemarks() + "; " + remarks.trim());
+        setRemarks(getRemarks() + delim + " " + remarks.trim());
       }
     }
   }

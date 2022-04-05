@@ -52,19 +52,19 @@
   </sql>
 
   <sql id="PROPS">
-    #{datasetKey},
-    #{target.id},
-    #{verbatimKey},
-    #{target.name},
-    #{target.authorship},
-    #{target.rank}::RANK,
-    #{target.code}::NOMCODE,
-    #{note},
-    now(),
-    #{modifiedBy},
-    #{estimate},
-    #{type}::ESTIMATETYPE,
-    #{referenceId}
+      #{datasetKey},
+      #{target.id},
+      #{verbatimKey},
+      #{target.name},
+      #{target.authorship},
+      #{target.rank}::RANK,
+      #{target.code}::NOMCODE,
+      #{remarks},
+      now(),
+      #{modifiedBy},
+      #{estimate},
+      #{type}::ESTIMATETYPE,
+      #{referenceId}
   </sql>
 
   <sql id="JOIN_USAGE">
@@ -109,6 +109,7 @@
 
   <resultMap id="estimateResultMap" type="SpeciesEstimate" autoMapping="true">
     <id property="id" column="id"/>
+    <result property="remarks" column="note"/>
     <association property="target" javaType="SimpleNameLink" autoMapping="true" columnPrefix="target_"/>
   </resultMap>
 

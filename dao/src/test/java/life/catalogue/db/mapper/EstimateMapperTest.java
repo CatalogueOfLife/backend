@@ -38,7 +38,7 @@ public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, 
     d.setEstimate(34567);
     d.setType(EstimateType.SPECIES_EXTINCT);
     d.setReferenceId(ref.getId());
-    d.setNote("I cannot remember why I did this.");
+    d.setRemarks("I cannot remember why I did this.");
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(d.getCreatedBy());
     return d;
@@ -54,7 +54,7 @@ public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, 
   
   @Override
   void updateTestObj(SpeciesEstimate obj) {
-    obj.setNote("My next note");
+    obj.setRemarks("My next note");
     obj.setEstimate(1289);
   }
   
