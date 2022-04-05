@@ -56,6 +56,8 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private int sCounter = 0;
   private int tCounter = 0;
   private final Usage target;
+  private String lastParentID;
+  private final List<NameUsageBase> lastUsages = new ArrayList<>();
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
   private final Map<String, Usage> ids = new HashMap<>();
   private final Map<String, String> refIds = new HashMap<>();
@@ -101,6 +103,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   }
 
   public void reset() {
+    processLast();
     ids.clear();
   }
 
@@ -274,10 +277,11 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
           continue;
         }
         // did we sync the name before in the same sector?
-        parent = findInSector(rnn);
-        if (parent != null) {
+        var existing = findInSector(rnn);
+        if (existing != null) {
           LOG.debug("Found implicit {} {} in sector {}", r, origName.getScientificName(), sector);
-          implicits.put(rnn, parent);
+          parent = existing;
+          implicits.put(rnn, existing);
           continue;
         }
         // finally, create missing implicit name
@@ -321,6 +325,22 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
 
   @Override
   public void accept(NameUsageBase u) {
+    // We buffer all children of a given parentID and sort them by rank before we pass them on to the handler
+    if (!Objects.equals(lastParentID, u.getParentId())) {
+      processLast();
+      lastParentID = u.getParentId();
+    }
+    lastUsages.add(u);
+  }
+
+  private void processLast() {
+    // sort by rank, then process
+    lastUsages.sort(Comparator.comparing(NameUsage::getRank));
+    lastUsages.forEach(this::process);
+    lastUsages.clear();
+  }
+
+  private void process(NameUsageBase u) {
     u.setSectorKey(sector.getId());
     u.getName().setSectorKey(sector.getId());
     // before we apply a specific decision
@@ -565,6 +585,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   
   @Override
   public void close() {
+    processLast();
     session.commit();
     session.close();
     batchSession.commit();

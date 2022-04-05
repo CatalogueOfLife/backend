@@ -500,9 +500,6 @@
     <if test="depthFirst">
       ORDER BY x.path
     </if>
-    <if test="!depthFirst">
-      ORDER BY x.n_rank
-    </if>
   </select>
 
   <select id="foreignChildren" resultMap="simpleResultMap">

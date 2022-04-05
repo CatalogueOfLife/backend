@@ -1,0 +1,7 @@
+ID	parentID	rank	scientificName	authorship
+f		family	Acoraceae	
+g	f	genus	Acorus	L.
+1	g	species	Acorus calamus	L.
+2	g	species	Acorus gramineus	Aiton
+3	g	variety	Acorus calamus var. americanus	Raf.
+4	g		Acorus calamus var. angustatus	Besser
