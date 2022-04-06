@@ -268,8 +268,9 @@
   <select id="listByNamesIndexIDGlobal" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM_NIDX"/>
+      LEFT JOIN dataset d ON d.key=nm.dataset_key
     WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
-    ORDER BY ni.id, nm.dataset_key, u.id
+    ORDER BY ni.id, d.title, u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 

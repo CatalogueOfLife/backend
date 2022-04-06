@@ -16,6 +16,7 @@ import static org.gbif.nameparser.api.NomCode.*;
  * @see <a href="http://www1.biologie.uni-hamburg.de/b-online/library/tennessee/nom-type.htm">GLOSSARY OF "TYPE" TERMINOLOGY</a>
  * @see <a href="https://micropal-basel.unibas.ch/Colls_NMB/GENERALS/COMTYPES.HTML">Compendium of Types</a>
  * @see <a href="http://mailman.nhm.ku.edu/pipermail/taxacom/2000-November/084885.html">Taxacom discussion, Roger J. Burkhalter based on C.E. Decker DEFINITIONS OF KINDS OF TYPE SPECIMENS (F.B. Horrell in Geological Society of America Bulletin, Vol. 49,1929, p, 219)</a>
+ * @see <a href="https://rdoc.taxonworks.org/TypeMaterial.html">TaxonWorks</a> which includes only the code governed values. A more restrictive but clearer path?
  *
  */
 public enum TypeStatus {

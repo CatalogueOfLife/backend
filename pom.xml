@@ -56,7 +56,7 @@
     <commons-compress.version>1.19</commons-compress.version>
     <commons-io.version>2.11.0</commons-io.version>
     <dropwizard.version>2.0.28</dropwizard.version>
-    <dwc-api.version>1.36-SNAPSHOT</dwc-api.version>
+    <dwc-api.version>1.36</dwc-api.version>
     <dwca-io.version>2.11</dwca-io.version>
     <elasticsearch.version>8.1.1</elasticsearch.version>
     <fastutil.version>8.5.6</fastutil.version>
