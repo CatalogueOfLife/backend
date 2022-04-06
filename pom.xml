@@ -86,7 +86,7 @@
     <name-parser.version>3.7.2-SNAPSHOT</name-parser.version>
     <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
     <neo4j.version>3.4.17</neo4j.version>
-    <newick-io.version>1.0-SNAPSHOT</newick-io.version>
+    <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.1.0</poi.version>
     <postgresql.version>42.3.3</postgresql.version>
     <scribejava.version>8.3.1</scribejava.version>

@@ -20,8 +20,10 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.*;
@@ -43,9 +45,12 @@ import de.undercouch.citeproc.csl.CSLType;
 public class VocabResource {
   
   private static final Logger LOG = LoggerFactory.getLogger(VocabResource.class);
+  private static final Map<Class<? extends Enum>, Set<String>> ignoreFields = Map.of(
+    Rank.class, Set.of("speciesOrBelow", "genusOrSuprageneric", "infrageneric", "infragenericStrictly", "infrasubspecific", "cultivarRank")
+  );
   private final Map<String, Class<Enum>> vocabs;
   private final List<String> vocabNames;
-  
+
   public VocabResource() {
     LOG.info("Scan for available vocabularies");
     Map<String, Class<Enum>> enums = Maps.newHashMap();
@@ -244,12 +249,27 @@ public class VocabResource {
   }
 
   private static Map<String, Object> enumFields(Enum entry) {
-    Map<String, Object> map = new HashMap<>();
+    Map<String, Object> map = new TreeMap<>();
     try {
+      final Pattern GETTER_NAME = Pattern.compile("^(?:is|get|has)([A-Z])(.+)");
+      for (var m : entry.getDeclaringClass().getDeclaredMethods()) {
+        var matcher = GETTER_NAME.matcher(m.getName());
+        if (!m.isSynthetic() && m.getParameterCount()==0 && matcher.find()) {
+          final String name = matcher.group(1).toLowerCase() + matcher.group(2);
+          Object val = m.invoke(entry);
+          if (val != null) {
+            if (val instanceof Class) {
+              Class<?> cl = (Class<?>) val;
+              val = cl.getSimpleName();
+            }
+          }
+          map.put(name, val);
+        }
+      }
+
       for (Field f : entry.getDeclaringClass().getDeclaredFields()) {
         if (!f.isEnumConstant() && !Modifier.isStatic(f.getModifiers()) && !f.getName().equals("$VALUES")) {
-          Object val = null;
-            val = FieldUtils.readField(f, entry, true);
+          Object val = FieldUtils.readField(f, entry, true);
           if (val != null) {
             if (val instanceof Class) {
               Class<?> cl = (Class<?>) val;
@@ -259,7 +279,11 @@ public class VocabResource {
           map.put(f.getName(), val);
         }
       }
-    } catch (IllegalAccessException e) {
+
+      if (ignoreFields.containsKey(entry.getClass())) {
+        ignoreFields.get(entry.getClass()).forEach(map::remove);
+      }
+    } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
     map.put("name", PermissiveEnumSerde.enumValueName(entry));

@@ -122,7 +122,7 @@ public class NameIndexImpl implements NameIndex {
   }
 
   /**
-   * Normalize to just a few rank buckets:
+   * Strong normaliztion to just a few rank buckets:
    *
    * SUPRAGENERIC_NAME for anything above the family group, maybe label as "SUPRAFAMILY" in UI)
    * FAMILY for any family group monomials MEGAFAMILY-INFRATRIBE
@@ -131,7 +131,7 @@ public class NameIndexImpl implements NameIndex {
    * SUBSPECIES for trinomials INFRASPECIFIC_NAME-STRAIN
    * UNRANKED
    */
-  public static Rank normRank(Rank r) {
+  public static Rank normCanonicalRank(Rank r) {
     if (r == null || r.otherOrUnranked()) {
       return Rank.UNRANKED;
 
@@ -152,6 +152,16 @@ public class NameIndexImpl implements NameIndex {
     }
     // should never reach here
     throw new IllegalArgumentException("Unknown rank " + r);
+  }
+
+  /**
+   * Very weak normalisation of ranks, mapping only null and uncomparable ranks to unranked.
+   */
+  public static Rank normRank(Rank r) {
+    if (r == null || r.otherOrUnranked() || r.isUncomparable()) {
+      return Rank.UNRANKED;
+    }
+    return r;
   }
 
   /**
@@ -405,7 +415,7 @@ public class NameIndexImpl implements NameIndex {
     if (r1 == null || r1 == Rank.UNRANKED ||
         r2 == null || r2 == Rank.UNRANKED) return true;
     
-    // allow all suprageneric ranks to match
+    // for suprageneric names
     if (r1.isSuprageneric() && r2.isSuprageneric()) {
       return true;
     }
