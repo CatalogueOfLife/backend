@@ -291,8 +291,9 @@ public class BasionymSorterTest {
         "Heliodoxa rubinoides aequatorialis (Gould, 1860)",
         "Androdon aequatorialis Gould, 1863",
         "Clementoron aequatorialis Gould, 1864",
-        // this one is 1 year apart so it matches the first recombination on top!
-        "Campylopterus largipennis aequatorialis Gould, 1861"
+      "Campylopterus largipennis aequatorialis Gould, 1861",
+        // this one has a palceholder year so it matches the first recombination on top!
+        "Campylopterus largipennis aequatorialis Gould, 1860"
     );
 
     Collection<BasionymGroup<Name>> groups = sorter.groupBasionyms(names);
@@ -300,7 +301,7 @@ public class BasionymSorterTest {
     assertEquals(1, groups.size());
     BasionymGroup<Name> bg = groups.iterator().next();
     assertEquals("aequatorialis", bg.getEpithet());
-    assertEquals("1861", bg.getBasionym().getCombinationAuthorship().getYear());
+    assertEquals("1860", bg.getBasionym().getCombinationAuthorship().getYear());
     assertEquals("aequatorialis", bg.getBasionym().getInfraspecificEpithet());
     assertEquals("Gould, 1860", bg.getAuthorship().toString());
   }

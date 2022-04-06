@@ -87,7 +87,7 @@ public class IdProviderIT {
         maxID.set(Math.max(val, maxID.get()));
       });
       // largest id issued is:
-      assertEquals("B6", IdConverter.LATIN29.encode(maxID.get()));
+      assertEquals("B5", IdConverter.LATIN29.encode(maxID.get()));
 
       // assert
       assertEquals(25, idm.countUsage(projectKey));
