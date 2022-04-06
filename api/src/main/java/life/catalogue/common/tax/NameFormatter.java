@@ -1,7 +1,7 @@
 package life.catalogue.common.tax;
 
 
-import life.catalogue.api.model.Name;
+import life.catalogue.api.model.FormattableName;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
@@ -34,7 +34,7 @@ public class NameFormatter {
    *
    * Uses name parts for parsed names, but the single scientificName field in case of unparsed names.
    */
-  public static String scientificName(Name n) {
+  public static String scientificName(FormattableName n) {
     // make sure this is a parsed name, otherwise just return prebuilt name
     if (!n.isParsed()) {
       return n.getScientificName();
@@ -48,14 +48,14 @@ public class NameFormatter {
   /**
    * The full concatenated authorship for parsed names including the sanctioning author.
    */
-  public static String authorship(Name n) {
+  public static String authorship(FormattableName n) {
     return authorship(n, true);
   }
 
   /**
    * The full concatenated authorship for parsed names including the sanctioning author.
    */
-  public static String authorship(Name n, boolean includeNotes) {
+  public static String authorship(FormattableName n, boolean includeNotes) {
     StringBuilder sb = new StringBuilder();
     if (n.hasBasionymAuthorship()) {
       sb.append("(");
@@ -84,6 +84,43 @@ public class NameFormatter {
     return sb.length() == 0 ? null : sb.toString();
   }
 
+  /**
+   * Builds a canonical name without authorship, rank or hybrid markers.
+   * It will be strictly a uni-, bi- or trinomial without any further additions apart from an optional cultivar epithet in which case
+   * the result can be a 4-parted name.
+   *
+   * Infrageneric names will be made uninomials without its embracing genus.
+   *
+   * If the name is inDetermined or unparsed the original scientificName will be returned.
+   */
+  public static String canonicalName(FormattableName n) {
+    if (n.isParsed() || !n.isIndetermined()) {
+      if (n.getUninomial() != null) {
+        return n.getUninomial();
+
+      } else if (n.isBinomial()) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(n.getGenus());
+        sb.append(" ");
+        sb.append(n.getSpecificEpithet());
+        if (n.getInfraspecificEpithet() != null) {
+          sb.append(" ");
+          sb.append(n.getInfraspecificEpithet());
+        }
+        if (n.getCultivarEpithet() != null) {
+          sb.append(" ");
+          sb.append(n.getCultivarEpithet());
+        }
+        return sb.toString();
+      }
+      // with or without genus - but not a binomial
+      if (n.getInfragenericEpithet() != null) {
+        return n.getInfragenericEpithet();
+      }
+    }
+    return n.getScientificName();
+  }
+
   public static String inItalics(String x) {
     return "<i>" + x + "</i>";
   }
@@ -91,7 +128,7 @@ public class NameFormatter {
   /**
    * build a scientific name without authorship from a parsed Name instance.
    */
-  private static StringBuilder buildScientificName(Name n) {
+  private static StringBuilder buildScientificName(FormattableName n) {
     StringBuilder sb = new StringBuilder();
 
     if (n.isCandidatus()) {
@@ -238,7 +275,7 @@ public class NameFormatter {
     return sb;
   }
 
-  private static StringBuilder appendInfraspecific(StringBuilder sb, Name n, boolean forceRankMarker) {
+  private static StringBuilder appendInfraspecific(StringBuilder sb, FormattableName n, boolean forceRankMarker) {
     // infraspecific part
     sb.append(' ');
     if (NamePart.INFRASPECIFIC == n.getNotho()) {
@@ -297,7 +334,7 @@ public class NameFormatter {
     return false;
   }
 
-  private static StringBuilder appendGenus(StringBuilder sb, Name n) {
+  private static StringBuilder appendGenus(StringBuilder sb, FormattableName n) {
     if (NamePart.GENERIC == n.getNotho()) {
       sb.append(HYBRID_MARKER)
         .append(" ");

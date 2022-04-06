@@ -433,7 +433,6 @@ public class NameIndexImplIT {
     setupMemory(true);
     addTestNames();
 
-    assertMatch(4, "Œnanthe 1771", Rank.GENUS);
     assertMatch(1, "Animalia", Rank.KINGDOM);
 
     assertMatch(22, "Rodentia", Rank.GENUS);
@@ -441,7 +440,7 @@ public class NameIndexImplIT {
     assertNoMatch("Rodenti", Rank.ORDER);
     
     assertMatch(23, "Rodentia Bowdich, 1821", Rank.ORDER);
-    assertMatch(23, "Rodentia Bowdich, 1221", Rank.ORDER);
+    assertMatch(23, "Rodentia Bowdich, 1?21", Rank.ORDER);
     assertMatch(23, "Rodentia Bowdich", Rank.ORDER);
     assertMatch(23, "Rodentia 1821", Rank.ORDER);
     assertMatch(23, "Rodentia Bow.", Rank.ORDER);
@@ -511,11 +510,13 @@ public class NameIndexImplIT {
     assertEquals(1, (int) names.get(0).getKey());
 
     assertMatch(5, "Drusilla zyrasoides", Rank.SPECIES);
-    assertMatch(7, "Myrmedonia (Zyras) alternans", Rank.SPECIES);
-    assertInsert( "Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
-    assertInsert( "Myrmedonia (Larus) alternans Cameron, 1925", Rank.SPECIES);
-  
-    assertEquals(20, ni.size());
+    assertMatch(7, MatchType.CANONICAL, "Myrmedonia (Zyras) alternans", Rank.SPECIES);
+    assertMatch(7, MatchType.CANONICAL, "Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
+    assertInsert("Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
+    assertInsert("Myrmedonia (Larus) alternans Cameron, 1925", Rank.SPECIES);
+    assertInsert("Myrmedonia alternans Krill, 1925", Rank.SPECIES);
+
+    assertEquals(19, ni.size());
   }
 
   static Name name(String name, Rank rank) {
@@ -553,18 +554,26 @@ public class NameIndexImplIT {
   }
 
   private NameMatch assertMatch(int key, String name, Rank rank) {
+    return assertMatch(key, null, name, rank);
+  }
+
+  private NameMatch assertMatch(int key, MatchType type, String name, Rank rank) {
     NameMatch m = match(name, rank);
     if (!m.hasMatch() || key != m.getName().getKey()) {
       System.err.println(m);
     }
     assertTrue("Expected single match but got none", m.hasMatch());
     assertEquals("Expected " + key + " but got " + m.getType(), key, (int) m.getName().getKey());
+    if (type != null) {
+      assertEquals("Expected " + type + " but got " + m.getType(), type, m.getType());
+    }
     return m;
   }
   
   private NameMatch assertInsert(String name, Rank rank) {
     NameMatch m = ni.match(name(name, rank), false, false);
-    assertEquals(MatchType.NONE, m.getType());
+    assertNotEquals(MatchType.EXACT, m.getType());
+    assertNotEquals(MatchType.VARIANT, m.getType());
     m = ni.match(name(name, rank), true, false);
     assertEquals(MatchType.EXACT, m.getType());
     return m;

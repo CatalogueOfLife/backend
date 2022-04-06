@@ -52,13 +52,13 @@ public class AuthorComparatorTest {
     
     p1.getCombinationAuthorship().setYear("1847");
     p2.getCombinationAuthorship().setYear("1877");
-    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+    assertEquals(Equality.DIFFERENT, comp.compare(p1, p2));
     
     p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("Carl von Linne"));
     ;
-    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+    assertEquals(Equality.DIFFERENT, comp.compare(p1, p2));
     
-    p2.getCombinationAuthorship().setYear("1847");
+    p2.getCombinationAuthorship().setYear("184?");
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
     
     
@@ -120,6 +120,7 @@ public class AuthorComparatorTest {
   
   @Test
   public void testCompareOptYear() throws Exception {
+    assertAuth("Pallas, 1771", Equality.DIFFERENT, "Pimbus, 1771");
     assertAuth("Pallas, 1771", Equality.EQUAL, "1771");
     assertAuth("Pallas, 1771", Equality.EQUAL, "Pallas");
     assertAuth("Pallas, 1771", Equality.DIFFERENT, "1778");
@@ -194,10 +195,11 @@ public class AuthorComparatorTest {
     
     assertAuth("Schultz-Bip", null, Equality.EQUAL, "Sch.Bip.", null);
     
-    assertAuth("Bruand", "1850", Equality.EQUAL, "Bruand", "1851");
+    assertAuth("Bruand", "1850", Equality.EQUAL, "Bruand", "1850");
+    assertAuth("Bruand", "1850", Equality.DIFFERENT, "Bruand", "1851");
     assertAuth("Bruand", "1850", Equality.DIFFERENT, null, "1998");
     assertAuth("Bruand", "1850", Equality.EQUAL, null, "1850");
-    assertAuth("Bruand", "1850", Equality.EQUAL, null, "1851");
+    assertAuth("Bruand", "1850", Equality.EQUAL, "Bruand", null);
     
     // https://github.com/gbif/checklistbank/issues/2
     assertAuth("L. f.", null, Equality.EQUAL, "L.", null);
@@ -248,7 +250,7 @@ public class AuthorComparatorTest {
     assertAuthStrict("K.Koch", null, true, "K. Koch", null);
     assertAuthStrict("A. Nelson", null, true, "A Nélson", null);
     assertAuthStrict("Colla", null, true, "Bertero ex Colla", null);
-    assertAuthStrict("Taczanowski & Berlepsch", "1885", true, "Berlepsch & Taczanowski", "1884");
+    assertAuthStrict("Taczanowski & Berlepsch", "1885", true, "Berlepsch & Taczanowski", "188?");
     
     assertAuthStrict("Oberholser", "1917", false, "Oberholser", "1919");
     assertAuthStrict("Gould", "1860", false, "Gould", "1862");

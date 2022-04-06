@@ -1,15 +1,14 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.jackson.IsEmptyFilter;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
-import life.catalogue.common.tax.SciNameNormalizer;
 
 import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.api.ParsedName;
 
 import java.net.URI;
 import java.util.List;
@@ -19,13 +18,9 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 
@@ -40,7 +35,7 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
  * The {@link #getAuthorship()} on the other hand contains the original value and is unaltered for parsed names.
  * It is only reconstructed for record that did not contain the authorship separately from the bare scientific name.
  */
-public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, LinneanName, ScientificName, Remarkable {
+public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, FormattableName, Remarkable {
 
   private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?( .+)?$");
   // matches only uninomials or binomials without any authorship
@@ -282,15 +277,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public String getScientificName() {
     return scientificName;
   }
-  
-  /**
-   * @return a normalized version of the scientific name useful for matching.
-   * Only used on db level from MyBatis
-   */
-  @JsonIgnore
-  public String getScientificNameNormalized() {
-    return SciNameNormalizer.normalize(scientificName);
-  }
+
 
   /**
    * WARN: avoid setting the cached scientificName for parsed names directly.
@@ -407,6 +394,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.basionymAuthorship = basionymAuthorship;
   }
   
+  @Override
   public String getSanctioningAuthor() {
     return sanctioningAuthor;
   }
@@ -501,6 +489,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     }
   }
   
+  @Override
   public String getCultivarEpithet() {
     return cultivarEpithet;
   }
@@ -509,6 +498,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.cultivarEpithet = cultivarEpithet;
   }
 
+  @Override
   @JsonInclude(value = JsonInclude.Include.NON_DEFAULT)
   public boolean isCandidatus() {
     return candidatus;
@@ -544,6 +534,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.type = type;
   }
 
+  @Override
   public String getNomenclaturalNote() {
     return nomenclaturalNote;
   }
@@ -552,75 +543,13 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.nomenclaturalNote = nomenclaturalNote;
   }
 
+  @Override
   public String getUnparsed() {
     return unparsed;
   }
 
   public void setUnparsed(String unparsed) {
     this.unparsed = unparsed;
-  }
-
-  /**
-   * @return the terminal epithet. Infraspecific epithet if existing, the species epithet or null
-   */
-  @JsonIgnore
-  public String getTerminalEpithet() {
-    return infraspecificEpithet == null ? specificEpithet : infraspecificEpithet;
-  }
-  
-  public String getEpithet(NamePart part) {
-    switch (part) {
-      case GENERIC:
-        return ObjectUtils.coalesce(getGenus(), getUninomial());
-      case INFRAGENERIC:
-        return getInfragenericEpithet();
-      case SPECIFIC:
-        return getSpecificEpithet();
-      case INFRASPECIFIC:
-        return getInfraspecificEpithet();
-    }
-    return null;
-  }
-
-  @JsonIgnore
-  public boolean isAutonym() {
-    return specificEpithet != null && specificEpithet.equals(infraspecificEpithet);
-  }
-  
-  /**
-   * @return true if the name is a bi- or trinomial with at least a genus and species epithet given.
-   */
-  @JsonIgnore
-  public boolean isBinomial() {
-    return genus != null && specificEpithet != null;
-  }
-  
-  /**
-   * @return true if the name is a trinomial with at least a genus, species and infraspecific
-   * epithet given.
-   */
-  @JsonIgnore
-  public boolean isTrinomial() {
-    return isBinomial() && infraspecificEpithet != null;
-  }
-  
-  @JsonIgnore
-  public boolean isIndetermined() {
-    return isParsed() && (
-        rank.isInfragenericStrictly() && infragenericEpithet == null && uninomial == null
-        || rank.isSpeciesOrBelow() && specificEpithet == null
-        || rank.isCultivarRank() && cultivarEpithet == null
-        || rank.isInfraspecific() && !rank.isCultivarRank() && infraspecificEpithet == null
-    );
-  }
-  
-  /**
-   * @return true if there is any parsed content
-   */
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  public boolean isParsed() {
-    return uninomial != null || genus != null || infragenericEpithet != null
-        || specificEpithet != null || infraspecificEpithet != null || cultivarEpithet != null;
   }
   
   /**
@@ -646,18 +575,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   @JsonIgnore
   public boolean isEmpty() {
     return scientificName == null && !isParsed();
-  }
-  
-  /**
-   * Lists all non empty atomized name parts for parsed names.
-   * Cultivar epithets, authorship and strains are excluded.
-   *
-   * @return all non null name parts
-   */
-  public List<String> nameParts() {
-    List<String> parts = Lists.newArrayList(uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet);
-    parts.removeIf(Objects::isNull);
-    return parts;
   }
 
   @JsonIgnore

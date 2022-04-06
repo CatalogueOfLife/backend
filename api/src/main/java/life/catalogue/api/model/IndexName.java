@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * All names with an authorship point also to their canonical authorless version.
  */
-public class IndexName extends DataEntity<Integer> implements LinneanName, ScientificName {
+public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   @JsonProperty("id")
   private Integer key;
@@ -228,7 +228,22 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   public String getCultivarEpithet() {
     return cultivarEpithet;
   }
-  
+
+  @Override
+  public boolean isCandidatus() {
+    return false;
+  }
+
+  @Override
+  public String getNomenclaturalNote() {
+    return null;
+  }
+
+  @Override
+  public String getUnparsed() {
+    return null;
+  }
+
   public void setCultivarEpithet(String cultivarEpithet) {
     this.cultivarEpithet = cultivarEpithet;
   }
@@ -239,7 +254,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   @JsonIgnore
   @Override
   public boolean hasAuthorship() {
-    return ScientificName.super.hasAuthorship() || authorship != null;
+    return FormattableName.super.hasAuthorship() || authorship != null;
   }
 
   /**

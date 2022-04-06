@@ -39,18 +39,16 @@ public class AuthorComparator {
   }
   
   /**
-   * Compares the authorteams and year of two names by first evaluating equivalence of the authors.
-   * Only if they appear to differ also a year comparison is done which can still yield an overall EQUAL in case years match.
+   * Compares the authorteams and year of two names.
+   * If given both the year and authorteam needs to match to yield an EQUAL.
    */
   public Equality compare(@Nullable Authorship a1, @Nullable Authorship a2) {
-    // compare authors first
-    Equality result = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP);
-    if (result != Equality.EQUAL) {
-      // if authors are not the same we allow a positive year comparison to override it as author comparison is very difficult
-      Equality yresult = new YearComparator(getIfNotNull(a1, Authorship::getYear), getIfNotNull(a2, Authorship::getYear)).compare();
-      if (yresult != Equality.UNKNOWN) {
-        result = yresult;
-      }
+    // compare year first - simpler to calculate
+    Equality result = new YearComparator(a1, a2).compare();
+    // compare authors if it's not already different
+    if (result != Equality.DIFFERENT) {
+      var aresult = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP);
+      return result.and(aresult);
     }
     return result;
   }

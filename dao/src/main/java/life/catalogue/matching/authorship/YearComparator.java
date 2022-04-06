@@ -8,17 +8,24 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.gbif.nameparser.api.Authorship;
+
 public class YearComparator {
   private static final Pattern YEAR = Pattern.compile("(^|[^0-9])([0-9?]{4})([^0-9]|$)");
   
   private String y1;
   private String y2;
-  
+
   public YearComparator(String y1, String y2) {
     this.y1 = normalizeYear(y1);
     this.y2 = normalizeYear(y2);
   }
-  
+
+  public YearComparator(Authorship a1, Authorship a2) {
+    this.y1 = normalizeYear(a1 == null ? null : a1.getYear());
+    this.y2 = normalizeYear(a2 == null ? null : a2.getYear());
+  }
+
   private String normalizeYear(String y) {
     if (y == null) return null;
     Matcher m = YEAR.matcher(StringUtils.deleteWhitespace(y));
@@ -67,11 +74,11 @@ public class YearComparator {
       if (y1.equals(y2)) {
         return Equality.EQUAL;
       }
-      // try to parse into ints and allow one year difference
+      // try to parse into ints and allow for no difference
       try {
         int yi1 = Integer.parseInt(y1);
         int yi2 = Integer.parseInt(y2);
-        if (Math.abs(yi1 - yi2) <= 1) {
+        if (yi1 == yi2) {
           return Equality.EQUAL;
         }
       } catch (NumberFormatException e) {
