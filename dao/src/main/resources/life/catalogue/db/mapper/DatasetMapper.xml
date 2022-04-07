@@ -287,7 +287,8 @@
     SELECT *
     FROM (
       SELECT DISTINCT ON (d.key) di.state, di.finished,
-      <include refid="SELECT"/>, (settings ->> 'import frequency')::int AS frequency
+      <include refid="SELECT"/>,
+      coalesce((d.settings ->> 'import frequency')::int, 7) AS frequency
       FROM dataset d
         LEFT JOIN dataset_import di ON di.dataset_key=d.key
         LEFT JOIN usage_count uc ON uc.dataset_key=d.key

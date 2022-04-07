@@ -110,15 +110,14 @@ public class ContinuousImporter implements ManagedExtended {
      */
     private List<Dataset> fetch() {
       // check never crawled datasets first
-      List<Dataset> datasets;
       try (SqlSession session = factory.openSession(true)) {
-        datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.continousImportBatchSize);
+        List<Dataset> datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.continousImportBatchSize);
         if (datasets.isEmpty()) {
           // now check for eligable datasets based on import frequency
           datasets = session.getMapper(DatasetMapper.class).listToBeImported(cfg.continousImportBatchSize);
         }
+        return datasets;
       }
-      return datasets;
     }
   }
 
