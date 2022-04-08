@@ -286,7 +286,7 @@ public class NameIndexImplIT {
 
     final List<Name> rawNames = List.of(n1, n2, n3, n4);
     final AtomicInteger counter = new AtomicInteger(0);
-    ExecutorService exec = Executors.newFixedThreadPool(12, new NamedThreadFactory("test-matcher"));
+    ExecutorService exec = Executors.newFixedThreadPool(52, new NamedThreadFactory("test-matcher"));
 
     final int repeat = 1000;
     StopWatch watch = StopWatch.createStarted();
@@ -316,6 +316,13 @@ public class NameIndexImplIT {
     ExecutorUtils.shutdown(exec);
     watch.stop();
     System.out.println(watch);
+
+    System.out.println("Names Index from memory:");
+    ni.all().forEach(System.out::println);
+    System.out.println("\nNames Index from postgres:");
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(NamesIndexMapper.class).processAll().forEach(System.out::println);
+    }
 
     assertEquals(repeat, counter.get());
     assertEquals(2, ni.size());
