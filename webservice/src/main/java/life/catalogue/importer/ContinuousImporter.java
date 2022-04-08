@@ -4,6 +4,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.config.ContinuousImportConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 
@@ -37,11 +38,11 @@ public class ContinuousImporter implements ManagedExtended {
   
   private Thread thread;
   private ImportManager manager;
-  private ImporterConfig cfg;
+  private ContinuousImportConfig cfg;
   private SqlSessionFactory factory;
   private ContinousImporterJob job;
   
-  public ContinuousImporter(ImporterConfig cfg, ImportManager manager, SqlSessionFactory factory) {
+  public ContinuousImporter(ContinuousImportConfig cfg, ImportManager manager, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.manager = manager;
     this.factory = factory;
@@ -50,16 +51,16 @@ public class ContinuousImporter implements ManagedExtended {
   static class ContinousImporterJob implements Runnable {
     private final SqlSessionFactory factory;
     private final ImportManager manager;
-    private final ImporterConfig cfg;
+    private final ContinuousImportConfig cfg;
     private volatile boolean running = true;
     
-    public ContinousImporterJob(ImporterConfig cfg, ImportManager manager, SqlSessionFactory factory) {
+    public ContinousImporterJob(ContinuousImportConfig cfg, ImportManager manager, SqlSessionFactory factory) {
       this.manager = manager;
       this.factory = factory;
       this.cfg = cfg;
-      if (cfg.maxQueue < cfg.continuous.batchSize) {
-        LOG.warn("Importer queue is shorter ({}) than the batch size ({}) to submit. Reduce batches to half the queue size!", cfg.maxQueue, cfg.continuous.batchSize);
-        cfg.continuous.batchSize = (cfg.maxQueue / 2);
+      if (cfg.queueSize < cfg.batchSize) {
+        LOG.warn("Importer queue is shorter ({}) than the batch size ({}) to submit. Reduce batches to half the queue size!", cfg.queueSize, cfg.batchSize);
+        cfg.batchSize = (cfg.queueSize / 2);
       }
     }
     
@@ -74,12 +75,12 @@ public class ContinuousImporter implements ManagedExtended {
       while (running) {
         try {
           while (!manager.hasStarted()) {
-            LOG.debug("Importer not started, sleep for {} minutes", cfg.continuous.polling);
-            TimeUnit.MINUTES.sleep(cfg.continuous.polling);
+            LOG.debug("Importer not started, sleep for {} minutes", cfg.polling);
+            TimeUnit.MINUTES.sleep(cfg.polling);
           }
-          while (manager.queueSize() > cfg.continuous.queueSize) {
-            LOG.debug("Importer busy, sleep for {} minutes", cfg.continuous.polling);
-            TimeUnit.MINUTES.sleep(cfg.continuous.polling);
+          while (manager.queueSize() > cfg.queueSize) {
+            LOG.debug("Importer busy, sleep for {} minutes", cfg.polling);
+            TimeUnit.MINUTES.sleep(cfg.polling);
           }
           List<Dataset> datasets = fetch();
           if (datasets.isEmpty()) {
@@ -114,10 +115,10 @@ public class ContinuousImporter implements ManagedExtended {
     private List<Dataset> fetch() {
       // check never crawled datasets first
       try (SqlSession session = factory.openSession(true)) {
-        List<Dataset> datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.continuous.batchSize);
+        List<Dataset> datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.batchSize);
         if (datasets.isEmpty()) {
           // now check for eligable datasets based on import frequency
-          datasets = session.getMapper(DatasetMapper.class).listToBeImported(cfg.continuous.defaultFrequency, cfg.continuous.batchSize);
+          datasets = session.getMapper(DatasetMapper.class).listToBeImported(cfg.defaultFrequency, cfg.batchSize);
         }
         return datasets;
       }
@@ -131,12 +132,12 @@ public class ContinuousImporter implements ManagedExtended {
   
   @Override
   public void start() throws Exception {
-    if (cfg.continuous.polling > 0) {
+    if (cfg.polling > 0) {
       LOG.info("Enable continuous importing");
       job = new ContinousImporterJob(cfg, manager, factory);
       thread = new Thread(job, THREAD_NAME);
       LOG.info("Start continuous importing with maxQueue={}, polling every {} minutes",
-          job.cfg.maxQueue, job.cfg.continuous.polling
+          job.cfg.queueSize, job.cfg.polling
       );
       thread.start();
     
