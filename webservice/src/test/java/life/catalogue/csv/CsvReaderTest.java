@@ -2,6 +2,8 @@ package life.catalogue.csv;
 
 import life.catalogue.api.model.VerbatimRecord;
 
+import life.catalogue.common.io.Resources;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.utils.file.FileUtils;
 
@@ -50,7 +52,16 @@ public class CsvReaderTest {
     });
     assertEquals(3, counter.get());
   }
-  
+
+  @Test
+  public void html() throws Exception {
+    var lines = FileUtils.streamToList(Resources.stream("csv/doctype.html"));
+    assertTrue(CsvReader.containsNonTabularData(lines));
+
+    lines = FileUtils.streamToList(Resources.stream("csv/15-CommonNames.txt"));
+    assertFalse(CsvReader.containsNonTabularData(lines));
+  }
+
   @Test
   public void corruptFiles() throws Exception {
     CsvReader reader = CsvReader.from(FileUtils.getClasspathFile("acef/corrupt").toPath());

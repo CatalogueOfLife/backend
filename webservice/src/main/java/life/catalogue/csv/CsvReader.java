@@ -370,8 +370,11 @@ public class CsvReader {
 
         if (lines.size() < 2) {
           // first line MUST be a header row...
-          LOG.warn("{} contains no data", PathUtils.getFilename(df));
-          
+          LOG.info("{} contains no data", PathUtils.getFilename(df));
+
+        } else if (containsNonTabularData(lines)) {
+          LOG.info("{} contains no tabular data", PathUtils.getFilename(df));
+
         } else {
           CsvParserSettings set = discoverFormat(lines);
           
@@ -381,7 +384,7 @@ public class CsvReader {
           parser.stopParsing();
           
           if (header == null) {
-            LOG.warn("{} contains no data", PathUtils.getFilename(df));
+            LOG.info("{} contains no data", PathUtils.getFilename(df));
             
           } else {
             int idx = 0;
@@ -436,7 +439,19 @@ public class CsvReader {
     }
     return null;
   }
-  
+
+  @VisibleForTesting
+  static boolean containsNonTabularData(List<String> lines) {
+    // we often see html as bad server responses or xml
+    for (String l : lines) {
+      l = l.toLowerCase(); // doctype declaration is case insensitive
+      if (l.contains("<!doctype ") || l.contains("<html>")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   protected Optional<Term> detectRowType(Schema schema, String termPrefix) {
     String fn = PathUtils.getBasename(schema.file);
     // special treatment for archives which are just one CSV file - the filename does not matter in this case!

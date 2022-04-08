@@ -196,8 +196,13 @@ public class ImportJob implements Runnable {
         setFormat(proxy.format);
       } else {
         // download archive directly
-        LOG.info("Downloading source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), source);
-        downloader.downloadIfModified(di.getDownloadUri(), source);
+        if (req.force) {
+          LOG.info("Force download of source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), source);
+          downloader.download(di.getDownloadUri(), source);
+        } else {
+          LOG.info("Download source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), source);
+          downloader.downloadIfModified(di.getDownloadUri(), source);
+        }
       }
 
     } else {
