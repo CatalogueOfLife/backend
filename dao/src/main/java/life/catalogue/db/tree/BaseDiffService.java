@@ -1,6 +1,7 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.ImportAttempt;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -170,14 +171,20 @@ public abstract class BaseDiffService<K> {
       pb.redirectOutput(tmp);
 
       Process ps = pb.start();
+      boolean timeout = false;
       // limit to 10s, see https://stackoverflow.com/questions/37043114/how-to-stop-a-command-being-executed-after-4-5-seconds-through-process-builder/37065167#37065167
       if (!ps.waitFor(timeoutInSeconds, TimeUnit.SECONDS)) {
-        LOG.warn("Diff between {} and {} has timed out after {}s", f1.getName(), f2.getName(), timeoutInSeconds);
+        LOG.error("Diff between {} and {} has timed out after {}s", f1.getName(), f2.getName(), timeoutInSeconds);
         ps.destroy(); // make sure we leave no process behind
+        timeout=true;
       }
       int status = ps.waitFor();
       if (status != 0) {
         String error = InputStreamUtils.readEntireStream(ps.getErrorStream());
+        if (timeout) {
+          LOG.warn("Unix diff failed with status {}: {}", status, error);
+          throw new UnavailableException("The requested diff timed out. Consider to narrow down your comparison to not overload the server");
+        }
         throw new RuntimeException("Unix diff failed with status " + status + ": " + error);
       }
       return UTF8IoUtils.readerFromFile(tmp);
