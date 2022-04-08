@@ -110,6 +110,9 @@ public class ImportManager implements ManagedExtended {
    * Lists the ImportRequests of the current queue
    */
   public List<ImportRequest> queue() {
+    if (!hasStarted()) {
+      return Collections.emptyList();
+    }
     return exec.getQueue()
         .stream()
         .map(ImportJob::getRequest)
@@ -117,6 +120,9 @@ public class ImportManager implements ManagedExtended {
   }
 
   public int queueSize() {
+    if (!hasStarted()) {
+      return 0;
+    }
     return exec.queueSize();
   }
 
@@ -200,7 +206,7 @@ public class ImportManager implements ManagedExtended {
     running.sort(DI_STARTED_COMPARATOR);
 
     // then add the priority queue from the executor, filtered for queued imports only keeping the queues priority order
-    if (exec != null) {
+    if (hasStarted()) {
       running.addAll(
           exec.getQueue()
               .stream()
