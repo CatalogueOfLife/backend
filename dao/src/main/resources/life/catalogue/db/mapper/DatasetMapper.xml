@@ -152,6 +152,10 @@
     <collection property="source" ofType="Citation" column="{datasetKey=key}" select="life.catalogue.db.mapper.CitationMapper.list" />
   </resultMap>
 
+  <resultMap id="datasetDIResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetDI" autoMapping="true" extends="datasetResultMap">
+    <id property="key" column="key"/>
+  </resultMap>
+
   <resultMap id="settingsResultMap" type="DatasetSettings" autoMapping="false">
     <id column="key"/>
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.SettingsTypeHandler"/>
@@ -283,7 +287,7 @@
     LIMIT #{limit}
   </select>
 
-  <select id="listToBeImported" resultMap="datasetResultMap">
+  <select id="listToBeImported" resultMap="datasetDIResultMap">
     SELECT *
     FROM (
       SELECT DISTINCT ON (d.key) di.state, di.finished,

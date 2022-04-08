@@ -389,10 +389,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     }
     commit();
 
-    List<Dataset> tobe = mapper().listToBeImported(3, 7);
+    List<DatasetMapper.DatasetDI> tobe = mapper().listToBeImported(3, 7);
     assertEquals(0, tobe.size());
 
-    List<Dataset> never = mapper().listNeverImported(3);
+    List<DatasetMapper.DatasetDI> never = mapper().listNeverImported(3);
     assertEquals(3, never.size());
 
     // we only have 3 with URLs

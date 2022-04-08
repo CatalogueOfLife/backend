@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -82,20 +83,14 @@ public class ContinuousImporter implements ManagedExtended {
             LOG.debug("Importer busy, sleep for {} minutes", cfg.polling);
             TimeUnit.MINUTES.sleep(cfg.polling);
           }
-          List<Dataset> datasets = fetch();
+          List<DatasetMapper.DatasetDI> datasets = fetch();
           if (datasets.isEmpty()) {
             LOG.debug("No datasets eligable to be imported. Sleep for {} hour", WAIT_TIME_IN_HOURS);
             TimeUnit.HOURS.sleep(WAIT_TIME_IN_HOURS);
             
           } else {
             LOG.info("Trying to schedule {} dataset imports", datasets.size());
-            for (Dataset d : datasets) {
-              try {
-                manager.submit(new ImportRequest(d.getKey(), Users.IMPORTER, false, false, false));
-              } catch (IllegalArgumentException e) {
-                LOG.warn("Failed to schedule dataset import {}: {}", d.getKey(), d.getTitle(), e);
-              }
-            }
+            datasets.forEach(this::scheduleImport);
           }
         } catch (InterruptedException e) {
           LOG.info("Interrupted continuous importing. Stop");
@@ -108,14 +103,26 @@ public class ContinuousImporter implements ManagedExtended {
       }
       MDC.remove(LoggingUtils.MDC_KEY_TASK);
     }
-    
+
+    private void scheduleImport(DatasetMapper.DatasetDI d) {
+      boolean force = d.getState() == ImportState.FAILED;
+      try {
+        if (force) {
+          LOG.info("Schedule a forced import of dataset {} which failed the last time on {}: {}", d.getFinished() ,d.getKey(), d.getTitle());
+        }
+        manager.submit(new ImportRequest(d.getKey(), Users.IMPORTER, force, false, false));
+      } catch (IllegalArgumentException e) {
+        LOG.warn("Failed to schedule a {}dataset import {}: {}", force? "forced ":"", d.getKey(), d.getTitle(), e);
+      }
+    }
+
     /**
      * Find the next batch of datasets eligable for importing
      */
-    private List<Dataset> fetch() {
+    private List<DatasetMapper.DatasetDI> fetch() {
       // check never crawled datasets first
       try (SqlSession session = factory.openSession(true)) {
-        List<Dataset> datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.batchSize);
+        List<DatasetMapper.DatasetDI> datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.batchSize);
         if (datasets.isEmpty()) {
           // now check for eligable datasets based on import frequency
           datasets = session.getMapper(DatasetMapper.class).listToBeImported(cfg.defaultFrequency, cfg.batchSize);

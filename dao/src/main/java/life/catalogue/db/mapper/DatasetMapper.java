@@ -6,9 +6,11 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -104,7 +106,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    *
    * @param limit maximum of datasets to return
    */
-  List<Dataset> listNeverImported(@Param("limit") int limit);
+  List<DatasetDI> listNeverImported(@Param("limit") int limit);
 
   /**
    * list datasets which have already been imported before, but need a refresh. The dataset.importFrequency is respected for rescheduling an
@@ -114,7 +116,28 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @param limit maximum of datasets to return
    * @param defaultFrequency number in days to between import attempts when no explicit frequency is configured
    */
-  List<Dataset> listToBeImported(@Param("defaultFrequency") int defaultFrequency, @Param("limit") int limit);
+  List<DatasetDI> listToBeImported(@Param("defaultFrequency") int defaultFrequency, @Param("limit") int limit);
+
+  class DatasetDI extends Dataset {
+    private ImportState state;
+    private LocalDateTime finished;
+
+    public ImportState getState() {
+      return state;
+    }
+
+    public void setState(ImportState state) {
+      this.state = state;
+    }
+
+    public LocalDateTime getFinished() {
+      return finished;
+    }
+
+    public void setFinished(LocalDateTime finished) {
+      this.finished = finished;
+    }
+  }
 
   /**
    * @return true if dataset exists and is not deleted
