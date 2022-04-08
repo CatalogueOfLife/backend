@@ -87,13 +87,12 @@ public class ContinuousImporter implements ManagedExtended {
             TimeUnit.HOURS.sleep(WAIT_TIME_IN_HOURS);
             
           } else {
+            LOG.info("Trying to schedule {} dataset imports", datasets.size());
             for (Dataset d : datasets) {
-              if (!d.hasDeletedDate()) {
-                try {
-                  manager.submit(new ImportRequest(d.getKey(), Users.IMPORTER, false, false, false));
-                } catch (IllegalArgumentException e) {
-                  // ignore
-                }
+              try {
+                manager.submit(new ImportRequest(d.getKey(), Users.IMPORTER, false, false, false));
+              } catch (IllegalArgumentException e) {
+                LOG.warn("Failed to schedule dataset import {}: {}", d.getKey(), d.getTitle(), e);
               }
             }
           }
