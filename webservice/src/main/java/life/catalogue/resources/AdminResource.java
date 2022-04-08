@@ -170,9 +170,9 @@ public class AdminResource {
     }
     
     if (s.scheduler != null && curr.scheduler != s.scheduler) {
-      if (cfg.importer.continousImportPolling < 1) {
+      if (cfg.importer.continuous.polling < 1) {
         // we configured the server with no polling, give it a reasonable default
-        cfg.importer.continousImportPolling = 10;
+        cfg.importer.continuous.polling = 10;
       }
       LOG.info("Set continuous importer to active={}", s.scheduler);
       startStopManaged(continuousImporter, s.scheduler);

@@ -60,7 +60,7 @@ public class ImportManagerDebugging {
   private static WsServerConfig provideConfig() {
     WsServerConfig cfg = new WsServerConfig();
     cfg.gbif.syncFrequency = 0;
-    cfg.importer.continousImportPolling = 0;
+    cfg.importer.continuous.polling = 0;
     cfg.importer.threads = 3;
     cfg.normalizer.archiveDir = Files.createTempDir();
     cfg.normalizer.scratchDir = Files.createTempDir();

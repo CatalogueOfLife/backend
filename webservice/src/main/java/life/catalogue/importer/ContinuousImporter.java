@@ -57,9 +57,9 @@ public class ContinuousImporter implements ManagedExtended {
       this.manager = manager;
       this.factory = factory;
       this.cfg = cfg;
-      if (cfg.maxQueue < cfg.continousImportBatchSize) {
-        LOG.warn("Importer queue is shorter ({}) than the batch size ({}) to submit. Reduce batches to half the queue size!", cfg.maxQueue, cfg.continousImportBatchSize);
-        cfg.continousImportBatchSize = (cfg.maxQueue / 2);
+      if (cfg.maxQueue < cfg.continuous.batchSize) {
+        LOG.warn("Importer queue is shorter ({}) than the batch size ({}) to submit. Reduce batches to half the queue size!", cfg.maxQueue, cfg.continuous.batchSize);
+        cfg.continuous.batchSize = (cfg.maxQueue / 2);
       }
     }
     
@@ -74,12 +74,12 @@ public class ContinuousImporter implements ManagedExtended {
       while (running) {
         try {
           while (!manager.hasStarted()) {
-            LOG.debug("Importer not started, sleep for {} minutes", cfg.continousImportPolling);
-            TimeUnit.MINUTES.sleep(cfg.continousImportPolling);
+            LOG.debug("Importer not started, sleep for {} minutes", cfg.continuous.polling);
+            TimeUnit.MINUTES.sleep(cfg.continuous.polling);
           }
-          while (manager.queueSize() > cfg.continousImportMinSize) {
-            LOG.debug("Importer busy, sleep for {} minutes", cfg.continousImportPolling);
-            TimeUnit.MINUTES.sleep(cfg.continousImportPolling);
+          while (manager.queueSize() > cfg.continuous.queueSize) {
+            LOG.debug("Importer busy, sleep for {} minutes", cfg.continuous.polling);
+            TimeUnit.MINUTES.sleep(cfg.continuous.polling);
           }
           List<Dataset> datasets = fetch();
           if (datasets.isEmpty()) {
@@ -114,10 +114,10 @@ public class ContinuousImporter implements ManagedExtended {
     private List<Dataset> fetch() {
       // check never crawled datasets first
       try (SqlSession session = factory.openSession(true)) {
-        List<Dataset> datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.continousImportBatchSize);
+        List<Dataset> datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.continuous.batchSize);
         if (datasets.isEmpty()) {
           // now check for eligable datasets based on import frequency
-          datasets = session.getMapper(DatasetMapper.class).listToBeImported(cfg.continousImportBatchSize);
+          datasets = session.getMapper(DatasetMapper.class).listToBeImported(cfg.continuous.defaultFrequency, cfg.continuous.batchSize);
         }
         return datasets;
       }
@@ -131,12 +131,12 @@ public class ContinuousImporter implements ManagedExtended {
   
   @Override
   public void start() throws Exception {
-    if (cfg.continousImportPolling > 0) {
+    if (cfg.continuous.polling > 0) {
       LOG.info("Enable continuous importing");
       job = new ContinousImporterJob(cfg, manager, factory);
       thread = new Thread(job, THREAD_NAME);
       LOG.info("Start continuous importing with maxQueue={}, polling every {} minutes",
-          job.cfg.maxQueue, job.cfg.continousImportPolling
+          job.cfg.maxQueue, job.cfg.continuous.polling
       );
       thread.start();
     

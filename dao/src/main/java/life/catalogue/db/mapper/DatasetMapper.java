@@ -112,8 +112,9 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * Includes private datasets.
    *
    * @param limit maximum of datasets to return
+   * @param defaultFrequency number in days to between import attempts when no explicit frequency is configured
    */
-  List<Dataset> listToBeImported(@Param("limit") int limit);
+  List<Dataset> listToBeImported(@Param("defaultFrequency") int defaultFrequency, @Param("limit") int limit);
 
   /**
    * @return true if dataset exists and is not deleted

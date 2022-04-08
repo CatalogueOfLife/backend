@@ -69,7 +69,7 @@ public class ImportJobIT {
   private static WsServerConfig provideConfig() {
     WsServerConfig cfg = new WsServerConfig();
     cfg.gbif.syncFrequency = 0;
-    cfg.importer.continousImportPolling = 0;
+    cfg.importer.continuous.polling = 0;
     cfg.importer.threads = 2;
     // wait for half a minute before completing an import to run assertions
     cfg.importer.wait = 30;
