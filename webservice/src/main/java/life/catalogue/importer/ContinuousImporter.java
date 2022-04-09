@@ -1,6 +1,5 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.util.LoggingUtils;
@@ -20,8 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import io.dropwizard.lifecycle.Managed;
-
 
 /**
  * A scheduler for new import jobs that runs continuously in the background
@@ -39,11 +36,11 @@ public class ContinuousImporter implements ManagedExtended {
   
   private Thread thread;
   private ImportManager manager;
-  private ContinuousImportConfig cfg;
+  private ImporterConfig cfg;
   private SqlSessionFactory factory;
   private ContinousImporterJob job;
   
-  public ContinuousImporter(ContinuousImportConfig cfg, ImportManager manager, SqlSessionFactory factory) {
+  public ContinuousImporter(ImporterConfig cfg, ImportManager manager, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.manager = manager;
     this.factory = factory;
@@ -55,13 +52,13 @@ public class ContinuousImporter implements ManagedExtended {
     private final ContinuousImportConfig cfg;
     private volatile boolean running = true;
     
-    public ContinousImporterJob(ContinuousImportConfig cfg, ImportManager manager, SqlSessionFactory factory) {
+    public ContinousImporterJob(ImporterConfig cfg, ImportManager manager, SqlSessionFactory factory) {
       this.manager = manager;
       this.factory = factory;
-      this.cfg = cfg;
-      if (cfg.queueSize < cfg.batchSize) {
-        LOG.warn("Importer queue is shorter ({}) than the batch size ({}) to submit. Reduce batches to half the queue size!", cfg.queueSize, cfg.batchSize);
-        cfg.batchSize = (cfg.queueSize / 2);
+      this.cfg = cfg.continuous;
+      if (cfg.maxQueue < cfg.batchSize) {
+        LOG.warn("Importer queue is shorter ({}) than the batch size ({}) to submit. Reduce batches to half the queue size!", cfg.maxQueue, cfg.batchSize);
+        cfg.batchSize = (cfg.maxQueue / 2);
       }
     }
     
@@ -79,7 +76,7 @@ public class ContinuousImporter implements ManagedExtended {
             LOG.debug("Importer not started, sleep for {} minutes", cfg.polling);
             TimeUnit.MINUTES.sleep(cfg.polling);
           }
-          while (manager.queueSize() > cfg.queueSize) {
+          while (manager.queueSize() > cfg.threshold) {
             LOG.debug("Importer busy, sleep for {} minutes", cfg.polling);
             TimeUnit.MINUTES.sleep(cfg.polling);
           }
@@ -139,12 +136,12 @@ public class ContinuousImporter implements ManagedExtended {
   
   @Override
   public void start() throws Exception {
-    if (cfg.polling > 0) {
+    if (cfg.continuous.polling > 0) {
       LOG.info("Enable continuous importing");
       job = new ContinousImporterJob(cfg, manager, factory);
       thread = new Thread(job, THREAD_NAME);
       LOG.info("Start continuous importing with maxQueue={}, polling every {} minutes",
-          job.cfg.queueSize, job.cfg.polling
+          job.cfg.threshold, job.cfg.polling
       );
       thread.start();
     

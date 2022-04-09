@@ -17,7 +17,7 @@ public class ContinuousImportConfig {
    */
   @Min(0)
   @Max(100)
-  public int queueSize = 0;
+  public int threshold = 0;
 
   /**
    * The number of datasets to queue during one import poll.

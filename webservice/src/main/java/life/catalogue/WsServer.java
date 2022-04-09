@@ -327,7 +327,7 @@ public class WsServer extends Application<WsServerConfig> {
       validator
     );
     env.lifecycle().manage(ManagedUtils.stopOnly(importManager));
-    ContinuousImporter cImporter = new ContinuousImporter(cfg.importer.continuous, importManager, getSqlSessionFactory());
+    ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
     env.lifecycle().manage(ManagedUtils.stopOnly(cImporter));
 
     // gbif sync
