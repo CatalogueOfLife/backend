@@ -23,6 +23,7 @@ import life.catalogue.dw.ManagedExtended;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
+import life.catalogue.metadata.DoiResolver;
 import life.catalogue.release.ReleaseManager;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;
@@ -70,6 +71,7 @@ public class ImportManager implements ManagedExtended {
   private final Map<Integer, PBQThreadPoolExecutor.ComparableFutureTask> futures = new ConcurrentHashMap<>();
   private final WsServerConfig cfg;
   private final DownloadUtil downloader;
+  private final DoiResolver resolver;
   private final SqlSessionFactory factory;
   private final NameIndex index;
   private final NameUsageIndexService indexService;
@@ -85,10 +87,11 @@ public class ImportManager implements ManagedExtended {
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
       SqlSessionFactory factory, NameIndex index, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
-      NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager, Validator validator) {
+      NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager, Validator validator, DoiResolver resolver) {
     this.cfg = cfg;
     this.factory = factory;
     this.validator = validator;
+    this.resolver = resolver;
     this.releaseManager = releaseManager;
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken, cfg.importer.githubTokenGeoff);
     this.index = index;
@@ -443,16 +446,10 @@ public class ImportManager implements ManagedExtended {
         ds.remove(Setting.DATA_ACCESS);
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
-      ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, indexService, imgService, dDao, sDao, decisionDao,
-          new StartNotifier() {
-            @Override
-            public void started() {
-              req.start();
-            }
-          },
+      return new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, resolver, indexService, imgService, dDao, sDao, decisionDao,
+        () -> req.start(),
           this::successCallBack,
           this::errorCallBack);
-      return job;
     }
   }
 

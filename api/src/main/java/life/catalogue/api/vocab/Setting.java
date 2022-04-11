@@ -113,7 +113,12 @@ public enum Setting {
   /**
    * If set to true the dataset metadata is locked and the gbif registry sync will not be applied to the dataset.
    */
-  GBIF_SYNC_LOCK(Boolean.class, false, EXTERNAL);
+  GBIF_SYNC_LOCK(Boolean.class, false, EXTERNAL),
+
+  /**
+   * Defines wheter the importer makes use of Crossref to lookup DOI metadata.
+   */
+  DOI_RESOLUTION(DoiResolution.class, false);
 
   private final Class type;
   private final DatasetOrigin[] origin;

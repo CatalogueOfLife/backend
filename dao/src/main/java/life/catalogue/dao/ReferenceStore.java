@@ -1,4 +1,4 @@
-package life.catalogue.importer.reference;
+package life.catalogue.dao;
 
 import life.catalogue.api.model.Reference;
 

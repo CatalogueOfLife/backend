@@ -5,9 +5,9 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
-import life.catalogue.importer.reference.ReferenceFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -22,7 +22,7 @@ public class AcefInserterTest extends InserterBaseTest {
   
   @Override
   public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException  {
-    return new AcefInserter(store, resource, settings, new ReferenceFactory(store));
+    return new AcefInserter(store, resource, settings, refFactory);
   }
 
   @Test

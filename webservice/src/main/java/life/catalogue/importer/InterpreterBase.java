@@ -6,9 +6,9 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
@@ -66,6 +66,9 @@ public class InterpreterBase {
     } else {
       LOG.info("No dataset wide distribution standard found in settings");
       distributionStandard = null;
+    }
+    if (settings.has(Setting.DOI_RESOLUTION)) {
+      refFactory.setResolveDOIs(settings.getEnum(Setting.DOI_RESOLUTION));
     }
   }
   

@@ -6,6 +6,7 @@ import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.common.tax.RankUtils;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.acef.AcefInserter;
@@ -16,9 +17,9 @@ import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.NotUniqueRuntimeException;
 import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.traverse.Traversals;
-import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 import life.catalogue.matching.NameIndex;
+import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NameType;
@@ -35,6 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.validation.Validator;
 
 import org.neo4j.graphdb.*;
@@ -69,13 +71,13 @@ public class Normalizer implements Callable<Boolean> {
   private MappingFlags meta;
 
 
-  public Normalizer(DatasetWithSettings dataset, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService, Validator validator) {
+  public Normalizer(DatasetWithSettings dataset, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService, Validator validator, @Nullable DoiResolver resolver) {
     this.format = Preconditions.checkNotNull(dataset.getDataFormat(), "Data format not given");
     this.dataset = dataset;
     this.sourceDir = sourceDir;
     this.store = store;
     this.datasetKey = dataset.getKey();
-    refFactory = new ReferenceFactory(datasetKey, store.references());
+    refFactory = new ReferenceFactory(datasetKey, store.references(), resolver);
     this.index = index;
     this.imgService = imgService;
     this.validator = validator;

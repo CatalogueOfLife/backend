@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.io.InputStreamUtils;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
@@ -13,7 +14,6 @@ import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
-import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.TreatmentFormatParser;
 
@@ -285,7 +285,7 @@ public class ColdpInserter extends NeoCsvInserter {
         try {
           CslData csl = CslDataConverter.toCslData(cslItem);
           csl.setId(id); // maybe superfluous but safe
-          Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
+          Reference ref = refFactory.fromCsl(datasetKey, csl);
           ref.setVerbatimKey(v.getId());
           store.references().create(ref);
 
@@ -326,7 +326,7 @@ public class ColdpInserter extends NeoCsvInserter {
               throw new IllegalArgumentException("Missing required CSL id field");
             }
           }
-          Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
+          Reference ref = refFactory.fromCsl(datasetKey, csl);
           ref.setVerbatimKey(v.getId());
           store.references().create(ref);
           

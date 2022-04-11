@@ -4,12 +4,12 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.NameValidator;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
 

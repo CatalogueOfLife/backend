@@ -1,12 +1,14 @@
-package life.catalogue.importer.reference;
+package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.DoiResolution;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.CSLTypeParser;
 import life.catalogue.parser.DateParser;
 import life.catalogue.parser.SafeParser;
@@ -63,23 +65,30 @@ public class ReferenceFactory {
 
   private final Integer datasetKey;
   private final ReferenceStore store;
-  
-  public ReferenceFactory(NeoDb db) {
-    this(db.getDatasetKey(), db.references());
-  }
+  private DoiResolution resolveDOIs = DoiResolution.NEVER;
+  private final DoiResolver resolver;
 
   /**
    * A factory without any store, so that each created references becomes a new instance.
    */
   public ReferenceFactory(Integer datasetKey) {
-    this(datasetKey, ReferenceStore.passThru());
+    this(datasetKey, ReferenceStore.passThru(), null);
   }
 
-  public ReferenceFactory(Integer datasetKey, ReferenceStore store) {
+  public ReferenceFactory(Integer datasetKey, DoiResolver resolver) {
+    this(datasetKey, ReferenceStore.passThru(), resolver);
+  }
+
+  public ReferenceFactory(Integer datasetKey, ReferenceStore store, @Nullable DoiResolver resolver) {
     this.datasetKey = datasetKey;
     this.store = store;
+    this.resolver = resolver;
   }
-  
+
+  public void setResolveDOIs(DoiResolution resolveDOIs) {
+    this.resolveDOIs = resolveDOIs;
+  }
+
   /**
    * Tries to find an existing reference by its id or exact citation. Returns null if not found
    */
@@ -110,7 +119,7 @@ public class ReferenceFactory {
    * @return
    *     Reference ref = fromAny(datasetKey, referenceID, null, authors, year, title, details, null, issues);
    */
-  public static Reference fromACEF(int datasetKey, String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
+  public Reference fromACEF(int datasetKey, String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
     CslData csl = new CslData();
     csl.setId(referenceID);
     // ACEF keeps authors and editors in the same field - try to detect
@@ -171,15 +180,32 @@ public class ReferenceFactory {
     csl.setURL(v.get(ColdpTerm.link));
     var ref = fromCsl(datasetKey, csl);
     ref.setRemarks(v.get(ColdpTerm.remarks));
-    if (v.hasTerm(ColdpTerm.citation) && ref.getCitation() == null) {
+    resolveDOI(ref);
+    if (v.hasTerm(ColdpTerm.citation) && (ref.getCitation() == null || !ref.getCsl().hasTitleContainerOrAuthor())) {
       ref.setCitation(v.get(ColdpTerm.citation));
     }
     return ref;
   }
 
-  public static Reference fromCsl(int datasetKey, CslData csl) {
+  private void resolveDOI(Reference ref) {
+    if (resolveDOIs != DoiResolution.NEVER && ref.getCsl().getDOI() != null) {
+      DOI.parse(ref.getCsl().getDOI()).ifPresent(doi -> {
+        Citation c = resolver.resolve(doi);
+        copyCitation2Ref(ref, c);
+      });
+    }
+  }
+  private void copyCitation2Ref(Reference ref, Citation c) {
+    if (ref != null && c != null) {
+      var csl = CslDataConverter.toCslData(c.toCSL());
+      ref.setCsl(csl);
+    }
+  }
+
+  public Reference fromCsl(int datasetKey, CslData csl) {
     Reference ref = newReference(datasetKey, csl.getId());
     ref.setCsl(csl);
+    resolveDOI(ref);
     // generate default APA citation string
     ref.setCitation(CslUtil.buildCitation(csl));
     updateIntYearFromCsl(ref);
@@ -505,6 +531,7 @@ public class ReferenceFactory {
     Reference ref = new Reference();
     ref.setId(id);
     ref.setDatasetKey(datasetKey);
+    DOI.parse(id).ifPresent(ref.getCsl()::setDOI);
     return ref;
   }
 

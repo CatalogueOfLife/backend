@@ -5,10 +5,11 @@ import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.importer.reference.ReferenceStore;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
+
+import life.catalogue.dao.ReferenceStore;
 
 import org.mapdb.DB;
 import org.mapdb.Serializer;

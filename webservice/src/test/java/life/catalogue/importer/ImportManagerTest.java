@@ -111,7 +111,7 @@ public class ImportManagerTest {
     final WsServerConfig cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
-      datasetDao, sDao, dDao, indexService, imgService, releaseManager, validator);
+      datasetDao, sDao, dDao, indexService, imgService, releaseManager, validator, null);
     manager.start();
   }
 

@@ -14,7 +14,7 @@ public class ReferenceDaoTest extends DaoTestBase {
   @Test
   public void list() {
     try (SqlSession session = session()) {
-      ReferenceDao dao = new ReferenceDao(PgSetupRule.getSqlSessionFactory(), validator);
+      ReferenceDao dao = new ReferenceDao(PgSetupRule.getSqlSessionFactory(), null, validator);
       dao.list(11, new Page());
     }
   }

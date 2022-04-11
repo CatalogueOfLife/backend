@@ -6,10 +6,10 @@ import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.ReferenceMapStore;
 import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.reference.ReferenceFactory;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
@@ -45,7 +45,7 @@ public class InterpreterBaseTest {
   public void init() {
     //MockitoAnnotations.initMocks(this);
     when(store.references()).thenReturn(refStore);
-    ib = new InterpreterBase(new DatasetSettings(), new ReferenceFactory(1, refStore), store);
+    ib = new InterpreterBase(new DatasetSettings(), new ReferenceFactory(1, refStore, null), store);
   }
 
   @Test

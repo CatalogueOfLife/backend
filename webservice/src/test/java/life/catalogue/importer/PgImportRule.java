@@ -163,7 +163,7 @@ public class PgImportRule extends ExternalResource {
 
     // normalize
     store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
-    Normalizer norm = new Normalizer(dataset, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator);
+    Normalizer norm = new Normalizer(dataset, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator, null);
     norm.call();
 
     // import into postgres

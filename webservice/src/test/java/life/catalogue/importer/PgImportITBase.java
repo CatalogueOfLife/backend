@@ -89,7 +89,7 @@ public class PgImportITBase {
     sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory(), validator);
     ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), ndao, indexService, validator);
-    rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory(), validator);
+    rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory(), null, validator);
     ddao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null,null, validator);
   }
   
@@ -120,7 +120,7 @@ public class PgImportITBase {
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       Normalizer norm = new Normalizer(dataset, store, source,
         NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
-        ImageService.passThru(), validator);
+        ImageService.passThru(), validator, null);
       norm.call();
       
       // import into postgres

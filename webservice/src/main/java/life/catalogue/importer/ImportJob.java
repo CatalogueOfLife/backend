@@ -43,6 +43,8 @@ import java.util.function.Consumer;
 
 import javax.validation.Validator;
 
+import life.catalogue.metadata.DoiResolver;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -76,6 +78,7 @@ public class ImportJob implements Runnable {
   private final NameUsageIndexService indexService;
   private final ImageService imgService;
   private final Validator validator;
+  private final DoiResolver resolver;
   private final DistributedArchiveService distributedArchiveService;
   
   private final StartNotifier notifier;
@@ -84,7 +87,7 @@ public class ImportJob implements Runnable {
   
   ImportJob(ImportRequest req, DatasetWithSettings d,
             WsServerConfig cfg,
-            DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, Validator validator,
+            DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, Validator validator, DoiResolver resolver,
             NameUsageIndexService indexService, ImageService imgService, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
@@ -96,6 +99,7 @@ public class ImportJob implements Runnable {
     this.req = req;
     this.cfg = cfg;
     this.downloader = downloader;
+    this.resolver = resolver;
     this.distributedArchiveService = new DistributedArchiveService(downloader.getClient());
     this.factory = factory;
     this.index = index;
@@ -248,7 +252,7 @@ public class ImportJob implements Runnable {
         LOG.info("Normalizing {}", datasetKey);
         updateState(ImportState.PROCESSING);
         store = NeoDbFactory.create(datasetKey, getAttempt(), cfg.normalizer);
-        new Normalizer(dataset, store, sourceDir, index, imgService, validator).call();
+        new Normalizer(dataset, store, sourceDir, index, imgService, validator, resolver).call();
   
         LOG.info("Fetching logo for {}", datasetKey);
         LogoUpdateJob.updateDatasetAsync(dataset.getDataset(), factory, downloader, cfg.normalizer::scratchFile, imgService, req.createdBy);

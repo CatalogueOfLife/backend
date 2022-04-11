@@ -8,9 +8,13 @@ import life.catalogue.db.mapper.ReferenceMapper;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
+import javax.validation.Valid;
 import javax.validation.Validator;
+
+import life.catalogue.metadata.DoiResolver;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -20,9 +24,11 @@ import org.slf4j.LoggerFactory;
 
 public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceDao.class);
+  private final DoiResolver resolver;
 
-  public ReferenceDao(SqlSessionFactory factory, Validator validator) {
+  public ReferenceDao(SqlSessionFactory factory, DoiResolver resolver, Validator validator) {
     super(false, factory, Reference.class, ReferenceMapper.class, validator);
+    this.resolver = resolver;
   }
   
   public Reference get(DSID<String> did, @Nullable String page) {
@@ -35,7 +41,15 @@ public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMap
     }
     return ref;
   }
-  
+
+  public DSID<String> create(int datasetKey, CslData csl, int user) {
+    if (csl.getId() == null) {
+      csl.setId(UUID.randomUUID().toString());
+    }
+    Reference ref = new ReferenceFactory(datasetKey, resolver).fromCsl(datasetKey, csl);
+    return create(ref, user);
+  }
+
   @Override
   public DSID<String> create(Reference r, int user) {
     // build default citation from csl

@@ -46,6 +46,7 @@ import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
 import life.catalogue.release.PublicReleaseListener;
@@ -278,6 +279,9 @@ public class WsServer extends Application<WsServerConfig> {
     // validation
     Validator validator = env.getValidator();
 
+    // DOI resolver
+    DoiResolver doiResolver = new DoiResolver(httpClient);
+
     // daos
     AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), bus);
     DatasetExportDao exdao = new DatasetExportDao(cfg.exportDir, getSqlSessionFactory(), bus, validator);
@@ -286,19 +290,13 @@ public class WsServer extends Application<WsServerConfig> {
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
-    ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), validator);
+    ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory(), searchService);
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
-
-    // portal html page renderer
-    PortalPageRenderer renderer = new PortalPageRenderer(dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
-
-    // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao, env.metrics());
 
     // DOI
     DoiService doiService;
@@ -310,6 +308,12 @@ public class WsServer extends Application<WsServerConfig> {
     }
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
     DoiUpdater doiUpdater = new DoiUpdater(getSqlSessionFactory(), doiService, coljersey.getCache(), converter);
+
+    // portal html page renderer
+    PortalPageRenderer renderer = new PortalPageRenderer(dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
+
+    // exporter
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao, env.metrics());
 
     // release
     final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, ndao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
@@ -324,7 +328,7 @@ public class WsServer extends Application<WsServerConfig> {
       indexService,
       imgService,
       releaseManager,
-      validator
+      validator, doiResolver
     );
     env.lifecycle().manage(ManagedUtils.stopOnly(importManager));
     ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());

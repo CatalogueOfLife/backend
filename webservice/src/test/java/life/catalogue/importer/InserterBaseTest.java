@@ -3,6 +3,7 @@ package life.catalogue.importer;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.config.NormalizerConfig;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 
@@ -21,13 +22,16 @@ import com.google.common.io.Files;
 public abstract class InserterBaseTest {
   protected DatasetWithSettings d;
   protected NeoDb store;
+  protected ReferenceFactory refFactory;
   protected NormalizerConfig cfg;
+
   
   @Before
   public void initCfg() throws Exception {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
+    refFactory = new ReferenceFactory(store.getDatasetKey(), store.references(), null);
   }
   
   @After

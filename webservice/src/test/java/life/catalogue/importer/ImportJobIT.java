@@ -137,7 +137,7 @@ public class ImportJobIT {
     }
 
     ImportRequest req = new ImportRequest(d.getKey(), Users.TESTER, false, false, false);
-    job = new ImportJob(req, d, cfg, new DownloadUtil(hc), PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator,
+    job = new ImportJob(req, d, cfg, new DownloadUtil(hc), PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator, null,
       indexService, new ImageServiceFS(cfg.img), datasetDao, sDao, dDao, this::start, this::success, this::error);
 
   }

@@ -5,7 +5,6 @@ import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.importer.reference.ReferenceFactory;
 
 import java.util.UUID;
 
@@ -30,7 +29,7 @@ public class ReferenceResource extends AbstractDatasetScopedResource<String, Ref
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);
   private final ReferenceDao dao;
-  
+
   public ReferenceResource(ReferenceDao dao) {
     super(Reference.class, dao);
     this.dao = dao;
@@ -48,11 +47,7 @@ public class ReferenceResource extends AbstractDatasetScopedResource<String, Ref
   @Consumes(MoreMediaTypes.APP_JSON_CSL)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String createCsl(@PathParam("key") int datasetKey, @Valid CslData csl, @Auth User user) {
-    if (csl.getId() == null) {
-      csl.setId(UUID.randomUUID().toString());
-    }
-    Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
-    return dao.create(ref, user.getKey()).getId();
+    return dao.create(datasetKey, csl, user.getKey()).getId();
   }
 
   @GET

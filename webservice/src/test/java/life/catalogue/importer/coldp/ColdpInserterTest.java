@@ -5,10 +5,10 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.neo.model.RelType;
-import life.catalogue.importer.reference.ReferenceFactory;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -192,6 +192,6 @@ public class ColdpInserterTest extends InserterBaseTest {
   
   @Override
   public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException {
-    return new ColdpInserter(store, resource, settings, new ReferenceFactory(store));
+    return new ColdpInserter(store, resource, settings, refFactory);
   }
 }

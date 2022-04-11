@@ -4,13 +4,13 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.DwcUnofficialTerm;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
-import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DcTerm;

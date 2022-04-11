@@ -117,6 +117,23 @@ public class NormalizerColdpIT extends NormalizerITBase {
   }
 
   @Test
+  public void testWscRefs() throws Exception {
+    normalize(23);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage t = usageByID("urn:lsid:nmbe.ch:spidersp:000002");
+      assertFalse(t.isSynonym());
+      assertEquals("Heptathela amamiensis Haupt, 1983", t.usage.getName().getLabel());
+      assertEquals("1938232063", t.usage.getName().getPublishedInId());
+      assertEquals("283", t.usage.getName().getPublishedInPage());
+
+      var r = refByID("1938232063");
+      assertEquals("1938232063", r.getId());
+      assertFalse(r.getCitation().startsWith("(n.d.)"));
+    }
+  }
+
+  @Test
   @Ignore("work in progress")
   public void testExcelMites() throws Exception {
     normalizeExcel("Torotrogla_villosa.xlsx", NomCode.ZOOLOGICAL);

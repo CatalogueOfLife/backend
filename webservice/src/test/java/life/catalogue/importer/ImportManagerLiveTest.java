@@ -99,7 +99,7 @@ public class ImportManagerLiveTest {
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.passThru(), datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), releaseManager, validator);
+        NameIndexFactory.passThru(), datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), releaseManager, validator, null);
     importManager.start();
 
     LOG.warn("Test initialized");

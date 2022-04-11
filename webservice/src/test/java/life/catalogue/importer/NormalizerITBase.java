@@ -182,7 +182,7 @@ abstract class NormalizerITBase {
       dws.setCode(code);
       dws.setNotes("INITIAL dws");
       Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-      Normalizer norm = new Normalizer(dws, store, arch, nameIndexSupplier.get(), ImageService.passThru(), validator);
+      Normalizer norm = new Normalizer(dws, store, arch, nameIndexSupplier.get(), ImageService.passThru(), validator, null);
       norm.call();
     
       // reopen

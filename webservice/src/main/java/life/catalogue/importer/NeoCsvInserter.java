@@ -7,12 +7,12 @@ import life.catalogue.common.collection.DefaultMap;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.Schema;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoCRUDStore;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.metadata.MetadataFactory;
 
 import org.gbif.dwc.terms.Term;

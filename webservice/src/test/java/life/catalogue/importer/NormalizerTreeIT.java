@@ -153,7 +153,7 @@ public class NormalizerTreeIT {
       NormalizerITBase.readDatasetCode(resourceDir).ifPresent(d::setCode);
 
       Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-      Normalizer norm = new Normalizer(d, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator);
+      Normalizer norm = new Normalizer(d, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator, null);
       norm.call();
       // reopen the neo db
       store = NeoDbFactory.open(datasetKey, 1, cfg);

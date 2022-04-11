@@ -1,0 +1,17 @@
+col:ID	col:parentID	col:status	col:rank	col:uninomial	col:genericName	col:specificEpithet	col:infraspecificEpithet	col:authorship	col:nameReferenceID	col:publishedInPage
+urn:lsid:nmbe.ch:spidersp:000006	urn:lsid:nmbe.ch:spidergen:03548	VALID	species		Songthela	hangzhouensis		(Chen, Zhang & Zhu, 1981)	40412209	305
+urn:lsid:nmbe.ch:spiderfam:0001			family	Liphistiidae				Thorell, 1869		
+urn:lsid:nmbe.ch:spidergen:03548	urn:lsid:nmbe.ch:spiderfam:0001		genus	Songthela				Ono, 2000		
+urn:lsid:nmbe.ch:spidersp:000007	urn:lsid:nmbe.ch:spidersp:000021	SYNONYM	species		Luthela	heyangensis		(Zhu & Wang, 1984)		
+urn:lsid:nmbe.ch:spidergen:04772	urn:lsid:nmbe.ch:spiderfam:0001		genus	Luthela				Xu & Li, 2022		
+urn:lsid:nmbe.ch:spidersp:000010	urn:lsid:nmbe.ch:spidergen:04256	VALID	species		Vinathela	hunanensis		(Song & Haupt, 1984)	-710981862	449
+urn:lsid:nmbe.ch:spidergen:04256	urn:lsid:nmbe.ch:spiderfam:0001		genus	Vinathela				Ono, 2000		
+urn:lsid:nmbe.ch:spidersp:000001	urn:lsid:nmbe.ch:spidergen:04256	VALID	species		Vinathela	abca		(Ono, 1999)	1597025983	37
+urn:lsid:nmbe.ch:spidersp:000002	urn:lsid:nmbe.ch:spidergen:00001	VALID	species		Heptathela	amamiensis		Haupt, 1983	1938232063	283
+urn:lsid:nmbe.ch:spidergen:00001	urn:lsid:nmbe.ch:spiderfam:0001		genus	Heptathela				Kishida, 1923		
+urn:lsid:nmbe.ch:spidersp:000003	urn:lsid:nmbe.ch:spidergen:03548	VALID	species		Songthela	bristowei		(Gertsch, 1967)	-1562836610	116
+urn:lsid:nmbe.ch:spidersp:000008	urn:lsid:nmbe.ch:spidergen:00001	VALID	species		Heptathela	higoensis		Haupt, 1983	1938232063	283
+urn:lsid:nmbe.ch:spidersp:000004	urn:lsid:nmbe.ch:spidergen:04253	VALID	species		Ganthela	cipingensis		(Wang, 1989)	1619357887	30
+urn:lsid:nmbe.ch:spidergen:04253	urn:lsid:nmbe.ch:spiderfam:0001		genus	Ganthela				Xu & Kuntner, 2015		
+urn:lsid:nmbe.ch:spidersp:000005	urn:lsid:nmbe.ch:spidergen:04256	VALID	species		Vinathela	cucphuongensis		(Ono, 1999)	1597025983	38
+urn:lsid:nmbe.ch:spidersp:000009	urn:lsid:nmbe.ch:spidergen:04256	VALID	species		Vinathela	hongkong		(Song & Wu, 1997)	273013001	1

@@ -120,7 +120,11 @@ public class CslData {
   private String volume;
   @JsonProperty("year-suffix")
   private String yearSuffix;
-  
+
+  public boolean hasTitleContainerOrAuthor() {
+    return title != null || containerTitle != null || author != null;
+  }
+
   public String getId() {
     return id;
   }
@@ -444,10 +448,13 @@ public class CslData {
     return DOI;
   }
   
-  public void setDOI(String dOI) {
-    DOI = dOI;
+  public void setDOI(String doi) {
+    DOI = doi;
   }
-  
+  public void setDOI(DOI doi) {
+    DOI = doi == null ? null : doi.toString();
+  }
+
   public String getEdition() {
     return edition;
   }

@@ -1,37 +1,75 @@
-package life.catalogue.importer.reference;
+package life.catalogue.dao;
 
-import life.catalogue.api.model.CslName;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.Reference;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DoiResolution;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
-import life.catalogue.importer.neo.ReferenceMapStore;
+import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.metadata.DoiResolver;
+
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import de.undercouch.citeproc.csl.CSLType;
+
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 public class ReferenceFactoryTest {
-  
+
   final String doi  = "10.1126/science.169.3946.635";
   final String link = "http://dx.doi.org/10.1126/science.169.3946.635";
-  
-  @Mock
-  ReferenceMapStore refStore;
+
+  ReferenceStore refStore = ReferenceStore.passThru();
+  DoiResolver resolver;
   ReferenceFactory rf;
   IssueContainer issues;
-  
+  Citation citation;
+
   @Before
   public void init(){
     MockitoAnnotations.initMocks(this);
-    rf = new ReferenceFactory(5, refStore);
     issues = new VerbatimRecord();
+    resolver = Mockito.mock(DoiResolver.class);
+    DOI d = new DOI(doi);
+
+    citation = new Citation();
+    citation.setType(CSLType.BOOK);
+    citation.setTitle("A great book to read");
+    citation.setAuthor(List.of(new CslName("Charles")));
+    citation.setIssued(FuzzyDate.of(1878));
+    citation.setDoi(d);
+    when(resolver.resolve(d)).thenReturn(citation);
+
+    rf = new ReferenceFactory(5, refStore, resolver);
+    rf.setResolveDOIs(DoiResolution.NEVER);
   }
-  
+
+  @Test
+  public void doiResolution() {
+    rf.setResolveDOIs(DoiResolution.ALWAYS);
+
+    VerbatimRecord v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "100");
+    v.put(ColdpTerm.citation, "Charles (1878): A great book to read");
+    var r = rf.fromColDP(v);
+    assertEquals(v.get(ColdpTerm.citation), r.getCitation());
+    assertNull(r.getCsl().getTitle());
+    assertNull(r.getCsl().getDOI());
+
+    v.put(ColdpTerm.doi, doi);
+    r = rf.fromColDP(v);
+    assertEquals(doi, r.getCsl().getDOI());
+    assertEquals(citation.getCitationText(), r.getCitation());
+    assertEquals(citation.getTitle(), r.getCsl().getTitle());
+
+  }
+
   @Test
   public void citation() {
     assertEquals("M.Döring. Guess what? (2001).", rf.buildCitation("M.Döring", "2001", "Guess what?", null));
@@ -56,7 +94,7 @@ public class ReferenceFactoryTest {
     assertEquals("Med-Checklist Vol.4 (published)", r.getCsl().getContainerTitle());
     assertEquals("Greuter,W. et al. (1989). Med-Checklist Vol.4 (Published).", r.getCitation());
   }
-  
+
   @Test
   public void fromColDP() {
     VerbatimRecord v = new VerbatimRecord();
@@ -83,7 +121,7 @@ public class ReferenceFactoryTest {
     assertEquals(link, r.getCsl().getURL());
     assertEquals("authors. (1920). title. Source, 7(31). https://doi.org/10.1126/science.169.3946.635", r.getCitation());
   }
-  
+
   @Test
   public void authors() {
     // comma, initials front
@@ -94,12 +132,12 @@ public class ReferenceFactoryTest {
     assertEquals("P.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Acevedo-Rodríguez", a.getFamily());
-  
+
     a = authors[3];
     assertEquals("M. J.", a.getGiven());
     assertEquals("de", a.getNonDroppingParticle());
     assertEquals("Belgrano", a.getFamily());
-  
+
     a = authors[12];
     assertEquals("S.", a.getGiven());
     assertEquals("de la", a.getNonDroppingParticle());
@@ -118,7 +156,7 @@ public class ReferenceFactoryTest {
     // semicolon
     authors = ReferenceFactory.parseAuthors("Ulloa, C.; Acevedo-Rodríguez, P.; Beck, Sigmund; de la Belgrano, Maria Josef; Simmel", issues);
     assertEquals(5, authors.length);
-  
+
     a = authors[0];
     assertEquals("C.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
@@ -128,17 +166,17 @@ public class ReferenceFactoryTest {
     assertEquals("P.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Acevedo-Rodríguez", a.getFamily());
-  
+
     a = authors[2];
     assertEquals("Sigmund", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Beck", a.getFamily());
-  
+
     a = authors[3];
     assertEquals("Maria Josef", a.getGiven());
     assertEquals("de la", a.getNonDroppingParticle());
     assertEquals("Belgrano", a.getFamily());
-  
+
     a = authors[4];
     assertNull(a.getGiven());
     assertNull(a.getNonDroppingParticle());
@@ -148,36 +186,36 @@ public class ReferenceFactoryTest {
     // comma within authors and between
     authors = ReferenceFactory.parseAuthors("Sautya, S., Tabachnick, K.R., Ingole, B.", issues);
     assertEquals(3, authors.length);
-  
+
     a = authors[0];
     assertEquals("S.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Sautya", a.getFamily());
-  
+
     a = authors[1];
     assertEquals("K.R.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Tabachnick", a.getFamily());
-  
+
     a = authors[2];
     assertEquals("B.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Ingole", a.getFamily());
-  
-  
+
+
     authors = ReferenceFactory.parseAuthors("Sautya,S., Tabachnick,K.R.,Ingole,B.", issues);
     assertEquals(3, authors.length);
-  
+
     a = authors[0];
     assertEquals("S.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Sautya", a.getFamily());
-  
+
     a = authors[1];
     assertEquals("K.R.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Tabachnick", a.getFamily());
-  
+
     a = authors[2];
     assertEquals("B.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
@@ -211,7 +249,7 @@ public class ReferenceFactoryTest {
     assertEquals(1888, (int) r.getYear());
     assertNull(r.getCsl());
   }
-  
+
   @Test
   public void fromDC() {
     Reference r = rf.fromDC("doi:10.4657/e463dgv", "full citation missing the year", "Dembridge, M.", "May 2008", "My great garden", "Journal of Herbs", issues);
@@ -225,7 +263,7 @@ public class ReferenceFactoryTest {
     assertEquals(2008, r.getCsl().getIssued().getDateParts()[0][0]);
     assertEquals("Journal of Herbs", r.getCsl().getContainerTitle());
   }
-  
+
   @Test
   public void fromCitation() {
     Reference r = rf.fromCitation("id", "citation", issues);
@@ -234,5 +272,5 @@ public class ReferenceFactoryTest {
     assertNull(r.getYear());
     assertNull(r.getCsl());
   }
-  
+
 }
