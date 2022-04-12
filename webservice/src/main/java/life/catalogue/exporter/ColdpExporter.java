@@ -2,6 +2,7 @@ package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
@@ -76,7 +77,7 @@ public class ColdpExporter extends ArchiveExporter {
       writer.set(ColdpTerm.extinct, t.isExtinct());
       writer.set(ColdpTerm.temporalRangeStart, t.getTemporalRangeStart());
       writer.set(ColdpTerm.temporalRangeEnd, t.getTemporalRangeEnd());
-      writer.set(ColdpTerm.environment, t.getEnvironments());
+      writer.set(ColdpTerm.environment, t.getEnvironments(), PermissiveEnumSerde::enumValueName);
       //writer.set(ColdpTerm.sequenceIndex, null);
     }
   }

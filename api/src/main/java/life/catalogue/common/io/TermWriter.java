@@ -115,19 +115,30 @@ public abstract class TermWriter implements AutoCloseable {
   }
 
   /**
-   * Concatenates values with comma
+   * Concatenates values with comma using toString.
    */
-  public void set(Term term, Collection<?> value) {
+  public <T> void set(Term term, Collection<T> value) {
     set(term, value, ",");
   }
 
   /**
-   * Concatenates values with given delimiter
+   * Concatenates values with comma
    */
-  public void set(Term term, Collection<?> value, String delimiter) {
+  public <T> void set(Term term, Collection<T> value, Function<T, String> converter) {
+    set(term, value, ",", converter);
+  }
+
+  /**
+   * Concatenates values with given delimiter using toString.
+   */
+  public <T> void set(Term term, Collection<T> value, String delimiter) {
+    set(term, value, delimiter, Object::toString);
+  }
+
+  public <T> void set(Term term, Collection<T> value, String delimiter, Function<T, String> converter) {
     if (value != null && !value.isEmpty()) {
       set(term, value.stream()
-                     .map(Object::toString)
+                     .map(converter)
                      .filter(StringUtils::isNotBlank)
                      .collect(Collectors.joining(delimiter))
       );
@@ -162,7 +173,7 @@ public abstract class TermWriter implements AutoCloseable {
     set(term, Integer.toString(value));
   }
 
-  public void set(Term term, Enum value) {
+  public void set(Term term, Enum<?> value) {
     if (value != null) {
       set(term, PermissiveEnumSerde.enumValueName(value));
     }
