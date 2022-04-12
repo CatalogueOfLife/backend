@@ -4,6 +4,7 @@ import life.catalogue.common.io.LineReader;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.NameFormatter;
 
+import java.io.IOException;
 import java.text.Normalizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,73 +53,74 @@ public class UnicodeUtils {
   static {
     // canonicals to be ignored from the homoglyph list
     final CharSet ignoredCanonicals = CharSet.of(' ', '\'', '-', '﹘');
-    var lr = new LineReader(Resources.stream("unicode/homoglyphs.txt"));
-    Int2CharMap homoglyphs = new Int2CharOpenHashMap();
-    final AtomicInteger minCP = new AtomicInteger(Integer.MAX_VALUE);
-    final AtomicInteger maxCP = new AtomicInteger(Integer.MIN_VALUE);
-    StringBuilder canonicals = new StringBuilder();
-    for (String line : lr) {
-      // the canonical is never a surrogate pair
-      char canonical = line.charAt(0);
-      // ignore all whitespace codepoints
-      if (ignoredCanonicals.contains(canonical)) {
-        continue;
-      }
-      if (DEBUG) {
-        System.out.print(canonical + " ");
-        System.out.println((int)canonical);
-      }
-      canonicals.append(canonical);
-
-      // ignore all ASCII chars from homoglyphs
-      final AtomicInteger counter = new AtomicInteger();
-      // ignore some frequently found quotation marks
-      // https://www.cl.cam.ac.uk/~mgk25/ucs/quotes.html
-      final IntSet ignore = new IntOpenHashSet();
-      "\u2018\u2019\u201C\u201D".codePoints().forEach(cp -> {
-        if (DEBUG) {
-          System.out.print("IGNORE ");
-          System.out.print(Character.toChars(cp));
-          System.out.print(" ");
-          System.out.print(cp);
-          System.out.println("  " + Character.getName(cp));
+    try (var lr = new LineReader(Resources.stream("unicode/homoglyphs.txt"))) {
+      Int2CharMap homoglyphs = new Int2CharOpenHashMap();
+      final AtomicInteger minCP = new AtomicInteger(Integer.MAX_VALUE);
+      final AtomicInteger maxCP = new AtomicInteger(Integer.MIN_VALUE);
+      StringBuilder canonicals = new StringBuilder();
+      for (String line : lr) {
+        // the canonical is never a surrogate pair
+        char canonical = line.charAt(0);
+        // ignore all whitespace codepoints
+        if (ignoredCanonicals.contains(canonical)) {
+          continue;
         }
-        ignore.add(cp);
-      });
-      line.substring(1).codePoints()
-          // remove hybrid marker which we use often
-          .filter(cp -> cp > 128
-                        && cp != NameFormatter.HYBRID_MARKER
-                        && !DIACRITICS.contains(cp)
-                        && !ignore.contains(cp)
-          )
-          .forEach(
-            cp -> {
-              if (DEBUG) {
-                System.out.print("  ");
-                System.out.print(Character.toChars(cp));
-                System.out.print(" ");
-                System.out.print(cp);
-                System.out.println("  " + Character.getName(cp));
+        if (DEBUG) {
+          System.out.print(canonical + " ");
+          System.out.println((int)canonical);
+        }
+        canonicals.append(canonical);
+
+        // ignore all ASCII chars from homoglyphs
+        final AtomicInteger counter = new AtomicInteger();
+        // ignore some frequently found quotation marks
+        // https://www.cl.cam.ac.uk/~mgk25/ucs/quotes.html
+        final IntSet ignore = new IntOpenHashSet();
+        "\u2018\u2019\u201C\u201D".codePoints().forEach(cp -> {
+          if (DEBUG) {
+            System.out.print("IGNORE ");
+            System.out.print(Character.toChars(cp));
+            System.out.print(" ");
+            System.out.print(cp);
+            System.out.println("  " + Character.getName(cp));
+          }
+          ignore.add(cp);
+        });
+        line.substring(1).codePoints()
+            // remove hybrid marker which we use often
+            .filter(cp -> cp > 128
+                          && cp != NameFormatter.HYBRID_MARKER
+                          && !DIACRITICS.contains(cp)
+                          && !ignore.contains(cp)
+            )
+            .forEach(
+              cp -> {
+                if (DEBUG) {
+                  System.out.print("  ");
+                  System.out.print(Character.toChars(cp));
+                  System.out.print(" ");
+                  System.out.print(cp);
+                  System.out.println("  " + Character.getName(cp));
+                }
+                homoglyphs.put(cp, canonical);
+                minCP.set( Math.min(minCP.get(), cp) );
+                maxCP.set( Math.max(maxCP.get(), cp) );
+                counter.incrementAndGet();
               }
-              homoglyphs.put(cp, canonical);
-              minCP.set( Math.min(minCP.get(), cp) );
-              maxCP.set( Math.max(maxCP.get(), cp) );
-              counter.incrementAndGet();
-            }
-          );
-      canonicals.append("[" + counter + "] ");
-      if (lr.getRow() > 175 || 'ɸ' == canonical) {
-        // skip all rare chars
-        break;
+            );
+        canonicals.append("[" + counter + "] ");
+        if (lr.getRow() > 175 || 'ɸ' == canonical) {
+          // skip all rare chars
+          break;
+        }
       }
+      HOMOGLYHPS = Int2CharMaps.unmodifiable(homoglyphs);
+      HOMOGLYHPS_LOWEST_CP = minCP.get();
+      HOMOGLYHPS_HIGHEST_CP = maxCP.get();
+      LOG.info("Loaded known homoglyphs: {}", canonicals);
+      LOG.debug("Min homoglyph codepoint: {}", minCP);
+      LOG.debug("Max homoglyph codepoint: {}", maxCP);
     }
-    HOMOGLYHPS = Int2CharMaps.unmodifiable(homoglyphs);
-    HOMOGLYHPS_LOWEST_CP = minCP.get();
-    HOMOGLYHPS_HIGHEST_CP = maxCP.get();
-    LOG.info("Loaded known homoglyphs: {}", canonicals);
-    LOG.debug("Min homoglyph codepoint: {}", minCP);
-    LOG.debug("Max homoglyph codepoint: {}", maxCP);
   }
 
   /**

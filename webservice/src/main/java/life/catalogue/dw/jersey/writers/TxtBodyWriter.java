@@ -51,6 +51,7 @@ public class TxtBodyWriter implements MessageBodyWriter<Stream<String>> {
       });
     } finally {
       br.close();
+      rows.close();
     }
   }
 }

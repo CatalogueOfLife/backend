@@ -51,6 +51,7 @@ public class TsvBodyWriter implements MessageBodyWriter<Stream<Object[]>> {
       });
     } finally {
       br.close();
+      rows.close();
     }
   }
 

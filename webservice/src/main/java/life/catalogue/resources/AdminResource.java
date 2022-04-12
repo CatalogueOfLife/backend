@@ -269,10 +269,11 @@ public class AdminResource {
   @Path("/gbif-sync")
   @Consumes(MediaType.TEXT_PLAIN)
   public BackgroundJob syncGBIFText(InputStream keysAsText, @Auth User user) {
-    var lr = new LineReader(keysAsText);
-    var keys = IterUtils.setOf(lr, UUID::fromString);
-    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), keys);
-    return runJob(job);
+    try (var lr = new LineReader(keysAsText)) {
+      var keys = IterUtils.setOf(lr, UUID::fromString);
+      GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), keys);
+      return runJob(job);
+    }
   }
 
   @POST

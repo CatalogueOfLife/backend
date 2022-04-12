@@ -10,6 +10,7 @@ import life.catalogue.matching.authorship.BasionymSorter;
 import life.catalogue.parser.NameParser;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -98,9 +99,10 @@ public class HomotypicGroupingResource {
    */
   @POST
   @Consumes(MediaType.TEXT_PLAIN)
-  public GroupingResult groupPlainText(InputStream names) throws UnsupportedEncodingException {
-    BufferedReader br = UTF8IoUtils.readerFromStream(names);
-    return group(br.lines().collect(Collectors.toList()));
+  public GroupingResult groupPlainText(InputStream names) throws IOException {
+    try (BufferedReader br = UTF8IoUtils.readerFromStream(names)) {
+      return group(br.lines().collect(Collectors.toList()));
+    }
   }
 
 }

@@ -82,6 +82,7 @@ public class CSVUtils {
   
   /**
    * Reads an UTF8 CSV stream separated by commas and generates a stream or rows, each being a list of columns.
+   * As always make sure to close the stream!
    */
   public static Stream<List<String>> parse(InputStream in) {
     return parse(in, 0);
@@ -89,6 +90,7 @@ public class CSVUtils {
 
   /**
    * Reads an UTF8 CSV stream separated by commas and generates a stream or rows, each being a list of columns.
+   * As always make sure to close the stream!
    * @param skip number of lines to skip at the beginning
    */
   public static Stream<List<String>> parse(InputStream in, long skip) {
@@ -98,6 +100,7 @@ public class CSVUtils {
 
   /**
    * Reads an UTF8 column delimited stream separated by a given delimiter and generates a stream or rows, each being a list of columns.
+   * As always make sure to close the stream!
    * @param skip number of lines to skip at the beginning
    * @param delimiter separating columns
    */

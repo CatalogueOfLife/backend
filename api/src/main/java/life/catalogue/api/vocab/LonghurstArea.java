@@ -68,9 +68,10 @@ public class LonghurstArea implements Area {
 
   static List<LonghurstArea> build() {
     // PROVCODE;PROVDESCR;Biome;Productivity(gC/m²*d);Prod(Class);;;CHL(mg/m²);Chl(class);;;Photic Depth(m);Photic Depth(class);;;MLD(sigma,m);MLD(sigma,class);;;ST0(°C);ST50(°C);Diff;;;;
-    return CSVUtils.parse(LonghurstArea.class.getResourceAsStream("/vocab/area/Longhurst_Province_Summary.csv"), 1)
-                   .map(row -> new LonghurstArea(row.get(0), row.get(1), row.get(2).charAt(0), Integer.parseInt(row.get(4))))
-                   .collect(Collectors.toList());
+    try (var csv = CSVUtils.parse(LonghurstArea.class.getResourceAsStream("/vocab/area/Longhurst_Province_Summary.csv"), 1)) {
+      return csv.map(row -> new LonghurstArea(row.get(0), row.get(1), row.get(2).charAt(0), Integer.parseInt(row.get(4))))
+                .collect(Collectors.toList());
+    }
   }
 
   public static LonghurstArea of(String id) throws IllegalArgumentException {

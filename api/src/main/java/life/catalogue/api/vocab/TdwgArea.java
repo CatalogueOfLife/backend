@@ -84,9 +84,10 @@ public class TdwgArea implements Area {
 
   private static List<TdwgArea> buildLevel(int level, int parentIdColumn) {
     final char delimiter = '*';
-    return CSVUtils.parse(TdwgArea.class.getResourceAsStream("/vocab/area/tdwg/tblLevel"+level+".txt"), 1, delimiter)
-                   .map(row -> new TdwgArea(cleanID(row.get(0)), row.get(1), parentIdColumn < 0 ? null : cleanID(row.get(parentIdColumn)), level))
-                   .collect(Collectors.toList());
+    try(var csv = CSVUtils.parse(TdwgArea.class.getResourceAsStream("/vocab/area/tdwg/tblLevel"+level+".txt"), 1, delimiter)) {
+      return csv.map(row -> new TdwgArea(cleanID(row.get(0)), row.get(1), parentIdColumn < 0 ? null : cleanID(row.get(parentIdColumn)), level))
+                .collect(Collectors.toList());
+    }
   }
 
   private static String cleanID(String raw) {

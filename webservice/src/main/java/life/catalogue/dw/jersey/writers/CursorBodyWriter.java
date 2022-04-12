@@ -31,6 +31,8 @@ public class CursorBodyWriter implements MessageBodyWriter<Cursor<?>> {
   public void writeTo(Cursor<?> c, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
     try (StreamBodyWriter.JsonArrayConsumer consumer = new StreamBodyWriter.JsonArrayConsumer(out)){
       c.forEach(consumer);
+    } finally {
+      c.close();
     }
   }
 }

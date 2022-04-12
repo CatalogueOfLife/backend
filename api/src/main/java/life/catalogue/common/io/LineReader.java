@@ -5,10 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
+import com.google.common.io.Closeables;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-public class LineReader implements Iterable<String> {
+public class LineReader implements Iterable<String>, AutoCloseable {
   private final BufferedReader br;
   private final boolean skipBlank;
   private final boolean skipComments;
@@ -37,6 +40,11 @@ public class LineReader implements Iterable<String> {
   @Override
   public Iterator<String> iterator() {
     return new LineIterator();
+  }
+
+  @Override
+  public void close() {
+    IOUtils.closeQuietly(br);
   }
 
   class LineIterator implements Iterator<String> {

@@ -52,6 +52,7 @@ public class CsvBodyWriter implements MessageBodyWriter<Stream<Object[]>> {
       });
     } finally {
       csv.close();
+      rows.close();
     }
   }
 }

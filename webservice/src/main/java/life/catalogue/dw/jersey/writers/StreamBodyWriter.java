@@ -37,6 +37,8 @@ public class StreamBodyWriter implements MessageBodyWriter<Stream<?>> {
   public void writeTo(Stream<?> stream, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
     try (JsonArrayConsumer consumer = new JsonArrayConsumer(out)){
       stream.forEach(consumer);
+    } finally {
+      stream.close();
     }
   }
 

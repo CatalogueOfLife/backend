@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 public class CSVUtilsTest {
   
   int counter = 1;
-  
+
   @Test
   public void parseLine() {
     testParse("a,b,c,d,e",   "a","b","c","d","e");
