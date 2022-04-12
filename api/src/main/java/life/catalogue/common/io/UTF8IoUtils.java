@@ -47,8 +47,13 @@ public class UTF8IoUtils {
     return readString(new FileInputStream(f));
   }
 
+  /**
+   * Reads the entire stream into a string and always closes the input stream!
+   */
   public static String readString(InputStream stream) throws IOException {
-    return IOUtils.toString(stream, StandardCharsets.UTF_8);
+    var str = IOUtils.toString(stream, StandardCharsets.UTF_8);
+    stream.close();
+    return str;
   }
 
 }

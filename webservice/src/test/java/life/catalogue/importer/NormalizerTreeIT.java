@@ -2,6 +2,7 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
@@ -161,7 +162,7 @@ public class NormalizerTreeIT {
       
       // assert tree
       InputStream tree = getClass().getResourceAsStream(resourceDir + "/expected.tree");
-      String expected = IOUtils.toString(tree, Charsets.UTF_8).trim();
+      String expected = UTF8IoUtils.readString(tree).trim();
       
       String neotree = PrinterUtils.textTree(store.getNeo());
       assertFalse("Empty tree, probably no root node found", neotree.isEmpty());
@@ -197,7 +198,7 @@ public class NormalizerTreeIT {
 
       InputStream bareNamesFile = getClass().getResourceAsStream(resourceDir + "/expected-barenames.txt");
       if (bareNamesFile != null) {
-        expected = IOUtils.toString(bareNamesFile, Charsets.UTF_8).trim();
+        expected = UTF8IoUtils.readString(bareNamesFile).trim();
         assertEquals("Bare names not as expected", expected, bareNames);
       } else if (!StringUtils.isBlank(bareNames)) {
         fail("Additional bare names:\n" + bareNames);

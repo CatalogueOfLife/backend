@@ -2,6 +2,7 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.Resources;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -40,7 +41,7 @@ public class JsonFlatPrinterTest {
     int count = PrinterFactory.dataset(JsonFlatPrinter.class, TestDataRule.TREE.key, null, true, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
     assertEquals(24, count);
     System.out.println(writer);
-    String expected = IOUtils.toString(Resources.stream("trees/flat.json"), StandardCharsets.UTF_8);
+    String expected = UTF8IoUtils.readString(Resources.stream("trees/flat.json"));
     // properties label and labelHtml change their order in the serialization. Lets focus on labelHtml
     String got = writer.toString().replaceAll(",\"label\":\"[^\"]+\"", "");
     assertEquals(expected, got);

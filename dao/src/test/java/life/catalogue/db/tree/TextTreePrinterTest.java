@@ -2,6 +2,7 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.Resources;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -35,7 +36,7 @@ public class TextTreePrinterTest {
     Writer writer = new StringWriter();
     int count = PrinterFactory.dataset(TextTreePrinter.class, TestDataRule.TREE.key, PgSetupRule.getSqlSessionFactory(), writer).print();
     assertEquals(25, count);
-    String expected = IOUtils.toString(Resources.stream("trees/tree2.tree"), StandardCharsets.UTF_8);
+    String expected = UTF8IoUtils.readString(Resources.stream("trees/tree2.tree"));
     assertEquals(expected, writer.toString());
   }
 
@@ -54,7 +55,7 @@ public class TextTreePrinterTest {
     int count = p.print();
     System.out.println(writer);
     assertEquals(5, count);
-    String expected = IOUtils.toString(Resources.stream("trees/treeWithCounts.tree"), StandardCharsets.UTF_8);
+    String expected = UTF8IoUtils.readString(Resources.stream("trees/treeWithCounts.tree"));
     assertEquals(expected, writer.toString());
   }
 

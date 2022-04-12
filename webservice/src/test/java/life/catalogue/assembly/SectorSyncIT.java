@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Origin;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -230,7 +231,7 @@ public class SectorSyncIT {
   
   void assertTree(String filename) throws IOException {
     InputStream resIn = getClass().getResourceAsStream("/assembly-trees/" + filename);
-    String expected = IOUtils.toString(resIn, Charsets.UTF_8).trim();
+    String expected = UTF8IoUtils.readString(resIn).trim();
     
     Writer writer = new StringWriter();
     PrinterFactory.dataset(TextTreePrinter.class, Datasets.COL, PgSetupRule.getSqlSessionFactory(), writer).print();

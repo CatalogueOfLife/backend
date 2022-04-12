@@ -55,20 +55,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
   }
 
   /**
-   * Base64-decodes and unzips the provided payload string. For testing purposes only.
-   *
-   * @param payload
-   * @return
-   * @throws IOException
-   */
-  public static String inflateToJson(String payload) throws IOException {
-    byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
-    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-    InputStream is = new InflaterInputStream(bais);
-    return IOUtils.toString(is, StandardCharsets.UTF_8);
-  }
-
-  /**
    * Provides a weakly normalized version of the provided string. Used to index generic epithets. See {@link NameStrings}.
    */
   public static String normalizeWeakly(String s) {

@@ -42,7 +42,7 @@ public class Resources {
    * @return single string of the entire classpath resource encoded in UTF8
    */
   public static String toString(String resourceName) throws IOException {
-    return IOUtils.toString(stream(resourceName), Charsets.UTF_8);
+    return UTF8IoUtils.readString(stream(resourceName));
   }
 
   /**

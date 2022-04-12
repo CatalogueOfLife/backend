@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.io.PathUtils;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.img.ImageService;
@@ -103,14 +104,14 @@ abstract class NormalizerITBase {
 
   public void assertTree() throws Exception {
     InputStream tree = getClass().getResourceAsStream(resourceDir() + "/expected.tree");
-    String expected = IOUtils.toString(tree, Charsets.UTF_8).trim();
+    String expected = UTF8IoUtils.readString(tree).trim();
     String neotree = PrinterUtils.textTree(store.getNeo());
     assertEquals(expected, neotree);
 
     // check also bare names if file exists
     InputStream bareNamesFile = getClass().getResourceAsStream(resourceDir() + "/expected-barenames.txt");
     if (bareNamesFile != null) {
-      expected = IOUtils.toString(bareNamesFile, Charsets.UTF_8).trim();
+      expected = UTF8IoUtils.readString(bareNamesFile).trim();
 
       String bareNames;
       try (Transaction tx = store.getNeo().beginTx()) {

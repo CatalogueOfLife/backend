@@ -2,6 +2,7 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.Resources;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -40,7 +41,7 @@ public class NewickPrinterTest {
     int count = PrinterFactory.dataset(NewickPrinter.class, TestDataRule.TREE.key, null, false, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
     assertEquals(20, count);
     System.out.println(writer);
-    String expected = IOUtils.toString(Resources.stream("trees/tree.newick"), StandardCharsets.UTF_8);
+    String expected = UTF8IoUtils.readString(Resources.stream("trees/tree.newick"));
     assertEquals(expected, writer.toString());
 
     writer = new StringWriter();
@@ -49,7 +50,7 @@ public class NewickPrinterTest {
     count = printer.print();
     assertEquals(20, count);
     System.out.println(writer);
-    expected = IOUtils.toString(Resources.stream("trees/tree.nhx"), StandardCharsets.UTF_8);
+    expected = UTF8IoUtils.readString(Resources.stream("trees/tree.nhx"));
     assertEquals(expected, writer.toString());
   }
 }
