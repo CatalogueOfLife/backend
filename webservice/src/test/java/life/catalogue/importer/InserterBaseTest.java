@@ -31,7 +31,6 @@ public abstract class InserterBaseTest {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-    refFactory = new ReferenceFactory(store.getDatasetKey(), store.references(), null);
   }
   
   @After
@@ -45,9 +44,10 @@ public abstract class InserterBaseTest {
   
   protected NeoInserter setup(String resource) {
     try {
-      store = NeoDbFactory.create(1, 1, cfg);
       d = new DatasetWithSettings();
       d.setKey(1);
+      store = NeoDbFactory.create(d.getKey(), 1, cfg);
+      refFactory = new ReferenceFactory(d.getKey(), store.references(), null);
 
       URL url = getClass().getResource(resource);
       Path path = Paths.get(url.toURI());

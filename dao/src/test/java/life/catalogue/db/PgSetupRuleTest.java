@@ -82,6 +82,7 @@ public class PgSetupRuleTest {
     enums.remove(Setting.class);
     enums.remove(IgnoreReason.class);
     enums.remove(MetadataFormat.class);
+    enums.remove(DoiResolution.class);
     // sort and print
     enums.sort(Comparator.comparing(cl -> BaseEnumSetTypeHandler.pgEnumName(cl)));
     return enums;
