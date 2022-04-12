@@ -121,6 +121,19 @@ public class CslData {
   @JsonProperty("year-suffix")
   private String yearSuffix;
 
+  public CslData() {
+  }
+
+  public CslData(String id) {
+    this.id = id;
+  }
+
+  public static CslData fromDOI(DOI doi) {
+    CslData csl = new CslData();
+    csl.DOI = doi.toString();
+    return csl;
+  }
+
   public boolean hasTitleContainerOrAuthor() {
     return title != null || containerTitle != null || author != null;
   }

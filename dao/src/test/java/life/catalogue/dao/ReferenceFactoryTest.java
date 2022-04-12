@@ -67,7 +67,6 @@ public class ReferenceFactoryTest {
     assertEquals(doi, r.getCsl().getDOI());
     assertEquals(citation.getCitationText(), r.getCitation());
     assertEquals(citation.getTitle(), r.getCsl().getTitle());
-
   }
 
   @Test
@@ -252,9 +251,21 @@ public class ReferenceFactoryTest {
 
   @Test
   public void fromDC() {
-    Reference r = rf.fromDC("doi:10.4657/e463dgv", "full citation missing the year", "Dembridge, M.", "May 2008", "My great garden", "Journal of Herbs", issues);
+    // first without important parts, we should use the full citation here
+    Reference r = rf.fromDC("doi:10.4657/e463dgv", "full citation missing the year", null, "May 2008", null, null, issues);
     assertEquals("doi:10.4657/e463dgv", r.getId());
     assertEquals("full citation missing the year", r.getCitation());
+    assertEquals(2008, (int) r.getYear());
+    assertNotNull(r.getCsl());
+    assertNull(r.getCsl().getTitle());
+    assertNull(r.getCsl().getAuthor());
+    assertEquals(2008, r.getCsl().getIssued().getDateParts()[0][0]);
+    assertNull(r.getCsl().getContainerTitle());
+
+    // now with parsed bits, generating a new citation
+    r = rf.fromDC("doi:10.4657/e463dgv", "full citation missing the year", "Dembridge, M.", "May 2008", "My great garden", "Journal of Herbs", issues);
+    assertEquals("doi:10.4657/e463dgv", r.getId());
+    assertEquals("Dembridge, M. (2008). My great garden. Journal of Herbs. https://doi.org/10.4657/e463dgv", r.getCitation());
     assertEquals(2008, (int) r.getYear());
     assertNotNull(r.getCsl());
     assertEquals("My great garden", r.getCsl().getTitle());

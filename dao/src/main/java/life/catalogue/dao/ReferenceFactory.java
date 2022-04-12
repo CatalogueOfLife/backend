@@ -102,55 +102,22 @@ public class ReferenceFactory {
     }
     return r;
   }
-  
+
   /**
-   * Builds a reference instance from a ACEF reference record.
-   * First tries to lookup an existing reference by its id.
+   * Builds a new reference instance from an ACEF reference record.
    * Does not persist the instance to the ref store.
    *
    * Example: Ross, J.H. | 1979 | A conspectus of African Acacia | Mem. Bot. Surv. S. Afr. 44: 1-150
    * | TaxAccRef
    *
-   * @param referenceID
+   * @param referenceID reference identifier
    * @param authors     author (or many) of publication
    * @param year        of publication
    * @param title       of paper or book
    * @param details     title of periodicals, volume number, and other common bibliographic details
-   * @return
-   *     Reference ref = fromAny(datasetKey, referenceID, null, authors, year, title, details, null, issues);
    */
-  public Reference fromACEF(int datasetKey, String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
-    CslData csl = new CslData();
-    csl.setId(referenceID);
-    // ACEF keeps authors and editors in the same field - try to detect
-    if (authors != null) {
-      var m = EDS.matcher(authors);
-      if (m.find()) {
-        csl.setEditor(parseAuthors(m.replaceFirst("").trim(), issues));
-      } else {
-        csl.setAuthor(parseAuthors(authors, issues));
-      }
-    }
-    csl.setTitle(title);
-    csl.setIssued(ReferenceFactory.toCslDate(year));
-    csl.setContainerTitle(details);
-    if (!StringUtils.isBlank(details)) {
-      // details can include any of the following and probably more: volume, edition, series, page, publisher
-      // try to parse out volume, issues and pages
-      CslUtil.parseVolumeIssuePage(details).ifPresentOrElse(vip -> {
-        csl.setContainerTitle(vip.beginning);
-        csl.setVolume(ObjectUtils.toString(vip.volume));
-        csl.setIssue(ObjectUtils.toString(vip.issue));
-        csl.setPage(ObjectUtils.toString(vip.page));
-      }, () -> {
-        issues.addIssue(Issue.CITATION_DETAILS_UNPARSED);
-      });
-    }
-    return fromCsl(datasetKey, csl);
-  }
-  
   public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
-    return fromACEF(datasetKey, referenceID, authors, year, title, details, issues);
+    return fromDC(true, referenceID, null, authors, year, title, details, issues);
   }
   
   public Reference fromColDP(VerbatimRecord v) {
@@ -178,36 +145,42 @@ public class ReferenceFactory {
     csl.setISSN(v.get(ColdpTerm.issn));
     csl.setDOI(v.get(ColdpTerm.doi));
     csl.setURL(v.get(ColdpTerm.link));
-    var ref = fromCsl(datasetKey, csl);
-    ref.setRemarks(v.get(ColdpTerm.remarks));
-    resolveDOI(ref);
-    if (v.hasTerm(ColdpTerm.citation) && (ref.getCitation() == null || !ref.getCsl().hasTitleContainerOrAuthor())) {
-      ref.setCitation(v.get(ColdpTerm.citation));
-    }
-    return ref;
+
+    return fromCsl(datasetKey, csl, v.get(ColdpTerm.citation), v.get(ColdpTerm.remarks));
   }
 
   private void resolveDOI(Reference ref) {
-    if (resolveDOIs != DoiResolution.NEVER && ref.getCsl().getDOI() != null) {
+    if (ref.getCsl() != null && ref.getCsl().getDOI() != null && (
+      resolveDOIs == DoiResolution.ALWAYS || resolveDOIs == DoiResolution.MISSING && !ref.getCsl().hasTitleContainerOrAuthor()
+    )) {
       DOI.parse(ref.getCsl().getDOI()).ifPresent(doi -> {
         Citation c = resolver.resolve(doi);
-        copyCitation2Ref(ref, c);
+        if (c != null) {
+          var csl = CslDataConverter.toCslData(c.toCSL());
+          csl.setDOI(ref.getCsl().getDOI());
+          ref.setCsl(csl);
+        }
       });
-    }
-  }
-  private void copyCitation2Ref(Reference ref, Citation c) {
-    if (ref != null && c != null) {
-      var csl = CslDataConverter.toCslData(c.toCSL());
-      ref.setCsl(csl);
     }
   }
 
   public Reference fromCsl(int datasetKey, CslData csl) {
+    return fromCsl(datasetKey, csl, null, null);
+  }
+
+  public Reference fromCsl(int datasetKey, CslData csl, String citation, String remarks) {
     Reference ref = newReference(datasetKey, csl.getId());
+    ref.setRemarks(remarks);
     ref.setCsl(csl);
-    resolveDOI(ref);
-    // generate default APA citation string
-    ref.setCitation(CslUtil.buildCitation(csl));
+    lookForDOI(ref);
+    resolveDOI(ref); // this can create a new csl instance!
+    // if a full citation is given prefer that over a CSL generated one in case we do not have structured basics
+    if (!StringUtils.isBlank(citation) && !ref.getCsl().hasTitleContainerOrAuthor()) {
+      ref.setCitation(citation);
+    } else {
+      // generate default APA citation string
+      ref.setCitation(CslUtil.buildCitation(ref.getCsl()));
+    }
     updateIntYearFromCsl(ref);
     return ref;
   }
@@ -223,48 +196,55 @@ public class ReferenceFactory {
       }
     }
   }
-  
-    /**
-     * Very similar to fromACEF but optionally providing a full citation given as
-     * bibliographicCitation
-     *
-     * @param identifier
-     * @param bibliographicCitation
-     * @param creator
-     * @param date
-     * @param title
-     * @param source
-     * @param issues
-     * @return
-     */
+
+  /**
+   * Factory method that takes the core DublinCore set of fields just like ACEF, but optionally also providing a full citation given as
+   * bibliographicCitation
+   **/
   public Reference fromDC(String identifier, String bibliographicCitation,
                           String creator, String date, String title, String source,
                           IssueContainer issues) {
-    Reference ref = find(identifier, bibliographicCitation);
+    return fromDC(false, identifier, bibliographicCitation, creator, date, title, source, issues);
+  }
+
+  /**
+   * Factory method that takes the core DublinCore set of fields just like ACEF, but optionally also providing a full citation given as
+   * bibliographicCitation
+   **/
+  private Reference fromDC(boolean forceNew, String identifier, String bibliographicCitation,
+                          String creator, String date, String title, String source,
+                          IssueContainer issues) {
+    Reference ref = forceNew ? null : find(identifier, bibliographicCitation);
     if (ref == null) {
-      ref = newReference(datasetKey, identifier);
-      if (!StringUtils.isBlank(bibliographicCitation)) {
-        ref.setCitation(bibliographicCitation);
-      }
-      ref.setYear(parseYear(date));
-      if (hasContent(creator, date, title, source)) {
-        if (ref.getCitation() == null) {
-          ref.setCitation(buildCitation(creator, date, title, source));
-        }
-        CslData csl = new CslData();
-        ref.setCsl(csl);
-        csl.setAuthor(parseAuthors(creator, issues));
-        csl.setTitle(nullIfEmpty(title));
-        csl.setIssued(toCslDate(date));
-        if (!StringUtils.isEmpty(source)) {
-          csl.setContainerTitle(source);
-          issues.addIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED);
+      CslData csl = new CslData();
+      csl.setId(identifier);
+      // ACEF keeps authors and editors in the same field - try to detect
+      if (creator != null) {
+        var m = EDS.matcher(creator);
+        if (m.find()) {
+          csl.setEditor(parseAuthors(m.replaceFirst("").trim(), issues));
+        } else {
+          csl.setAuthor(parseAuthors(creator, issues));
         }
       }
+      csl.setTitle(title);
+      csl.setIssued(ReferenceFactory.toCslDate(date));
+      csl.setContainerTitle(source);
+      if (!StringUtils.isBlank(source)) {
+        // details can include any of the following and probably more: volume, edition, series, page, publisher
+        // try to parse out volume, issues and pages
+        CslUtil.parseVolumeIssuePage(source).ifPresentOrElse(vip -> {
+          csl.setContainerTitle(vip.beginning);
+          csl.setVolume(ObjectUtils.toString(vip.volume));
+          csl.setIssue(ObjectUtils.toString(vip.issue));
+          csl.setPage(ObjectUtils.toString(vip.page));
+        }, () -> issues.addIssue(Issue.CITATION_DETAILS_UNPARSED));
+      }
+      return fromCsl(datasetKey, csl, bibliographicCitation, null);
     }
     return ref;
   }
-  
+
   /**
    * Creates a Reference instance from a DarwinCore data source.
    *
@@ -531,8 +511,27 @@ public class ReferenceFactory {
     Reference ref = new Reference();
     ref.setId(id);
     ref.setDatasetKey(datasetKey);
-    DOI.parse(id).ifPresent(ref.getCsl()::setDOI);
     return ref;
   }
 
+  /**
+   * Copies a DOI found as the identifier into the CSL DOI field.
+   * @return same instance as given
+   */
+  private static Reference lookForDOI(Reference ref) {
+    if (ref.getCsl() == null || ref.getCsl().getDOI() == null) {
+      Optional<DOI> doi = DOI.parse(ref.getId());
+      if (!doi.isPresent() && ref.getCsl() != null) {
+        doi= DOI.parse(ref.getCsl().getId())
+                .or(() -> DOI.parse(ref.getCsl().getURL()));
+      }
+      doi.ifPresent(d -> {
+        if (ref.getCsl() == null) {
+          ref.setCsl(new CslData(ref.getId()));
+        }
+        ref.getCsl().setDOI(d);
+      });
+    }
+    return ref;
+  }
 }
