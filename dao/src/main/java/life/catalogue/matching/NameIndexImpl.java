@@ -346,7 +346,6 @@ public class NameIndexImpl implements NameIndex {
       add(n);
       match.setName(n);
       match.setType(MatchType.EXACT);
-      LOG.debug("Inserted: {}", match.getName().getLabel());
       return match;
     }
     return match2;
@@ -359,7 +358,6 @@ public class NameIndexImpl implements NameIndex {
   @Override
   public void add(IndexName name) {
     final String key = key(name);
-    name.setRank(normRank(name.getRank()));
 
     try (SqlSession s = sqlFactory.openSession(true)) {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
@@ -370,12 +368,12 @@ public class NameIndexImpl implements NameIndex {
       name.setModified(LocalDateTime.now());
 
       if (name.hasAuthorship()) {
+        name.setRank(normRank(name.getRank())); // canonical names have a much stronger rank normalisation
         // make sure there exists a canonical name without authorship already
         IndexName canonical = getCanonical(key);
         if (canonical == null) {
           // insert new canonical
           canonical = new IndexName();
-          canonical.setRank(normCanonicalRank(name.getRank()));
           if (name.getInfragenericEpithet() != null && name.isInfrageneric()) {
             canonical.setUninomial(name.getInfragenericEpithet());
           } else {
@@ -405,6 +403,7 @@ public class NameIndexImpl implements NameIndex {
   }
 
   private void createCanonical(NamesIndexMapper nim, String key, IndexName cn){
+    cn.setRank(normCanonicalRank(cn.getRank()));
     // mybatis default canonicalID to the newly created key in the database...
     nim.create(cn);
     // ... but the instance is not updated automatically

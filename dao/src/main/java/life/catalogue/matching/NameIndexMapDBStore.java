@@ -183,6 +183,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
     avail();
     check(name);
 
+    LOG.debug("Insert {}{} #{} keyed on >{}<", name.isCanonical() ? "canonical ":"", name.getLabelWithRank(), name.getKey(), key);
     keys.put(name.getKey(), name);
 
     // update names group

@@ -36,5 +36,4 @@ public interface NameIndexStore extends Managed {
   boolean containsKey(String key);
   
   void add(String key, IndexName name);
-
 }
