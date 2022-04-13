@@ -78,7 +78,7 @@ public class NormalizerTreeIT {
     //acefIds = IntStream.empty();
     //acefIds = IntStream.of(0);
     //dwcaIds = IntStream.empty();
-    //dwcaIds = IntStream.of(31, 32, 33, 34);
+    //dwcaIds = IntStream.of(7,31);
     //coldpIds = IntStream.empty();
     return Stream.concat(
         //List.<Object[]>of(new Object[] {DataFormat.DWCA, 17}).stream(),

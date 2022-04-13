@@ -20,6 +20,7 @@
 		<field index="13" term="http://rs.tdwg.org/dwc/terms/class"/>
 		<field index="15" term="http://rs.tdwg.org/dwc/terms/phylum"/>
 		<field index="16" term="http://rs.tdwg.org/dwc/terms/kingdom"/>
-	</core>
+    <field default="botanical" term="http://rs.tdwg.org/dwc/terms/nomenclaturalCode"/>
+  </core>
 </archive>
 
