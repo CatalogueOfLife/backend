@@ -18,7 +18,6 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -28,7 +27,6 @@ import org.gbif.nameparser.util.UnicodeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -121,53 +119,11 @@ public class NameIndexImpl implements NameIndex {
   }
 
   /**
-   * Strong normaliztion to just a few rank buckets:
-   *
-   * SUPRAGENERIC_NAME for anything above the family group, maybe label as "SUPRAFAMILY" in UI)
-   * FAMILY for any family group monomials MEGAFAMILY-INFRATRIBE
-   * GENUS for genus group monomials GENUS-INFRAGENERIC_NAME
-   * SPECIES for binomials SPECIES_AGGREGATE-SPECIES
-   * SUBSPECIES for trinomials INFRASPECIFIC_NAME-STRAIN
-   * UNRANKED
-   */
-  public static Rank normCanonicalRank(Rank r) {
-    if (r == null || r.otherOrUnranked()) {
-      return Rank.UNRANKED;
-
-    } else if (r.isFamilyGroup()) {
-      return Rank.FAMILY;
-
-    } else if (r.isGenusGroup()) {
-      return Rank.GENUS;
-
-    } else if (r.isSuprageneric()) {
-      return Rank.SUPRAGENERIC_NAME;
-
-    } else if (r == Rank.SPECIES_AGGREGATE || r == Rank.SPECIES) {
-      return Rank.SPECIES;
-
-    } else if (r.isInfraspecific()) {
-      return Rank.SUBSPECIES;
-    }
-    // should never reach here
-    throw new IllegalArgumentException("Unknown rank " + r);
-  }
-
-  /**
-   * Very weak normalisation of ranks, mapping only null and uncomparable ranks to unranked.
-   */
-  public static Rank normRank(Rank r) {
-    if (r == null || r.otherOrUnranked() || r.isUncomparable()) {
-      return Rank.UNRANKED;
-    }
-    return r;
-  }
-
-  /**
    * Does comparison by rank, name & author to pick real match from candidates
    */
   private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
-    final Rank rank = normRank(query.getRank());
+    final Rank rank = IndexName.normRank(query.getRank());
+    final Rank canonRank = IndexName.normCanonicalRank(query.getRank());
     final boolean compareRank = rank != Rank.UNRANKED;
     final boolean hasAuthorship = query.hasAuthorship();
     final String canonicalname = NameFormatter.canonicalName(query);
@@ -179,12 +135,19 @@ public class NameIndexImpl implements NameIndex {
     int bestScore = 0;
     final List<IndexName> matches = new ArrayList<>();
     for (IndexName n : candidates) {
+      boolean isCanon = n.isCanonical();
       // 0 to 5
       int score = 0;
       
-      // make sure rank match up exactly if part of query
-      if (compareRank && !match(rank, n.getRank())) {
+      // for non canonical matches ranks need to match up exactly
+      // for canonical matches we only compare the strongly normalised ranks
+      if (compareRank && rank != n.getRank()
+          && n.getRank() != Rank.UNRANKED
+          && (!isCanon || canonRank != n.getRank())) {
         continue;
+      }
+      if (rank == n.getRank()) {
+        score += 1;
       }
 
       // we only want matches without an authorship
@@ -194,7 +157,7 @@ public class NameIndexImpl implements NameIndex {
 
       // exact full name match: =5
       if (queryfullname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.getLabel()))) {
-        score = 5;
+        score += 5;
         
       } else {
 
@@ -215,7 +178,7 @@ public class NameIndexImpl implements NameIndex {
           }
         }
 
-        // avoid exact matches to different infrgenerics - unless the match is a canonical one that does not have infrageneric epithets
+        // avoid exact matches to different infragenerics - unless the match is a canonical one that does not have infrageneric epithets
         if (!n.isCanonical() && !Objects.equals(n.getInfragenericEpithet(), query.getInfragenericEpithet())) {
           continue;
         }
@@ -235,9 +198,9 @@ public class NameIndexImpl implements NameIndex {
     } else if (matches.size() == 1) {
       IndexName m0 = matches.get(0);
       m.setName(m0);
-      if (query.getLabel().equalsIgnoreCase(m0.getLabel())) {
+      if (query.getLabel().equalsIgnoreCase(m0.getLabel()) && query.getRank() == m0.getRank()) {
         m.setType(MatchType.EXACT);
-      } else if (m0.isCanonical() && (hasAuthorship || !canonicalname.equals(queryfullname))) {
+      } else if (m0.isCanonical() && (hasAuthorship || !canonicalname.equals(queryfullname) || query.getRank() != m0.getRank())) {
         m.setType(MatchType.CANONICAL);
       } else {
         m.setType(MatchType.VARIANT);
@@ -356,55 +319,43 @@ public class NameIndexImpl implements NameIndex {
    * This method is not thread safe!
    */
   @Override
-  public void add(IndexName name) {
-    final String key = key(name);
+  public void add(IndexName n) {
+    final String key = key(n);
 
     try (SqlSession s = sqlFactory.openSession(true)) {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
 
-      name.setCreatedBy(Users.MATCHER);
-      name.setCreated(LocalDateTime.now());
-      name.setModifiedBy(Users.MATCHER);
-      name.setModified(LocalDateTime.now());
+      n.setCreatedBy(Users.MATCHER);
+      n.setCreated(LocalDateTime.now());
+      n.setModifiedBy(Users.MATCHER);
+      n.setModified(LocalDateTime.now());
 
-      if (name.hasAuthorship()) {
-        name.setRank(normRank(name.getRank())); // canonical names have a much stronger rank normalisation
-        // make sure there exists a canonical name without authorship already
-        IndexName canonical = getCanonical(key);
-        if (canonical == null) {
-          // insert new canonical
-          canonical = new IndexName();
-          if (name.getInfragenericEpithet() != null && name.isInfrageneric()) {
-            canonical.setUninomial(name.getInfragenericEpithet());
-          } else {
-            canonical.setUninomial(name.getUninomial());
-            canonical.setGenus(name.getGenus());
-            canonical.setSpecificEpithet(name.getSpecificEpithet());
-            canonical.setInfraspecificEpithet(name.getInfraspecificEpithet());
-            canonical.setCultivarEpithet(name.getCultivarEpithet());
-          }
-          canonical.setCreatedBy(Users.MATCHER);
-          canonical.setModifiedBy(Users.MATCHER);
-          if (name.isParsed()) {
-            canonical.setScientificName(NameFormatter.canonicalName(name));
-          } else {
-            canonical.setScientificName(name.getScientificName());
-          }
-          createCanonical(nim, key, canonical);
-        }
-        name.setCanonicalId(canonical.getKey());
-        nim.create(name);
-        store.add(key, name);
+      // rebuild standard name strings if parsed
+      if (n.isParsed()) {
+        n.setScientificName(NameFormatter.scientificName(n));
+        n.setAuthorship(NameFormatter.authorship(n, false));
+      }
+
+      if (n.qualifiesAsCanonical()) {
+        createCanonical(nim, key, n);
 
       } else {
-        createCanonical(nim, key, name);
+        // make sure there exists a canonical name without authorship and strongly normalised rank already
+        IndexName cn = getCanonical(key);
+        if (cn == null) {
+          // insert new canonical
+          cn = IndexName.newCanonical(n);
+          createCanonical(nim, key, cn);
+        }
+        n.setCanonicalId(cn.getKey());
+        nim.create(n);
+        store.add(key, n);
       }
     }
   }
 
   private void createCanonical(NamesIndexMapper nim, String key, IndexName cn){
-    cn.setRank(normCanonicalRank(cn.getRank()));
-    // mybatis default canonicalID to the newly created key in the database...
+    // mybatis defaults canonicalID to the newly created key in the database...
     nim.create(cn);
     // ... but the instance is not updated automatically
     cn.setCanonicalId(cn.getKey());

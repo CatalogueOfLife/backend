@@ -24,6 +24,11 @@ public interface ScientificName {
 
   String getLabel();
 
+  @JsonIgnore
+  default String getLabelWithRank() {
+    return getLabel() + " [" + getRank() + "]";
+  }
+
   /**
    * @return true if any kind of authorship exists
    */

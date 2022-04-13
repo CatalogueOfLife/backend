@@ -75,11 +75,10 @@ public class NameMatch {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append(type.name())
-        .append(" match");
+    sb.append(type.name());
     if (type != MatchType.NONE) {
       sb.append(": ");
-      sb.append(name.getLabel(false));
+      sb.append(name.getLabelWithRank());
     }
     return sb.toString();
   }

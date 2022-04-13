@@ -167,10 +167,11 @@ public class NameFormatter {
             }
           }
           if (showInfraGen) {
-            // If we know the rank we use explicit rank markers
-            // this is how botanical infrageneric names are formed, see http://www.iapt-taxon.org/nomen/main.php?page=art21
-            if (appendRankMarker(sb, n.getRank(), NamePart.INFRAGENERIC == n.getNotho())) {
-              sb.append(' ');
+            // For botanical names we use explicit rank markers, see http://www.iapt-taxon.org/nomen/main.php?page=art21
+            if (NomCode.BOTANICAL == n.getCode()) {
+              if (appendRankMarker(sb, n.getRank(), NamePart.INFRAGENERIC == n.getNotho())) {
+                sb.append(' ');
+              }
             }
             sb.append(n.getInfragenericEpithet());
           }

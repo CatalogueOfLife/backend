@@ -17,6 +17,7 @@ import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -26,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
@@ -50,60 +52,62 @@ public class NameIndexImplIT {
   @After
   public void stop() throws Exception {
     if (ni != null) {
+      dumpIndex();
       ni.close();
     }
   }
 
   void addTestNames() throws Exception {
     List.of(
-      // 1
+      // 1+2
       iname("Animalia", Rank.KINGDOM),
-      // 2+3
+      // 3+4
       iname("Oenanthe Vieillot, 1816", Rank.GENUS),
-      // 4
-      iname("Oenanthe Pallas, 1771", Rank.GENUS),
       // 5
-      iname("Oenanthe L.", Rank.GENUS),
+      iname("Oenanthe Pallas, 1771", Rank.GENUS),
       // 6
-      iname("Oenanthe aquatica", Rank.SPECIES),
+      iname("Oenanthe L.", Rank.GENUS),
       // 7
-      iname("Oenanthe aquatica Poir.", Rank.SPECIES),
+      iname("Oenanthe aquatica", Rank.SPECIES),
       // 8
-      iname("Oenanthe aquatica Senser, 1957", Rank.SPECIES),
+      iname("Oenanthe aquatica Poir.", Rank.SPECIES),
       // 9
-      iname("Natting tosee", Rank.SPECIES),
+      iname("Oenanthe aquatica Senser, 1957", Rank.SPECIES),
       // 10
-      iname("Abies alba", Rank.SPECIES),
+      iname("Natting tosee", Rank.SPECIES),
       // 11
-      iname("Abies alba Mumpf.", Rank.SPECIES),
+      iname("Abies alba", Rank.SPECIES),
       // 12
+      iname("Abies alba Mumpf.", Rank.SPECIES),
+      // 13
       iname("Abies alba 1778", Rank.SPECIES),
-      // 13+14
+      // 14+15
       iname("Picea alba 1778", Rank.SPECIES),
-      // 15
-      iname("Picea", Rank.GENUS),
       // 16
-      iname("Carex cayouettei", Rank.SPECIES),
+      iname("Picea", Rank.GENUS),
       // 17
-      iname("Carex comosa × Carex lupulina", Rank.SPECIES),
+      iname("Carex cayouettei", Rank.SPECIES),
       // 18
-      iname("Natting tosee2", Rank.SPECIES),
+      iname("Carex comosa × Carex lupulina", Rank.SPECIES),
       // 19
-      iname("Natting tosee3", Rank.SPECIES),
+      iname("Natting tosee2", Rank.SPECIES),
       // 20
-      iname("Natting tosee4", Rank.SPECIES),
+      iname("Natting tosee3", Rank.SPECIES),
       // 21
-      iname("Natting tosee5", Rank.SPECIES),
+      iname("Natting tosee4", Rank.SPECIES),
       // 22
-      iname("Rodentia", Rank.GENUS),
+      iname("Natting tosee5", Rank.SPECIES),
       // 23
-      iname("Rodentia Bowdich, 1821", Rank.ORDER),
+      iname("Rodentia", Rank.GENUS),
       // 24
+      iname("Rodentia Bowdich, 1821", Rank.ORDER),
+      // 25
       iname("Aeropyrum coil-shaped virus", Rank.UNRANKED)
     ).forEach(n -> {
       ni.add(n);
     });
-    assertEquals(24, ni.size());
+    dumpIndex();
+    assertEquals(25, ni.size());
   }
 
   void setupMemory(boolean erase) throws Exception {
@@ -209,7 +213,6 @@ public class NameIndexImplIT {
   @Test
   public void infraspecifics() throws Exception {
     setupMemory(true);
-    assertEquals(0, ni.size());
 
     Name n1 = new Name();
     n1.setScientificName("Abies alba alba");
@@ -221,30 +224,99 @@ public class NameIndexImplIT {
     n1.setRank(Rank.SUBSPECIES);
     n1.setType(NameType.SCIENTIFIC);
 
-    NameMatch m1 = ni.match(n1, true, true);
-    assertEquals(MatchType.EXACT, m1.getType());
-    assertEquals(n1.getScientificName(), m1.getName().getScientificName());
-    final int canonID = m1.getName().getCanonicalId();
+    NameMatch m = ni.match(n1, true, true);
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals(n1.getScientificName(), m.getName().getScientificName());
+    final int canonID = m.getName().getCanonicalId();
+    final int m1Key = m.getNameKey();
 
-    Name n2 = new Name(n1);
-    n2.setRank(Rank.VARIETY);
-    NameMatch m2 = ni.match(n2, true, true);
-    assertEquals(MatchType.EXACT, m2.getType());
-    assertNotEquals(m1.getNameKey(), m2.getNameKey());
-    assertCanonicalNidx(m2, canonID);
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+      n.setRank(Rank.VARIETY);
+    });
+    assertNotEquals(m1Key, (int) m.getNameKey());
+    assertCanonicalNidx(m, canonID);
+    final int m2Key = m.getNameKey();
 
-    Name n3 = new Name(n2);
-    n1.setScientificName("Abies alba var. alba");
-    NameMatch m3 = ni.match(n3, true, true);
-    assertEquals(MatchType.EXACT, m3.getType());
-    assertNidx(m3, m2.getNameKey(), canonID);
+    // the scientificName is rebuilt if parsed, so this one is the exact same as above
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+      n.setRank(Rank.VARIETY);
+      n.setScientificName("Abies alba var. alba");
+    });
+    assertNidx(m, m2Key, canonID);
 
-    Name n4 = new Name(n1);
-    n4.setRank(Rank.FORM);
-    NameMatch m4 = ni.match(n4, true, true);
-    assertEquals(MatchType.EXACT, m4.getType());
-    assertNotEquals(m1.getNameKey(), m4.getNameKey());
-    assertCanonicalNidx(m4, canonID);
+    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
+      n.setRank(Rank.VARIETY);
+      n.setScientificName("Abies alba × alba");
+      n.setNotho(NamePart.INFRASPECIFIC);
+    });
+    assertNidx(m, m2Key, canonID);
+    final int m4Key = m.getNameKey();
+
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+      n.setRank(Rank.FORM);
+    });
+    assertNotEquals(m1Key, (int) m.getNameKey());
+    assertNotEquals(m2Key, (int) m.getNameKey());
+    assertCanonicalNidx(m, canonID);
+    final int m5Key = m.getNameKey();
+
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+      n.setRank(Rank.FORM);
+      n.setAuthorship(null);
+      n.setCombinationAuthorship(null);
+      n.setScientificName("Abies alba f. alba");
+    });
+    assertNotEquals(m5Key, (int) m.getNameKey());
+    assertCanonicalNidx(m, canonID);
+    final int m6Key = m.getNameKey();
+  }
+
+  @Test
+  public void higher() throws Exception {
+    setupMemory(true);
+
+    Name n1 = new Name();
+    n1.setScientificName("Puma");
+    n1.setUninomial("Puma");
+    n1.setAuthorship("L.");
+    n1.setCombinationAuthorship(Authorship.authors("L."));
+    n1.setRank(Rank.GENUS);
+    n1.setType(NameType.SCIENTIFIC);
+
+    NameMatch m = ni.match(n1, true, true);
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals(n1.getScientificName(), m.getName().getScientificName());
+    final int canonID = m.getName().getCanonicalId();
+    final int m1Key = m.getNameKey();
+
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+      n.setRank(Rank.SUBGENUS);
+    });
+    assertNotEquals(m1Key, (int) m.getNameKey());
+    assertCanonicalNidx(m, canonID);
+    final int m2Key = m.getNameKey();
+
+    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
+      n.setAuthorship("Linné");
+      n.setCombinationAuthorship(Authorship.authors("Linné"));
+    });
+    assertNidx(m, m1Key, canonID);
+
+    // we query with a canonical, hence exact
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+      n.setRank(Rank.SUBGENUS);
+      n.setAuthorship(null);
+      n.setCombinationAuthorship(null);
+    });
+    assertCanonicalNidx(m, canonID);
+  }
+
+  private NameMatch matchNameCopy(Name original, MatchType matchTypeAssertion, Consumer<Name> modifier) {
+    Name n = new Name(original);
+    modifier.accept(n);
+    NameMatch nm = ni.match(n, true, true);
+    assertEquals("", matchTypeAssertion, nm.getType());
+    return nm;
   }
 
   void assertNidx(NameMatch m, int nidx, int canonicalID){
@@ -273,18 +345,24 @@ public class NameIndexImplIT {
     n1.setRank(Rank.SPECIES);
     n1.setType(NameType.SCIENTIFIC);
 
-    Name n2 = new Name(n1);
+    Name n2 = new Name(n1); // should be a variant and no new index name
     n2.setSpecificEpithet("albus");
-    n1.setScientificName("Abies albus");
+    n2.setScientificName("Abies albus");
 
-    Name n3 = new Name(n1);
+    Name n3 = new Name(n1); // should be the canonical and no new index name
     n3.setAuthorship(null);
     n3.setCombinationAuthorship(null);
 
-    Name n4 = new Name(n1);
-    n4.setRank(Rank.SPECIES_AGGREGATE);
+    Name n4 = new Name(n2); // should be the canonical and no new index name
+    n4.setAuthorship(null);
+    n4.setCombinationAuthorship(null);
 
-    final List<Name> rawNames = List.of(n1, n2, n3, n4);
+    Name n5 = new Name(n1); // should be the same
+    n1.setAuthorship("Miller");
+    n1.setCombinationAuthorship(Authorship.authors("Miller"));
+
+
+    final List<Name> rawNames = List.of(n1, n2, n3, n4, n5);
     final AtomicInteger counter = new AtomicInteger(0);
     ExecutorService exec = Executors.newFixedThreadPool(52, new NamedThreadFactory("test-matcher"));
 
@@ -310,23 +388,25 @@ public class NameIndexImplIT {
         } else {
           assertEquals(idx, cidx);
         }
-        assertEquals(2, ni.size());
       });
     }
     ExecutorUtils.shutdown(exec);
     watch.stop();
     System.out.println(watch);
 
-    System.out.println("Names Index from memory:");
-    ni.all().forEach(System.out::println);
+    dumpIndex();
+    assertEquals(repeat, counter.get());
+    assertEquals(2, ni.size());
+    assertCanonicalAbiesAlba();
+  }
+
+  void dumpIndex() {
+    //System.out.println("Names Index from memory:");
+    //ni.all().forEach(System.out::println);
     System.out.println("\nNames Index from postgres:");
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(NamesIndexMapper.class).processAll().forEach(System.out::println);
     }
-
-    assertEquals(repeat, counter.get());
-    assertEquals(2, ni.size());
-    assertCanonicalAbiesAlba();
   }
 
   @Test
@@ -440,48 +520,48 @@ public class NameIndexImplIT {
     setupMemory(true);
     addTestNames();
 
-    assertMatch(1, "Animalia", Rank.KINGDOM);
+    assertMatch(2, "Animalia", Rank.KINGDOM);
 
-    assertMatch(22, "Rodentia", Rank.GENUS);
+    assertMatch(23, "Rodentia", Rank.GENUS);
     assertNoMatch("Rodentia", Rank.ORDER);
     assertNoMatch("Rodenti", Rank.ORDER);
     
-    assertMatch(23, "Rodentia Bowdich, 1821", Rank.ORDER);
-    assertMatch(23, "Rodentia Bowdich, 1?21", Rank.ORDER);
-    assertMatch(23, "Rodentia Bowdich", Rank.ORDER);
-    assertMatch(23, "Rodentia 1821", Rank.ORDER);
-    assertMatch(23, "Rodentia Bow.", Rank.ORDER);
-    assertMatch(23, "Rodentia Bow, 1821", Rank.ORDER);
-    assertMatch(23, "Rodentia B 1821", Rank.ORDER);
+    assertMatch(24, "Rodentia Bowdich, 1821", Rank.ORDER);
+    assertMatch(24, "Rodentia Bowdich, 1?21", Rank.ORDER);
+    assertMatch(24, "Rodentia Bowdich", Rank.ORDER);
+    assertMatch(24, "Rodentia 1821", Rank.ORDER);
+    assertMatch(24, "Rodentia Bow.", Rank.ORDER);
+    assertMatch(24, "Rodentia Bow, 1821", Rank.ORDER);
+    assertMatch(24, "Rodentia B 1821", Rank.ORDER);
     assertNoMatch("Rodentia", Rank.FAMILY);
     assertNoMatch("Rodentia Mill., 1823", Rank.SUBORDER);
     
-    assertMatch(2, "Oenanthe", Rank.GENUS);
-    assertMatch(3, "Oenanthe Vieillot", Rank.GENUS);
-    assertMatch(3, "Oenanthe V", Rank.GENUS);
-    assertMatch(3, "Oenanthe Vieillot", Rank.GENUS);
-    assertMatch(4, "Oenanthe P", Rank.GENUS);
-    assertMatch(4, "Oenanthe Pal", Rank.GENUS);
-    assertMatch(4, "Œnanthe 1771", Rank.GENUS);
-    assertMatch(2, "Œnanthe", Rank.GENUS);
-    assertCanonMatch(2, "Oenanthe Camelot", Rank.GENUS);
+    assertMatch(3, "Oenanthe", Rank.GENUS);
+    assertMatch(4, "Oenanthe Vieillot", Rank.GENUS);
+    assertMatch(4, "Oenanthe V", Rank.GENUS);
+    assertMatch(4, "Oenanthe Vieillot", Rank.GENUS);
+    assertMatch(5, "Oenanthe P", Rank.GENUS);
+    assertMatch(5, "Oenanthe Pal", Rank.GENUS);
+    assertMatch(5, "Œnanthe 1771", Rank.GENUS);
+    assertMatch(3, "Œnanthe", Rank.GENUS);
+    assertCanonMatch(3, "Oenanthe Camelot", Rank.GENUS);
 
-    assertMatch(6, "Oenanthe aquatica", Rank.SPECIES);
-    assertMatch(7, "Oenanthe aquatica Poir", Rank.SPECIES);
-    assertMatch(6, "Œnanthe aquatica", Rank.SPECIES);
+    assertMatch(7, "Oenanthe aquatica", Rank.SPECIES);
+    assertMatch(8, "Oenanthe aquatica Poir", Rank.SPECIES);
+    assertMatch(7, "Œnanthe aquatica", Rank.SPECIES);
     
     // it is allowed to add an author to the single current canonical name if it doesnt have an author yet!
-    assertMatch(10, "Abies alba", Rank.SPECIES);
-    assertMatch(12, "Abies alba Döring, 1778", Rank.SPECIES);
-    assertMatch(11, "Abies alba Mumpf.", Rank.SPECIES);
-    assertCanonMatch(10,"Abies alba Mill.", Rank.SPECIES);
-    assertCanonMatch(10,"Abies alba 1789", Rank.SPECIES);
+    assertMatch(11, "Abies alba", Rank.SPECIES);
+    assertMatch(13, "Abies alba Döring, 1778", Rank.SPECIES);
+    assertMatch(12, "Abies alba Mumpf.", Rank.SPECIES);
+    assertCanonMatch(11,"Abies alba Mill.", Rank.SPECIES);
+    assertCanonMatch(11,"Abies alba 1789", Rank.SPECIES);
 
     // try unparsable names
-    assertMatch(16, "Carex cayouettei", Rank.SPECIES);
-    assertMatch(17, "Carex comosa × Carex lupulina", Rank.SPECIES);
-    assertMatch(24, "Aeropyrum coil-shaped virus", Rank.UNRANKED);
-    assertMatch(24, "Aeropyrum coil-shaped virus", Rank.SPECIES);
+    assertMatch(17, "Carex cayouettei", Rank.SPECIES);
+    assertMatch(18, "Carex comosa × Carex lupulina", Rank.SPECIES);
+    assertMatch(25, "Aeropyrum coil-shaped virus", Rank.UNRANKED);
+    assertMatch(25, "Aeropyrum coil-shaped virus", Rank.SPECIES); // given in index as UNRANKED
   }
   
   /**
@@ -491,10 +571,11 @@ public class NameIndexImplIT {
   public void testSubgenusLookup() throws Exception {
     setupMemory(true);
     List<IndexName> names = List.of(
-      //2
+      //1+2
       iname("Animalia", Rank.KINGDOM),
-
+      //3
       iname("Zyras", Rank.GENUS),
+      //4
       iname("Zyras", Rank.SUBGENUS),
       //5
       iname("Drusilla", Rank.GENUS),
@@ -513,17 +594,20 @@ public class NameIndexImplIT {
     );
     ni.addAll(names);
 
-    assertEquals(16, ni.size()); // 6 canonical ones
-    assertEquals(1, (int) names.get(0).getKey());
+    assertEquals(17, ni.size());
+    assertEquals(2, (int) names.get(0).getKey());
+    assertEquals("Zyras", names.get(2).getScientificName());
 
-    assertMatch(5, "Drusilla zyrasoides", Rank.SPECIES);
-    assertMatch(7, MatchType.CANONICAL, "Myrmedonia (Zyras) alternans", Rank.SPECIES);
-    assertMatch(7, MatchType.CANONICAL, "Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
+    assertMatch(6, "Drusilla zyrasoides", Rank.SPECIES);
+
+    assertMatch(6, "Drusilla zyrasoides", Rank.SPECIES);
+    assertMatch(8, MatchType.CANONICAL, "Myrmedonia (Zyras) alternans", Rank.SPECIES);
+    assertMatch(8, MatchType.CANONICAL, "Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
     assertInsert("Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
     assertInsert("Myrmedonia (Larus) alternans Cameron, 1925", Rank.SPECIES);
     assertInsert("Myrmedonia alternans Krill, 1925", Rank.SPECIES);
 
-    assertEquals(19, ni.size());
+    assertEquals(20, ni.size());
   }
 
   static Name name(String name, Rank rank) {

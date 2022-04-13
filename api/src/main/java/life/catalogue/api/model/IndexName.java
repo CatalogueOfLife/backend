@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.jackson.IsEmptyFilter;
+import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.text.StringUtils;
 
 import org.gbif.nameparser.api.*;
@@ -18,7 +19,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Contains all main Name properties but removes all dataset, verbatim, sector extras.
  * It is also code agnostic.
  *
- * All names with an authorship point also to their canonical authorless version.
+ * An index name is considered a canonical name when it does not have any authorship
+ * and has a strongly standardised rank, see {@link IndexName#normCanonicalRank(Rank)}.
+ * All parsed names with an authorship point also to their canonical authorless version.
  */
 public class IndexName extends DataEntity<Integer> implements FormattableName {
 
@@ -66,7 +69,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   public IndexName(Name n) {
     this.scientificName = n.getScientificName();
     this.authorship = n.getAuthorship();
-    this.rank = n.getRank();
+    setRank(n.getRank());
     this.uninomial = n.getUninomial();
     this.genus = n.getGenus();
     this.infragenericEpithet = n.getInfragenericEpithet();
@@ -83,6 +86,76 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   public IndexName(Name n, int key) {
     this(n);
     setKey(key);
+  }
+
+  /**
+   * Creates a new canonical index name from an existing name with a standard rank and no authorship.
+   */
+  public static IndexName newCanonical(IndexName n) {
+    IndexName cn = new IndexName();
+    cn.setCanonicalRank(n.getRank());
+    if (n.getInfragenericEpithet() != null && n.isInfrageneric()) {
+      cn.setUninomial(n.getInfragenericEpithet());
+    } else {
+      cn.setUninomial(n.getUninomial());
+      cn.setGenus(n.getGenus());
+      cn.setSpecificEpithet(n.getSpecificEpithet());
+      cn.setInfraspecificEpithet(n.getInfraspecificEpithet());
+      cn.setCultivarEpithet(n.getCultivarEpithet());
+    }
+    if (n.isParsed()) {
+      cn.setScientificName(NameFormatter.canonicalName(n));
+    } else {
+      cn.setScientificName(n.getScientificName());
+    }
+    cn.setCreated(n.getCreated());
+    cn.setCreatedBy(n.getCreatedBy());
+    cn.setModified(n.getModified());
+    cn.setModifiedBy(n.getModifiedBy());
+    return cn;
+  }
+
+  /**
+   * Very weak normalisation of ranks, mapping only null and uncomparable ranks to unranked.
+   */
+  public static Rank normRank(Rank r) {
+    if (r == null || r.otherOrUnranked() || r.isUncomparable()) {
+      return Rank.UNRANKED;
+    }
+    return r;
+  }
+
+  /**
+   * Strong normaliztion to just a few rank buckets:
+   *
+   * SUPRAGENERIC_NAME for anything above the family group, maybe label as "SUPRAFAMILY" in UI)
+   * FAMILY for any family group monomials MEGAFAMILY-INFRATRIBE
+   * GENUS for genus group monomials GENUS-INFRAGENERIC_NAME
+   * SPECIES for binomials SPECIES_AGGREGATE-SPECIES
+   * SUBSPECIES for trinomials INFRASPECIFIC_NAME-STRAIN
+   * UNRANKED
+   */
+  public static Rank normCanonicalRank(Rank r) {
+    if (r == null || r.otherOrUnranked()) {
+      return Rank.UNRANKED;
+
+    } else if (r.isFamilyGroup()) {
+      return Rank.FAMILY;
+
+    } else if (r.isGenusGroup()) {
+      return Rank.GENUS;
+
+    } else if (r.isSuprageneric()) {
+      return Rank.SUPRAGENERIC_NAME;
+
+    } else if (r == Rank.SPECIES_AGGREGATE || r == Rank.SPECIES) {
+      return Rank.SPECIES;
+
+    } else if (r.isInfraspecific()) {
+      return Rank.SUBSPECIES;
+    }
+    // should never reach here
+    throw new IllegalArgumentException("Unknown rank " + r);
   }
 
   @Override
@@ -163,7 +236,11 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   @Override
   public void setRank(Rank rank) {
-    this.rank = rank == null ? Rank.UNRANKED : rank;
+    this.rank = normRank(rank);
+  }
+
+  public void setCanonicalRank(Rank rank) {
+    this.rank = normCanonicalRank(rank);
   }
 
   @Override
@@ -275,6 +352,17 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   }
 
   /**
+   * Checks the names properties to see if it qualifies for a canonical name,
+   * i.e. a name that has one of the few standard ranks and is
+   *  a) unparsed or b) parsed, but without any authorship.
+   * @return true if this represents a canonical name in the index
+   */
+  @JsonIgnore
+  public boolean qualifiesAsCanonical() {
+    return rank == normCanonicalRank(rank) && !hasAuthorship();
+  }
+
+  /**
    * Full name.O
    * @return same as canonicalNameComplete but formatted with basic html tags
    */
@@ -287,15 +375,6 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   @JsonIgnore
   public String getLabel() {
     return getLabel(false);
-  }
-
-  @JsonIgnore
-  public String getLabelWithRank() {
-    var sb = getLabelBuilder(false);
-    sb.append(" [");
-    sb.append(rank);
-    sb.append("]");
-    return sb.toString();
   }
 
   public String getLabel(boolean html) {
@@ -361,7 +440,11 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   @Override
   public String toString() {
-    return key + " " + getLabel(false);
+    String label = key + " " + getLabelWithRank();
+    if (isCanonical()) {
+      return label.replaceFirst(" \\[", " [CANON ");
+    }
+    return  label;
   }
   
 }
