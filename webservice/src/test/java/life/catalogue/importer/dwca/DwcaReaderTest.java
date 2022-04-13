@@ -83,7 +83,7 @@ public class DwcaReaderTest {
     
     assertEquals(1, reader.size());
     assertEquals(DwcTerm.Taxon, reader.coreRowType());
-    assertEquals(15, reader.coreSchema().size());
+    assertEquals(16, reader.coreSchema().size());
     assertTrue(reader.coreSchema().hasTerm(DwcaTerm.ID));
     assertFalse(reader.coreSchema().hasTerm(DwcTerm.taxonID));
     
