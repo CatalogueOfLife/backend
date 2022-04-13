@@ -98,7 +98,16 @@ public class DwcaReaderTest {
     assertTrue(reader.coreSchema().hasTerm(DwcTerm.scientificName));
     assertTrue(reader.coreSchema().hasTerm(DwcTerm.taxonRank));
   }
-  
+
+  @Test
+  public void dwca41() throws Exception {
+    DwcaReader reader = DwcaReader.from(PathUtils.classPathTestRes("dwca/41"));
+
+    var format = reader.coreSchema().settings.getFormat();
+    assertEquals('\t', format.getDelimiter());
+    assertEquals('\n', format.getNormalizedNewline());
+  }
+
   @Test
   public void dwca14() throws Exception {
     DwcaReader reader = DwcaReader.from(PathUtils.classPathTestRes("dwca/14"));
