@@ -140,7 +140,7 @@ public class NameParserTest {
   
   @Test
   public void parseSubgenera() throws Exception {
-    assertName("Eteone subgen. Mysta", "Eteone subgen. Mysta")
+    assertName("Eteone subgen. Mysta", "Eteone (Mysta)") // no code given, defaults to zoology
         .infraGeneric("Eteone", Rank.SUBGENUS, "Mysta")
         .nothingElse();
     
@@ -241,12 +241,12 @@ public class NameParserTest {
   @Test
   public void parseInfraGeneric() throws Exception {
     
-    assertName("Zignoella subgen. Trematostoma Sacc.", "Zignoella subgen. Trematostoma")
+    assertName("Zignoella subgen. Trematostoma Sacc.", "Zignoella (Trematostoma)")
         .infraGeneric("Zignoella", Rank.SUBGENUS, "Trematostoma")
         .combAuthors(null, "Sacc.")
         .nothingElse();
     
-    assertName("subgen. Trematostoma Sacc.", "subgen. Trematostoma")
+    assertName("subgen. Trematostoma Sacc.", "Trematostoma")
         .infraGeneric(null, Rank.SUBGENUS, "Trematostoma")
         .combAuthors(null, "Sacc.")
         .nothingElse();

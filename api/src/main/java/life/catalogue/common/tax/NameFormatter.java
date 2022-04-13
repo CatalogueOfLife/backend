@@ -153,9 +153,9 @@ public class NameFormatter {
           if (n.getGenus() != null) {
             appendGenus(sb, n);
             sb.append(" ");
-            // we show zoological infragenerics in brackets,
+            // we show infragenerics in brackets, unless its a botanical name
             // but use rank markers for botanical names (unless its no defined rank)
-            if (NomCode.ZOOLOGICAL == n.getCode()) {
+            if (NomCode.BOTANICAL != n.getCode()) {
               sb.append("(");
               if (NamePart.INFRAGENERIC == n.getNotho()) {
                 sb.append(HYBRID_MARKER)
