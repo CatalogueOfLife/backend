@@ -106,6 +106,7 @@ public class CslFormatter {
    * Apply some custom cleaning that allows us to adapt the CSL style without changing the complex CSL files.
    */
   static String customCleaning(String x){
-    return x.replaceAll(" *\\[Data +set\\]", "");
+    return x.replaceAll(" *\\[Data +set\\]", "")
+            .replaceFirst("^(<div class=\"csl-entry\">)?\\(n\\.d\\.\\)\\. *", "$1");
   }
 }

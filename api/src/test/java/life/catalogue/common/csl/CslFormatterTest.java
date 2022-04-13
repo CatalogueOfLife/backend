@@ -89,6 +89,24 @@ public class CslFormatterTest {
     assertFalse(x.contains("[Data set]"));
   }
 
+  @Test
+  public void pureDOI() throws JsonProcessingException {
+    CSLItemDataBuilder builder = new CSLItemDataBuilder()
+      .type(CSLType.ARTICLE_JOURNAL)
+      .DOI("10.1093/database/baw125");
+
+    var text = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT);
+    var html = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.HTML);
+
+    String x = text.cite(builder.build());
+    System.out.println(x);
+    assertFalse(x.contains("(n.d.)"));
+
+    x = html.cite(builder.build());
+    System.out.println(x);
+    assertFalse(x.contains("(n.d.)"));
+  }
+
   /**
    * Not a CSL test really, but the BibTeX
    * @throws IOException
