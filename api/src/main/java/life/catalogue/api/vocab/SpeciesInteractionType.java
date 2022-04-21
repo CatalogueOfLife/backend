@@ -301,7 +301,7 @@ public enum SpeciesInteractionType {
     return INVERSE.get(this);
   }
 
-  boolean isSymmetric() {
+  public boolean isSymmetric() {
     return this == INVERSE.get(this);
   }
 }

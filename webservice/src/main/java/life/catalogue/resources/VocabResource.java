@@ -45,6 +45,7 @@ import de.undercouch.citeproc.csl.CSLType;
 public class VocabResource {
   
   private static final Logger LOG = LoggerFactory.getLogger(VocabResource.class);
+  private static final Pattern GETTER_NAME = Pattern.compile("^(?:is|get|has)([A-Z])(.+)");
   private static final Map<Class<? extends Enum>, Set<String>> ignoreFields = Map.of(
     Rank.class, Set.of("speciesOrBelow", "genusOrSuprageneric", "infrageneric", "infragenericStrictly", "infrasubspecific", "cultivarRank")
   );
@@ -251,10 +252,9 @@ public class VocabResource {
   private static Map<String, Object> enumFields(Enum entry) {
     Map<String, Object> map = new TreeMap<>();
     try {
-      final Pattern GETTER_NAME = Pattern.compile("^(?:is|get|has)([A-Z])(.+)");
       for (var m : entry.getDeclaringClass().getDeclaredMethods()) {
         var matcher = GETTER_NAME.matcher(m.getName());
-        if (!m.isSynthetic() && m.getParameterCount()==0 && matcher.find()) {
+        if (Modifier.isPublic(m.getModifiers()) && !m.isSynthetic() && m.getParameterCount()==0 && matcher.find()) {
           final String name = matcher.group(1).toLowerCase() + matcher.group(2);
           Object val = m.invoke(entry);
           if (val != null) {
