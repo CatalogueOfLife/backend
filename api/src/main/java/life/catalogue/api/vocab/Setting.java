@@ -118,7 +118,7 @@ public enum Setting {
   /**
    * Defines wheter the importer makes use of Crossref to lookup DOI metadata.
    */
-  DOI_RESOLUTION(DoiResolution.class, false);
+  DOI_RESOLUTION(DoiResolution.class, false, EXTERNAL, MANAGED);
 
   private final Class type;
   private final DatasetOrigin[] origin;
