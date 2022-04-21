@@ -109,8 +109,7 @@ public class NameIndexImpl implements NameIndex {
 
   @Override
   public IndexName get(Integer key) {
-    var n = store.get(key);
-    return n;
+    return store.get(key);
   }
 
   @Override
@@ -136,7 +135,7 @@ public class NameIndexImpl implements NameIndex {
     final List<IndexName> matches = new ArrayList<>();
     for (IndexName n : candidates) {
       boolean isCanon = n.isCanonical();
-      // 0 to 5
+      // 0 to 6
       int score = 0;
       
       // for non canonical matches ranks need to match up exactly
