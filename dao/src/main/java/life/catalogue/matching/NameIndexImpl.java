@@ -164,8 +164,8 @@ public class NameIndexImpl implements NameIndex {
         // authorship comparison only for non canonical queries/matches
         if (hasAuthorship) {
           // remove different authorships or
-          // +1 for equal authorships
-          // +2 for exact equal authorship strings
+          // +2 for equal authorships
+          // +3 for exact equal authorship strings
           Equality aeq = authComp.compare(query, n);
           if (aeq == Equality.DIFFERENT) {
             continue;
@@ -174,7 +174,7 @@ public class NameIndexImpl implements NameIndex {
           if (queryauthorship.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.getAuthorship()))) {
             score += 3;
           } else if (aeq == Equality.EQUAL) {
-            score += 1;
+            score += 2;
           }
         }
 
@@ -200,7 +200,7 @@ public class NameIndexImpl implements NameIndex {
       m.setName(m0);
       if (query.getLabel().equalsIgnoreCase(m0.getLabel()) && query.getRank() == m0.getRank()) {
         m.setType(MatchType.EXACT);
-      } else if (m0.isCanonical() && (hasAuthorship || !canonicalname.equals(queryfullname) || query.getRank() != m0.getRank())) {
+      } else if (m0.isCanonical() && (hasAuthorship || !querycanonical.equals(queryfullname) || query.getRank() != m0.getRank())) {
         m.setType(MatchType.CANONICAL);
       } else {
         m.setType(MatchType.VARIANT);
@@ -302,8 +302,10 @@ public class NameIndexImpl implements NameIndex {
    * we need to make sure here again that the name indeed did not yet exist.
    */
   public synchronized NameMatch tryToAdd(Name orig, NameMatch match, boolean verbose) {
+    LOG.debug("{} match, try to add {}", match.getType(), orig.getLabel());
     var match2 = match(orig, false, verbose);
     if (needsInsert(match2, orig)) {
+      LOG.info("{} match, adding {}", match.getType(), orig.getLabel());
       // verified we still do not have that name - insert the original match for real!
       IndexName n = new IndexName(orig);
       add(n);

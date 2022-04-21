@@ -1,5 +1,7 @@
 package life.catalogue.matching;
 
+import com.google.common.collect.Lists;
+
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
@@ -22,6 +24,8 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -328,14 +332,7 @@ public class NameIndexImplIT {
     assertEquals((int)m.getName().getCanonicalId(), canonicalID);
   }
 
-  /**
-   * Try to add the same name concurrently, making sure we never get duplicates in the index
-   */
-  @Test
-  public void concurrentMatching() throws Exception {
-    setupMemory(true);
-    assertEquals(0, ni.size());
-
+  List<Name> prepareTestNames() {
     Name n1 = new Name();
     n1.setScientificName("Abies alba");
     n1.setGenus("Abies");
@@ -361,12 +358,66 @@ public class NameIndexImplIT {
     n1.setAuthorship("Miller");
     n1.setCombinationAuthorship(Authorship.authors("Miller"));
 
+    return List.of(n1, n2, n3, n4, n5);
+  }
 
-    final List<Name> rawNames = List.of(n1, n2, n3, n4, n5);
+  @Test
+  public void sequentialMatching() throws Exception {
+    var names = prepareTestNames();
+    final int repeat = names.size()*2;
+
+    sequentialMatching(names, repeat);
+
+    // now also in reverse ordering
+    var namesRev = new ArrayList<>(names);
+    Collections.reverse(namesRev);
+    sequentialMatching(namesRev, repeat);
+
+    // manual order as failed in concurrent matching
+    var namesAlt = List.of(names.get(2), names.get(1), names.get(0), names.get(4), names.get(3));
+    sequentialMatching(namesAlt, repeat);
+  }
+
+  public void sequentialMatching(List<Name> rawNames, int repeat) throws Exception {
+    setupMemory(true);
+    assertEquals(0, ni.size());
+
+    final AtomicInteger counter = new AtomicInteger(0);
+
+    for (int x=0; x<repeat; x++) {
+      Name n = rawNames.get(x % rawNames.size());
+      counter.incrementAndGet();
+      var m = ni.match(n, true, true);
+      assertTrue(m.hasMatch());
+      final Integer idx = m.getName().getKey();
+      final Integer cidx = m.getName().getCanonicalId();
+      if (n.hasAuthorship()) {
+        assertNotEquals(idx, cidx);
+      } else {
+        assertEquals(idx, cidx);
+      }
+    }
+
+    dumpIndex();
+    assertEquals(repeat, counter.get());
+    assertEquals(2, ni.size());
+    assertCanonicalAbiesAlba();
+    ni.close();
+  }
+
+  /**
+   * Try to add the same name concurrently, making sure we never get duplicates in the index
+   */
+  @Test
+  public void concurrentMatching() throws Exception {
+    setupMemory(true);
+    assertEquals(0, ni.size());
+
+    final List<Name> rawNames = prepareTestNames();
     final AtomicInteger counter = new AtomicInteger(0);
     ExecutorService exec = Executors.newFixedThreadPool(52, new NamedThreadFactory("test-matcher"));
 
-    final int repeat = 1000;
+    final int repeat = rawNames.size() * 60;
     StopWatch watch = StopWatch.createStarted();
     for (int x=0; x<repeat; x++) {
       Name n = rawNames.get(x % rawNames.size());
@@ -380,7 +431,7 @@ public class NameIndexImplIT {
         if (m == null) {
           fail("Matching error");
         }
-        assertEquals(MatchType.EXACT, m.getType());
+        assertTrue(m.hasMatch());
         final Integer idx = m.getName().getKey();
         final Integer cidx = m.getName().getCanonicalId();
         if (n.hasAuthorship()) {
