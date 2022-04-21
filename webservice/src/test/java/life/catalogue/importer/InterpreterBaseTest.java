@@ -238,6 +238,28 @@ public class InterpreterBaseTest {
     assertNull(n.getAuthorship());
     assertTrue(n.getCombinationAuthorship().isEmpty());
     assertNull(n.getCombinationAuthorship().getYear());
+
+    // daggers should be removed from name parts, not just entire names
+    // https://github.com/CatalogueOfLife/data/issues/417
+    pnu = ib.interpretName(true, "1", "species", null, "Hamilton, 1990",
+      null, "Acixiites†", null, "costalis", null, null, null, "original combination, valid: Yes", null, null, v);
+    n = pnu.get().getName();
+    assertEquals("Acixiites costalis", n.getScientificName());
+    assertEquals("Acixiites", n.getGenus());
+    assertEquals("costalis", n.getSpecificEpithet());
+    assertEquals("Hamilton, 1990", n.getAuthorship());
+    assertEquals(Authorship.yearAuthors("1990", "Hamilton"), n.getCombinationAuthorship());
+    assertTrue(n.getBasionymAuthorship().isEmpty());
+
+    pnu = ib.interpretName(true, "1", "species", null, "Hamilton, 1990",
+      null, "Acixiites", null, "costalis †", null, null, null, null, null, null, v);
+    n = pnu.get().getName();
+    assertEquals("Acixiites costalis", n.getScientificName());
+    assertEquals("Acixiites", n.getGenus());
+    assertEquals("costalis", n.getSpecificEpithet());
+    assertEquals("Hamilton, 1990", n.getAuthorship());
+    assertEquals(Authorship.yearAuthors("1990", "Hamilton"), n.getCombinationAuthorship());
+    assertTrue(n.getBasionymAuthorship().isEmpty());
   }
 
   @Test

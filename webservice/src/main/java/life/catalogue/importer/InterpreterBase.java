@@ -408,17 +408,18 @@ public class InterpreterBase {
     if (useAtoms) {
       pnu = new ParsedNameUsage();
       Name atom = new Name();
-      pnu.setName(atom);
-
-      atom.setUninomial(trimToNull(uninomial));
-      atom.setGenus(trimToNull(genus));
-      atom.setInfragenericEpithet(trimToNull(infraGenus));
-      atom.setSpecificEpithet(lowercaseEpithet(species, v));
-      atom.setInfraspecificEpithet(lowercaseEpithet(infraspecies, v));
-      atom.setCultivarEpithet(trimToNull(cultivar));
       atom.setRank(rank);
       atom.setCode(code);
       setDefaultNameType(atom);
+      pnu.setName(atom);
+
+      set(pnu, atom::setUninomial, uninomial);
+      set(pnu, atom::setGenus, genus);
+      set(pnu, atom::setInfragenericEpithet, infraGenus);
+      set(pnu, atom::setSpecificEpithet, lowercaseEpithet(species, v));
+      set(pnu, atom::setInfraspecificEpithet, lowercaseEpithet(infraspecies, v));
+      set(pnu, atom::setCultivarEpithet, cultivar);
+
       // misplaced uninomial in genus field
       if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null && atom.getUninomial() == null) {
         atom.setUninomial(atom.getGenus());
@@ -508,6 +509,34 @@ public class InterpreterBase {
     pnu.getName().rebuildScientificName();
 
     return Optional.of(pnu);
+  }
+
+  private static void set(ParsedNameUsage pnu, Consumer<String> setter, String epithet) {
+    var epi = new ExtinctEpithet(epithet);
+    setter.accept(epi.epithet);
+    if (epi.extinct) {
+      pnu.setExtinct(true);
+    }
+  }
+
+  private static class ExtinctEpithet {
+    final static Pattern DAGGER = Pattern.compile("[††️‡]");
+    final String epithet;
+    final boolean extinct;
+
+    private ExtinctEpithet(String epithet) {
+      boolean dagger = false;
+      epithet = trimToNull(epithet);
+      if (epithet != null) {
+        var m = DAGGER.matcher(epithet);
+        if (m.find()) {
+          epithet = trimToNull(m.replaceAll(""));
+          dagger = true;
+        }
+      }
+      this.epithet = epithet;
+      this.extinct = dagger;
+    }
   }
 
   public NeoUsage interpretUsage(ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term... idTerms) {
