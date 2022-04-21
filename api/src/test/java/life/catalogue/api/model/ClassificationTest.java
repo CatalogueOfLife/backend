@@ -31,9 +31,12 @@ public class ClassificationTest {
     assertTrue(c1.equalsAboveRank(c2, Rank.FAMILY));
     assertFalse(c1.equalsAboveRank(c2, Rank.GENUS));
     
-    c1.setFamily("Pinaceae");
+    c1.setFamily("† Pinaceae"); // dagger and hybrid marker are ignored!
     assertTrue(c1.equalsAboveRank(c2, Rank.GENUS));
-    
+
+    c1.setFamily("×Pinaceae"); // dagger and hybrid marker are ignored!
+    assertTrue(c1.equalsAboveRank(c2, Rank.GENUS));
+
     c1.setKingdom("Plantae");
     c2.setKingdom(c1.getKingdom());
     c1.setPhylum("Phylo");

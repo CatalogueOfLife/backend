@@ -464,6 +464,34 @@ public class NormalizerACEFIT extends NormalizerITBase {
     }
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/417
+   */
+  @Test
+  public void flow() throws Exception {
+    normalize(23);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = usageByID("8229");
+      assertFalse(u.isSynonym());
+      assertEquals("Coleoscyta elytrata (Martynov, 1935)", u.usage.getName().getLabel());
+      assertEquals(NameType.SCIENTIFIC, u.usage.getName().getType());
+      assertEquals("Coleoscyta", u.usage.getName().getGenus());
+      assertEquals("elytrata", u.usage.getName().getSpecificEpithet());
+      assertEquals("(Martynov, 1935)", u.usage.getName().getAuthorship());
+
+      Set<Node> usages = store.usagesByName("Coleoscyta†", null, Rank.GENUS, true);
+      assertTrue(usages.isEmpty());
+      u = usageByName(Rank.GENUS, "Coleoscyta");
+      assertEquals("Coleoscyta", u.usage.getName().getLabel());
+
+      usages = store.usagesByName("Coleoscytidae†", null, Rank.FAMILY, true);
+      assertTrue(usages.isEmpty());
+      u = usageByName(Rank.FAMILY, "Coleoscytidae");
+      assertEquals("Coleoscytidae", u.usage.getName().getLabel());
+    }
+  }
+
   private void assertProParte(NeoUsage syn, String... acceptedNames) {
     Set<String> expected = Sets.newHashSet(acceptedNames);
     List<RankedUsage> accepted = store.accepted(syn.node);

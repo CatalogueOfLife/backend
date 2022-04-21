@@ -3,6 +3,8 @@ package life.catalogue.api.model;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 
+import life.catalogue.common.tax.SciNameNormalizer;
+
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 
@@ -11,7 +13,7 @@ import java.util.Objects;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
+import static life.catalogue.common.tax.SciNameNormalizer.*;
 /**
  *
  */
@@ -448,7 +450,14 @@ public class Classification {
     }
     return false;
   }
-  
+
+  /**
+   * @return the name at given rank, cleaned from potential hybrid markers and dagger symbols
+   */
+  public String getByRankCleaned(Rank rank) {
+    return clean(getByRank(rank));
+  }
+
   public String getByRank(Rank rank) {
     switch (rank) {
       case SUPERKINGDOM:
@@ -562,7 +571,7 @@ public class Classification {
     if (o == null) return false;
     for (Rank r : RANKS) {
       if (r.higherThan(lowest)) {
-        if (!Objects.equals(this.getByRank(r), o.getByRank(r))) {
+        if (!Objects.equals(clean(this.getByRank(r)), clean(o.getByRank(r)))) {
           return false;
         }
       } else {
@@ -570,6 +579,10 @@ public class Classification {
       }
     }
     return false;
+  }
+
+  private static String clean(String x) {
+    return removeHybridMarker(removeDagger(x));
   }
   
 }

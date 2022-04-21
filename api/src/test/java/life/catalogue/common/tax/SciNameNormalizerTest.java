@@ -6,6 +6,13 @@ import static org.junit.Assert.assertEquals;
 
 
 public class SciNameNormalizerTest {
+  @Test
+  public void removeHybridMarker() throws Exception {
+    assertEquals("Abies", SciNameNormalizer.removeHybridMarker("Abies"));
+    assertEquals("Abies", SciNameNormalizer.removeHybridMarker("×Abies"));
+    assertEquals("Carex cayouettei", SciNameNormalizer.removeHybridMarker("Carex ×cayouettei"));
+    assertEquals("Platanus hispanica", SciNameNormalizer.removeHybridMarker("Platanus x hispanica"));
+  }
 
   @Test
   public void testNormalize() throws Exception {

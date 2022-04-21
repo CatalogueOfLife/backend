@@ -512,30 +512,10 @@ public class InterpreterBase {
   }
 
   private static void set(ParsedNameUsage pnu, Consumer<String> setter, String epithet) {
-    var epi = new ExtinctEpithet(epithet);
-    setter.accept(epi.epithet);
+    var epi = new ExtinctName(epithet);
+    setter.accept(epi.name);
     if (epi.extinct) {
       pnu.setExtinct(true);
-    }
-  }
-
-  private static class ExtinctEpithet {
-    final static Pattern DAGGER = Pattern.compile("[††️‡]");
-    final String epithet;
-    final boolean extinct;
-
-    private ExtinctEpithet(String epithet) {
-      boolean dagger = false;
-      epithet = trimToNull(epithet);
-      if (epithet != null) {
-        var m = DAGGER.matcher(epithet);
-        if (m.find()) {
-          epithet = trimToNull(m.replaceAll(""));
-          dagger = true;
-        }
-      }
-      this.epithet = epithet;
-      this.extinct = dagger;
     }
   }
 

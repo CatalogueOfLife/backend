@@ -668,7 +668,7 @@ public class Normalizer implements Callable<Boolean> {
       if ((taxon.rank == null || !taxon.rank.higherThan(hr)) && cl.getByRank(hr) != null) {
         // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
-        for (Node n : store.usagesByName(cl.getByRank(hr), null, hr, true)) {
+        for (Node n : store.usagesByName(cl.getByRankCleaned(hr), null, hr, true)) {
           // ignore synonyms
           if (n.hasLabel(Labels.SYNONYM)) continue;
           if (parent == null) {
@@ -766,16 +766,24 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("{} synonym cycles resolved", counter);
   }
 
+  /**
+   * Creates a new denormalised higher taxon usage.
+   * The given uninomial is allowed to contain a dagger to indicate extinct taxa.
+   */
   private NeoUsage createHigherTaxon(String uninomial, Rank rank) {
     NeoUsage t = NeoUsage.createTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
 
     Name n = new Name();
-    n.setUninomial(uninomial);
+    var eName = new ExtinctName(uninomial);
+    n.setUninomial(eName.name);
     n.setRank(rank);
     n.rebuildScientificName();
     // determine type - can e.g. be placeholders
     n.setType(NameParser.PARSER.determineType(n).orElse(NameType.SCIENTIFIC));
     t.usage.setName(n);
+    if (eName.extinct) {
+      t.asTaxon().setExtinct(true);
+    }
     // store both, which creates a single new neo node
     store.createNameAndUsage(t);
     return t;

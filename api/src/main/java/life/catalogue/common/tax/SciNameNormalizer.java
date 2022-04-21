@@ -3,6 +3,7 @@ package life.catalogue.common.tax;
 import java.util.regex.Pattern;
 
 import static life.catalogue.common.text.StringUtils.foldToAscii;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 
 /**
@@ -34,12 +35,33 @@ public class SciNameNormalizer {
   private static final Pattern empty = Pattern.compile("[?!\"'`_-]");
   private static final Pattern punct = Pattern.compile("[,.:;]");
   private static final Pattern white = Pattern.compile("\\s{2,}");
-  
+  // †
+  public final static Pattern dagger = Pattern.compile("[\\u2020\\u2021\\u271D]");
+
   // dont use guava or commons so we dont have to bundle it for the solr cloud plugin ...
   public static boolean hasContent(String s) {
     return s != null && !(s.trim().isEmpty());
   }
-  
+
+  /**
+   * Removes the dagger symbol from a name string
+   */
+  public static String removeDagger(String name) {
+    if (name == null) return null;
+    return trimToNull(dagger.matcher(name).replaceAll(""));
+  }
+
+  /**
+   * Removes a hybrid cross, or a likely hybrid cross.
+   */
+  public static String removeHybridMarker(String name) {
+    if (name == null) return null;
+    name = removeHybridSignGenus.matcher(name).replaceAll("$1");
+    name = removeHybridSignEpithet.matcher(name).replaceAll(" $1");
+
+    return name;
+  }
+
   /**
    * Folds a name into its ASCII equivalent,
    * replaces all punctuation with space
@@ -81,8 +103,7 @@ public class SciNameNormalizer {
     s = normalizedAscii(s);
     
     // Remove a hybrid cross, or a likely hybrid cross.
-    s = removeHybridSignGenus.matcher(s).replaceAll("$1");
-    s = removeHybridSignEpithet.matcher(s).replaceAll(" $1");
+    s = removeHybridMarker(s);
     
     // Only for bi/trinomials, otherwise we mix up ranks.
     if (normMonomials) {
