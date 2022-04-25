@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.importer.MappingFlags;
+import life.catalogue.csv.MappingInfos;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
@@ -47,9 +47,9 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
   }
   
   private final NeoDb store;
-  private final MappingFlags meta;
+  private final MappingInfos meta;
   
-  public DwcaRelationInserter(NeoDb store, MappingFlags meta) {
+  public DwcaRelationInserter(NeoDb store, MappingInfos meta) {
     this.store = store;
     this.meta = meta;
   }

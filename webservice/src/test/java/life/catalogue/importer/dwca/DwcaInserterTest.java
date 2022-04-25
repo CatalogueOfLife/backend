@@ -12,6 +12,8 @@ import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.neo.model.NeoUsage;
 
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.NomCode;
 
 import java.io.IOException;
@@ -62,7 +64,7 @@ public class DwcaInserterTest extends InserterBaseTest {
       NeoUsage u = store.usages().objByID("319088");
       assertNotNull(u.getVerbatimKey());
       VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
-      v.hasTerm(DwcaReaderTest.TERM_CoL_name);
+      v.hasTerm(new UnknownTerm(URI.create("http://unknown.org/CoL_name"), false));
     }
   }
 

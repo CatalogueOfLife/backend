@@ -5,6 +5,7 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
+import life.catalogue.csv.DwcaReader;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;

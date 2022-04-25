@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.csv.MappingInfos;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -13,7 +14,7 @@ public interface NeoInserter {
 
   Optional<DatasetWithSettings> readMetadata();
 
-  MappingFlags getMappingFlags();
+  MappingInfos getMappingFlags();
 
   Optional<Path> logo();
 }

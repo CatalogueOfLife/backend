@@ -6,7 +6,7 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
-import life.catalogue.importer.MappingFlags;
+import life.catalogue.csv.MappingInfos;
 import life.catalogue.importer.NameValidator;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -34,7 +34,7 @@ public class AcefInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
   private static final int ACEF_AUTHOR_MAX = 100;
 
-  AcefInterpreter(DatasetSettings settings, MappingFlags metadata, ReferenceFactory refFactory, NeoDb store) {
+  AcefInterpreter(DatasetSettings settings, MappingInfos metadata, ReferenceFactory refFactory, NeoDb store) {
     super(settings, refFactory, store);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);

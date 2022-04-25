@@ -94,23 +94,6 @@ public class PathUtils {
   }
   
   /**
-   * Read a classpath resource at test time as a Path.
-   * Not that this requires actual files and does NOT work with classpath resources from jar files!
-   */
-  public static Path classPathTestRes(String resource) {
-    URL url = Resources.getResource(resource);
-    try {
-      return Paths.get(url.toURI());
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-  }
-  
-  public static File classPathTestFile(String resource) {
-    return classPathTestRes(resource).toFile();
-  }
-
-  /**
    * Creates a new symlink to a given file/folder, deleting any previously existing link that might exist.
    * @param link the symlink file to create
    * @param target  the real file to link to

@@ -199,6 +199,8 @@
     <module>doi</module>
     <module>metadata</module>
     <module>parser</module>
+    <module>reader</module>
+    <module>reader-xls</module>
     <module>webservice</module>
     <module>coldp</module>
   </modules>
@@ -238,6 +240,16 @@
         <version>${project.version}</version>
         <classifier>tests</classifier>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>reader</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>reader-xls</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>

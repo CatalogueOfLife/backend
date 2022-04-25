@@ -119,6 +119,14 @@
     </dependency>
     <dependency>
       <groupId>org.catalogueoflife</groupId>
+      <artifactId>reader</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
+      <artifactId>reader-xls</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
       <artifactId>dao</artifactId>
     </dependency>
     <dependency>
@@ -208,7 +216,7 @@
     </dependency>
 
     <!-- You usually also want to make sure that XML library in use is Woodstox since it is not only faster
-        than Stax implementation JDK provides, but also works better and avoids some known issues like adding
+        than the Stax implementation JDK provides, but also works better and avoids some known issues like adding
         unnecessary namespace prefixes -->
     <dependency>
       <groupId>org.codehaus.woodstox</groupId>

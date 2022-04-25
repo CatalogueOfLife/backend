@@ -6,7 +6,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
-import life.catalogue.importer.MappingFlags;
+import life.catalogue.csv.MappingInfos;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -34,9 +34,9 @@ public class DwcInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(DwcInterpreter.class);
   private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
 
-  private final MappingFlags mappingFlags;
+  private final MappingInfos mappingFlags;
 
-  public DwcInterpreter(DatasetSettings settings, MappingFlags mappingFlags, ReferenceFactory refFactory, NeoDb store) {
+  public DwcInterpreter(DatasetSettings settings, MappingInfos mappingFlags, ReferenceFactory refFactory, NeoDb store) {
     super(settings, refFactory, store);
     this.mappingFlags = mappingFlags;
   }

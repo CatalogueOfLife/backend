@@ -11,7 +11,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.TxtTreeTerm;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.csv.CsvReader;
-import life.catalogue.importer.MappingFlags;
+import life.catalogue.csv.MappingInfos;
+import life.catalogue.csv.SourceInvalidException;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
@@ -42,7 +43,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 public class TxtTreeInserter implements NeoInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(TxtTreeInserter.class);
-  private static final MappingFlags FLAGS = new MappingFlags();
+  private static final MappingInfos FLAGS = new MappingInfos();
   static {
     FLAGS.setDenormedClassificationMapped(false);
     FLAGS.setAcceptedNameMapped(false);
@@ -70,7 +71,7 @@ public class TxtTreeInserter implements NeoInserter {
         treeFileName = PathUtils.getFilename(f);
     });
     if (treeFile == null) {
-      throw new NormalizationFailedException.SourceInvalidException("No valid tree data file found in " + folder);
+      throw new SourceInvalidException("No valid tree data file found in " + folder);
     }
   }
 
@@ -159,7 +160,7 @@ public class TxtTreeInserter implements NeoInserter {
   }
 
   @Override
-  public MappingFlags getMappingFlags() {
+  public MappingInfos getMappingFlags() {
     return FLAGS;
   }
 

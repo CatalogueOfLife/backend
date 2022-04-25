@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<archive xmlns="http://rs.tdwg.org/dwc/text/" metadata="eml.xml">
+  <core encoding="UTF-8" fieldsTerminatedBy="&#x9;" linesTerminatedBy="&#xA;" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.tdwg.org/dwc/terms/Taxon">
+    <files>
+      <location>taxa.txt</location>
+    </files>
+    <id index="0" />
+    <field index="0" term="http://rs.tdwg.org/dwc/terms/taxonID"/> <!-- treatment ID + ".taxon" for taxon, treatment ID + ".syn<orderpos>" for new junior synonyms -->
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/namePublishedIn"/> <!-- reference string of original description -->
+    <field index="2" term="http://rs.tdwg.org/dwc/terms/acceptedNameUsageID"/> <!-- blank, except for new junior synonyms -->
+    <field index="3" term="http://rs.tdwg.org/dwc/terms/parentNameUsageID"/> <!-- blank -->
+    <field index="4" term="http://rs.tdwg.org/dwc/terms/originalNameUsageID"/> <!-- blank -->
+    <field index="5" term="http://rs.tdwg.org/dwc/terms/kingdom"/> <!-- taxon@kingdom -->
+    <field index="6" term="http://rs.tdwg.org/dwc/terms/phylum"/> <!-- taxon@phylum -->
+    <field index="7" term="http://rs.tdwg.org/dwc/terms/class"/> <!-- taxon@class -->
+    <field index="8" term="http://rs.tdwg.org/dwc/terms/order"/> <!-- taxon@order -->
+    <field index="9" term="http://rs.tdwg.org/dwc/terms/family"/> <!-- taxon@family -->
+    <field index="10" term="http://rs.tdwg.org/dwc/terms/genus"/> <!-- taxon@genus -->
+    <field index="11" term="http://rs.tdwg.org/dwc/terms/taxonRank"/> <!-- taxon@rank -->
+    <field index="12" term="http://rs.tdwg.org/dwc/terms/scientificName"/> <!-- reconciled taxon name with reconciled authority, with parentheses and all -->
+    <field index="13" term="http://rs.tdwg.org/dwc/terms/scientificNameAuthorship" /> <!-- reconciled authority like given in document -->
+    <field index="14" term="http://gbif.org/dwc/terms/1.0/canonicalName" /> <!-- reconciled taxon without authority -->
+    <field index="15" term="http://plazi.org/terms/1.0/verbatimScientificName" /> <!-- verbatim taxon name string like given in document, with authority and all -->    
+    <field index="16" term="http://plazi.org/terms/1.0/basionymAuthors" /> <!-- authority name(s) if authority in parentheses, and for new combinations -->
+    <field index="17" term="http://plazi.org/terms/1.0/basionymYear" /> <!-- authority year if authority in parentheses, and for new combinations -->
+    <field index="18" term="http://plazi.org/terms/1.0/combinationAuthors" /> <!-- authority name(s) if authority _not_ in parentheses, treatment authority name(s) for new taxon names and new combinations -->
+    <field index="19" term="http://plazi.org/terms/1.0/combinationYear" /> <!-- authority year if authority _not_ in parentheses, treatment authority name(s) for new taxon names and new combinations -->
+    <field index="20" term="http://rs.tdwg.org/dwc/terms/taxonomicStatus"/> <!-- blank except for new junior synonyms, where "synonym", "homotypicSynonym" if we have a syntype -->
+    <field index="21" term="http://rs.tdwg.org/dwc/terms/nomenclaturalStatus"/> <!-- blank -->
+    <field index="22" term="http://purl.org/dc/terms/references"/> <!-- HTTP URI of treatment -->
+  </core>
+</archive>

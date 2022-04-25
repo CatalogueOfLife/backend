@@ -10,6 +10,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import life.catalogue.common.io.Resources;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -31,7 +33,7 @@ public class CharsetDetectionTest {
   }
   
   public static Iterable<Path> testFiles() throws IOException, URISyntaxException {
-    Path folder = PathUtils.classPathTestRes("charsets");
+    Path folder = Resources.toPath("charsets");
     
     return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
       @Override

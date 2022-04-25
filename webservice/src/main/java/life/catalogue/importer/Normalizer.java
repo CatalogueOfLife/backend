@@ -6,6 +6,7 @@ import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.common.tax.RankUtils;
+import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
@@ -68,7 +69,7 @@ public class Normalizer implements Callable<Boolean> {
   private final NameIndex index;
   private final DatasetWithSettings dataset;
   private final Validator validator;
-  private MappingFlags meta;
+  private MappingInfos meta;
 
 
   public Normalizer(DatasetWithSettings dataset, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService, Validator validator, @Nullable DoiResolver resolver) {

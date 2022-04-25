@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -73,7 +74,11 @@ public class Resources {
   public static File toFile(String resourceName) {
     return new File(ClassLoader.getSystemResource(resourceName).getFile());
   }
-  
+
+  public static Path toPath(String resourceName) {
+    return toFile(resourceName).toPath();
+  }
+
   /**
    * Copies a classpath resource to a tmp file
    * @return newly copied tmp file

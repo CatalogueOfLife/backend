@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.collection.DefaultMap;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.csv.CsvReader;
+import life.catalogue.csv.MappingInfos;
 import life.catalogue.csv.Schema;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoCRUDStore;
@@ -236,7 +237,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
   }
 
   @Override
-  public MappingFlags getMappingFlags() {
+  public MappingInfos getMappingFlags() {
     return reader.getMappingFlags();
   }
 

@@ -1,10 +1,10 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.csv.AcefReader;
+import life.catalogue.csv.ColdpReader;
 import life.catalogue.csv.CsvReader;
-import life.catalogue.importer.acef.AcefReader;
-import life.catalogue.importer.coldp.ColdpReader;
-import life.catalogue.importer.dwca.DwcaReader;
+import life.catalogue.csv.DwcaReader;
 import life.catalogue.importer.proxy.DistributedArchiveService;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 

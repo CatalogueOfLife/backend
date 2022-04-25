@@ -6,7 +6,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
-import life.catalogue.importer.MappingFlags;
+import life.catalogue.csv.MappingInfos;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoRel;
@@ -35,7 +35,7 @@ public class ColdpInterpreter extends InterpreterBase {
   private static final EnumNote<TaxonomicStatus> ACC_NOTE = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings(); // for multi value ID fields
 
-  ColdpInterpreter(DatasetSettings settings, MappingFlags metadata, ReferenceFactory refFactory, NeoDb store) {
+  ColdpInterpreter(DatasetSettings settings, MappingInfos metadata, ReferenceFactory refFactory, NeoDb store) {
     super(settings, refFactory, store);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);

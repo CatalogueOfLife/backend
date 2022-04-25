@@ -1,0 +1,6 @@
+taxonID	parentNameUsageID	acceptedNameUsageID	originalNameUsageID	scientificName	taxonRank
+1				Plantae	kingdom
+10	1			Asteraceae	family
+100	10			Crepis L.	genus
+1000	100			Crepis pulchra L.	species
+1001		1000	1000	Chondrilla pulchra (L.) Lam.	species
