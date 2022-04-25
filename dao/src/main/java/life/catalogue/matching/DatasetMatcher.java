@@ -38,9 +38,10 @@ public class DatasetMatcher {
     this.factory = factory;
     this.ni = ni.assertOnline();
   }
-  
+
   /**
    * Matches all names of an entire dataset and updates its name index id and issues in postgres
+   *
    * @param allowInserts if true allows inserts into the names index
    * @return number of names which have a changed match to before
    */
@@ -60,7 +61,7 @@ public class DatasetMatcher {
 
       update = nmm.exists(datasetKey);
       final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.MANAGED;
-      LOG.info("{} name matches for {}{}", update ? "Update" : "Create", isProject? "project ":"", datasetKey);
+      LOG.info("{} name matches for {}{}", update ? "Update" : "Create", isProject ? "project " : "", datasetKey);
       nm.processDataset(datasetKey).forEach(hn);
       // also match archived names
       if (isProject) {
@@ -73,7 +74,7 @@ public class DatasetMatcher {
     } finally {
       datasets++;
       LOG.info("{} {} name matches for {} names and {} not matching, {} being archived names, for dataset {}", update ? "Updated" : "Created",
-        updated-updatedBefore, total-totalBefore, nomatch-nomatchBefore, archived-archivedBefore, datasetKey);
+        updated - updatedBefore, total - totalBefore, nomatch - nomatchBefore, archived - archivedBefore, datasetKey);
     }
 
     try (SqlSession session = factory.openSession(false)) {
@@ -108,6 +109,7 @@ public class DatasetMatcher {
 
   class BulkMatchHandlerNames extends BulkMatchHandler {
     NameMatchMapper nmm;
+
     BulkMatchHandlerNames(int datasetKey, boolean allowInserts) {
       super(datasetKey, allowInserts);
       nmm = batchSession.getMapper(NameMatchMapper.class);
@@ -117,7 +119,7 @@ public class DatasetMatcher {
     void persist(Name n, NameMatch m, Integer oldId, Integer newKey) {
       if (oldId == null) {
         nmm.create(n, n.getSectorKey(), newKey, m.getType());
-      } else if (newKey != null){
+      } else if (newKey != null) {
         nmm.update(n, newKey, m.getType());
       } else {
         nmm.delete(n);
@@ -127,6 +129,7 @@ public class DatasetMatcher {
 
   class BulkMatchHandlerArchivedUsages extends BulkMatchHandler {
     ArchivedNameUsageMatchMapper nmm;
+
     BulkMatchHandlerArchivedUsages(int datasetKey, boolean allowInserts) {
       super(datasetKey, allowInserts);
       nmm = batchSession.getMapper(ArchivedNameUsageMatchMapper.class);
@@ -136,7 +139,7 @@ public class DatasetMatcher {
     void persist(Name n, NameMatch m, Integer oldId, Integer newKey) {
       if (oldId == null) {
         nmm.create(n, newKey, m.getType());
-      } else if (newKey != null){
+      } else if (newKey != null) {
         nmm.update(n, newKey, m.getType());
       } else {
         nmm.delete(n);
@@ -157,7 +160,7 @@ public class DatasetMatcher {
       this.allowInserts = allowInserts;
       this.batchSession = factory.openSession(ExecutorType.BATCH, false);
     }
-  
+
     @Override
     public void accept(Name n) {
       _total++;

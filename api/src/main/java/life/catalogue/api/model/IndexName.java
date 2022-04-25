@@ -344,6 +344,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   }
 
   /**
+   * Override the default method to rely on the actual ids in the index to be precise.
    * @return true if this represents a canonical name in the index
    */
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)

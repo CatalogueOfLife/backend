@@ -27,14 +27,14 @@ public class TestDataRuleTest {
   @Parameterized.Parameters(name= "{index}: {0}")
   public static Iterable<Object[]> data() {
     List<TestDataRule.TestData> list = List.of(
+      TestDataRule.NIDX,
       TestDataRule.DUPLICATES,
       TestDataRule.KEEP,
       TestDataRule.APPLE,
       TestDataRule.FISH,
       TestDataRule.TREE,
       TestDataRule.DRAFT,
-      TestDataRule.DRAFT_WITH_SECTORS,
-      NamesIndexMapperTest.NIDX
+      TestDataRule.DRAFT_WITH_SECTORS
     );
     return list.stream().map(t -> new Object[]{t}).collect(Collectors.toList());
   }
@@ -92,7 +92,7 @@ public class TestDataRuleTest {
       assertEquals(18, count);
     } else if(data.equals(TestDataRule.DRAFT_WITH_SECTORS)) {
       assertEquals(23, count);
-    } else if(data.equals(NamesIndexMapperTest.NIDX)) {
+    } else if(data.equals(TestDataRule.NIDX)) {
       assertEquals(0, count);
     }
   }

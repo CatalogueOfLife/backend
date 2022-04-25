@@ -13,10 +13,8 @@ import static org.junit.Assert.assertNotNull;
 
 public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, NamesIndexMapper> {
 
-  public final static TestDataRule.TestData NIDX = new TestDataRule.TestData("nidx", null, null, null);
-
   public NamesIndexMapperTest() {
-    super(NamesIndexMapper.class, NIDX);
+    super(NamesIndexMapper.class, TestDataRule.NIDX);
   }
 
   @Test

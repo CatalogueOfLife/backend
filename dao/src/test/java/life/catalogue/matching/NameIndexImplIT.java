@@ -4,10 +4,7 @@ import com.google.common.collect.Lists;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.exception.UnavailableException;
-import life.catalogue.api.model.IndexName;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameMatch;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
@@ -18,10 +15,7 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.parser.NameParser;
 
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -509,6 +503,98 @@ public class NameIndexImplIT {
     assertEquals(3, ni.size());
   }
 
+  @Test
+  public void unparsed() throws Exception {
+    setupMemory(true);
+    assertEquals(0, ni.size());
+
+    var names = List.of(
+      // FLOW placeholder
+      Name.newBuilder()
+          .scientificName("Aphaena dives var. [unnamed]")
+          .authorship("Walker, 1851")
+          .rank(Rank.SUBSPECIES)
+          .type(NameType.PLACEHOLDER)
+          .code(NomCode.ZOOLOGICAL)
+          .build(),
+      // ICTV virus
+      Name.newBuilder()
+          .scientificName("Abutilon mosaic Bolivia virus")
+          .rank(Rank.SPECIES)
+          .type(NameType.VIRUS)
+          .code(NomCode.VIRUS)
+          .build(),
+      Name.newBuilder()
+          .scientificName("Abutilon mosaic Brazil virus")
+          .rank(Rank.SPECIES)
+          .type(NameType.VIRUS)
+          .code(NomCode.VIRUS)
+          .build(),
+      // GTDB OTU
+      Name.newBuilder()
+          .scientificName("AABM5-125-24")
+          .rank(Rank.PHYLUM)
+          .type(NameType.OTU)
+          .build(),
+      Name.newBuilder()
+          .scientificName("Aureabacteria_A")
+          .rank(Rank.PHYLUM)
+          .type(NameType.OTU)
+          .code(NomCode.BACTERIAL)
+          .build(),
+      // GTDB informal
+      Name.newBuilder()
+          .scientificName("Aalborg-Aaw sp.")
+          .genus("Aalborg-Aaw")
+          .rank(Rank.SPECIES)
+          .type(NameType.INFORMAL)
+          .code(NomCode.BACTERIAL)
+          .build(),
+      Name.newBuilder()
+          .scientificName("Actinomarina sp.")
+          .genus("Actinomarina")
+          .rank(Rank.SPECIES)
+          .type(NameType.INFORMAL)
+          .code(NomCode.BACTERIAL)
+          .build(),
+      // GTDB no name
+      Name.newBuilder()
+          .scientificName("B3-LCP")
+          .rank(Rank.CLASS)
+          .type(NameType.NO_NAME)
+          .build(),
+      // VASCAN hybrid
+      Name.newBuilder()
+          .scientificName("Agropyron cristatum × Agropyron fragile")
+          .rank(Rank.SPECIES)
+          .type(NameType.HYBRID_FORMULA)
+          .code(NomCode.BOTANICAL)
+          .build()
+    );
+
+    for (int repeat=1; repeat<2; repeat++) {
+      for (Name n : names) {
+        var m = ni.match(n, true, true);
+        if (NameIndexImpl.INDEX_NAME_TYPES.contains(n.getType())) {
+          assertTrue(m.hasMatch());
+          final Integer idx = m.getName().getKey();
+          final Integer cidx = m.getName().getCanonicalId();
+          if (n.isCanonical()) {
+            assertEquals(idx, cidx);
+          } else {
+            assertNotEquals(idx, cidx);
+          }
+        } else {
+          assertFalse(m.hasMatch());
+        }
+      }
+    }
+
+    dumpIndex();
+    // 5 names inserted +2 canonicals because of phylum rank
+    assertEquals(7, ni.size());
+    ni.close();
+  }
 
   private static IndexName create(String genus, String species){
     return create(genus, species, null);

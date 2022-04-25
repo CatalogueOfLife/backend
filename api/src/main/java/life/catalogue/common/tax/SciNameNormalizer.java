@@ -35,7 +35,7 @@ public class SciNameNormalizer {
   private static final Pattern empty = Pattern.compile("[?!\"'`_-]");
   private static final Pattern punct = Pattern.compile("[,.:;]");
   private static final Pattern white = Pattern.compile("\\s{2,}");
-  // †
+  // ††️‡
   public final static Pattern dagger = Pattern.compile("[\\u2020\\u2021\\u271D]");
 
   // dont use guava or commons so we dont have to bundle it for the solr cloud plugin ...

@@ -11,6 +11,7 @@ import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.api.ParsedName;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -215,7 +216,45 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.setModifiedBy(n.getModifiedBy());
     this.setModified(n.getModified());
   }
-  
+
+  private Name(Builder builder) {
+    setCreated(builder.created);
+    setCreatedBy(builder.createdBy);
+    setModified(builder.modified);
+    setModifiedBy(builder.modifiedBy);
+    setDatasetKey(builder.datasetKey);
+    setId(builder.id);
+    setSectorKey(builder.sectorKey);
+    setVerbatimKey(builder.verbatimKey);
+    setNamesIndexId(builder.namesIndexId);
+    setNamesIndexType(builder.namesIndexType);
+    setScientificName(builder.scientificName);
+    setAuthorship(builder.authorship);
+    setRank(builder.rank);
+    setUninomial(builder.uninomial);
+    setGenus(builder.genus);
+    setInfragenericEpithet(builder.infragenericEpithet);
+    setSpecificEpithet(builder.specificEpithet);
+    setInfraspecificEpithet(builder.infraspecificEpithet);
+    setCultivarEpithet(builder.cultivarEpithet);
+    setCandidatus(builder.candidatus);
+    setNotho(builder.notho);
+    setCombinationAuthorship(builder.combinationAuthorship);
+    setBasionymAuthorship(builder.basionymAuthorship);
+    setSanctioningAuthor(builder.sanctioningAuthor);
+    setCode(builder.code);
+    setNomStatus(builder.nomStatus);
+    setPublishedInId(builder.publishedInId);
+    setPublishedInPage(builder.publishedInPage);
+    setPublishedInYear(builder.publishedInYear);
+    setOrigin(builder.origin);
+    setType(builder.type);
+    setLink(builder.link);
+    setNomenclaturalNote(builder.nomenclaturalNote);
+    setUnparsed(builder.unparsed);
+    setRemarks(builder.remarks);
+  }
+
   /**
    * @return a ParsedName instance representing this name
    */
@@ -237,6 +276,50 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     pn.setNomenclaturalNote(n.getRemarks());
     pn.setType(n.getType());
     return pn;
+  }
+
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
+  public static Builder newBuilder(Name copy) {
+    Builder builder = new Builder();
+    builder.created = copy.getCreated();
+    builder.createdBy = copy.getCreatedBy();
+    builder.modified = copy.getModified();
+    builder.modifiedBy = copy.getModifiedBy();
+    builder.datasetKey = copy.getDatasetKey();
+    builder.id = copy.getId();
+    builder.sectorKey = copy.getSectorKey();
+    builder.verbatimKey = copy.getVerbatimKey();
+    builder.namesIndexId = copy.getNamesIndexId();
+    builder.namesIndexType = copy.getNamesIndexType();
+    builder.scientificName = copy.getScientificName();
+    builder.authorship = copy.getAuthorship();
+    builder.rank = copy.getRank();
+    builder.uninomial = copy.getUninomial();
+    builder.genus = copy.getGenus();
+    builder.infragenericEpithet = copy.getInfragenericEpithet();
+    builder.specificEpithet = copy.getSpecificEpithet();
+    builder.infraspecificEpithet = copy.getInfraspecificEpithet();
+    builder.cultivarEpithet = copy.getCultivarEpithet();
+    builder.candidatus = copy.isCandidatus();
+    builder.notho = copy.getNotho();
+    builder.combinationAuthorship = copy.getCombinationAuthorship();
+    builder.basionymAuthorship = copy.getBasionymAuthorship();
+    builder.sanctioningAuthor = copy.getSanctioningAuthor();
+    builder.code = copy.getCode();
+    builder.nomStatus = copy.getNomStatus();
+    builder.publishedInId = copy.getPublishedInId();
+    builder.publishedInPage = copy.getPublishedInPage();
+    builder.publishedInYear = copy.getPublishedInYear();
+    builder.origin = copy.getOrigin();
+    builder.type = copy.getType();
+    builder.link = copy.getLink();
+    builder.nomenclaturalNote = copy.getNomenclaturalNote();
+    builder.unparsed = copy.getUnparsed();
+    builder.remarks = copy.getRemarks();
+    return builder;
   }
 
   public Integer getSectorKey() {
@@ -716,4 +799,223 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     return sb.toString();
   }
 
+  public static final class Builder {
+    private LocalDateTime created;
+    private Integer createdBy;
+    private LocalDateTime modified;
+    private Integer modifiedBy;
+    private Integer datasetKey;
+    private String id;
+    private Integer sectorKey;
+    private Integer verbatimKey;
+    private Integer namesIndexId;
+    private MatchType namesIndexType;
+    private String scientificName;
+    private String authorship;
+    private Rank rank;
+    private String uninomial;
+    private String genus;
+    private String infragenericEpithet;
+    private String specificEpithet;
+    private String infraspecificEpithet;
+    private String cultivarEpithet;
+    private boolean candidatus;
+    private NamePart notho;
+    private Authorship combinationAuthorship;
+    private Authorship basionymAuthorship;
+    private String sanctioningAuthor;
+    private NomCode code;
+    private NomStatus nomStatus;
+    private String publishedInId;
+    private String publishedInPage;
+    private Integer publishedInYear;
+    private Origin origin;
+    private NameType type;
+    private URI link;
+    private String nomenclaturalNote;
+    private String unparsed;
+    private String remarks;
+
+    private Builder() {
+    }
+
+    public Builder created(LocalDateTime val) {
+      created = val;
+      return this;
+    }
+
+    public Builder createdBy(Integer val) {
+      createdBy = val;
+      return this;
+    }
+
+    public Builder modified(LocalDateTime val) {
+      modified = val;
+      return this;
+    }
+
+    public Builder modifiedBy(Integer val) {
+      modifiedBy = val;
+      return this;
+    }
+
+    public Builder datasetKey(Integer val) {
+      datasetKey = val;
+      return this;
+    }
+
+    public Builder id(String val) {
+      id = val;
+      return this;
+    }
+
+    public Builder sectorKey(Integer val) {
+      sectorKey = val;
+      return this;
+    }
+
+    public Builder verbatimKey(Integer val) {
+      verbatimKey = val;
+      return this;
+    }
+
+    public Builder namesIndexId(Integer val) {
+      namesIndexId = val;
+      return this;
+    }
+
+    public Builder namesIndexType(MatchType val) {
+      namesIndexType = val;
+      return this;
+    }
+
+    public Builder scientificName(String val) {
+      scientificName = val;
+      return this;
+    }
+
+    public Builder authorship(String val) {
+      authorship = val;
+      return this;
+    }
+
+    public Builder rank(Rank val) {
+      rank = val;
+      return this;
+    }
+
+    public Builder uninomial(String val) {
+      uninomial = val;
+      return this;
+    }
+
+    public Builder genus(String val) {
+      genus = val;
+      return this;
+    }
+
+    public Builder infragenericEpithet(String val) {
+      infragenericEpithet = val;
+      return this;
+    }
+
+    public Builder specificEpithet(String val) {
+      specificEpithet = val;
+      return this;
+    }
+
+    public Builder infraspecificEpithet(String val) {
+      infraspecificEpithet = val;
+      return this;
+    }
+
+    public Builder cultivarEpithet(String val) {
+      cultivarEpithet = val;
+      return this;
+    }
+
+    public Builder candidatus(boolean val) {
+      candidatus = val;
+      return this;
+    }
+
+    public Builder notho(NamePart val) {
+      notho = val;
+      return this;
+    }
+
+    public Builder combinationAuthorship(Authorship val) {
+      combinationAuthorship = val;
+      return this;
+    }
+
+    public Builder basionymAuthorship(Authorship val) {
+      basionymAuthorship = val;
+      return this;
+    }
+
+    public Builder sanctioningAuthor(String val) {
+      sanctioningAuthor = val;
+      return this;
+    }
+
+    public Builder code(NomCode val) {
+      code = val;
+      return this;
+    }
+
+    public Builder nomStatus(NomStatus val) {
+      nomStatus = val;
+      return this;
+    }
+
+    public Builder publishedInId(String val) {
+      publishedInId = val;
+      return this;
+    }
+
+    public Builder publishedInPage(String val) {
+      publishedInPage = val;
+      return this;
+    }
+
+    public Builder publishedInYear(Integer val) {
+      publishedInYear = val;
+      return this;
+    }
+
+    public Builder origin(Origin val) {
+      origin = val;
+      return this;
+    }
+
+    public Builder type(NameType val) {
+      type = val;
+      return this;
+    }
+
+    public Builder link(URI val) {
+      link = val;
+      return this;
+    }
+
+    public Builder nomenclaturalNote(String val) {
+      nomenclaturalNote = val;
+      return this;
+    }
+
+    public Builder unparsed(String val) {
+      unparsed = val;
+      return this;
+    }
+
+    public Builder remarks(String val) {
+      remarks = val;
+      return this;
+    }
+
+    public Name build() {
+      return new Name(this);
+    }
+  }
 }

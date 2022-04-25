@@ -1,0 +1,5 @@
+dataset_key,name_id,index_id,type
+100,n1,4,EXACT
+101,n1,3,EXACT
+102,n1,4,EXACT
+102,n2,4,VARIANT

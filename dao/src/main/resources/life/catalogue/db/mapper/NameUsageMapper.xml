@@ -136,6 +136,7 @@
 
   <resultMap id="usageResultMap" type="NameUsageBase" autoMapping="true">
     <id property="id" column="id"/>
+    <id property="datasetKey" column="dataset_key"/>
     <discriminator column="is_synonym" javaType="boolean">
       <case value="false" resultType="Taxon" resultMap="life.catalogue.db.mapper.TaxonMapper.taxonResultMap"/>
       <case value="true" resultType="Synonym" resultMap="life.catalogue.db.mapper.SynonymMapper.synonymResultMap"/>
@@ -144,6 +145,7 @@
 
   <resultMap id="bareNameResultMap" type="BareName" autoMapping="true">
     <id column="n_id"/>
+    <id property="datasetKey" column="dataset_key"/>
     <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
   </resultMap>
 
@@ -272,6 +274,18 @@
     WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
     ORDER BY ni.id, d.title, u.id
     <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="countByNamesIndexID" resultType="integer">
+    SELECT count(*)
+    FROM names_index ni
+      JOIN name_match nm ON nm.index_id=ni.id
+      JOIN name n ON n.dataset_key=nm.dataset_key AND n.id=nm.name_id
+      JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=n.id
+    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    <if test="datasetKey != null">
+      AND nm.dataset_key = #{datasetKey}
+    </if>
   </select>
 
   <select id="listRelated" resultMap="usageResultMap">

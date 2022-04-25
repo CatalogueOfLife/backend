@@ -55,9 +55,8 @@ public class NameUsageSearchResource {
       throw new IllegalArgumentException("nidx parameter required");
     }
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
     List<NameUsageBase> result = num.listByNamesIndexIDGlobal(namesIndexID, page);
-    return new ResultPage<>(p, result, () -> nmm.count(namesIndexID, null));
+    return new ResultPage<>(p, result, () -> num.countByNamesIndexID(namesIndexID, null));
   }
 
   @GET

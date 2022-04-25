@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class NameIndexImpl implements NameIndex {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexImpl.class);
-  private static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
+  static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
       NameType.SCIENTIFIC, NameType.HYBRID_FORMULA, NameType.VIRUS, NameType.OTU
   );
   
@@ -212,9 +212,9 @@ public class NameIndexImpl implements NameIndex {
       //  a) no rank was given
       //  b) the authorship matches various authorships, e.g. if only the basionym or year is given
 
-      // pick canonical
-      if (matches.stream().anyMatch(Predicates.not(IndexName::hasAuthorship))) {
-        matches.removeIf(IndexName::hasAuthorship);
+      // pick canonical if part of matches
+      if (matches.stream().anyMatch(IndexName::isCanonical)) {
+        matches.removeIf(Predicates.not(IndexName::isCanonical));
         if (matches.size()==1) {
           m.setType(MatchType.CANONICAL);
         }
@@ -222,7 +222,7 @@ public class NameIndexImpl implements NameIndex {
 
       // log a warning if we still have more than one match so we can maybe refine the algorithm in the future
       if (compareRank && matches.size() > 1) {
-        LOG.debug("Ambiguous match ({} hits) for {} {}", matches.size(), query.getRank(), query.getLabel());
+        LOG.info("Ambiguous match ({} hits) for {} {}", matches.size(), query.getRank(), query.getLabel());
       }
       // we pick the lowest key to guarantee a stable outcome in all cases - even if we dont have a canonical (should not really happen)
       IndexName earliest = matches.get(0);

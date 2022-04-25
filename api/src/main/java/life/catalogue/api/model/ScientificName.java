@@ -38,6 +38,11 @@ public interface ScientificName {
   }
 
   @JsonIgnore
+  default boolean isCanonical() {
+    return getRank() == IndexName.normCanonicalRank(getRank()) && !hasAuthorship();
+  }
+
+  @JsonIgnore
   default boolean hasCombinationAuthorship() {
     return getCombinationAuthorship() != null && !getCombinationAuthorship().isEmpty();
   }

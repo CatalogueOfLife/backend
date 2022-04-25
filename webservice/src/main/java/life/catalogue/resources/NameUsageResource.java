@@ -57,8 +57,7 @@ public class NameUsageResource {
     Supplier<Integer> count;
     if (namesIndexID != null) {
       result = mapper.listByNamesIndexID(datasetKey, namesIndexID, p);
-      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
-      count = () -> nmm.count(namesIndexID, datasetKey);
+      count = () -> mapper.countByNamesIndexID(namesIndexID, datasetKey);
     } else if (q != null) {
       result = mapper.listByName(datasetKey, q, rank, p);
       count = () -> result.size();
