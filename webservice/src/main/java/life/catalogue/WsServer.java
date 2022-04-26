@@ -49,8 +49,8 @@ import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
+import life.catalogue.release.ProjectCopyFactory;
 import life.catalogue.release.PublicReleaseListener;
-import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
 import life.catalogue.resources.legacy.IdMap;
 import life.catalogue.resources.legacy.LegacyWebserviceResource;
@@ -316,7 +316,7 @@ public class WsServer extends Application<WsServerConfig> {
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao, env.metrics());
 
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(httpClient, diDao, ddao, ndao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
+    final var copyFactory = new ProjectCopyFactory(httpClient, diDao, ddao, ndao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
 
     // importer
     importManager = new ImportManager(cfg,
@@ -327,7 +327,7 @@ public class WsServer extends Application<WsServerConfig> {
       ddao, secdao, decdao,
       indexService,
       imgService,
-      releaseManager,
+      executor,
       validator, doiResolver
     );
     env.lifecycle().manage(ManagedUtils.stopOnly(importManager));
@@ -360,7 +360,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetExportResource(getSqlSessionFactory(), searchService, exportManager, diDao, cfg));
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetPatchResource());
-    j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, assembly, releaseManager));
+    j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, assembly, copyFactory, executor));
     j.register(new DatasetReviewerResource(adao));
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));

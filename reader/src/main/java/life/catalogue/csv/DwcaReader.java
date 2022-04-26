@@ -4,6 +4,7 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
+import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
 
@@ -14,9 +15,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.xml.stream.XMLInputFactory;
@@ -60,7 +60,19 @@ public class DwcaReader extends CsvReader {
       DwcTerm.MeasurementOrFact, DwcTerm.measurementID,
       DwcUnofficialTerm.NameRelations, DwcTerm.taxonID
   );
-  
+
+  private static final Map<Term, Term> TERM_TO_ROW_TYPE = MapUtils.linkedHashMap(
+    DwcTerm.occurrenceID, DwcTerm.Occurrence,
+    DwcTerm.measurementID, DwcTerm.MeasurementOrFact,
+    DwcUnofficialTerm.relatedNameUsageID, DwcUnofficialTerm.NameRelations,
+    DwcTerm.taxonID, DwcTerm.Taxon,
+    DwcTerm.parentNameUsageID, DwcTerm.Taxon,
+    DwcTerm.acceptedNameUsageID, DwcTerm.Taxon,
+    DwcTerm.originalNameUsageID, DwcTerm.Taxon,
+    DwcTerm.nomenclaturalStatus, DwcTerm.Taxon,
+    DwcTerm.eventID, DwcTerm.Event
+  );
+
   static {
     // make sure we are aware of ColTerms
     TermFactory.instance().registerTermEnum(DwcUnofficialTerm.class);
@@ -164,16 +176,16 @@ public class DwcaReader extends CsvReader {
     // we only end up here when there is no meta descriptor
     // the default impl derives the rowType from the file name - not very trustworthy
     Optional<Term> rowTypeFile = super.detectRowType(schema, termPrefix);
-    // so we check columns for existing id terms first
+    // so we check columns for known and indicating terms first
     Optional<Term> rowTypeCol = Optional.empty();
-    for (Map.Entry<Term, Term> e : ROW_TYPE_TO_ID.entrySet()) {
-      if (schema.hasTerm(e.getValue())) {
-        rowTypeCol = Optional.of(e.getKey());
+    for (Map.Entry<Term, Term> e : TERM_TO_ROW_TYPE.entrySet()) {
+      if (schema.hasTerm(e.getKey())) {
+        rowTypeCol = Optional.of(e.getValue());
         break;
       }
     }
     if (rowTypeCol.isPresent() && !rowTypeCol.equals(rowTypeFile)) {
-      LOG.info("Different rowType detected for file {}: {} (filename) vs {} (id terms)", PathUtils.getFilename(schema.file), rowTypeFile.get(), rowTypeCol.get());
+      LOG.info("Different rowType detected for file {}: {} (filename) vs {} (terms)", PathUtils.getFilename(schema.file), rowTypeFile.get(), rowTypeCol.get());
     }
     return rowTypeCol.isPresent() ? rowTypeCol : rowTypeFile;
   }

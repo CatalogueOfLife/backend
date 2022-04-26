@@ -1,7 +1,5 @@
 package life.catalogue.release;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
@@ -15,16 +13,14 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.doi.service.DoiService;
+import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ImageService;
 
 import java.io.File;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
-
-import life.catalogue.doi.service.DatasetConverter;
-import life.catalogue.doi.service.DoiService;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.img.ImageService;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Rule;
@@ -32,7 +28,10 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import static org.junit.Assert.*;
+import com.google.common.eventbus.EventBus;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ProjectReleaseIT extends ProjectBaseIT {
 
@@ -122,7 +121,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
   private ProjectRelease buildRelease() {
     ReleaseConfig cfg = new ReleaseConfig();
     cfg.restart = false;
-    return releaseManager.buildRelease(projectKey, Users.TESTER);
+    return projectCopyFactory.buildRelease(projectKey, Users.TESTER);
   }
   
 }

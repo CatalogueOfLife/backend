@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -15,7 +16,6 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.release.ReleaseManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,7 +44,7 @@ public class ImportManagerDebugging {
   ImportManager importManager;
   CloseableHttpClient hc;
   @Mock
-  ReleaseManager releaseManager;
+  JobExecutor jobExecutor;
   @Mock
   Validator validator;
 
@@ -92,7 +92,7 @@ public class ImportManagerDebugging {
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
         NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started(),
-      datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), releaseManager, validator, null);
+      datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
     importManager.start();
   }
   

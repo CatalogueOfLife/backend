@@ -45,6 +45,7 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
       "col": "http://catalogueoflife.org/terms/"
     }
   ],
+  "@id":"https://www.catalogueoflife.org/data/taxon/${info.taxon.getId()}",
   "@type": "Taxon",
   "additionalType": [
     "dwc:Taxon",
@@ -121,6 +122,7 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
 
 <#if parent??>
   "parentTaxon": {
+    "@id":"https://www.catalogueoflife.org/data/taxon/${parent.id}",
     "@type": "Taxon",
     "name": "${parent.label!}",
     "scientificName": {

@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.Resources;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -15,7 +16,6 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.release.ReleaseManager;
 
 import java.io.File;
 import java.io.InputStream;
@@ -61,7 +61,7 @@ public class ImportManagerTest {
 
   CloseableHttpClient hc;
   @Mock
-  ReleaseManager releaseManager;
+  JobExecutor jobExecutor;
   @Mock
   ImageServiceFS imgService;
   @Mock
@@ -111,7 +111,7 @@ public class ImportManagerTest {
     final WsServerConfig cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
-      datasetDao, sDao, dDao, indexService, imgService, releaseManager, validator, null);
+      datasetDao, sDao, dDao, indexService, imgService, jobExecutor, validator, null);
     manager.start();
   }
 
@@ -124,15 +124,15 @@ public class ImportManagerTest {
 
   @Test
   public void upload() throws Exception {
-    InputStream data = Resources.stream("dwca/1/taxa.txt");
+    final String resName = "dwca/1/taxa.txt";
     assertFalse(manager.hasRunning());
     try {
-      manager.upload(Datasets.COL, data, true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN);
+      manager.upload(Datasets.COL, Resources.stream(resName), true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN);
       fail("Cannot upload to col draft");
     } catch (IllegalArgumentException e) {
       // expected, its the draft
     }
-    manager.upload(datasetKey, data, true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN);
+    manager.upload(datasetKey, Resources.stream(resName), true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN);
     TimeUnit.SECONDS.sleep(2);
     assertTrue(manager.hasRunning());
   }

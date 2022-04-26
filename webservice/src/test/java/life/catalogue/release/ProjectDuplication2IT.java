@@ -24,7 +24,7 @@ public class ProjectDuplication2IT extends ProjectBaseIT {
 
   @Test
   public void empty() throws Exception {
-    ProjectDuplication dupl = releaseManager.buildDuplication(Datasets.COL, Users.TESTER);
+    ProjectDuplication dupl = projectCopyFactory.buildDuplication(Datasets.COL, Users.TESTER);
     dupl.run();
     assertEquals(ImportState.FINISHED, dupl.getMetrics().getState());
   }

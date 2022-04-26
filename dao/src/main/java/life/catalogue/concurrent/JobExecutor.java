@@ -4,6 +4,7 @@ import life.catalogue.api.vocab.JobStatus;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -167,6 +168,17 @@ public class JobExecutor implements AutoCloseable {
 
   public boolean isQueued(ComparableFutureTask f) {
     return queue.contains(f);
+  }
+
+  public <T extends BackgroundJob> List<T> getQueue(Class<T> jobClass) {
+    List<T> matches = new ArrayList<>();
+    List<BackgroundJob> jobs = getQueue();
+    for (var job : jobs) {
+      if (jobClass.isInstance(job)) {
+        matches.add((T) job);
+      }
+    }
+    return matches;
   }
 
   public List<BackgroundJob> getQueue() {

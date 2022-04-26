@@ -5,6 +5,8 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.concurrent.DatasetBlockingJob;
+import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.*;
@@ -22,10 +24,10 @@ import org.slf4j.LoggerFactory;
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
 /**
- * Abstract Runnable that copies a project with all its data into a new dataset
+ * Abstract job that copies a project with all its data into a new dataset
  * and allows for custom pre/post work to be done.
  */
-public abstract class AbstractProjectCopy implements Runnable {
+public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   protected final Logger LOG = LoggerFactory.getLogger(getClass());
   protected final SqlSessionFactory factory;
   protected final DatasetImportDao diDao;
@@ -47,6 +49,7 @@ public abstract class AbstractProjectCopy implements Runnable {
 
   public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, DatasetDao dDao, NameUsageIndexService indexService, Validator validator,
                              int userKey, int datasetKey, boolean mapIds) {
+    super(datasetKey, userKey, JobPriority.HIGH);
     DaoUtils.requireManaged(datasetKey, "Only managed datasets can be duplicated.");
     this.actionName = actionName;
     this.factory = factory;
@@ -103,8 +106,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   }
 
   @Override
-  public void run() {
-    LoggingUtils.setDatasetMDC(datasetKey, getClass());
+  public void runWithLock() {
     try {
       LOG.info("{} project {} to new dataset {}", actionName, datasetKey, getNewDatasetKey());
       // prepare new tables
@@ -178,7 +180,6 @@ public abstract class AbstractProjectCopy implements Runnable {
           LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);
         }
       }
-      LoggingUtils.removeDatasetMDC();
     }
   }
 

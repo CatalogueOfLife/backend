@@ -15,7 +15,6 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.release.ReleaseManager;
 
 import java.net.URI;
 
@@ -44,8 +43,6 @@ public class ImportJobIT {
 
   CloseableHttpClient hc;
   DatasetImportDao diDao;
-  @Mock
-  ReleaseManager releaseManager;
   @Mock
   Validator validator;
 

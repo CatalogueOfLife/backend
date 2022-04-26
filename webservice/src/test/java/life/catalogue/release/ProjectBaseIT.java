@@ -3,7 +3,6 @@ package life.catalogue.release;
 import life.catalogue.HttpClientUtils;
 import life.catalogue.WsServerConfig;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
-import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.doi.DoiUpdater;
@@ -20,7 +19,6 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -45,7 +43,7 @@ public abstract class ProjectBaseIT {
   NameDao nDao;
   TaxonDao tdao;
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-  ReleaseManager releaseManager;
+  ProjectCopyFactory projectCopyFactory;
   CloseableHttpClient client;
 
   @Before
@@ -71,7 +69,7 @@ public abstract class ProjectBaseIT {
     sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     client = HttpClientUtils.httpsClient();
-    releaseManager = new ReleaseManager(client, diDao, dDao, nDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), validator, cfg);
+    projectCopyFactory = new ProjectCopyFactory(client, diDao, dDao, nDao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), validator, cfg);
   }
 
   @After

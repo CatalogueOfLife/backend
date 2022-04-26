@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.vocab.*;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -13,7 +14,6 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.release.ReleaseManager;
 
 import org.gbif.nameparser.api.NomCode;
 
@@ -53,7 +53,7 @@ public class ImportManagerLiveTest {
   CloseableHttpClient hc;
   DatasetImportDao diDao;
   @Mock
-  ReleaseManager releaseManager;
+  JobExecutor jobExecutor;
   @Mock
   Validator validator;
 
@@ -99,7 +99,7 @@ public class ImportManagerLiveTest {
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.passThru(), datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), releaseManager, validator, null);
+        NameIndexFactory.passThru(), datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
     importManager.start();
 
     LOG.warn("Test initialized");

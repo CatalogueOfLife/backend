@@ -61,7 +61,7 @@ public class ProjectDuplicationIT extends ProjectBaseIT {
     SectorSyncIT.setupNamesIndex(PgSetupRule.getSqlSessionFactory());
     SectorSyncIT.syncAll(sdao, siDao, eDao);
 
-    ProjectDuplication dupe = releaseManager.buildDuplication(Datasets.COL, Users.TESTER);
+    ProjectDuplication dupe = projectCopyFactory.buildDuplication(Datasets.COL, Users.TESTER);
     final int datasetKey = dupe.newDatasetKey;
     System.out.println(String.format("Copy dataset %s into %s", Datasets.COL, datasetKey));
     dupe.run();

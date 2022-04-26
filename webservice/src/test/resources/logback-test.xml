@@ -12,6 +12,7 @@
   </appender>
 
     <logger name="life.catalogue" level="INFO"/>
+    <logger name="life.catalogue.importer" level="DEBUG"/>
     <logger name="life.catalogue.release" level="INFO"/>
     <logger name="life.catalogue.admin" level="INFO"/>
     <logger name="life.catalogue.csv" level="INFO"/>

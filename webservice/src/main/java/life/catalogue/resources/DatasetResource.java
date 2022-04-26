@@ -6,14 +6,15 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.release.AuthorlistGenerator;
+import life.catalogue.release.ProjectCopyFactory;
 import life.catalogue.release.ProjectRelease;
-import life.catalogue.release.ReleaseManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,15 +40,18 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final DatasetDao dao;
   private final DatasetSourceDao sourceDao;
   private final AssemblyCoordinator assembly;
-  private final ReleaseManager releaseManager;
+  private final JobExecutor exec;
+  private final ProjectCopyFactory jobFactory;
+
   private final AuthorlistGenerator authGen = new AuthorlistGenerator();
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, AssemblyCoordinator assembly, ProjectCopyFactory jobFactory, JobExecutor exec) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.sourceDao = sourceDao;
     this.assembly = assembly;
-    this.releaseManager = releaseManager;
+    this.jobFactory = jobFactory;
+    this.exec = exec;
   }
 
   /**
@@ -142,15 +146,17 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @POST
   @Path("/{key}/copy")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer copy(@PathParam("key") int key, @Auth User user) {
-    return releaseManager.duplicate(key, user);
+  public void copy(@PathParam("key") int key, @Auth User user) {
+    var job = jobFactory.buildDuplication(key, user.getKey());
+    exec.submit(job);
   }
 
   @POST
   @Path("/{key}/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer release(@PathParam("key") int key, @Auth User user) {
-    return releaseManager.release(key, user);
+  public void release(@PathParam("key") int key, @Auth User user) {
+    var job = jobFactory.buildRelease(key, user.getKey());
+    exec.submit(job);
   }
 
   @GET

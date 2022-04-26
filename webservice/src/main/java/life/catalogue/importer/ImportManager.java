@@ -14,8 +14,8 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.PBQThreadPoolExecutor;
-import life.catalogue.concurrent.StartNotifier;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -24,7 +24,7 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.metadata.DoiResolver;
-import life.catalogue.release.ReleaseManager;
+import life.catalogue.release.AbstractProjectCopy;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;
 
@@ -56,8 +56,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
-import io.dropwizard.lifecycle.Managed;
-
 /**
  * Manages import task scheduling, removing and listing
  */
@@ -75,7 +73,9 @@ public class ImportManager implements ManagedExtended {
   private final SqlSessionFactory factory;
   private final NameIndex index;
   private final NameUsageIndexService indexService;
-  private final ReleaseManager releaseManager;
+
+  private final JobExecutor jobExecutor;
+
   private final SectorDao sDao;
   private final DatasetDao dDao;
   private final DatasetImportDao dao;
@@ -87,12 +87,12 @@ public class ImportManager implements ManagedExtended {
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
       SqlSessionFactory factory, NameIndex index, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
-      NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager, Validator validator, DoiResolver resolver) {
+      NameUsageIndexService indexService, ImageService imgService, JobExecutor jobExecutor, Validator validator, DoiResolver resolver) {
     this.cfg = cfg;
     this.factory = factory;
     this.validator = validator;
     this.resolver = resolver;
-    this.releaseManager = releaseManager;
+    this.jobExecutor = jobExecutor;
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken, cfg.importer.githubTokenGeoff);
     this.index = index;
     this.imgService = imgService;
@@ -204,8 +204,10 @@ public class ImportManager implements ManagedExtended {
         .filter(di -> di.getState().isRunning())
         .collect(Collectors.toList());
 
-    // include releasing job if existing and sort by creation date
-    releaseManager.getMetrics().ifPresent(running::add);
+    // include releasing jobs if existing and sort by creation date
+    for (AbstractProjectCopy projJob : jobExecutor.getQueue(AbstractProjectCopy.class)) {
+      running.add(projJob.getMetrics());
+    }
     running.sort(DI_STARTED_COMPARATOR);
 
     // then add the priority queue from the executor, filtered for queued imports only keeping the queues priority order
