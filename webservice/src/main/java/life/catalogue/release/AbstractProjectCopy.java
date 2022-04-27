@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 
 import javax.validation.Validator;
 
+import life.catalogue.importer.InterpreterBase;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;

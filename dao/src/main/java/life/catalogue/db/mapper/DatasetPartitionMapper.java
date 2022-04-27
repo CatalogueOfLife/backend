@@ -199,9 +199,10 @@ public interface DatasetPartitionMapper {
    * so they become visible.
    *
    * Warning! This requires an AccessExclusiveLock on the main tables
-   * which often leads to deadlocks, see https://github.com/Sp2000/colplus-backend/issues/387
+   * which can lead to deadlocks, see https://github.com/Sp2000/colplus-backend/issues/387
    *
-   * Best to manually acquire and afterwards release a lock first, attaching doesn't take long.
+   * Make sure constraints are in place on both the default partition and the table being attached so that no table scans are
+   * needed which would lock the main table for a long time. Otherwise attaching doesncan be fast!
    *
    * @param key
    */
@@ -235,13 +236,6 @@ public interface DatasetPartitionMapper {
    * @param key datasetkey
    */
   int updateUsageCounter(@Param("key") int key);
-
-  /**
-   * Locks a dataset specific table in EXCLUSIVE mode, only allowing select statements by other transactions.
-   * The lock is released when the transaction is ended. There is no other manual lock release possible.
-   * Warning: this should never be used for EXTERNAL datasets which share partitions!!!
-   */
-  void lockTables(@Param("datasetKey") int datasetKey);
 
   /**
    * Checks whether the partition for the given datasetKey exists already.

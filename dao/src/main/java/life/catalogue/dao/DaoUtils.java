@@ -66,13 +66,6 @@ public class DaoUtils {
     return false;
   }
 
-  public static void aquireTableLock(int datasetKey, SqlSession session) {
-    if (isManagedOrRelease(datasetKey)) {
-      LOG.info("Try to aquire a table lock for managed/released dataset {}", datasetKey);
-      session.getMapper(DatasetPartitionMapper.class).lockTables(datasetKey);
-    }
-  }
-
   /**
    * Makes sure a given dataset key belongs to a dataset that can be modified,
    * i.e. it exists, it is not deleted or released.

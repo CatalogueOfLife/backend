@@ -2,6 +2,7 @@ package life.catalogue.common.util;
 
 import life.catalogue.api.model.DSID;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import org.slf4j.MDC;
@@ -26,9 +27,17 @@ public class LoggingUtils {
     }
   }
 
-  public static void setDatasetMDC(int datasetKey, Class<?> source) {
+  /**
+   * Sets the dataset key in MDC if it does not exist yet.
+   * @return true if a new datasetKey has been set, false if the same key already existed before.
+   */
+  public static boolean setDatasetMDC(int datasetKey, Class<?> source) {
+    if (Objects.equals(String.valueOf(datasetKey), MDC.get(MDC_KEY_DATASET))) {
+      return false;
+    }
     MDC.put(MDC_KEY_TASK, source.getSimpleName());
     MDC.put(MDC_KEY_DATASET, String.valueOf(datasetKey));
+    return true;
   }
 
   public static void setSectorMDC(DSID<Integer> sectorKey, Integer attempt, Class<?> source) {

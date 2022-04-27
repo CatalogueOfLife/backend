@@ -84,12 +84,11 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
     Stats stats = new Stats();
-    try (SqlSession lockSession = factory.openSession()) {
-      LoggingUtils.setDatasetMDC(datasetKey, getClass());
+    boolean setMDC = false;
+    try {
+      setMDC = LoggingUtils.setDatasetMDC(datasetKey, getClass());
       LOG.info("Start indexing dataset {}", datasetKey);
       NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
-      // we lock the main dataset tables so they are only accessible by select statements, but not any modifying statements.
-      DaoUtils.aquireTableLock(datasetKey, lockSession);
       if (clearIndex) {
         LOG.info("Remove dataset {} from index", datasetKey);
         createOrEmptyIndex(datasetKey);
@@ -118,7 +117,10 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       throw new EsException(e);
 
     } finally {
-      LoggingUtils.removeDatasetMDC();
+      // only remove from MDC if we set it in this method before
+      if (setMDC) {
+        LoggingUtils.removeDatasetMDC();
+      }
     }
   }
 

@@ -257,7 +257,7 @@ public class ReferenceFactory {
   public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear, IssueContainer issues) {
     String citation = publishedIn;
     if (publishedIn != null && publishedInYear != null && !publishedIn.contains(publishedInYear)) {
-      citation = String.format("%s (%s)", publishedIn, publishedInYear);
+      citation = String.format("%s %s", publishedIn, publishedInYear);
     }
     Reference ref = find(publishedInID, citation);
     if (ref == null) {

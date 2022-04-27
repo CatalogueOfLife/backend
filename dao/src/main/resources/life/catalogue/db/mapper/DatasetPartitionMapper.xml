@@ -72,14 +72,6 @@
     EXECUTE FUNCTION track_usage_count();
   </update>
 
-  <update id="lockTables" parameterType="map">
-    SELECT 1 FROM verbatim_${datasetKey} LIMIT 1;
-    LOCK TABLE verbatim_${datasetKey} IN EXCLUSIVE mode;
-    LOCK TABLE name_${datasetKey} IN EXCLUSIVE mode;
-    LOCK TABLE name_usage_${datasetKey} IN EXCLUSIVE mode;
-    LOCK TABLE reference_${datasetKey} IN EXCLUSIVE mode;
-  </update>
-
   <update id="deleteData">
     DELETE FROM ${table} WHERE dataset_key=#{key};
   </update>

@@ -11,6 +11,299 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-04-27 fix reference partitions
+Somehow the reference default partition contains the latest project data since March 21st 
+while there is an unattached reference_3 table with most of the old data.
+
+Merging data and attaching to the main table:
+```
+--
+-- REFERENCE
+--
+
+-- make sure we only have the project in the default partitions
+SELECT DISTINCT dataset_key FROM reference WHERE dataset_key IN (3,2056,2082,2142,2149,2153,2161,2242,2274,2296,2303,2315,2328,2332,2344,2349,2351,2366,2368,2369,2370);
+
+-- move old unused data out of the way, keep it just in case
+ALTER TABLE reference_3 RENAME TO reference_3_old;
+
+-- migrate project data out of shared partitions
+CREATE TABLE reference_3 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+INSERT INTO reference_3 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference WHERE dataset_key=3;
+INSERT INTO reference_3 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_3_old;
+ALTER TABLE reference_3 ADD CONSTRAINT reference_3_dataset_key_check CHECK (dataset_key = 3);
+ALTER TABLE reference ATTACH PARTITION reference_3 FOR VALUES IN ( 3 );
+DELETE FROM reference WHERE dataset_key=3;
+
+-- do similar for all releases
+ALTER TABLE reference_2056 RENAME TO reference_2056_old;
+ALTER TABLE reference_2082 RENAME TO reference_2082_old;
+ALTER TABLE reference_2142 RENAME TO reference_2142_old;
+ALTER TABLE reference_2149 RENAME TO reference_2149_old;
+ALTER TABLE reference_2153 RENAME TO reference_2153_old;
+ALTER TABLE reference_2161 RENAME TO reference_2161_old;
+ALTER TABLE reference_2242 RENAME TO reference_2242_old;
+ALTER TABLE reference_2274 RENAME TO reference_2274_old;
+ALTER TABLE reference_2296 RENAME TO reference_2296_old;
+ALTER TABLE reference_2303 RENAME TO reference_2303_old;
+ALTER TABLE reference_2315 RENAME TO reference_2315_old;
+ALTER TABLE reference_2328 RENAME TO reference_2328_old;
+ALTER TABLE reference_2332 RENAME TO reference_2332_old;
+ALTER TABLE reference_2344 RENAME TO reference_2344_old;
+ALTER TABLE reference_2349 RENAME TO reference_2349_old;
+ALTER TABLE reference_2351 RENAME TO reference_2351_old;
+ALTER TABLE reference_2366 RENAME TO reference_2366_old;
+ALTER TABLE reference_2368 RENAME TO reference_2368_old;
+ALTER TABLE reference_2369 RENAME TO reference_2369_old;
+ALTER TABLE reference_2370 RENAME TO reference_2370_old;
+
+CREATE TABLE reference_2056 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2082 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2142 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2149 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2153 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2161 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2242 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2274 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2296 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2303 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2315 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2328 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2332 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2344 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2349 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2351 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2366 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2368 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2369 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE reference_2370 (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+
+INSERT INTO reference_2056 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2056_old;
+INSERT INTO reference_2082 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2082_old;
+INSERT INTO reference_2142 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2142_old;
+INSERT INTO reference_2149 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2149_old;
+INSERT INTO reference_2153 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2153_old;
+INSERT INTO reference_2161 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2161_old;
+INSERT INTO reference_2242 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2242_old;
+INSERT INTO reference_2274 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2274_old;
+INSERT INTO reference_2296 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2296_old;
+INSERT INTO reference_2303 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2303_old;
+INSERT INTO reference_2315 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2315_old;
+INSERT INTO reference_2328 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2328_old;
+INSERT INTO reference_2332 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2332_old;
+INSERT INTO reference_2344 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2344_old;
+INSERT INTO reference_2349 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2349_old;
+INSERT INTO reference_2351 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2351_old;
+INSERT INTO reference_2366 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2366_old;
+INSERT INTO reference_2368 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2368_old;
+INSERT INTO reference_2369 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2369_old;
+INSERT INTO reference_2370 (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM reference_2370_old;
+
+ALTER TABLE reference ATTACH PARTITION reference_2056 FOR VALUES IN (2056);
+ALTER TABLE reference ATTACH PARTITION reference_2082 FOR VALUES IN (2082);
+ALTER TABLE reference ATTACH PARTITION reference_2142 FOR VALUES IN (2142);
+ALTER TABLE reference ATTACH PARTITION reference_2149 FOR VALUES IN (2149);
+ALTER TABLE reference ATTACH PARTITION reference_2153 FOR VALUES IN (2153);
+ALTER TABLE reference ATTACH PARTITION reference_2161 FOR VALUES IN (2161);
+ALTER TABLE reference ATTACH PARTITION reference_2242 FOR VALUES IN (2242);
+ALTER TABLE reference ATTACH PARTITION reference_2274 FOR VALUES IN (2274);
+ALTER TABLE reference ATTACH PARTITION reference_2296 FOR VALUES IN (2296);
+ALTER TABLE reference ATTACH PARTITION reference_2303 FOR VALUES IN (2303);
+ALTER TABLE reference ATTACH PARTITION reference_2315 FOR VALUES IN (2315);
+ALTER TABLE reference ATTACH PARTITION reference_2328 FOR VALUES IN (2328);
+ALTER TABLE reference ATTACH PARTITION reference_2332 FOR VALUES IN (2332);
+ALTER TABLE reference ATTACH PARTITION reference_2344 FOR VALUES IN (2344);
+ALTER TABLE reference ATTACH PARTITION reference_2349 FOR VALUES IN (2349);
+ALTER TABLE reference ATTACH PARTITION reference_2351 FOR VALUES IN (2351);
+ALTER TABLE reference ATTACH PARTITION reference_2366 FOR VALUES IN (2366);
+ALTER TABLE reference ATTACH PARTITION reference_2368 FOR VALUES IN (2368);
+ALTER TABLE reference ATTACH PARTITION reference_2369 FOR VALUES IN (2369);
+ALTER TABLE reference ATTACH PARTITION reference_2370 FOR VALUES IN (2370);
+
+DROP TABLE reference_2056_old;
+DROP TABLE reference_2082_old;
+DROP TABLE reference_2142_old;
+DROP TABLE reference_2149_old;
+DROP TABLE reference_2153_old;
+DROP TABLE reference_2161_old;
+DROP TABLE reference_2242_old;
+DROP TABLE reference_2274_old;
+DROP TABLE reference_2296_old;
+DROP TABLE reference_2303_old;
+DROP TABLE reference_2315_old;
+DROP TABLE reference_2328_old;
+DROP TABLE reference_2332_old;
+DROP TABLE reference_2344_old;
+DROP TABLE reference_2349_old;
+DROP TABLE reference_2351_old;
+DROP TABLE reference_2366_old;
+DROP TABLE reference_2368_old;
+DROP TABLE reference_2369_old;
+DROP TABLE reference_2370_old;
+
+--
+-- VERBATIM
+-- the doc field is generated and the indices not derived from the parent tables.
+-- So we better create new tables to be safe and copy data to them before attaching
+--
+SELECT DISTINCT dataset_key FROM verbatim WHERE dataset_key IN (3,2056,2082,2142,2149,2153,2161,2242,2274,2296,2303,2315,2328,2332,2344,2349,2351,2366,2368,2369,2370);
+-- nothing is in there, so we just attach the old tables!
+
+ALTER TABLE verbatim_3 RENAME TO verbatim_3_old;
+ALTER TABLE verbatim_2056 RENAME TO verbatim_2056_old;
+ALTER TABLE verbatim_2082 RENAME TO verbatim_2082_old;
+ALTER TABLE verbatim_2142 RENAME TO verbatim_2142_old;
+ALTER TABLE verbatim_2149 RENAME TO verbatim_2149_old;
+ALTER TABLE verbatim_2153 RENAME TO verbatim_2153_old;
+ALTER TABLE verbatim_2161 RENAME TO verbatim_2161_old;
+ALTER TABLE verbatim_2242 RENAME TO verbatim_2242_old;
+ALTER TABLE verbatim_2274 RENAME TO verbatim_2274_old;
+ALTER TABLE verbatim_2296 RENAME TO verbatim_2296_old;
+ALTER TABLE verbatim_2303 RENAME TO verbatim_2303_old;
+ALTER TABLE verbatim_2315 RENAME TO verbatim_2315_old;
+ALTER TABLE verbatim_2328 RENAME TO verbatim_2328_old;
+ALTER TABLE verbatim_2332 RENAME TO verbatim_2332_old;
+ALTER TABLE verbatim_2344 RENAME TO verbatim_2344_old;
+ALTER TABLE verbatim_2349 RENAME TO verbatim_2349_old;
+ALTER TABLE verbatim_2351 RENAME TO verbatim_2351_old;
+ALTER TABLE verbatim_2366 RENAME TO verbatim_2366_old;
+ALTER TABLE verbatim_2368 RENAME TO verbatim_2368_old;
+ALTER TABLE verbatim_2369 RENAME TO verbatim_2369_old;
+ALTER TABLE verbatim_2370 RENAME TO verbatim_2370_old;
+
+CREATE TABLE verbatim_3 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2056 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2082 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2142 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2149 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2153 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2161 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2242 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2274 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2296 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2303 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2315 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2328 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2332 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2344 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2349 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2351 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2366 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2368 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2369 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE verbatim_2370 (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+
+INSERT INTO verbatim_3 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_3_old;
+INSERT INTO verbatim_2056 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2056_old;
+INSERT INTO verbatim_2082 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2082_old;
+INSERT INTO verbatim_2142 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2142_old;
+INSERT INTO verbatim_2149 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2149_old;
+INSERT INTO verbatim_2153 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2153_old;
+INSERT INTO verbatim_2161 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2161_old;
+INSERT INTO verbatim_2242 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2242_old;
+INSERT INTO verbatim_2274 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2274_old;
+INSERT INTO verbatim_2296 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2296_old;
+INSERT INTO verbatim_2303 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2303_old;
+INSERT INTO verbatim_2315 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2315_old;
+INSERT INTO verbatim_2328 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2328_old;
+INSERT INTO verbatim_2332 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2332_old;
+INSERT INTO verbatim_2344 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2344_old;
+INSERT INTO verbatim_2349 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2349_old;
+INSERT INTO verbatim_2351 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2351_old;
+INSERT INTO verbatim_2366 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2366_old;
+INSERT INTO verbatim_2368 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2368_old;
+INSERT INTO verbatim_2369 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2369_old;
+INSERT INTO verbatim_2370 (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM verbatim_2370_old;
+
+-- for speedy attaching
+ALTER TABLE verbatim_default ADD CONSTRAINT verbatim_default_dataset_key_not_known CHECK (dataset_key!=3 AND dataset_key!=2056 AND dataset_key!=2082 AND dataset_key!=2142 AND dataset_key!=2149 AND dataset_key!=2153 AND dataset_key!=2161 AND dataset_key!=2242 AND dataset_key!=2274 AND dataset_key!=2296 AND dataset_key!=2303 AND dataset_key!=2315 AND dataset_key!=2328 AND dataset_key!=2332 AND dataset_key!=2344 AND dataset_key!=2349 AND dataset_key!=2351 AND dataset_key!=2366 AND dataset_key!=2368 AND dataset_key!=2369 AND dataset_key!=2370);
+
+ALTER TABLE verbatim ATTACH PARTITION verbatim_3 FOR VALUES IN (3);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2056 FOR VALUES IN (2056);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2082 FOR VALUES IN (2082);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2142 FOR VALUES IN (2142);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2149 FOR VALUES IN (2149);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2153 FOR VALUES IN (2153);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2161 FOR VALUES IN (2161);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2242 FOR VALUES IN (2242);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2274 FOR VALUES IN (2274);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2296 FOR VALUES IN (2296);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2303 FOR VALUES IN (2303);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2315 FOR VALUES IN (2315);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2328 FOR VALUES IN (2328);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2332 FOR VALUES IN (2332);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2344 FOR VALUES IN (2344);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2349 FOR VALUES IN (2349);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2351 FOR VALUES IN (2351);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2366 FOR VALUES IN (2366);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2368 FOR VALUES IN (2368);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2369 FOR VALUES IN (2369);
+ALTER TABLE verbatim ATTACH PARTITION verbatim_2370 FOR VALUES IN (2370);
+
+DROP TABLE verbatim_3_old;
+DROP TABLE verbatim_2056_old;
+DROP TABLE verbatim_2082_old;
+DROP TABLE verbatim_2142_old;
+DROP TABLE verbatim_2149_old;
+DROP TABLE verbatim_2153_old;
+DROP TABLE verbatim_2161_old;
+DROP TABLE verbatim_2242_old;
+DROP TABLE verbatim_2274_old;
+DROP TABLE verbatim_2296_old;
+DROP TABLE verbatim_2303_old;
+DROP TABLE verbatim_2315_old;
+DROP TABLE verbatim_2328_old;
+DROP TABLE verbatim_2332_old;
+DROP TABLE verbatim_2344_old;
+DROP TABLE verbatim_2349_old;
+DROP TABLE verbatim_2351_old;
+DROP TABLE verbatim_2366_old;
+DROP TABLE verbatim_2368_old;
+DROP TABLE verbatim_2369_old;
+DROP TABLE verbatim_2370_old;
+
+
+--
+-- FOREIGN KEYS
+-- establish missing foreign key constraints (takes long time) which we should have created when the partitioning went live
+--
+ALTER TABLE reference ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE name ADD FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, related_name_id) REFERENCES name;
+ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage;
+ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE verbatim_source ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage;
+
+```
+
 ### 2022-03-30 changed dataset types
 ```
 ALTER TABLE dataset ALTER COLUMN type SET DEFAULT null;
@@ -111,7 +404,7 @@ ALTER TABLE treatment_default ADD CONSTRAINT treatment_default_dataset_key_no_pr
 ALTER TABLE vernacular_name_default ADD CONSTRAINT vernacular_name_default_dataset_key_no_project_check CHECK (dataset_key < 9812 OR dataset_key >= 20000);
 ```
 
-### 2022-02-22 names archive
+### 2022-02-22 new issues
 ```
 ALTER TYPE ISSUE ADD VALUE 'MULTI_WORD_MONOMIAL';
 ALTER TYPE ISSUE ADD VALUE 'WRONG_MONOMIAL_CASE';

@@ -244,7 +244,12 @@ public class ReferenceFactoryTest {
   public void fromDWC() {
     Reference r = rf.fromDWC("12345", "Dingle Doodle da", "1888", issues);
     assertEquals("12345", r.getId());
-    assertEquals("Dingle Doodle da (1888)", r.getCitation());
+    assertEquals("Dingle Doodle da 1888", r.getCitation());
+    assertEquals(1888, (int) r.getYear());
+    assertNull(r.getCsl());
+
+    r = rf.fromDWC("12345", "Proc. Biol. Soc. Washington", "(1888)", issues);
+    assertEquals("Proc. Biol. Soc. Washington (1888)", r.getCitation());
     assertEquals(1888, (int) r.getYear());
     assertNull(r.getCsl());
   }

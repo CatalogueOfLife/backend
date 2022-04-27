@@ -98,7 +98,7 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
       "name": "${s.name.scientificName}",
       "author": "${s.name.authorship!}",
       "taxonRank": "${s.name.rank}"
-      <#if s.name.publishedInId??>
+      <#if s.name.publishedInId?? && info.getReference(s.name.publishedInId)??>
        ,"isBasedOn": {
           "@type": "ScholarlyArticle",
           "name": "${info.getReference(s.name.publishedInId).citation!}"
