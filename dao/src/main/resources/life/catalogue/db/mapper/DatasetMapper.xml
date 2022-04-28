@@ -470,7 +470,12 @@
   </update>
 
   <update id="delete" parameterType="map">
-    UPDATE dataset SET deleted = now(), attempt=null, alias=null, gbif_key=null
+    UPDATE dataset SET deleted = now(), attempt=null, alias=null, gbif_key=null, gbif_publisher_key=null
+    WHERE key = #{key}
+  </update>
+
+  <update id="updateModifiedBy" parameterType="map">
+    UPDATE dataset SET modified = now(), modified_by = #{user}
     WHERE key = #{key}
   </update>
 

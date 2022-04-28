@@ -408,6 +408,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected boolean deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+    // track who did the deletion in modified_by
+    mapper.updateModifiedBy(key, user);
     session.close();
     // clear search index asynchroneously
     CompletableFuture.supplyAsync(() -> indexService.deleteDataset(key))
