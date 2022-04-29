@@ -14,7 +14,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import life.catalogue.dw.jersey.filter.VaryAccept;
+
 import org.apache.ibatis.session.SqlSession;
+import org.apache.poi.ss.formula.functions.T;
+import org.checkerframework.checker.units.qual.K;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +37,18 @@ public class ReferenceResource extends AbstractDatasetScopedResource<String, Ref
   public ReferenceResource(ReferenceDao dao) {
     super(Reference.class, dao);
     this.dao = dao;
+  }
+
+  @GET
+  @Path("{id}")
+  @Override
+  @VaryAccept
+  @Produces({MediaType.APPLICATION_JSON,
+    MoreMediaTypes.APP_JSON_CSL,
+    MoreMediaTypes.APP_BIBTEX
+  })
+  public Reference get(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return super.get(datasetKey, id);
   }
 
   @Override

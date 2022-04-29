@@ -230,9 +230,12 @@
     CREATE UNIQUE INDEX IF NOT EXISTS idx_ref_fks_${datasetKey} ON ref_fks_${datasetKey} (id);
   </sql>
 
+  <!-- WARNING!
+    Relies on temp table ref_fks_${datasetKey} to exist
+  -->
   <sql id="orphanWhere">
     WHERE r.dataset_key=#{datasetKey} AND NOT EXISTS (
-      SELECT NULL FROM ref_fks_${datasetKey} rfk WHERE r.id=rfk.id
+      SELECT TRUE FROM ref_fks_${datasetKey} rfk WHERE r.id=rfk.id
     )
     <if test="before!=null">
       AND r.modified &lt; #{before}
