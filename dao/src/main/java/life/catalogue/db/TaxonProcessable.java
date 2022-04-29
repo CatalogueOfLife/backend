@@ -4,6 +4,8 @@ import life.catalogue.api.model.DSID;
 
 import java.util.List;
 
+import life.catalogue.db.mapper.*;
+
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -11,6 +13,20 @@ import org.apache.ibatis.annotations.Param;
  * @param <T> entity type
  */
 public interface TaxonProcessable<T> extends TempNameUsageRelated {
+
+  /**
+   * All TaxonProcessable mappers.
+   */
+  List<Class<? extends TaxonProcessable<?>>> MAPPERS = List.of(
+    SynonymMapper.class,
+    VerbatimSourceMapper.class,
+    VernacularNameMapper.class,
+    DistributionMapper.class,
+    MediaMapper.class,
+    SpeciesInteractionMapper.class,
+    TaxonConceptRelationMapper.class,
+    TreatmentMapper.class
+  );
 
   List<T> listByTaxon(@Param("key") DSID<String> key);
 

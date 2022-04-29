@@ -195,35 +195,14 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (s == null) {
         throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
       }
-      // order matters!
-      List<SectorProcessable<?>> secProcMappers = List.of(
-        // usage related
-        session.getMapper(VerbatimSourceMapper.class),
-        session.getMapper(DistributionMapper.class),
-        session.getMapper(MediaMapper.class),
-        session.getMapper(VernacularNameMapper.class),
-        session.getMapper(SpeciesInteractionMapper.class),
-        session.getMapper(TaxonConceptRelationMapper.class),
-        session.getMapper(TreatmentMapper.class),
-        // usage
-        session.getMapper(NameUsageMapper.class),
-        // name related
-        session.getMapper(NameMatchMapper.class),
-        session.getMapper(TypeMaterialMapper.class),
-        session.getMapper(NameRelationMapper.class),
-        // name
-        session.getMapper(NameMapper.class),
-        // refs
-        session.getMapper(ReferenceMapper.class)
-      );
 
       final String sectorType = subSector ? "subsector" : "sector";
 
-      secProcMappers.forEach(m -> {
-        int count = m.deleteBySector(sectorKey);
-        String type = m.getClass().getSimpleName().replace("Mapper", "");
-        LOG.info("Deleted {} {} records from {} {}", count, type, sectorType, sectorKey);
-      });
+      // order matters!
+      for (Class<? extends SectorProcessable<?>> m : SectorProcessable.MAPPERS) {
+        int count = session.getMapper(m).deleteBySector(sectorKey);
+        LOG.info("Deleted {} existing {}s from {} {}", count, m.getSimpleName().replaceAll("Mapper", ""), sectorType, sectorKey);
+      }
 
       // update datasetSectors counts
       SectorDao.incSectorCounts(session, s, -1);

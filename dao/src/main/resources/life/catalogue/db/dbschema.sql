@@ -1154,29 +1154,35 @@ CREATE TABLE name_usage_archive (
 );
 
 
-CREATE TABLE name_match (
-  dataset_key INTEGER NOT NULL,
-  sector_key INTEGER,
-  index_id INTEGER NOT NULL REFERENCES names_index,
-  name_id TEXT NOT NULL,
-  type MATCHTYPE,
-  PRIMARY KEY (dataset_key, name_id),
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name
+CREATE TABLE parser_config (
+  id TEXT PRIMARY KEY,
+  candidatus BOOLEAN DEFAULT FALSE,
+  extinct BOOLEAN DEFAULT FALSE,
+  rank RANK NOT NULL,
+  notho NAMEPART,
+  code NOMCODE,
+  type NAMETYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  uninomial TEXT,
+  genus TEXT,
+  infrageneric_epithet TEXT,
+  specific_epithet TEXT,
+  infraspecific_epithet TEXT,
+  cultivar_epithet TEXT,
+  basionym_authors TEXT[] DEFAULT '{}',
+  basionym_ex_authors TEXT[] DEFAULT '{}',
+  basionym_year TEXT,
+  combination_authors TEXT[] DEFAULT '{}',
+  combination_ex_authors TEXT[] DEFAULT '{}',
+  combination_year TEXT,
+  sanctioning_author TEXT,
+  published_in TEXT,
+  nomenclatural_note TEXT,
+  taxonomic_note TEXT,
+  unparsed TEXT,
+  remarks TEXT
 );
-CREATE INDEX ON name_match (dataset_key, sector_key);
-CREATE INDEX ON name_match (dataset_key, index_id);
-CREATE INDEX ON name_match (index_id);
-
-CREATE TABLE name_usage_archive_match (
-  dataset_key INTEGER NOT NULL,
-  index_id INTEGER NOT NULL REFERENCES names_index,
-  usage_id TEXT NOT NULL,
-  type MATCHTYPE,
-  PRIMARY KEY (dataset_key, usage_id)
-);
-CREATE INDEX ON name_usage_archive_match (dataset_key, index_id);
-CREATE INDEX ON name_usage_archive_match (index_id);
 
 
 --
@@ -1199,17 +1205,6 @@ CREATE INDEX ON verbatim (dataset_key, type);
 CREATE INDEX ON verbatim USING GIN (dataset_key, doc);
 CREATE INDEX ON verbatim USING GIN (dataset_key, issues);
 CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_path_ops);
-
-CREATE TABLE verbatim_source (
-  id TEXT NOT NULL,
-  dataset_key INTEGER NOT NULL,
-  source_id TEXT,
-  source_dataset_key INTEGER,
-  issues ISSUE[] DEFAULT '{}',
-  FOREIGN KEY (dataset_key, id) REFERENCES name_usage,
-) PARTITION BY LIST (dataset_key);
-
-CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
 
 
 CREATE TABLE reference (
@@ -1401,6 +1396,16 @@ CREATE INDEX ON name_usage (dataset_key, verbatim_key);
 CREATE INDEX ON name_usage (dataset_key, sector_key);
 CREATE INDEX ON name_usage (dataset_key, according_to_id);
 
+CREATE TABLE verbatim_source (
+  id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  source_id TEXT,
+  source_dataset_key INTEGER,
+  issues ISSUE[] DEFAULT '{}',
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
+) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
 
 CREATE TABLE taxon_concept_rel (
   id INTEGER NOT NULL,
@@ -1572,35 +1577,34 @@ CREATE INDEX ON media (dataset_key, verbatim_key);
 CREATE INDEX ON media (dataset_key, reference_id);
 
 
-CREATE TABLE parser_config (
-  id TEXT PRIMARY KEY,
-  candidatus BOOLEAN DEFAULT FALSE,
-  extinct BOOLEAN DEFAULT FALSE,
-  rank RANK NOT NULL,
-  notho NAMEPART,
-  code NOMCODE,
-  type NAMETYPE NOT NULL,
-  created_by INTEGER NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  uninomial TEXT,
-  genus TEXT,
-  infrageneric_epithet TEXT,
-  specific_epithet TEXT,
-  infraspecific_epithet TEXT,
-  cultivar_epithet TEXT,
-  basionym_authors TEXT[] DEFAULT '{}',
-  basionym_ex_authors TEXT[] DEFAULT '{}',
-  basionym_year TEXT,
-  combination_authors TEXT[] DEFAULT '{}',
-  combination_ex_authors TEXT[] DEFAULT '{}',
-  combination_year TEXT,
-  sanctioning_author TEXT,
-  published_in TEXT,
-  nomenclatural_note TEXT,
-  taxonomic_note TEXT,
-  unparsed TEXT,
-  remarks TEXT
+--
+-- SHARED TABLES REFERRING TO DATA TABLES
+--
+CREATE TABLE name_match (
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  index_id INTEGER NOT NULL REFERENCES names_index,
+  name_id TEXT NOT NULL,
+  type MATCHTYPE,
+  PRIMARY KEY (dataset_key, name_id),
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name
 );
+CREATE INDEX ON name_match (dataset_key, sector_key);
+CREATE INDEX ON name_match (dataset_key, index_id);
+CREATE INDEX ON name_match (index_id);
+
+CREATE TABLE name_usage_archive_match (
+  dataset_key INTEGER NOT NULL,
+  index_id INTEGER NOT NULL REFERENCES names_index,
+  usage_id TEXT NOT NULL,
+  type MATCHTYPE,
+  PRIMARY KEY (dataset_key, usage_id)
+);
+CREATE INDEX ON name_usage_archive_match (dataset_key, index_id);
+CREATE INDEX ON name_usage_archive_match (index_id);
+
+
 
 -- FUNCTIONS
 CREATE FUNCTION plaziGbifKey() RETURNS UUID AS $$

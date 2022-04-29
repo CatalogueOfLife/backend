@@ -14,7 +14,7 @@ import org.apache.ibatis.annotations.Param;
  *
  */
 public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDataset, DatasetProcessable<VerbatimSource>,
-  SectorProcessable<VerbatimSource>, TempNameUsageRelated {
+  SectorProcessable<VerbatimSource>, TaxonProcessable<VerbatimSource> {
 
   VerbatimSource get(@Param("key") DSID<String> key);
   

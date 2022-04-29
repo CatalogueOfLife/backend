@@ -102,7 +102,7 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
   @Test
   public void synonyms() throws Exception {
     
-    List<Synonym> synonyms = synonymMapper.listByTaxon(datasetKey, tax.getId());
+    List<Synonym> synonyms = synonymMapper.listByTaxon(tax);
     assertTrue(synonyms.isEmpty());
     assertEquals(0, synonyms.size());
 
@@ -133,7 +133,7 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     
     // no synonym links added yet, expect empty synonymy even though basionym links
     // exist!
-    synonyms = synonymMapper.listByTaxon(datasetKey, tax.getId());
+    synonyms = synonymMapper.listByTaxon(tax);
     assertTrue(synonyms.isEmpty());
     assertEquals(0, synonyms.size());
     
@@ -141,7 +141,7 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     Synonym syn = TestEntityGenerator.newSynonym(syn1, tax.getId());
     synonymMapper.create(syn);
     commit();
-    synonyms = synonymMapper.listByTaxon(datasetKey, tax.getId());
+    synonyms = synonymMapper.listByTaxon(tax);
     assertEquals(1, synonyms.size());
     
     synonymMapper.create(newSyn(syn, syn2bas, tax.getId()));
@@ -150,9 +150,9 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     synonymMapper.create(newSyn(syn, syn3bas, tax.getId()));
     synonymMapper.create(newSyn(syn, syn31, tax.getId()));
     
-    synonyms = synonymMapper.listByTaxon(datasetKey, tax.getId());
+    synonyms = synonymMapper.listByTaxon(tax);
     assertEquals(6, synonyms.size());
-    assertEquals(2, synonymMapper.listByTaxon(datasetKey, TestEntityGenerator.TAXON2.getId()).size());
+    assertEquals(2, synonymMapper.listByTaxon(TestEntityGenerator.TAXON2).size());
     
     
     // now also add a misapplied name with the same name
@@ -163,8 +163,8 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     synonymMapper.create(syn);
     commit();
     
-    assertEquals(6, synonymMapper.listByTaxon(datasetKey, tax.getId()).size());
-    assertEquals(3, synonymMapper.listByTaxon(datasetKey, TestEntityGenerator.TAXON2.getId()).size());
+    assertEquals(6, synonymMapper.listByTaxon(tax).size());
+    assertEquals(3, synonymMapper.listByTaxon(TestEntityGenerator.TAXON2).size());
   }
   
   static Synonym newSyn(Synonym syn, Name n, String accKey) {

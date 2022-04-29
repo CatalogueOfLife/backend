@@ -235,6 +235,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       // create required partitions to load data
       partition();
       loadData();
+      // populate global tables that refer to partitioned data
+      loadGlobalData2();
       updateSequences();
       // finally create a test user to use in tests
       session.getMapper(UserMapper.class).create(TEST_USER);
@@ -351,7 +353,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   /**
-   * Loads only global data including the dataset table.
+   * Loads most global data including the dataset table, but not the name_match tables which requires name data to exist.
    * This is important to happen before other data is loaded,
    * as the dataset table defines the immutable origin that defines how partitions are layed out!
    */
@@ -379,6 +381,20 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
           "n_type", NameType.SCIENTIFIC
       ));
       copyGlobalTable(pgc, "id_report");
+
+      c.commit();
+    }
+  }
+
+  void loadGlobalData2() throws SQLException, IOException {
+    try (Connection c = sqlSessionFactorySupplier.get().openSession(false).getConnection()) {
+      PgConnection pgc = InitDbUtils.toPgConnection(c);
+
+      // common data for all tests and even the empty one
+      ScriptRunner runner = new ScriptRunner(session.getConnection());
+      runner.setSendFullScript(true);
+      runner.runScript(Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
+
       copyGlobalTable(pgc, "name_match");
 
       c.commit();

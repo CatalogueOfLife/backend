@@ -41,22 +41,6 @@ import javax.annotation.Nullable;
 public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
 
-  private static final List<Class<? extends SectorProcessable<?>>> SECTOR_MAPPERS = List.of(
-    VerbatimSourceMapper.class,
-    VernacularNameMapper.class,
-    DistributionMapper.class,
-    MediaMapper.class,
-    SpeciesInteractionMapper.class,
-    TaxonConceptRelationMapper.class,
-    TreatmentMapper.class,
-    NameUsageMapper.class,
-    TypeMaterialMapper.class,
-    NameRelationMapper.class,
-    NameMatchMapper.class,
-    NameMapper.class,
-    ReferenceMapper.class
-  );
-
   private final EstimateDao estimateDao;
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
@@ -264,7 +248,7 @@ public class SectorSync extends SectorRunnable {
   private void deleteOld() {
     try (SqlSession session = factory.openSession(true)) {
       // TODO: deal with species estimates separately as they are on a shared table
-      for (Class<? extends SectorProcessable<?>> m : SECTOR_MAPPERS) {
+      for (Class<? extends SectorProcessable<?>> m : SectorProcessable.MAPPERS) {
         int count = session.getMapper(m).deleteBySector(sector);
         LOG.info("Deleted {} existing {}s from sector {}", count, m.getSimpleName().replaceAll("Mapper", ""), sector);
       }

@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.NameProcessable;
+import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -126,7 +127,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       var homotypicNamesIds = nrm.listRelatedNameIDs(DSID.of(datasetKey, nameId), NomRelType.HOMOTYPIC_RELATIONS);
 
       // now go through synonym usages and add to misapplied, heterotypic or skip if seen before
-      for (Synonym s : sm.listByTaxon(datasetKey, taxonId)) {
+      for (Synonym s : sm.listByTaxon(DSID.of(datasetKey, taxonId))) {
         if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
           syn.getMisapplied().add(s);
         } else if (homotypicNamesIds.contains(s.getName().getId())) {
@@ -480,7 +481,12 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     for (Sector s : sm.listByTarget(did)) {
       tMapper.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), -1);
     }
-    // deleting the taxon now should cascade deletes to synonyms, vernaculars, etc but keep the name record!
+    // delete all associated infos (vernaculars, etc)
+    // but keep the name record!
+    for (Class<? extends TaxonProcessable<?>> m : TaxonProcessable.MAPPERS) {
+      int count = session.getMapper(m).deleteByTaxon(did);
+      LOG.info("Deleted {} associated {}s for taxon {}", count, m.getSimpleName().replaceAll("Mapper", ""), did);
+    }
   }
   
   @Override

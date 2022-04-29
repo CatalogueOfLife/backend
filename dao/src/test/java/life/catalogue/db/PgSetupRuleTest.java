@@ -31,7 +31,6 @@ public class PgSetupRuleTest {
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
 
-
   /**
    * https://github.com/Sp2000/colplus-backend/issues/577
    */

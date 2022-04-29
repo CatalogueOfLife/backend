@@ -62,7 +62,7 @@
   <select id="listByTaxon" resultMap="synonymResultMap">
     SELECT <include refid="SELECT_NO_ACCEPTED"/>
     FROM <include refid="FROM_NO_ACCEPTED"/>
-    WHERE u.dataset_key=#{datasetKey} AND u.parent_id = #{taxonId} AND u.is_synonym
+    WHERE u.dataset_key=#{key.datasetKey} AND u.parent_id = #{key.id} AND u.is_synonym
     ORDER BY u.status, n.scientific_name
   </select>
 
@@ -116,6 +116,11 @@
   <delete id="deleteByDataset" parameterType="map">
     DELETE FROM name_usage
     WHERE dataset_key=#{datasetKey} AND is_synonym
+  </delete>
+
+  <delete id="deleteByTaxon" parameterType="map">
+    DELETE FROM name_usage
+    WHERE dataset_key=#{key.datasetKey} AND parent_id = #{key.id} AND is_synonym
   </delete>
 
 </mapper>
