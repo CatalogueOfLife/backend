@@ -262,6 +262,34 @@ DROP TABLE verbatim_2368_old;
 DROP TABLE verbatim_2369_old;
 DROP TABLE verbatim_2370_old;
 
+--
+-- DATA INTEGRITY ISSUES
+-- sector_key is missing in some old project tables - update based on the usage or remove
+
+-- DISTRIBUTION
+UPDATE distribution_3 d SET sector_key=u.sector_key FROM name_usage_3 u WHERE u.id=d.taxon_id AND d.sector_key IS NULL;
+UPDATE distribution x SET sector_key=u.sector_key FROM dataset d, name_usage u 
+    WHERE x.dataset_key=d.key AND x.dataset_key=u.dataset_key AND d.origin='RELEASED' AND d.source_key=3 AND u.id=x.taxon_id AND x.sector_key IS NULL;
+DELETE FROM distribution_3 WHERE sector_key IS NULL;
+DELETE FROM distribution x USING dataset d, name_usage u 
+    WHERE x.dataset_key=d.key AND x.dataset_key=u.dataset_key AND d.origin='RELEASED' AND d.source_key=3 AND u.id=x.taxon_id AND x.sector_key IS NULL;
+DELETE FROM distribution x WHERE NOT EXISTS (SELECT TRUE FROM name_usage u WHERE u.dataset_key=x.dataset_key AND u.id=x.taxon_id);
+
+-- VERNACULAR NAME
+UPDATE vernacular_name_3 v SET sector_key=u.sector_key FROM name_usage_3 u WHERE u.id=v.taxon_id AND v.sector_key IS NULL;
+UPDATE vernacular_name x SET sector_key=u.sector_key FROM dataset d, name_usage u 
+    WHERE x.dataset_key=d.key AND x.dataset_key=u.dataset_key AND d.origin='RELEASED' AND d.source_key=3 AND u.id=x.taxon_id AND x.sector_key IS NULL;
+DELETE FROM vernacular_name_3 WHERE sector_key IS NULL;
+DELETE FROM vernacular_name x USING dataset d, name_usage u 
+    WHERE x.dataset_key=d.key AND x.dataset_key=u.dataset_key AND d.origin='RELEASED' AND d.source_key=3 AND u.id=x.taxon_id AND x.sector_key IS NULL;
+
+-- NAME REL
+DELETE FROM name_rel x WHERE NOT EXISTS (SELECT TRUE FROM name n WHERE n.dataset_key=x.dataset_key AND n.id=x.name_id);
+DELETE FROM name_rel x WHERE NOT EXISTS (SELECT TRUE FROM name n WHERE n.dataset_key=x.dataset_key AND n.id=x.related_name_id);
+
+-- VERBATIM SOURCE (projects only)
+DELETE FROM verbatim_source x WHERE NOT EXISTS (SELECT TRUE FROM name_usage u WHERE u.dataset_key=x.dataset_key AND u.id=x.id);
+
 
 --
 -- FOREIGN KEYS
@@ -301,7 +329,6 @@ ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENC
 ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
 ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
 ALTER TABLE verbatim_source ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage;
-
 ```
 
 ### 2022-03-30 changed dataset types
