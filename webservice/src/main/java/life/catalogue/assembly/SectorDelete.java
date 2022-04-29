@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
+import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TempNameUsageRelated;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * Deletes a sector but keeps its imports so we can still show historical releases properly which access the sync history of projects.
  * A sector deletion keeps synced data of rank above species level by default!
  * Names and taxa of ranks above species are kept, but the sectorKey is removed from all entities that previously belonged to the deleted sector.
- * At the same time all verbatim source records are removed
+ * At the same time all verbatim source records and other associated data like vernacular names are entirely removed.
  */
 public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
@@ -82,31 +83,12 @@ public class SectorDelete extends SectorRunnable {
       removeZoologicalAmbiguousRanks(sectorKey, session);
 
       // delete usages, names and related records that are listed in the temp table
-      // order matters!
-      List<TempNameUsageRelated> mappers = List.of(
-        // usage related
-        session.getMapper(VerbatimSourceMapper.class),
-        session.getMapper(DistributionMapper.class),
-        session.getMapper(MediaMapper.class),
-        session.getMapper(VernacularNameMapper.class),
-        session.getMapper(SpeciesInteractionMapper.class),
-        session.getMapper(TaxonConceptRelationMapper.class),
-        session.getMapper(TreatmentMapper.class),
-        // usage
-        session.getMapper(NameUsageMapper.class),
-        // name related
-        session.getMapper(NameMatchMapper.class),
-        session.getMapper(TypeMaterialMapper.class),
-        session.getMapper(NameRelationMapper.class),
-        // name
-        session.getMapper(NameMapper.class)
-      );
-
-      mappers.forEach(m -> {
+      for (Class<? extends TempNameUsageRelated> mc : TempNameUsageRelated.MAPPERS) {
+        TempNameUsageRelated m = session.getMapper(mc);
         int count = m.deleteByTemp(sectorKey.getDatasetKey());
         String type = m.getClass().getSimpleName().replace("Mapper", "");
         LOG.info("Deleted {} {} records from sector {}", count, type, sectorKey);
-      });
+      }
       // the commit removes the temp table!!!
       session.commit();
 
@@ -115,12 +97,19 @@ public class SectorDelete extends SectorRunnable {
       // remove verbatim sources from remaining usages
       vsm.deleteBySector(s);
 
-      // remove sector from usages, names, refs & type_material
-      int count = um.removeSectorKey(sectorKey);
-      nm.removeSectorKey(sectorKey);
-      session.getMapper(ReferenceMapper.class).removeSectorKey(sectorKey);
-      session.getMapper(TypeMaterialMapper.class).removeSectorKey(sectorKey);
-      LOG.info("Mark {} existing taxa with their synonyms and related information to not belong to sector {} anymore", count, sectorKey);
+      // remove sector from all entities left
+      SectorProcessable.MAPPERS.forEach(mc -> {
+        int count;
+        SectorProcessable m = session.getMapper(mc);
+        if (mc.equals(VerbatimSourceMapper.class)) {
+          count = m.deleteBySector(sectorKey);
+          LOG.info("Deleted {} verbatim sources for sector {}", count, sectorKey);
+        } else {
+          count = m.removeSectorKey(sectorKey);
+          String type = mc.getSimpleName().replace("Mapper", "");
+          LOG.info("Removed sector key {} from {} {} records", sectorKey, count, type);
+        }
+      });
 
       // update datasetSectors counts
       SectorDao.incSectorCounts(session, s, -1);
