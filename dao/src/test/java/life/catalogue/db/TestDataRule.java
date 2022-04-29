@@ -321,7 +321,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         st.execute("DELETE FROM " + t + " WHERE dataset_key=" + Datasets.COL);
       };
       session.getConnection().commit();
-      for (String t : new String[]{"sector_import", "sector"}){
+      for (String t : new String[]{"name_match", "sector_import", "sector"}){
         st.execute("DELETE FROM " + t);
       };
       session.getConnection().commit();

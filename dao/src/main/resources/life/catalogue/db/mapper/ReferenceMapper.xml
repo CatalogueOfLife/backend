@@ -215,6 +215,8 @@
       UNION
     SELECT unnest(reference_ids) FROM name_usage WHERE dataset_key=#{datasetKey} AND reference_ids IS NOT NULL
       UNION
+    SELECT according_to_id FROM name_usage WHERE dataset_key=#{datasetKey} AND according_to_id IS NOT NULL
+      UNION
     SELECT reference_id FROM taxon_concept_rel WHERE dataset_key=#{datasetKey} AND reference_id IS NOT NULL
       UNION
     SELECT reference_id FROM species_interaction WHERE dataset_key=#{datasetKey} AND reference_id IS NOT NULL
