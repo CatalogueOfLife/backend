@@ -293,42 +293,65 @@ DELETE FROM verbatim_source x WHERE NOT EXISTS (SELECT TRUE FROM name_usage u WH
 
 --
 -- FOREIGN KEYS
+ALTER TABLE name_match ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
 -- establish missing foreign key constraints (takes long time) which we should have created when the partitioning went live
 --
+ALTER TABLE verbatim_source ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage;
 ALTER TABLE reference ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE reference ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
 ALTER TABLE name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
 ALTER TABLE name ADD FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference;
+ALTER TABLE name ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
 ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
 ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
 ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
 ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, related_name_id) REFERENCES name;
 ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
 ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
 ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
 ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
 ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference;
 ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
 ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
 ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
 ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
 ALTER TABLE taxon_concept_rel ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage;
 ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
 ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
 ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
 ALTER TABLE species_interaction ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage;
-ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
-ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
-ALTER TABLE media ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-ALTER TABLE media ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
-ALTER TABLE media ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
-ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage;
 ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
 ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
 ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
-ALTER TABLE verbatim_source ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
+ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
+ALTER TABLE media ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
+
+-- INDEX UPDATE
+DROP INDEX name_rel_dataset_key_name_id_type_idx;
+CREATE INDEX ON name_rel (dataset_key, name_id);
+CREATE INDEX ON name_rel (dataset_key, related_name_id);
+DROP INDEX taxon_concept_rel_dataset_key_taxon_id_type_idx;
+CREATE INDEX ON taxon_concept_rel (dataset_key, taxon_id);
+CREATE INDEX ON taxon_concept_rel (dataset_key, related_taxon_id);
+DROP INDEX species_interaction_dataset_key_taxon_id_type_idx;
+CREATE INDEX ON species_interaction (dataset_key, taxon_id);
+CREATE INDEX ON species_interaction (dataset_key, related_taxon_id);
 ```
 
 ### 2022-03-30 changed dataset types

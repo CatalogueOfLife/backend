@@ -1160,7 +1160,9 @@ CREATE TABLE name_match (
   index_id INTEGER NOT NULL REFERENCES names_index,
   name_id TEXT NOT NULL,
   type MATCHTYPE,
-  PRIMARY KEY (dataset_key, name_id)
+  PRIMARY KEY (dataset_key, name_id),
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name
 );
 CREATE INDEX ON name_match (dataset_key, sector_key);
 CREATE INDEX ON name_match (dataset_key, index_id);
@@ -1203,7 +1205,8 @@ CREATE TABLE verbatim_source (
   dataset_key INTEGER NOT NULL,
   source_id TEXT,
   source_dataset_key INTEGER,
-  issues ISSUE[] DEFAULT '{}'
+  issues ISSUE[] DEFAULT '{}',
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage,
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
@@ -1307,13 +1310,14 @@ CREATE TABLE name_rel (
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, related_name_id) REFERENCES name ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name,
+  FOREIGN KEY (dataset_key, related_name_id) REFERENCES name
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON name_rel (dataset_key, name_id, type);
+CREATE INDEX ON name_rel (dataset_key, name_id);
+CREATE INDEX ON name_rel (dataset_key, related_name_id);
 CREATE INDEX ON name_rel (dataset_key, sector_key);
 CREATE INDEX ON name_rel (dataset_key, verbatim_key);
 CREATE INDEX ON name_rel (dataset_key, reference_id);
@@ -1343,10 +1347,10 @@ CREATE TABLE type_material (
   link TEXT,
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON type_material (dataset_key, name_id);
@@ -1384,9 +1388,10 @@ CREATE TABLE name_usage (
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   dataset_sectors JSONB,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name ON DELETE CASCADE,
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name,
   FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY LIST (dataset_key);
 
@@ -1412,14 +1417,15 @@ CREATE TABLE taxon_concept_rel (
   reference_id TEXT,
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
+  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON taxon_concept_rel (dataset_key, taxon_id, type);
+CREATE INDEX ON taxon_concept_rel (dataset_key, taxon_id);
+CREATE INDEX ON taxon_concept_rel (dataset_key, related_taxon_id);
 CREATE INDEX ON taxon_concept_rel (dataset_key, sector_key);
 CREATE INDEX ON taxon_concept_rel (dataset_key, verbatim_key);
 CREATE INDEX ON taxon_concept_rel (dataset_key, reference_id);
@@ -1441,14 +1447,15 @@ CREATE TABLE species_interaction (
   reference_id TEXT,
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
+  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON species_interaction (dataset_key, taxon_id, type);
+CREATE INDEX ON species_interaction (dataset_key, taxon_id);
+CREATE INDEX ON species_interaction (dataset_key, related_taxon_id);
 CREATE INDEX ON species_interaction (dataset_key, sector_key);
 CREATE INDEX ON species_interaction (dataset_key, verbatim_key);
 CREATE INDEX ON species_interaction (dataset_key, reference_id);
@@ -1473,10 +1480,10 @@ CREATE TABLE vernacular_name (
   reference_id TEXT,
   doc tsvector GENERATED ALWAYS AS (to_tsvector('simple2', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON vernacular_name (dataset_key, taxon_id);
@@ -1501,10 +1508,10 @@ CREATE TABLE distribution (
   area TEXT NOT NULL,
   reference_id TEXT,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON distribution (dataset_key, taxon_id);
@@ -1524,9 +1531,9 @@ CREATE TABLE treatment (
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   document TEXT NOT NULL,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, id) REFERENCES name_usage ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON treatment (dataset_key, sector_key);
@@ -1553,10 +1560,10 @@ CREATE TABLE media (
   link TEXT,
   reference_id TEXT,
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage ON DELETE CASCADE
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON media (dataset_key, taxon_id);
