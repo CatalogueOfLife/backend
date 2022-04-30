@@ -140,6 +140,11 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       // build indices and attach partition - the actual copy commands use the concrete table names so we can load them without being attached yet
       Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
 
+      // at last copy name matches - we need an attached table for this to fulfill constraints
+      try (SqlSession session = factory.openSession(true)) {
+        copyTable(NameMatch.class, NameMatchMapper.class, session);
+      }
+
       // subclass specifics
       finalWork();
 
@@ -210,7 +215,6 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       copyTable(Reference.class, ReferenceMapper.class, session);
 
       copyTable(Name.class, NameMapper.class, session);
-      copyTable(NameMatch.class, NameMatchMapper.class, session);
       copyTable(NameRelation.class, NameRelationMapper.class, session);
       copyTable(TypeMaterial.class, TypeMaterialMapper.class, session);
 

@@ -1587,7 +1587,8 @@ CREATE TABLE name_match (
   name_id TEXT NOT NULL,
   type MATCHTYPE,
   PRIMARY KEY (dataset_key, name_id),
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name
 );
 CREATE INDEX ON name_match (dataset_key, sector_key);
 CREATE INDEX ON name_match (dataset_key, index_id);
