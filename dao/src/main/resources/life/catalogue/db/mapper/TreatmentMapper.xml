@@ -82,4 +82,9 @@
     </if>
   </insert>
 
+  <update id="removeSectorKey" parameterType="map">
+    UPDATE treatment SET sector_key = NULL
+    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
+  </update>
+
 </mapper>

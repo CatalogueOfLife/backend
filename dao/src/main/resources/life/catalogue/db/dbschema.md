@@ -290,6 +290,49 @@ DELETE FROM name_rel x WHERE NOT EXISTS (SELECT TRUE FROM name n WHERE n.dataset
 -- VERBATIM SOURCE (projects only)
 DELETE FROM verbatim_source x WHERE NOT EXISTS (SELECT TRUE FROM name_usage u WHERE u.dataset_key=x.dataset_key AND u.id=x.id);
 
+-- References had data integrity problems because the table was not attached for some weeks. Remove unused refs:
+CREATE TABLE md_ref_fks AS
+    SELECT dataset_key,published_in_id AS id FROM name WHERE published_in_id IS NOT NULL
+      UNION
+    SELECT dataset_key,reference_id FROM name_rel WHERE reference_id IS NOT NULL
+      UNION
+    SELECT dataset_key,reference_id FROM type_material WHERE reference_id IS NOT NULL
+      UNION
+    SELECT dataset_key,unnest(reference_ids) FROM name_usage WHERE reference_ids IS NOT NULL
+      UNION
+    SELECT dataset_key,according_to_id FROM name_usage WHERE according_to_id IS NOT NULL
+      UNION
+    SELECT dataset_key,reference_id FROM taxon_concept_rel WHERE reference_id IS NOT NULL
+      UNION
+    SELECT dataset_key,reference_id FROM species_interaction WHERE reference_id IS NOT NULL
+      UNION
+    SELECT dataset_key,reference_id FROM vernacular_name WHERE reference_id IS NOT NULL
+      UNION
+    SELECT dataset_key,reference_id FROM media WHERE reference_id IS NOT NULL
+      UNION
+    SELECT dataset_key,reference_id FROM distribution WHERE reference_id IS NOT NULL
+      UNION
+    SELECT dataset_key,reference_id FROM estimate WHERE reference_id IS NOT NULL;
+CREATE UNIQUE INDEX ON md_ref_fks (dataset_key,id);
+SELECT dataset_key, count(*) from reference r join dataset d on d.key=r.dataset_key where d.source_key=3 AND NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE r.dataset_key=rfk.dataset_key AND r.id=rfk.id) GROUP BY 1; 
+
+delete from reference_2242 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2242 AND r.id=rfk.id); 
+delete from reference_2296 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2296 AND r.id=rfk.id); 
+delete from reference_2303 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2303 AND r.id=rfk.id); 
+delete from reference_2315 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2315 AND r.id=rfk.id); 
+delete from reference_2328 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2328 AND r.id=rfk.id); 
+delete from reference_2332 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2332 AND r.id=rfk.id); 
+delete from reference_2344 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2344 AND r.id=rfk.id); 
+delete from reference_2349 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2349 AND r.id=rfk.id); 
+delete from reference_2351 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2351 AND r.id=rfk.id); 
+delete from reference_2366 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2366 AND r.id=rfk.id); 
+delete from reference_2368 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=2368 AND r.id=rfk.id); 
+delete from reference_9804 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=9804 AND r.id=rfk.id); 
+delete from reference_9812 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=9812 AND r.id=rfk.id); 
+delete from reference_9817 r where NOT EXISTS (SELECT TRUE FROM md_ref_fks rfk WHERE rfk.dataset_key=9817 AND r.id=rfk.id); 
+
+DROP TABLE md_ref_fks;
+
 
 --
 -- FOREIGN KEYS
