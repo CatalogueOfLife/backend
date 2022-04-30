@@ -72,11 +72,32 @@
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 
+  <select id="listByTaxon" parameterType="map" resultMap="verbatimResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </select>
+
+  <delete id="deleteByTaxon" parameterType="map">
+    DELETE FROM <include refid="FROM"/>
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </delete>
+
   <select id="processDataset" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key = #{datasetKey}
   </select>
+
+  <select id="processSector" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/> JOIN name_usage u ON v.id=u.id AND v.dataset_key=u.dataset_key
+    WHERE v.dataset_key = #{key.datasetKey} AND u.sector_key = #{key.id}
+  </select>
+
+  <update id="removeSectorKey" parameterType="map">
+    <!-- nothing to do, sectorKey is no the usage table! -->
+  </update>
 
   <delete id="delete" parameterType="map">
     DELETE FROM verbatim_source

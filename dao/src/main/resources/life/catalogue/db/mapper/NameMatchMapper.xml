@@ -24,6 +24,12 @@
     WHERE nm.dataset_key = #{key.datasetKey} AND nm.name_id = #{key.id}
   </select>
 
+  <select id="processSector" parameterType="map" resultMap="nameMatchResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT nm.type, <include refid="life.catalogue.db.mapper.NamesIndexMapper.SELECT"/>
+    FROM name_match nm LEFT JOIN names_index n ON n.id=nm.index_id
+    WHERE nm.dataset_key = #{key.datasetKey} AND nm.sector_key = #{key.id}
+  </select>
+
   <select id="processIndexIds" resultType="Integer">
     SELECT DISTINCT index_id
     FROM name_match
@@ -90,6 +96,11 @@
       AND nm.dataset_key = #{datasetKey}
     </if>
   </select>
+
+  <update id="removeSectorKey" parameterType="map">
+    UPDATE name_match SET sector_key = NULL
+    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
+  </update>
 
   <update id="truncate">
     TRUNCATE name_match CASCADE

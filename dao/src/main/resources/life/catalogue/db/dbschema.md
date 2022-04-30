@@ -11,8 +11,8 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2022-04-27 fix reference partitions
-Somehow the reference default partition contains the latest project data since March 21st 
+### 2022-04-27 fix reference partition & data integrity
+Somehow the reference and vernacular name default partition contains the latest project data since March 21st 
 while there is an unattached reference_3 table with most of the old data.
 
 Merging data and attaching to the main table:
