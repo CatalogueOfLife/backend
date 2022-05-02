@@ -80,20 +80,27 @@ public class UpdateReleaseTool implements AutoCloseable {
 
     // DOI
     this.doiCfg = doiCfg;
-    final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider(ApiModule.MAPPER, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
-    ClientConfig jerseyCfg = new ClientConfig(jacksonJsonProvider);
-    jerseyCfg.register(new LoggingFeature(java.util.logging.Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
-    jerseyCfg.register(new UserAgentFilter());
-    final Client client = ClientBuilder.newClient(jerseyCfg);
-    doiService = new DataCiteService(doiCfg, client);
-    UserDao udao = new UserDao(factory, new EventBus(), validator);
-    DatasetConverter converter = new DatasetConverter(
-      URI.create("https://www.catalogueoflife.org"),
-      URI.create("https://data.catalogueoflife.org"),
-      udao::get
-    );
+    doiService = buildDoiService(doiCfg);
+    DatasetConverter converter = buildConverter(factory);
     LatestDatasetKeyCacheImpl cache = new LatestDatasetKeyCacheImpl(factory);
     doiUpdater = new DoiUpdater(factory, doiService, cache, converter);
+  }
+
+  static DatasetConverter buildConverter(SqlSessionFactory factory){
+    UserDao udao = new UserDao(factory, new EventBus(), validator);
+    return new DatasetConverter(
+      URI.create("https://www.catalogueoflife.org"),
+      URI.create("https://www.checklistbank.org"),
+      udao::get
+    );
+  }
+  static DataCiteService buildDoiService(DoiConfig cfg){
+    final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider(ApiModule.MAPPER, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
+    ClientConfig jerseyCfg = new ClientConfig(jacksonJsonProvider);
+    jerseyCfg.register(new LoggingFeature(java.util.logging.Logger.getLogger(UpdateReleaseTool.class.getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
+    jerseyCfg.register(new UserAgentFilter());
+    final Client client = ClientBuilder.newClient(jerseyCfg);
+    return new DataCiteService(cfg, client);
   }
 
   /**
@@ -293,7 +300,7 @@ public class UpdateReleaseTool implements AutoCloseable {
 
   public static void main(String[] args) {
     PgConfig cfg = new PgConfig();
-    cfg.host = "pg1.catalogueoflife.org";
+    cfg.host = "pg1.checklistbank.org";
     cfg.database = "col";
     cfg.user = "col";
     cfg.password = "";

@@ -12,11 +12,15 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.dao.DatasetExportDao;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.NameUsageArchiver;
+import life.catalogue.db.MybatisFactory;
+import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.doi.service.DatasetConverter;
+import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiException;
 import life.catalogue.doi.service.DoiService;
 
@@ -95,7 +99,7 @@ public class PublicReleaseListener {
   }
 
   private void publishColSourceDois(Dataset release) {
-    LOG.info("Publish all draft source DOIs for COL release {}: {}", release.getKey(), release.getVersion());
+    LOG.debug("Publish all draft source DOIs for COL release {}: {}", release.getKey(), release.getVersion());
     DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger published = new AtomicInteger(0);
     try {
@@ -108,31 +112,38 @@ public class PublicReleaseListener {
             var srcAttr = converter.source(d, null, release, true);
             doiService.update(srcAttr);
             doiService.publish(doi);
+            published.incrementAndGet();
           } catch (DoiException e) {
             LOG.error("Error publishing DOI {} for COL source {} {}", doi, d.getKey(), d.getAlias(), e);
           }
         }
       });
-      LOG.info("Published {} draft source DOIs for COL release {}: {}", published, release.getKey(), release.getVersion());
 
-    } catch (RuntimeException e) {
+    } catch (Exception e) {
       LOG.error("Failed to publish {} draft source DOIs for COL release {}: {}", published, release.getKey(), release.getVersion(), e);
+
+    } finally {
+      LOG.info("Published {} draft source DOIs for COL release {}: {}", published, release.getKey(), release.getVersion());
     }
   }
 
   /**
-   * Change DOI metadata for last release to point to CLB, not life.catalogue.portal
+   * Change DOI metadata for last release to point to CLB, not the COL portal
    */
   private void updateColDoiUrls(Dataset release) {
+    AtomicInteger updated = new AtomicInteger(0);
     try (SqlSession session = factory.openSession()) {
       Integer lastReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(release.getKey());
       if (lastReleaseKey != null) {
         LOG.info("Last public release before {} is {}", release.getKey(), lastReleaseKey);
-        LOG.info("Change target URLs of DOIs from previous release {} to point to ChecklistBank", lastReleaseKey);
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         Dataset prev = dm.get(lastReleaseKey);
         if (prev.getDoi() != null) {
-          doiService.updateSilently(prev.getDoi(), converter.datasetURI(lastReleaseKey, false));
+          var url = converter.datasetURI(lastReleaseKey, false);
+          LOG.info("Change DOI {} from previous release {} to target {}", prev.getDoi(), lastReleaseKey, url);
+          doiService.updateSilently(prev.getDoi(), url);
+        } else {
+          LOG.info("No DOI existing for previous release {}", lastReleaseKey);
         }
 
         // sources
@@ -144,14 +155,19 @@ public class PublicReleaseListener {
           .collect(Collectors.toSet());
         for (var src : psm.listReleaseSources(lastReleaseKey)) {
           if (src.getDoi() != null && !currentDOIs.contains(src.getDoi())) {
-            doiService.updateSilently(src.getDoi(), converter.sourceURI(lastReleaseKey, src.getKey(), false));
+            var url = converter.sourceURI(lastReleaseKey, src.getKey(), false);
+            LOG.info("Update source DOI {} from previous release {} to target {}", src.getDoi(), lastReleaseKey, url);
+            doiService.updateSilently(src.getDoi(), url);
+            updated.incrementAndGet();
           }
         }
       } else {
         LOG.info("No previous release before {}", release.getKey());
       }
-    } catch (RuntimeException e) {
+    } catch (Exception e) {
       LOG.error("Error updating previous DOIs for COL release {}: {}", release.getKey(), release.getVersion(), e);
+    } finally {
+      LOG.info("Updated target URLs for {} source DOIs for COL release {}: {}", updated, release.getKey(), release.getVersion());
     }
   }
 
@@ -214,4 +230,36 @@ public class PublicReleaseListener {
     return new File(colDownloadDir, "latest_" + format.getFilename() + ".zip");
   }
 
+  public static void main(String[] args) {
+    PgConfig cfg = new PgConfig();
+    cfg.host = "pg1.checklistbank.org";
+    cfg.database = "col";
+    cfg.user = "col";
+    cfg.password = "";
+    DoiConfig doiCfg = new DoiConfig();
+    doiCfg.api = "https://api.datacite.org";
+    doiCfg.prefix = "10.48580";
+    doiCfg.username = "";
+    doiCfg.password = "";
+
+
+    WsServerConfig wcfg = new WsServerConfig();
+    wcfg.db = cfg;
+    wcfg.doi = doiCfg;
+
+    try (var dataSource = cfg.pool()) {
+      var factory = MybatisFactory.configure(dataSource, "releaseListener");
+      DatasetInfoCache.CACHE.setFactory(factory);
+      var doiService = UpdateReleaseTool.buildDoiService(doiCfg);
+      var converter = UpdateReleaseTool.buildConverter(factory);
+
+      PublicReleaseListener listener = new PublicReleaseListener(wcfg, factory, null, doiService, converter);
+      try (SqlSession session = factory.openSession()) {
+        DatasetMapper dm = session.getMapper(DatasetMapper.class);
+        var release = dm.get(9817);
+        listener.publishColSourceDois(release);
+        listener.updateColDoiUrls(release);
+      }
+    }
+  }
 }
