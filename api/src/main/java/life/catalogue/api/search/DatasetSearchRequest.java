@@ -32,7 +32,10 @@ public class DatasetSearchRequest {
   
   @QueryParam("q")
   private String q;
-  
+
+  @QueryParam("alias")
+  private String alias;
+
   @QueryParam("code")
   private NomCode code;
 
@@ -132,6 +135,14 @@ public class DatasetSearchRequest {
   
   public void setQ(String q) {
     this.q = q;
+  }
+
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
   }
 
   public Boolean isPrivat() {
@@ -301,6 +312,7 @@ public class DatasetSearchRequest {
     DatasetSearchRequest that = (DatasetSearchRequest) o;
     return reverse == that.reverse
            && Objects.equals(q, that.q)
+           && Objects.equals(alias, that.alias)
            && code == that.code
            && Objects.equals(privat, that.privat)
            && Objects.equals(releasedFrom, that.releasedFrom)
@@ -323,6 +335,6 @@ public class DatasetSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifPublisherKey, editor, reviewer, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
+    return Objects.hash(q, alias, code, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifPublisherKey, editor, reviewer, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
   }
 }

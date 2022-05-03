@@ -15,6 +15,8 @@ public interface LatestDatasetKeyCache {
 
   @Nullable Integer getReleaseByAttempt(int projectKey, int attempt);
 
+  @Nullable Integer getColAnnualRelease(int year);
+
   boolean isLatestRelease(int datasetKey);
 
   void refresh(int projectKey);

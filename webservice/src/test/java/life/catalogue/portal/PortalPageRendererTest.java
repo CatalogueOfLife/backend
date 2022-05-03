@@ -42,6 +42,11 @@ public class PortalPageRendererTest {
     }
 
     @Override
+    public @Nullable Integer getColAnnualRelease(int year) {
+      return null;
+    }
+
+    @Override
     public boolean isLatestRelease(int datasetKey) {
       return true;
     }

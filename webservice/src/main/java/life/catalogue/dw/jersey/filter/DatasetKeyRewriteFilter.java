@@ -32,14 +32,19 @@ import org.slf4j.LoggerFactory;
  *  - the latest public release of a project: {projectKey}LR
  *  - the latest release candidate of a project, public or private: {projectKey}LRC
  *  - a specific release attempt of a project, public or private: {projectKey}R{attempt}
+ *  - an annual version of COL: COL2021
  */
 @PreMatching
 public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = LoggerFactory.getLogger(DatasetKeyRewriteFilter.class);
 
-  private static final Pattern REL_PATTERN = Pattern.compile("(\\d+)(?:LRC?|R(\\d+))$");
-  private static final Pattern REL_PATH = Pattern.compile("dataset/(\\d+)(?:LRC?|R(\\d+))");
+  private static final String REL_PATTERN_STR = "(\\d+)(?:LRC?|R(\\d+))";
+  private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
+  private static final Pattern REL_PATH = Pattern.compile("dataset/" + REL_PATTERN_STR + "(?:/|\\.|$)");
+  private static final String COL_PREFIX = "COL";
+  private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_PREFIX + "(20\\d\\d)(?:/|\\.|$)", Pattern.CASE_INSENSITIVE);
+  private static final Pattern COL_PATTERN = Pattern.compile("^" + COL_PREFIX + "(20\\d\\d)$");
   // all parameters that contain dataset keys and which we check if they need to be rewritten
   private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey", "hassourcedataset", "releasedfrom");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
@@ -89,6 +94,13 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
       } else {
         req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1)+"LR");
       }
+    } else {
+      m = COL_PATH.matcher(req.getUriInfo().getPath());
+      if (m.find()) {
+        Integer rkey = releaseKeyFromYear(m);
+        builder.replacePath(m.replaceFirst("dataset/" + rkey));
+        req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, COL_PREFIX + m.group(1));
+      }
     }
 
     // change request
@@ -105,6 +117,11 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
       Matcher m = REL_PATTERN.matcher(datasetKey);
       if (m.find()){
         return Optional.of(releaseKeyFromMatch(m));
+      } else {
+        m = COL_PATTERN.matcher(datasetKey);
+        if (m.find()){
+          return Optional.of(releaseKeyFromMatch(m));
+        }
       }
     }
     return Optional.empty();
@@ -143,4 +160,13 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     return releaseKey;
   }
 
+  private Integer releaseKeyFromYear(Matcher m) {
+    // parsing cannot fail, we have a pattern
+    int year = Integer.parseInt(m.group(1));
+    Integer releaseKey = cache.getColAnnualRelease(year);
+    if (releaseKey == null) {
+      throw new NotFoundException("COL Annual Checklist " + year + " was never released");
+    }
+    return releaseKey;
+  }
 }

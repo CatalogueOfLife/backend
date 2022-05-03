@@ -72,6 +72,9 @@
       <if test="req.privat != null">
         AND d.private = #{req.privat}
       </if>
+      <if test="req.alias != null">
+        AND d.alias = #{req.alias}
+      </if>
       <if test="req.code != null">
         AND d.settings @> jsonb_build_object('NOMENCLATURAL_CODE', #{req.code})
       </if>
