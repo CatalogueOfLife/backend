@@ -72,6 +72,12 @@ public class DatasetSearchRequest {
   private Boolean hasGbifKey;
 
   /**
+   * Filters datasets by their gbif dataset UUID.
+   */
+  @QueryParam("gbifKey")
+  private UUID gbifKey;
+
+  /**
    * Filters datasets by their gbif Publisher UUID.
    */
   @QueryParam("gbifPublisherKey")
@@ -191,6 +197,14 @@ public class DatasetSearchRequest {
 
   public void setHasGbifKey(Boolean hasGbifKey) {
     this.hasGbifKey = hasGbifKey;
+  }
+
+  public UUID getGbifKey() {
+    return gbifKey;
+  }
+
+  public void setGbifKey(UUID gbifKey) {
+    this.gbifKey = gbifKey;
   }
 
   public UUID getGbifPublisherKey() {
@@ -319,6 +333,7 @@ public class DatasetSearchRequest {
            && Objects.equals(contributesTo, that.contributesTo)
            && Objects.equals(hasSourceDataset, that.hasSourceDataset)
            && Objects.equals(hasGbifKey, that.hasGbifKey)
+           && Objects.equals(gbifKey, that.gbifKey)
            && Objects.equals(gbifPublisherKey, that.gbifPublisherKey)
            && Objects.equals(editor, that.editor)
            && Objects.equals(reviewer, that.reviewer)
@@ -335,6 +350,6 @@ public class DatasetSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, alias, code, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifPublisherKey, editor, reviewer, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
+    return Objects.hash(q, alias, code, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, editor, reviewer, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
   }
 }

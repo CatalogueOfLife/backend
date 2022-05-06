@@ -113,6 +113,9 @@
           IS NULL
         </if>
       </if>
+      <if test="req.gbifKey != null">
+        AND d.gbif_key=#{req.gbifKey}
+      </if>
       <if test="req.gbifPublisherKey != null">
         AND d.gbif_publisher_key=#{req.gbifPublisherKey}
       </if>
