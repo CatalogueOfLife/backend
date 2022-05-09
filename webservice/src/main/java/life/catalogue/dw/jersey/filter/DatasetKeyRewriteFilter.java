@@ -41,9 +41,9 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
 
   private static final String REL_PATTERN_STR = "(\\d+)(?:LRC?|R(\\d+))";
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
-  private static final Pattern REL_PATH = Pattern.compile("dataset/" + REL_PATTERN_STR + "(?:/|\\.|$)");
+  private static final Pattern REL_PATH = Pattern.compile("dataset/" + REL_PATTERN_STR);
   private static final String COL_PREFIX = "COL";
-  private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_PREFIX + "(20\\d\\d)(?:/|\\.|$)", Pattern.CASE_INSENSITIVE);
+  private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_PREFIX + "(20\\d\\d)", Pattern.CASE_INSENSITIVE);
   private static final Pattern COL_PATTERN = Pattern.compile("^" + COL_PREFIX + "(20\\d\\d)$");
   // all parameters that contain dataset keys and which we check if they need to be rewritten
   private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey", "hassourcedataset", "releasedfrom");
