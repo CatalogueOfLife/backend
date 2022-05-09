@@ -118,7 +118,7 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSearchRequest req = new DatasetSearchRequest();
       req.setReleasedFrom(Datasets.COL);
-      req.setAlias(String.format("COL%s2", year-2000));
+      req.setAlias(String.format("COL%02d", year-2000));
       var resp = dm.search(req,null,new Page());
       if (resp != null && !resp.isEmpty()) {
         if (resp.size() > 1) {
