@@ -25,7 +25,24 @@ import static org.junit.Assert.*;
  *
  */
 public class CsvReaderTest {
-  
+
+  @Test
+  public void clean() throws Exception {
+    assertNull(CsvReader.clean(""));
+    assertNull("", CsvReader.clean("null"));
+    assertNull("", CsvReader.clean("null  "));
+    assertEquals("hi Pete", CsvReader.clean("hi  Pete "));
+    assertEquals("hi Pete", CsvReader.clean("hi  Pete "));
+    assertEquals("hi Pete", CsvReader.clean("hi  Pete "));
+    assertEquals("öüä", CsvReader.clean("öüä")); // 2 byte encodings
+    // 3 byte encodings using the combining diaresis - visually entirely different, but not in raw bytes!
+    assertEquals("Bärmann, Fürst von Lieven & Sudhaus, 2009", CsvReader.clean("Bärmann, Fürst von Lieven & Sudhaus, 2009"));
+    assertEquals("Niä", CsvReader.clean("Nia"+'\u0308')); // combining diaresis
+    assertEquals("Nin̆a", CsvReader.clean("Nin"+'\u0306' +"a")); // combining breve
+    assertEquals("Niña", CsvReader.clean("Nin"+'\u0303' +"a")); // combining tilde
+    assertEquals("Niéa", CsvReader.clean("Nie"+'\u0301' +"a")); // combining Acute Accent
+  }
+
   @Test
   public void fromFolder() throws Exception {
     CsvReader reader = CsvReader.from(Resources.toFile("acef/0").toPath());

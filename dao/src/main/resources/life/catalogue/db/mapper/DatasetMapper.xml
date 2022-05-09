@@ -140,6 +140,9 @@
       <if test="req.issued != null">
         AND d.issued > #{req.issued}
       </if>
+      <if test="req.rowType != null and !req.rowType.isEmpty()">
+        <foreach item="rt" collection="req.rowType" separator=""> AND exist(di.verbatim_by_term_count, '${rt}')</foreach>
+      </if>
       <if test="req.minSize != null">
         AND <include refid="size"/> >= #{req.minSize}
       </if>

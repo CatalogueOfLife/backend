@@ -19,6 +19,7 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.Normalizer;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -51,6 +52,8 @@ import com.univocity.parsers.csv.CsvParserSettings;
  * Very basic value cleaning is done:
  * - NULL and \N values are considered null
  * - Whitespace including control characters is trimmed and collapsed to a single space
+ * - Unicode characters are normalised into the composed NFC form.
+ * This includes the combining modifier characters, see https://docs.oracle.com/javase/tutorial/i18n/text/normalizerapi.html
  * <p>
  * It forms the basis for reading ColDP, DWC and ACEF files.
  */
@@ -680,11 +683,15 @@ public class CsvReader {
     }
   }
 
-  private static String clean(String x) {
+  @VisibleForTesting
+  static String clean(String x) {
     if (Strings.isNullOrEmpty(x) || NULL_PATTERN.matcher(x).find()) {
       return null;
     }
-    return Strings.emptyToNull(SPACE_MATCHER.trimAndCollapseFrom(x, ' ').trim());
+    x = SPACE_MATCHER.trimAndCollapseFrom(x, ' ');
+    // normalise unicode into NFC
+    x = Normalizer.normalize(x, Normalizer.Form.NFC);
+    return Strings.emptyToNull(x.trim());
   }
   
   private static boolean isAllNull(String[] row) {

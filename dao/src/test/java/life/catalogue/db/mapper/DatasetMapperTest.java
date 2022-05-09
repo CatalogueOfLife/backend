@@ -5,6 +5,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.nameparser.api.NomCode;
@@ -621,6 +622,11 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     assertEquals(0, mapper().search(query, null, new Page()).size());
     query.setPrivat(false);
     assertEquals(8, mapper().search(query, null, new Page()).size());
+
+    // rowType queries
+    query = new DatasetSearchRequest();
+    query.setRowType(List.of(ColdpTerm.TypeMaterial));
+    assertEquals(0, mapper().search(query, null, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {

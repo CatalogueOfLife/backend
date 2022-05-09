@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 
+import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
 
 import java.time.LocalDate;
@@ -109,6 +110,9 @@ public class DatasetSearchRequest {
 
   @QueryParam("license")
   private List<License> license;
+
+  @QueryParam("rowType")
+  private List<Term> rowType;
 
   @QueryParam("modified")
   private LocalDate modified;
@@ -247,6 +251,14 @@ public class DatasetSearchRequest {
     this.hasSourceDataset = hasSourceDataset;
   }
 
+  public List<Term> getRowType() {
+    return rowType;
+  }
+
+  public void setRowType(List<Term> rowType) {
+    this.rowType = rowType;
+  }
+
   public List<DatasetType> getType() {
     return type;
   }
@@ -341,6 +353,7 @@ public class DatasetSearchRequest {
            && Objects.equals(origin, that.origin)
            && Objects.equals(type, that.type)
            && Objects.equals(license, that.license)
+           && Objects.equals(rowType, that.rowType)
            && Objects.equals(modified, that.modified)
            && Objects.equals(created, that.created)
            && Objects.equals(issued, that.issued)
@@ -350,6 +363,6 @@ public class DatasetSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, alias, code, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, editor, reviewer, modifiedBy, origin, type, license, modified, created, issued, minSize, sortBy, reverse);
+    return Objects.hash(q, alias, code, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, editor, reviewer, modifiedBy, origin, type, license, rowType, modified, created, issued, minSize, sortBy, reverse);
   }
 }
