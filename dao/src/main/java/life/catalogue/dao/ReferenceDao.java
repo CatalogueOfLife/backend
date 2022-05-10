@@ -46,7 +46,7 @@ public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMap
     if (csl.getId() == null) {
       csl.setId(UUID.randomUUID().toString());
     }
-    Reference ref = new ReferenceFactory(datasetKey, resolver).fromCsl(datasetKey, csl);
+    Reference ref = new ReferenceFactory(datasetKey, resolver).fromCsl(datasetKey, csl, IssueContainer.VOID);
     return create(ref, user);
   }
 

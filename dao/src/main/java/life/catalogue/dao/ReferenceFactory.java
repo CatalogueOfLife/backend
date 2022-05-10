@@ -146,15 +146,15 @@ public class ReferenceFactory {
     csl.setDOI(v.get(ColdpTerm.doi));
     csl.setURL(v.get(ColdpTerm.link));
 
-    return fromCsl(datasetKey, csl, v.get(ColdpTerm.citation), v.get(ColdpTerm.remarks));
+    return fromCsl(datasetKey, csl, v.get(ColdpTerm.citation), v.get(ColdpTerm.remarks), v);
   }
 
-  private void resolveDOI(Reference ref) {
+  private void resolveDOI(Reference ref, IssueContainer issues) {
     if (ref.getCsl() != null && ref.getCsl().getDOI() != null && (
       resolveDOIs == DoiResolution.ALWAYS || resolveDOIs == DoiResolution.MISSING && !ref.getCsl().hasTitleContainerOrAuthor()
     )) {
       DOI.parse(ref.getCsl().getDOI()).ifPresent(doi -> {
-        Citation c = resolver.resolve(doi);
+        Citation c = resolver.resolve(doi, issues);
         if (c != null) {
           var csl = CslDataConverter.toCslData(c.toCSL());
           csl.setDOI(ref.getCsl().getDOI());
@@ -164,16 +164,16 @@ public class ReferenceFactory {
     }
   }
 
-  public Reference fromCsl(int datasetKey, CslData csl) {
-    return fromCsl(datasetKey, csl, null, null);
+  public Reference fromCsl(int datasetKey, CslData csl, IssueContainer issues) {
+    return fromCsl(datasetKey, csl, null, null, issues);
   }
 
-  public Reference fromCsl(int datasetKey, CslData csl, String citation, String remarks) {
+  public Reference fromCsl(int datasetKey, CslData csl, String citation, String remarks, IssueContainer issues) {
     Reference ref = newReference(datasetKey, csl.getId());
     ref.setRemarks(remarks);
     ref.setCsl(csl);
     lookForDOI(ref);
-    resolveDOI(ref); // this can create a new csl instance!
+    resolveDOI(ref, issues); // this can create a new csl instance!
     // if a full citation is given prefer that over a CSL generated one in case we do not have structured basics
     if (!StringUtils.isBlank(citation) && !ref.getCsl().hasTitleContainerOrAuthor()) {
       ref.setCitation(citation);
@@ -240,7 +240,7 @@ public class ReferenceFactory {
           csl.setPage(ObjectUtils.toString(vip.page));
         }, () -> issues.addIssue(Issue.CITATION_DETAILS_UNPARSED));
       }
-      return fromCsl(datasetKey, csl, bibliographicCitation, null);
+      return fromCsl(datasetKey, csl, bibliographicCitation, null, issues);
     }
     return ref;
   }

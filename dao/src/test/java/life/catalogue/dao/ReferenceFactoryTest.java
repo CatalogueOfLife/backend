@@ -44,7 +44,7 @@ public class ReferenceFactoryTest {
     citation.setAuthor(List.of(new CslName("Charles")));
     citation.setIssued(FuzzyDate.of(1878));
     citation.setDoi(d);
-    when(resolver.resolve(d)).thenReturn(citation);
+    when(resolver.resolve(d, IssueContainer.VOID)).thenReturn(citation);
 
     rf = new ReferenceFactory(5, refStore, resolver);
     rf.setResolveDOIs(DoiResolution.NEVER);

@@ -3,6 +3,8 @@ package life.catalogue.metadata;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
+import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.parser.CSLTypeParser;
 
 import java.io.IOException;
@@ -33,7 +35,7 @@ public class DoiResolver {
     reader = ApiModule.MAPPER.readerFor(CrossRefCitation.class);
   }
 
-  public Citation resolve(DOI doi) {
+  public Citation resolve(DOI doi, IssueContainer issues) {
     HttpGet request = new HttpGet(doi.getUrl());
     request.addHeader(HttpHeaders.ACCEPT, CSL_TYPE);
 
@@ -52,6 +54,11 @@ public class DoiResolver {
         }
       } else {
         LOG.warn("Failed to resolve DOI {}. HTTP {}", doi, resp.getStatusLine());
+        if (resp.getStatusLine().getStatusCode() == 404) {
+          issues.addIssue(Issue.DOI_NOT_FOUND);
+        } else {
+          issues.addIssue(Issue.DOI_UNRESOLVED);
+        }
       }
 
     } catch (IOException e) {

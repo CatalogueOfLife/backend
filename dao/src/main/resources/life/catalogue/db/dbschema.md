@@ -11,6 +11,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-05-10 add DOI issues
+```
+ALTER TYPE ISSUE ADD VALUE 'DOI_NOT_FOUND';
+ALTER TYPE ISSUE ADD VALUE 'DOI_UNRESOLVED';
+```
+
 ### 2022-04-27 fix reference partition & data integrity
 Somehow the reference and vernacular name default partition contains the latest project data since March 21st 
 while there is an unattached reference_3 table with most of the old data.

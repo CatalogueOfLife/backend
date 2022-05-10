@@ -4,6 +4,10 @@ import de.undercouch.citeproc.csl.CSLType;
 
 import life.catalogue.api.model.DOI;
 
+import life.catalogue.api.model.IssueContainer;
+
+import life.catalogue.api.vocab.Issue;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.AfterClass;
@@ -34,20 +38,24 @@ public class DoiResolverIT {
   public void crossref() throws Exception {
     var resolver = new DoiResolver(http);
     DOI doi = new DOI("10.1007/s00705-021-05156-1");
-    var cit = resolver.resolve(doi);
+    IssueContainer issues = IssueContainer.simple();
+    var cit = resolver.resolve(doi, issues);
     assertEquals(doi, cit.getDoi());
     assertEquals(doi.getDoiName(), cit.getId());
     assertEquals("Archives of Virology", cit.getContainerTitle());
     assertEquals(CSLType.ARTICLE_JOURNAL, cit.getType());
     assertNotNull(cit.getAuthor().get(0).getOrcid());
+    assertFalse(issues.hasIssue(Issue.DOI_NOT_FOUND));
   }
 
   @Test
   public void notExisting() throws Exception {
     var resolver = new DoiResolver(http);
     DOI doi = new DOI("10.1007/s007051234567wertzucvbnmxcvbnm");
-    var cit = resolver.resolve(doi);
+    IssueContainer issues = IssueContainer.simple();
+    var cit = resolver.resolve(doi, issues);
     assertNull(cit);
+    assertTrue(issues.hasIssue(Issue.DOI_NOT_FOUND));
   }
 
 }

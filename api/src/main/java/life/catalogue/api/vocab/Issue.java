@@ -395,6 +395,12 @@ public enum Issue {
 
   AUTHORSHIP_REMOVED(NAME, Level.WARNING,
     "The interpreted authorship was removed because it was not considered appropriate."),
+
+  DOI_NOT_FOUND(REFERENCE, Level.WARNING,
+    "The given DOI does not exist in Crossref."),
+
+  DOI_UNRESOLVED(REFERENCE, Level.WARNING,
+    "The given DOI could not be resolved by Crossref. This might be a temporary problem."),
   ;
 
   /**
