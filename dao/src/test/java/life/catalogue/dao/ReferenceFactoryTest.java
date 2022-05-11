@@ -11,13 +11,13 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import de.undercouch.citeproc.csl.CSLType;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class ReferenceFactoryTest {
@@ -44,7 +44,7 @@ public class ReferenceFactoryTest {
     citation.setAuthor(List.of(new CslName("Charles")));
     citation.setIssued(FuzzyDate.of(1878));
     citation.setDoi(d);
-    when(resolver.resolve(d, IssueContainer.VOID)).thenReturn(citation);
+    when(resolver.resolve(any(DOI.class), any(IssueContainer.class))).thenReturn(citation);
 
     rf = new ReferenceFactory(5, refStore, resolver);
     rf.setResolveDOIs(DoiResolution.NEVER);
