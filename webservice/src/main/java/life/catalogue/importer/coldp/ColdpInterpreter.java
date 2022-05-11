@@ -290,6 +290,7 @@ public class ColdpInterpreter extends InterpreterBase {
     if (opt.isPresent()) {
       // publishedIn
       Name n = opt.get().getName();
+      n.setPublishedInPageLink(v.get(ColdpTerm.publishedInPageLink));
       setReference(v, refIdTerm, rid -> {
           n.setPublishedInId(rid);
           n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));
