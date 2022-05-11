@@ -142,7 +142,12 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * The page(s) or other detailed location within the publishedIn reference the name was described.
    */
   private String publishedInPage;
-  
+
+  /**
+   * The page(s) or other detailed location within the publishedIn reference the name was described.
+   */
+  private String publishedInPageLink;
+
   /**
    * Year the name was published. Taken either from the authorship
    * or if not existing (e.g. botanical names) from the published in reference
@@ -205,6 +210,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.publishedInId = n.publishedInId;
     this.publishedInPage = n.publishedInPage;
     this.publishedInYear = n.publishedInYear;
+    this.publishedInPageLink = n.publishedInPageLink;
     this.origin = n.origin;
     this.type = n.type;
     this.unparsed = n.unparsed;
@@ -246,6 +252,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setNomStatus(builder.nomStatus);
     setPublishedInId(builder.publishedInId);
     setPublishedInPage(builder.publishedInPage);
+    publishedInPageLink = builder.publishedInPageLink;
     setPublishedInYear(builder.publishedInYear);
     setOrigin(builder.origin);
     setType(builder.type);
@@ -312,6 +319,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.nomStatus = copy.getNomStatus();
     builder.publishedInId = copy.getPublishedInId();
     builder.publishedInPage = copy.getPublishedInPage();
+    builder.publishedInPageLink = copy.getPublishedInPageLink();
     builder.publishedInYear = copy.getPublishedInYear();
     builder.origin = copy.getOrigin();
     builder.type = copy.getType();
@@ -428,7 +436,15 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setPublishedInPage(String publishedInPage) {
     this.publishedInPage = publishedInPage;
   }
-  
+
+  public String getPublishedInPageLink() {
+    return publishedInPageLink;
+  }
+
+  public void setPublishedInPageLink(String publishedInPageLink) {
+    this.publishedInPageLink = publishedInPageLink;
+  }
+
   public Integer getPublishedInYear() {
     return publishedInYear;
   }
@@ -733,7 +749,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
            && Objects.equals(verbatimKey, name.verbatimKey)
            && Objects.equals(namesIndexId, name.namesIndexId)
            && namesIndexType == name.namesIndexType
-           && Objects.equals(scientificName, name.scientificName)
+           && scientificName.equals(name.scientificName)
            && Objects.equals(authorship, name.authorship)
            && rank == name.rank
            && Objects.equals(uninomial, name.uninomial)
@@ -750,6 +766,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
            && nomStatus == name.nomStatus
            && Objects.equals(publishedInId, name.publishedInId)
            && Objects.equals(publishedInPage, name.publishedInPage)
+           && Objects.equals(publishedInPageLink, name.publishedInPageLink)
            && Objects.equals(publishedInYear, name.publishedInYear)
            && origin == name.origin
            && type == name.type
@@ -761,7 +778,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, remarks);
   }
 
   @Override
@@ -828,6 +845,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private NomStatus nomStatus;
     private String publishedInId;
     private String publishedInPage;
+    private String publishedInPageLink;
     private Integer publishedInYear;
     private Origin origin;
     private NameType type;
@@ -976,6 +994,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder publishedInPage(String val) {
       publishedInPage = val;
+      return this;
+    }
+
+    public Builder publishedInPageLink(String val) {
+      publishedInPageLink = val;
       return this;
     }
 

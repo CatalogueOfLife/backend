@@ -5,6 +5,8 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 
+import life.catalogue.api.vocab.NomStatus;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
@@ -67,6 +69,9 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   @Override
   Name createTestEntity(int dkey) {
     Name n = TestEntityGenerator.newName(dkey, "sk1");
+    n.setNomStatus(NomStatus.ACCEPTABLE);
+    n.setPublishedInPage("223");
+    n.setPublishedInPageLink("http://bhl.org/pub/1234567");
     n.setNomenclaturalNote("nom. illeg.");
     n.setUnparsed("bla bli blub");
     return n;

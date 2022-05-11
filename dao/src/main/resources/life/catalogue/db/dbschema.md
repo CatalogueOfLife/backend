@@ -11,10 +11,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2022-05-10 add DOI issues
+### 2022-05-10 add DOI issues & publishedPageLink
 ```
 ALTER TYPE ISSUE ADD VALUE 'DOI_NOT_FOUND';
 ALTER TYPE ISSUE ADD VALUE 'DOI_UNRESOLVED';
+
+ALTER TABLE name ADD COLUMN published_in_page_link TEXT;
+ALTER TABLE name_usage_archive ADD COLUMN n_published_in_page_link TEXT;
 ```
 
 ### 2022-04-27 fix reference partition & data integrity
