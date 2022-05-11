@@ -749,7 +749,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
            && Objects.equals(verbatimKey, name.verbatimKey)
            && Objects.equals(namesIndexId, name.namesIndexId)
            && namesIndexType == name.namesIndexType
-           && scientificName.equals(name.scientificName)
+           && Objects.equals(scientificName, name.scientificName)
            && Objects.equals(authorship, name.authorship)
            && rank == name.rank
            && Objects.equals(uninomial, name.uninomial)
