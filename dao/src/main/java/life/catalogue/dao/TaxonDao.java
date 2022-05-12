@@ -593,6 +593,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     ) {
       TaxonMapper tm = writeSession.getMapper(TaxonMapper.class);
       tm.resetDatasetSectorCount(datasetKey);
+      writeSession.commit();
       SectorCountUpdHandler scConsumer = new SectorCountUpdHandler(tm);
       readSession.getMapper(SectorMapper.class).processDataset(datasetKey).forEach(scConsumer);
       writeSession.commit();

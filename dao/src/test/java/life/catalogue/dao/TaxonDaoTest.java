@@ -7,9 +7,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.SectorMapperTest;
-import life.catalogue.db.mapper.SynonymMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 
@@ -294,7 +292,29 @@ public class TaxonDaoTest extends DaoTestBase {
     MybatisTestUtils.populateDraftTree(session());
     tDao.updateAllSectorCounts(Datasets.COL);
   }
-  
+
+  @Test
+  public void updateAllSectorCounts2() {
+
+    try (SqlSession session = factory().openSession(true)) {
+      MybatisTestUtils.populateDraftTree(session);
+      MybatisTestUtils.populateTestTree(12, session);
+      session.commit();
+    }
+
+    SectorDao sdao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao, validator);
+    SectorDaoTest.setupSectors(sdao);
+
+    tDao.updateAllSectorCounts(3);
+    SectorDaoTest.assertSectorCounts();
+
+
+    // finally rebuild once more & check
+    tDao.updateAllSectorCounts(3);
+    SectorDaoTest.assertSectorCounts();
+  }
+
+
   @Test
   public void updateParentChange(){
     MybatisTestUtils.populateDraftTree(session());

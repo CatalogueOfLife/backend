@@ -19,7 +19,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class SectorDaoTest extends DaoTestBase {
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
@@ -46,45 +46,57 @@ public class SectorDaoTest extends DaoTestBase {
       txm.resetDatasetSectorCount(3);
       session.commit();
     }
-  
+
+    setupSectors(dao);
+
+    assertSectorCounts();
+  }
+
+  /**
+   * 3 sectors, 2 from source 12, 1 from 11
+   */
+  static void setupSectors(SectorDao dao) {
+    // now create some sectors and test again
     Sector s = SectorMapperTest.create();
     s.setSubjectDatasetKey(11);
     s.getSubject().setId("root-1");
-    s.getTarget().setId("t4");
+    s.getTarget().setId("t4"); // Coleoptera
+    s.setMode(Sector.Mode.ATTACH);
     dao.create(s, user);
-  
+
     s = SectorMapperTest.create();
     s.setSubjectDatasetKey(12);
     s.getSubject().setId("t2");
-    s.getTarget().setId("t5");
+    s.getTarget().setId("t1"); // Animalia
+    s.setMode(Sector.Mode.UNION);
     dao.create(s, user);
-  
+
     s = SectorMapperTest.create();
     s.setSubjectDatasetKey(12);
     s.getSubject().setId("t3");
-    s.getTarget().setId("t3");
+    s.getTarget().setId("t3"); // Insecta
+    s.setMode(Sector.Mode.ATTACH);
     dao.create(s, user);
-  
-  
+  }
+  static void assertSectorCounts() {
     try (SqlSession session = factory().openSession(true)) {
       TreeMapper tm = session.getMapper(TreeMapper.class);
-    
+
       TreeNode tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t5"));
-      assertEquals(0, tn.getDatasetSectors().get(11));
-      assertEquals(1, tn.getDatasetSectors().get(12));
-  
+      assertNull(tn.getDatasetSectors());
+
       tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t4"));
       assertEquals(1, tn.getDatasetSectors().get(11));
-      assertEquals(0, tn.getDatasetSectors().get(12));
+      assertFalse(tn.getDatasetSectors().containsKey(12));
 
       tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t3"));
       assertEquals(1, tn.getDatasetSectors().get(11));
-      assertEquals(2, tn.getDatasetSectors().get(12));
-    
+      assertEquals(1, tn.getDatasetSectors().get(12));
+
       tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t2"));
       assertEquals(1, tn.getDatasetSectors().get(11));
-      assertEquals(2, tn.getDatasetSectors().get(12));
-    
+      assertEquals(1, tn.getDatasetSectors().get(12));
+
       tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t1"));
       assertEquals(1, tn.getDatasetSectors().get(11));
       assertEquals(2, tn.getDatasetSectors().get(12));

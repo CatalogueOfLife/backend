@@ -51,7 +51,7 @@ public class MybatisTestUtils {
     NameMapper nm = session.getMapper(NameMapper.class);
   
     Name n1 = uninomial(nm, datasetKey,"n1", "Animalia", Rank.KINGDOM);
-    Name n2 = uninomial(nm, datasetKey,"n2", "Arthropoda", Rank.KINGDOM);
+    Name n2 = uninomial(nm, datasetKey,"n2", "Arthropoda", Rank.PHYLUM);
     Name n3 = uninomial(nm, datasetKey,"n3", "Insecta", Rank.CLASS);
     Name n4 = uninomial(nm, datasetKey,"n4", "Coleoptera", Rank.ORDER);
     Name n5 = uninomial(nm, datasetKey,"n5", "Lepidoptera", Rank.ORDER);
