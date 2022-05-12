@@ -69,8 +69,8 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, DatasetProcessab
 
   /**
    * Recursively updates the sector count for a given taxon and all its parents.
-   * @param key the taxon datasetKey & id, pointing to a catalogue
-   * @param dkey the datasetKey that sectors are counted for
+   * @param key the taxon datasetKey & id, pointing to a catalogue or release
+   * @param dkey the source datasetKey that sectors are counted for
    * @param delta the change to apply to the count for the given datasetKey, can be negative
    */
   void incDatasetSectorCount(@Param("key") DSID<String> key, @Param("dkey") int dkey, @Param("delta") int delta);

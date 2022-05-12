@@ -15,6 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Resets all dataset sector counts for an entire catalogue, see param datasetKey,
+ * and rebuilds the counts from the currently mapped sectors
+ */
 public class SectorCountJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(SectorCountJob.class);
 
