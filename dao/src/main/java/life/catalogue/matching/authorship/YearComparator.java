@@ -64,9 +64,7 @@ public class YearComparator {
   }
   
   /**
-   * Compares year strings.
-   * If parsable as integers allows for 1 year difference
-   * due to frequent confusion between imprint dates and actual dates of publication
+   * Compares year strings allowin for placeholders in comparison in addition to strict numbers.
    */
   public Equality compare() {
     if (y1 != null && y2 != null) {
