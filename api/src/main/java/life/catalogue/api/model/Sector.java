@@ -222,13 +222,12 @@ public class Sector extends DatasetScopedEntity<Integer> {
            && placeholderRank == sector.placeholderRank
            && Objects.equals(ranks, sector.ranks)
            && Objects.equals(entities, sector.entities)
-           && Objects.equals(note, sector.note)
-           && Objects.equals(size, sector.size);
+           && Objects.equals(note, sector.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, mode, priority, syncAttempt, datasetAttempt, code, placeholderRank, ranks, entities, note, size);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, mode, priority, syncAttempt, datasetAttempt, code, placeholderRank, ranks, entities, note);
   }
 
   @Override
