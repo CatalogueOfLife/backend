@@ -266,13 +266,10 @@
   </update>
 
   <update id="resetDatasetSectorCount">
-    UPDATE name_usage AS u SET dataset_sectors = CASE WHEN u.sector_key IS NULL THEN NULL ELSE jsonb_build_object(s.subject_dataset_key, 1) END
-    FROM name_usage u2
-      JOIN name n ON n.dataset_key=#{datasetKey} AND n.id=u2.name_id
-      LEFT JOIN sector s ON s.id=u2.sector_key AND s.dataset_key=#{datasetKey}
-    WHERE u2.dataset_key=#{datasetKey} AND u2.id=u.id
-      AND u.dataset_key=#{datasetKey}
-      AND n.rank &lt; 'GENUS'
+    UPDATE name_usage AS u SET dataset_sectors = NULL
+    FROM name n
+    WHERE u.dataset_key=#{datasetKey} AND n.dataset_key=#{datasetKey} AND n.id=u.name_id
+      AND n.rank &lt;= 'GENUS'
       AND NOT u.is_synonym
   </update>
 

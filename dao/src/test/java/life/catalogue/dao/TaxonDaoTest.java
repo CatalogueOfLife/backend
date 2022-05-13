@@ -314,7 +314,6 @@ public class TaxonDaoTest extends DaoTestBase {
     SectorDaoTest.assertSectorCounts();
   }
 
-
   @Test
   public void updateParentChange(){
     MybatisTestUtils.populateDraftTree(session());
