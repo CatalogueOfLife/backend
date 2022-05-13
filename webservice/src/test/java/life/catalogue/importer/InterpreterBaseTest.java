@@ -84,9 +84,32 @@ public class InterpreterBaseTest {
   @Test
   public void interpretName() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
-    Optional<ParsedNameUsage> pnu = ib.interpretName(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881",
+    Optional<ParsedNameUsage> pnu;
+    Name n;
+
+    pnu = ib.interpretName(true, "1", null, "Cerastium ligusticum subsp. granulatum", "(Huter et al.) P. D. Sell & Whitehead",
+      null, null, null, null, null, null, null, null, null, null, v);
+    assertNull(pnu.get().getTaxonomicNote());
+    n = pnu.get().getName();
+    assertEquals("Cerastium ligusticum subsp. granulatum", n.getScientificName());
+    assertEquals("(Huter et al.) P. D. Sell & Whitehead", n.getAuthorship());
+    assertNull(n.getNomenclaturalNote());
+    assertEquals(Rank.SUBSPECIES, n.getRank());
+    assertNull(n.getUninomial());
+    assertEquals("Cerastium", n.getGenus());
+    assertNull(n.getInfragenericEpithet());
+    assertEquals("ligusticum", n.getSpecificEpithet());
+    assertEquals("granulatum", n.getInfraspecificEpithet());
+    assertEquals("(Huter et al.) P. D. Sell & Whitehead", n.getAuthorship());
+    assertNull(n.getBasionymAuthorship().getYear());
+    assertEquals("Huter", n.getBasionymAuthorship().getAuthors().get(0));
+    assertEquals("al.", n.getBasionymAuthorship().getAuthors().get(1));
+    assertEquals("P.D.Sell", n.getCombinationAuthorship().getAuthors().get(0));
+    assertEquals("Whitehead", n.getCombinationAuthorship().getAuthors().get(1));
+
+    pnu = ib.interpretName(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881",
       null, "Abies", null, "alba", null, null, null, null, null, null, v);
-    Name n = pnu.get().getName();
+    n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -260,6 +283,15 @@ public class InterpreterBaseTest {
     assertEquals("Hamilton, 1990", n.getAuthorship());
     assertEquals(Authorship.yearAuthors("1990", "Hamilton"), n.getCombinationAuthorship());
     assertTrue(n.getBasionymAuthorship().isEmpty());
+
+    pnu = ib.interpretName(true, "1", null, "Leucophyta R. Br.", null, null, null, null, null, null, null, "botanical", null, null, null, v);
+    n = pnu.get().getName();
+    assertEquals("Leucophyta", n.getScientificName());
+    assertEquals("R.Br.", n.getAuthorship());
+    assertEquals("Leucophyta", n.getUninomial());
+    assertNull(n.getGenus());
+    assertNull(n.getSpecificEpithet());
+    assertEquals(Rank.UNRANKED, n.getRank());
   }
 
   @Test

@@ -364,17 +364,13 @@ public class InterpreterBase {
     final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
     Rank rank = Rank.UNRANKED;
-    boolean explicitRank = false;
     // we only parse ranks given with more than one char. c or g alone can be very ambiguous, see https://github.com/CatalogueOfLife/data/issues/302
     if (vrank != null && (vrank.length()>1 || vrank.equals("f") || vrank.equals("v"))) {
       try {
         // use advanced rank parser that takes the code into account!
         var parsedRank = RankParser.PARSER.parse(code, vrank);
         if (parsedRank.isPresent()) {
-          explicitRank = true;
           rank = parsedRank.get();
-        } else {
-          rank = Rank.UNRANKED;
         }
       } catch (UnparsableException e) {
         v.addIssue(Issue.RANK_INVALID);
@@ -426,10 +422,6 @@ public class InterpreterBase {
         atom.setGenus(null);
       }
 
-      // infer the rank in case it was not given explicitly
-      if (!explicitRank && rank.otherOrUnranked() && vrank == null) {
-        atom.setRank(RankUtils.inferRank(atom));
-      }
       atom.rebuildScientificName();
 
       // parse the reconstructed name without authorship to detect name type and potential problems
@@ -461,12 +453,35 @@ public class InterpreterBase {
       }
 
     } else if (StringUtils.isNotBlank(sciname)) {
+      // be careful, this infers ranks from the name!
       pnu = NameParser.PARSER.parse(sciname, rank, code, v).get();
 
     } else {
       LOG.info("No name given for {}", id);
       return Optional.empty();
     }
+
+    // assign best rank
+    // we potentially have an explicit one and one coming from the name parser that does inferal based on rank markers and suffices
+    // we dont want to infer uninomials by their name endings - it works in most cases, but the few errors we get are really bad
+    // see https://github.com/CatalogueOfLife/data/issues/438
+    if (rank.otherOrUnranked() && StringUtils.isBlank(vrank)) {
+      // we can infer the rank a little but be careful
+      Rank inferred = Rank.UNRANKED;
+      if (pnu.getName().getRank() != null && pnu.getName().getRank().notOtherOrUnranked()) {
+        // might be inferred already by the parser
+        inferred = pnu.getName().getRank();
+      } else {
+        inferred = RankUtils.inferRank(pnu.getName());
+      }
+      // we ignore inferred ranks for uninomials above genera as these are suffix based
+      // infrageneric names for plants mostly contain explicit rank markers, so we keep those
+      if (!inferred.isGenusOrSuprageneric()) {
+        rank = inferred;
+      }
+    }
+    // finally use it
+    pnu.getName().setRank(rank);
 
     // try to add an authorship if not yet there
     NameParser.PARSER.parseAuthorshipIntoName(pnu, authorship, v);
@@ -498,12 +513,6 @@ public class InterpreterBase {
       }
     }
     pnu.getName().setNomStatus(life.catalogue.api.util.ObjectUtils.coalesce(status, statusAuthorship));
-
-    // assign best rank
-    if (rank.notOtherOrUnranked() || explicitRank || pnu.getName().getRank() == null) {
-      // TODO: check ACEF ranks...
-      pnu.getName().setRank(rank);
-    }
 
     // finally update the scientificName with the canonical form if we can
     pnu.getName().rebuildScientificName();
