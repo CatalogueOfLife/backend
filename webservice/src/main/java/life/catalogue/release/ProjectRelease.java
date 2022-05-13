@@ -44,15 +44,15 @@ public class ProjectRelease extends AbstractProjectCopy {
   public static Set<DataFormat> EXPORT_FORMATS = Set.of(DataFormat.TEXT_TREE, DataFormat.COLDP, DataFormat.DWCA, DataFormat.ACEF);
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
 
-  private final ImageService imageService;
-  private final WsServerConfig cfg;
+  protected final WsServerConfig cfg;
+  protected final NameDao nDao;
   private final UriBuilder datasetApiBuilder;
   private final URI colseo;
   private final CloseableHttpClient client;
+  private final ImageService imageService;
   private final ExportManager exportManager;
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
-  private final NameDao nDao;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
@@ -106,21 +106,9 @@ public class ProjectRelease extends AbstractProjectCopy {
       LOG.info("Removed {} bare names from project {}", num, datasetKey);
     }
 
+    final Integer prevReleaseKey = createReleaseDOI();
+
     try (SqlSession session = factory.openSession(true)) {
-      // find previous public release needed for DOI management
-      final Integer prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
-      LOG.info("Last public release was {}", prevReleaseKey);
-
-      // assign DOIs?
-      if (cfg.doi != null) {
-        newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
-        updateDataset(newDataset);
-
-        var attr = doiUpdater.buildReleaseMetadata(datasetKey, false, newDataset, prevReleaseKey);
-        LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
-        doiService.createSilently(attr);
-      }
-
       // treat source. Archive dataset metadata & logos & assign a potentially new DOI
       updateState(ImportState.ARCHIVING);
       DatasetSourceDao dao = new DatasetSourceDao(factory);
@@ -160,6 +148,29 @@ public class ProjectRelease extends AbstractProjectCopy {
     updateState(ImportState.MATCHING);
     IdProvider idProvider = new IdProvider(datasetKey, attempt, newDatasetKey, cfg.release, factory);
     idProvider.run();
+  }
+
+  /**
+   * Creates a new DOI for the new release
+   * @return the previous releases datasetKey
+   */
+  protected Integer createReleaseDOI() throws Exception {
+    try (SqlSession session = factory.openSession(true)) {
+      // find previous public release needed for DOI management
+      final Integer prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
+      LOG.info("Last public release was {}", prevReleaseKey);
+
+      // assign DOIs?
+      if (cfg.doi != null) {
+        newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
+        updateDataset(newDataset);
+
+        var attr = doiUpdater.buildReleaseMetadata(datasetKey, false, newDataset, prevReleaseKey);
+        LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
+        doiService.createSilently(attr);
+      }
+      return prevReleaseKey;
+    }
   }
 
   /**

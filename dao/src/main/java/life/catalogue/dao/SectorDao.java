@@ -90,7 +90,9 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       }
       s.setTarget(target.toSimpleNameLink());
       
-      
+      // make sure the priority is not take, otherwise make room
+      updatePriorities(s, mapper);
+
       // creates sector key
       mapper.create(s);
 
@@ -129,13 +131,26 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   protected void updateBefore(Sector s, Sector old, int user, SectorMapper mapper, SqlSession session) {
     parsePlaceholderRank(s);
     requireTaxonIdExists(s.getTargetAsDSID(), session);
-    super.updateBefore(s, old, user, mapper, session);
+    if (s.getPriority() != null && !Objects.equals(s.getPriority(), old.getPriority())) {
+      updatePriorities(s, mapper);
+    }
   }
-
   private static void requireTaxonIdExists(DSID<String> key, SqlSession session){
     if (key != null && key.getId() != null) {
       if (!session.getMapper(NameUsageMapper.class).exists(key)) {
         throw new IllegalArgumentException("ID " + key.getId() + " not existing in dataset " + key.getDatasetKey());
+      }
+    }
+  }
+
+  private static void updatePriorities(Sector s, SectorMapper mapper){
+    if (s.getPriority() != null) {
+      // does that priority already exist? If so, make room
+      var pk = mapper.getByPriority(s.getDatasetKey(), s.getPriority());
+      if (pk != null) {
+        // to avoid constraint problems we need to shift this and lower prios
+        int num = mapper.incLowerPriorities(s.getDatasetKey(), s.getPriority());
+        LOG.debug("Shifted {} lower priority sectors for dataset {}", num, s.getDatasetKey());
       }
     }
   }

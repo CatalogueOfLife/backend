@@ -50,7 +50,7 @@ public class DatasetConverter {
    *  - url
    *
    * @param release
-   * @param latest if true points to the life.catalogue.portal, not checklist bank
+   * @param latest if true points to the COL portal, not checklist bank
    * @return
    */
   public DoiAttributes release(Dataset release, boolean latest, @Nullable DOI project, @Nullable DOI previousVersion) {

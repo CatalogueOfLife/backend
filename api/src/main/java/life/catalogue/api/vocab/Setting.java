@@ -61,7 +61,6 @@ public enum Setting {
 
   /**
    * Template used to build a new release alias.
-   * See RELEASE_TITLE_TEMPLATE for usage.
    */
   RELEASE_ALIAS_TEMPLATE(String.class, MANAGED),
 
@@ -84,6 +83,12 @@ public enum Setting {
    * If true a release will prepare exports for the entire release in all common formats.
    */
   RELEASE_PREPARE_DOWNLOADS(Boolean.class, MANAGED),
+
+  /**
+   * Template used to build a new extended release alias.
+   */
+  XRELEASE_ALIAS_TEMPLATE(String.class, MANAGED),
+
 
   /**
    * Number of first authors from a project/release to use for the container authors of a source chapter-in-a-book citation.

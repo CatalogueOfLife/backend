@@ -202,7 +202,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     diDao.update(metrics);
   }
 
-  private void copyData() {
+  private void copyData()  {
     LOG.info("Copy data into dataset {}", newDatasetKey);
     updateState(ImportState.INSERTING);
     try (SqlSession session = factory.openSession(true)) {
@@ -246,7 +246,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     indexService.indexDataset(newDatasetKey);
   }
 
-  private <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
+  <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
     int count = session.getMapper(mapperClass).copyDataset(datasetKey, newDatasetKey, mapIds);
     LOG.info("Copied {} {}s", count, entity.getSimpleName());
   }

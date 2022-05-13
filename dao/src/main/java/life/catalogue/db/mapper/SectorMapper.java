@@ -33,6 +33,13 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   List<Sector> listChildSectors(@Param("key") DSID<Integer> sectorKey);
 
   /**
+   * List all sectors for a given dataset and mode ordered by priority.
+   * @param datasetKey project or release key
+   * @param modes modes to include in the sector listing. If null all modes will be considered
+   */
+  List<Sector> listByPriority(@Param("datasetKey") Integer datasetKey, @Param("mode") Sector.Mode... modes);
+
+  /**
    * List all sector keys which have a targetID within the given subtree starting with ad including the given key.
    */
   List<Integer> listDescendantSectorKeys(@Param("key") DSID<String> key);
@@ -58,4 +65,20 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
    */
   int updateLastSync(@Param("key") DSID<Integer> key, @Param("attempt") int attempt);
 
+  /**
+   * Checks whether we already have a sector in the given dataset with the given priority
+   * @param datasetKey project or release
+   * @param priority priority to test
+   * @return the primary key of the sector if found
+   */
+  Integer getByPriority(@Param("datasetKey") Integer datasetKey, @Param("priority") Integer priority);
+
+  /**
+   * Increases the priority value of all sectors in the given dataset which have the same or a higher priority value currently.
+   * A higher priority value means it will be less important!
+   * @param datasetKey
+   * @param priority
+   * @return number of changed sectors
+   */
+  int incLowerPriorities(@Param("datasetKey") Integer datasetKey, @Param("priority") Integer priority);
 }
