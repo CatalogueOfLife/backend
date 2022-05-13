@@ -114,6 +114,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       // prepare new tables
       updateState(ImportState.PROCESSING);
       Partitioner.partition(factory, newDatasetKey, newDatasetOrigin);
+      checkIfCancelled();
       // is an id mapping table needed?
       if (mapIds) {
         LOG.info("Create clean id mapping tables for project {}", datasetKey);
@@ -132,23 +133,30 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       }
 
       // call prep
+      checkIfCancelled();
       prepWork();
 
       // copy data
+      checkIfCancelled();
       copyData();
 
       // build indices and attach partition - the actual copy commands use the concrete table names so we can load them without being attached yet
+      checkIfCancelled();
       Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
 
       // at last copy name matches - we need an attached table for this to fulfill constraints
+      checkIfCancelled();
       try (SqlSession session = factory.openSession(true)) {
         copyTable(NameMatch.class, NameMatchMapper.class, session);
       }
 
       // subclass specifics
+      checkIfCancelled();
       finalWork();
 
+      checkIfCancelled();
       metrics();
+      checkIfCancelled();
 
       try {
         // ES index

@@ -154,6 +154,12 @@ public abstract class BackgroundJob implements Runnable {
     return !isRunning() && !isQueued();
   }
 
+  protected void checkIfCancelled() throws InterruptedException {
+    if (Thread.currentThread().isInterrupted()) {
+      throw new InterruptedException(getClass().getSimpleName() + " job " + key + " was cancelled while " + status);
+    }
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

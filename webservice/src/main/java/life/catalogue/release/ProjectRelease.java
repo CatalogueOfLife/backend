@@ -47,7 +47,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   protected final WsServerConfig cfg;
   protected final NameDao nDao;
   private final UriBuilder datasetApiBuilder;
-  private final URI colseo;
+  private final URI portalURI;
   private final CloseableHttpClient client;
   private final ImageService imageService;
   private final ExportManager exportManager;
@@ -63,7 +63,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.nDao = nDao;
     this.cfg = cfg;
     this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
-    this.colseo = UriBuilder.fromUri(cfg.apiURI).path("colseo").build();
+    this.portalURI = UriBuilder.fromUri(cfg.apiURI).path("portal").build();
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
@@ -201,6 +201,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   void finalWork() throws Exception {
+    checkIfCancelled();
     // update both the projects and release datasets import attempt pointer
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
@@ -211,7 +212,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     if (client != null && datasetApiBuilder != null) {
       URI api = datasetApiBuilder.build(datasetKey);
       VarnishUtils.ban(client, api);
-      VarnishUtils.ban(client, colseo); // flush also /colseo which also points to latest releases
+      VarnishUtils.ban(client, portalURI); // flush also /colseo which also points to latest releases
     }
     // kick off exports
     if (settings.isEnabled(Setting.RELEASE_PREPARE_DOWNLOADS)) {

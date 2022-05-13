@@ -137,16 +137,13 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public File exportDir = new File("/tmp/exports");
 
-  @NotNull
-  public String exportCss = "https://gitcdn.link/repo/CatalogueOfLife/backend/master/webservice/src/main/resources/exporter/html/catalogue.css";
-
-  public URI apiURI = URI.create("https://api.catalogueoflife.org");
+  public URI apiURI = URI.create("https://api.checklistbank.org");
 
   @NotNull
-  public URI downloadURI = URI.create("https://download.catalogueoflife.org");
+  public URI downloadURI = URI.create("https://download.checklistbank.org");
 
   @NotNull
-  public URI clbURI = URI.create("https://data.catalogueoflife.org");
+  public URI clbURI = URI.create("https://www.checklistbank.org");
 
   @NotNull
   public URI portalURI = URI.create("https://www.catalogueoflife.org");
