@@ -7,6 +7,8 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.ApiKryoPool;
 
+import org.checkerframework.checker.units.qual.N;
+
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 
@@ -456,9 +458,14 @@ public class TestEntityGenerator {
     tm.setCitation("UGANDA: adult ♂, CW 21.5, CL 14.4, CH 7.4, FW 6.5 mm, Imatong Mountains, near border with South Sudan (3.79° N, 32.87° E), at 2,134 m asl, 11 Aug. 1955, L.C. Beadle (NHM 1955.11.8.26–27).");
     tm.setCountry(Country.UGANDA);
     tm.setLocality("Imatong Mountains, near border with South Sudan");
-    tm.setLatitude(3.79);
-    tm.setLongitude(32.87);
-    tm.setAltitude(2134);
+    tm.setLatitude("3° 47' 24''");
+    tm.setLongitude("32° 52' 11.999''");
+    tm.setCoordinate(new Coordinate(32.87, 3.79));
+    tm.setAltitude("2134m");
+    tm.setInstitutionCode("G-DC");
+    tm.setCatalogNumber("1234");
+    tm.setAssociatedSequences("genbank-seq-num");
+    tm.setSex(Sex.FEMALE);
     tm.setDate("11 Aug. 1955");
     tm.setCollector("L.C. Beadle");
     tm.applyUser(Users.TESTER);

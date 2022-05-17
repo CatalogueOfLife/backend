@@ -401,6 +401,9 @@ public enum Issue {
 
   DOI_UNRESOLVED(REFERENCE, Level.WARNING,
     "The given DOI could not be resolved by Crossref. This might be a temporary problem."),
+
+  TYPE_MATERIAL_SEX_INVALID(TYPE_MATERIAL, Level.WARNING,
+    "A type material record attached to this name has an unparsable sex."),
   ;
 
   /**

@@ -11,6 +11,23 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-05-17 extend TypeMaterial
+```
+ALTER TABLE type_material ADD COLUMN sex SEX;
+ALTER TABLE type_material ADD COLUMN institution_code TEXT;
+ALTER TABLE type_material ADD COLUMN catalog_number TEXT;
+ALTER TABLE type_material ADD COLUMN associated_sequences TEXT;
+ALTER TABLE type_material ADD COLUMN coordinate POINT;
+ALTER TABLE type_material ALTER COLUMN altitude type TEXT;
+UPDATE type_material SET coordinate = POINT(longitude, latitude) WHERE latitude IS NOT NULL AND longitude IS NOT NULL;
+ALTER TABLE type_material DROP CONSTRAINT type_material_latitude_check;
+ALTER TABLE type_material DROP CONSTRAINT type_material_longitude_check;
+ALTER TABLE type_material ALTER COLUMN latitude type TEXT;
+ALTER TABLE type_material ALTER COLUMN longitude type TEXT;
+
+ALTER TYPE ISSUE ADD VALUE 'TYPE_MATERIAL_SEX_INVALID';
+```
+
 ### 2022-05-10 add DOI issues & publishedPageLink
 ```
 ALTER TYPE ISSUE ADD VALUE 'DOI_NOT_FOUND';

@@ -85,15 +85,23 @@ public class StringUtils {
     if (parts == null)
       return null;
     StringBuilder sb = new StringBuilder();
-    for (String p : parts) {
-      if (!org.apache.commons.lang3.StringUtils.isBlank(p)) {
-        if (sb.length() > 0) {
-          sb.append(delimiter);
+    append(sb, delimiter, false, parts);
+    return sb.toString();
+  }
+
+  public static void append(StringBuilder sb, String delimiter, boolean delimiterBeforeFirstPart, String... parts) {
+    boolean first = true;
+    if (parts != null) {
+      for (String p : parts) {
+        if (!org.apache.commons.lang3.StringUtils.isBlank(p)) {
+          if (sb.length() > 0 && (!first || delimiterBeforeFirstPart)) {
+            sb.append(delimiter);
+          }
+          first = false;
+          sb.append(p.trim());
         }
-        sb.append(p.trim());
       }
     }
-    return sb.toString();
   }
 
   public static String hexString(byte[] data) {
