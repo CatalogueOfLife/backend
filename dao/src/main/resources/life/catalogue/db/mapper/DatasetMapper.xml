@@ -285,7 +285,7 @@
     AND coalesce((d.settings ->> 'import frequency')::int, 0) >= 0
   </sql>
 
-  <select id="listNeverImported" resultMap="datasetResultMap">
+  <select id="listNeverImported" resultMap="datasetDIResultMap">
     SELECT <include refid="SELECT"/>
     FROM dataset d
       LEFT JOIN dataset_import di ON di.dataset_key=d.key
