@@ -385,13 +385,11 @@ public class NeoDb {
       LOG.info("Neo processing of {} finished in {} batches with {} records", label, consumer.getBatchCounter(), consumer.getRecordCounter());
       
     } catch (InterruptedException e) {
-      // make sure our processing thread is gone and then rethrow to handle on higher level
+      Thread.currentThread().interrupt();  // set interrupt flag back
       LOG.error("Neo processing interrupted", e);
       if (consThread.isAlive()) {
         consThread.interrupt();
-        consThread.join();
       }
-      throw e;
     }
     
     if (consumer.hasError()) {
