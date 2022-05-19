@@ -11,6 +11,8 @@
     </encoder>
   </appender>
 
+    <logger name="ch.qos.logback.classic" level="WARN"/>
+    <logger name="org.gbif.dwc.terms.TermFactory" level="WARN"/>
     <logger name="life.catalogue" level="INFO"/>
     <logger name="life.catalogue.importer" level="DEBUG"/>
     <logger name="life.catalogue.release" level="INFO"/>

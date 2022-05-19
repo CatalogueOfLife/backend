@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -360,164 +361,170 @@ public class InterpreterBase {
                                                  final String cultivar,
                                                  String nomCode, String nomStatus,
                                                  String link, String remarks, VerbatimRecord v) {
-    // parse rank & code as they improve name parsing
-    final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
+    try {
+      // parse rank & code as they improve name parsing
+      final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
-    Rank rank = Rank.UNRANKED;
-    // we only parse ranks given with more than one char. c or g alone can be very ambiguous, see https://github.com/CatalogueOfLife/data/issues/302
-    if (vrank != null && (vrank.length()>1 || vrank.equals("f") || vrank.equals("v"))) {
-      try {
-        // use advanced rank parser that takes the code into account!
-        var parsedRank = RankParser.PARSER.parse(code, vrank);
-        if (parsedRank.isPresent()) {
-          rank = parsedRank.get();
+      Rank rank = Rank.UNRANKED;
+      // we only parse ranks given with more than one char. c or g alone can be very ambiguous, see https://github.com/CatalogueOfLife/data/issues/302
+      if (vrank != null && (vrank.length()>1 || vrank.equals("f") || vrank.equals("v"))) {
+        try {
+          // use advanced rank parser that takes the code into account!
+          var parsedRank = RankParser.PARSER.parse(code, vrank);
+          if (parsedRank.isPresent()) {
+            rank = parsedRank.get();
+          }
+        } catch (UnparsableException e) {
+          v.addIssue(Issue.RANK_INVALID);
+          rank = Rank.OTHER;
         }
-      } catch (UnparsableException e) {
+      } else if (vrank != null) {
         v.addIssue(Issue.RANK_INVALID);
         rank = Rank.OTHER;
       }
-    } else if (vrank != null) {
-      v.addIssue(Issue.RANK_INVALID);
-      rank = Rank.OTHER;
-    }
 
-    // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
-    boolean isAtomized;
-    if (rank.isSupraspecific()) {
-      // require uninomial, genus or infragenus
-      isAtomized = ObjectUtils.anyNonBlank(uninomial, genus, infraGenus);
-    } else if (rank.isInfraspecific()) {
-      // require genus, species and one lower level epithet
-      isAtomized = ObjectUtils.allNonBlank(genus, species) && ObjectUtils.anyNonBlank(infraspecies, cultivar);
-    } else if (rank.isSpeciesOrBelow()) {
-      // require genus and species
-      isAtomized = ObjectUtils.allNonBlank(genus, species);
-    } else {
-      isAtomized = ObjectUtils.anyNonBlank(uninomial, genus, infraGenus, species, infraspecies);
-    }
-
-    final boolean useAtoms = isAtomized && (preferAtoms || StringUtils.isBlank(sciname));
-    ParsedNameUsage pnu;
-
-    // we can get the scientific name in various ways.
-    // we prefer already atomized names as we want to trust humans more than machines
-    if (useAtoms) {
-      pnu = new ParsedNameUsage();
-      Name atom = new Name();
-      atom.setRank(rank);
-      atom.setCode(code);
-      setDefaultNameType(atom);
-      pnu.setName(atom);
-
-      set(pnu, atom::setUninomial, uninomial);
-      set(pnu, atom::setGenus, genus);
-      set(pnu, atom::setInfragenericEpithet, infraGenus);
-      set(pnu, atom::setSpecificEpithet, lowercaseEpithet(species, v));
-      set(pnu, atom::setInfraspecificEpithet, lowercaseEpithet(infraspecies, v));
-      set(pnu, atom::setCultivarEpithet, cultivar);
-
-      // misplaced uninomial in genus field
-      if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null && atom.getUninomial() == null) {
-        atom.setUninomial(atom.getGenus());
-        atom.setGenus(null);
+      // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
+      boolean isAtomized;
+      if (rank.isSupraspecific()) {
+        // require uninomial, genus or infragenus
+        isAtomized = ObjectUtils.anyNonBlank(uninomial, genus, infraGenus);
+      } else if (rank.isInfraspecific()) {
+        // require genus, species and one lower level epithet
+        isAtomized = ObjectUtils.allNonBlank(genus, species) && ObjectUtils.anyNonBlank(infraspecies, cultivar);
+      } else if (rank.isSpeciesOrBelow()) {
+        // require genus and species
+        isAtomized = ObjectUtils.allNonBlank(genus, species);
+      } else {
+        isAtomized = ObjectUtils.anyNonBlank(uninomial, genus, infraGenus, species, infraspecies);
       }
 
-      atom.rebuildScientificName();
+      final boolean useAtoms = isAtomized && (preferAtoms || StringUtils.isBlank(sciname));
+      ParsedNameUsage pnu;
 
-      // parse the reconstructed name without authorship to detect name type and potential problems
-      Optional<ParsedNameUsage> pnuFromAtom = NameParser.PARSER.parse(atom.getLabel(), rank, code, v);
-      if (pnuFromAtom.isPresent()) {
-        final Name pn = pnuFromAtom.get().getName();
+      // we can get the scientific name in various ways.
+      // we prefer already atomized names as we want to trust humans more than machines
+      if (useAtoms) {
+        pnu = new ParsedNameUsage();
+        Name atom = new Name();
+        atom.setRank(rank);
+        atom.setCode(code);
+        setDefaultNameType(atom);
+        pnu.setName(atom);
 
-        // check name type if its parsable - otherwise we should not use name atoms
-        if (!pn.getType().isParsable()) {
-          LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.getLabel(), pn.getType());
-          pnu.setName(pn);
-        } else if (pn.isParsed()) {
-          // if parsed compare with original atoms
-          if (
-              !Objects.equals(atom.getUninomial(), pn.getUninomial()) ||
-                  !Objects.equals(atom.getGenus(), pn.getGenus()) ||
-                  !Objects.equals(atom.getInfragenericEpithet(), pn.getInfragenericEpithet()) ||
-                  !Objects.equals(atom.getSpecificEpithet(), pn.getSpecificEpithet()) ||
-                  !Objects.equals(atom.getInfraspecificEpithet(), pn.getInfraspecificEpithet())
-          ) {
-            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", pn.getLabel(), atom.getLabel());
-            v.addIssue(Issue.PARSED_NAME_DIFFERS);
-          }
+        set(pnu, atom::setUninomial, uninomial);
+        set(pnu, atom::setGenus, genus);
+        set(pnu, atom::setInfragenericEpithet, infraGenus);
+        set(pnu, atom::setSpecificEpithet, lowercaseEpithet(species, v));
+        set(pnu, atom::setInfraspecificEpithet, lowercaseEpithet(infraspecies, v));
+        set(pnu, atom::setCultivarEpithet, cultivar);
+
+        // misplaced uninomial in genus field
+        if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null && atom.getUninomial() == null) {
+          atom.setUninomial(atom.getGenus());
+          atom.setGenus(null);
         }
+
+        atom.rebuildScientificName();
+
+        // parse the reconstructed name without authorship to detect name type and potential problems
+        Optional<ParsedNameUsage> pnuFromAtom = NameParser.PARSER.parse(atom.getLabel(), rank, code, v);
+        if (pnuFromAtom.isPresent()) {
+          final Name pn = pnuFromAtom.get().getName();
+
+          // check name type if its parsable - otherwise we should not use name atoms
+          if (!pn.getType().isParsable()) {
+            LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.getLabel(), pn.getType());
+            pnu.setName(pn);
+          } else if (pn.isParsed()) {
+            // if parsed compare with original atoms
+            if (
+                !Objects.equals(atom.getUninomial(), pn.getUninomial()) ||
+                    !Objects.equals(atom.getGenus(), pn.getGenus()) ||
+                    !Objects.equals(atom.getInfragenericEpithet(), pn.getInfragenericEpithet()) ||
+                    !Objects.equals(atom.getSpecificEpithet(), pn.getSpecificEpithet()) ||
+                    !Objects.equals(atom.getInfraspecificEpithet(), pn.getInfraspecificEpithet())
+            ) {
+              LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", pn.getLabel(), atom.getLabel());
+              v.addIssue(Issue.PARSED_NAME_DIFFERS);
+            }
+          }
+        } else {
+          // only really happens for blank strings
+          LOG.info("No name given for {}", id);
+          return Optional.empty();
+        }
+
+      } else if (StringUtils.isNotBlank(sciname)) {
+        // be careful, this infers ranks from the name!
+        pnu = NameParser.PARSER.parse(sciname, rank, code, v).get();
+
       } else {
-        // only really happens for blank strings
         LOG.info("No name given for {}", id);
         return Optional.empty();
       }
 
-    } else if (StringUtils.isNotBlank(sciname)) {
-      // be careful, this infers ranks from the name!
-      pnu = NameParser.PARSER.parse(sciname, rank, code, v).get();
-
-    } else {
-      LOG.info("No name given for {}", id);
-      return Optional.empty();
-    }
-
-    // assign best rank
-    // we potentially have an explicit one and one coming from the name parser that does inferal based on rank markers and suffices
-    // we dont want to infer uninomials by their name endings - it works in most cases, but the few errors we get are really bad
-    // see https://github.com/CatalogueOfLife/data/issues/438
-    if (rank.otherOrUnranked() && StringUtils.isBlank(vrank)) {
-      // we can infer the rank a little but be careful
-      Rank inferred = Rank.UNRANKED;
-      if (pnu.getName().getRank() != null && pnu.getName().getRank().notOtherOrUnranked()) {
-        // might be inferred already by the parser
-        inferred = pnu.getName().getRank();
-      } else {
-        inferred = RankUtils.inferRank(pnu.getName());
+      // assign best rank
+      // we potentially have an explicit one and one coming from the name parser that does inferal based on rank markers and suffices
+      // we dont want to infer uninomials by their name endings - it works in most cases, but the few errors we get are really bad
+      // see https://github.com/CatalogueOfLife/data/issues/438
+      if (rank.otherOrUnranked() && StringUtils.isBlank(vrank)) {
+        // we can infer the rank a little but be careful
+        Rank inferred = Rank.UNRANKED;
+        if (pnu.getName().getRank() != null && pnu.getName().getRank().notOtherOrUnranked()) {
+          // might be inferred already by the parser
+          inferred = pnu.getName().getRank();
+        } else {
+          inferred = RankUtils.inferRank(pnu.getName());
+        }
+        // we ignore inferred ranks for uninomials above genera as these are suffix based
+        // infrageneric names for plants mostly contain explicit rank markers, so we keep those
+        if (!inferred.isGenusOrSuprageneric()) {
+          rank = inferred;
+        }
       }
-      // we ignore inferred ranks for uninomials above genera as these are suffix based
-      // infrageneric names for plants mostly contain explicit rank markers, so we keep those
-      if (!inferred.isGenusOrSuprageneric()) {
-        rank = inferred;
+      // finally use it
+      pnu.getName().setRank(rank);
+
+      // try to add an authorship if not yet there
+      NameParser.PARSER.parseAuthorshipIntoName(pnu, authorship, v);
+
+      // common basics
+      pnu.getName().setId(id);
+      pnu.getName().setVerbatimKey(v.getId());
+      pnu.getName().setOrigin(Origin.SOURCE);
+      pnu.getName().setLink(parse(UriParser.PARSER, link).orNull());
+      pnu.getName().setRemarks(remarks);
+      // applies default dataset code if we cannot find or parse any
+      // Always make sure this happens BEFORE we update the canonical scientific name
+      if (code != null) {
+        pnu.getName().setCode(code);
       }
-    }
-    // finally use it
-    pnu.getName().setRank(rank);
 
-    // try to add an authorship if not yet there
-    NameParser.PARSER.parseAuthorshipIntoName(pnu, authorship, v);
-
-    // common basics
-    pnu.getName().setId(id);
-    pnu.getName().setVerbatimKey(v.getId());
-    pnu.getName().setOrigin(Origin.SOURCE);
-    pnu.getName().setLink(parse(UriParser.PARSER, link).orNull());
-    pnu.getName().setRemarks(remarks);
-    // applies default dataset code if we cannot find or parse any
-    // Always make sure this happens BEFORE we update the canonical scientific name
-    if (code != null) {
-      pnu.getName().setCode(code);
-    }
-
-    // name status can be explicitly given or as part of the nom notes from the authorship
-    // dont store the explicit name status, it only remains as verbatim and interpreted data
-    // see https://github.com/CatalogueOfLife/backend/issues/760
-    NomStatus status           = parse(NomStatusParser.PARSER, nomStatus).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
-    NomStatus statusAuthorship = parse(NomStatusParser.PARSER, pnu.getName().getNomenclaturalNote()).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
-    if (statusAuthorship != null) {
-      v.addIssue(Issue.AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE);
-    }
-    // both given? do they match up?
-    if (status != null && statusAuthorship != null) {
-      if (status != statusAuthorship && !status.isCompatible(statusAuthorship)) {
-        v.addIssue(Issue.CONFLICTING_NOMENCLATURAL_STATUS);
+      // name status can be explicitly given or as part of the nom notes from the authorship
+      // dont store the explicit name status, it only remains as verbatim and interpreted data
+      // see https://github.com/CatalogueOfLife/backend/issues/760
+      NomStatus status           = parse(NomStatusParser.PARSER, nomStatus).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
+      NomStatus statusAuthorship = parse(NomStatusParser.PARSER, pnu.getName().getNomenclaturalNote()).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
+      if (statusAuthorship != null) {
+        v.addIssue(Issue.AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE);
       }
+      // both given? do they match up?
+      if (status != null && statusAuthorship != null) {
+        if (status != statusAuthorship && !status.isCompatible(statusAuthorship)) {
+          v.addIssue(Issue.CONFLICTING_NOMENCLATURAL_STATUS);
+        }
+      }
+      pnu.getName().setNomStatus(ObjectUtils.coalesce(status, statusAuthorship));
+
+      // finally update the scientificName with the canonical form if we can
+      pnu.getName().rebuildScientificName();
+
+      return Optional.of(pnu);
+
+    } catch (InterruptedException e) {
+      // interpreters are free to throw the runtime equivalent
+      throw new InterruptedRuntimeException(e.getMessage());
     }
-    pnu.getName().setNomStatus(life.catalogue.api.util.ObjectUtils.coalesce(status, statusAuthorship));
-
-    // finally update the scientificName with the canonical form if we can
-    pnu.getName().rebuildScientificName();
-
-    return Optional.of(pnu);
   }
 
   private static void set(ParsedNameUsage pnu, Consumer<String> setter, String epithet) {

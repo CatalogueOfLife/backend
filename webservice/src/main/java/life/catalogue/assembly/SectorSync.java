@@ -196,7 +196,7 @@ public class SectorSync extends SectorRunnable {
     }
   }
 
-  private void processTree() {
+  private void processTree() throws InterruptedException {
     final Set<String> blockedIds = decisions.values().stream()
         .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK) && ed.getSubject().getId() != null)
         .map(ed -> ed.getSubject().getId())
@@ -208,8 +208,9 @@ public class SectorSync extends SectorRunnable {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       LOG.info("{} taxon tree {} to {}. Blocking {} nodes", sector.getMode(), sector.getSubject(), sector.getTarget(), blockedIds.size());
       if (sector.getMode() == Sector.Mode.ATTACH) {
-        um.processTree(subjectDatasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)
-            .forEach(treeHandler);
+        for (var u : um.processTree(subjectDatasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)) {
+          treeHandler.acceptThrows(u);
+        }
 
       } else if (sector.getMode() == Sector.Mode.UNION) {
         LOG.info("Traverse taxon tree at {}, ignoring immediate children above rank {}. Blocking {} nodes", sector.getSubject().getId(), sector.getPlaceholderRank(), blockedIds.size());

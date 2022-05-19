@@ -40,14 +40,14 @@ public class MatchingResource {
   public NameMatch match(@QueryParam("q") String q,
                          @QueryParam("rank") Rank rank,
                          @QueryParam("code") NomCode code,
-                         @QueryParam("verbose") boolean verbose) {
+                         @QueryParam("verbose") boolean verbose) throws InterruptedException {
     Name n = name(q, rank, code);
     NameMatch m = ni.match(n, false, verbose);
     LOG.debug("Matching {} to {}", n.getLabel(), m);
     return m;
   }
   
-  static Name name(String name, Rank rank, NomCode code) {
+  static Name name(String name, Rank rank, NomCode code) throws InterruptedException {
     Optional<ParsedNameUsage> opt = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID);
     if (opt.isPresent()) {
       Name n = opt.get().getName();

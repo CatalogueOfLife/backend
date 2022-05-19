@@ -747,30 +747,30 @@ public class NameIndexImplIT {
     assertEquals(20, ni.size());
   }
 
-  static Name name(String name, Rank rank) {
+  static Name name(String name, Rank rank) throws InterruptedException {
     Name n = TestEntityGenerator.setUserDate(NameParser.PARSER.parse(name, rank, null, IssueContainer.VOID).get().getName());
     n.setRank(rank);
     return n;
   }
 
-  static IndexName iname(String name, Rank rank) {
+  static IndexName iname(String name, Rank rank) throws InterruptedException {
     return new IndexName(name(name, rank));
   }
 
-  private NameMatch assertCanonMatch(Integer key, String name, Rank rank) {
+  private NameMatch assertCanonMatch(Integer key, String name, Rank rank) throws InterruptedException {
     NameMatch m = assertMatchType(MatchType.CANONICAL, name, rank);
     assertTrue(m.hasMatch());
     assertEquals(key, m.getName().getKey());
     return m;
   }
   
-  private NameMatch assertNoMatch(String name, Rank rank) {
+  private NameMatch assertNoMatch(String name, Rank rank) throws InterruptedException {
     NameMatch m = assertMatchType(MatchType.NONE, name, rank);
     assertFalse(m.hasMatch());
     return m;
   }
   
-  private NameMatch assertMatchType(MatchType expected, String name, Rank rank) {
+  private NameMatch assertMatchType(MatchType expected, String name, Rank rank) throws InterruptedException {
     NameMatch m = match(name, rank);
     if (expected != m.getType()) {
       System.out.println(m);
@@ -781,11 +781,11 @@ public class NameIndexImplIT {
     return m;
   }
 
-  private NameMatch assertMatch(int key, String name, Rank rank) {
+  private NameMatch assertMatch(int key, String name, Rank rank) throws InterruptedException {
     return assertMatch(key, null, name, rank);
   }
 
-  private NameMatch assertMatch(int key, MatchType type, String name, Rank rank) {
+  private NameMatch assertMatch(int key, MatchType type, String name, Rank rank) throws InterruptedException {
     NameMatch m = match(name, rank);
     if (!m.hasMatch() || key != m.getName().getKey()) {
       System.err.println(m);
@@ -798,7 +798,7 @@ public class NameIndexImplIT {
     return m;
   }
   
-  private NameMatch assertInsert(String name, Rank rank) {
+  private NameMatch assertInsert(String name, Rank rank) throws InterruptedException {
     NameMatch m = ni.match(name(name, rank), false, false);
     assertNotEquals(MatchType.EXACT, m.getType());
     assertNotEquals(MatchType.VARIANT, m.getType());
@@ -807,7 +807,7 @@ public class NameIndexImplIT {
     return m;
   }
   
-  private NameMatch match(String name, Rank rank) {
+  private NameMatch match(String name, Rank rank) throws InterruptedException {
     NameMatch m = ni.match(name(name, rank), false, true);
     return m;
   }

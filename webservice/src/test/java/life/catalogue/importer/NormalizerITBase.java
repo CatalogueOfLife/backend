@@ -58,7 +58,7 @@ abstract class NormalizerITBase {
   
   protected NeoDb store;
   private int attempt;
-  private NormalizerConfig cfg;
+  protected NormalizerConfig cfg;
   private final DataFormat format;
   private final Supplier<NameIndex> nameIndexSupplier;
   protected DatasetWithSettings dws;
@@ -157,8 +157,12 @@ abstract class NormalizerITBase {
     normalize(Paths.get(url.toURI()), code);
   }
 
-  protected String resourceDir() {
+  protected static String resourceDir(int datasetKey, DataFormat format) {
     return "/" + format.name().toLowerCase().replaceAll("_", "-") + "/" + datasetKey;
+  }
+
+  protected String resourceDir() {
+    return resourceDir(datasetKey,  format);
   }
   
   public void normalize(URI url) throws Exception {

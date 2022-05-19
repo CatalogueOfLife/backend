@@ -56,7 +56,7 @@ public class NamesIndexResource {
                          @QueryParam("authorship") String authorship,
                          @QueryParam("rank") Rank rank,
                          @QueryParam("code") NomCode code,
-                         @QueryParam("verbose") boolean verbose) {
+                         @QueryParam("verbose") boolean verbose) throws InterruptedException {
     Name n = name(ObjectUtils.coalesce(scientificName, q), authorship, rank, code);
     NameMatch m = ni.match(n, false, verbose);
     LOG.debug("Matching {} to {}", n.getLabel(), m);
@@ -76,7 +76,7 @@ public class NamesIndexResource {
     return session.getMapper(NamesIndexMapper.class).listByRegex(regex, canonical, rank, p);
   }
 
-  static Name name(String name, String authorship, Rank rank, NomCode code) {
+  static Name name(String name, String authorship, Rank rank, NomCode code) throws InterruptedException {
     Optional<ParsedNameUsage> opt = NameParser.PARSER.parse(name, authorship, rank, code, IssueContainer.VOID);
     if (opt.isPresent()) {
       Name n = opt.get().getName();

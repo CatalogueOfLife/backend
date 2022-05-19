@@ -1,5 +1,9 @@
 package life.catalogue.api.txtree;
 
+import life.catalogue.common.func.ThrowingConsumer;
+
+import life.catalogue.common.lang.InterruptedRuntimeException;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.io.BufferedReader;
@@ -92,10 +96,15 @@ public class Tree implements Iterable<TreeNode> {
   }
 
   public static Tree read(InputStream stream) throws IOException {
-    return read(stream, null);
+    try {
+      return read(stream, null);
+    } catch (InterruptedException e) {
+      // we dont have any listener that would throw this, never happens
+      throw new InterruptedRuntimeException(e.getMessage());
+    }
   }
 
-  public static Tree read(InputStream stream, @Nullable Consumer<TreeLine> listener) throws IOException {
+  public static Tree read(InputStream stream, @Nullable ThrowingConsumer<TreeLine, InterruptedException> listener) throws IOException, InterruptedException {
     Tree tree = new Tree();
     LinkedList<TreeNode> parents = Lists.newLinkedList();
     
@@ -139,7 +148,7 @@ public class Tree implements Iterable<TreeNode> {
 
           if (listener != null) {
             TreeLine tl = new TreeLine(row, level, line.trim());
-            listener.accept(tl);
+            listener.acceptThrows(tl);
           }
         } else {
           throw new IllegalArgumentException("Failed to parse Tree on line " + row + ": " + line);

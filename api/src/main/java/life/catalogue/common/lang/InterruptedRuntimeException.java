@@ -7,7 +7,11 @@ public class InterruptedRuntimeException extends RuntimeException {
   
   public InterruptedRuntimeException() {
   }
-  
+
+  public InterruptedRuntimeException(Exception root) {
+    super(root);
+  }
+
   public InterruptedRuntimeException(String message) {
     super(message);
   }
@@ -15,4 +19,9 @@ public class InterruptedRuntimeException extends RuntimeException {
   public InterruptedRuntimeException(String message, Exception root) {
     super(message, root);
   }
+
+  public InterruptedException asChecked() {
+    return new InterruptedException(getMessage());
+  }
+
 }

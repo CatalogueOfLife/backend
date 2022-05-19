@@ -19,8 +19,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
-
 /**
  * Utils class that wraps the main DatasetPartitionMapper.
  * See DatasetPartitionMapper for the main documentation.
@@ -118,7 +116,6 @@ public class Partitioner {
    * See https://github.com/Sp2000/colplus-backend/issues/127
    */
   public static synchronized void partition(SqlSession session, int datasetKey, DatasetOrigin origin) {
-    interruptIfCancelled();
     LOG.info("Create empty partition for dataset {}", datasetKey);
     DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
     // first remove if existing
@@ -138,7 +135,6 @@ public class Partitioner {
    * Deletes an entire partition if its dataset specific or deleted all data from shared partitions, e.g. for external datasets.
    */
   public static synchronized void delete(SqlSession session, int datasetKey, DatasetOrigin origin) {
-    interruptIfCancelled();
     LOG.info("Delete partition for dataset {}", datasetKey);
     session.getMapper(DatasetPartitionMapper.class).delete(datasetKey, origin);
   }
@@ -156,7 +152,6 @@ public class Partitioner {
    * @param session session with auto commit - no transaction allowed here !!!
    */
   public static synchronized void attach(SqlSession session, int datasetKey, DatasetOrigin origin) {
-    interruptIfCancelled();
     // attach to main table - this requires an AccessExclusiveLock on all main tables
     // see https://github.com/Sp2000/colplus-backend/issues/387
     LOG.info("Attach partition tables for dataset {} with origin {}", datasetKey, origin);

@@ -108,7 +108,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   }
 
   @Override
-  public void runWithLock() {
+  public void runWithLock() throws InterruptedException {
     try {
       LOG.info("{} project {} to new dataset {}", actionName, datasetKey, getNewDatasetKey());
       // prepare new tables
@@ -163,11 +163,17 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       metrics.setState(ImportState.FINISHED);
       LOG.info("Successfully finished {} project {} into dataset {}", actionName,  datasetKey, newDatasetKey);
 
+    } catch (InterruptedException e) {
+      metrics.setState(ImportState.CANCELED);
+      LOG.warn("Cancelled {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
+      // cleanup failed remains
+      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
+      dDao.delete(newDatasetKey, user);
+
     } catch (Exception e) {
       metrics.setState(ImportState.FAILED);
       metrics.setError(Exceptions.getFirstMessage(e));
       LOG.error("Error {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
-
       // cleanup failed remains
       LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
       dDao.delete(newDatasetKey, user);
@@ -190,7 +196,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     }
   }
 
-  private void metrics() {
+  private void metrics() throws InterruptedException {
     LOG.info("Build import metrics for dataset " + datasetKey);
     updateState(ImportState.ANALYZING);
     // update usage counter
@@ -202,7 +208,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     diDao.update(metrics);
   }
 
-  private void copyData() {
+  private void copyData() throws InterruptedException {
     LOG.info("Copy data into dataset {}", newDatasetKey);
     updateState(ImportState.INSERTING);
     try (SqlSession session = factory.openSession(true)) {
@@ -228,7 +234,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     }
   }
 
-  void updateState(ImportState state) {
+  void updateState(ImportState state) throws InterruptedException {
     LOG.info("Change state for dataset {} to {}", newDatasetKey, state);
     metrics.setState(state);
     diDao.update(metrics);

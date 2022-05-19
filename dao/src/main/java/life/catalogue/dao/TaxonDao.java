@@ -369,12 +369,18 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       // create taxon in ES
       indexService.update(t.getDatasetKey(), List.of(t.getId()));
       return t;
+
     }
   }
   
   static void parseName(Name n) {
     if (!n.isParsed()) {
-      NameParser.PARSER.parse(n, IssueContainer.VOID);
+      try {
+        NameParser.PARSER.parse(n, IssueContainer.VOID);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt(); // reset flag
+      }
+
     } else {
       if (n.getType() == null) {
         n.setType(NameType.SCIENTIFIC);

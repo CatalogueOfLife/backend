@@ -62,7 +62,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
   }
 
   @Override
-  public void process(Node n) {
+  public void process(Node n) throws InterruptedException {
     if (n.hasLabel(Labels.USAGE)) {
       try {
         NeoUsage u = store.usages().objByNode(n);
@@ -72,6 +72,8 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
           processVerbatimUsage(u, v, p);
           store.put(v);
         }
+      } catch (InterruptedException e) {
+        throw e;
       } catch (Exception e) {
         LOG.error("error processing explicit relations for usage {} {}", n, NeoProperties.getRankedUsage(n), e);
       }
@@ -102,7 +104,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
    * @param v
    * @param p parent (usage=taxon) or accepted (usage=synonym) node
    */
-  protected void processVerbatimUsage(NeoUsage u, VerbatimRecord v, Node p) {
+  protected void processVerbatimUsage(NeoUsage u, VerbatimRecord v, Node p) throws InterruptedException {
     // override to do further processing per usage node
   }
 

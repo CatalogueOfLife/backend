@@ -16,13 +16,25 @@ public class Exceptions {
     return (t instanceof RuntimeException) ? (RuntimeException) t : new RuntimeException(t);
   }
 
-  public static void interruptIfCancelled() throws InterruptedRuntimeException {
+  public static void interruptIfCancelled() throws InterruptedException {
+    if (Thread.currentThread().isInterrupted()) {
+      throw new InterruptedException();
+    }
+  }
+
+  public static void interruptIfCancelled(String msg) throws InterruptedException {
+    if (Thread.currentThread().isInterrupted()) {
+      throw new InterruptedException(msg);
+    }
+  }
+
+  public static void runtimeInterruptIfCancelled() throws InterruptedRuntimeException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedRuntimeException();
     }
   }
 
-  public static void interruptIfCancelled(String msg) throws InterruptedRuntimeException {
+  public static void runtimeInterruptIfCancelled(String msg) throws InterruptedRuntimeException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedRuntimeException(msg);
     }

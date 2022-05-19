@@ -305,7 +305,7 @@ public class NameParserTest {
     assertNoName("&nbsp;");
   }
   
-  private void assertNoName(String name) throws UnparsableException {
+  private void assertNoName(String name) throws UnparsableException, InterruptedException {
     assertName(name, name, NameType.NO_NAME)
         .nothingElse();
   }
@@ -453,19 +453,19 @@ public class NameParserTest {
     assertEquals(a, pa.getCombinationAuthorship());
   }
   
-  static NameAssertion assertName(String rawName, String sciname) throws UnparsableException {
+  static NameAssertion assertName(String rawName, String sciname) throws UnparsableException, InterruptedException {
     return assertName(rawName, sciname, NameType.SCIENTIFIC);
   }
   
-  static NameAssertion assertName(String rawName, String sciname, NameType type) throws UnparsableException {
+  static NameAssertion assertName(String rawName, String sciname, NameType type) throws UnparsableException, InterruptedException {
     return assertName(rawName, null, null, sciname, type);
   }
   
-  static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname) throws UnparsableException {
+  static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname) throws UnparsableException, InterruptedException {
     return assertName(rawName, rank, code, sciname, NameType.SCIENTIFIC);
   }
   
-  static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname, NameType type) throws UnparsableException {
+  static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname, NameType type) throws UnparsableException, InterruptedException {
     var issues = new IssueContainer.Simple();
     ParsedNameUsage n = NameParser.PARSER.parse(rawName, rank, code, issues).get();
     assertEquals(sciname, n.getName().getScientificName());

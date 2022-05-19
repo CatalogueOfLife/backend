@@ -89,7 +89,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     session.commit();
   }
 
-  private void loadTree(int datasetKey, TreeData td) throws IOException {
+  private void loadTree(int datasetKey, TreeData td) throws IOException, InterruptedException{
     Tree tree = Tree.read(td.resource());
     LOG.debug("Inserting {} usages for dataset {}", tree.getCount(), datasetKey);
     for (TreeNode n : tree.getRoot().children) {
@@ -97,7 +97,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     }
   }
 
-  private void insertSubtree(int datasetKey, TreeNode parent, TreeNode t) {
+  private void insertSubtree(int datasetKey, TreeNode parent, TreeNode t) throws InterruptedException {
     insertNode(datasetKey, parent, t, false);
     for (TreeNode syn : t.synonyms) {
       insertNode(datasetKey, t, syn, true);
@@ -107,7 +107,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     }
   }
 
-  private void insertNode(int datasetKey, TreeNode parent, TreeNode tn, boolean synonym) {
+  private void insertNode(int datasetKey, TreeNode parent, TreeNode tn, boolean synonym) throws InterruptedException {
     ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, IssueContainer.VOID).get();
     Name n = nat.getName();
     n.setDatasetKey(datasetKey);

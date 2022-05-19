@@ -26,18 +26,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
+import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
 
 /**
- *
+ * The base class for all inserters using CSV based data.
+ * As the insertion can be a longer running and blocking process, potentially kicking off child threads, e.g. name parsing jobs,
+ * we check for interrupted threads frequently to allow users to cancel the job. As we make heavy use of streams and functional programming
+ * all methods are free to throw the InterruptedRuntimeException instead of the checked version.
  */
 public abstract class NeoCsvInserter implements NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCsvInserter.class);
+  private static final String INTERRUPT_MESSAGE = "NeoInserter interrupted, exit early with incomplete import";
 
   protected final DatasetSettings settings;
   protected final NeoDb store;
@@ -46,8 +52,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
   protected final ReferenceFactory refFactory;
   private int vcounter;
   private Map<Term, AtomicInteger> badTaxonFks = DefaultMap.createCounter();
-  
-  
+
   public NeoCsvInserter(Path folder, CsvReader reader, NeoDb store, DatasetSettings settings, ReferenceFactory refFactory) {
     this.folder = folder;
     this.reader = reader;
@@ -76,43 +81,52 @@ public abstract class NeoCsvInserter implements NeoInserter {
     }
   }
 
+  /**
+   * @throws NormalizationFailedException
+   * @throws InterruptedException InterruptedRuntimeException thrown by any processing are converted into regular InterruptedException by this method
+   */
   @Override
-  public final void insertAll() throws NormalizationFailedException {
-    store.startBatchMode();
-    interruptIfCancelled("Normalizer interrupted, exit early");
+  public final void insertAll() throws NormalizationFailedException, InterruptedException {
     try {
+      interruptIfCancelled(INTERRUPT_MESSAGE);
+      store.startBatchMode();
       batchInsert();
       LOG.info("Batch insert completed, {} verbatim records processed, {} nodes created", vcounter, store.size());
+
     } catch (InterruptedRuntimeException e) {
-      throw e;
+      throw e.asChecked();
+
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to batch insert csv data", e);
+
+    } finally {
+      if (store.isBatchMode()) {
+        store.endBatchMode();
+        LOG.info("Neo batch inserter closed, data flushed to disk");
+      }
     }
 
-    interruptIfCancelled("Normalizer interrupted, exit early");
-    store.endBatchMode();
-    LOG.info("Neo batch inserter closed, data flushed to disk");
-  
     final int batchV = vcounter;
     final int batchRec = store.size();
-    interruptIfCancelled("Normalizer interrupted, exit early");
+    interruptIfCancelled(INTERRUPT_MESSAGE);
     postBatchInsert();
     LOG.info("Post batch insert completed, {} verbatim records processed creating {} new nodes", batchV, store.size() - batchRec);
     
-    interruptIfCancelled("Normalizer interrupted, exit early");
+    interruptIfCancelled(INTERRUPT_MESSAGE);
     LOG.debug("Start processing explicit relations ...");
     store.process(null,5000, relationProcessor());
 
     LOG.info("Insert of {} verbatim records and {} nodes completed", vcounter, store.size());
   }
-  
-  private void processVerbatim(final CsvReader reader, final Term classTerm, Function<VerbatimRecord, Boolean> proc) {
-    interruptIfCancelled("NeoInserter interrupted, exit early with incomplete import");
+
+  private void processVerbatim(final CsvReader reader, final Term classTerm, Predicate<VerbatimRecord> proc) {
+    runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
     final AtomicInteger counter = new AtomicInteger(0);
     final AtomicInteger success = new AtomicInteger(0);
     reader.stream(classTerm).forEach(rec -> {
+      runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
       store.put(rec);
-      if (proc.apply(rec)) {
+      if (proc.test(rec)) {
         success.incrementAndGet();
       } else {
         rec.addIssue(Issue.NOT_INTERPRETED);
@@ -127,17 +141,16 @@ public abstract class NeoCsvInserter implements NeoInserter {
     vcounter += counter.get();
   }
   
-  protected <T extends VerbatimEntity> void insertEntities(final CsvReader reader, final Term classTerm,
+  protected <T extends VerbatimEntity > void insertEntities(final CsvReader reader, final Term classTerm,
                                                            Function<VerbatimRecord, Optional<T>> interpret,
-                                                           Function<T, Boolean> add
+                                                           Predicate<T> add
   ) {
     processVerbatim(reader, classTerm, rec -> {
-      interruptIfCancelled("NeoInserter interrupted, exit early");
       Optional<T> opt = interpret.apply(rec);
       if (opt.isPresent()) {
         T obj = opt.get();
         obj.setVerbatimKey(rec.getId());
-        return add.apply(obj);
+        return add.test(obj);
       }
       return false;
     });
@@ -149,7 +162,6 @@ public abstract class NeoCsvInserter implements NeoInserter {
                                                                 final BiConsumer<NeoUsage, T> add
   ) {
     processVerbatim(reader, classTerm, rec -> {
-      interruptIfCancelled("NeoInserter interrupted, exit early");
       List<T> results = interpret.apply(rec);
       if (reader.isEmpty()) return false;
       boolean interpreted = true;
@@ -246,9 +258,9 @@ public abstract class NeoCsvInserter implements NeoInserter {
     return reader.logo();
   }
 
-  protected abstract void batchInsert() throws NormalizationFailedException;
+  protected abstract void batchInsert() throws NormalizationFailedException, InterruptedException, InterruptedRuntimeException;
   
-  protected void postBatchInsert() throws NormalizationFailedException {
+  protected void postBatchInsert() throws NormalizationFailedException, InterruptedException {
     // nothing by default
   }
   

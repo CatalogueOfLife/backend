@@ -158,7 +158,7 @@ public class ImportJob implements Runnable {
     return di;
   }
   
-  private void updateState(ImportState state) {
+  private void updateState(ImportState state) throws InterruptedException {
     di.setState(state);
     dao.update(di);
     checkIfCancelled();
@@ -169,7 +169,7 @@ public class ImportJob implements Runnable {
     dataset.setDataFormat(format);
   }
 
-  private void checkIfCancelled() {
+  private void checkIfCancelled() throws InterruptedException {
     Exceptions.interruptIfCancelled("Import " + di.attempt() + " was cancelled");
   }
 
@@ -178,7 +178,7 @@ public class ImportJob implements Runnable {
    * This includes downloading, proxy downloads, modified checks and checks for uploads detecting the actual format
    * @return true if sourceDir should be imported
    */
-  private boolean prepareSourceData(Path sourceDir) throws IOException, IllegalArgumentException {
+  private boolean prepareSourceData(Path sourceDir) throws IOException, IllegalArgumentException, InterruptedException {
     last = dao.getLast(dataset.getKey());
 
     File source = cfg.normalizer.source(datasetKey);

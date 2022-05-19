@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.csv.MappingInfos;
@@ -97,6 +98,7 @@ public class Normalizer implements Callable<Boolean> {
       // batch import verbatim records
       insertData();
       // create new id generator being aware of existing ids we inserted up to now
+      checkIfCancelled();
       store.updateIdGenerators();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       checkIfCancelled();
@@ -143,7 +145,7 @@ public class Normalizer implements Callable<Boolean> {
    * Mostly checks for required attributes so that subsequent postgres imports do not fail,
    * but also does further issue flagging.
    */
-  private void validate() {
+  private void validate() throws InterruptedException {
     store.names().all().forEach(nn -> {
       Name n = nn.getName();
       require(n, n.getId(), "name id");
@@ -327,7 +329,7 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));
   }
 
-  private void normalize() {
+  private void normalize() throws InterruptedException {
     // cleanup synonym & parent relations
     cutSynonymCycles();
     relinkSynonymChains();
@@ -578,7 +580,7 @@ public class Normalizer implements Callable<Boolean> {
    * <p>
    * The classification is not applied to synonyms!
    */
-  private void applyDenormedClassification() {
+  private void applyDenormedClassification() throws InterruptedException {
     if (!meta.isDenormedClassificationMapped()) {
       LOG.info("No higher classification mapped");
       return;
@@ -587,7 +589,7 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("Start processing higher denormalized classification ...");
     store.process(Labels.TAXON, store.batchSize, new NodeBatchProcessor() {
       @Override
-      public void process(Node u) {
+      public void process(Node u) throws InterruptedException {
         // the highest current parent of n
         RankedUsage highest = findHighestParent(u);
         // only need to apply classification if highest exists and is not already a kingdom, the denormed classification cannot add to it anymore!
@@ -634,7 +636,7 @@ public class Normalizer implements Callable<Boolean> {
    * @param taxon
    * @param cl
    */
-  private void applyClassification(RankedUsage taxon, Classification cl) {
+  private void applyClassification(RankedUsage taxon, Classification cl) throws InterruptedException {
     // first modify classification to only keep those ranks we want to apply!
     // exclude lowest rank from classification to be applied if this taxon is rankless and has the same name
     if (taxon.rank == null || taxon.rank.isUncomparable()) {
@@ -771,7 +773,7 @@ public class Normalizer implements Callable<Boolean> {
    * Creates a new denormalised higher taxon usage.
    * The given uninomial is allowed to contain a dagger to indicate extinct taxa.
    */
-  private NeoUsage createHigherTaxon(String uninomial, Rank rank) {
+  private NeoUsage createHigherTaxon(String uninomial, Rank rank) throws InterruptedException {
     NeoUsage t = NeoUsage.createTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
 
     Name n = new Name();
@@ -896,7 +898,7 @@ public class Normalizer implements Callable<Boolean> {
     store.addIssues(store.usages().objByNode(node).usage, issue);
   }
 
-  private void insertData() throws NormalizationFailedException {
+  private void insertData() throws NormalizationFailedException, InterruptedException {
     // closing the batch inserter opens the normalizer db again for regular access via the store
     try {
       NeoInserter inserter;

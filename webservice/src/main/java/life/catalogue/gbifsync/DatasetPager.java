@@ -69,7 +69,7 @@ public class DatasetPager {
 
   private Agent loadPublisher(UUID key) {
     WebTarget pubDetail = organization.path(key.toString());
-    LOG.info("Retrieve organization {}", pubDetail.getUri());
+    LOG.debug("Retrieve organization {}", pubDetail.getUri());
     GAgent p = pubDetail.request()
                         .accept(MediaType.APPLICATION_JSON_TYPE)
                         .get(GAgent.class);
@@ -78,7 +78,7 @@ public class DatasetPager {
 
   private Agent loadHost(UUID key) {
     WebTarget insDetail = installation.path(key.toString());
-    LOG.info("Retrieve installation {}", insDetail.getUri());
+    LOG.debug("Retrieve installation {}", insDetail.getUri());
     GInstallation ins = insDetail.request()
                                  .accept(MediaType.APPLICATION_JSON_TYPE)
                                  .get(GInstallation.class);

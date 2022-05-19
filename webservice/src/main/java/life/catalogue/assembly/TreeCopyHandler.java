@@ -2,6 +2,7 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.func.ThrowingConsumer;
 import life.catalogue.dao.CatCopy;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
@@ -31,7 +32,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 
-public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
+public class TreeCopyHandler implements ThrowingConsumer<NameUsageBase, InterruptedException>, AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
   private static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS,Rank.SUBGENUS, Rank.SPECIES);
 
@@ -102,7 +103,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
   }
 
-  public void reset() {
+  public void reset() throws InterruptedException {
     processLast();
     ids.clear();
   }
@@ -324,7 +325,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   }
 
   @Override
-  public void accept(NameUsageBase u) {
+  public void acceptThrows(NameUsageBase u) throws InterruptedException {
     // We buffer all children of a given parentID and sort them by rank before we pass them on to the handler
     if (!Objects.equals(lastParentID, u.getParentId())) {
       processLast();
@@ -333,14 +334,16 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     lastUsages.add(u);
   }
 
-  private void processLast() {
+  private void processLast() throws InterruptedException {
     // sort by rank, then process
     lastUsages.sort(Comparator.comparing(NameUsage::getRank));
-    lastUsages.forEach(this::process);
+    for (var u : lastUsages) {
+      process(u);
+    }
     lastUsages.clear();
   }
 
-  private void process(NameUsageBase u) {
+  private void process(NameUsageBase u) throws InterruptedException {
     u.setSectorKey(sector.getId());
     u.getName().setSectorKey(sector.getId());
     // before we apply a specific decision
@@ -434,7 +437,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     return false;
   }
   
-  private void applyDecision(NameUsageBase u, EditorialDecision ed) {
+  private void applyDecision(NameUsageBase u, EditorialDecision ed) throws InterruptedException {
     switch (ed.getMode()) {
       case BLOCK:
         throw new IllegalStateException("Blocked usage " + u.getId() + " should not have been traversed");
@@ -585,11 +588,17 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   
   @Override
   public void close() {
-    processLast();
-    session.commit();
-    session.close();
-    batchSession.commit();
-    batchSession.close();
+    try {
+      processLast();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+
+    } finally {
+      session.commit();
+      session.close();
+      batchSession.commit();
+      batchSession.close();
+    }
   }
 
 }

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.security.RolesAllowed;
+import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -212,8 +213,14 @@ public class NameParserResource {
 
   private Optional<PNIssue> parse(CRName n) {
     LOG.debug("Parse: {}", n);
-    Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.authorship, n.rank, n.code, n);
-    return parsed.map(nat -> new PNIssue(nat, n.issues));
+    try {
+      Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.authorship, n.rank, n.code, n);
+      return parsed.map(nat -> new PNIssue(nat, n.issues));
+
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return Optional.empty();
+    }
   }
 
   @GET
