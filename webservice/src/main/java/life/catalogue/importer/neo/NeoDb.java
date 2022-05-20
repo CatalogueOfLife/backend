@@ -439,8 +439,8 @@ public class NeoDb {
       }
     } finally {
       inserter = null;
-      LOG.info("Neo batch inserter closed, data flushed to disk");
     }
+    LOG.info("Neo batch inserter closed, data flushed to disk");
     openNeo();
   }
   
