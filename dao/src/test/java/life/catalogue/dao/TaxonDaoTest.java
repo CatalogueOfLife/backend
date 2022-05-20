@@ -342,9 +342,9 @@ public class TaxonDaoTest extends DaoTestBase {
 
   @Test
   public void deleteRecursively() throws Exception {
+    MybatisTestUtils.replaceTestData(TestDataRule.TREE);
     final DSIDValue<String> key = DSID.of(TestDataRule.TREE.key, null);
-    MybatisTestUtils.populateTestData(TestDataRule.TREE, true);
-  
+
     // create some sectors in the subtree to make sure they also get removed
     SectorMapper sm = mapper(SectorMapper.class);
     Sector s1 = SectorMapperTest.create(key.id("t2"), DSID.of(TestDataRule.TREE.datasetKeys.iterator().next(), "x"));

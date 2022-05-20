@@ -96,7 +96,7 @@ public class AcefExporterTest extends ExporterTest {
   @Test
   public void exportNonManaged() throws Exception {
     // run different test data rule
-    MybatisTestUtils.populateTestData(TestDataRule.APPLE, false);
+    MybatisTestUtils.replaceTestData(TestDataRule.APPLE);
     final int key = TestDataRule.APPLE.key;
 
     // prepare metadata

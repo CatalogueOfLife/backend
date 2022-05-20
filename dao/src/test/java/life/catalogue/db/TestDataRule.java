@@ -285,7 +285,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     session.commit();
   }
 
-  public void updateSequences() throws Exception {
+  public void updateSequences() {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
     for (int dk : testData.datasetKeys) {
       pm.createManagedSequences(dk);
@@ -302,7 +302,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
       st.execute("TRUNCATE \"user\" CASCADE");
       session.getConnection().commit();
-      st.execute("TRUNCATE dataset CASCADE");
+      st.execute("TRUNCATE dataset CASCADE"); // this should cascade to all data partitions, but to make sure we also do:
+      st.execute("TRUNCATE name_usage CASCADE");
+      st.execute("TRUNCATE name CASCADE");
+      st.execute("TRUNCATE reference CASCADE");
       session.getConnection().commit();
       st.execute("TRUNCATE dataset_archive CASCADE");
       st.execute("TRUNCATE sector CASCADE");

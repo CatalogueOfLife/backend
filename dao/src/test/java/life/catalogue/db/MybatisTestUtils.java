@@ -96,15 +96,12 @@ public class MybatisTestUtils {
     session.commit();
   }
   
-  public static void populateTestData(TestDataRule.TestData data, boolean skipGlobalTables) throws IOException, SQLException {
+  public static void replaceTestData(TestDataRule.TestData data) throws IOException, SQLException {
     TestDataRule rule = new TestDataRule(data);
-    rule.initSession();
     try {
-      if (!skipGlobalTables) {
-        rule.loadGlobalData();
-      }
-      rule.partition();
-      rule.loadData();
+      rule.before();
+    } catch (Throwable e) {
+      throw new RuntimeException(e);
     } finally {
       rule.getSqlSession().close();
     }
