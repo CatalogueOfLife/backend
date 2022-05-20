@@ -27,14 +27,17 @@ public class TestDataRuleTest {
   @Parameterized.Parameters(name= "{index}: {0}")
   public static Iterable<Object[]> data() {
     List<TestDataRule.TestData> list = List.of(
-      TestDataRule.NIDX,
-      TestDataRule.DUPLICATES,
+      TestDataRule.EMPTY,
       TestDataRule.KEEP,
+      TestDataRule.DATASET_MIX,
       TestDataRule.APPLE,
       TestDataRule.FISH,
       TestDataRule.TREE,
+      TestDataRule.TREE2,
       TestDataRule.DRAFT,
-      TestDataRule.DRAFT_WITH_SECTORS
+      TestDataRule.DRAFT_WITH_SECTORS,
+      TestDataRule.DUPLICATES,
+      TestDataRule.NIDX
     );
     return list.stream().map(t -> new Object[]{t}).collect(Collectors.toList());
   }
