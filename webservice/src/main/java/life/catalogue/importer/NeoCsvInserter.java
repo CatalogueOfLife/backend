@@ -102,7 +102,6 @@ public abstract class NeoCsvInserter implements NeoInserter {
     } finally {
       if (store.isBatchMode()) {
         store.endBatchMode();
-        LOG.info("Neo batch inserter closed, data flushed to disk");
       }
     }
 

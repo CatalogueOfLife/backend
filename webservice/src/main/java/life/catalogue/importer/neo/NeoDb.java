@@ -413,7 +413,7 @@ public class NeoDb {
   public void startBatchMode() {
     try {
       closeNeoQuietly();
-      LOG.info("Start batch mode for {}", neoDir);
+      LOG.info("Open batch inserter for {}", neoDir);
       inserter = BatchInserters.inserter(neoDir);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -424,10 +424,23 @@ public class NeoDb {
     return inserter != null;
   }
   
-  public void endBatchMode() throws NotUniqueRuntimeException {
-    LOG.info("End batch mode for {}", neoDir);
-    inserter.shutdown();
-    inserter = null;
+  public void endBatchMode() throws NotUniqueRuntimeException, InterruptedException {
+    LOG.info("Shutting down batch inserter for {} ...", neoDir);
+    try {
+      inserter.shutdown();
+    } catch (Exception e) {
+      // the BatchInserter shutdown manages to sneak through an InterruptedException in case the thread is interrupted during shutdown which
+      // can take some time and involves blocking IO operations. We'll have to make sure the inserter is properly closed, otherwise we're in trouble
+      // see https://github.com/CatalogueOfLife/backend/issues/1147 and https://github.com/CatalogueOfLife/backend/issues/1132
+      if (e instanceof InterruptedException) {
+        LOG.warn("Shutdown of batch inserter was interrupted. Trying again", e);
+        inserter.shutdown();
+        throw e;
+      }
+    } finally {
+      inserter = null;
+      LOG.info("Neo batch inserter closed, data flushed to disk");
+    }
     openNeo();
   }
   
