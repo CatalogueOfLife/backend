@@ -435,8 +435,8 @@ public class NeoDb {
       if (e instanceof InterruptedException) {
         LOG.warn("Shutdown of batch inserter was interrupted. Trying again", e);
         inserter.shutdown();
-        throw e;
       }
+      throw e;
     } finally {
       inserter = null;
     }

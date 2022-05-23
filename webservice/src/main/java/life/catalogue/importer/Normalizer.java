@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.common.tax.RankUtils;
@@ -325,6 +326,7 @@ public class Normalizer implements Callable<Boolean> {
         }
       }
       counts.get(m.getType()).incrementAndGet();
+      Exceptions.runtimeInterruptIfCancelled();
     });
     LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));
   }
