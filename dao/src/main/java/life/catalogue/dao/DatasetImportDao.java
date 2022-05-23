@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.type2.StringCount;
@@ -148,8 +149,10 @@ public class DatasetImportDao {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       updateMetrics(mapper, di, key);
-  
+
+      Exceptions.runtimeInterruptIfCancelled();
       fileMetricsDao.updateTree(key, di.getDatasetKey(), di.getAttempt());
+      Exceptions.runtimeInterruptIfCancelled();
       fileMetricsDao.updateNames(key, di.getDatasetKey(), di.getAttempt());
       
     } catch (IOException e) {

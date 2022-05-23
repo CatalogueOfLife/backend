@@ -7,6 +7,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
@@ -388,7 +389,7 @@ public class PgImport implements Callable<Boolean> {
         });
         LOG.info("Loaded {} decisions for indexing", cnt);
       }
-
+      interruptIfCancelled();
       try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
         LOG.info("Inserting all taxa & synonyms");
         TreatmentMapper treatmentMapper = session.getMapper(TreatmentMapper.class);
@@ -527,6 +528,7 @@ public class PgImport implements Callable<Boolean> {
           nuw.setPublisherKey(dataset.getGbifPublisherKey());
           nuw.setIssues(mergeIssues(vKeys));
           indexer.accept(nuw);
+          runtimeInterruptIfCancelled();
         }
       }
     }

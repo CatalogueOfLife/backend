@@ -247,7 +247,6 @@ public class ImportJob implements Runnable {
 
     try {
       final boolean doImport = prepareSourceData(sourceDir);
-      checkIfCancelled();
       if (doImport) {
         LOG.info("Normalizing {}", datasetKey);
         updateState(ImportState.PROCESSING);
