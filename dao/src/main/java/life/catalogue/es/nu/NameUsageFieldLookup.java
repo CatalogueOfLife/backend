@@ -50,7 +50,8 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(NAME_TYPE, "type");
     putSingle(USAGE_ID, "usageId");
 
-    if (size() != NameUsageSearchParameter.values().length) {
+    // UNSAFE is not mapped, it will never make it through
+    if (size()+1 != NameUsageSearchParameter.values().length) {
       Set<NameUsageSearchParameter> all = new HashSet<>(List.of(NameUsageSearchParameter.values()));
       all.removeAll(keySet());
       String missing = all.stream().map(Enum::toString).collect(Collectors.joining(","));

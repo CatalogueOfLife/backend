@@ -25,7 +25,7 @@ class RequestValidator {
     if (request.hasFilter(USAGE_ID)) {
       if (!request.hasFilter(DATASET_KEY)) {
         throw invalidSearchRequest("When specifying a usage ID, the dataset key must also be specified");
-      } else if (request.getFilters().size() != 2) {
+      } else if (request.getFilters().size() != 2 && !request.hasFilter(UNSAFE)) {
         throw invalidSearchRequest("No filters besides dataset key allowed when specifying usage ID");
       }
     }
@@ -34,6 +34,10 @@ class RequestValidator {
       if (!request.hasFilter(CATALOGUE_KEY) || request.getFilterValues(CATALOGUE_KEY).size() > 1) {
         throw invalidSearchRequest("When specifying a decision mode, a single catalogue key must also be specified");
       }
+    }
+    // remove UNSAFE - it did its job
+    if (request.hasFilter(UNSAFE)) {
+      request.getFilters().remove(UNSAFE);
     }
   }
 

@@ -110,7 +110,13 @@ public enum NameUsageSearchParameter {
   /**
    * The name usage origin
    */
-  ORIGIN(Origin.class);
+  ORIGIN(Origin.class),
+
+  /**
+   * Unsafe mode that avoids request validations
+   */
+  UNSAFE(Boolean.class)
+  ;
 
   private final Class<?> type;
 
