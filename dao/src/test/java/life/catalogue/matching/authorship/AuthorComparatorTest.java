@@ -21,11 +21,11 @@ import static org.junit.Assert.assertFalse;
 public class AuthorComparatorTest {
   AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
   
-  public static Authorship parse(String x) {
+  public static Authorship parse(String x) throws InterruptedException {
     return NameParser.PARSER.parseAuthorship(x).orElse(new ParsedAuthorship()).getCombinationAuthorship();
   }
   
-  public static Authorship parse(String x, String year) {
+  public static Authorship parse(String x, String year) throws InterruptedException {
     if (year != null) {
       x = Strings.nullToEmpty(x) + " " + year;
     }
@@ -458,19 +458,19 @@ public class AuthorComparatorTest {
     assertEquals(Equality.EQUAL, comp.compare(p2, p3));
   }
   
-  private void assertAuth(String a1, String y1, Equality eq, String a2, String y2) {
+  private void assertAuth(String a1, String y1, Equality eq, String a2, String y2) throws InterruptedException {
     assertEquals(eq, comp.compare(parse(a1, y1), parse(a2, y2)));
   }
   
-  private void assertAuth(String a1, Equality eq, String a2) {
+  private void assertAuth(String a1, Equality eq, String a2) throws InterruptedException {
     assertEquals(eq, comp.compare(parse(a1), parse(a2)));
   }
   
-  private void assertAuthStrict(String a1, String y1, boolean eq, String a2, String y2) {
+  private void assertAuthStrict(String a1, String y1, boolean eq, String a2, String y2) throws InterruptedException {
     assertEquals(eq, comp.compareStrict(parse(a1, y1), parse(a2, y2)));
   }
   
-  private void assertAuth(String a1, String y1, String a1b, String y1b, Equality eq, String a2, String y2, String a2b, String y2b) {
+  private void assertAuth(String a1, String y1, String a1b, String y1b, Equality eq, String a2, String y2, String a2b, String y2b) throws InterruptedException {
     Name p1 = new Name();
     p1.setCombinationAuthorship(parse(a1, y1));
     p1.setBasionymAuthorship(parse(a1b, y1b));

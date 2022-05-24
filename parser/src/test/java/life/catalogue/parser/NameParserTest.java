@@ -443,7 +443,7 @@ public class NameParserTest {
     }
   }
 
-  static void assertAuthorship(String authorship, String year, String... authors) throws UnparsableException {
+  static void assertAuthorship(String authorship, String year, String... authors) throws InterruptedException, UnparsableException {
     ParsedAuthorship pa = NameParser.PARSER.parseAuthorship(authorship).get();
     Authorship a = new Authorship();
     a.setYear(year);

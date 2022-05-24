@@ -97,16 +97,16 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     try {
       return parse(name, Rank.UNRANKED, null, IssueContainer.VOID);
     } catch (InterruptedException e) {
-      LOG.warn("NameParser got interrupted. Return nothing");
+      LOG.warn("NameParser got interrupted");
       Thread.currentThread().interrupt();
-      return Optional.empty();
     }
+    return Optional.empty();
   }
   
   /**
    * @return a parsed authorship instance only, i.e. combination & original year & author list
    */
-  public Optional<ParsedAuthorship> parseAuthorship(String authorship) {
+  public Optional<ParsedAuthorship> parseAuthorship(String authorship) throws InterruptedException {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedAuthorship());
     try {
       ParsedAuthorship pa = parserInternal.parseAuthorship(authorship);
@@ -122,7 +122,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Populates the parsed authorship of a given name instance by parsing a single authorship string.
    * Only parses the authorship if the name itself is already parsed.
    */
-  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String authorship, IssueContainer v){
+  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String authorship, IssueContainer v) throws InterruptedException {
     // try to add an authorship if not yet there
     if (!Strings.isNullOrEmpty(authorship)) {
       if (pnu.getName().isParsed()) {
