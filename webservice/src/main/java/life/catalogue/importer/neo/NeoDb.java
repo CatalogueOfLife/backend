@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NodeBatchProcessor.BatchConsumer;
@@ -432,9 +433,14 @@ public class NeoDb {
       // the BatchInserter shutdown manages to sneak through an InterruptedException in case the thread is interrupted during shutdown which
       // can take some time and involves blocking IO operations. We'll have to make sure the inserter is properly closed, otherwise we're in trouble
       // see https://github.com/CatalogueOfLife/backend/issues/1147 and https://github.com/CatalogueOfLife/backend/issues/1132
-      if (e instanceof InterruptedException) {
+      if (Exceptions.containsInstanceOf( e, InterruptedException.class)) {
         LOG.warn("Shutdown of batch inserter was interrupted. Trying again", e);
-        inserter.shutdown();
+        try {
+          inserter.shutdown();
+        } catch (IllegalStateException ex) {
+          // Batch inserter already has shutdown - we are good, ignore
+        }
+        throw new InterruptedException("Shutdown of batch inserter was interrupted");
       }
       throw e;
     } finally {

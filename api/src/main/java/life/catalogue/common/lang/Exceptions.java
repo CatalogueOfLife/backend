@@ -40,6 +40,23 @@ public class Exceptions {
     }
   }
 
+  /**
+   * @return true if the given exception ex or any of it's root causes is an instance of exceptionClass
+   */
+  public static boolean containsInstanceOf(Throwable ex, final Class<? extends Exception> exceptionClass) {
+    if (ex == null) {
+      return false;
+    }
+    if (exceptionClass.isInstance(ex)) {
+      return true;
+    }
+    return containsInstanceOf(ex.getCause(), exceptionClass);
+  }
+
+  public static boolean isRootCause(Throwable ex, Class<? extends Exception> cause) {
+    return ex.getCause() != null && cause.isInstance(ex.getCause());
+  }
+
   public static Throwable getRootCause(Throwable ex) {
     if (ex.getCause() != null && !ex.getCause().equals(ex))
       return getRootCause(ex.getCause());
