@@ -9,6 +9,8 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.DatasetSourceMapper;
+import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
@@ -17,7 +19,7 @@ import org.gbif.dwc.terms.Term;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.LinkedList;
+import java.util.*;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -26,13 +28,15 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
 
+/**
+ * ColDP exporter using a merged NameUsage entity and usageIDs instead of nameIDs for linking.
+ */
 public class ColdpExporter extends ArchiveExporter {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpExporter.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
-  private static final String LOGO_FILENAME = "logo.png";
-  private DatasetSourceMapper projectSourceMapper;
   private Writer cslWriter;
   private boolean cslFirst = true;
+  private NameUsageKeyMap nameUsageKeyMap;
 
   public ColdpExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(DataFormat.COLDP, userKey, req, factory, cfg, imageService, timer);
@@ -41,7 +45,7 @@ public class ColdpExporter extends ArchiveExporter {
   @Override
   protected void init(SqlSession session) throws Exception {
     super.init(session);
-    projectSourceMapper = session.getMapper(DatasetSourceMapper.class);
+    nameUsageKeyMap = new NameUsageKeyMap(datasetKey, session);
   }
 
   @Override
@@ -57,6 +61,10 @@ public class ColdpExporter extends ArchiveExporter {
 
   @Override
   void write(NameUsageBase u) {
+    // name usage records come first - this allows us to keep a mapping of nameIDs to usageIDs
+    // which we will use instead of nameIDs exclusively in the exporter as we use NameUsage records.
+    nameUsageKeyMap.add(u.getName().getId(), u.getId());
+
     write(u.getName());
     writer.set(ColdpTerm.ID, u.getId());
     writer.set(ColdpTerm.sourceID, sector2datasetKey(u.getSectorKey()));
@@ -84,7 +92,22 @@ public class ColdpExporter extends ArchiveExporter {
 
   void write(BareName u) {
     write(u.getName());
-    writer.set(ColdpTerm.ID, u.getName().getId()); // wrong, see https://github.com/CatalogueOfLife/backend/issues/1046
+    // we need to make sure the nameID does not clash with a usageID, see https://github.com/CatalogueOfLife/backend/issues/1046
+    // bare names come after all other usages, so we can check our map
+    String bareID = u.getName().getId();
+    Integer counter = null;
+    while (nameUsageKeyMap.containsUsageID(bareID)) {
+      // we need to invent some new unique id :(
+      if (counter == null) {
+        bareID = "BN-"+bareID;
+        counter = 2;
+      } else {
+        bareID = "BN" + counter + "-" + u.getName().getId();
+        counter++;
+      }
+    }
+    nameUsageKeyMap.add(u.getName().getId(), bareID);
+    writer.set(ColdpTerm.ID, bareID);
     writer.set(ColdpTerm.status, TaxonomicStatus.BARE_NAME);
     writer.set(ColdpTerm.remarks, u.getRemarks());
   }
@@ -92,7 +115,7 @@ public class ColdpExporter extends ArchiveExporter {
   void write(Name n) {
     writer.set(ColdpTerm.sourceID, sector2datasetKey(n.getSectorKey()));
     for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
-      writer.set(ColdpTerm.basionymID, rel.getRelatedNameId());
+      writer.set(ColdpTerm.basionymID, nameUsageKeyMap.getFirst(rel.getRelatedNameId()));
     }
     writer.set(ColdpTerm.scientificName, n.getScientificName());
     writer.set(ColdpTerm.authorship, n.getAuthorship());
@@ -179,8 +202,8 @@ public class ColdpExporter extends ArchiveExporter {
 
   @Override
   void write(NameRelation rel) {
-    writer.set(ColdpTerm.nameID, rel.getNameId());
-    writer.set(ColdpTerm.relatedNameID, rel.getRelatedNameId());
+    writer.set(ColdpTerm.nameID, nameUsageKeyMap.getFirst(rel.getNameId()));
+    writer.set(ColdpTerm.relatedNameID, nameUsageKeyMap.getFirst(rel.getRelatedNameId()));
     writer.set(ColdpTerm.sourceID, sector2datasetKey(rel.getSectorKey()));
     writer.set(ColdpTerm.type, rel.getType());
     writer.set(ColdpTerm.referenceID, rel.getReferenceId());
@@ -191,19 +214,22 @@ public class ColdpExporter extends ArchiveExporter {
   void write(TypeMaterial tm) {
     writer.set(ColdpTerm.ID, tm.getId());
     writer.set(ColdpTerm.sourceID, sector2datasetKey(tm.getSectorKey()));
-    writer.set(ColdpTerm.nameID, tm.getNameId());
+    writer.set(ColdpTerm.nameID, nameUsageKeyMap.getFirst(tm.getNameId()));
     writer.set(ColdpTerm.citation, tm.getCitation());
     writer.set(ColdpTerm.status, tm.getStatus());
     writer.set(ColdpTerm.referenceID, tm.getReferenceId());
-    writer.set(ColdpTerm.locality, tm.getLocality());
     writer.set(ColdpTerm.country, tm.getCountry(), Country::getIso2LetterCode);
+    writer.set(ColdpTerm.locality, tm.getLocality());
     writer.set(ColdpTerm.latitude, tm.getLatitude());
     writer.set(ColdpTerm.longitude, tm.getLongitude());
     writer.set(ColdpTerm.altitude, tm.getAltitude());
+    writer.set(ColdpTerm.associatedSequences, tm.getAssociatedSequences());
     writer.set(ColdpTerm.host, tm.getHost());
-    writer.set(ColdpTerm.altitude, tm.getAltitude());
+    writer.set(ColdpTerm.sex, tm.getSex());
     writer.set(ColdpTerm.date, tm.getDate());
     writer.set(ColdpTerm.collector, tm.getCollector());
+    writer.set(ColdpTerm.institutionCode, tm.getInstitutionCode());
+    writer.set(ColdpTerm.catalogNumber, tm.getCatalogNumber());
     writer.set(ColdpTerm.link, tm.getLink());
     writer.set(ColdpTerm.remarks, tm.getRemarks());
   }
