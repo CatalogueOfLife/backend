@@ -35,11 +35,10 @@ public class NameUsageKeyMap {
   public void add(String nameID, String usageID) {
     if (name2usageID.containsKey(nameID)) {
       if (!name2usageID.get(nameID).equals(usageID)) {
-        if (name2usageIDExtras.containsKey(nameID)) {
-          name2usageIDExtras.get(nameID).add(usageID);
-        } else {
-          name2usageIDExtras.put(nameID, Set.of(usageID));
+        if (!name2usageIDExtras.containsKey(nameID)) {
+          name2usageIDExtras.put(nameID, new HashSet<>());
         }
+        name2usageIDExtras.get(nameID).add(usageID);
       }
     } else {
       name2usageID.put(nameID, usageID);
