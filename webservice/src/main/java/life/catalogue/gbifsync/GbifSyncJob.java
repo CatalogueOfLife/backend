@@ -5,6 +5,7 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.GbifConfig;
@@ -112,7 +113,8 @@ public class GbifSyncJob extends GlobalBlockingJob {
   /**
    * @return the dataset key in CLB even if locked or null if it never was synced
    */
-  private Integer sync(DatasetWithSettings gbif, DatasetWithSettings curr) {
+  private Integer sync(DatasetWithSettings gbif, DatasetWithSettings curr) throws InterruptedException {
+    Exceptions.interruptIfCancelled("GBIF sync interrupted");
     // start out with the existing key if there is one
     Integer key = curr == null ? null : curr.getKey();
     try {

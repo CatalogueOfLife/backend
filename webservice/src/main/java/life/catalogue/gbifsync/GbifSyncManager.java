@@ -12,6 +12,7 @@ import org.gbif.nameparser.utils.NamedThreadFactory;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.client.Client;
@@ -37,7 +38,8 @@ public class GbifSyncManager implements ManagedExtended {
   private final DatasetDao ddao;
   private final SqlSessionFactory sessionFactory;
   private final Client client;
-  
+  private ScheduledFuture<?> future;
+
   public GbifSyncManager(GbifConfig gbif, DatasetDao ddao, SqlSessionFactory sessionFactory, Client client) {
     this.cfg = gbif;
     this.ddao = ddao;
@@ -67,7 +69,7 @@ public class GbifSyncManager implements ManagedExtended {
       );
       LOG.info("Enable GBIF registry sync job every {} hours", cfg.syncFrequency);
       job = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC);
-      scheduler.scheduleAtFixedRate(job, 0, cfg.syncFrequency, TimeUnit.HOURS);
+      future = scheduler.scheduleAtFixedRate(job, 0, cfg.syncFrequency, TimeUnit.HOURS);
    
     } else {
       LOG.warn("Disable GBIF dataset sync");
@@ -77,6 +79,9 @@ public class GbifSyncManager implements ManagedExtended {
   @Override
   public void stop() throws Exception {
     if (scheduler != null) {
+      if (future != null) {
+        future.cancel(true);
+      }
       ExecutorUtils.shutdown(scheduler, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
     }
     job = null;
