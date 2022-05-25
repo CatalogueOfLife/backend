@@ -430,8 +430,10 @@ public class NeoDb {
     try {
       inserter.shutdown();
     } catch (Exception e) {
-      // the BatchInserter shutdown manages to sneak through an InterruptedException in case the thread is interrupted during shutdown which
-      // can take some time and involves blocking IO operations. We'll have to make sure the inserter is properly closed, otherwise we're in trouble
+      // the BatchInserter shutdown flushes data to disk, so this involves blocking IO operations which can
+      // a) throw an interrupted exception during shutdown and
+      // b) throw some IOException, e.g. UnderlyingStorageException "No space left on device"
+      // We'll have to make sure the inserter is properly closed and all resources are free'd up.
       // see https://github.com/CatalogueOfLife/backend/issues/1147 and https://github.com/CatalogueOfLife/backend/issues/1132
       if (Exceptions.containsInstanceOf( e, InterruptedException.class)) {
         LOG.warn("Shutdown of batch inserter was interrupted. Trying again", e);
@@ -442,7 +444,9 @@ public class NeoDb {
         }
         throw new InterruptedException("Shutdown of batch inserter was interrupted");
       }
+      LOG.error("Shutdown of batch inserter failed", e);
       throw e;
+
     } finally {
       inserter = null;
     }
