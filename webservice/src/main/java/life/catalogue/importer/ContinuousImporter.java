@@ -28,6 +28,8 @@ import org.slf4j.MDC;
  * <p>
  * - never imported datasets first
  * - the datasets configured indexing frequency
+ *
+ * If imports have failed previously, there will be an embargo for 1 week.
  */
 public class ContinuousImporter implements ManagedExtended {
   private static final Logger LOG = LoggerFactory.getLogger(ContinuousImporter.class);
