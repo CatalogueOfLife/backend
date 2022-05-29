@@ -1,0 +1,7 @@
+col:ID	col:parentID	col:status	col:rank	col:order	col:family	col:genus	col:species	col:scientificName	col:authorship	col:uninomial	col:genericName	col:specificEpithet	col:code
+
+1		accepted	species	Diptera	Chironomidae	[Ablabesmyia]	aurea	[Ablabesmyia] aurea	(Johannsen, 1907)		[Ablabesmyia]	aurea	zoological
+2		provisionally accepted	species	Diptera	Chironomidae	[Ablabesmyia]	caliptera	[Ablabesmyia] caliptera	(Kieffer, 1906)		[Ablabesmyia]	caliptera	zoological
+Sp89393	2	synonym	species					Ablabesmyia caliptera	Kieffer, 1906		Ablabesmyia	caliptera	zoological
+3		accepted	species	Diptera	Chironomidae	Ablabesmyia	markita	Ablabesmyia markita	(Kieffer, 1906)		Ablabesmyia	markita	zoological
+4		provisionally accepted	species	Diptera	Chironomidae			Margot margerita	(Kieffer, 1906)		Margot	margerita	zoological

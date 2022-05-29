@@ -236,7 +236,7 @@
             ts_rank_cd(d.doc, plainto_tsquery('simple2', #{req.q}))
             <bind name="rev" value="!req.reverse"/>
           </when>
-          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED'">
+          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED' ">
             ${req.sortBy.name().toLowerCase()}
             <bind name="rev" value="!req.reverse"/>
           </when>

@@ -39,6 +39,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -64,7 +65,7 @@ public class SectorSyncIT {
       DataFormat.COLDP, 0, 22,
     NomCode.ZOOLOGICAL,
       DataFormat.ACEF,  5, 6, 11,
-      DataFormat.COLDP, 2, 4, 14,
+      DataFormat.COLDP, 2, 4, 14, 24,
     NomCode.VIRUS,
       DataFormat.ACEF,  14
   );
@@ -570,6 +571,23 @@ public class SectorSyncIT {
     syncAll();
     
     assertTree("cat14.txt");
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1150
+   */
+  @Test
+  @Ignore("Unfinished")
+  public void testDipteraUncertainGenus() throws Exception {
+    print(datasetKey(24, DataFormat.COLDP));
+
+    NameUsageBase diptera = getByName(datasetKey(24, DataFormat.COLDP), Rank.ORDER, "Diptera");
+    NameUsageBase insecta = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    createSector(Sector.Mode.ATTACH, diptera, insecta);
+
+    syncAll();
+
+    assertTree("cat24.txt");
   }
   
 }
