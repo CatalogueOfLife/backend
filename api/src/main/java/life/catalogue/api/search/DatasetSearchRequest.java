@@ -28,6 +28,7 @@ public class DatasetSearchRequest {
     RELEVANCE,
     CREATED,
     MODIFIED,
+    IMPORTED,
     SIZE
   }
   

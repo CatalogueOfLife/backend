@@ -1,0 +1,23 @@
+Animalia [kingdom]
+  Annelida [phylum]
+  Arthropoda [phylum]
+    Arachnida [class]
+    Insecta [class]
+      Diptera [order]
+        Chironomidae [family]
+          Ablabesmyia
+            Ablabesmyia markita (Kieffer, 1906)
+          Margot margerita (Kieffer, 1906)
+  Chordata [phylum]
+    Aves [class]
+Archaea [kingdom]
+Bacteria [kingdom]
+Chromista [kingdom]
+Fungi [kingdom]
+  Ascomycota [phylum]
+  Basidiomycota [phylum]
+Plantae [kingdom]
+  Bryophyta [phylum]
+  Tracheophyta [phylum]
+Protozoa [kingdom]
+Viruses [kingdom]
