@@ -1,10 +1,7 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Country;
-import life.catalogue.api.vocab.Gazetteer;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoDb;
@@ -292,6 +289,16 @@ public class InterpreterBaseTest {
     assertNull(n.getGenus());
     assertNull(n.getSpecificEpithet());
     assertEquals(Rank.UNRANKED, n.getRank());
+
+    // https://github.com/CatalogueOfLife/testing/issues/195
+    ib.settings.enable(Setting.EPITHET_ADD_HYPHEN);
+    pnu = ib.interpretName(true, "1", null, null, null, null, "Cosmopterix", null, "sancti vincentii", null, null, "botanical", null, null, null, v);
+    n = pnu.get().getName();
+    assertEquals("Cosmopterix sancti-vincentii", n.getScientificName());
+    assertNull(n.getAuthorship());
+    assertNull(n.getUninomial());
+    assertEquals("Cosmopterix", n.getGenus());
+    assertEquals("sancti-vincentii", n.getSpecificEpithet());
   }
 
   @Test

@@ -340,12 +340,18 @@ public class InterpreterBase {
     return parse(BooleanParser.PARSER, v.getFirst(terms)).orNull();
   }
 
-  private static String lowercaseEpithet(String epithet, IssueContainer issues) {
+  private String sanitizeEpithet(String epithet, IssueContainer issues) {
     if (epithet != null && !epithet.equals(epithet.toLowerCase())) {
       issues.addIssue(Issue.UPPERCASE_EPITHET);
-      return epithet.trim().toLowerCase();
+      epithet = epithet.trim().toLowerCase();
+    } else {
+      epithet = trimToNull(epithet);
     }
-    return trimToNull(epithet);
+    if (epithet != null && settings.isEnabled(Setting.EPITHET_ADD_HYPHEN)) {
+      epithet = epithet.replaceAll("\\s+", "-");
+      issues.addIssue(Issue.MULTI_WORD_EPITHET);
+    }
+    return epithet;
   }
   
   private static void setDefaultNameType(Name n) {
@@ -414,8 +420,8 @@ public class InterpreterBase {
         set(pnu, atom::setUninomial, uninomial);
         set(pnu, atom::setGenus, genus);
         set(pnu, atom::setInfragenericEpithet, infraGenus);
-        set(pnu, atom::setSpecificEpithet, lowercaseEpithet(species, v));
-        set(pnu, atom::setInfraspecificEpithet, lowercaseEpithet(infraspecies, v));
+        set(pnu, atom::setSpecificEpithet, sanitizeEpithet(species, v));
+        set(pnu, atom::setInfraspecificEpithet, sanitizeEpithet(infraspecies, v));
         set(pnu, atom::setCultivarEpithet, cultivar);
 
         // misplaced uninomial in genus field
