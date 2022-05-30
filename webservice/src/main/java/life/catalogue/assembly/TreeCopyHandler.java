@@ -61,6 +61,7 @@ public class TreeCopyHandler implements ThrowingConsumer<NameUsageBase, Interrup
   private final List<NameUsageBase> lastUsages = new ArrayList<>();
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
   private final Map<String, Usage> ids = new HashMap<>();
+  private final Set<String> skippedTaxa = new HashSet<>(); // usageIDs of skipped accetepd names only
   private final Map<String, String> refIds = new HashMap<>();
   private final Map<String, String> nameIds = new HashMap<>();
   final Map<IgnoreReason, Integer> ignoredCounter = new HashMap<>();
@@ -106,6 +107,7 @@ public class TreeCopyHandler implements ThrowingConsumer<NameUsageBase, Interrup
   public void reset() throws InterruptedException {
     processLast();
     ids.clear();
+    skippedTaxa.clear();
   }
 
   public Map<String, Usage> getUsageIds() {
@@ -357,6 +359,9 @@ public class TreeCopyHandler implements ThrowingConsumer<NameUsageBase, Interrup
     if (skipUsage(u, decisions.get(u.getId()))) {
       // skip this taxon, but include children
       LOG.info("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().getLabel(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
+      if (u.isTaxon()) {
+        skippedTaxa.add(u.getId());
+      }
       // use taxons parent also as the parentID for this so children link one level up
       ids.put(u.getId(), ids.getOrDefault(u.getParentId(), target));
       return;
@@ -413,6 +418,11 @@ public class TreeCopyHandler implements ThrowingConsumer<NameUsageBase, Interrup
         incIgnored(IgnoreReason.RANK);
         return true;
       }
+    } else if (skippedTaxa.contains(u.getParentId())) {
+      // we ignore synonyms for taxa which have been skipped
+      // https://github.com/CatalogueOfLife/backend/issues/1150
+      incIgnored(IgnoreReason.IGNORED_PARENT);
+      return true;
     }
     switch (n.getType()) {
       case PLACEHOLDER:

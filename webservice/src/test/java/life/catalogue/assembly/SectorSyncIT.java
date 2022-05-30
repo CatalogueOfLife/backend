@@ -69,7 +69,6 @@ public class SectorSyncIT {
     NomCode.VIRUS,
       DataFormat.ACEF,  14
   );
-
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   static IndexName match;
   static NameIndex nidx;
@@ -577,7 +576,6 @@ public class SectorSyncIT {
    * https://github.com/CatalogueOfLife/backend/issues/1150
    */
   @Test
-  @Ignore("Unfinished")
   public void testDipteraUncertainGenus() throws Exception {
     print(datasetKey(24, DataFormat.COLDP));
 
