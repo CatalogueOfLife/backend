@@ -9,6 +9,7 @@ import life.catalogue.importer.neo.ReferenceMapStore;
 import life.catalogue.importer.neo.model.NeoUsage;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Arrays;
@@ -299,6 +300,17 @@ public class InterpreterBaseTest {
     assertNull(n.getUninomial());
     assertEquals("Cosmopterix", n.getGenus());
     assertEquals("sancti-vincentii", n.getSpecificEpithet());
+
+    // https://github.com/CatalogueOfLife/data/issues/431
+    ib.settings.disable(Setting.EPITHET_ADD_HYPHEN);
+    pnu = ib.interpretName(true, "1", null, "Asplenium × mitsutae Viane & Reichst.", "Viane & Reichst.", null, "Asplenium", null, "× mitsutae", null, null, "botanical", null, null, null, v);
+    n = pnu.get().getName();
+    assertEquals("Asplenium × mitsutae", n.getScientificName());
+    assertEquals("Viane & Reichst.", n.getAuthorship());
+    assertNull(n.getUninomial());
+    assertEquals("Asplenium", n.getGenus());
+    assertEquals("mitsutae", n.getSpecificEpithet());
+    assertEquals(NamePart.SPECIFIC, n.getNotho());
   }
 
   @Test

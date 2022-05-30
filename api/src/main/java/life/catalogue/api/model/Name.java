@@ -570,7 +570,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   public void setSpecificEpithet(String species) {
     if (setNothoIfHybrid(species, NamePart.SPECIFIC)) {
-      specificEpithet = species.substring(1);
+      specificEpithet = species.substring(1).trim();
     } else {
       specificEpithet = species;
     }
@@ -582,7 +582,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   public void setInfraspecificEpithet(String infraSpecies) {
     if (setNothoIfHybrid(infraSpecies, NamePart.INFRASPECIFIC)) {
-      this.infraspecificEpithet = infraSpecies.substring(1);
+      this.infraspecificEpithet = infraSpecies.substring(1).trim();
     } else {
       this.infraspecificEpithet = infraSpecies;
     }
