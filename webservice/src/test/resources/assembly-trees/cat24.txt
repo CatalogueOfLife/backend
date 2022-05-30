@@ -5,9 +5,9 @@ Animalia [kingdom]
     Insecta [class]
       Diptera [order]
         Chironomidae [family]
-          Ablabesmyia
-            Ablabesmyia markita (Kieffer, 1906)
-          Margot margerita (Kieffer, 1906)
+          Ablabesmyia [genus]
+            Ablabesmyia markita (Kieffer, 1906) [species]
+          Margot margerita (Kieffer, 1906) [species]
   Chordata [phylum]
     Aves [class]
 Archaea [kingdom]

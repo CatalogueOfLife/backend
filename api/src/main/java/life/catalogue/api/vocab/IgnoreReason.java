@@ -12,6 +12,7 @@ public enum IgnoreReason {
   INDETERMINED,
   RANK,
   INCONSISTENT_NAME,
+  IGNORED_PARENT,
   // ignored name types
   NAME_PLACEHOLDER,
   NAME_NO_NAME,
