@@ -55,7 +55,7 @@ public class NeoDbFactory {
       if (root instanceof ClosedByInterruptException || root instanceof InterruptedException) {
         throw new InterruptedRuntimeException("Failed to create NeoDB, thread was interrupted", e);
       }
-      throw new IllegalStateException("Failed to init NormalizerStore at " + storeDir, e);
+      throw new IllegalStateException(String.format("Failed to init NormalizerStore at %s. Cause: %s", storeDir, root), e);
     }
   }
   

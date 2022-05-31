@@ -303,12 +303,12 @@ public class ImportJob implements Runnable {
   
     } catch (InterruptedException | InterruptedRuntimeException e) {
       // cancelled import
-      LOG.warn("Dataset {} import cancelled. Log to db", datasetKey);
+      LOG.warn("Dataset {} import cancelled", datasetKey);
       dao.updateImportCancelled(di);
       
     } catch (Throwable e) {
       // failed import
-      LOG.error("Dataset {} import failed. {}. Log to db", datasetKey, e.getMessage(), e);
+      LOG.error("Dataset {} import failed. {}", datasetKey, e.getMessage(), e);
       dao.updateImportFailure(di, e);
       throw e;
       

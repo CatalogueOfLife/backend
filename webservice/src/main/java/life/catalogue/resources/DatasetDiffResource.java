@@ -32,15 +32,6 @@ public class DatasetDiffResource extends AbstractDiffResource<Integer> {
     return dsid.getDatasetKey();
   }
 
-
-  @GET
-  @Path("test")
-  @Produces(MediaType.TEXT_PLAIN)
-  public Reader test() throws IOException {
-    return UTF8IoUtils.readerFromFile(new File("/Users/markus/Downloads/gen-wsc.sh"));
-  }
-
-
   @GET
   @Path("{key2}")
   @Produces(MediaType.TEXT_PLAIN)
