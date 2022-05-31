@@ -214,9 +214,16 @@ public class ImportJob implements Runnable {
       throw new IllegalStateException("Dataset " + datasetKey + " is not external and there are no uploads to be imported");
     }
 
-    boolean isModified = lastMD5IsDifferent(source); // this also sets md5 on di
+
+    di.setMd5(ChecksumUtils.getMD5Checksum(source));
     di.setDownload(downloader.lastModified(source));
     dao.update(di);
+
+    boolean isModified = true;
+    if (last != null && di.getMd5().equals(last.getMd5())) {
+      LOG.info("MD5 unchanged: {}", di.getMd5());
+      isModified = false;
+    }
 
     checkIfCancelled();
     // decompress and import?
@@ -333,21 +340,6 @@ public class ImportJob implements Runnable {
     return dataset.isEnabled(Setting.REMATCH_DECISIONS);
   }
 
-  /**
-   * See https://github.com/Sp2000/colplus-backend/issues/78
-   *
-   * @return true if the source file has a different MD5 hash as the last imported file
-   */
-  private boolean lastMD5IsDifferent(File source) throws IOException {
-    di.setMd5(ChecksumUtils.getMD5Checksum(source));
-    if (last != null) {
-      LOG.debug("Compare with last MD5 {}", last.getMd5());
-      return !di.getMd5().equals(last.getMd5());
-    } else {
-      return true;
-    }
-  }
-  
   @Override
   public boolean equals(Object o) {
     if (this == o)
