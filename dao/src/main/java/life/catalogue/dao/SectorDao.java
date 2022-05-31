@@ -5,7 +5,10 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.SectorProcessable;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.DecisionMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.es.NameUsageIndexService;
 
 import java.util.ArrayList;

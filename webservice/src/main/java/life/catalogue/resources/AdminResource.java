@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import io.swagger.v3.oas.annotations.Hidden;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.IndexJob;
 import life.catalogue.admin.jobs.ReimportJob;
@@ -53,7 +51,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import io.dropwizard.auth.Auth;
-import io.dropwizard.lifecycle.Managed;
+import io.swagger.v3.oas.annotations.Hidden;
 
 @Path("/admin")
 @Hidden

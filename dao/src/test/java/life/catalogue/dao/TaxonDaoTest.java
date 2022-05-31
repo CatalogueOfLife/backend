@@ -7,7 +7,9 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.SectorMapperTest;
+import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 

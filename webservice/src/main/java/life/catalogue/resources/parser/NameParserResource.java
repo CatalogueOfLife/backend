@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.security.RolesAllowed;
-import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -46,7 +45,7 @@ public class NameParserResource {
     dao = new ParserConfigDao(factory);
   }
 
-  public class CRName implements IssueContainer {
+  public static class CRName implements IssueContainer {
     private NomCode code;
     private Rank rank;
     private String name;

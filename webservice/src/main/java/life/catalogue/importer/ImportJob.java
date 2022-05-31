@@ -30,6 +30,7 @@ import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
+import life.catalogue.metadata.DoiResolver;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +43,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.validation.Validator;
-
-import life.catalogue.metadata.DoiResolver;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -240,7 +239,7 @@ public class ImportJob implements Runnable {
   private void  importDataset() throws Exception {
     di = dao.createWaiting(datasetKey, this, req.createdBy);
     LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
-    LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
+    LOG.info("Start new {}import attempt {} for {} dataset {}: {}", req.force ? "forced " : "" ,di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
 
     final Path sourceDir = cfg.normalizer.sourceDir(datasetKey).toPath();
     NeoDb store = null;

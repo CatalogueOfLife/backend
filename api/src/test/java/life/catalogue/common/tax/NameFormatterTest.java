@@ -1,7 +1,6 @@
 package life.catalogue.common.tax;
 
 import life.catalogue.api.model.Name;
-
 import life.catalogue.api.vocab.NomStatus;
 
 import org.gbif.nameparser.api.Authorship;

@@ -10,7 +10,6 @@ import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
-
 import life.catalogue.matching.NameIndexFactory;
 
 import org.gbif.nameparser.api.NameType;
@@ -23,6 +22,9 @@ import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Relationship;
@@ -30,9 +32,6 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.Iterators;
 
 import de.undercouch.citeproc.csl.CSLType;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import static org.junit.Assert.*;
 

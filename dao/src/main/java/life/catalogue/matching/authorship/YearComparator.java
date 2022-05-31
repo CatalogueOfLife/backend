@@ -3,12 +3,12 @@ package life.catalogue.matching.authorship;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
 
+import org.gbif.nameparser.api.Authorship;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-
-import org.gbif.nameparser.api.Authorship;
 
 public class YearComparator {
   private static final Pattern YEAR = Pattern.compile("(^|[^0-9])([0-9?]{4})([^0-9]|$)");

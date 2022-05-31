@@ -5,7 +5,6 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.lang.Exceptions;
-import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.csv.MappingInfos;

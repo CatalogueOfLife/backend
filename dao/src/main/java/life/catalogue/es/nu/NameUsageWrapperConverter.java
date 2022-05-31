@@ -9,14 +9,11 @@ import life.catalogue.es.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
-
-import org.apache.commons.io.IOUtils;
 
 import static life.catalogue.api.vocab.NameField.*;
 import static life.catalogue.common.collection.CollectionUtils.notEmpty;

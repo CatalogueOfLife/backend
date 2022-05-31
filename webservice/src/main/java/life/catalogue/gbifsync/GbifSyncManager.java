@@ -4,7 +4,6 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
-
 import life.catalogue.dw.ManagedExtended;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;
@@ -20,8 +19,6 @@ import javax.ws.rs.client.Client;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.dropwizard.lifecycle.Managed;
 
 
 /**

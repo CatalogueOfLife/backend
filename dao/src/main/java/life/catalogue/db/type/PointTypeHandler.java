@@ -1,10 +1,9 @@
 package life.catalogue.db.type;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
-
 import life.catalogue.api.model.Coordinate;
-import life.catalogue.api.model.DOI;
+
+import java.sql.*;
+import java.util.regex.Pattern;
 
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
@@ -13,8 +12,8 @@ import org.postgresql.geometric.PGpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
-import java.util.regex.Pattern;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 
 /**
  * Handler for Coordinate java instances mapped to the native Postgres point type.

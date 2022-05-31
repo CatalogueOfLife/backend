@@ -1,7 +1,6 @@
 package life.catalogue.exporter;
 
 import life.catalogue.db.PgSetupRule;
-
 import life.catalogue.db.TestDataRule;
 
 import org.apache.ibatis.session.SqlSession;

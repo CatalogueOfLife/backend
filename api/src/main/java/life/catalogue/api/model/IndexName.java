@@ -4,7 +4,10 @@ import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.text.StringUtils;
 
-import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
 

@@ -26,13 +26,12 @@ public class JsonObjSerializer extends Serializer<ObjectNode> {
 
   @Override
   public void write(final Kryo kryo, final Output output, final ObjectNode obj) {
-    OutputChunked chunked = new OutputChunked(output, 256);
-    try {
+    try (OutputChunked chunked = new OutputChunked(output, 256)) {
       chunked.write(MAPPER.writeValueAsBytes(obj));
+      chunked.endChunk();
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
-    chunked.endChunk();
   }
 
   @Override

@@ -2,11 +2,12 @@ package life.catalogue.common.lang;
 
 import life.catalogue.api.exception.NotFoundException;
 
-import org.junit.Test;
-
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ExceptionsTest {
 

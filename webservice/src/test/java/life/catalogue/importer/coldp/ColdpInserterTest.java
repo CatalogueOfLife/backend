@@ -5,7 +5,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
-import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.neo.model.RelType;

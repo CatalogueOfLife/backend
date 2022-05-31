@@ -1,33 +1,15 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.RandomUtils;
-import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.api.vocab.Users;
-import life.catalogue.dao.NameDao;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Page;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
 
-import org.apache.ibatis.cursor.Cursor;
-
-import org.gbif.nameparser.api.Rank;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static life.catalogue.api.TestEntityGenerator.DATASET11;
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 

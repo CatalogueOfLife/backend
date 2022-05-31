@@ -31,8 +31,6 @@ import com.google.common.base.Splitter;
 
 import de.undercouch.citeproc.csl.CSLType;
 
-import static life.catalogue.common.text.StringUtils.hasContent;
-
 /**
  * Dataset specific factory for reference instances. It mostly manages the CSL parsing and works
  * with variously structured input forms. Responsible for detecting and flagging of issues in

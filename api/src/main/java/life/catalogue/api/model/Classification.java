@@ -3,8 +3,6 @@ package life.catalogue.api.model;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 
-import life.catalogue.common.tax.SciNameNormalizer;
-
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 
@@ -13,7 +11,9 @@ import java.util.Objects;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import static life.catalogue.common.tax.SciNameNormalizer.*;
+
+import static life.catalogue.common.tax.SciNameNormalizer.removeDagger;
+import static life.catalogue.common.tax.SciNameNormalizer.removeHybridMarker;
 /**
  *
  */

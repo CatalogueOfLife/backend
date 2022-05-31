@@ -8,9 +8,6 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.db.mapper.DatasetSourceMapper;
-import life.catalogue.db.mapper.NameRelationMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
@@ -19,7 +16,7 @@ import org.gbif.dwc.terms.Term;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.LinkedList;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

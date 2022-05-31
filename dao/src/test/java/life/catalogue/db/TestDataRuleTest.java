@@ -5,7 +5,6 @@ import life.catalogue.api.model.Page;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.NamesIndexMapperTest;
 
 import java.util.List;
 import java.util.stream.Collectors;

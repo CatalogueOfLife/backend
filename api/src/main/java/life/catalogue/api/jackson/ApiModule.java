@@ -123,14 +123,14 @@ public class ApiModule extends SimpleModule {
     ctxt.setMixInAnnotations(Term.class, TermMixIn.class);
   }
   
-  abstract class AuthorshipMixIn {
+  abstract static class AuthorshipMixIn {
     @JsonIgnore
     abstract boolean isEmpty();
   }
 
   @JsonSerialize(using = TermSerde.Serializer.class, keyUsing = TermSerde.KeySerializer.class)
   @JsonDeserialize(using = TermSerde.Deserializer.class, keyUsing = TermSerde.KeyDeserializer.class)
-  static abstract class TermMixIn {
+  abstract static class TermMixIn {
 
   }
 

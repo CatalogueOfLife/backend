@@ -7,11 +7,10 @@ import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.ContinuousImportConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.dw.ManagedExtended;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import life.catalogue.dw.ManagedExtended;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

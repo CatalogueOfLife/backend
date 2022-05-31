@@ -150,10 +150,8 @@ public class DistributedArchiveService {
         for (Term t : fd.header) {
           if (sb.length() > 1) {
             sb.append(fd.delimiter);
-            if (fd.quotation != null) {
-              sb.append(fd.quotation);
-            }
-          } else if (fd.quotation != null) {
+          }
+          if (fd.quotation != null) {
             sb.append(fd.quotation);
           }
           sb.append(t.prefixedName());

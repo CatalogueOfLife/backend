@@ -2,9 +2,9 @@ package life.catalogue.exporter;
 
 import life.catalogue.db.mapper.NameUsageMapper;
 
-import org.apache.ibatis.session.SqlSession;
-
 import java.util.*;
+
+import org.apache.ibatis.session.SqlSession;
 
 public class NameUsageKeyMap {
   private final Map<String, String> name2usageID = new HashMap<>();

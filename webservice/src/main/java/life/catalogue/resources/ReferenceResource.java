@@ -5,8 +5,7 @@ import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-
-import java.util.UUID;
+import life.catalogue.dw.jersey.filter.VaryAccept;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -14,11 +13,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import life.catalogue.dw.jersey.filter.VaryAccept;
-
 import org.apache.ibatis.session.SqlSession;
-import org.apache.poi.ss.formula.functions.T;
-import org.checkerframework.checker.units.qual.K;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

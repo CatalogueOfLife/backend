@@ -1,7 +1,10 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.exception.UnavailableException;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.FormattableName;
+import life.catalogue.api.model.IndexName;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.func.Predicates;
@@ -15,15 +18,13 @@ import life.catalogue.matching.authorship.AuthorComparator;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.util.UnicodeUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

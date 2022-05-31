@@ -1,12 +1,10 @@
 package life.catalogue.metadata;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.model.DOI;
-
 import life.catalogue.api.model.IssueContainer;
-
 import life.catalogue.api.vocab.Issue;
+
+import java.io.IOException;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -15,7 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
+import de.undercouch.citeproc.csl.CSLType;
 
 import static org.junit.Assert.*;
 

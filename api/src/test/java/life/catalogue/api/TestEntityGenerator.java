@@ -7,8 +7,6 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.ApiKryoPool;
 
-import org.checkerframework.checker.units.qual.N;
-
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 

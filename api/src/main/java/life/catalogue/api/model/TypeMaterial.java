@@ -3,14 +3,12 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Sex;
 import life.catalogue.api.vocab.TypeStatus;
+import life.catalogue.common.text.StringUtils;
 
 import java.net.URI;
-import java.util.Locale;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import life.catalogue.common.text.StringUtils;
 
 /**
  * Type material should only be associated with the original name, not with a recombination.

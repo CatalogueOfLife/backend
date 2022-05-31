@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
-import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.*;
@@ -15,8 +14,6 @@ import life.catalogue.es.NameUsageIndexService;
 import java.time.LocalDateTime;
 
 import javax.validation.Validator;
-
-import life.catalogue.importer.InterpreterBase;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

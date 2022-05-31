@@ -1,13 +1,12 @@
 package life.catalogue.db;
 
 import life.catalogue.api.model.DSID;
-
 import life.catalogue.db.mapper.*;
+
+import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
-
-import java.util.List;
 
 /**
  * Minimal mapper to deal with entities of type V for an entire sector in a managed dataset.

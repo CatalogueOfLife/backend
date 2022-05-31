@@ -8,7 +8,6 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 
 import org.gbif.nameparser.api.*;
-import org.gbif.nameparser.api.ParsedName;
 
 import java.net.URI;
 import java.time.LocalDateTime;

@@ -2,8 +2,6 @@ package life.catalogue.importer;
 
 import life.catalogue.common.tax.SciNameNormalizer;
 
-import java.util.regex.Pattern;
-
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public class ExtinctName {

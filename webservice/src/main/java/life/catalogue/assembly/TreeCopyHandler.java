@@ -13,7 +13,6 @@ import life.catalogue.parser.NameParser;
 import org.gbif.nameparser.api.*;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 

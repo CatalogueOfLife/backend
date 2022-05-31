@@ -2,12 +2,10 @@ package life.catalogue.resources;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.User;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.tree.DatasetDiffService;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;

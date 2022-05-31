@@ -3,8 +3,6 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.common.io.InputStreamUtils;
-import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.csv.ExcelCsvExtractor;
@@ -18,10 +16,6 @@ import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
-
-import life.catalogue.resources.ResourceUtils;
-
-import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
@@ -42,12 +36,10 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.neo4j.graphdb.*;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.io.Files;

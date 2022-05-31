@@ -1,10 +1,11 @@
 package life.catalogue.matching;
 
-import com.google.common.collect.Lists;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.exception.UnavailableException;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.IndexName;
+import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;

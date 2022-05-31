@@ -1,7 +1,6 @@
 package life.catalogue.csv;
 
 import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.io.Resources;
 
 import org.gbif.dwc.terms.AcefTerm;

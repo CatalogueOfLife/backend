@@ -34,17 +34,13 @@ import java.util.Set;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import com.google.common.base.Charsets;
 
 import static org.junit.Assert.*;
 

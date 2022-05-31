@@ -1,7 +1,6 @@
 package life.catalogue.api.txtree;
 
 import life.catalogue.common.func.ThrowingConsumer;
-
 import life.catalogue.common.lang.InterruptedRuntimeException;
 
 import org.gbif.nameparser.api.Rank;
@@ -12,7 +11,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -189,7 +187,7 @@ public class Tree implements Iterable<TreeNode> {
     return new NNIterator(this);
   }
   
-  private class NNIter {
+  private static class NNIter {
     private int synIdx;
     private final TreeNode node;
     

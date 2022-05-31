@@ -5,7 +5,6 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.db.mapper.ArchivedNameMapper;
-import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.InvalidQueryException;

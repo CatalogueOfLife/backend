@@ -1,7 +1,5 @@
 package life.catalogue.cache;
 
-import com.esotericsoftware.minlog.Log;
-
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -14,19 +12,15 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.NotFoundException;
 
-import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-
-import org.checkerframework.checker.units.qual.K;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Cache that listens to dataset changes and provides the latest dataset keys for project releases

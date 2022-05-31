@@ -1,7 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.io.Files;
-
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.NormalizerConfig;
@@ -10,15 +8,16 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.*;
-
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.*;
+import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+
+import com.google.common.io.Files;
+
+import static org.junit.Assert.fail;
 
 public class NeoCsvInserterTest {
 

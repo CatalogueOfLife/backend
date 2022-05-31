@@ -2,6 +2,7 @@ package life.catalogue.common.util;
 
 import life.catalogue.common.io.CharsetDetection;
 import life.catalogue.common.io.PathUtils;
+import life.catalogue.common.io.Resources;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -9,8 +10,6 @@ import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import life.catalogue.common.io.Resources;
 
 import org.junit.Test;
 

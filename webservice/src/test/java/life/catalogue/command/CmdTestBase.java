@@ -2,6 +2,8 @@ package life.catalogue.command;
 
 import life.catalogue.WsServer;
 import life.catalogue.WsServerConfig;
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
 
 import java.io.File;
 import java.net.URL;
@@ -9,9 +11,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
-
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
 
 import org.junit.Before;
 import org.junit.ClassRule;

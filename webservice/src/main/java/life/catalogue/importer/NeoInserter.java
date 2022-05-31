@@ -1,7 +1,6 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.csv.MappingInfos;
 
 import java.nio.file.Path;

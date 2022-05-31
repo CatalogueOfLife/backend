@@ -1,9 +1,8 @@
 package life.catalogue.parser;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import life.catalogue.api.model.Coordinate;
+
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 

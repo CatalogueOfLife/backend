@@ -1,7 +1,5 @@
 package life.catalogue.command;
 
-import life.catalogue.db.PgSetupRule;
-
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
