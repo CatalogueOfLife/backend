@@ -95,7 +95,7 @@ public class DatasetImportDao {
   public DatasetImport getLast(int datasetKey) {
     // a release? use mother project in that case
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (info.origin == DatasetOrigin.RELEASED) {
+    if (info.origin == DatasetOrigin.RELEASE) {
       return getReleaseAttempt(datasetKey);
     } else {
       try (SqlSession session = factory.openSession(true)) {
@@ -115,7 +115,7 @@ public class DatasetImportDao {
       var release = session.getMapper(DatasetMapper.class).get(releaseKey);
       if (release == null) {
         throw NotFoundException.notFound(Dataset.class, releaseKey);
-      } else if (release.getOrigin() != DatasetOrigin.RELEASED) {
+      } else if (release.getOrigin() != DatasetOrigin.RELEASE) {
         throw new IllegalArgumentException(releaseKey + " is not a release");
       }
       return session.getMapper(DatasetImportMapper.class).get(release.getSourceKey(), release.getAttempt());

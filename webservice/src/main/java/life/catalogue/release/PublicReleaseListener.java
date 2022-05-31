@@ -71,7 +71,7 @@ public class PublicReleaseListener {
   @Subscribe
   public void datasetChanged(DatasetChanged event){
     if (event.isUpdated() // assures we got both obj and old
-      && event.obj.getOrigin() == DatasetOrigin.RELEASED
+      && event.obj.getOrigin() == DatasetOrigin.RELEASE
       && event.old.isPrivat() // that was private before
       && !event.obj.isPrivat() // but now is public
     ) {

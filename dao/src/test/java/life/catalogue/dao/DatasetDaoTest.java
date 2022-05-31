@@ -96,7 +96,7 @@ public class DatasetDaoTest extends DaoTestBase {
   @Test
   public void deleteProject() {
     Dataset proj = DatasetMapperTest.create();
-    proj.setOrigin(DatasetOrigin.MANAGED);
+    proj.setOrigin(DatasetOrigin.PROJECT);
     dao.create(proj, Users.TESTER);
 
     Set<Integer> releaseKeys = new HashSet<>();
@@ -119,7 +119,7 @@ public class DatasetDaoTest extends DaoTestBase {
   int createRelease(int projectKey) {
     Dataset d = DatasetMapperTest.create();
     d.setSourceKey(projectKey);
-    d.setOrigin(DatasetOrigin.RELEASED);
+    d.setOrigin(DatasetOrigin.RELEASE);
     dao.create(d, Users.TESTER);
     return d.getKey();
   }

@@ -4,7 +4,6 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
 
 import java.util.function.IntPredicate;
@@ -33,7 +32,7 @@ public class DaoUtils {
    */
   public static void requireManaged(int datasetKey, String message) throws NotFoundException {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
-    if (origin != DatasetOrigin.MANAGED) {
+    if (origin != DatasetOrigin.PROJECT) {
       throw new IllegalArgumentException(message + " Dataset " + datasetKey + " is of origin " + origin);
     }
   }
@@ -78,7 +77,7 @@ public class DaoUtils {
     Dataset d = dm.get(datasetKey);
     if (d == null || d.hasDeletedDate()) {
       throw NotFoundException.notFound(Dataset.class, datasetKey);
-    } else if (d.getOrigin() == DatasetOrigin.RELEASED) {
+    } else if (d.getOrigin() == DatasetOrigin.RELEASE) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be " + action);
     }
     return d;

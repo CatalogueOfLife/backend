@@ -38,63 +38,63 @@ public enum Setting {
   /**
    * Overrides the gazetteer standard to use in all distribution interpretations for the dataset.
    */
-  DISTRIBUTION_GAZETTEER(Gazetteer.class, EXTERNAL, MANAGED),
+  DISTRIBUTION_GAZETTEER(Gazetteer.class, EXTERNAL, PROJECT),
 
   /**
    * The nomenclatural code followed in the dataset.
    * It will be used mostly as a hint to format names accordingly.
    * If the dataset contains mixed data from multiple codes keep this field null.
    */
-  NOMENCLATURAL_CODE(NomCode.class, EXTERNAL, MANAGED),
+  NOMENCLATURAL_CODE(NomCode.class, EXTERNAL, PROJECT),
 
   /**
    * Setting that will inform the importer to rematch all decisions (decisions sensu strictu but also sectors and estimates)
    * Defaults to false
    */
-  REMATCH_DECISIONS(Boolean.class, EXTERNAL, MANAGED),
+  REMATCH_DECISIONS(Boolean.class, EXTERNAL, PROJECT),
 
   /**
    * Setting that will inform the importer not to update any metadata from archives.
    * Metadata will be locked and can only be edited manually.
    */
-  LOCK_METADATA(Boolean.class, EXTERNAL, MANAGED),
+  LOCK_METADATA(Boolean.class, EXTERNAL, PROJECT),
 
   /**
    * Template used to build a new release alias.
    */
-  RELEASE_ALIAS_TEMPLATE(String.class, MANAGED),
+  RELEASE_ALIAS_TEMPLATE(String.class, PROJECT),
 
   /**
    * If true a release will include as its authors all authors of all it's sources.
    */
-  RELEASE_ADD_SOURCE_AUTHORS(Boolean.class, MANAGED),
+  RELEASE_ADD_SOURCE_AUTHORS(Boolean.class, PROJECT),
 
   /**
    * If true a release will include as its authors all contributors of the project (not source contributors).
    */
-  RELEASE_ADD_CONTRIBUTORS(Boolean.class, MANAGED),
+  RELEASE_ADD_CONTRIBUTORS(Boolean.class, PROJECT),
 
   /**
    * If true a release will first delete all bare names from the project before it copies data.
    */
-  RELEASE_REMOVE_BARE_NAMES(Boolean.class, MANAGED),
+  RELEASE_REMOVE_BARE_NAMES(Boolean.class, PROJECT),
 
   /**
    * If true a release will prepare exports for the entire release in all common formats.
    */
-  RELEASE_PREPARE_DOWNLOADS(Boolean.class, MANAGED),
+  RELEASE_PREPARE_DOWNLOADS(Boolean.class, PROJECT),
 
   /**
    * Template used to build a new extended release alias.
    */
-  XRELEASE_ALIAS_TEMPLATE(String.class, MANAGED),
+  XRELEASE_ALIAS_TEMPLATE(String.class, PROJECT),
 
 
   /**
    * Number of first authors from a project/release to use for the container authors of a source chapter-in-a-book citation.
    * If not given all authors are used.
    */
-  SOURCE_MAX_CONTAINER_AUTHORS(Integer.class, MANAGED, RELEASED),
+  SOURCE_MAX_CONTAINER_AUTHORS(Integer.class, PROJECT, RELEASE),
 
   /**
    * In continuous import mode the frequency the dataset is scheduled for imports.
@@ -103,17 +103,17 @@ public enum Setting {
 
   DATA_ACCESS(URI.class, EXTERNAL),
 
-  DATA_FORMAT(DataFormat.class, EXTERNAL, MANAGED),
+  DATA_FORMAT(DataFormat.class, EXTERNAL, PROJECT),
 
   /**
    * Project defaults to be used for the sector.entities property
    */
-  SECTOR_ENTITIES(EntityType.class, true, MANAGED),
+  SECTOR_ENTITIES(EntityType.class, true, PROJECT),
 
   /**
    * Project defaults to be used for the sector.ranks property
    */
-  SECTOR_RANKS(Rank.class, true, MANAGED),
+  SECTOR_RANKS(Rank.class, true, PROJECT),
 
   /**
    * If set to true the dataset metadata is locked and the gbif registry sync will not be applied to the dataset.
@@ -123,7 +123,7 @@ public enum Setting {
   /**
    * Defines wheter the importer makes use of Crossref to lookup DOI metadata.
    */
-  DOI_RESOLUTION(DoiResolution.class, false, EXTERNAL, MANAGED);
+  DOI_RESOLUTION(DoiResolution.class, false, EXTERNAL, PROJECT);
 
   private final Class type;
   private final DatasetOrigin[] origin;

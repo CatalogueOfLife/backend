@@ -55,7 +55,7 @@ abstract class SectorRunnable implements Runnable {
   final SectorImport state;
 
   /**
-   * @throws IllegalArgumentException if the sectors dataset is not of MANAGED origin
+   * @throws IllegalArgumentException if the sectors dataset is not of PROJECT origin
    */
   SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, SqlSessionFactory factory,
                  NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
@@ -82,9 +82,9 @@ abstract class SectorRunnable implements Runnable {
     sector = loadSectorAndUpdateDatasetImport(false);
     this.subjectDatasetKey = sector.getSubjectDatasetKey();
     try (SqlSession session = factory.openSession(true)) {
-      // make sure the target catalogue is MANAGED and not RELEASED!
+      // make sure the target catalogue is a PROJECT and not a RELEASE!
       Dataset target = session.getMapper(DatasetMapper.class).get(sectorKey.getDatasetKey());
-      if (target.getOrigin() != DatasetOrigin.MANAGED) {
+      if (target.getOrigin() != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + target.getOrigin() + " dataset");
       }
       if (validateLicenses) {

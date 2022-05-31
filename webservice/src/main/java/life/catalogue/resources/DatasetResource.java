@@ -9,6 +9,7 @@ import life.catalogue.assembly.AssemblyState;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
@@ -27,6 +28,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import io.dropwizard.auth.Auth;
@@ -116,7 +118,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   })
   public Dataset preview(@PathParam("key") Integer key) {
     Dataset d = super.get(key);
-    if (d.getOrigin() != DatasetOrigin.MANAGED) {
+    if (d.getOrigin() != DatasetOrigin.PROJECT) {
       throw new IllegalArgumentException("Release metadata preview required a managed project");
     }
 
@@ -156,6 +158,18 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void release(@PathParam("key") int key, @Auth User user) {
     var job = jobFactory.buildRelease(key, user.getKey());
+    exec.submit(job);
+  }
+
+  @POST
+  @Path("/{key}/xrelease")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void xRelease(@PathParam("key") int key, @Auth User user) {
+    int releaseKey;
+    try (SqlSession session = factory.openSession(true)) {
+      releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true);
+    }
+    var job = jobFactory.buildExtendedRelease(releaseKey, user.getKey());
     exec.submit(job);
   }
 

@@ -316,7 +316,7 @@ public class WsServer extends Application<WsServerConfig> {
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao, env.metrics());
 
     // release
-    final var copyFactory = new ProjectCopyFactory(httpClient, diDao, ddao, ndao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
+    final var copyFactory = new ProjectCopyFactory(httpClient, diDao, ddao, siDao, ndao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
 
     // importer
     importManager = new ImportManager(cfg,

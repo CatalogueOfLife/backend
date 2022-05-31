@@ -1,12 +1,10 @@
 package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.DatasetImport;
-import life.catalogue.api.model.User;
-import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.NameDao;
+import life.catalogue.dao.SectorImportDao;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -15,23 +13,15 @@ import life.catalogue.img.ImageService;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.validation.Validator;
-
-import java.util.Optional;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 public class ProjectCopyFactory {
   private final ExportManager exportManager;
   private final DatasetImportDao diDao;
   private final DatasetDao dDao;
   private final NameDao nDao;
+  private final SectorImportDao siDao;
   private final NameUsageIndexService indexService;
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
@@ -41,13 +31,14 @@ public class ProjectCopyFactory {
   private final Validator validator;
   private final WsServerConfig cfg;
 
-  public ProjectCopyFactory(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, ExportManager exportManager, NameUsageIndexService indexService,
+  public ProjectCopyFactory(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, NameDao nDao, ExportManager exportManager, NameUsageIndexService indexService,
                             ImageService imageService, DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator, WsServerConfig cfg) {
     this.client = client;
     this.exportManager = exportManager;
     this.diDao = diDao;
     this.dDao = dDao;
     this.nDao = nDao;
+    this.siDao = siDao;
     this.indexService = indexService;
     this.imageService = imageService;
     this.doiService = doiService;
@@ -55,6 +46,16 @@ public class ProjectCopyFactory {
     this.factory = factory;
     this.validator = validator;
     this.cfg = cfg;
+  }
+
+  /**
+   * Extended release into a new dataset
+   * @param releaseKey the dataset key of the base release this extended release should be based on.
+   *
+   * @throws IllegalArgumentException if the dataset is not a release
+   */
+  public ExtendedRelease buildExtendedRelease(final int releaseKey, final int userKey) {
+    return new ExtendedRelease(factory, indexService, dDao, diDao, siDao, nDao, imageService, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**

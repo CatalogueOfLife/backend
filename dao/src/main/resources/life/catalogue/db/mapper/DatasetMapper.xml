@@ -40,7 +40,7 @@
 
   <sql id="FROM_PROJ">
     <if test="userKey != null">
-      LEFT JOIN dataset proj ON d.source_key=proj.key AND d.origin = 'RELEASED'::DATASETORIGIN
+      LEFT JOIN dataset proj ON d.source_key=proj.key AND d.origin = 'RELEASE'::DATASETORIGIN
     </if>
   </sql>
 
@@ -102,7 +102,7 @@
       </if>
       <if test="req.releasedFrom != null">
         AND d.source_key=#{req.releasedFrom}
-        AND d.origin = 'RELEASED'::DATASETORIGIN
+        AND d.origin = 'RELEASE'::DATASETORIGIN
       </if>
       <if test="req.hasGbifKey != null">
         AND d.gbif_key
@@ -274,7 +274,7 @@
   <select id="listReleases" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE d.origin='RELEASED' AND d.source_key=#{projectKey}
+    WHERE d.origin='RELEASE' AND d.source_key=#{projectKey}
     ORDER BY d.created, d.key
   </select>
 

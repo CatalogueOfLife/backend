@@ -37,15 +37,15 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   @Test
   public void createDelete() {
     // we create the prov-cat partition in the InitMybatisRule
-    mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
-    mapper().create(Datasets.COL, DatasetOrigin.MANAGED);
-    mapper().attach(Datasets.COL, DatasetOrigin.MANAGED);
+    mapper().delete(Datasets.COL, DatasetOrigin.PROJECT);
+    mapper().create(Datasets.COL, DatasetOrigin.PROJECT);
+    mapper().attach(Datasets.COL, DatasetOrigin.PROJECT);
 
-    mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
-    mapper().create(Datasets.COL, DatasetOrigin.MANAGED);
-    mapper().attach(Datasets.COL, DatasetOrigin.MANAGED);
+    mapper().delete(Datasets.COL, DatasetOrigin.PROJECT);
+    mapper().create(Datasets.COL, DatasetOrigin.PROJECT);
+    mapper().attach(Datasets.COL, DatasetOrigin.PROJECT);
 
-    mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
+    mapper().delete(Datasets.COL, DatasetOrigin.PROJECT);
   }
 
   @Test
@@ -61,9 +61,9 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   @Test
   public void concurrentAttach() throws Exception {
     
-    mapper().delete(Datasets.COL, DatasetOrigin.MANAGED);
-    mapper().create(Datasets.COL, DatasetOrigin.MANAGED);
-    mapper().attach(Datasets.COL, DatasetOrigin.MANAGED);
+    mapper().delete(Datasets.COL, DatasetOrigin.PROJECT);
+    mapper().create(Datasets.COL, DatasetOrigin.PROJECT);
+    mapper().attach(Datasets.COL, DatasetOrigin.PROJECT);
 
     commit();
 

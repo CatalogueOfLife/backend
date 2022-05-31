@@ -222,7 +222,7 @@
   <select id="listProjectKeys" parameterType="map" resultType="integer">
     SELECT DISTINCT x.dataset_key
     FROM decision x JOIN dataset d ON d.key=x.dataset_key
-    WHERE d.origin='MANAGED' AND x.subject_dataset_key = #{subjectDatasetKey}
+    WHERE d.origin='PROJECT' AND x.subject_dataset_key = #{subjectDatasetKey}
   </select>
 
   <insert id="copyDataset" parameterType="map">

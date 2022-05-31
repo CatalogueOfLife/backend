@@ -55,10 +55,10 @@ public class PgImportTest {
     public Boolean call() throws Exception {
       System.out.println("START " + datasetKey);
       System.out.println("PARTITION " + datasetKey);
-      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.MANAGED);
+      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.PROJECT);
 
       System.out.println("INDEX & ATTACH " + datasetKey);
-      Partitioner.attach(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.MANAGED);
+      Partitioner.attach(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.PROJECT);
       System.out.println("FINISHED " + datasetKey);
       return true;
     }

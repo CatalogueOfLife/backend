@@ -17,8 +17,8 @@ import com.google.common.collect.Lists;
  * We deal with dataset partitioning depending on the immutable origin property of the dataset:
  *
  * EXTERNAL: HASH based partitioning on the datasetKey
- * MANAGED: a dedicated partition which provides fast read/write speeds
- * RELEASED: a dedicated partition which provides fast read/write speeds and allows for quick deletions of entire releases when they get old
+ * PROJECT: a dedicated partition which provides fast read/write speeds
+ * RELEASE: a dedicated partition which provides fast read/write speeds and allows for quick deletions of entire releases when they get old
  *
  * This assumes that the total number of managed and released datasets is well below 1000.
  * If we ever exceed these numbers we should relocate partitions.
@@ -64,7 +64,7 @@ public interface DatasetPartitionMapper {
       "vernacular_name"
   );
 
-  List<String> MANAGED_SERIAL_TABLES = Lists.newArrayList(
+  List<String> PROJECT_SERIAL_TABLES = Lists.newArrayList(
     "sector",
     "decision"
   );
@@ -106,7 +106,7 @@ public interface DatasetPartitionMapper {
     // things specific to managed and released datasets only
     if (origin.isManagedOrRelease()) {
       // sequences needed to generate keys in managed datasets
-      if (origin == DatasetOrigin.MANAGED) {
+      if (origin == DatasetOrigin.PROJECT) {
         createManagedSequences(key);
       }
       TABLES.forEach(t -> {
@@ -150,7 +150,7 @@ public interface DatasetPartitionMapper {
   void deleteIdSequence(@Param("table") String table, @Param("key") int key);
 
   default void createManagedSequences(@Param("key") int key) {
-    MANAGED_SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
+    PROJECT_SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
   }
 
   /**
@@ -158,11 +158,11 @@ public interface DatasetPartitionMapper {
    * @param key datasetKey
    */
   default void updateManagedSequences(int key) {
-    MANAGED_SERIAL_TABLES.forEach(t -> updateIdSequence(t, key));
+    PROJECT_SERIAL_TABLES.forEach(t -> updateIdSequence(t, key));
   }
 
   default void deleteManagedSequences(@Param("key") int key) {
-    MANAGED_SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
+    PROJECT_SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
   }
 
   /**

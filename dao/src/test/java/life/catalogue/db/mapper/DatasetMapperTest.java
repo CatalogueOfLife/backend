@@ -128,20 +128,20 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     final int ukey = user.getKey();
 
     Dataset proj = create();
-    proj.setOrigin(DatasetOrigin.MANAGED);
+    proj.setOrigin(DatasetOrigin.PROJECT);
     proj.setCreatedBy(ukey);
     mapper().create(proj);
     commit();
     final int projKey = proj.getKey();
 
     Dataset rel1 = create();
-    rel1.setOrigin(DatasetOrigin.RELEASED);
+    rel1.setOrigin(DatasetOrigin.RELEASE);
     rel1.setSourceKey(projKey);
     rel1.setCreatedBy(ukey);
     mapper().create(rel1);
 
     Dataset rel2 = create();
-    rel2.setOrigin(DatasetOrigin.RELEASED);
+    rel2.setOrigin(DatasetOrigin.RELEASE);
     rel2.setSourceKey(projKey);
     rel2.setPrivat(true);
     mapper().create(rel2);
@@ -233,20 +233,20 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   public void immutableOriginAndSourceKey() throws Exception {
     Dataset d1 = create();
     d1.setSourceKey(Datasets.COL);
-    d1.setOrigin(DatasetOrigin.RELEASED);
+    d1.setOrigin(DatasetOrigin.RELEASE);
     mapper().create(d1);
     DatasetOrigin o = d1.getOrigin();
-    assertEquals(DatasetOrigin.RELEASED, o);
+    assertEquals(DatasetOrigin.RELEASE, o);
     assertEquals((Integer)Datasets.COL, d1.getSourceKey());
 
-    d1.setOrigin(DatasetOrigin.MANAGED);
+    d1.setOrigin(DatasetOrigin.PROJECT);
     d1.setSourceKey(null);
     mapper().update(d1);
 
     commit();
 
     Dataset d2 = mapper().get(d1.getKey());
-    assertEquals(DatasetOrigin.RELEASED, d2.getOrigin());
+    assertEquals(DatasetOrigin.RELEASE, d2.getOrigin());
     assertEquals((Integer)Datasets.COL, d2.getSourceKey());
   }
 
@@ -315,14 +315,14 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Collections.sort(actual);
     assertEquals(external, actual);
 
-    actual = mapper().keys(DatasetOrigin.EXTERNAL, DatasetOrigin.RELEASED);
+    actual = mapper().keys(DatasetOrigin.EXTERNAL, DatasetOrigin.RELEASE);
     Collections.sort(actual);
     assertEquals(external, actual);
 
-    actual = mapper().keys(DatasetOrigin.RELEASED);
+    actual = mapper().keys(DatasetOrigin.RELEASE);
     assertTrue(actual.isEmpty());
 
-    actual = mapper().keys(DatasetOrigin.EXTERNAL, DatasetOrigin.MANAGED);
+    actual = mapper().keys(DatasetOrigin.EXTERNAL, DatasetOrigin.PROJECT);
     Collections.sort(actual);
     assertEquals(all, actual);
   }
@@ -597,13 +597,13 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     // by origin
     query = new DatasetSearchRequest();
-    query.setOrigin(List.of(DatasetOrigin.MANAGED));
+    query.setOrigin(List.of(DatasetOrigin.PROJECT));
     assertEquals(7, mapper().search(query, null, new Page()).size());
 
     query.setOrigin(List.of(DatasetOrigin.EXTERNAL));
     assertEquals(1, mapper().search(query, null, new Page()).size());
 
-    query.setOrigin(List.of(DatasetOrigin.MANAGED, DatasetOrigin.EXTERNAL));
+    query.setOrigin(List.of(DatasetOrigin.PROJECT, DatasetOrigin.EXTERNAL));
     assertEquals(8, mapper().search(query, null, new Page()).size());
 
     // by code
@@ -638,7 +638,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     ds.setContributor(List.of(Agent.parse(organisation)));
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
-    ds.setOrigin(DatasetOrigin.MANAGED);
+    ds.setOrigin(DatasetOrigin.PROJECT);
     ds.setKey(datasetKeyGen.nextProjectKey());
     ds.setContact(Agent.person("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
     ds.setEditor(List.of(

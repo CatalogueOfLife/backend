@@ -20,8 +20,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 
-import static life.catalogue.api.vocab.DatasetOrigin.MANAGED;
-import static life.catalogue.api.vocab.DatasetOrigin.RELEASED;
+import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
+import static life.catalogue.api.vocab.DatasetOrigin.RELEASE;
 
 public class DatasetSourceDao {
   private final static Logger LOG = LoggerFactory.getLogger(DatasetSourceDao.class);
@@ -51,7 +51,7 @@ public class DatasetSourceDao {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-      if (MANAGED == info.origin) {
+      if (PROJECT == info.origin) {
         d = psm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
           // get latest version with patch applied
@@ -59,7 +59,7 @@ public class DatasetSourceDao {
           patch(d, datasetKey, project, session.getMapper(DatasetPatchMapper.class));
         }
 
-      } else if (RELEASED == info.origin) {
+      } else if (RELEASE == info.origin) {
         d = psm.getReleaseSource(sourceDatasetKey, datasetKey);
         // if the release was deleted, the source should also be marked as deleted
         if (info.deleted) {
@@ -78,7 +78,7 @@ public class DatasetSourceDao {
     source.applyUser(user);
 
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (RELEASED != info.origin) {
+    if (RELEASE != info.origin) {
       throw new IllegalArgumentException("source has to be from a release");
     }
 
@@ -103,16 +103,16 @@ public class DatasetSourceDao {
    * @param rebuild if true force to rebuild source metadata and not take it from the source archive. Only relevant for release.
    */
   public List<Dataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild){
-    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASED, MANAGED);
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, PROJECT);
     List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-      if (RELEASED == info.origin && !rebuild) {
+      if (RELEASE == info.origin && !rebuild) {
         sources = psm.listReleaseSources(datasetKey);
 
       } else {
         // get latest version with patch applied
-        final int projectKey = RELEASED == info.origin ? info.sourceKey : datasetKey;
+        final int projectKey = RELEASE == info.origin ? info.sourceKey : datasetKey;
         final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(datasetKey);
         DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
 
@@ -217,7 +217,7 @@ public class DatasetSourceDao {
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       AtomicInteger sectorCounter = new AtomicInteger(0);
       // a release? use mother project in that case
-      if (info.origin == DatasetOrigin.RELEASED) {
+      if (info.origin == DatasetOrigin.RELEASE) {
         Integer projectKey = info.sourceKey;
         for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, sourceKey)){
           if (s.getSyncAttempt() != null) {

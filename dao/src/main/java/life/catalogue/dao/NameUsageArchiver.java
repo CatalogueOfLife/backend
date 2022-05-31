@@ -35,7 +35,7 @@ public class NameUsageArchiver {
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       var project = dm.get(projectKey);
-      if (project.getOrigin() != DatasetOrigin.MANAGED) {
+      if (project.getOrigin() != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("Dataset "+ projectKey+" is not a project");
       }
       if (project.hasDeletedDate()) {

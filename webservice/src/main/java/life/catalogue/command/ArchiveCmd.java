@@ -49,7 +49,7 @@ public class ArchiveCmd extends AbstractMybatisCmd {
       try (SqlSession session = factory.openSession()) {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         var req = new DatasetSearchRequest();
-        req.setOrigin(List.of(DatasetOrigin.MANAGED));
+        req.setOrigin(List.of(DatasetOrigin.PROJECT));
         req.setSortBy(DatasetSearchRequest.SortBy.KEY);
         final int limit = 1000;
         projects = dm.search(req, userKey, new Page(0, limit));

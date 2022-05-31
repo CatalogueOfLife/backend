@@ -26,7 +26,7 @@ public interface DecisionMapper extends BaseDecisionMapper<EditorialDecision, De
 
   /**
    * List all distinct project dataset keys that have at least one decision on the given subject dataset key.
-   * This will only return dataset keys of MANAGED projects, not RELEASED datasets.
+   * This will only return dataset keys of PROJECT, not RELEASE datasets.
    * @param subjectDatasetKey the decision subjects datasetKey
    */
   List<Integer> listProjectKeys(@Param("subjectDatasetKey") int subjectDatasetKey);

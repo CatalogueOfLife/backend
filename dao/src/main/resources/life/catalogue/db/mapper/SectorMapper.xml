@@ -239,6 +239,17 @@
     ORDER BY id
   </select>
 
+  <select id="listByPriority" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE s.dataset_key=#{datasetKey}
+    <if test="mode != null and !mode.isEmpty()">
+      AND s.mode IN
+      <foreach item="m" collection="mode" open="(" separator=" OR " close=")">#{m}::SECTOR_MODE</foreach>
+    </if>
+    ORDER BY priority, id
+  </select>
+
   <select id="listDescendantSectorKeys" resultType="Integer">
     WITH RECURSIVE x AS (
       SELECT t.id, s.id AS sid
@@ -252,7 +263,6 @@
     )
     SELECT DISTINCT sid FROM x WHERE sid IS NOT NULL
   </select>
-
 
   <select id="count" resultType="integer">
     SELECT count(*)
@@ -269,7 +279,7 @@
   <select id="listProjectKeys" parameterType="map" resultType="integer">
     SELECT DISTINCT x.dataset_key
     FROM sector x JOIN dataset d ON d.key=x.dataset_key
-    WHERE d.origin='MANAGED' AND x.subject_dataset_key = #{subjectDatasetKey}
+    WHERE d.origin='PROJECT' AND x.subject_dataset_key = #{subjectDatasetKey}
   </select>
 
   <select id="search" resultMap="sectorResultMap">

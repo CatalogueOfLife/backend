@@ -118,7 +118,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     assertEquals(copy, d);
 
     // other non metadata infos that should not be patched
-    patch.setOrigin(DatasetOrigin.RELEASED);
+    patch.setOrigin(DatasetOrigin.RELEASE);
     patch.setType(DatasetType.ARTICLE);
     patch.setSourceKey(1234);
     patch.setAttempt(13);

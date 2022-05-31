@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.CitationUtils;
@@ -27,18 +28,16 @@ import java.util.List;
 
 public class ExtendedRelease extends ProjectRelease {
   private final int baseReleaseKey;
-  private final SectorImportDao sid;
+  private final SectorImportDao siDao;
   private List<Sector> sectors;
 
-  ExtendedRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao sid, NameDao nDao, ImageService imageService,
-                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
+  ExtendedRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, ImageService imageService,
+                  int releaseKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                   DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super(factory, indexService, diDao, dDao, nDao, imageService, datasetKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
-    this.sid = sid;
-    try (SqlSession session = factory.openSession(true)) {
-      baseReleaseKey = session.getMapper(DatasetMapper.class).latestRelease(datasetKey, true);
-      LOG.info("Build extended release for project {} from public release {}", datasetKey, baseReleaseKey);
-    }
+    super(factory, indexService, diDao, dDao, nDao, imageService, DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE).sourceKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    this.siDao = siDao;
+    baseReleaseKey = releaseKey;
+    LOG.info("Build extended release for project {} from public release {}", datasetKey, baseReleaseKey);
   }
 
   @Override
@@ -56,7 +55,15 @@ public class ExtendedRelease extends ProjectRelease {
     try (SqlSession session = factory.openSession(true)) {
       sectors = session.getMapper(SectorMapper.class).listByPriority(datasetKey, Sector.Mode.MERGE);
     }
+  }
 
+  @Override
+  protected Integer createReleaseDOI() throws Exception {
+    try (SqlSession session = factory.openSession(true)) {
+      // find previous public release needed for DOI management
+      final Integer prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
+      return createReleaseDOI(prevReleaseKey);
+    }
   }
 
   @Override
@@ -86,9 +93,9 @@ public class ExtendedRelease extends ProjectRelease {
     // sector metrics
     metrics.setState( ImportState.ANALYZING);
     for (Sector s : sectors) {
-      var sim = sid.getAttempt(s, s.getSyncAttempt());
+      var sim = siDao.getAttempt(s, s.getSyncAttempt());
       LOG.info("Build metrics for sector {}", s);
-      sid.updateMetrics(sim, newDatasetKey);
+      siDao.updateMetrics(sim, newDatasetKey);
     }
   }
 
@@ -99,7 +106,7 @@ public class ExtendedRelease extends ProjectRelease {
     metrics.setState(ImportState.INSERTING);
     for (Sector s : sectors) {
       checkIfCancelled();
-      var sm = new SectorMerge(newDatasetKey, s, getUserKey(), factory, sid);
+      var sm = new SectorMerge(newDatasetKey, s, getUserKey(), factory, siDao);
       sm.run();
     }
   }

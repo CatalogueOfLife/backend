@@ -11,6 +11,27 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-06-01 extended catalogue
+```
+ALTER TABLE sector ADD COLUMN priority INTEGER;
+
+ALTER TABLE dataset ALTER COLUMN origin TYPE text;
+ALTER TABLE dataset_archive ALTER COLUMN origin TYPE text;
+ALTER TABLE dataset_source ALTER COLUMN origin TYPE text;
+UPDATE dataset SET origin = 'PROJECT' WHERE origin = 'PROJECT';
+UPDATE dataset SET origin = 'RELEASE' WHERE origin = 'RELEASED';
+DROP TYPE DATASETORIGIN;
+CREATE TYPE DATASETORIGIN AS ENUM (
+  'EXTERNAL',
+  'PROJECT',
+  'RELEASE',
+  'XRELEASE'
+);
+ALTER TABLE dataset ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+ALTER TABLE dataset_archive ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+ALTER TABLE dataset_source ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+```
+
 ### 2022-05-10 add DOI issues & publishedPageLink
 ```
 ALTER TYPE ISSUE ADD VALUE 'DOI_NOT_FOUND';
@@ -641,7 +662,7 @@ SELECT p.key AS project_key, r.key AS release_key, r.attempt, (
   WHERE origin='RELEASED' AND deleted IS NULL AND NOT private AND source_key=p.key
 )  
 FROM dataset p JOIN dataset r ON r.source_key=p.key 
-WHERE p.origin='MANAGED' AND r.origin='RELEASED' AND r.deleted IS NULL AND NOT r.private
+WHERE p.origin='PROJECT' AND r.origin='RELEASED' AND r.deleted IS NULL AND NOT r.private
 ORDER BY p.key, r.created;
 
 -- copy ids into a faster temp table
@@ -833,7 +854,7 @@ LANGUAGE 'plpgsql';
 
 execute the following to clean project tables for managed and released datasets each:
 ```
-./exec-sql.sh sql/partitioning1.sql --origin MANAGED
+./exec-sql.sh sql/partitioning1.sql --origin PROJECT
 ./exec-sql.sh sql/partitioning1.sql --origin RELEASED
 
 ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT IF EXISTS verbatim_source_{KEY}_id_fkey;
@@ -1635,7 +1656,7 @@ CREATE TABLE verbatim_source (
 CREATE INDEX ON verbatim_source USING GIN(issues);
 ```
 
-and for all MANAGED data partitions `./exec-sql {YOURFILE} --managed true`
+and for all PROJECT data partitions `./exec-sql {YOURFILE} --managed true`
 ```
 CREATE TABLE verbatim_source_{KEY} (LIKE verbatim_source INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
 ALTER TABLE verbatim_source_{KEY} ADD PRIMARY KEY (id);
@@ -3148,19 +3169,19 @@ ALTER TABLE dataset_import ALTER COLUMN origin TYPE text;
 DROP TYPE DATASETORIGIN;
 CREATE TYPE DATASETORIGIN AS ENUM (
   'EXTERNAL',
-  'MANAGED',
+  'PROJECT',
   'RELEASED'
 );
 UPDATE dataset SET origin='EXTERNAL' WHERE origin='UPLOADED' AND data_access IS NOT NULL;
-UPDATE dataset SET origin='MANAGED' WHERE origin='UPLOADED';
-UPDATE dataset SET origin='RELEASED' WHERE origin='MANAGED' AND locked;
+UPDATE dataset SET origin='PROJECT' WHERE origin='UPLOADED';
+UPDATE dataset SET origin='RELEASED' WHERE origin='PROJECT' AND locked;
 UPDATE dataset SET source_key=3 WHERE origin='RELEASED';
 UPDATE dataset_archive SET origin='EXTERNAL' WHERE origin='UPLOADED' AND data_access IS NOT NULL;
-UPDATE dataset_archive SET origin='MANAGED' WHERE origin='UPLOADED';
-UPDATE dataset_archive SET origin='RELEASED' WHERE origin='MANAGED' AND locked;
+UPDATE dataset_archive SET origin='PROJECT' WHERE origin='UPLOADED';
+UPDATE dataset_archive SET origin='RELEASED' WHERE origin='PROJECT' AND locked;
 UPDATE dataset_archive SET source_key=3 WHERE origin='RELEASED';
 UPDATE dataset_import SET origin='EXTERNAL' WHERE origin='UPLOADED' AND download_uri IS NOT NULL;
-UPDATE dataset_import SET origin='MANAGED' WHERE origin='UPLOADED';
+UPDATE dataset_import SET origin='PROJECT' WHERE origin='UPLOADED';
 ALTER TABLE dataset ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_archive ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_import ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;

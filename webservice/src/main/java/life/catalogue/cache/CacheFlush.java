@@ -35,7 +35,7 @@ public class CacheFlush {
 
     } else if (event.isUpdated()) {
       // did visibility of a releases change?
-      if (event.obj.isPrivat() != event.old.isPrivat() && event.obj.getOrigin() == DatasetOrigin.RELEASED) {
+      if (event.obj.isPrivat() != event.old.isPrivat() && event.obj.getOrigin() == DatasetOrigin.RELEASE) {
         int projectKey = event.obj.getSourceKey();
         VarnishUtils.ban(client, projectUrlBuilder.build(projectKey));
         VarnishUtils.ban(client, colseo);

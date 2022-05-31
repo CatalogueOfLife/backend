@@ -151,7 +151,7 @@ public class PgImportRule extends ExternalResource {
     dataset.setModifiedBy(IMPORT_USER.getKey());
     dataset.setDataFormat(tr.format);
     dataset.setType(tr.type);
-    dataset.setOrigin(DatasetOrigin.MANAGED);
+    dataset.setOrigin(DatasetOrigin.PROJECT);
     dataset.setCode(tr.code);
     dataset.setTitle("Test Dataset " + source.toString());
 

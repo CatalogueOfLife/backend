@@ -28,13 +28,13 @@ public class PartitionerTest {
       Set<String> keys = Partitioner.partitionSuffices(con, null);
       assertEquals(Set.of("3","11", "mod1", "mod0"), keys); // 12 is external, so kept in default partition
 
-      keys = Partitioner.partitionSuffices(con, DatasetOrigin.MANAGED);
+      keys = Partitioner.partitionSuffices(con, DatasetOrigin.PROJECT);
       assertEquals(Set.of("3","11"), keys);
 
       keys = Partitioner.partitionSuffices(con, DatasetOrigin.EXTERNAL);
       assertEquals(Set.of("mod1", "mod0"), keys);
 
-      keys = Partitioner.partitionSuffices(con, DatasetOrigin.RELEASED);
+      keys = Partitioner.partitionSuffices(con, DatasetOrigin.RELEASE);
       assertEquals(Set.of(), keys);
     }
   }

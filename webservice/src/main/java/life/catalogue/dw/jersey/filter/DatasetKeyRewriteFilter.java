@@ -137,7 +137,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     // parsing cannot fail, we have a pattern
     int projectKey = Integer.parseInt(m.group(1));
 
-    if (DatasetInfoCache.CACHE.info(projectKey).origin != DatasetOrigin.MANAGED) {
+    if (DatasetInfoCache.CACHE.info(projectKey).origin != DatasetOrigin.PROJECT) {
       // abort request! bad argument
       throw new IllegalArgumentException("Dataset " + projectKey + " is not a project");
     }

@@ -68,7 +68,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       DatasetOrigin origin = DatasetInfoCache.CACHE.info(s.getDatasetKey()).origin;
       if (origin == null) {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " does not exist");
-      } else if (origin != DatasetOrigin.MANAGED) {
+      } else if (origin != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " is not managed but of origin " + origin);
       }
 

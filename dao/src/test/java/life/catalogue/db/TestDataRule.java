@@ -389,14 +389,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   void loadGlobalData2() throws SQLException, IOException {
     try (Connection c = sqlSessionFactorySupplier.get().openSession(false).getConnection()) {
       PgConnection pgc = InitDbUtils.toPgConnection(c);
-
-      // common data for all tests and even the empty one
-      ScriptRunner runner = new ScriptRunner(session.getConnection());
-      runner.setSendFullScript(true);
-      runner.runScript(Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
-
       copyGlobalTable(pgc, "name_match");
-
       c.commit();
     }
   }

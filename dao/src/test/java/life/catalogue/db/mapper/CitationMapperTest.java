@@ -82,7 +82,7 @@ public class CitationMapperTest extends MapperTestBase<CitationMapper> {
 
     Dataset rel = DatasetTest.generateTestDataset();
     rel.setSourceKey(datasetKey);
-    rel.setOrigin(DatasetOrigin.RELEASED);
+    rel.setOrigin(DatasetOrigin.RELEASE);
     TestEntityGenerator.setUser(rel);
     dmapper().create(rel);
     commit();

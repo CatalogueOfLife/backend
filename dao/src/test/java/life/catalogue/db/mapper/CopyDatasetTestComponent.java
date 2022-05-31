@@ -10,11 +10,11 @@ import org.apache.ibatis.session.SqlSession;
 public class CopyDatasetTestComponent {
 
   public static void copy(CopyDataset mapper, int key, boolean mapIds) throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 998, DatasetOrigin.MANAGED);
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 998, DatasetOrigin.PROJECT);
     mapper.copyDataset(key, 998, false);
 
     if (mapIds) {
-      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999, DatasetOrigin.MANAGED);
+      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999, DatasetOrigin.PROJECT);
       try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
         DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
         DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.createIdMapTable(t, key));

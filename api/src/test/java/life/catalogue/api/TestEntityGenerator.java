@@ -256,7 +256,7 @@ public class TestEntityGenerator {
     d.setAlias(title);
     d.setType(DatasetType.TAXONOMIC);
     d.setLicense(License.CC0);
-    d.setOrigin(DatasetOrigin.MANAGED);
+    d.setOrigin(DatasetOrigin.PROJECT);
     return d;
   }
 

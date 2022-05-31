@@ -26,7 +26,7 @@ import com.google.common.base.Preconditions;
 
 import net.sourceforge.argparse4j.inf.Subparser;
 
-import static life.catalogue.api.vocab.DatasetOrigin.RELEASED;
+import static life.catalogue.api.vocab.DatasetOrigin.RELEASE;
 
 /**
  * Creates missing sector import metrics for all releases of a given project.
@@ -152,10 +152,10 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
 
   private void updateDataset(Dataset d) {
     try {
-      final boolean isRelease = DatasetOrigin.RELEASED == d.getOrigin();
+      final boolean isRelease = DatasetOrigin.RELEASE == d.getOrigin();
       // the datasetKey to store metrics under - the project in case of a release
       int datasetKey = isRelease ? d.getSourceKey() : d.getKey();
-      if (d.getOrigin() == DatasetOrigin.MANAGED || d.getAttempt() == null) {
+      if (d.getOrigin() == DatasetOrigin.PROJECT || d.getAttempt() == null) {
         LOG.info("No import existing for dataset {}", d.getKey());
 
       } else {
@@ -180,7 +180,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
 
   private void updateProjectMetrics() {
     var info = DatasetInfoCache.CACHE.info(key);
-    info.requireOrigin(DatasetOrigin.MANAGED);
+    info.requireOrigin(DatasetOrigin.PROJECT);
 
     // retrieve all releases incl private ones
     Dataset project;
@@ -210,9 +210,9 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
       return;
     }
 
-    final int projectKey = RELEASED == d.getOrigin() ? d.getSourceKey() : d.getKey();
-    final String kind = RELEASED == d.getOrigin() ? "release" : "project";
-    if (RELEASED == d.getOrigin()) {
+    final int projectKey = RELEASE == d.getOrigin() ? d.getSourceKey() : d.getKey();
+    final String kind = RELEASE == d.getOrigin() ? "release" : "project";
+    if (RELEASE == d.getOrigin()) {
       LOG.info("Updating sector metrics for project {} release {}#{}", projectKey, d.getKey(), d.getAttempt());
     } else {
       LOG.info("Updating sector metrics for project {}: {}", d.getKey(), d.getAliasOrTitle());

@@ -74,7 +74,7 @@ public class DatasetInfoCache {
       this.origin = Preconditions.checkNotNull(origin, "origin is required");
       this.sourceKey = sourceKey;
       this.deleted = deleted;
-      if (origin == DatasetOrigin.RELEASED) {
+      if (origin == DatasetOrigin.RELEASE) {
         Preconditions.checkNotNull(sourceKey, "sourceKey is required for release " + key);
       }
     }
@@ -122,12 +122,27 @@ public class DatasetInfoCache {
   }
 
   /**
+   * Returns the dataset info for a given dataset key
+   * and requires the origin to be of the given type.
+   * @return the dataset info for a given dataset
+   * @throws NotFoundException
+   * @throws IllegalArgumentException if the datasetKey does not refer to the given origin
+   */
+  public DatasetInfo info(int datasetKey, DatasetOrigin origin) throws NotFoundException, IllegalArgumentException {
+    var info = info(datasetKey);
+    if (info.origin != origin) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is not a " + origin);
+    }
+    return info;
+  }
+
+  /**
    * @return the source=project key for releases or the given key for all other origins
    * @throws NotFoundException
    */
   public int keyOrProjectKey(int datasetKey) throws NotFoundException {
     var info = get(datasetKey, true);
-    return info.origin == DatasetOrigin.RELEASED ? info.sourceKey : datasetKey;
+    return info.origin == DatasetOrigin.RELEASE ? info.sourceKey : datasetKey;
   }
 
   /**

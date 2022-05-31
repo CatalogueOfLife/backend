@@ -9,7 +9,7 @@ ALTER SEQUENCE user_key_seq RESTART WITH 100;
 
 -- insert well known datasets
 INSERT INTO dataset (key, type, origin, title, alias, settings, created_by, modified_by) VALUES
-    (3, 'TAXONOMIC', 'MANAGED', 'Catalogue of Life', 'COL', jsonb_build_object('import frequency', -1), 0, 0);
+    (3, 'TAXONOMIC', 'PROJECT', 'Catalogue of Life', 'COL', jsonb_build_object('import frequency', -1), 0, 0);
 
 ALTER SEQUENCE dataset_key_seq RESTART WITH 1000;
 

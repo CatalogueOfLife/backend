@@ -82,7 +82,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   }
 
   public static void modifyDataset(int datasetKey, Dataset d, DatasetSettings ds, DatasetSourceDao srcDao, AuthorlistGenerator authGen) {
-    d.setOrigin(DatasetOrigin.RELEASED);
+    d.setOrigin(DatasetOrigin.RELEASE);
 
     final FuzzyDate today = FuzzyDate.now();
     d.setIssued(today);
@@ -151,26 +151,34 @@ public class ProjectRelease extends AbstractProjectCopy {
   }
 
   /**
-   * Creates a new DOI for the new release
+   * Creates a new DOI for the new release using the latest public release for the prevReleaseKey
    * @return the previous releases datasetKey
    */
   protected Integer createReleaseDOI() throws Exception {
     try (SqlSession session = factory.openSession(true)) {
       // find previous public release needed for DOI management
       final Integer prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
-      LOG.info("Last public release was {}", prevReleaseKey);
-
-      // assign DOIs?
-      if (cfg.doi != null) {
-        newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
-        updateDataset(newDataset);
-
-        var attr = doiUpdater.buildReleaseMetadata(datasetKey, false, newDataset, prevReleaseKey);
-        LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
-        doiService.createSilently(attr);
-      }
-      return prevReleaseKey;
+      return createReleaseDOI(prevReleaseKey);
     }
+  }
+
+  /**
+   * Creates a new DOI for the new release
+   * @return the previous releases datasetKey
+   * @param prevReleaseKey the previous release key to build the metadata with
+   */
+  protected Integer createReleaseDOI(Integer prevReleaseKey) throws Exception {
+    // assign DOIs?
+    if (cfg.doi != null) {
+      newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
+      updateDataset(newDataset);
+
+      LOG.info("Use last release {} for metadata of {}", prevReleaseKey, newDatasetKey);
+      var attr = doiUpdater.buildReleaseMetadata(datasetKey, false, newDataset, prevReleaseKey);
+      LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
+      doiService.createSilently(attr);
+    }
+    return prevReleaseKey;
   }
 
   /**

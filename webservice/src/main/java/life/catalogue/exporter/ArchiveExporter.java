@@ -132,9 +132,9 @@ public abstract class ArchiveExporter extends DatasetExporter {
       // for releases and projects also include an EML for each source dataset as defined by all sectors
       for (Integer sk : sourceKeys) {
         Dataset src = null;
-        if (DatasetOrigin.MANAGED == dataset.getOrigin()) {
+        if (DatasetOrigin.PROJECT == dataset.getOrigin()) {
           src = psm.getProjectSource(sk, datasetKey);
-        } else if (DatasetOrigin.RELEASED == dataset.getOrigin()) {
+        } else if (DatasetOrigin.RELEASE == dataset.getOrigin()) {
           src = psm.getReleaseSource(sk, datasetKey);
         }
         if (src == null) {
