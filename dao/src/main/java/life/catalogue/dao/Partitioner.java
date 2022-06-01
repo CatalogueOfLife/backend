@@ -125,9 +125,8 @@ public class Partitioner {
   }
   
   public static synchronized void delete(SqlSessionFactory factory, int datasetKey, DatasetOrigin origin) {
-    try (SqlSession session = factory.openSession(false)) {
+    try (SqlSession session = factory.openSession(true)) {
       delete(session, datasetKey, origin);
-      session.commit();
     }
   }
 
