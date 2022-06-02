@@ -265,8 +265,7 @@ public class DatasetImportDao {
   public void updateImportFailure(DatasetImport di, Throwable e) {
     di.setFinished(LocalDateTime.now());
     di.setState(ImportState.FAILED);
-    // System.out.println(ExceptionUtils.getMessage(e));
-    di.setError(e.getClass().getSimpleName() + ": " + e.getMessage());
+    di.setError(Exceptions.simpleLogWithCauses(e));
     update(di);
   }
   
