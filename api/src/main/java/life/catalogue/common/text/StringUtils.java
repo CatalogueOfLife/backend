@@ -34,6 +34,7 @@ public class StringUtils {
   private static final Pattern WHITESPACE = Pattern.compile("\\s+");
   private static final Pattern SPACE = Pattern.compile("[\\u00A0\\u2000-\\u200A\\u2028\\u2029\\u202F]"); // https://en.wikipedia.org/wiki/General_Punctuation
   private static final Pattern INVISIBLE = Pattern.compile("[\\u200B-\\u200F\\u202A-\\u202C\\u202F\\u2060-\\u206F]");
+  public static final Pattern EMAIL_EXTRACTION = Pattern.compile("\\b[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+){1,10}\\b");
 
   private StringUtils() {}
 
@@ -568,6 +569,16 @@ public class StringUtils {
     return INVISIBLE.matcher(
       SPACE.matcher(value).replaceAll(" ")
     ).replaceAll("");
+  }
+
+  public static String extractEmail(String value) {
+    if (value != null) {
+      var m = EMAIL_EXTRACTION.matcher(value.replaceAll("\\s+", ""));
+      if (m.find()) {
+        return m.group();
+      }
+    }
+    return null;
   }
 
 }

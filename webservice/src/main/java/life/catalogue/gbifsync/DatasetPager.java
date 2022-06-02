@@ -23,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -507,7 +508,16 @@ public class DatasetPager {
     }
 
     String firstEmail() {
-      return email == null || email.isEmpty() ? null : email.get(0);
+      if (email != null) {
+        for (String add : email) {
+          // deal with <>, e.g. Scratchpad Team <scratchpad@nhm.ac.uk>
+          String clean = life.catalogue.common.text.StringUtils.extractEmail(add);
+          if (clean != null) {
+            return clean;
+          }
+        }
+      }
+      return null;
     }
 
     @Override
