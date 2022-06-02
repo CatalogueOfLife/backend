@@ -9,6 +9,7 @@ import life.catalogue.common.date.FuzzyDate;
 import org.gbif.dwc.terms.*;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,6 +42,32 @@ public class ApiKryoPoolTest {
     r.setDatasetKey(77);
     r.setCsl(TestEntityGenerator.createCsl());
     assertSerde(r);
+  }
+
+  @Test
+  public void testTypeMaterial() throws Exception {
+    var d = new TypeMaterial();
+    d.setId("1234");
+    d.setReferenceId("1984");
+    d.setStatus(TypeStatus.ALLOLECTOTYPE);
+    d.setSectorKey(13);
+    d.setVerbatimKey(6789);
+    d.setSex(Sex.FEMALE);
+    d.setAssociatedSequences("my sequence");
+    d.setCoordinate(new Coordinate(-1.7891,2.12));
+    d.setAltitude("1000m");
+    d.setCatalogNumber("45612");
+    d.setInstitutionCode("B");
+    d.setCitation("cite me like this");
+    d.setCountry(Country.AFGHANISTAN);
+    d.setDate("my date");
+    d.setHost("my host");
+    d.setCollector("my collector");
+    d.setNameId("nameID");
+    d.setLink(URI.create("http://gbif.org/234567"));
+    d.setLatitude("12°31``2`");
+    d.setLongitude("21°32``12`");
+    assertSerde(d);
   }
 
   @Test
