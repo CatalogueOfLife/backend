@@ -27,8 +27,7 @@ import org.slf4j.LoggerFactory;
 public class GbifSyncManager implements ManagedExtended {
   private static final Logger LOG = LoggerFactory.getLogger(GbifSyncManager.class);
   private static final String THREAD_NAME = "gbif-sync";
-  public static final UUID PLAZI_KEY = UUID.fromString("7ce8aef0-9e92-11dc-8738-b8a03c50a862");
-  
+
   private ScheduledExecutorService scheduler;
   private GbifSyncJob job;
   private final GbifConfig cfg;

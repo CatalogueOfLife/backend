@@ -50,9 +50,11 @@ public class DatasetPager {
   final Client client;
   private final LoadingCache<UUID, Agent> publisherCache;
   private final LoadingCache<UUID, Agent> hostCache;
+  private final Set<UUID> articlePublishers;
 
   public DatasetPager(Client client, GbifConfig gbif) {
     this.client = client;
+    articlePublishers = Set.copyOf(gbif.articlePublishers);
     dataset = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"));
     datasets = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
@@ -182,8 +184,9 @@ public class DatasetPager {
       return null;
     }
     // type
-    if (GbifSyncManager.PLAZI_KEY.equals(d.getGbifPublisherKey())) {
+    if (d.getGbifPublisherKey() != null && articlePublishers.contains(d.getGbifPublisherKey())) {
       d.setType(DatasetType.ARTICLE);
+
     } else if (g.subtype != null) {
       switch (g.subtype) {
         case "NOMENCLATOR_AUTHORITY":
