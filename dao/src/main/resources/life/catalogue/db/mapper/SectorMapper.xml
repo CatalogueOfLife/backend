@@ -243,7 +243,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE s.dataset_key=#{datasetKey}
-    <if test="mode != null and !mode.isEmpty()">
+    <if test="mode != null and mode.length &gt; 0">
       AND s.mode IN
       <foreach item="m" collection="mode" open="(" separator=" OR " close=")">#{m}::SECTOR_MODE</foreach>
     </if>
