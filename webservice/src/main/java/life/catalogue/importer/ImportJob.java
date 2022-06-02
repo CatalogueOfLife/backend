@@ -18,6 +18,7 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.dao.SectorDao;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
@@ -46,6 +47,7 @@ import javax.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +67,6 @@ public class ImportJob implements Runnable {
   private final ImportRequest req;
   private final DatasetWithSettings dataset;
   private DatasetImport di;
-  private DatasetImport last;
   private final WsServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
@@ -178,8 +179,6 @@ public class ImportJob implements Runnable {
    * @return true if sourceDir should be imported
    */
   private boolean prepareSourceData(Path sourceDir) throws IOException, IllegalArgumentException, InterruptedException {
-    last = dao.getLast(dataset.getKey());
-
     File source = cfg.normalizer.source(datasetKey);
     source.getParentFile().mkdirs();
     if (req.upload) {
@@ -219,15 +218,22 @@ public class ImportJob implements Runnable {
     dao.update(di);
 
     boolean isModified = true;
-    if (last != null && di.getMd5().equals(last.getMd5())) {
-      LOG.info("MD5 unchanged: {}", di.getMd5());
-      isModified = false;
+    if (dataset.getImportAttempt() != null) {
+      try (SqlSession session = factory.openSession()) {
+        String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dataset.getImportAttempt());
+        if (Objects.equals(lastMD5, di.getMd5())) {
+          LOG.info("MD5 unchanged: {}", di.getMd5());
+          isModified = false;
+        } else {
+          LOG.info("MD5 changed from attempt {}: {} to {}", dataset.getImportAttempt(), lastMD5, di.getMd5());
+        }
+      }
     }
 
     checkIfCancelled();
     // decompress and import?
     if (isModified || req.force) {
-      if (!isModified) {
+      if (req.force) {
         LOG.info("Force reimport of unchanged archive {}", datasetKey);
       }
       LOG.info("Extracting files from archive {}", datasetKey);

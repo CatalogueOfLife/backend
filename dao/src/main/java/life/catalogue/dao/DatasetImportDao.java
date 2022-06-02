@@ -98,6 +98,7 @@ public class DatasetImportDao {
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.origin == DatasetOrigin.RELEASED) {
       return getReleaseAttempt(datasetKey);
+
     } else {
       try (SqlSession session = factory.openSession(true)) {
         return session.getMapper(DatasetImportMapper.class).last(datasetKey);
