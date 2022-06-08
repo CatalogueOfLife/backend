@@ -20,15 +20,11 @@ import static org.junit.Assert.assertEquals;
 
 public class ExtendedReleaseIT extends ProjectBaseIT {
 
-
-  public final static TestDataRule.TestData XCOL_DATA = new TestDataRule.TestData("xcol", 3, 1, 2,
+  final static TestDataRule.TestData XCOL_DATA = new TestDataRule.TestData("xcol", 3, 1, 2,
     Map.of(
       "sector", Map.of("created_by", 100, "modified_by", 100)
     ),3,11,12,13);
   final int projectKey = XCOL_DATA.key;
-
-  @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
 
   IdProvider provider;
   NameMatchingRule matchingRule = new NameMatchingRule();
@@ -44,27 +40,17 @@ public class ExtendedReleaseIT extends ProjectBaseIT {
   public void init2() throws IOException {
     cfg = new ReleaseConfig();
     provider = new IdProvider(projectKey, 1, -1, cfg, PgSetupRule.getSqlSessionFactory());
-    System.out.println("Create id mapping tables for project " + projectKey);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-      DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.createIdMapTable(t, projectKey));
-    }
   }
 
   @After
   public void destroy2() {
-    System.out.println("Remove id mapping tables for project " + projectKey);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-      DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, projectKey));
-    }
     org.apache.commons.io.FileUtils.deleteQuietly(cfg.reportDir);
   }
 
 
   @Test
   public void release() throws Exception {
-    var xrel = projectCopyFactory.buildExtendedRelease(11, Users.TESTER);
+    var xrel = projectCopyFactory.buildExtendedRelease(13, Users.TESTER);
     xrel.run();
 
     assertEquals(ImportState.FINISHED, xrel.getMetrics().getState());

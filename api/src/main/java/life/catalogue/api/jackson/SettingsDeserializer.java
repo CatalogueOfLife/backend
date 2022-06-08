@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,8 @@ public class SettingsDeserializer extends JsonDeserializer {
         return LocalDate.parse((String) value);
       } else if (key.getType().equals(URI.class)) {
         return URI.create( (String) value);
+      } else if (key.getType().equals(UUID.class)) {
+        return UUID.fromString( (String) value);
       } else if (key.isEnum()) {
         return VocabularyUtils.lookupEnum((String) value, (Class<Enum<?>>) key.getType());
       } else {

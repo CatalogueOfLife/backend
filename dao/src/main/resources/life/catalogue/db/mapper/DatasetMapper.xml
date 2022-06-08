@@ -193,8 +193,6 @@
     WHERE key = #{key}
   </update>
 
-
-
   <select id="keys" resultType="integer">
     SELECT key
     FROM dataset
@@ -202,6 +200,13 @@
     <if test="origin != null and origin.length > 0">
       AND origin IN <foreach item="o" collection="origin" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
     </if>
+    ORDER BY key
+  </select>
+
+  <select id="keysByPublisher" resultType="integer">
+    SELECT key
+    FROM dataset
+    WHERE deleted IS NULL AND gbif_publisher_key = #{publisher}
     ORDER BY key
   </select>
 

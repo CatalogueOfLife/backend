@@ -189,7 +189,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
    * @param lowestRank optional rank cutoff filter to only include children with a rank above or equal to the one given
    * @param includeSynonyms if true includes synonyms, otherwise only taxa
-   * @param depthFirst if true uses a depth first traversal which is more expensive then breadth first!
+   * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
    */
   Cursor<NameUsageBase> processTree(@Param("datasetKey") int datasetKey,
                      @Param("sectorKey") Integer sectorKey,

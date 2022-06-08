@@ -247,7 +247,7 @@
       AND s.mode IN
       <foreach item="m" collection="mode" open="(" separator=" OR " close=")">#{m}::SECTOR_MODE</foreach>
     </if>
-    ORDER BY priority, id
+    ORDER BY priority NULLS LAST, id
   </select>
 
   <select id="listDescendantSectorKeys" resultType="Integer">

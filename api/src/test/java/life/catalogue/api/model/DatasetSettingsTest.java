@@ -12,6 +12,7 @@ import org.gbif.nameparser.api.Rank;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -33,17 +34,19 @@ public class DatasetSettingsTest extends SerdeTestBase<DatasetSettings> {
   }
 
   public static DatasetSettings generateTestValue() {
-    DatasetSettings ds = DatasetSettings.of(Map.of(
-      Setting.DISTRIBUTION_GAZETTEER, Gazetteer.ISO,
-      Setting.REMATCH_DECISIONS, true,
-      Setting.CSV_DELIMITER, "\t",
-      Setting.CSV_QUOTE, "\"",
-      Setting.CSV_QUOTE_ESCAPE, "\\",
-      Setting.NOMENCLATURAL_CODE, NomCode.BOTANICAL,
-      Setting.IMPORT_FREQUENCY, Frequency.MONTHLY,
-      Setting.DATA_ACCESS, URI.create("www.gbif.org"),
-      Setting.SECTOR_ENTITIES, List.of(EntityType.VERNACULAR),
-      Setting.SECTOR_RANKS, List.of(Rank.GENUS, Rank.SPECIES, Rank.SUBGENUS, Rank.TRIBE)
+    DatasetSettings ds = DatasetSettings.of(Map.ofEntries(
+      Map.entry(Setting.DISTRIBUTION_GAZETTEER, Gazetteer.ISO),
+      Map.entry(Setting.REMATCH_DECISIONS, true),
+      Map.entry(Setting.CSV_DELIMITER, "\t"),
+      Map.entry(Setting.CSV_QUOTE, "\""),
+      Map.entry(Setting.CSV_QUOTE_ESCAPE, "\\"),
+      Map.entry(Setting.NOMENCLATURAL_CODE, NomCode.BOTANICAL),
+      Map.entry(Setting.IMPORT_FREQUENCY, Frequency.MONTHLY),
+      Map.entry(Setting.DATA_ACCESS, URI.create("www.gbif.org")),
+      Map.entry(Setting.SECTOR_ENTITIES, List.of(EntityType.VERNACULAR)),
+      Map.entry(Setting.SECTOR_RANKS, List.of(Rank.GENUS, Rank.SPECIES, Rank.SUBGENUS, Rank.TRIBE)),
+      Map.entry(Setting.XRELEASE_SOURCE_PUBLISHER, List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())),
+      Map.entry(Setting.XRELEASE_EXCLUDE_SOURCE_DATASET, List.of(1010, 1020, 1233))
     ));
     return ds;
   }

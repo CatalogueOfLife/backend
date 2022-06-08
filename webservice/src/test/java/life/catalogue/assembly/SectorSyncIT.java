@@ -202,7 +202,7 @@ public class SectorSyncIT {
   }
 
   static void sync(Sector s, SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
-    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), sdao, siDao, eDao,
+    SectorSync ss = SectorSync.withDelete(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), sdao, siDao, eDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();

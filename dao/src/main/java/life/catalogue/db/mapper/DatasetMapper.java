@@ -107,6 +107,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Integer> keys(@Param("origin") DatasetOrigin... origin);
 
   /**
+   * @return list of all dataset keys which have not been deleted and are published by the given gbif publisher key.
+   */
+  List<Integer> keysByPublisher(@Param("publisher") UUID publisher);
+
+  /**
    * list datasets which have not been imported before, ordered by date created.
    * Includes private datasets.
    *

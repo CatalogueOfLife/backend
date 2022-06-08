@@ -22,18 +22,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import org.gbif.nameparser.api.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 /**
  * Syncs/imports source data for a given sector into the assembled catalogue
@@ -44,12 +38,26 @@ public class SectorSync extends SectorRunnable {
   private final EstimateDao estimateDao;
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
+  private final boolean delete;
 
-  public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
+  public static SectorSync withDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
+                                      SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
+                                      Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+    return new SectorSync(true, sectorKey, factory, nameIndex, indexService, sdao, sid, estimateDao,
+      successCallback, errorCallback, user);
+  }
+
+  public static SectorSync noDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex,
+                                      SectorDao sdao, SectorImportDao sid, User user) throws IllegalArgumentException {
+    return new SectorSync(false, sectorKey, factory, nameIndex, null, sdao, sid, null,
+      x -> {}, (s,e) -> {LOG.error("Sector merge {} failed: {}", sectorKey, e.getMessage(), e);}, user);
+  }
+
+  private SectorSync(boolean delete, DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
                     SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
-                    Consumer<SectorRunnable> successCallback,
-                    BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+                    Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, true, factory, indexService, sdao, sid, successCallback, errorCallback, user);
+    this.delete = delete;
     this.sid = sid;
     this.estimateDao = estimateDao;
     this.nameIndex = nameIndex;
@@ -57,22 +65,28 @@ public class SectorSync extends SectorRunnable {
   
   @Override
   void doWork() throws Exception {
-    state.setState( ImportState.DELETING);
-    relinkForeignChildren();
+    if (delete) {
+      state.setState( ImportState.DELETING);
+      relinkForeignChildren();
+    }
     try {
-      deleteOld();
-      checkIfCancelled();
+      if (delete) {
+        deleteOld();
+        checkIfCancelled();
+      }
 
       state.setState(ImportState.INSERTING);
       processTree();
       checkIfCancelled();
 
     } finally {
-      // run these even if we get errors in the main tree copying
-      state.setState( ImportState.MATCHING);
-      rematchForeignChildren();
-      relinkAttachedSectors();
-      rematchEstimates();
+      if (delete) {
+        // run these even if we get errors in the main tree copying
+        state.setState( ImportState.MATCHING);
+        rematchForeignChildren();
+        relinkAttachedSectors();
+        rematchEstimates();
+      }
     }
   }
 
@@ -196,6 +210,13 @@ public class SectorSync extends SectorRunnable {
     }
   }
 
+  private TreeHandler sectorHandler(){
+    if (sector.getMode() == Sector.Mode.MERGE) {
+      return new TreeMergeHandler(decisions, factory, nameIndex, user, sector, state);
+    }
+    return new TreeCopyHandler(decisions, factory, nameIndex, user, sector, state);
+  }
+
   private void processTree() {
     final Set<String> blockedIds = decisions.values().stream()
         .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK) && ed.getSubject().getId() != null)
@@ -203,12 +224,14 @@ public class SectorSync extends SectorRunnable {
         .collect(Collectors.toSet());
 
     try (SqlSession session = factory.openSession(false);
-         TreeCopyHandler treeHandler = new TreeCopyHandler(decisions, factory, nameIndex, user, sector, state)
+         TreeHandler treeHandler = sectorHandler()
     ){
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       LOG.info("{} taxon tree {} to {}. Blocking {} nodes", sector.getMode(), sector.getSubject(), sector.getTarget(), blockedIds.size());
-      if (sector.getMode() == Sector.Mode.ATTACH) {
-        um.processTree(subjectDatasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)
+
+      if (sector.getMode() == Sector.Mode.ATTACH || sector.getMode() == Sector.Mode.MERGE) {
+        String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
+        um.processTree(subjectDatasetKey, null, rootID, blockedIds, null, true,false)
             .forEach(treeHandler);
 
       } else if (sector.getMode() == Sector.Mode.UNION) {
@@ -233,15 +256,15 @@ public class SectorSync extends SectorRunnable {
         }
 
       } else {
-        throw new NotImplementedException("Only attach and union sectors are implemented");
+        throw new NotImplementedException(sector.getMode() + " sectors are not supported");
       }
 
       LOG.info("Sync name & taxon relations from sector {}", sectorKey);
       treeHandler.copyRelations();
 
       // copy handler stats to metrics
-      state.setAppliedDecisionCount(treeHandler.decisionCounter);
-      state.setIgnoredByReasonCount(Map.copyOf(treeHandler.ignoredCounter));
+      state.setAppliedDecisionCount(treeHandler.getDecisionCounter());
+      state.setIgnoredByReasonCount(Map.copyOf(treeHandler.getIgnoredCounter()));
     }
   }
 

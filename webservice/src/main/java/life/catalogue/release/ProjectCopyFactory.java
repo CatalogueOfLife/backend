@@ -1,10 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.NameDao;
-import life.catalogue.dao.SectorImportDao;
+import life.catalogue.dao.*;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -21,6 +18,7 @@ public class ProjectCopyFactory {
   private final DatasetImportDao diDao;
   private final DatasetDao dDao;
   private final NameDao nDao;
+  private final SectorDao sDao;
   private final SectorImportDao siDao;
   private final NameUsageIndexService indexService;
   private final DoiService doiService;
@@ -31,13 +29,15 @@ public class ProjectCopyFactory {
   private final Validator validator;
   private final WsServerConfig cfg;
 
-  public ProjectCopyFactory(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, NameDao nDao, ExportManager exportManager, NameUsageIndexService indexService,
-                            ImageService imageService, DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator, WsServerConfig cfg) {
+  public ProjectCopyFactory(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
+                            ExportManager exportManager, NameUsageIndexService indexService, ImageService imageService,
+                            DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator, WsServerConfig cfg) {
     this.client = client;
     this.exportManager = exportManager;
     this.diDao = diDao;
     this.dDao = dDao;
     this.nDao = nDao;
+    this.sDao = sDao;
     this.siDao = siDao;
     this.indexService = indexService;
     this.imageService = imageService;
@@ -55,7 +55,7 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not a release
    */
   public ExtendedRelease buildExtendedRelease(final int releaseKey, final int userKey) {
-    return new ExtendedRelease(factory, indexService, dDao, diDao, siDao, nDao, imageService, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    return new ExtendedRelease(factory, indexService, dDao, diDao, siDao, nDao, sDao, imageService, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**
@@ -65,7 +65,7 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
-    return new ProjectRelease(factory, indexService, diDao, dDao, nDao, imageService, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    return new ProjectRelease(factory, indexService, diDao, dDao, nDao, sDao, imageService, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**

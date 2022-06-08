@@ -23,22 +23,18 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 
-public class TreeCopyHandler implements TreeHandler {
-  private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
-  private static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS,Rank.SUBGENUS, Rank.SPECIES);
-
+/**
+ * Expects breadth first traversal
+ */
+public class TreeMergeHandler implements TreeHandler {
+  private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
   private final Set<EntityType> entities;
   private final Set<Rank> ranks;
-  private final List<Rank> implicitRanks = new ArrayList<>();
 
-  private final int catalogueKey;
+  private final int targetDatasetKey;
   private final User user;
   private final Sector sector;
   private final SectorImport state;
@@ -65,8 +61,8 @@ public class TreeCopyHandler implements TreeHandler {
   private final Map<IgnoreReason, Integer> ignoredCounter = new HashMap<>();
   private int decisionCounter = 0;
 
-  TreeCopyHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
-    this.catalogueKey = sector.getDatasetKey();
+  TreeMergeHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
+    this.targetDatasetKey = sector.getDatasetKey();
     this.user = user;
     this.sector = sector;
     this.state = state;
@@ -83,13 +79,6 @@ public class TreeCopyHandler implements TreeHandler {
     if (ranks.size() < Rank.values().length) {
       LOG.info("Copy only ranks: {}", Joiner.on(", ").join(ranks));
     }
-
-    for (Rank r : IMPLICITS) {
-      if (!ranks.isEmpty() && ranks.contains(r)) {
-        implicitRanks.add(r);
-      }
-    }
-    LOG.info("Create implicit taxa for ranks {}", Joiner.on(", ").join(implicitRanks));
 
     vm = batchSession.getMapper(VerbatimSourceMapper.class);
     rm = batchSession.getMapper(ReferenceMapper.class);
@@ -124,57 +113,7 @@ public class TreeCopyHandler implements TreeHandler {
    */
   @Override
   public void copyRelations() {
-    // copy name relations
-    copyNameRelations();
-
-    // copy taxon relations
-    copyTaxonRelations();
-  }
-
-  private void copyTaxonRelations() {
-    // TODO: copy taxon relations
-    LOG.info("Synced {} taxon relations from sector {} - NOT IMPLEMENTED", 0, sector.getKey());
-  }
-
-  private void copyNameRelations(){
-    // copy name relations
-    NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
-    NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
-    int counter = 0;
-    IntSet relIds = new IntOpenHashSet();
-
-    var key = DSID.of(sector.getSubjectDatasetKey(), "");
-    for (Map.Entry<String, String> n : nameIds.entrySet()) {
-      for (NameRelation nr : nrm.listByName(key.id(n.getKey()))) {
-        if (!relIds.contains((int)nr.getId())) {
-          updateFKs(nr);
-          nr.setNameId(nameIds.get(nr.getNameId()));
-          nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
-          if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
-            nrmWrite.create(nr);
-            relIds.add((int)nr.getId());
-            if (counter++ % 2500 == 0) {
-              batchSession.commit();
-            }
-          } else {
-            LOG.info("Name relation {} outside of synced sector {}", nr.getKey(), sector.getKey());
-          }
-        }
-      }
-    }
-    batchSession.commit();
-    LOG.info("Synced {} name relations from sector {}", relIds.size(), sector.getKey());
-  }
-
-  private void updateFKs(DatasetScopedEntity<?> obj){
-    obj.setDatasetKey(sector.getDatasetKey());
-    if (obj instanceof VerbatimEntity) {
-      ((VerbatimEntity)obj).setVerbatimKey(null);
-    }
-    if (obj instanceof Referenced) {
-      Referenced r = (Referenced) obj;
-      r.setReferenceId(lookupReference(r.getReferenceId()));
-    }
+    // TODO: copy name & taxon relations
   }
 
   private Usage usage(NameUsageBase u) {
@@ -248,7 +187,7 @@ public class TreeCopyHandler implements TreeHandler {
         }
         // finally, create missing implicit name
         DatasetEntityDao.newKey(n);
-        n.setDatasetKey(catalogueKey);
+        n.setDatasetKey(targetDatasetKey);
         n.setOrigin(Origin.IMPLICIT_NAME);
         n.applyUser(user);
         LOG.debug("Create implicit {} from {}: {}", r, origName.getScientificName(), n);
@@ -258,7 +197,7 @@ public class TreeCopyHandler implements TreeHandler {
 
         Taxon t = new Taxon();
         DatasetEntityDao.newKey(t);
-        t.setDatasetKey(catalogueKey);
+        t.setDatasetKey(targetDatasetKey);
         t.setName(n);
         t.setParentId(parent.id);
         t.setSectorKey(sector.getId());
@@ -278,7 +217,7 @@ public class TreeCopyHandler implements TreeHandler {
   private Usage findInSector(RanKnName rnn) {
     // we need to commit the batch session to see the recent inserts
     batchSession.commit();
-    var matches = num.findSimple(catalogueKey, sector.getKey().getId(), TaxonomicStatus.ACCEPTED, rnn.rank, rnn.name);
+    var matches = num.findSimple(targetDatasetKey, sector.getKey().getId(), TaxonomicStatus.ACCEPTED, rnn.rank, rnn.name);
     if (!matches.isEmpty()) {
       return new Usage(matches.get(0));
     }
@@ -334,14 +273,14 @@ public class TreeCopyHandler implements TreeHandler {
     }
 
     // copy usage with all associated information. This assigns a new id !!!
-    DSID<String> parentDID = new DSIDValue<>(catalogueKey, parent.id);
+    DSID<String> parentDID = new DSIDValue<>(targetDatasetKey, parent.id);
     String origNameID= u.getName().getId();
     DSID<String> orig = CatCopy.copyUsage(batchSession, u, parentDID, user.getKey(), entities, this::lookupReference, this::lookupReference);
     // remember old to new id mappings
     ids.put(orig.getId(), usage(u));
     nameIds.put(origNameID, u.getName().getId());
     // track source
-    VerbatimSource v = new VerbatimSource(catalogueKey, u.getId(), sector.getSubjectDatasetKey(), orig.getId());
+    VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), orig.getId());
     vm.create(v);
     // match name
     createMatch(u.getName());
@@ -531,19 +470,19 @@ public class TreeCopyHandler implements TreeHandler {
         return refIds.get(ref.getId());
       }
       // sth new?
-      List<Reference> matches = rm.find(catalogueKey, sector.getId(), ref.getCitation());
+      List<Reference> matches = rm.find(targetDatasetKey, sector.getId(), ref.getCitation());
       if (matches.isEmpty()) {
         // insert new ref
-        ref.setDatasetKey(catalogueKey);
+        ref.setDatasetKey(targetDatasetKey);
         ref.setSectorKey(sector.getId());
         ref.applyUser(user);
-        DSID<String> origID = ReferenceDao.copyReference(batchSession, ref, catalogueKey, user.getKey());
+        DSID<String> origID = ReferenceDao.copyReference(batchSession, ref, targetDatasetKey, user.getKey());
         refIds.put(origID.getId(), ref.getId());
         return ref.getId();
         
       } else {
         if (matches.size() > 1) {
-          LOG.warn("{} duplicate references in catalogue {} with citation {}", matches.size(), catalogueKey, ref.getCitation());
+          LOG.warn("{} duplicate references in catalogue {} with citation {}", matches.size(), targetDatasetKey, ref.getCitation());
         }
         String refID = matches.get(0).getId();
         refIds.put(ref.getId(), refID);

@@ -196,7 +196,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   private synchronized void syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
-    SectorSync ss = new SectorSync(sectorKey, factory, nameIndex, indexService, sdao, sid, estimateDao, this::successCallBack, this::errorCallBack, user);
+    SectorSync ss = SectorSync.withDelete(sectorKey, factory, nameIndex, indexService, sdao, sid, estimateDao, this::successCallBack, this::errorCallBack, user);
     queueJob(ss);
   }
 

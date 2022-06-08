@@ -5,6 +5,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import com.google.common.base.Preconditions;
 
@@ -89,6 +90,20 @@ public enum Setting {
    */
   XRELEASE_ALIAS_TEMPLATE(String.class, PROJECT),
 
+  /**
+   * GBIF publisher organisation keys to be used as dynamic sources of sectors
+   * for extended releases. Each dataset published by these publishers become a sector
+   * in its entirety without a single subject root. These sectors will be persisted in the project
+   * so the sector key is fixed.
+   *
+   * Use the XRELEASE_EXCLUDE_SOURCE_DATASET setting to ignore specific datasets.
+   */
+  XRELEASE_SOURCE_PUBLISHER(UUID.class, true, PROJECT),
+
+  /**
+   * A list of dataset keys to be ignored as dynamic sources via the XRELEASE_SOURCE_PUBLISHER setting.
+   */
+  XRELEASE_EXCLUDE_SOURCE_DATASET(Integer.class, true, PROJECT),
 
   /**
    * Number of first authors from a project/release to use for the container authors of a source chapter-in-a-book citation.
@@ -148,8 +163,9 @@ public enum Setting {
   Setting(Class type, DatasetOrigin... origin) {
     this(type, false, origin);
   }
+
   /**
-   * Use String, Integer, Boolean, LocalDate, URI or a custom col enumeration class
+   * Use String, Integer, Boolean, LocalDate, URI, UUID or a custom col enumeration class
    *
    * @param type
    * @param origin
@@ -161,8 +177,9 @@ public enum Setting {
       || type.equals(Integer.class)
       || type.equals(Boolean.class)
       || type.equals(LocalDate.class)
+      || type.equals(UUID.class)
       || type.equals(URI.class)
-      || type.isEnum(), "Unsupported type");
+      || type.isEnum(), "Unsupported type"); // see SettingsDeserializer
     this.type = type;
   }
 

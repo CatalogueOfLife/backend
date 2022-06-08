@@ -33,6 +33,8 @@ import com.google.common.base.Preconditions;
 
 abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
+  private final static Set<Rank> MERGE_RANKS_DEFAULT = Set.of(Rank.FAMILY, Rank.GENUS, Rank.SPECIES,
+    Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM, Rank.UNRANKED);
 
   protected final DSID<Integer> sectorKey;
   protected final int subjectDatasetKey;
@@ -190,9 +192,15 @@ abstract class SectorRunnable implements Runnable {
         }
 
         if (s.getRanks() == null || s.getRanks().isEmpty()) {
-          if (ds.has(Setting.SECTOR_RANKS)) {
+          if(s.getMode() == Sector.Mode.MERGE) {
+            // in merge mode we dont want any higher ranks than family by default!
+            s.setRanks(MERGE_RANKS_DEFAULT);
+
+          } else if (ds.has(Setting.SECTOR_RANKS)) {
             s.setRanks(Set.copyOf(ds.getEnumList(Setting.SECTOR_RANKS)));
+
           } else {
+            // all
             s.setRanks(Set.of(Rank.values()));
           }
         }

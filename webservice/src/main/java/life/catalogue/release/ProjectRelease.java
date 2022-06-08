@@ -12,10 +12,7 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.text.CitationUtils;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.DatasetSourceDao;
-import life.catalogue.dao.NameDao;
+import life.catalogue.dao.*;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
@@ -46,6 +43,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   protected final WsServerConfig cfg;
   protected final NameDao nDao;
+  protected final SectorDao sDao;
   private final UriBuilder datasetApiBuilder;
   private final URI portalURI;
   private final CloseableHttpClient client;
@@ -54,13 +52,15 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
 
-  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, ImageService imageService,
+  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, SectorDao sDao,
+                 ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super("releasing", factory, diDao, dDao, indexService, validator, userKey, datasetKey, true);
     this.imageService = imageService;
     this.doiService = doiService;
     this.nDao = nDao;
+    this.sDao = sDao;
     this.cfg = cfg;
     this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
     this.portalURI = UriBuilder.fromUri(cfg.apiURI).path("portal").build();
