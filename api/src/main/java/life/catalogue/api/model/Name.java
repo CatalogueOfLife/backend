@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -682,13 +683,21 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   }
 
   public String getLabel(boolean html) {
-    return appendNameLabel(new StringBuilder(), html).toString();
+    return appendNameLabel(new StringBuilder(), null, html).toString();
   }
 
-  StringBuilder appendNameLabel(StringBuilder sb, boolean html) {
+  /**
+   * @param sb build to append to
+   * @param preAuthorship optional prefix to be placed just before the authorship
+   */
+  StringBuilder appendNameLabel(StringBuilder sb, @Nullable String preAuthorship, boolean html) {
     String name = html ? scientificNameHtml() : scientificName;
     if (name != null) {
       sb.append(name);
+    }
+    if (preAuthorship != null) {
+      sb.append(" ");
+      sb.append(preAuthorship);
     }
     if (authorship != null) {
       sb.append(" ");

@@ -83,9 +83,9 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
   @Test
   public void jsonConstructor() {
     // all nulls
-    NameUsageSearchRequest r = new NameUsageSearchRequest(null,null,null,null,null,false,false,false,null,null,null);
+    NameUsageSearchRequest r = new NameUsageSearchRequest(null,null,null,null,null,null,false,false,false,null,null,null);
     // empty collections
-    r = new NameUsageSearchRequest(Map.of(), Set.of(),Set.of(),null,null,false,false,false,null,null,null);
+    r = new NameUsageSearchRequest(Map.of(), Set.of(),null,Set.of(),null,null,false,false,false,null,null,null);
   }
 
   @Test

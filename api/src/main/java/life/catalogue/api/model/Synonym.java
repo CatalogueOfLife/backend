@@ -32,7 +32,7 @@ public class Synonym extends NameUsageBase {
 
   @Override
   public String getLabel(boolean html) {
-    return getLabelBuilder(getName(), accepted != null ? accepted.isExtinct() : null, getNamePhrase(), getAccordingTo(), html).toString();
+    return labelBuilder(getName(), accepted != null ? accepted.isExtinct() : null, getStatus(), getNamePhrase(), getAccordingTo(), html).toString();
   }
 
   @Override

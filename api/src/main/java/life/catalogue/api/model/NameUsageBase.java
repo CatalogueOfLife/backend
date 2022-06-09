@@ -97,16 +97,21 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   }
 
   public String getLabel(boolean html) {
-    return getLabelBuilder(name, null, namePhrase, accordingTo, html).toString();
+    return labelBuilder(name, null, status, namePhrase, accordingTo, html).toString();
   }
 
-  public static StringBuilder getLabelBuilder(Name name, Boolean extinct, String namePhrase, String accordingTo, boolean html) {
+  public static StringBuilder labelBuilder(Name name, Boolean extinct, TaxonomicStatus status, String namePhrase, String accordingTo, boolean html) {
     StringBuilder sb = new StringBuilder();
     if (Boolean.TRUE.equals(extinct)) {
       sb.append(EXTINCT_SYMBOL);
     }
     if (name != null) {
-      name.appendNameLabel(sb, html);
+      String auct = null;
+      if (status == TaxonomicStatus.MISAPPLIED && namePhrase == null && accordingTo == null) {
+        // default for misapplied names: https://github.com/gbif/name-parser/issues/87
+        auct = "auct. non";
+      }
+      name.appendNameLabel(sb, auct, html);
     } else {
       sb.append("UNNAMED");
     }
@@ -114,7 +119,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       sb.append(" ");
       sb.append(namePhrase);
     }
-    if (accordingTo != null) {
+    if (accordingTo != null && (namePhrase == null || namePhrase.length() < 6)) {
       sb.append(" ");
       if (html) {
         sb.append(NameFormatter.inItalics("sensu"));

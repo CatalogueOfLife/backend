@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
@@ -50,6 +51,16 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   SimpleName getSimpleByIdMap(@Param("key") DSID<String> key);
 
   boolean exists(@Param("key") DSID<String> key);
+
+  /**
+   * Tests whether a given name usage key exists or throws a NotFoundException otherwise.
+   * @param key
+   */
+  default void existsOrThrow(DSID<String> key) throws NotFoundException {
+    if (!exists(key)) {
+      throw NotFoundException.notFound(NameUsage.class, key);
+    }
+  }
 
   int delete(@Param("key") DSID<String> key);
 
