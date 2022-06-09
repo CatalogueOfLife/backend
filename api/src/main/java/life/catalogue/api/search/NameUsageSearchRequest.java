@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import javax.ws.rs.QueryParam;
 
@@ -31,6 +32,10 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("facet")
   private Set<NameUsageSearchParameter> facets = EnumSet.noneOf(NameUsageSearchParameter.class);
 
+  @QueryParam("facetLimit")
+  @Min(0)
+  private Integer facetLimit;
+
   @QueryParam("content")
   private Set<SearchContent> content = EnumSet.copyOf(DEFAULT_CONTENT);
 
@@ -49,6 +54,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @JsonCreator
   public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters,
       @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
+      @JsonProperty("facetLimit") @Min(0) Integer facetLimit,
       @JsonProperty("content") Set<SearchContent> content,
       @JsonProperty("sortBy") SortBy sortBy,
       @JsonProperty("q") String q,
@@ -60,8 +66,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("maxRank") Rank maxRank) {
     super(q, fuzzy, minRank, maxRank, sortBy, reverse);
     this.highlight = highlight;
-    this.fuzzy = fuzzy;
     this.searchType = searchType;
+    this.facetLimit = facetLimit;
     setFilters(filters);
     setFacets(facets);
     setContent(content);
@@ -76,10 +82,11 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    */
   public NameUsageSearchRequest(NameUsageSearchRequest other) {
     super(other);
-    setFacets(other.facets);
-    setContent(other.content);
     this.highlight = other.highlight;
     this.searchType = other.searchType;
+    this.facetLimit = other.facetLimit;
+    setFacets(other.facets);
+    setContent(other.content);
   }
 
 
@@ -115,6 +122,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
 
   public Set<NameUsageSearchParameter> getFacets() {
     return facets;
+  }
+
+  public Integer getFacetLimit() {
+    return facetLimit;
+  }
+
+  public void setFacetLimit(Integer facetLimit) {
+    this.facetLimit = facetLimit;
   }
 
   public Set<SearchContent> getContent() {
@@ -160,14 +175,15 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     if (!(o instanceof NameUsageSearchRequest)) return false;
     if (!super.equals(o)) return false;
     NameUsageSearchRequest that = (NameUsageSearchRequest) o;
-    return highlight == that.highlight &&
-      Objects.equals(facets, that.facets) &&
-      Objects.equals(content, that.content) &&
-      searchType == that.searchType;
+    return highlight == that.highlight
+           && Objects.equals(facets, that.facets)
+           && Objects.equals(facetLimit, that.facetLimit)
+           && Objects.equals(content, that.content)
+           && searchType == that.searchType;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), facets, content, highlight, searchType);
+    return Objects.hash(super.hashCode(), facets, facetLimit, content, highlight, searchType);
   }
 }

@@ -44,7 +44,7 @@ public class FacetsTranslator {
       // those specified by the filter.
       NameUsageSearchRequest temp = copy.copy();
       temp.removeFilter(facet);
-      Aggregation agg = new FacetAggregation(field, generateQuery(temp));
+      Aggregation agg = new FacetAggregation(field, generateQuery(temp), request.getFacetLimit());
       filterAgg.nest(facet.name(), agg);
     }
     return singletonMap(GLOBAL_AGG_LABEL, globalAgg);
