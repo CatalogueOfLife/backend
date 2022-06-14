@@ -196,7 +196,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   private synchronized void syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
-    SectorSync ss = SectorSync.withDelete(sectorKey, factory, nameIndex, indexService, sdao, sid, estimateDao, this::successCallBack, this::errorCallBack, user);
+    SectorSync ss = SectorSync.regular(sectorKey, factory, nameIndex, indexService, sdao, sid, estimateDao, this::successCallBack, this::errorCallBack, user);
     queueJob(ss);
   }
 
@@ -218,7 +218,7 @@ public class AssemblyCoordinator implements Managed {
     nameIndex.assertOnline();
     // is this sector already syncing?
     if (syncs.containsKey(job.sectorKey)) {
-      LOG.info("{} already busy", job.sector);
+      LOG.info("{} already queued or running", job.sector);
       // ignore
     
     } else {

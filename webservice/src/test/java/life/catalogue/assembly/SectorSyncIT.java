@@ -34,17 +34,13 @@ import java.util.Set;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import com.google.common.base.Charsets;
 
 import static org.junit.Assert.*;
 
@@ -202,7 +198,7 @@ public class SectorSyncIT {
   }
 
   static void sync(Sector s, SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
-    SectorSync ss = SectorSync.withDelete(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), sdao, siDao, eDao,
+    SectorSync ss = SectorSync.regular(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), sdao, siDao, eDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();

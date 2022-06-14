@@ -27,7 +27,7 @@ import com.google.common.base.Preconditions;
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 /**
- * Expects breadth first traversal
+ * Expects depth first traversal!
  */
 public class TreeMergeHandler implements TreeHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
@@ -48,20 +48,17 @@ public class TreeMergeHandler implements TreeHandler {
   private final NameMapper nm;
   // for reading only:
   private final NameUsageMapper num;
-  private int sCounter = 0;
-  private int tCounter = 0;
   private final Usage target;
-  private String lastParentID;
-  private final List<NameUsageBase> lastUsages = new ArrayList<>();
-  private final Map<RanKnName, Usage> implicits = new HashMap<>();
-  private final Map<String, Usage> ids = new HashMap<>();
-  private final Set<String> skippedTaxa = new HashSet<>(); // usageIDs of skipped accetepd names only
-  private final Map<String, String> refIds = new HashMap<>();
-  private final Map<String, String> nameIds = new HashMap<>();
+  private final ParentStack parents;
+  private final UsageMatcher matcher;
+  private int counter = 0;  // all source usages
+  private int sCounter = 0; // created only
+  private int tCounter = 0; // created only
   private final Map<IgnoreReason, Integer> ignoredCounter = new HashMap<>();
   private int decisionCounter = 0;
+  private int updateCounter = 0;
 
-  TreeMergeHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
+  TreeMergeHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher, User user, Sector sector, SectorImport state) {
     this.targetDatasetKey = sector.getDatasetKey();
     this.user = user;
     this.sector = sector;
@@ -71,6 +68,7 @@ public class TreeMergeHandler implements TreeHandler {
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     batchSession = factory.openSession(ExecutorType.BATCH, false);
     session = factory.openSession(true);
+    this.matcher = matcher;
 
     this.entities = Preconditions.checkNotNull(sector.getEntities(), "Sector entities required");
     LOG.info("Copy taxon extensions: {}", Joiner.on(", ").join(entities));
@@ -89,13 +87,13 @@ public class TreeMergeHandler implements TreeHandler {
     // load target taxon
     Taxon t = tm.get(sector.getTargetAsDSID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
+    parents = new ParentStack(t);
   }
 
   @Override
   public void reset() {
-    processLast();
-    ids.clear();
-    skippedTaxa.clear();
+    // only needed for UNION sectors which do several iterations
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -106,6 +104,48 @@ public class TreeMergeHandler implements TreeHandler {
   @Override
   public int getDecisionCounter() {
     return decisionCounter;
+  }
+
+  @Override
+  public void accept(NameUsageBase nu) {
+    // make rank non null
+    if (nu.getName().getRank() == null) nu.getName().setRank(Rank.UNRANKED);
+    // track parent classification and match to existing usages. Create new ones if they dont yet exist
+    parents.put(nu);
+    LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classification());
+    counter++;
+    // decisions
+    if (decisions.containsKey(nu.getId())) {
+      applyDecision(nu, decisions.get(nu.getId()));
+    }
+    if (skipUsage(nu, decisions.get(nu.getId()))) {
+      // skip this taxon, but include children
+      LOG.debug("Ignore {} {} [{}] type={}; status={}", nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), nu.getName().getType(), nu.getName().getNomStatus());
+      return;
+    }
+    // find out matching
+
+    var match = matcher.match(nu, parents.classification());
+    if (match == null) {
+      create(nu, parents.matchParent());
+      if (nu.isTaxon()) {
+        state.setTaxonCount(++tCounter);
+      } else {
+        state.setSynonymCount(++sCounter);
+      }
+      // commit in batches
+      if ((sCounter + tCounter) % 1000 == 0) {
+        session.commit();
+        batchSession.commit();
+      }
+
+    } else {
+      update(nu, match);
+    }
+  }
+
+  private void update(NameUsageBase nu, NameUsageBase match) {
+    //TODO: implement updates for authorship, published in, vernaculars, basionym, etc
   }
 
   /**
@@ -224,24 +264,7 @@ public class TreeMergeHandler implements TreeHandler {
     return null;
   }
 
-  @Override
-  public void accept(NameUsageBase u) {
-    // We buffer all children of a given parentID and sort them by rank before we pass them on to the handler
-    if (!Objects.equals(lastParentID, u.getParentId())) {
-      processLast();
-      lastParentID = u.getParentId();
-    }
-    lastUsages.add(u);
-  }
-
-  private void processLast() {
-    // sort by rank, then process
-    lastUsages.sort(Comparator.comparing(NameUsage::getRank));
-    lastUsages.forEach(this::process);
-    lastUsages.clear();
-  }
-
-  private void process(NameUsageBase u) {
+  private void create(NameUsageBase u, NameUsageBase parent) {
     u.setSectorKey(sector.getId());
     u.getName().setSectorKey(sector.getId());
     // before we apply a specific decision
@@ -249,19 +272,6 @@ public class TreeMergeHandler implements TreeHandler {
       u.getName().setCode(sector.getCode());
     }
     
-    if (decisions.containsKey(u.getId())) {
-      applyDecision(u, decisions.get(u.getId()));
-    }
-    if (skipUsage(u, decisions.get(u.getId()))) {
-      // skip this taxon, but include children
-      LOG.info("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().getLabel(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
-      if (u.isTaxon()) {
-        skippedTaxa.add(u.getId());
-      }
-      // use taxons parent also as the parentID for this so children link one level up
-      ids.put(u.getId(), ids.getOrDefault(u.getParentId(), target));
-      return;
-    }
     // all non root nodes have newly created parents
     Usage parent = ids.getOrDefault(u.getParentId(), target);
     // apply general COL rules
@@ -285,18 +295,7 @@ public class TreeMergeHandler implements TreeHandler {
     // match name
     createMatch(u.getName());
 
-    // counter
-    if (u.isTaxon()) {
-      state.setTaxonCount(++tCounter);
-    } else {
-      state.setSynonymCount(++sCounter);
-    }
-    
-    // commit in batches
-    if ((sCounter + tCounter) % 1000 == 0) {
-      session.commit();
-      batchSession.commit();
-    }
+
   }
 
   private void incIgnored(IgnoreReason reason) {
@@ -494,7 +493,6 @@ public class TreeMergeHandler implements TreeHandler {
   
   @Override
   public void close() {
-    processLast();
     session.commit();
     session.close();
     batchSession.commit();

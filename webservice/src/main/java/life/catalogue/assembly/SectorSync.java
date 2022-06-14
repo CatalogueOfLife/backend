@@ -38,29 +38,31 @@ public class SectorSync extends SectorRunnable {
   private final EstimateDao estimateDao;
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
+  private final UsageMatcher matcher;
   private final boolean delete;
 
-  public static SectorSync withDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
-                                      SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
-                                      Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    return new SectorSync(true, sectorKey, factory, nameIndex, indexService, sdao, sid, estimateDao,
+  public static SectorSync regular(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
+                                   SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
+                                   Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+    return new SectorSync(true, sectorKey, factory, nameIndex, null, indexService, sdao, sid, estimateDao,
       successCallback, errorCallback, user);
   }
 
-  public static SectorSync noDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex,
-                                      SectorDao sdao, SectorImportDao sid, User user) throws IllegalArgumentException {
-    return new SectorSync(false, sectorKey, factory, nameIndex, null, sdao, sid, null,
+  public static SectorSync merge(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
+                                 SectorDao sdao, SectorImportDao sid, User user) throws IllegalArgumentException {
+    return new SectorSync(false, sectorKey, factory, nameIndex, matcher, null, sdao, sid, null,
       x -> {}, (s,e) -> {LOG.error("Sector merge {} failed: {}", sectorKey, e.getMessage(), e);}, user);
   }
 
-  private SectorSync(boolean delete, DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
-                    SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
-                    Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+  private SectorSync(boolean delete, DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
+                     NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
+                     Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, true, factory, indexService, sdao, sid, successCallback, errorCallback, user);
     this.delete = delete;
     this.sid = sid;
     this.estimateDao = estimateDao;
     this.nameIndex = nameIndex;
+    this.matcher = matcher;
   }
   
   @Override
@@ -212,7 +214,7 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(decisions, factory, nameIndex, user, sector, state);
+      return new TreeMergeHandler(decisions, factory, nameIndex, matcher, user, sector, state);
     }
     return new TreeCopyHandler(decisions, factory, nameIndex, user, sector, state);
   }
@@ -231,7 +233,7 @@ public class SectorSync extends SectorRunnable {
 
       if (sector.getMode() == Sector.Mode.ATTACH || sector.getMode() == Sector.Mode.MERGE) {
         String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
-        um.processTree(subjectDatasetKey, null, rootID, blockedIds, null, true,false)
+        um.processTree(subjectDatasetKey, null, rootID, blockedIds, null, true,sector.getMode() == Sector.Mode.MERGE)
             .forEach(treeHandler);
 
       } else if (sector.getMode() == Sector.Mode.UNION) {

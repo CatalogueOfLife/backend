@@ -1,7 +1,5 @@
 package life.catalogue.release;
 
-import com.google.common.collect.Maps;
-
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -12,12 +10,11 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.SectorSync;
-import life.catalogue.assembly.TreeCopyHandler;
+import life.catalogue.assembly.UsageMatcher;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
@@ -26,25 +23,18 @@ import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 
 import life.catalogue.matching.NameIndex;
-import life.catalogue.release.extended.SectorMerge;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.Rank;
 
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.ResourceIterable;
-
 import javax.validation.Validator;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class ExtendedRelease extends ProjectRelease {
   private final static Set<Rank> PUBLISHER_SECTOR_RANKS = Set.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM);
@@ -171,14 +161,15 @@ public class ExtendedRelease extends ProjectRelease {
   private void mergeSectors() throws Exception {
     updateState(ImportState.INSERTING);
     int priority = 0;
+    final UsageMatcher matcher = new UsageMatcher(baseReleaseKey, nameIndex, factory);
     for (Sector s : sectors) {
       priority = s.getPriority() == null ? priority + 1 : s.getPriority();
       priorities.put((int)s.getId(), priority);
       checkIfCancelled();
-      var sm = SectorSync.noDelete(s, factory, nameIndex, sDao, siDao, fullUser);
-      sm.run();
-      if (sm.getState().getState() != ImportState.FINISHED){
-        throw new IllegalStateException("SectorSync failed with error: " + sm.getState().getError());
+      var ss = SectorSync.merge(s, factory, nameIndex, matcher, sDao, siDao, fullUser);
+      ss.run();
+      if (ss.getState().getState() != ImportState.FINISHED){
+        throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
       }
     }
   }
