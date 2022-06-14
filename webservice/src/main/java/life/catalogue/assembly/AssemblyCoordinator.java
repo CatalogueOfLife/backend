@@ -182,8 +182,9 @@ public class AssemblyCoordinator implements Managed {
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
         sm.processSectors(catalogueKey, request.getDatasetKey()).forEach(s -> {
-          syncSector(s, user);
-          cnt.getAndIncrement();
+          if (syncSector(s, user)) {
+            cnt.getAndIncrement();
+          }
         });
       }
       // now that we have them schedule syncs
@@ -194,16 +195,21 @@ public class AssemblyCoordinator implements Managed {
       throw new IllegalArgumentException("No sectorKey or datasetKey given in request");
     }
   }
-  
-  private synchronized void syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
+
+  /**
+   * @return true if it was actually queued
+   * @throws IllegalArgumentException
+   */
+  private synchronized boolean syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
     SectorSync ss = new SectorSync(sectorKey, factory, nameIndex, indexService, sdao, sid, estimateDao, this::successCallBack, this::errorCallBack, user);
-    queueJob(ss);
+    return queueJob(ss);
   }
 
   /**
    * @param full if true does a full deletion. Otherwise higher rank taxa are kept unlinked from the sector
+   * @return true if the deletion was actually scheduled
    */
-  public void deleteSector(DSID<Integer> sectorKey, boolean full, User user) throws IllegalArgumentException {
+  public boolean deleteSector(DSID<Integer> sectorKey, boolean full, User user) throws IllegalArgumentException {
     nameIndex.assertOnline();
     SectorRunnable sd;
     if (full) {
@@ -211,20 +217,25 @@ public class AssemblyCoordinator implements Managed {
     } else {
       sd = new SectorDelete(sectorKey, factory, indexService, sdao, sid, this::successCallBack, this::errorCallBack, user);
     }
-    queueJob(sd);
+    return queueJob(sd);
   }
-  
-  private synchronized void queueJob(SectorRunnable job) throws IllegalArgumentException {
+
+  /**
+   * @return true if it was actually queued
+   * @throws IllegalArgumentException
+   */
+  private synchronized boolean queueJob(SectorRunnable job) throws IllegalArgumentException {
     nameIndex.assertOnline();
     // is this sector already syncing?
     if (syncs.containsKey(job.sectorKey)) {
       LOG.info("{} already busy", job.sector);
-      // ignore
+      return false;
     
     } else {
       assertStableData(job);
       syncs.put(job.sectorKey, new SectorFuture(job, exec.submit(job)));
       LOG.info("Queued {} for {} targeting {}", job.getClass().getSimpleName(), job.sector, job.sector.getTarget());
+      return true;
     }
   }
   

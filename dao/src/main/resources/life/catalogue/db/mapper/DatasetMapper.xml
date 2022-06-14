@@ -280,6 +280,7 @@
 
   <sql id="importable">
     d.deleted IS NULL
+    AND NOT d.private
     AND d.origin = 'EXTERNAL'
     AND d.settings ->> 'data access' IS NOT NULL
     AND coalesce((d.settings ->> 'import frequency')::int, 0) >= 0
