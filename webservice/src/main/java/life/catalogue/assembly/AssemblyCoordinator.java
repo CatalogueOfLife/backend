@@ -265,7 +265,8 @@ public class AssemblyCoordinator implements Managed {
   public synchronized void cancel(DSID<Integer> sectorKey, User user) {
     if (syncs.containsKey(sectorKey)) {
       LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);
-      syncs.remove(sectorKey).future.cancel(true);
+      var sync = syncs.remove(sectorKey);
+      sync.future.cancel(true);
     }
   }
   

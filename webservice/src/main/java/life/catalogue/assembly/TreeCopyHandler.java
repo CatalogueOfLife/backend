@@ -99,7 +99,7 @@ public class TreeCopyHandler implements ThrowingConsumer<NameUsageBase, Interrup
     // for reading only
     num = session.getMapper(NameUsageMapper.class);
     // load target taxon
-    Taxon t = tm.get(sector.getTargetAsDSID());
+    Taxon t = session.getMapper(TaxonMapper.class).get(sector.getTargetAsDSID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
   }
 
