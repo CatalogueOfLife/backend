@@ -159,10 +159,6 @@ abstract class SectorRunnable implements Runnable {
   void init() throws Exception {
     // load latest version of the sector again to get the latest target ids
     sector = loadSectorAndUpdateDatasetImport(validateSector);
-    if (sector.getMode() == Sector.Mode.MERGE) {
-      //TODO: https://github.com/Sp2000/colplus-backend/issues/509
-      throw new NotImplementedException("Sector merging not implemented yet");
-    }
     loadDecisions();
     loadForeignChildren();
     loadAttachedSectors();

@@ -41,24 +41,29 @@ public class SectorSync extends SectorRunnable {
   private final UsageMatcher matcher;
   private final boolean delete;
 
+  public static SectorSync any(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, UsageMatcher matcher,
+                                   SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
+                                   Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+    return new SectorSync(sectorKey, factory, nameIndex, matcher, indexService, sdao, sid, estimateDao, successCallback, errorCallback, user);
+  }
+
   public static SectorSync regular(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
                                    SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
                                    Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    return new SectorSync(true, sectorKey, factory, nameIndex, null, indexService, sdao, sid, estimateDao,
-      successCallback, errorCallback, user);
+    return new SectorSync(sectorKey, factory, nameIndex, null, indexService, sdao, sid, estimateDao, successCallback, errorCallback, user);
   }
 
   public static SectorSync merge(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
                                  SectorDao sdao, SectorImportDao sid, User user) throws IllegalArgumentException {
-    return new SectorSync(false, sectorKey, factory, nameIndex, matcher, null, sdao, sid, null,
+    return new SectorSync(sectorKey, factory, nameIndex, matcher, null, sdao, sid, null,
       x -> {}, (s,e) -> {LOG.error("Sector merge {} failed: {}", sectorKey, e.getMessage(), e);}, user);
   }
 
-  private SectorSync(boolean delete, DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
+  private SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
                      NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
                      Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, true, factory, indexService, sdao, sid, successCallback, errorCallback, user);
-    this.delete = delete;
+    this.delete = sector.getMode() != Sector.Mode.MERGE;
     this.sid = sid;
     this.estimateDao = estimateDao;
     this.nameIndex = nameIndex;

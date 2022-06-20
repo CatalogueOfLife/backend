@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 public class CoLUsageRules {
   private static final Logger LOG = LoggerFactory.getLogger(CoLUsageRules.class);
 
-  public static void apply(NameUsageBase u, TreeHandler.Usage parent) {
+  public static void apply(NameUsageBase u) {
     Name n = u.getName();
     // change tax status of manuscript names
     if (NomStatus.MANUSCRIPT == n.getNomStatus()) {

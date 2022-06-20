@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Origin;
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
@@ -27,9 +28,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -55,19 +54,27 @@ public class SectorSyncIT {
   final static PgSetupRule pg = new PgSetupRule();
   final static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   final static TestDataRule dataRule = TestDataRule.draft();
+//  final static PgImportRule importRule = PgImportRule.create(
+//    NomCode.BOTANICAL,
+//      DataFormat.ACEF,  1,
+//    DataFormat.COLDP, 0, 22,
+//    DataFormat.COLDP, 0,
+//    DataFormat.DWCA, 1,
+//    NomCode.ZOOLOGICAL,
+//      DataFormat.ACEF,  5, 6, 11,
+//      DataFormat.COLDP, 2, 4, 14, 24,
+//    NomCode.VIRUS,
+//      DataFormat.ACEF,  14
+//  );
   final static PgImportRule importRule = PgImportRule.create(
     NomCode.BOTANICAL,
-      DataFormat.ACEF,  1,
-      DataFormat.COLDP, 0, 22,
-    NomCode.ZOOLOGICAL,
-      DataFormat.ACEF,  5, 6, 11,
-      DataFormat.COLDP, 2, 4, 14, 24,
-    NomCode.VIRUS,
-      DataFormat.ACEF,  14
+      DataFormat.COLDP, 0,
+      DataFormat.DWCA, 1
   );
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   static IndexName match;
   static NameIndex nidx;
+  static UsageMatcher umatcher;
 
   @ClassRule
   public final static TestRule chain = RuleChain
@@ -103,6 +110,7 @@ public class SectorSyncIT {
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
     sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     setupNamesIndex(PgSetupRule.getSqlSessionFactory());
+    umatcher = new UsageMatcher(Datasets.COL, nidx, PgSetupRule.getSqlSessionFactory());
   }
   
   
@@ -152,10 +160,19 @@ public class SectorSyncIT {
     return createSector(mode, src.getDatasetKey(), simple(src), simple(target));
   }
 
+  public static DSID<Integer> createSector(Sector.Mode mode, Integer priority, NameUsageBase src, NameUsageBase target) {
+    return createSector(mode, priority, src.getDatasetKey(), simple(src), simple(target));
+  }
+
   public static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
+    return createSector(mode, null, datasetKey, src, target);
+  }
+
+  public static DSID<Integer> createSector(Sector.Mode mode, Integer priority, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
+      sector.setPriority(priority);
       sector.setDatasetKey(Datasets.COL);
       sector.setSubjectDatasetKey(datasetKey);
       sector.setSubject(src);
@@ -187,7 +204,17 @@ public class SectorSyncIT {
 
   public static void syncAll(SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      // first do all non merge sectors
+      List<Sector> merges = new ArrayList<>();
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
+        if (s.getMode() != Sector.Mode.MERGE) {
+          sync(s, sdao, siDao, eDao);
+        } else {
+          merges.add(s);
+        }
+      }
+      merges.sort(Comparator.nullsLast(Comparator.comparing(Sector::getPriority)));
+      for (var s : merges) {
         sync(s, sdao, siDao, eDao);
       }
     }
@@ -198,7 +225,7 @@ public class SectorSyncIT {
   }
 
   static void sync(Sector s, SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
-    SectorSync ss = SectorSync.regular(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), sdao, siDao, eDao,
+    SectorSync ss = SectorSync.any(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), umatcher, sdao, siDao, eDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();
@@ -224,9 +251,20 @@ public class SectorSyncIT {
     PrinterFactory.dataset(TextTreePrinter.class, datasetKey, PgSetupRule.getSqlSessionFactory(), writer).print();
     System.out.println(writer.toString());
   }
-  
+
+  void print(String filename) throws Exception {
+    System.out.println("\n" + filename);
+    InputStream resIn = openResourceStream(filename);
+    String tree = UTF8IoUtils.readString(resIn).trim();
+    System.out.println(tree);
+  }
+
+  InputStream openResourceStream(String filename) {
+    return getClass().getResourceAsStream("/assembly-trees/" + filename);
+  }
+
   void assertTree(String filename) throws IOException {
-    InputStream resIn = getClass().getResourceAsStream("/assembly-trees/" + filename);
+    InputStream resIn = openResourceStream(filename);
     String expected = UTF8IoUtils.readString(resIn).trim();
     
     Writer writer = new StringWriter();
@@ -582,6 +620,31 @@ public class SectorSyncIT {
     syncAll();
 
     assertTree("cat24.txt");
+  }
+
+  @Test
+  public void testMerge() throws Exception {
+    print("cat0.txt");
+    //print(datasetKey(0, DataFormat.COLDP));
+
+    NameUsageBase src = getByName(datasetKey(0, DataFormat.COLDP), Rank.KINGDOM, "Plantae");
+    NameUsageBase plant = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
+    createSector(Sector.Mode.UNION, src, plant);
+
+    src = getByName(datasetKey(1, DataFormat.DWCA), Rank.KINGDOM, "Plantae");
+    createSector(Sector.Mode.MERGE, src, plant);
+
+    final String plantID = plant.getId();
+    assertNull(plant.getSectorKey());
+
+    syncAll();
+    // Paulownia × tomentosa f. pasta is a provisional name and should not create implicit taxa!
+    // https://github.com/CatalogueOfLife/backend/issues/1003
+    assertTree("cat0.txt");
+    plant = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
+    // make sure the kingdom is not part of the sector, we merged!
+    assertNull(plant.getSectorKey());
+    assertEquals(plantID, plant.getId());
   }
   
 }
