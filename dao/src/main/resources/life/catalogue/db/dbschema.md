@@ -18,8 +18,15 @@ ALTER TABLE sector ADD COLUMN priority INTEGER;
 ALTER TABLE dataset ALTER COLUMN origin TYPE text;
 ALTER TABLE dataset_archive ALTER COLUMN origin TYPE text;
 ALTER TABLE dataset_source ALTER COLUMN origin TYPE text;
-UPDATE dataset SET origin = 'PROJECT' WHERE origin = 'PROJECT';
+ALTER TABLE dataset_import ALTER COLUMN origin TYPE text;
+UPDATE dataset SET origin = 'PROJECT' WHERE origin = 'MANAGED';
 UPDATE dataset SET origin = 'RELEASE' WHERE origin = 'RELEASED';
+UPDATE dataset_archive SET origin = 'PROJECT' WHERE origin = 'MANAGED';
+UPDATE dataset_archive SET origin = 'RELEASE' WHERE origin = 'RELEASED';
+UPDATE dataset_source SET origin = 'PROJECT' WHERE origin = 'MANAGED';
+UPDATE dataset_source SET origin = 'RELEASE' WHERE origin = 'RELEASED';
+UPDATE dataset_import SET origin = 'PROJECT' WHERE origin = 'MANAGED';
+UPDATE dataset_import SET origin = 'RELEASE' WHERE origin = 'RELEASED';
 DROP TYPE DATASETORIGIN;
 CREATE TYPE DATASETORIGIN AS ENUM (
   'EXTERNAL',
@@ -30,6 +37,7 @@ CREATE TYPE DATASETORIGIN AS ENUM (
 ALTER TABLE dataset ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_archive ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_source ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+ALTER TABLE dataset_import ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ```
 
 ### 2022-05-10 add DOI issues & publishedPageLink

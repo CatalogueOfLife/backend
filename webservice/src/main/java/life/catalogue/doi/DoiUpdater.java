@@ -72,7 +72,7 @@ public class DoiUpdater {
           return;
         }
       } catch (NotFoundException e) {
-        LOG.warn("COL dataset DOI {} that points to a non existing dataset {}", event.getDoi(), datasetKey);
+        LOG.warn("COL dataset DOI {} points to a non existing dataset {}", event.getDoi(), datasetKey);
         return;
 
       } catch (IllegalArgumentException e) {
