@@ -213,11 +213,13 @@ public class NameIndexMapDBStore implements NameIndexStore {
     if (name.getCanonicalId() != null && !name.getCanonicalId().equals(name.getKey())) {
       if (canonical.containsKey(name.getCanonicalId())) {
         group = canonical.get(name.getCanonicalId());
-        group = ArrayUtils.add(group, name.getKey());
+        if (!ArrayUtils.contains(group, name.getKey())) {
+          group = ArrayUtils.add(group, name.getKey());
+          canonical.put(name.getCanonicalId(), group);
+        }
       } else {
-        group = new int[]{name.getKey()};
+        canonical.put(name.getCanonicalId(), new int[]{name.getKey()});
       }
-      canonical.put(name.getCanonicalId(), group);
     }
   }
 
