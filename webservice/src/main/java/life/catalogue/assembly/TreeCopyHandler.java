@@ -23,6 +23,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
   private final List<NameUsageBase> lastUsages = new ArrayList<>();
   private final Map<String, Usage> ids = new HashMap<>();
   private final Map<String, String> nameIds = new HashMap<>();
+  private final Map<RanKnName, Usage> implicits = new HashMap<>();
 
   TreeCopyHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
     super(decisions, factory, nameIndex, user, sector, state);
@@ -153,6 +154,29 @@ public class TreeCopyHandler extends TreeBaseHandler {
       session.commit();
       batchSession.commit();
     }
+  }
+
+  protected Usage findExisting(Name n) {
+    RanKnName rnn = new RanKnName(n.getRank(), n.getScientificName());
+    // did we create that implicit name before?
+    if (implicits.containsKey(rnn)) {
+      return implicits.get(rnn);
+    }
+
+    // we need to commit the batch session to see the recent inserts
+    batchSession.commit();
+    var matches = num.findSimple(targetDatasetKey, sector.getKey().getId(), TaxonomicStatus.ACCEPTED, rnn.rank, rnn.name);
+    if (!matches.isEmpty()) {
+      var u = new Usage(matches.get(0));
+      implicits.put(rnn, u);
+      return u;
+    }
+    return null;
+  }
+
+  @Override
+  protected void cacheImplicit(Taxon t, Usage parent) {
+    implicits.put(new RanKnName(t.getName().getRank(), t.getName().getScientificName()), parent);
   }
 
   @Override

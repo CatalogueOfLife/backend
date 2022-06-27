@@ -1,13 +1,12 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Origin;
-import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -35,6 +34,7 @@ import javax.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -68,11 +68,10 @@ public class SectorSyncIT {
 //  );
   final static PgImportRule importRule = PgImportRule.create(
     NomCode.BOTANICAL,
-      DataFormat.COLDP, 0,
-      DataFormat.DWCA, 1
+      DataFormat.COLDP, 0, 25,
+      DataFormat.DWCA, 1, 2
   );
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
-  static IndexName match;
   static NameIndex nidx;
   static UsageMatcher umatcher;
 
@@ -91,11 +90,12 @@ public class SectorSyncIT {
   SectorDao sdao;
 
   public static void setupNamesIndex(SqlSessionFactory factory) {
-    match = new IndexName(TestEntityGenerator.NAME4);
-    try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(NamesIndexMapper.class).create(match);
+    try {
+      nidx = NameIndexFactory.memory(factory, AuthorshipNormalizer.INSTANCE);
+      nidx.start();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-    nidx = NameIndexFactory.fixed(match);
   }
 
   @Before
@@ -112,7 +112,11 @@ public class SectorSyncIT {
     setupNamesIndex(PgSetupRule.getSqlSessionFactory());
     umatcher = new UsageMatcher(Datasets.COL, nidx, PgSetupRule.getSqlSessionFactory());
   }
-  
+
+  @After
+  public void tearDown () throws Exception {
+    nidx.close();
+  }
   
   public int datasetKey(int key, DataFormat format) {
     return importRule.datasetKey(key, format);
@@ -204,18 +208,22 @@ public class SectorSyncIT {
 
   public static void syncAll(SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      // first do all non merge sectors
-      List<Sector> merges = new ArrayList<>();
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
-        if (s.getMode() != Sector.Mode.MERGE) {
-          sync(s, sdao, siDao, eDao);
-        } else {
-          merges.add(s);
-        }
-      }
-      merges.sort(Comparator.nullsLast(Comparator.comparing(Sector::getPriority)));
-      for (var s : merges) {
         sync(s, sdao, siDao, eDao);
+      }
+    }
+  }
+
+  public void syncMerges() {
+    syncMerges(sdao, siDao, eDao);
+  }
+
+  public static void syncMerges(SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
+        if (s.getMode() == Sector.Mode.MERGE) {
+          sync(s, sdao, siDao, eDao);
+        }
       }
     }
   }
@@ -628,23 +636,34 @@ public class SectorSyncIT {
     //print(datasetKey(0, DataFormat.COLDP));
 
     NameUsageBase src = getByName(datasetKey(0, DataFormat.COLDP), Rank.KINGDOM, "Plantae");
-    NameUsageBase plant = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
+    final NameUsageBase plant = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
     createSector(Sector.Mode.UNION, src, plant);
+
+    syncAll();
 
     src = getByName(datasetKey(1, DataFormat.DWCA), Rank.KINGDOM, "Plantae");
     createSector(Sector.Mode.MERGE, src, plant);
 
+    src = getByName(datasetKey(2, DataFormat.DWCA), Rank.PHYLUM, "Basidiomycota");
+    final NameUsageBase basi = getByName(Datasets.COL, Rank.PHYLUM, "Basidiomycota");
+    createSector(Sector.Mode.MERGE, src, basi);
+
+    src = getByName(datasetKey(25, DataFormat.COLDP), Rank.FAMILY, "Asteraceae");
+    final NameUsageBase asteraceae = getByName(Datasets.COL, Rank.FAMILY, "Asteraceae");
+    createSector(Sector.Mode.MERGE, src, asteraceae);
+
+    syncMerges();
+
     final String plantID = plant.getId();
     assertNull(plant.getSectorKey());
 
-    syncAll();
     // Paulownia × tomentosa f. pasta is a provisional name and should not create implicit taxa!
     // https://github.com/CatalogueOfLife/backend/issues/1003
-    assertTree("cat0.txt");
-    plant = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
+    assertTree("cat-merge1.txt");
+    var plant2 = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
     // make sure the kingdom is not part of the sector, we merged!
-    assertNull(plant.getSectorKey());
-    assertEquals(plantID, plant.getId());
+    assertNull(plant2.getSectorKey());
+    assertEquals(plantID, plant2.getId());
   }
   
 }

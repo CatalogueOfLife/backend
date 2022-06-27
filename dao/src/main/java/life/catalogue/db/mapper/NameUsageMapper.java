@@ -28,11 +28,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   NameUsageBase get(@Param("key") DSID<String> key);
 
   /**
-   * SimpleName.parent=parentName
+   * SimpleName.parent=parent.id
    * @param key
-   * @return
    */
   SimpleName getSimple(@Param("key") DSID<String> key);
+
+  /**
+   * Retrieve the parent of the given key as a SimpleName with
+   * SimpleName.parent=parent.id
+   * @param key of the child to fetch the parent from
+   */
+  SimpleName getSimpleParent(@Param("key") DSID<String> key);
 
   List<SimpleName> findSimple(@Param("datasetKey") int datasetKey,
                               @Param("sectorKey") Integer sectorKey,
@@ -176,8 +182,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<String> deleteSubtree(@Param("key") DSID<String> key);
 
   /**
-   * Iterates over all accepted descendants in a tree in breadth-first order for a given start taxon
+   * Iterates over all accepted descendants in a tree for a given start taxon
    * and processes them with the supplied handler. If the start taxon is null all root taxa are used.
+   *
+   * By default this will be in breadth-first order.
+   * Depth first can also be requested, but is more expensive and will be slower.
    *
    * This allows a single query to efficiently stream all its values without keeping them in memory.
    *
@@ -199,6 +208,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                      @Param("includeSynonyms") boolean includeSynonyms,
                      @Param("depthFirst") boolean depthFirst);
 
+  /**
+   * Same as processTree, but it does not populate the accepted name for synonyms, thus requiring
+   * only half the amount of joins!
+   */
+  Cursor<NameUsageBase> processTreeNoAcc(@Param("datasetKey") int datasetKey,
+                                    @Param("sectorKey") Integer sectorKey,
+                                    @Param("startID") @Nullable String startID,
+                                    @Param("exclusions") @Nullable Set<String> exclusions,
+                                    @Param("lowestRank") @Nullable Rank lowestRank,
+                                    @Param("includeSynonyms") boolean includeSynonyms,
+                                    @Param("depthFirst") boolean depthFirst);
   /**
    * List all usages from a sector different to the one given including nulls,
    * which are direct children of a taxon from the given sector key.

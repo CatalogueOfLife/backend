@@ -31,6 +31,11 @@ public class Synonym extends NameUsageBase {
   }
 
   @Override
+  public NameUsageBase copy() {
+    return new Synonym(this);
+  }
+
+  @Override
   public String getLabel(boolean html) {
     return getLabelBuilder(getName(), accepted != null ? accepted.isExtinct() : null, getNamePhrase(), getAccordingTo(), html).toString();
   }

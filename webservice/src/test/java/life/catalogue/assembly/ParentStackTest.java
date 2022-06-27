@@ -5,10 +5,6 @@ import life.catalogue.api.model.NameUsageBase;
 
 import life.catalogue.api.model.Taxon;
 
-import org.gbif.api.model.checklistbank.ParsedName;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -22,7 +18,7 @@ public class ParentStackTest {
     ParentStack parents = new ParentStack(king);
 
     assertEquals(0, parents.size());
-    assertNull(parents.lowest());
+    assertNull(parents.last());
     assertEquals(king, parents.lowestParentMatch());
 
     parents.put(src(1, null));
@@ -44,7 +40,7 @@ public class ParentStackTest {
     parents.put(src(4, 1)); // this removes all but the first key
     assertEquals(2, parents.size());
     assertFalse(parents.isDoubtful());
-    assertNotNull(parents.lowest());
+    assertNotNull(parents.last());
   }
 
   private NameUsageBase src(int key, Integer parentKey) {

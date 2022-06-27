@@ -1,29 +1,24 @@
 package life.catalogue.assembly;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.Expiry;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-
-import com.github.benmanes.caffeine.cache.Weigher;
 
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.NameIndex;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Matches usages against a given dataset. Matching is primarily based on names index matches,
@@ -43,8 +38,9 @@ public class UsageMatcher {
 
   private List<NameUsageBase> loadUsage(@NonNull Integer integer) {
     try (SqlSession session = factory.openSession(true)) {
-      var num = session.getMapper(NameUsageMapper.class);
-      return num.listByNamesIndexID(datasetKey, integer, page);
+      var result = session.getMapper(NameUsageMapper.class).listByNamesIndexID(datasetKey, integer, page);
+      // avoid empty lists which get cached
+      return result == null || result.isEmpty() ? null : result;
     }
   }
 
@@ -55,7 +51,19 @@ public class UsageMatcher {
   }
 
   public NameUsageBase match(NameUsageBase nu, List<ParentStack.MatchedUsage> parents) {
-    // rematch?
+    matchNidxIfNeeded(nu);
+    if (nu.getName().getNamesIndexId() != null) {
+      var nidx = nameIndex.get(nu.getName().getNamesIndexId());
+
+      var existing = usages.get(nu.getName().getNamesIndexId());
+      if (existing != null && !existing.isEmpty()) {
+        return match(nu, existing, parents);
+      }
+    }
+    return null;
+  }
+
+  private void matchNidxIfNeeded(NameUsageBase nu) {
     if (nu.getName().getNamesIndexId() == null) {
       var match = nameIndex.match(nu.getName(), true, false);
       if (match.hasMatch()) {
@@ -64,14 +72,9 @@ public class UsageMatcher {
       } else {
         LOG.info("No name match for {}", nu.getName());
       }
+    } else {
+      // update verbatimKey with canonical nidx !!!
     }
-    if (nu.getName().getNamesIndexId() != null) {
-      var existing = usages.get(nu.getName().getNamesIndexId());
-      if (!existing.isEmpty()) {
-        return match(nu, existing, parents);
-      }
-    }
-    return null;
   }
 
   private NameUsageBase match(NameUsageBase nu, List<NameUsageBase> existing, List<ParentStack.MatchedUsage> parents) {
@@ -79,4 +82,40 @@ public class UsageMatcher {
     return existing.get(0);
   }
 
+  /**
+   * Evicts all name usages with the given nameIndexID from the cache.
+   */
+  private void delete(@Nullable Integer nameIndexID) {
+    if (nameIndexID != null) {
+      usages.invalidate(nameIndexID);
+    }
+  }
+
+  /**
+   * Manually adds a name usage to the cache.
+   * The name will be matched to the names index if it does not have a names index id yet.
+   */
+  public void add(NameUsageBase nu) {
+    matchNidxIfNeeded(nu);
+    if (nu.getName().getNamesIndexId() != null) {
+      var before = get(nu.getName().getVerbatimKey());
+      if (before == null) {
+        before = new ArrayList<>();
+        before.add(nu);
+        usages.put(nu.getName().getNamesIndexId(), before);
+      } else {
+        before.add(nu);
+      }
+    } else {
+      LOG.debug("No names index key. Cannot add name usage {}", nu);
+    }
+  }
+
+  public List<NameUsageBase> get(Integer nameIndexID) {
+    return usages.get(nameIndexID);
+  }
+
+  public void clear() {
+    usages.invalidateAll();
+  }
 }

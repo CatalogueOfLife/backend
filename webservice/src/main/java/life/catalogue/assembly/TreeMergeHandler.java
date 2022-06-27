@@ -2,29 +2,15 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.dao.CatCopy;
-import life.catalogue.dao.DatasetEntityDao;
-import life.catalogue.dao.ReferenceDao;
-import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.parser.NameParser;
-
-import org.apache.commons.math3.random.StableRandomGenerator;
 
 import org.gbif.nameparser.api.*;
 
 import java.util.*;
 
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 
@@ -37,6 +23,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final UsageMatcher matcher;
   private int counter = 0;  // all source usages
   private int updCounter = 0; // updates
+  private final DSID<String> targetKey = DSID.root(targetDatasetKey); // key to some target usage that can be reused
 
   TreeMergeHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher, User user, Sector sector, SectorImport state) {
     super(decisions, factory, nameIndex, user, sector, state);
@@ -88,10 +75,33 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
+    Usage parent;
+    // make sure synonyms have a matched direct parent (second last, cause the last is the synonym itself)
+    if (nu.isSynonym()) {
+      parent = usage(parents.secondLast().match);
+    } else {
+      parent = usage(parents.lowestParentMatch());
+    }
+
+    // replace accepted taxa with doubtful ones for all nomenclators and for synonym parents
+    // and allow to manually configure a doubtful status
+    // http://dev.gbif.org/issues/browse/POR-2780
+    if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL || parent.status.isSynonym())) {
+      nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    }
+    if (parent.status.isSynonym()) {
+      // use accepted instead
+      var sn = num.getSimpleParent(targetKey.id(parent.id));
+      parent = usage(sn);
+    }
+
     // finally create or update records
     if (match == null) {
-      var parent = usage(parents.lowestParentMatch());
-      create(nu, parent);
+      if (parent != null) {
+        create(nu, parent);
+        parents.setMatch(nu); // this is now the modified, created usage
+        matcher.add(nu);
+      }
     } else {
       update(nu, match);
     }
@@ -103,10 +113,30 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
   }
 
+  /**
+   * Use the same usage matching to find existing taxa
+   */
+  @Override
+  protected Usage findExisting(Name n) {
+    // we need to commit the batch session to see the recent inserts
+    batchSession.commit();
+    Taxon t = new Taxon(n);
+    var m = matcher.match(t, parents.classification());
+    return usage(m);
+  }
+
+  @Override
+  protected void cacheImplicit(Taxon t, Usage parent) {
+    matcher.add(t);
+  }
+
   private void update(NameUsageBase nu, NameUsageBase existing) {
-    //TODO: implement updates for authorship, published in, vernaculars, basionym, etc
-    LOG.debug("Update {} with {}", existing, nu);
-    updCounter++;
+    if (nu.getStatus() == existing.getStatus()) {
+      //TODO: implement updates for authorship, published in, vernaculars, basionym, etc
+      // patch classification if direct parent adds to it
+      LOG.debug("Update {} with {}", existing, nu);
+      updCounter++;
+    }
   }
 
   /**

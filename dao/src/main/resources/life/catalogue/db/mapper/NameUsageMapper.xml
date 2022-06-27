@@ -23,7 +23,7 @@
     ${alias}.modified_by AS ${prefix}modified_by
   </sql>
 
-  <sql id="SELECT">
+  <sql id="SELECT_NO_ACCEPTED">
     u.is_synonym,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="u"/>
@@ -35,7 +35,10 @@
       <property name="aliasNI" value="nm"/>
       <property name="prefix" value="n_"/>
     </include>
-    ,
+  </sql>
+
+  <sql id="SELECT">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT_NO_ACCEPTED"/>,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="a"/>
       <property name="prefix" value="a_"/>
@@ -117,7 +120,8 @@
   </sql>
 
   <sql id="FROM_NO_ACCEPTED">
-    name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+    name_usage u
+    JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
     LEFT JOIN name_match nm ON nm.dataset_key=n.dataset_key AND nm.name_id=n.id
     LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
   </sql>
@@ -185,6 +189,13 @@
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
+  </select>
+
+  <select id="getSimpleParent" resultMap="simpleResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
+      JOIN name_usage child ON child.dataset_key=u.dataset_key AND child.parent_id=u.id
+    WHERE child.dataset_key = #{key.datasetKey} AND child.id = #{key.id}
   </select>
 
   <select id="findSimple" resultMap="simpleResultMap">
@@ -505,6 +516,36 @@
       ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id) AS path
     </if>
     FROM <include refid="FROM"/>
+    JOIN x ON x.id = u.parent_id
+    <where>
+      u.dataset_key=#{datasetKey}
+      <include refid="WHERE_UNION"/>
+    </where>
+    )
+    SELECT * FROM x
+    <if test="depthFirst">
+      ORDER BY x.path
+    </if>
+  </select>
+
+
+  <select id="processTreeNoAcc" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    WITH RECURSIVE x AS(
+    SELECT <include refid="SELECT_NO_ACCEPTED"/>
+    <if test="depthFirst">
+      ,concat_ws('|', n.scientific_name, u.id) AS path
+    </if>
+    FROM <include refid="FROM_NO_ACCEPTED"/>
+    WHERE u.dataset_key=#{datasetKey} AND
+    <include refid="WHERE_START"/>
+
+    UNION
+
+    SELECT <include refid="SELECT_NO_ACCEPTED"/>
+    <if test="depthFirst">
+      ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id) AS path
+    </if>
+    FROM <include refid="FROM_NO_ACCEPTED"/>
     JOIN x ON x.id = u.parent_id
     <where>
       u.dataset_key=#{datasetKey}

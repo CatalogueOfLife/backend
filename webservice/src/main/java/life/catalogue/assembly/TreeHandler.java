@@ -11,6 +11,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+/**
+ * Consumers should not expect the accepted property of a Synonym to exist!
+ * Use the parentID property instead to lookup the accepted name if needed.
+ */
 public interface TreeHandler extends Consumer<NameUsageBase>, AutoCloseable {
 
   void reset();

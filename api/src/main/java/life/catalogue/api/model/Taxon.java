@@ -49,6 +49,11 @@ public class Taxon extends NameUsageBase {
   }
 
   @Override
+  public NameUsageBase copy() {
+    return new Taxon(this);
+  }
+
+  @Override
   public String getLabel(boolean html) {
     return getLabelBuilder(getName(), extinct, getNamePhrase(), getAccordingTo(), html).toString();
   }

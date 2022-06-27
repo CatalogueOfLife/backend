@@ -12,6 +12,7 @@ public class ParentStack {
   private final NameUsageBase root;
   private final LinkedList<MatchedUsage> parents = new LinkedList<>();
   private String doubtfulUsageID = null;
+  private boolean first = true;
 
   /**
    * @param rootTarget the default attachment point to the target taxonomy
@@ -25,7 +26,7 @@ public class ParentStack {
     NameUsageBase match;
 
     public MatchedUsage(NameUsageBase usage) {
-      this.usage = usage;
+      this.usage = usage.copy();
     }
   }
 
@@ -53,16 +54,22 @@ public class ParentStack {
    * @return the lowest matched parent to be used for newly created usages.
    */
   public NameUsageBase lowestParentMatch() {
-    for (var mu : parents) {
-      if (mu.match != null) {
-        return mu.match;
+    var it = parents.descendingIterator();
+    while(it.hasNext()){
+      var nu = it.next();
+      if (nu.match != null) {
+        return nu.match;
       }
     }
     return root;
   }
 
-  public NameUsageBase lowest() {
-    return parents.isEmpty() ? null : parents.getLast().usage;
+  public MatchedUsage secondLast() {
+    return parents.isEmpty() ? null : parents.get(parents.size()-2);
+  }
+
+  public MatchedUsage last() {
+    return parents.isEmpty() ? null : parents.getLast();
   }
 
   public void put(NameUsageBase nu) {
@@ -84,11 +91,14 @@ public class ParentStack {
           }
         }
       }
-      if (parents.isEmpty()) {
+      if (!first && parents.isEmpty()) {
         throw new IllegalStateException("Usage parent " + nu.getParentId() + " not found for " + nu.getLabel());
       }
     }
     parents.add(new MatchedUsage(nu));
+    if (first) {
+      first = false;
+    }
   }
 
   private void clear() {

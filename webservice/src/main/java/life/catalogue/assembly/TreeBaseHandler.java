@@ -39,6 +39,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final int targetDatasetKey;
   protected final User user;
   protected final Sector sector;
+  protected final Dataset source;
   protected final SectorImport state;
   protected final Map<String, EditorialDecision> decisions;
   protected final NameIndex nameIndex;
@@ -53,7 +54,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Usage targetUsage;
   protected final Taxon target;
   // tracker
-  protected final Map<RanKnName, Usage> implicits = new HashMap<>();
   protected final Set<String> ignoredTaxa = new HashSet<>(); // usageIDs of skipped accepted names only
   // counter
   protected final Map<IgnoreReason, Integer> ignoredCounter = new HashMap<>();
@@ -91,6 +91,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // load target taxon
     target = session.getMapper(TaxonMapper.class).get(sector.getTargetAsDSID());
     targetUsage = usage(target);
+    // load source dataset
+    source = session.getMapper(DatasetMapper.class).get(sector.getSubjectDatasetKey());
 
     // writes only
     batchSession = factory.openSession(ExecutorType.BATCH, false);
@@ -101,9 +103,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   protected Usage usage(NameUsageBase u) {
-    return new Usage(u.getId(), u.getName().getRank(), u.getStatus());
+    return u == null ? null : new Usage(u.getId(), u.getName().getRank(), u.getStatus());
   }
 
+  protected Usage usage(SimpleName sn) {
+    return sn == null ? null : new Usage(sn.getId(), sn.getRank(), sn.getStatus());
+  }
 
   /**
    * Creates a new usage with the lowest current matched parent.
@@ -130,7 +135,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
     VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), orig.getId());
     vm.create(v);
     // match name
-    createMatch(u.getName());
+    matchName(u.getName());
+    persistMatch(u.getName());
 
     if (u.isTaxon()) {
       state.setTaxonCount(++tCounter);
@@ -151,13 +157,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
    * @return the parent, either as supplied or the new one if implicit taxa were created
    */
   protected Usage createImplicit(Usage parent, Taxon taxon) {
-    List<Rank> neededRanks = new ArrayList<>();
-
     // figure out if we need to create any implicit taxon
     Name origName = taxon.getName();
     // do only create implicit names if the name is parsed & not provisional
     // see https://github.com/CatalogueOfLife/coldp/issues/45
     if (origName.isParsed() && !origName.isIndetermined() && !taxon.isProvisional()) {
+      List<Rank> neededRanks = new ArrayList<>();
       for (Rank r : implicitRanks) {
         if (parent.rank.higherThan(r) && r.higherThan(origName.getRank())) {
           neededRanks.add(r);
@@ -192,18 +197,13 @@ public abstract class TreeBaseHandler implements TreeHandler {
           LOG.warn("Could not create implicit name for rank {} from {}: {}", r, origName.getScientificName(), n);
           continue;
         }
-        RanKnName rnn = new RanKnName(r, n.getScientificName());
-        // did we create that implicit name before?
-        if (implicits.containsKey(rnn)) {
-          parent = implicits.get(rnn);
-          continue;
-        }
+        // match to names index - does not persist yet
+        matchName(n);
         // did we sync the name before in the same sector?
-        var existing = findInSector(rnn);
+        Usage existing = findExisting(n);
         if (existing != null) {
           LOG.debug("Found implicit {} {} in sector {}", r, origName.getScientificName(), sector);
           parent = existing;
-          implicits.put(rnn, existing);
           continue;
         }
         // finally, create missing implicit name
@@ -213,8 +213,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
         n.applyUser(user);
         LOG.debug("Create implicit {} from {}: {}", r, origName.getScientificName(), n);
         nm.create(n);
-        // match name
-        createMatch(n);
+        // persist match name
+        persistMatch(n);
 
         Taxon t = new Taxon();
         DatasetEntityDao.newKey(t);
@@ -228,28 +228,34 @@ public abstract class TreeBaseHandler implements TreeHandler {
         tm.create(t);
 
         parent = usage(t);
-        //reuse implicit names...
-        implicits.put(new RanKnName(n.getRank(), n.getScientificName()), parent);
+        // allow reuse of implicit names
+        cacheImplicit(t, parent);
       }
     }
     return parent;
   }
 
-  protected void createMatch(Name n) {
+  protected abstract Usage findExisting(Name n);
+
+  protected abstract void cacheImplicit(Taxon t, Usage parent);
+
+  /**
+   * Matches the name, but does not store anything yet.
+   */
+  protected void matchName(Name n) {
     NameMatch m = nameIndex.match(n, true, false);
     if (m.hasMatch()) {
-      session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNameKey(), m.getType());
+      n.setNamesIndexType(m.getType());
+      n.setNamesIndexId(m.getNameKey());
+    } else {
+      n.setNamesIndexType(MatchType.NONE);
     }
   }
 
-  private Usage findInSector(RanKnName rnn) {
-    // we need to commit the batch session to see the recent inserts
-    batchSession.commit();
-    var matches = num.findSimple(targetDatasetKey, sector.getKey().getId(), TaxonomicStatus.ACCEPTED, rnn.rank, rnn.name);
-    if (!matches.isEmpty()) {
-      return new Usage(matches.get(0));
+  protected void persistMatch(Name n) {
+    if (n.getNamesIndexId() != null) {
+      session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId(), n.getNamesIndexType());
     }
-    return null;
   }
 
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision) {
