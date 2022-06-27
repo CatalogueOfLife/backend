@@ -4,7 +4,10 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.db.mapper.NamesIndexMapper;
+import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.NameIndexImpl;
+import life.catalogue.matching.NameIndexMapDBStore;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NomCode;
@@ -14,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -93,5 +97,23 @@ public class NamesIndexResource {
       throw new IllegalArgumentException("Unable to parse name: " + name);
     }
   }
-  
+
+  @GET
+  @Path("compact")
+  @RolesAllowed({Roles.ADMIN})
+  public void compact() {
+    store().compact();
+  }
+
+  @GET
+  @Path("debug/{key}")
+  @RolesAllowed({Roles.ADMIN})
+  public int[] debugCanonical(@PathParam("key") int key) {
+    return store().debugCanonical(key);
+  }
+
+  private NameIndexMapDBStore store() {
+    return ((NameIndexImpl) ni).store();
+  }
+
 }

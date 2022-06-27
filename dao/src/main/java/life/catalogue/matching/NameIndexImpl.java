@@ -289,6 +289,10 @@ public class NameIndexImpl implements NameIndex {
     return store.count();
   }
 
+  public NameIndexMapDBStore store() {
+    return (NameIndexMapDBStore) store;
+  }
+
   @Override
   public Iterable<IndexName> all() {
     return store.all();

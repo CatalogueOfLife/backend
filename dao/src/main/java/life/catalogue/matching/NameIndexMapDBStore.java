@@ -1,5 +1,8 @@
 package life.catalogue.matching;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
@@ -134,11 +137,16 @@ public class NameIndexMapDBStore implements NameIndexStore {
   public Collection<IndexName> byCanonical(Integer key) {
     if (canonical.containsKey(key)) {
       return Arrays.stream(canonical.get(key))
+        .distinct()
         .boxed()
         .map(this::get)
-        .collect(Collectors.toList());
+        .collect(Collectors.toSet());
     }
     return null;
+  }
+
+  public int[] debugCanonical(Integer key) {
+    return canonical.get(key);
   }
 
   @Override
@@ -210,6 +218,14 @@ public class NameIndexMapDBStore implements NameIndexStore {
         group = new int[]{name.getKey()};
       }
       canonical.put(name.getCanonicalId(), group);
+    }
+  }
+
+  @Override
+  public void compact() {
+    for (var entry : canonical.entrySet()) {
+      IntSet set = IntOpenHashSet.of(entry.getValue());
+      canonical.put(entry.getKey(), set.toIntArray());
     }
   }
 

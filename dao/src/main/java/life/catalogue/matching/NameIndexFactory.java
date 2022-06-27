@@ -62,7 +62,7 @@ public class NameIndexFactory {
       public int size() {
         return 0;
       }
-      
+
       @Override
       public void add(IndexName name) {
       }
