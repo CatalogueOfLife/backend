@@ -224,7 +224,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
   @Override
   public void compact() {
     for (var entry : canonical.entrySet()) {
-      IntSet set = IntOpenHashSet.of(entry.getValue());
+      IntSet set = new IntOpenHashSet(entry.getValue());
       canonical.put(entry.getKey(), set.toIntArray());
     }
   }
