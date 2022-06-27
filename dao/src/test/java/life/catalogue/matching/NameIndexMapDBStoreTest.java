@@ -104,7 +104,7 @@ public class NameIndexMapDBStoreTest {
     addName("b", 13, 10);
     addName("b", 12, 10);
     assertEquals(7, db.count());
-    assertArrayEquals(new int[]{12,13,12}, db.debugCanonical(10));
+    assertArrayEquals(new int[]{12,13}, db.debugCanonical(10));
 
     db.compact();
     assertEquals(7, db.count());
