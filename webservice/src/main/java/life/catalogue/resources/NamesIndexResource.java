@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
@@ -98,7 +100,8 @@ public class NamesIndexResource {
     }
   }
 
-  @GET
+  @POST
+  @Hidden
   @Path("compact")
   @RolesAllowed({Roles.ADMIN})
   public void compact() {
@@ -106,6 +109,7 @@ public class NamesIndexResource {
   }
 
   @GET
+  @Hidden
   @Path("debug/{key}")
   @RolesAllowed({Roles.ADMIN})
   public int[] debugCanonical(@PathParam("key") int key) {
