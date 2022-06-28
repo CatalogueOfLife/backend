@@ -39,10 +39,10 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = LoggerFactory.getLogger(DatasetKeyRewriteFilter.class);
 
-  private static final String REL_PATTERN_STR = "(\\d+)(?:LRC?|R(\\d+))";
+  private static final String REL_PATTERN_STR = "(\\d+)(?:LX?RC?|R(\\d+))";
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
   private static final Pattern REL_PATH = Pattern.compile("dataset/" + REL_PATTERN_STR);
-  private static final String COL_PREFIX = "COL";
+  private static final String COL_PREFIX = "(X?COL)";
   private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_PREFIX + "(20\\d\\d)", Pattern.CASE_INSENSITIVE);
   private static final Pattern COL_PATTERN = Pattern.compile("^" + COL_PREFIX + "(20\\d\\d)$");
   // all parameters that contain dataset keys and which we check if they need to be rewritten
@@ -99,7 +99,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
       if (m.find()) {
         Integer rkey = releaseKeyFromYear(m);
         builder.replacePath(m.replaceFirst("dataset/" + rkey));
-        req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, COL_PREFIX + m.group(1));
+        req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1) + m.group(2));
       }
     }
 
@@ -120,7 +120,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
       } else {
         m = COL_PATTERN.matcher(datasetKey);
         if (m.find()){
-          return Optional.of(releaseKeyFromMatch(m));
+          return Optional.of(releaseKeyFromYear(m));
         }
       }
     }
@@ -143,11 +143,12 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     }
 
     Integer releaseKey;
-    // candidate requested? (\\d+)(?:LRC?|R(\\d+))$
-    if (m.group().endsWith("C")) {
-      releaseKey = cache.getLatestReleaseCandidate(projectKey);
+    // candidate requested? (\\d+)(?:LX?RC?|R(\\d+))$
+    final boolean extended = m.group().contains("X");
+    if (m.group().endsWith("RC")) {
+      releaseKey = cache.getLatestReleaseCandidate(projectKey, extended);
     } else if (m.group().endsWith("R")) {
-      releaseKey = cache.getLatestRelease(projectKey);
+      releaseKey = cache.getLatestRelease(projectKey, extended);
     } else {
       // parsing cannot fail, we have a pattern
       int attempt = Integer.parseInt(m.group(2));
@@ -162,10 +163,11 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
 
   private Integer releaseKeyFromYear(Matcher m) {
     // parsing cannot fail, we have a pattern
-    int year = Integer.parseInt(m.group(1));
-    Integer releaseKey = cache.getColAnnualRelease(year);
+    int year = Integer.parseInt(m.group(2));
+    final boolean extended = m.group(1).startsWith("X");
+    Integer releaseKey = cache.getColAnnualRelease(year, extended);
     if (releaseKey == null) {
-      throw new NotFoundException("COL Annual Checklist " + year + " was never released");
+      throw new NotFoundException( (extended ? "XCOL" : "COL") + " Annual Checklist " + year + " was never released");
     }
     return releaseKey;
   }

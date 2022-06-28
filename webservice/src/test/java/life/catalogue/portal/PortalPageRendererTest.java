@@ -27,22 +27,22 @@ public class PortalPageRendererTest {
     }
 
     @Override
-    public @Nullable Integer getLatestRelease(@NonNull Integer key) {
+    public @Nullable Integer getLatestRelease(int projectKey, boolean ext) {
       return dataRule.testData.key;
     }
 
     @Override
-    public @Nullable Integer getLatestReleaseCandidate(@NonNull Integer key) {
+    public @Nullable Integer getLatestReleaseCandidate(int projectKey, boolean ext) {
       return dataRule.testData.key;
     }
 
     @Override
-    public @Nullable Integer getReleaseByAttempt(int project, int attempt) {
+    public @Nullable Integer getReleaseByAttempt(int projectKey, int attempt) {
       return null;
     }
 
     @Override
-    public @Nullable Integer getColAnnualRelease(int year) {
+    public @Nullable Integer getColAnnualRelease(int year, boolean ext) {
       return null;
     }
 

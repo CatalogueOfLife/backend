@@ -16,12 +16,11 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Cache that listens to dataset changes and provides the latest dataset keys for project releases
@@ -29,24 +28,36 @@ import org.slf4j.LoggerFactory;
  */
 public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
   private static final Logger LOG = LoggerFactory.getLogger(LatestDatasetKeyCacheImpl.class);
-
+  private final static int MAX_SIZE = 1000;
   private SqlSessionFactory factory;
   private final LoadingCache<Integer, Integer> latestRelease = Caffeine.newBuilder()
-    .maximumSize(1000)
-    .expireAfterWrite(1, TimeUnit.HOURS)
-    .build(k -> lookupLatest(k, false));
+                                                                       .maximumSize(MAX_SIZE)
+                                                                       .expireAfterWrite(1, TimeUnit.HOURS)
+                                                                       .build(k -> lookupLatest(k, false, false));
+  private final LoadingCache<Integer, Integer> latestXRelease = Caffeine.newBuilder()
+                                                                        .maximumSize(MAX_SIZE)
+                                                                        .expireAfterWrite(1, TimeUnit.HOURS)
+                                                                        .build(k -> lookupLatest(k, false, true));
   private final LoadingCache<Integer, Integer> latestCandidate = Caffeine.newBuilder()
-    .maximumSize(1000)
-    .expireAfterWrite(1, TimeUnit.HOURS)
-    .build(k -> lookupLatest(k, true));
-  private final LoadingCache<ReleaseAttempt, Integer> releaseAttempt = Caffeine.newBuilder()
-    .maximumSize(1000)
-    .expireAfterWrite(30, TimeUnit.DAYS)
-    .build(this::lookupAttempt);
+                                                                         .maximumSize(MAX_SIZE)
+                                                                         .expireAfterWrite(1, TimeUnit.HOURS)
+                                                                         .build(k -> lookupLatest(k, true, false));
+  private final LoadingCache<Integer, Integer> latestXCandidate = Caffeine.newBuilder()
+                                                                          .maximumSize(MAX_SIZE)
+                                                                          .expireAfterWrite(1, TimeUnit.HOURS)
+                                                                          .build(k -> lookupLatest(k, true, true));
   private final LoadingCache<Integer, Integer> annualReleases = Caffeine.newBuilder()
-    .maximumSize(50)
-    .expireAfterWrite(30, TimeUnit.DAYS)
-    .build(this::lookupAnnualRelease);
+                                                                        .maximumSize(50)
+                                                                        .expireAfterWrite(30, TimeUnit.DAYS)
+                                                                        .build(y -> lookupAnnualRelease(y, false));
+  private final LoadingCache<Integer, Integer> annualXReleases = Caffeine.newBuilder()
+                                                                        .maximumSize(50)
+                                                                        .expireAfterWrite(30, TimeUnit.DAYS)
+                                                                         .build(y -> lookupAnnualRelease(y, true));
+  private final LoadingCache<ReleaseAttempt, Integer> releaseAttempt = Caffeine.newBuilder()
+                                                                               .maximumSize(MAX_SIZE)
+                                                                               .expireAfterWrite(30, TimeUnit.DAYS)
+                                                                               .build(this::lookupAttempt);
 
 
   public LatestDatasetKeyCacheImpl(SqlSessionFactory factory) {
@@ -60,14 +71,14 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
 
   @Override
   @Nullable
-  public Integer getLatestRelease(@NonNull Integer key) {
-    return latestRelease.get(key);
+  public Integer getLatestRelease(int projectKey, boolean extended) {
+    return extended ? latestXRelease.get(projectKey): latestRelease.get(projectKey);
   }
 
   @Override
   @Nullable
-  public Integer getLatestReleaseCandidate(@NonNull Integer key) {
-    return latestCandidate.get(key);
+  public Integer getLatestReleaseCandidate(int projectKey, boolean extended) {
+    return extended ? latestXCandidate.get(projectKey): latestCandidate.get(projectKey);
   }
 
   @Override
@@ -77,15 +88,15 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
   }
 
   @Override
-  public @Nullable Integer getColAnnualRelease(int year) {
-    return annualReleases.get(year);
+  public @Nullable Integer getColAnnualRelease(int year, boolean extended) {
+    return extended ? annualXReleases.get(year) : annualReleases.get(year);
   }
 
   @Override
   public boolean isLatestRelease(int datasetKey) {
     var info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.origin == DatasetOrigin.RELEASE && info.sourceKey != null) {
-      return Objects.equals(getLatestRelease(info.sourceKey), datasetKey);
+      return Objects.equals(getLatestRelease(info.sourceKey, false), datasetKey);
     }
     return false;
   }
@@ -94,7 +105,7 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
    * @param projectKey a dataset key that is known to exist and point to a managed dataset
    * @return dataset key for the latest release of a project or null in case no release exists
    */
-  private Integer lookupLatest(int projectKey, boolean candidate) throws NotFoundException {
+  private Integer lookupLatest(int projectKey, boolean candidate, boolean extended) throws NotFoundException {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       return dm.latestRelease(projectKey, !candidate);
@@ -108,16 +119,17 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
     }
   }
 
-  private Integer lookupAnnualRelease(int year) {
+  private Integer lookupAnnualRelease(int year, boolean extended) {
+    final String col = extended ? "XCOL" : "COL";
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSearchRequest req = new DatasetSearchRequest();
       req.setReleasedFrom(Datasets.COL);
-      req.setAlias(String.format("COL%02d", year-2000));
-      var resp = dm.search(req,null,new Page());
+      req.setAlias(String.format("%s%02d", col, year - 2000));
+      var resp = dm.search(req, null, new Page());
       if (resp != null && !resp.isEmpty()) {
         if (resp.size() > 1) {
-          LOG.warn("Multiple public COL releases found with alias {}", req.getAlias());
+          LOG.warn("Multiple public {} releases found with alias {}", col, req.getAlias());
         }
         return resp.get(0).getKey();
       }

@@ -197,7 +197,7 @@ public class PortalPageRenderer {
 
   private int releaseKey(Environment env) {
     boolean preview = env == Environment.PREVIEW;
-    Integer key = preview ? cache.getLatestReleaseCandidate(Datasets.COL) : cache.getLatestRelease(Datasets.COL);
+    Integer key = preview ? cache.getLatestReleaseCandidate(Datasets.COL, false) : cache.getLatestRelease(Datasets.COL, false);
     if (key == null) throw new NotFoundException("No COL" + (preview ? " preview" : "") + " release existing");
     return key;
   }
