@@ -6,6 +6,7 @@ import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.*;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
@@ -20,7 +21,7 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   
   IssueContainer getIssues(@Param("key") DSID<String> key);
 
-  void update(@Param("key") DSID<String> key, @Param("issues") Set<Issue> issues);
+  void update(@Param("key") DSID<String> key, @Param("issues") Set<Issue> issues, @Param("sources") Map<VerbatimSource.InfoGroup, DSID<String>> secondarySources);
 
   void delete(@Param("key") DSID<String> key);
 

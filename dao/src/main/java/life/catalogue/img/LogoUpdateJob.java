@@ -106,26 +106,28 @@ public class LogoUpdateJob extends BackgroundJob {
    */
   private Boolean pullLogo(Dataset dataset) {
     if (dataset.getLogo() != null) {
-      LOG.info("Pulling logo from {}", dataset.getLogo());
-      String fn = FilenameUtils.getName(dataset.getLogo().getPath());
-      if (Strings.isNullOrEmpty(fn)) {
-        fn = "logo-original";
-      }
-      File logo = scratchFileFunc.apply(dataset.getKey(), fn);
-      try {
-        downloader.download(dataset.getLogo(), logo);
-        // now read image and copy to logo repo for resizing
-        imgService.putDatasetLogo(dataset.getKey(), ImageIO.read(logo));
-        return true;
-    
-      } catch (DownloadException e) {
-        LOG.error("Failed to download logo from {}", dataset.getLogo(), e);
-    
-      } catch (IOException e) {
-        LOG.error("Failed to read logo image {} from downloaded file {}", dataset.getLogo(), logo.getAbsolutePath(), e);
+      if (scratchFileFunc != null && downloader != null && imgService != null) {
+        LOG.info("Pulling logo from {}", dataset.getLogo());
+        String fn = FilenameUtils.getName(dataset.getLogo().getPath());
+        if (Strings.isNullOrEmpty(fn)) {
+          fn = "logo-original";
+        }
+        File logo = scratchFileFunc.apply(dataset.getKey(), fn);
+        try {
+          downloader.download(dataset.getLogo(), logo);
+          // now read image and copy to logo repo for resizing
+          imgService.putDatasetLogo(dataset.getKey(), ImageIO.read(logo));
+          return true;
 
-      } finally {
-        FileUtils.deleteQuietly(logo);
+        } catch (DownloadException e) {
+          LOG.error("Failed to download logo from {}", dataset.getLogo(), e);
+
+        } catch (IOException e) {
+          LOG.error("Failed to read logo image {} from downloaded file {}", dataset.getLogo(), logo.getAbsolutePath(), e);
+
+        } finally {
+          FileUtils.deleteQuietly(logo);
+        }
       }
       return false;
     }

@@ -104,7 +104,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void testByNidx() throws Exception {
     // does not do proper test but run the query to make sure the SQL is not wrong
-    var res = mapper().listByNamesIndexID(testDataRule.testData.key, 3, new Page());
+    var res = mapper().listByNamesIndexOrCanonicalID(testDataRule.testData.key, 3, new Page());
     res = mapper().listByNamesIndexIDGlobal(3, new Page());
   }
 

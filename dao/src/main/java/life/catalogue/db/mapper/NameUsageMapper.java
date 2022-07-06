@@ -87,14 +87,21 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId, @Param("page") Page page);
 
   /**
+   * List all usages in a given dataset that have the given names index id if the nidx points to a qualified name.
+   * If the given nidx is a canonical name id list all usages with or without authorship that match the canonical nidx.
    * Warning, this does not return bare names, only true usages!
    */
-  List<NameUsageBase> listByNamesIndexID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx, @Param("page") Page page);
+  List<NameUsageBase> listByNamesIndexOrCanonicalID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx, @Param("page") Page page);
 
   /**
    * Warning, this does not return bare names, only true usages!
    */
   List<NameUsageBase> listByNamesIndexIDGlobal(@Param("nidx") int nidx, @Param("page") Page page);
+
+  /**
+   * List all usages linked to an index name with the given canonical nidx.
+   */
+  List<NameUsageBase> listByCanonNIDX(@Param("datasetKey") int datasetKey, @Param("nidx") int canonicalNidx);
 
   /**
    * Warning, this does not count bare names, only true usages!
@@ -269,6 +276,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   /**
    * Iterate over all usages ordered by their canonical names index id.
+   * The parent property is filled with the parent name, not its ID.
    */
   Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
 

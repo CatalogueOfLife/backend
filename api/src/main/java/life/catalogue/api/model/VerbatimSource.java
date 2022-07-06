@@ -3,18 +3,20 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.Issue;
 
 import java.io.Serializable;
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 
 public class VerbatimSource implements DSID<String>, IssueContainer, Serializable {
 
+  public enum InfoGroup {
+    NAME, AUTHORSHIP, PUBLISHED_IN, BASIONYM, STATUS, PARENT, EXTINCT, DOI, LINK
+  }
   private String id;
   private Integer datasetKey;
   private String sourceId;
   private Integer sourceDatasetKey;
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
+  private Map<InfoGroup, DSID<String>> secondarySources = new EnumMap<>(InfoGroup.class);
   // instance hash created on load to see if the instance has been changed
   private int _hashKeyOnLoad = -1;
 
@@ -72,6 +74,18 @@ public class VerbatimSource implements DSID<String>, IssueContainer, Serializabl
     this.issues = issues;
   }
 
+  public Map<InfoGroup, DSID<String>> getSecondarySources() {
+    return secondarySources;
+  }
+
+  public void setSecondarySources(Map<InfoGroup, DSID<String>> secondarySources) {
+    this.secondarySources = secondarySources;
+  }
+
+  public void setSecondarySource(InfoGroup group, DSID<String> source) {
+    secondarySources.put(group, DSID.copy(source));
+  }
+
   /**
    * Stores the current state of the instance for subsequent hasChanged() tests.
    */
@@ -95,11 +109,12 @@ public class VerbatimSource implements DSID<String>, IssueContainer, Serializabl
       Objects.equals(datasetKey, that.datasetKey) &&
       Objects.equals(sourceId, that.sourceId) &&
       Objects.equals(sourceDatasetKey, that.sourceDatasetKey) &&
-      Objects.equals(issues, that.issues);
+      Objects.equals(issues, that.issues) &&
+      Objects.equals(secondarySources, that.secondarySources);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, sourceId, sourceDatasetKey, issues);
+    return Objects.hash(id, datasetKey, sourceId, sourceDatasetKey, issues, secondarySources);
   }
 }

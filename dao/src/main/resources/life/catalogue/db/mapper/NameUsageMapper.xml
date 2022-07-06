@@ -162,6 +162,15 @@
 
   <resultMap id="simpleNidxResultMap" type="SimpleNameWithNidx" autoMapping="true">
     <id property="id" column="id"/>
+    <result property="parent" column="parent_id"/>
+    <result property="name" column="scientific_name"/>
+    <result property="phrase" column="name_phrase" />
+    <result property="namesIndexId" column="index_id" />
+    <result property="namesIndexMatchType" column="type" />
+  </resultMap>
+
+  <resultMap id="simpleNidxResultMapParentName" type="SimpleNameWithNidx" autoMapping="true">
+    <id property="id" column="id"/>
     <result property="name" column="scientific_name"/>
     <result property="phrase" column="name_phrase" />
     <result property="namesIndexId" column="index_id" />
@@ -270,7 +279,13 @@
     <include refid="FROM_ACCEPTED"/>
   </sql>
 
-  <select id="listByNamesIndexID" resultMap="usageResultMap">
+  <select id="listByCanonNIDX" resultMap="usageResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM_NIDX"/>
+    WHERE nm.dataset_key = #{datasetKey} AND ni.canonical_id=#{nidx}
+  </select>
+
+  <select id="listByNamesIndexOrCanonicalID" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM_NIDX"/>
     WHERE nm.dataset_key = #{datasetKey} AND (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
@@ -605,7 +620,7 @@
   </select>
 
   <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    SELECT u.id, nm.index_id, nm.type, n.rank, n.authorship, u.name_phrase, u.status, np.scientific_name AS parent, ni.canonical_id
+    SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, ni.canonical_id, nm.type, np.scientific_name AS parent
     FROM name_usage u
       JOIN name n ON n.dataset_key=#{datasetKey} AND n.id=u.name_id
       LEFT JOIN name_usage up ON up.dataset_key=#{datasetKey} AND up.id=u.parent_id

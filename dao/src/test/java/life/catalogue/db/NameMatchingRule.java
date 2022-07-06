@@ -39,6 +39,10 @@ public class NameMatchingRule extends ExternalResource {
     RematchJob.all(TestDataRule.TEST_USER.getKey(), factory, nidx).run();
   }
 
+  public void rematch(int datasetKey) {
+    RematchJob.one(TestDataRule.TEST_USER.getKey(), factorySupplier.get(), nidx, datasetKey).run();
+  }
+
   public NameIndex getIndex() {
     return nidx;
   }

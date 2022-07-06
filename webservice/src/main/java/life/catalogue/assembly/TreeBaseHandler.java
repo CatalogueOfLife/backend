@@ -416,7 +416,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return null;
   }
 
-  private String lookupReference(Reference ref) {
+  protected String lookupReference(Reference ref) {
     if (ref != null) {
       if (refIds.containsKey(ref.getId())) {
         // we have seen this ref before

@@ -31,14 +31,14 @@ public class UsageMatcher {
   private final int datasetKey;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
+  // key = canonical nidx
   private final LoadingCache<Integer, List<NameUsageBase>> usages = Caffeine.newBuilder()
-                                                                      .maximumSize(100_000)
-                                                                      .build(this::loadUsage);
-  private final Page page = new Page(0, 100);
+                                                                                 .maximumSize(100_000)
+                                                                                 .build(this::loadUsage);
 
-  private List<NameUsageBase> loadUsage(@NonNull Integer integer) {
+  private List<NameUsageBase> loadUsage(@NonNull Integer nidx) {
     try (SqlSession session = factory.openSession(true)) {
-      var result = session.getMapper(NameUsageMapper.class).listByNamesIndexID(datasetKey, integer, page);
+      var result = session.getMapper(NameUsageMapper.class).listByCanonNIDX(datasetKey, nidx);
       // avoid empty lists which get cached
       return result == null || result.isEmpty() ? null : result;
     }
@@ -50,12 +50,20 @@ public class UsageMatcher {
     this.factory = factory;
   }
 
-  public NameUsageBase match(NameUsageBase nu, List<ParentStack.MatchedUsage> parents) {
-    matchNidxIfNeeded(nu);
-    if (nu.getName().getNamesIndexId() != null) {
-      var nidx = nameIndex.get(nu.getName().getNamesIndexId());
+  private Integer canonNidx(Integer nidx) {
+    if (nidx != null) {
+      var xn = nameIndex.get(nidx);
+      if (xn != null) {
+        return xn.getCanonicalId();
+      }
+    }
+    return null;
+  }
 
-      var existing = usages.get(nu.getName().getNamesIndexId());
+  public NameUsageBase match(NameUsageBase nu, List<ParentStack.MatchedUsage> parents) {
+    var canonNidx = matchNidxIfNeeded(nu);
+    if (canonNidx != null) {
+      var existing = usages.get(canonNidx);
       if (existing != null && !existing.isEmpty()) {
         return match(nu, existing, parents);
       }
@@ -63,18 +71,23 @@ public class UsageMatcher {
     return null;
   }
 
-  private void matchNidxIfNeeded(NameUsageBase nu) {
+  /**
+   * @return the canonical names index id or null if it cant be matched
+   */
+  private Integer matchNidxIfNeeded(NameUsageBase nu) {
     if (nu.getName().getNamesIndexId() == null) {
       var match = nameIndex.match(nu.getName(), true, false);
       if (match.hasMatch()) {
         nu.getName().setNamesIndexId(match.getName().getKey());
         nu.getName().setNamesIndexType(match.getType());
+        // we know the canonical id, return it right here
+        return match.getName().getCanonicalId();
+
       } else {
         LOG.info("No name match for {}", nu.getName());
       }
-    } else {
-      // update verbatimKey with canonical nidx !!!
     }
+    return canonNidx(nu.getName().getNamesIndexId());
   }
 
   private NameUsageBase match(NameUsageBase nu, List<NameUsageBase> existing, List<ParentStack.MatchedUsage> parents) {
@@ -83,11 +96,11 @@ public class UsageMatcher {
   }
 
   /**
-   * Evicts all name usages with the given nameIndexID from the cache.
+   * Evicts all name usages with the given canonical nameIndexID from the cache.
    */
-  private void delete(@Nullable Integer nameIndexID) {
-    if (nameIndexID != null) {
-      usages.invalidate(nameIndexID);
+  private void delete(@Nullable Integer cidx) {
+    if (cidx != null) {
+      usages.invalidate(cidx);
     }
   }
 
@@ -96,23 +109,18 @@ public class UsageMatcher {
    * The name will be matched to the names index if it does not have a names index id yet.
    */
   public void add(NameUsageBase nu) {
-    matchNidxIfNeeded(nu);
-    if (nu.getName().getNamesIndexId() != null) {
-      var before = get(nu.getName().getVerbatimKey());
+    var canonNidx = matchNidxIfNeeded(nu);
+    if (canonNidx != null) {
+      var before = usages.get(canonNidx);
       if (before == null) {
+        // nothing existing, even after loading the cache from the db. Create a new list
         before = new ArrayList<>();
-        before.add(nu);
-        usages.put(nu.getName().getNamesIndexId(), before);
-      } else {
-        before.add(nu);
+        usages.put(canonNidx, before);
       }
+      before.add(nu);
     } else {
       LOG.debug("No names index key. Cannot add name usage {}", nu);
     }
-  }
-
-  public List<NameUsageBase> get(Integer nameIndexID) {
-    return usages.get(nameIndexID);
   }
 
   public void clear() {

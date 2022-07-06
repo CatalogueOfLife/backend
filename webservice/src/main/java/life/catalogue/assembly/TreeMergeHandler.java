@@ -1,7 +1,10 @@
 package life.catalogue.assembly;
 
+import kotlin.collections.EmptySet;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.matching.NameIndex;
 
 import org.gbif.nameparser.api.*;
@@ -64,7 +67,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       applyDecision(nu, decisions.get(nu.getId()));
     }
 
-    // find out matching - even if we dont include the name in the merge we want the parents matched
+    // find out matching - even if we don't include the name in the merge we want the parents matched
     var match = matcher.match(nu, parents.classification());
     LOG.debug("{} matches {}", nu.getLabel(), match);
     parents.setMatch(match);
@@ -75,6 +78,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
+    // parent can be null if no matches exist
     Usage parent;
     // make sure synonyms have a matched direct parent (second last, cause the last is the synonym itself)
     if (nu.isSynonym()) {
@@ -89,7 +93,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL || parent.status.isSynonym())) {
       nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     }
-    if (parent.status.isSynonym()) {
+    if (parent != null && parent.status.isSynonym()) {
       // use accepted instead
       var sn = num.getSimpleParent(targetKey.id(parent.id));
       parent = usage(sn);
@@ -130,13 +134,44 @@ public class TreeMergeHandler extends TreeBaseHandler {
     matcher.add(t);
   }
 
-  private void update(NameUsageBase nu, NameUsageBase existing) {
+  private boolean update(NameUsageBase nu, NameUsageBase existing) {
     if (nu.getStatus() == existing.getStatus()) {
-      //TODO: implement updates for authorship, published in, vernaculars, basionym, etc
-      // patch classification if direct parent adds to it
-      LOG.debug("Update {} with {}", existing, nu);
-      updCounter++;
+      Set<VerbatimSource.InfoGroup> updated = EnumSet.noneOf(VerbatimSource.InfoGroup.class);
+      var pn = existing.getName();
+      if (pn.isParsed() && !pn.hasAuthorship() && nu.getName().hasAuthorship()) {
+        updated.add(VerbatimSource.InfoGroup.AUTHORSHIP);
+        pn.setCombinationAuthorship(nu.getName().getCombinationAuthorship());
+        pn.setSanctioningAuthor(nu.getName().getSanctioningAuthor());
+        pn.setBasionymAuthorship(nu.getName().getBasionymAuthorship());
+        pn.rebuildAuthorship();
+        LOG.debug("Updated {} with authorship {}", pn.getScientificName(), pn.getAuthorship());
+      }
+      if (pn.getPublishedInId() == null && nu.getName().getPublishedInId() != null) {
+        updated.add(VerbatimSource.InfoGroup.PUBLISHED_IN);
+        Reference ref = rm.get(DSID.of(nu.getDatasetKey(), nu.getName().getPublishedInId()));
+        pn.setPublishedInId(lookupReference(ref));
+        pn.setPublishedInPage(nu.getName().getPublishedInPage());
+        pn.setPublishedInPageLink(nu.getName().getPublishedInPageLink());
+        LOG.debug("Updated {} with publishedIn", pn);
+      }
+      // TODO: implement updates basionym, vernaculars, etc
+      // TODO: patch classification if direct parent adds to it
+      if (!updated.isEmpty()) {
+        updCounter++;
+        // update name
+        nm.update(pn);
+        // track source
+        var v = vm.get(existing);
+        if (v != null) {
+          for (var group : updated) {
+            v.setSecondarySource(group, nu);
+          }
+          vm.update(existing, v.getIssues(), v.getSecondarySources());
+        }
+        return true;
+      }
     }
+    return false;
   }
 
   /**
