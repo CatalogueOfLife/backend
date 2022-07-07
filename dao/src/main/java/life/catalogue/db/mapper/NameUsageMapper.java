@@ -268,5 +268,5 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
 
-  Cursor<String> processIds(@Param("datasetKey") int datasetKey);
+  Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms);
 }

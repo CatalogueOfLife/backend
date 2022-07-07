@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
  */
 @Produces(MediaType.APPLICATION_JSON)
 @Provider
-public class StreamBodyWriter implements MessageBodyWriter<Stream<?>> {
-  private static final Logger LOG = LoggerFactory.getLogger(StreamBodyWriter.class);
+public class StreamBodyJsonWriter implements MessageBodyWriter<Stream<?>> {
+  private static final Logger LOG = LoggerFactory.getLogger(StreamBodyJsonWriter.class);
 
   @Override
   public boolean isWriteable(Class<?> type, Type type1, Annotation[] antns, MediaType mt) {

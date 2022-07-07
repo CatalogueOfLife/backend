@@ -581,8 +581,11 @@
     ORDER BY ni.canonical_id, ni.id
   </select>
 
-  <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+  <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="2" resultSetType="FORWARD_ONLY">
     SELECT id FROM name_usage WHERE dataset_key=#{datasetKey}
+    <if test="!synonyms">
+      AND NOT is_synonym
+    </if>
   </select>
 
   <delete id="delete" parameterType="map">
