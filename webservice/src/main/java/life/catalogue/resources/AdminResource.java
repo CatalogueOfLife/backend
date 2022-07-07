@@ -12,6 +12,7 @@ import life.catalogue.assembly.AssemblyState;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
@@ -32,6 +33,7 @@ import life.catalogue.resources.legacy.IdMap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -45,6 +47,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.neo4j.internal.kernel.api.Write;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,7 +150,13 @@ public class AdminResource {
       && assembly.getState().isIdle(); // syncs
     return settings;
   }
-  
+
+  private void updateStatus(boolean maintenance) throws IOException {
+    try (Writer w = UTF8IoUtils.writerFromFile(cfg.statusFile)) {
+      w.write(String.format("{\"maintenance\": %s}\n", maintenance));
+    }
+  }
+
   @PUT
   @Path("/settings")
   public synchronized void setSettings(ServerSettings s) throws Exception {
@@ -156,6 +165,7 @@ public class AdminResource {
     if (s.maintenance != null && curr.maintenance != s.maintenance) {
       LOG.info("Set maintenance mode={}", s.maintenance);
       curr.maintenance = s.maintenance;
+      updateStatus(curr.maintenance);
     }
 
     if (s.gbifSync != null && curr.gbifSync != s.gbifSync) {

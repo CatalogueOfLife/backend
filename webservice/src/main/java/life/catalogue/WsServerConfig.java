@@ -137,8 +137,12 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public File exportDir = new File("/tmp/exports");
 
+  /**
+   * JSON status file to be updated for maintenance mode.
+   * Should be served as a static file from https://download.checklistbank.org/.status.json
+   */
   @NotNull
-  public String exportCss = "https://gitcdn.link/repo/CatalogueOfLife/backend/master/webservice/src/main/resources/exporter/html/catalogue.css";
+  public File statusFile = new File("/tmp/.status.json");
 
   public URI apiURI = URI.create("https://api.catalogueoflife.org");
 
