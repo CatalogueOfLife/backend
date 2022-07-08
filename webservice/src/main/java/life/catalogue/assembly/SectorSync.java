@@ -85,7 +85,7 @@ public class SectorSync extends SectorRunnable {
   @Override
   void init() throws Exception {
     super.init();
-    // also load all sector subject to auto block them
+    // also load all sector subjects to auto block them
     try (SqlSession session = factory.openSession()) {
       AtomicInteger counter = new AtomicInteger();
       session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey).forEach(s -> {

@@ -138,6 +138,13 @@ public class AdminResource {
     return assembly.getState();
   }
 
+  @DELETE
+  @Path("/assembly")
+  public void restartAssembly() throws Exception {
+    assembly.stop();
+    assembly.start();
+  }
+
   @GET
   @Path("/settings")
   @PermitAll

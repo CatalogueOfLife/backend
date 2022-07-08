@@ -104,6 +104,7 @@ public class AssemblyCoordinator implements Managed {
 
   @Override
   public void stop() throws Exception {
+    LOG.info("Stop assembly coordinator");
     // orderly shutdown running syncs
     for (SectorFuture df : syncs.values()) {
       df.future.cancel(true);
