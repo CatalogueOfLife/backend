@@ -1194,7 +1194,7 @@ public enum Country implements Area {
   /**
    * Turkey.
    */
-  TURKEY("TR", "TUR", 792, "Turkey", Continent.EUROPE),
+  TURKEY("TR", "TUR", 792, "Türkiye", Continent.EUROPE),
   
   /**
    * Turkmenistan.
