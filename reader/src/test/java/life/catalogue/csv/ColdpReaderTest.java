@@ -3,9 +3,6 @@ package life.catalogue.csv;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.Resources;
 
-import java.nio.file.Paths;
-
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

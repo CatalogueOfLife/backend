@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static life.catalogue.api.util.ObjectUtils.getIfNotNull;
 import static life.catalogue.common.tax.AuthorshipNormalizer.Author;
 
 /**

@@ -1,10 +1,12 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.TimeoutException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.ImportAttempt;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.FileMetricsDao;
 
 import java.io.BufferedReader;
@@ -159,32 +161,33 @@ public abstract class BaseDiffService<K> {
   }
 
   protected BufferedReader udiff(File f1, String label1, File f2, String label2, int context, boolean unzip) {
+    Process ps = null;
+    File tmp;
     try {
       String cmd = String.format("export LC_CTYPE=en_US.UTF-8; diff --label %s --label %s -B -d -U %s %s %s",
         label1, label2, context, input(f1, unzip), input(f2, unzip));
       // we write the diff to a temp file as we get into problems with the process not returning when streaming the results directly.
       // Especially when http connections are aborted.
-      File tmp = File.createTempFile("coldiff-", ".diff");
+      tmp = File.createTempFile("coldiff-", ".diff");
       tmp.deleteOnExit();
       LOG.debug("Execute: {}", cmd);
       ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd + "; exit 0");
       pb.redirectOutput(tmp);
 
-      Process ps = pb.start();
+      ps = pb.start();
       boolean timeout = false;
-      // limit to 10s, see https://stackoverflow.com/questions/37043114/how-to-stop-a-command-being-executed-after-4-5-seconds-through-process-builder/37065167#37065167
+      // limit max time, see https://stackoverflow.com/questions/37043114/how-to-stop-a-command-being-executed-after-4-5-seconds-through-process-builder/37065167#37065167
       if (!ps.waitFor(timeoutInSeconds, TimeUnit.SECONDS)) {
         LOG.error("Diff between {} and {} has timed out after {}s", f1.getName(), f2.getName(), timeoutInSeconds);
-        ps.destroy(); // make sure we leave no process behind
         timeout=true;
       }
       int status = ps.waitFor();
       if (status != 0) {
         String error = InputStreamUtils.readEntireStream(ps.getErrorStream());
         if (timeout) {
-          LOG.warn("Unix diff failed with status {}: {}", status, error);
-          throw new UnavailableException("The requested diff timed out. Consider to narrow down your comparison to not overload the server");
+          throw new TimeoutException("The requested diff timed out. Consider to narrow down your comparison to not overload the server");
         }
+        LOG.warn("Unix diff failed with status {}: {}", status, error);
         throw new RuntimeException("Unix diff failed with status " + status + ": " + error);
       }
       return UTF8IoUtils.readerFromFile(tmp);
@@ -193,7 +196,21 @@ public abstract class BaseDiffService<K> {
       throw new RuntimeException("Unix diff failed", e);
 
     } catch (InterruptedException e) {
-      throw new RuntimeException("Unix diff was interrupted", e);
+      throw new InterruptedRuntimeException("Unix diff was interrupted", e);
+
+    } finally {
+      // make sure we leave no process behind
+      if (ps != null) {
+        ps.destroy();
+        try {
+          if (!ps.waitFor(5, TimeUnit.SECONDS)) {
+            ps.destroyForcibly();
+          }
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          ps.destroyForcibly();
+        }
+      }
     }
   }
 

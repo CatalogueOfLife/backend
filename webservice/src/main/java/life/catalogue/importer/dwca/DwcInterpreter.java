@@ -1,12 +1,11 @@
 package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.DwcUnofficialTerm;
+import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
-import life.catalogue.csv.MappingInfos;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -199,23 +198,15 @@ public class DwcInterpreter extends InterpreterBase {
       m.setLocality(rec.get(DwcTerm.locality));
       m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(DwcTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
       try {
-        Optional<CoordParser.LatLon> coord = CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLatitude), rec.get(DwcTerm.decimalLongitude));
-        if (coord.isPresent()) {
-          m.setLatitude(coord.get().lat);
-          m.setLongitude(coord.get().lon);
-        }
+        CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLatitude), rec.get(DwcTerm.decimalLongitude)).ifPresent(m::setCoordinate);
       } catch (UnparsableException e) {
         rec.addIssue(Issue.LAT_LON_INVALID);
       }
-      if (rec.hasAny(DwcTerm.maximumElevationInMeters, DwcTerm.minimumElevationInMeters)) {
-        var min = integer(rec, Issue.ALTITUDE_INVALID, DwcTerm.minimumElevationInMeters);
-        var max = integer(rec, Issue.ALTITUDE_INVALID, DwcTerm.maximumElevationInMeters);
-        if (min != null && max != null) {
-          m.setAltitude((min + (max-min)/2));
-        } else {
-          m.setAltitude(ObjectUtils.coalesce(min, max));
-        }
-      }
+      m.setAltitude(rec.getFirst(DwcTerm.minimumElevationInMeters, DwcTerm.maximumElevationInMeters));
+      m.setSex(SafeParser.parse(SexParser.PARSER, rec.get(DwcTerm.sex)).orNull(Issue.TYPE_MATERIAL_SEX_INVALID, rec));
+      m.setInstitutionCode(rec.get(DwcTerm.institutionCode));
+      m.setCatalogNumber(rec.get(DwcTerm.catalogNumber));
+      m.setAssociatedSequences(rec.get(DwcTerm.associatedSequences));
       m.setHost(null);
       m.setDate(rec.get(DwcTerm.eventDate));
       m.setCollector(rec.get(DwcTerm.recordedBy));

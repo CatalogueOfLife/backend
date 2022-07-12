@@ -6,7 +6,8 @@ import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.SectorProcessable;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.decision.EstimateRematcher;
@@ -112,7 +113,7 @@ public class SectorSync extends SectorRunnable {
   @Override
   void init() throws Exception {
     super.init();
-    // also load all sector subject to auto block them
+    // also load all sector subjects to auto block them
     try (SqlSession session = factory.openSession()) {
       AtomicInteger counter = new AtomicInteger();
       session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey).forEach(s -> {
@@ -224,7 +225,7 @@ public class SectorSync extends SectorRunnable {
     return new TreeCopyHandler(decisions, factory, nameIndex, user, sector, state);
   }
 
-  private void processTree() {
+  private void processTree() throws InterruptedException {
     final Set<String> blockedIds = decisions.values().stream()
         .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK) && ed.getSubject().getId() != null)
         .map(ed -> ed.getSubject().getId())
@@ -238,7 +239,7 @@ public class SectorSync extends SectorRunnable {
 
       if (sector.getMode() == Sector.Mode.ATTACH || sector.getMode() == Sector.Mode.MERGE) {
         String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
-        um.processTreeNoAcc(subjectDatasetKey, null, rootID, blockedIds, null, true,sector.getMode() == Sector.Mode.MERGE)
+        um.processTree(subjectDatasetKey, null, rootID, blockedIds, null, true,sector.getMode() == Sector.Mode.MERGE)
             .forEach(treeHandler);
 
       } else if (sector.getMode() == Sector.Mode.UNION) {
@@ -256,7 +257,7 @@ public class SectorSync extends SectorRunnable {
             treeHandler.accept(child);
           } else {
             LOG.info("Traverse child {}", child);
-            um.processTreeNoAcc(subjectDatasetKey, null, child.getId(), blockedIds, null, true,false)
+            um.processTree(subjectDatasetKey, null, child.getId(), blockedIds, null, true,false)
                 .forEach(treeHandler);
           }
           treeHandler.reset();

@@ -70,7 +70,7 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
       throw new IllegalArgumentException("Diffs need to be between different datasets");
     }
     if (userDiffs.contains(userKey)) {
-      throw new TooManyRequestsException("Diffs need to be between different datasets");
+      throw new TooManyRequestsException("You can only run one diff at a time");
     }
     // throw a 404 early in case any of the datasets does not exist
     ddao.getOr404(key1);

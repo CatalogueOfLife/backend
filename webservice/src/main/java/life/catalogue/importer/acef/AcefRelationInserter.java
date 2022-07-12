@@ -31,7 +31,7 @@ public class AcefRelationInserter extends RelationInserterBase {
   }
   
   @Override
-  protected void processVerbatimUsage(NeoUsage u, VerbatimRecord v, Node p) {
+  protected void processVerbatimUsage(NeoUsage u, VerbatimRecord v, Node p) throws InterruptedException {
     if (AcefTerm.AcceptedInfraSpecificTaxa == v.getType()) {
       // finally we have all pieces to also interpret infraspecific names
       // even with a missing parent, we will still try to build a name

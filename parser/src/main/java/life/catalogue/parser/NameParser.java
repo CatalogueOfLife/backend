@@ -94,13 +94,19 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    */
   @Deprecated
   public Optional<ParsedNameUsage> parse(String name) {
-    return parse(name, Rank.UNRANKED, null, IssueContainer.VOID);
+    try {
+      return parse(name, Rank.UNRANKED, null, IssueContainer.VOID);
+    } catch (InterruptedException e) {
+      LOG.warn("NameParser got interrupted");
+      Thread.currentThread().interrupt();
+    }
+    return Optional.empty();
   }
   
   /**
    * @return a parsed authorship instance only, i.e. combination & original year & author list
    */
-  public Optional<ParsedAuthorship> parseAuthorship(String authorship) {
+  public Optional<ParsedAuthorship> parseAuthorship(String authorship) throws InterruptedException {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedAuthorship());
     try {
       ParsedAuthorship pa = parserInternal.parseAuthorship(authorship);
@@ -116,7 +122,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Populates the parsed authorship of a given name instance by parsing a single authorship string.
    * Only parses the authorship if the name itself is already parsed.
    */
-  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String authorship, IssueContainer v){
+  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String authorship, IssueContainer v) throws InterruptedException {
     // try to add an authorship if not yet there
     if (!Strings.isNullOrEmpty(authorship)) {
       if (pnu.getName().isParsed()) {
@@ -285,7 +291,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
-  public Optional<ParsedNameUsage> parse(String name, Rank rank, NomCode code, IssueContainer issues) {
+  public Optional<ParsedNameUsage> parse(String name, Rank rank, NomCode code, IssueContainer issues) throws InterruptedException {
     return parse(name, null, rank, code, issues);
   }
 
@@ -293,7 +299,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
-  public Optional<ParsedNameUsage> parse(String name, String authorship, Rank rank, NomCode code, IssueContainer issues) {
+  public Optional<ParsedNameUsage> parse(String name, String authorship, Rank rank, NomCode code, IssueContainer issues) throws InterruptedException {
     Name n = new Name();
     n.setScientificName(name);
     n.setAuthorship(authorship);
@@ -308,7 +314,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    *
    * Populates a given name instance with the parsing results.
    */
-  public Optional<ParsedNameUsage> parse(Name n, IssueContainer issues) {
+  public Optional<ParsedNameUsage> parse(Name n, IssueContainer issues) throws InterruptedException {
     if (StringUtils.isBlank(n.getScientificName())) {
       return Optional.empty();
     }
@@ -338,7 +344,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     return Optional.of(pnu);
   }
   
-  public Optional<NameType> determineType(Name name) {
+  public Optional<NameType> determineType(Name name) throws InterruptedException {
     String sciname = name.getScientificName();
     if (StringUtils.isBlank(sciname)) {
       return Optional.of(NameType.NO_NAME);

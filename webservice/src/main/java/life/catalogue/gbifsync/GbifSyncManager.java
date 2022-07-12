@@ -4,7 +4,6 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
-
 import life.catalogue.dw.ManagedExtended;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;
@@ -12,6 +11,7 @@ import org.gbif.nameparser.utils.NamedThreadFactory;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.client.Client;
@@ -20,8 +20,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.dropwizard.lifecycle.Managed;
-
 
 /**
  * Syncs datasets from the GBIF registry
@@ -29,15 +27,15 @@ import io.dropwizard.lifecycle.Managed;
 public class GbifSyncManager implements ManagedExtended {
   private static final Logger LOG = LoggerFactory.getLogger(GbifSyncManager.class);
   private static final String THREAD_NAME = "gbif-sync";
-  public static final UUID PLAZI_KEY = UUID.fromString("7ce8aef0-9e92-11dc-8738-b8a03c50a862");
-  
+
   private ScheduledExecutorService scheduler;
   private GbifSyncJob job;
   private final GbifConfig cfg;
   private final DatasetDao ddao;
   private final SqlSessionFactory sessionFactory;
   private final Client client;
-  
+  private ScheduledFuture<?> future;
+
   public GbifSyncManager(GbifConfig gbif, DatasetDao ddao, SqlSessionFactory sessionFactory, Client client) {
     this.cfg = gbif;
     this.ddao = ddao;
@@ -67,7 +65,7 @@ public class GbifSyncManager implements ManagedExtended {
       );
       LOG.info("Enable GBIF registry sync job every {} hours", cfg.syncFrequency);
       job = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC);
-      scheduler.scheduleAtFixedRate(job, 0, cfg.syncFrequency, TimeUnit.HOURS);
+      future = scheduler.scheduleAtFixedRate(job, 0, cfg.syncFrequency, TimeUnit.HOURS);
    
     } else {
       LOG.warn("Disable GBIF dataset sync");
@@ -77,6 +75,9 @@ public class GbifSyncManager implements ManagedExtended {
   @Override
   public void stop() throws Exception {
     if (scheduler != null) {
+      if (future != null) {
+        future.cancel(true);
+      }
       ExecutorUtils.shutdown(scheduler, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
     }
     job = null;

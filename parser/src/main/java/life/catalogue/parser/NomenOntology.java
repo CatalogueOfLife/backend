@@ -32,7 +32,7 @@ public class NomenOntology {
 
   private Map<String, Nomen> classes;
 
-  public class Nomen {
+  public static class Nomen {
     public final String name;
     public Nomen subClassOf;
     public NomCode code;

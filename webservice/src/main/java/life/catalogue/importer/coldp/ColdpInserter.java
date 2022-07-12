@@ -64,7 +64,7 @@ public class ColdpInserter extends NeoCsvInserter {
    * quick check to see if all required files are existing.
    */
   @Override
-  protected void batchInsert() throws NormalizationFailedException {
+  protected void batchInsert() throws NormalizationFailedException, InterruptedException {
     inter = new ColdpInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
     // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
@@ -193,7 +193,7 @@ public class ColdpInserter extends NeoCsvInserter {
     }
   }
 
-  private void insertTreatments(){
+  private void insertTreatments() throws InterruptedException {
     ColdpReader coldp = (ColdpReader) reader;
     if (coldp.hasTreatments()) {
       try {
@@ -268,8 +268,7 @@ public class ColdpInserter extends NeoCsvInserter {
   }
   
   private void insertBibTex(final int datasetKey, File f) {
-    try {
-      InputStream is = new FileInputStream(f);
+    try (InputStream is = new FileInputStream(f)){
       BibTeXConverter bc = new BibTeXConverter();
       BibTeXDatabase db = bc.loadDatabase(is);
       bc.toItemData(db).forEach((id, cslItem) -> {

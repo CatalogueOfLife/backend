@@ -222,11 +222,11 @@ public class EsModule extends SimpleModule {
   @JsonSubTypes({@JsonSubTypes.Type(value = Taxon.class, name = "T"),
       @JsonSubTypes.Type(value = BareName.class, name = "B"),
       @JsonSubTypes.Type(value = Synonym.class, name = "S")})
-  abstract class NameUsageMixIn {
+  abstract static class NameUsageMixIn {
     @JsonIgnore abstract String getLabel();
     @JsonIgnore abstract String getLabelHtml();
   }
-  abstract class NameMixIn {
+  abstract static class NameMixIn {
     @JsonIgnore abstract String getLabelHtml();
   }
 

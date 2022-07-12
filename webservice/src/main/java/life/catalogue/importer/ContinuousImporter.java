@@ -7,11 +7,10 @@ import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.ContinuousImportConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.dw.ManagedExtended;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import life.catalogue.dw.ManagedExtended;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -28,6 +27,8 @@ import org.slf4j.MDC;
  * <p>
  * - never imported datasets first
  * - the datasets configured indexing frequency
+ *
+ * If imports have failed previously, there will be an embargo for 1 week.
  */
 public class ContinuousImporter implements ManagedExtended {
   private static final Logger LOG = LoggerFactory.getLogger(ContinuousImporter.class);

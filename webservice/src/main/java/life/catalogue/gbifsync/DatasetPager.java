@@ -23,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +51,11 @@ public class DatasetPager {
   final Client client;
   private final LoadingCache<UUID, Agent> publisherCache;
   private final LoadingCache<UUID, Agent> hostCache;
+  private final Set<UUID> articlePublishers;
 
   public DatasetPager(Client client, GbifConfig gbif) {
     this.client = client;
+    articlePublishers = Set.copyOf(gbif.articlePublishers);
     dataset = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"));
     datasets = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
@@ -69,7 +72,7 @@ public class DatasetPager {
 
   private Agent loadPublisher(UUID key) {
     WebTarget pubDetail = organization.path(key.toString());
-    LOG.info("Retrieve organization {}", pubDetail.getUri());
+    LOG.debug("Retrieve organization {}", pubDetail.getUri());
     GAgent p = pubDetail.request()
                         .accept(MediaType.APPLICATION_JSON_TYPE)
                         .get(GAgent.class);
@@ -78,7 +81,7 @@ public class DatasetPager {
 
   private Agent loadHost(UUID key) {
     WebTarget insDetail = installation.path(key.toString());
-    LOG.info("Retrieve installation {}", insDetail.getUri());
+    LOG.debug("Retrieve installation {}", insDetail.getUri());
     GInstallation ins = insDetail.request()
                                  .accept(MediaType.APPLICATION_JSON_TYPE)
                                  .get(GInstallation.class);
@@ -182,8 +185,9 @@ public class DatasetPager {
       return null;
     }
     // type
-    if (GbifSyncManager.PLAZI_KEY.equals(d.getGbifPublisherKey())) {
+    if (d.getGbifPublisherKey() != null && articlePublishers.contains(d.getGbifPublisherKey())) {
       d.setType(DatasetType.ARTICLE);
+
     } else if (g.subtype != null) {
       switch (g.subtype) {
         case "NOMENCLATOR_AUTHORITY":
@@ -504,7 +508,16 @@ public class DatasetPager {
     }
 
     String firstEmail() {
-      return email == null || email.isEmpty() ? null : email.get(0);
+      if (email != null) {
+        for (String add : email) {
+          // deal with <>, e.g. Scratchpad Team <scratchpad@nhm.ac.uk>
+          String clean = life.catalogue.common.text.StringUtils.extractEmail(add);
+          if (clean != null) {
+            return clean;
+          }
+        }
+      }
+      return null;
     }
 
     @Override

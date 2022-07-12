@@ -138,7 +138,12 @@ public enum Setting {
   /**
    * Defines wheter the importer makes use of Crossref to lookup DOI metadata.
    */
-  DOI_RESOLUTION(DoiResolution.class, false, EXTERNAL, PROJECT);
+  DOI_RESOLUTION(DoiResolution.class, false, EXTERNAL, PROJECT),
+
+  /**
+   * If true replaces spaces in epithets with hyphens during interpretation, thus replacing multiple words with a single one.
+   */
+  EPITHET_ADD_HYPHEN(Boolean.class, false, EXTERNAL);
 
   private final Class type;
   private final DatasetOrigin[] origin;

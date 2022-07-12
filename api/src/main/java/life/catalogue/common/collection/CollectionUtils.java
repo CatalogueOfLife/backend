@@ -65,9 +65,7 @@ public class CollectionUtils {
    */
   public static <T> List<T> list(T... args) {
     List<T> list = new ArrayList<>();
-    for (T arg : args) {
-      list.add(arg);
-    }
+    list.addAll(Arrays.asList(args));
     return list;
   }
 

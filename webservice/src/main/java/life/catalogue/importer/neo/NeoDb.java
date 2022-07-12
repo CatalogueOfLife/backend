@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NodeBatchProcessor.BatchConsumer;
@@ -141,8 +142,19 @@ public class NeoDb {
     } catch (Exception e) {
       LOG.error("Failed to close mapDb for directory {}", neoDir.getAbsolutePath(), e);
     }
-    closeNeo();
-    LOG.debug("Closed NormalizerStore for directory {}", neoDir.getAbsolutePath());
+    closeNeoQuietly();
+    // make sure we don't leave any batch inserter alive.
+    // Should have been closed, but we don't want to take the risk-
+    if (inserter != null) {
+      try {
+        inserter.shutdown();
+        LOG.warn("Batch inserter was not closed properly at {}. Closed now.", neoDir.getAbsolutePath());
+      } catch (IllegalStateException e) {
+        // it was closed already but somehow the instance was not removed;)
+      } finally {
+        inserter = null;
+      }
+    }
   }
   
   public void closeAndDelete() {
@@ -177,10 +189,12 @@ public class NeoDb {
     }
   }
 
-  private void closeNeo() {
+  private void closeNeoQuietly() {
     try {
       if (neo != null) {
         neo.shutdown();
+        LOG.debug("Closed NormalizerStore for directory {}", neoDir.getAbsolutePath());
+        neo = null;
       }
     } catch (Exception e) {
       LOG.error("Failed to close neo4j {}", neoDir.getAbsolutePath(), e);
@@ -340,13 +354,13 @@ public class NeoDb {
    * @param callback
    * @return total number of processed nodes.
    */
-  public int process(@Nullable Labels label, final int batchSize, NodeBatchProcessor callback) {
+  public int process(@Nullable Labels label, final int batchSize, NodeBatchProcessor callback) throws InterruptedException {
     final BlockingQueue<List<Node>> queue = new LinkedBlockingQueue<>(3);
     BatchConsumer consumer = new BatchConsumer(datasetKey, attempt, neo, callback, queue, Thread.currentThread());
     Thread consThread = new Thread(consumer, "neodb-processor-" + datasetKey);
-    consThread.start();
 
     try (Transaction tx = neo.beginTx()){
+      consThread.start();
       final ResourceIterator<Node> iter = label == null ? neo.getAllNodes().iterator() : neo.findNodes(label);
       UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(iter, batchSize);
 
@@ -374,7 +388,6 @@ public class NeoDb {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();  // set interrupt flag back
       LOG.error("Neo processing interrupted", e);
-      
       if (consThread.isAlive()) {
         consThread.interrupt();
       }
@@ -400,7 +413,8 @@ public class NeoDb {
    */
   public void startBatchMode() {
     try {
-      closeNeo();
+      closeNeoQuietly();
+      LOG.info("Open batch inserter for {}", neoDir);
       inserter = BatchInserters.inserter(neoDir);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -411,10 +425,33 @@ public class NeoDb {
     return inserter != null;
   }
   
-  public void endBatchMode() throws NotUniqueRuntimeException {
-    inserter.shutdown();
+  public void endBatchMode() throws NotUniqueRuntimeException, InterruptedException {
+    LOG.info("Shutting down batch inserter for {} ...", neoDir);
+    try {
+      inserter.shutdown();
+    } catch (Exception e) {
+      // the BatchInserter shutdown flushes data to disk, so this involves blocking IO operations which can
+      // a) throw an interrupted exception during shutdown and
+      // b) throw some IOException, e.g. UnderlyingStorageException "No space left on device"
+      // We'll have to make sure the inserter is properly closed and all resources are free'd up.
+      // see https://github.com/CatalogueOfLife/backend/issues/1147 and https://github.com/CatalogueOfLife/backend/issues/1132
+      if (Exceptions.containsInstanceOf( e, InterruptedException.class)) {
+        LOG.warn("Shutdown of batch inserter was interrupted. Trying again", e);
+        try {
+          inserter.shutdown();
+        } catch (IllegalStateException ex) {
+          // Batch inserter already has shutdown - we are good, ignore
+        }
+        throw new InterruptedException("Shutdown of batch inserter was interrupted");
+      }
+      LOG.error("Shutdown of batch inserter failed", e);
+      throw e;
+
+    } finally {
+      inserter = null;
+    }
+    LOG.info("Neo batch inserter closed, data flushed to disk");
     openNeo();
-    inserter = null;
   }
   
   /**

@@ -79,7 +79,7 @@ public class YamlMapper {
     }
   }
 
-  abstract class AgentMixIn {
+  abstract static class AgentMixIn {
     @JsonIgnore
     abstract String getName();
 
@@ -87,12 +87,12 @@ public class YamlMapper {
     abstract String getOrcidAsUrl();
   }
 
-  abstract class CslNameMixIn {
+  abstract static class CslNameMixIn {
     @JsonIgnore
     abstract Boolean getIsInstitution();
   }
 
-  abstract class DatasetMixIn {
+  abstract static class DatasetMixIn {
 
     @JsonIgnore
     abstract Integer getKey();
@@ -155,7 +155,7 @@ public class YamlMapper {
 
   }
 
-  abstract class CitationMixIn {
+  abstract static class CitationMixIn {
     @JsonAlias("DOI")
     @JsonProperty("doi")
     private DOI doi;

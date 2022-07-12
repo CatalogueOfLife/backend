@@ -27,10 +27,15 @@ public class BasionymSorterTest {
   private final BasionymSorter sorter = new BasionymSorter(new AuthorComparator(AuthorshipNormalizer.INSTANCE));
 
   private static Name parse(String x) {
-    return NameParser.PARSER.parse(x, null, null, IssueContainer.VOID).get().getName();
+    try {
+      return NameParser.PARSER.parse(x, null, null, IssueContainer.VOID).get().getName();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("parser got interrupted");
+    }
   }
 
-  private static Name parse(String x, Rank rank) {
+  private static Name parse(String x, Rank rank) throws InterruptedException {
     return NameParser.PARSER.parse(x, rank, null, IssueContainer.VOID).get().getName();
   }
 

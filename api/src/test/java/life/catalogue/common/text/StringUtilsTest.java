@@ -13,6 +13,21 @@ public class StringUtilsTest {
 
 
   @Test
+  public void extractEmail() {
+    assertEquals("user@domain.com", StringUtils.extractEmail("user@domain.com"));
+    assertEquals("user@domain.co.in", StringUtils.extractEmail("user@domain.co.in"));
+    assertEquals("user.name@domain.com", StringUtils.extractEmail("user.name@domain.com"));
+    assertEquals("user?name@domain.co.in", StringUtils.extractEmail("user?name@domain.co.in"));
+    assertEquals("user'name@domain.co.in", StringUtils.extractEmail("user'name@domain.co.in"));
+    assertEquals("scratchpad@nhm.ac.uk", StringUtils.extractEmail("Scratchpad Team <scratchpad@nhm.ac.uk>"));
+    assertEquals("dfgh@gbif.org", StringUtils.extractEmail(" dfgh @ gbif.org"));
+
+    assertNull(StringUtils.extractEmail(" "));
+    assertNull(StringUtils.extractEmail("@"));
+    assertNull(StringUtils.extractEmail("@domain.co.in"));
+  }
+
+  @Test
   public void equalsIgnoreSpace() {
     assertFalse(StringUtils.equalsIgnoreCaseAndSpace(null, "gdu23"));
     assertFalse(StringUtils.equalsIgnoreCaseAndSpace("gdu23", null));

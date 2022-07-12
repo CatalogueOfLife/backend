@@ -139,6 +139,13 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
 
   public URI apiURI = URI.create("https://api.checklistbank.org");
 
+  /**
+   * JSON status file to be updated for maintenance mode.
+   * Should be served as a static file from https://download.checklistbank.org/.status.json
+   */
+  @NotNull
+  public File statusFile = new File("/tmp/.status.json");
+
   @NotNull
   public URI downloadURI = URI.create("https://download.checklistbank.org");
 

@@ -1,7 +1,5 @@
 package life.catalogue.dw.jersey.writers;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.Reference;
 import life.catalogue.common.csl.CslDataConverter;
@@ -21,6 +19,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
+
+import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * Writer that generates BibTeX for reference instances.

@@ -1,8 +1,5 @@
 package life.catalogue.csv;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.Issue;
@@ -38,6 +35,8 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.common.ResultIterator;
@@ -575,7 +574,7 @@ public class CsvReader {
     return Optional.empty();
   }
   
-  private class TermRecIterator implements Iterator<VerbatimRecord> {
+  private static class TermRecIterator implements Iterator<VerbatimRecord> {
     private final ResultIterator<String[], ParsingContext> iter;
     private final Schema s;
     private final int maxIdx;

@@ -49,13 +49,13 @@ public class NeoDbFactory {
       }
       return new NeoDb(datasetKey, attempt, dbMaker.make(), storeDir, builder, cfg.batchSize, cfg.batchTimeout);
 
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       // can be caused by interruption in mapdb
       Throwable root = Exceptions.getRootCause(e);
-      if (root instanceof ClosedByInterruptException) {
+      if (root instanceof ClosedByInterruptException || root instanceof InterruptedException) {
         throw new InterruptedRuntimeException("Failed to create NeoDB, thread was interrupted", e);
       }
-      throw new IllegalStateException("Failed to init NormalizerStore at " + storeDir, e);
+      throw new IllegalStateException(String.format("Failed to init NormalizerStore at %s. Cause: %s", storeDir, root), e);
     }
   }
   

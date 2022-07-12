@@ -7,7 +7,6 @@ import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
@@ -19,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -84,6 +84,7 @@ public class NameUsageSearchResource {
     @JsonCreator
     public SearchRequestBody(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filter,
         @JsonProperty("facet") Set<NameUsageSearchParameter> facet,
+        @JsonProperty("facetLimit") @Min(0) Integer facetLimit,
         @JsonProperty("content") Set<NameUsageSearchRequest.SearchContent> content,
         @JsonProperty("sortBy") NameUsageSearchRequest.SortBy sortBy,
         @JsonProperty("q") String q,
@@ -95,7 +96,7 @@ public class NameUsageSearchResource {
         @JsonProperty("type") NameUsageRequest.SearchType searchType,
         @JsonProperty("minRank") Rank minRank,
         @JsonProperty("maxRank") Rank maxRank) {
-      request = new NameUsageSearchRequest(filter, facet, content, sortBy, q, highlight, reverse, fuzzy, searchType, minRank, maxRank);
+      request = new NameUsageSearchRequest(filter, facet, facetLimit, content, sortBy, q, highlight, reverse, fuzzy, searchType, minRank, maxRank);
       page = new Page(offset, limit);
     }
   }

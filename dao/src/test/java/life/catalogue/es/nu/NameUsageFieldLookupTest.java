@@ -12,8 +12,10 @@ public class NameUsageFieldLookupTest {
   @Test
   public void lookup() {
     for (NameUsageSearchParameter p : NameUsageSearchParameter.values()) {
-      assertNotNull(NameUsageFieldLookup.INSTANCE.lookupSingle(p));
-      assertEquals(1, NameUsageFieldLookup.INSTANCE.lookup(p).length);
+      if (p != NameUsageSearchParameter.UNSAFE) {
+        assertNotNull(NameUsageFieldLookup.INSTANCE.lookupSingle(p));
+        assertEquals(1, NameUsageFieldLookup.INSTANCE.lookup(p).length);
+      }
     }
   }
 }

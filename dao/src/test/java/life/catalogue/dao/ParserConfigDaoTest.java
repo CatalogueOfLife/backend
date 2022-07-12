@@ -21,7 +21,7 @@ public class ParserConfigDaoTest {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
 
   @Test
-  public void addToParser() {
+  public void addToParser() throws InterruptedException {
     ParserConfigDao dao = new ParserConfigDao(PgSetupRule.getSqlSessionFactory());
     ParserConfig cfg = new ParserConfig();
     cfg.setScientificName("Jezzinothrips cretacicus");
@@ -39,7 +39,7 @@ public class ParserConfigDaoTest {
     assertParsed("Jezzinothrips  cretacicus", " zur  Strassen , 1973 ", Rank.SPECIES, "1977","zur Straßen");
   }
 
-  void assertParsed(String name, String authorship, Rank rank, String year, String... authors){
+  void assertParsed(String name, String authorship, Rank rank, String year, String... authors) throws InterruptedException {
     ParsedNameUsage pn = NameParser.PARSER.parse(name, authorship, rank, null, IssueContainer.VOID).get();
     assertEquals(rank, pn.getName().getRank());
     assertEquals(Authorship.yearAuthors(year, authors), pn.getName().getCombinationAuthorship());

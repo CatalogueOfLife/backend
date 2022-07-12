@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.CatCopy;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
@@ -300,97 +301,102 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   protected void applyDecision(NameUsageBase u, EditorialDecision ed) {
-    switch (ed.getMode()) {
-      case BLOCK:
-        throw new IllegalStateException("Blocked usage " + u.getId() + " should not have been traversed");
-      case UPDATE:
-        decisionCounter++;
-        if (ed.getName() != null) {
-          Name n = u.getName();
-          Name n2 = ed.getName();
+    try {
+      switch (ed.getMode()) {
+        case BLOCK:
+          throw new IllegalStateException("Blocked usage " + u.getId() + " should not have been traversed");
+        case UPDATE:
+          decisionCounter++;
+          if (ed.getName() != null) {
+            Name n = u.getName();
+            Name n2 = ed.getName();
 
-          if (n2.getScientificName() != null) {
-            // parse a new name!
-            final String name = n2.getScientificName() + " " + coalesce(n2.getAuthorship(), "");
-            NomCode code = coalesce(n2.getCode(), n.getCode());
-            Rank rank = coalesce(n2.getRank(), n.getRank());
-            ParsedNameUsage nat = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).orElseGet(() -> {
-              LOG.warn("Unparsable decision name {}", name);
-              // add the full, unparsed authorship in this case to not lose it
-              ParsedNameUsage nat2 = new ParsedNameUsage();
-              nat2.getName().setScientificName(n2.getScientificName());
-              nat2.getName().setAuthorship(n2.getAuthorship());
-              return nat2;
-            });
-            // copy all pure name props
-            Name nn = nat.getName();
-            n.setScientificName(nn.getScientificName());
-            n.setAuthorship(nn.getAuthorship());
-            n.setType(nn.getType());
-            n.setRank(nn.getRank());
-            n.setUninomial(nn.getUninomial());
-            n.setGenus(nn.getGenus());
-            n.setInfragenericEpithet(nn.getInfragenericEpithet());
-            n.setSpecificEpithet(nn.getSpecificEpithet());
-            n.setInfraspecificEpithet(nn.getInfraspecificEpithet());
-            n.setCultivarEpithet(nn.getCultivarEpithet());
-            n.setCandidatus(nn.isCandidatus());
-            n.setNotho(nn.getNotho());
-            n.setCombinationAuthorship(nn.getCombinationAuthorship());
-            n.setBasionymAuthorship(nn.getBasionymAuthorship());
-            n.setSanctioningAuthor(nn.getSanctioningAuthor());
+            if (n2.getScientificName() != null) {
+              // parse a new name!
+              final String name = n2.getScientificName() + " " + coalesce(n2.getAuthorship(), "");
+              NomCode code = coalesce(n2.getCode(), n.getCode());
+              Rank rank = coalesce(n2.getRank(), n.getRank());
+              ParsedNameUsage nat = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).orElseGet(() -> {
+                LOG.warn("Unparsable decision name {}", name);
+                // add the full, unparsed authorship in this case to not lose it
+                ParsedNameUsage nat2 = new ParsedNameUsage();
+                nat2.getName().setScientificName(n2.getScientificName());
+                nat2.getName().setAuthorship(n2.getAuthorship());
+                return nat2;
+              });
+              // copy all pure name props
+              Name nn = nat.getName();
+              n.setScientificName(nn.getScientificName());
+              n.setAuthorship(nn.getAuthorship());
+              n.setType(nn.getType());
+              n.setRank(nn.getRank());
+              n.setUninomial(nn.getUninomial());
+              n.setGenus(nn.getGenus());
+              n.setInfragenericEpithet(nn.getInfragenericEpithet());
+              n.setSpecificEpithet(nn.getSpecificEpithet());
+              n.setInfraspecificEpithet(nn.getInfraspecificEpithet());
+              n.setCultivarEpithet(nn.getCultivarEpithet());
+              n.setCandidatus(nn.isCandidatus());
+              n.setNotho(nn.getNotho());
+              n.setCombinationAuthorship(nn.getCombinationAuthorship());
+              n.setBasionymAuthorship(nn.getBasionymAuthorship());
+              n.setSanctioningAuthor(nn.getSanctioningAuthor());
 
-          } else if (n2.getAuthorship() != null) {
-            // no full name, just changing authorship
-            n.setAuthorship(n2.getAuthorship());
-            ParsedAuthorship an = NameParser.PARSER.parseAuthorship(n2.getAuthorship()).orElseGet(() -> {
-              LOG.warn("Unparsable decision authorship {}", n2.getAuthorship());
-              // add the full, unparsed authorship in this case to not lose it
-              ParsedName pn2 = new ParsedName();
-              pn2.getCombinationAuthorship().getAuthors().add(n2.getAuthorship());
-              return pn2;
-            });
-            n.setCombinationAuthorship(an.getCombinationAuthorship());
-            n.setSanctioningAuthor(an.getSanctioningAuthor());
-            n.setBasionymAuthorship(an.getBasionymAuthorship());
+            } else if (n2.getAuthorship() != null) {
+              // no full name, just changing authorship
+              n.setAuthorship(n2.getAuthorship());
+              ParsedAuthorship an = NameParser.PARSER.parseAuthorship(n2.getAuthorship()).orElseGet(() -> {
+                LOG.warn("Unparsable decision authorship {}", n2.getAuthorship());
+                // add the full, unparsed authorship in this case to not lose it
+                ParsedName pn2 = new ParsedName();
+                pn2.getCombinationAuthorship().getAuthors().add(n2.getAuthorship());
+                return pn2;
+              });
+              n.setCombinationAuthorship(an.getCombinationAuthorship());
+              n.setSanctioningAuthor(an.getSanctioningAuthor());
+              n.setBasionymAuthorship(an.getBasionymAuthorship());
+            }
+            // any other changes
+            if (n2.getCode() != null) {
+              n.setCode(n2.getCode());
+            }
+            if (n2.getRank() != null) {
+              n.setRank(n2.getRank());
+            }
+            if (n2.getNomStatus() != null) {
+              n.setNomStatus(n2.getNomStatus());
+            }
+            if (n2.getType() != null) {
+              n.setType(n2.getType());
+            }
           }
-          // any other changes
-          if (n2.getCode() != null) {
-            n.setCode(n2.getCode());
+          if (ed.getStatus() != null) {
+            try {
+              u.setStatus(ed.getStatus());
+            } catch (IllegalArgumentException e) {
+              LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().getLabel(), ed.getStatus(), e);
+            }
           }
-          if (n2.getRank() != null) {
-            n.setRank(n2.getRank());
+          if (u.isTaxon()) {
+            Taxon t = (Taxon) u;
+            if (ed.getEnvironments() != null) {
+              t.setEnvironments(ed.getEnvironments());
+            }
+            if (ed.isExtinct() != null) {
+              t.setExtinct(ed.isExtinct());
+            }
           }
-          if (n2.getNomStatus() != null) {
-            n.setNomStatus(n2.getNomStatus());
-          }
-          if (n2.getType() != null) {
-            n.setType(n2.getType());
-          }
-        }
-        if (ed.getStatus() != null) {
-          try {
-            u.setStatus(ed.getStatus());
-          } catch (IllegalArgumentException e) {
-            LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().getLabel(), ed.getStatus(), e);
-          }
-        }
-        if (u.isTaxon()) {
-          Taxon t = (Taxon) u;
-          if (ed.getEnvironments() != null) {
-            t.setEnvironments(ed.getEnvironments());
-          }
-          if (ed.isExtinct() != null) {
-            t.setExtinct(ed.isExtinct());
-          }
-        }
-      case REVIEWED:
-        // good. nothing to do
-    }
-    // propagate all notes to usage remarks
-    // https://github.com/CatalogueOfLife/backend/issues/740
-    if (ed.getNote() != null) {
-      u.addRemarks(ed.getNote());
+        case REVIEWED:
+          // good. nothing to do
+      }
+      // propagate all notes to usage remarks
+      // https://github.com/CatalogueOfLife/backend/issues/740
+      if (ed.getNote() != null) {
+        u.addRemarks(ed.getNote());
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();  // set interrupt flag back
+      throw new InterruptedRuntimeException(e);
     }
   }
 

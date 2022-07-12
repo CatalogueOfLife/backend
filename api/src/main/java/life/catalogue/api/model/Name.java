@@ -8,7 +8,6 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 
 import org.gbif.nameparser.api.*;
-import org.gbif.nameparser.api.ParsedName;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -18,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -570,7 +570,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   public void setSpecificEpithet(String species) {
     if (setNothoIfHybrid(species, NamePart.SPECIFIC)) {
-      specificEpithet = species.substring(1);
+      specificEpithet = species.substring(1).trim();
     } else {
       specificEpithet = species;
     }
@@ -582,7 +582,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   public void setInfraspecificEpithet(String infraSpecies) {
     if (setNothoIfHybrid(infraSpecies, NamePart.INFRASPECIFIC)) {
-      this.infraspecificEpithet = infraSpecies.substring(1);
+      this.infraspecificEpithet = infraSpecies.substring(1).trim();
     } else {
       this.infraspecificEpithet = infraSpecies;
     }
@@ -683,13 +683,21 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   }
 
   public String getLabel(boolean html) {
-    return appendNameLabel(new StringBuilder(), html).toString();
+    return appendNameLabel(new StringBuilder(), null, html).toString();
   }
 
-  StringBuilder appendNameLabel(StringBuilder sb, boolean html) {
+  /**
+   * @param sb build to append to
+   * @param preAuthorship optional prefix to be placed just before the authorship
+   */
+  StringBuilder appendNameLabel(StringBuilder sb, @Nullable String preAuthorship, boolean html) {
     String name = html ? scientificNameHtml() : scientificName;
     if (name != null) {
       sb.append(name);
+    }
+    if (preAuthorship != null) {
+      sb.append(" ");
+      sb.append(preAuthorship);
     }
     if (authorship != null) {
       sb.append(" ");

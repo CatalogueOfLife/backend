@@ -36,4 +36,10 @@ public interface NameIndexStore extends Managed {
   boolean containsKey(String key);
   
   void add(String key, IndexName name);
+
+  /**
+   * Tries to compact the store, but retaining all identifiers.
+   */
+  void compact();
+
 }

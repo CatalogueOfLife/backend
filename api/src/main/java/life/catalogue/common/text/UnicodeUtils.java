@@ -4,7 +4,6 @@ import life.catalogue.common.io.LineReader;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.NameFormatter;
 
-import java.io.IOException;
 import java.text.Normalizer;
 import java.util.concurrent.atomic.AtomicInteger;
 

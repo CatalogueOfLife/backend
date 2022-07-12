@@ -15,8 +15,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.xml.stream.XMLInputFactory;
@@ -152,7 +153,8 @@ public class DwcaReader extends CsvReader {
       // select core
       if (size() == 1) {
         coreRowType = schemas.keySet().iterator().next();
-      } else {
+
+      } else if (size() > 1) {
         for (Term t : PREFERRED_CORE_TYPES) {
           if (hasData(t)) {
             coreRowType = t;
@@ -166,6 +168,11 @@ public class DwcaReader extends CsvReader {
         }
       }
     }
+
+    if (isEmpty()) {
+      throw new SourceInvalidException("No core schema found");
+    }
+
     CsvFormat format = coreSchema().settings.getFormat();
     LOG.info("Found {} core [delim={} quote={}] and {} extensions",
         coreRowType, format.getDelimiter(), format.getQuote(), size() - 1);

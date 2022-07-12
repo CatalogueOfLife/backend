@@ -3,7 +3,6 @@ package life.catalogue.csv;
 import life.catalogue.common.io.Resources;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

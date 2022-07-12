@@ -48,6 +48,7 @@ public abstract class TreeNode implements DSID<String> {
   private Integer sectorDatasetKey;
   private Boolean sectorRoot;
   private EditorialDecision decision;
+  // maps of included sectors, aggregated by their subject dataset key. This EXCLUDES the sectorKey of this node
   private Int2IntOpenHashMap datasetSectors;
   
   /**
@@ -72,7 +73,7 @@ public abstract class TreeNode implements DSID<String> {
 
     @Override
     public String getLabelHtml() {
-      return NameUsageBase.getLabelBuilder(_name, extinct, namePhrase, null, true).toString();
+      return NameUsageBase.labelBuilder(_name, extinct, getStatus(), namePhrase, null, true).toString();
     }
   }
 

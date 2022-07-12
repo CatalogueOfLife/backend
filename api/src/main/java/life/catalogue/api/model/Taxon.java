@@ -55,7 +55,7 @@ public class Taxon extends NameUsageBase {
 
   @Override
   public String getLabel(boolean html) {
-    return getLabelBuilder(getName(), extinct, getNamePhrase(), getAccordingTo(), html).toString();
+    return labelBuilder(getName(), extinct, getStatus(), getNamePhrase(), getAccordingTo(), html).toString();
   }
 
   @Override

@@ -5,7 +5,6 @@ import life.catalogue.api.model.Page;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.NamesIndexMapperTest;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,14 +26,17 @@ public class TestDataRuleTest {
   @Parameterized.Parameters(name= "{index}: {0}")
   public static Iterable<Object[]> data() {
     List<TestDataRule.TestData> list = List.of(
-      TestDataRule.NIDX,
-      TestDataRule.DUPLICATES,
+      TestDataRule.EMPTY,
       TestDataRule.KEEP,
+      TestDataRule.DATASET_MIX,
       TestDataRule.APPLE,
       TestDataRule.FISH,
       TestDataRule.TREE,
+      TestDataRule.TREE2,
       TestDataRule.DRAFT,
-      TestDataRule.DRAFT_WITH_SECTORS
+      TestDataRule.DRAFT_WITH_SECTORS,
+      TestDataRule.DUPLICATES,
+      TestDataRule.NIDX
     );
     return list.stream().map(t -> new Object[]{t}).collect(Collectors.toList());
   }

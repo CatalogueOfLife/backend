@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class TermsAggregation extends BucketAggregation {
 
-  public static enum SortBy {
+  public enum SortBy {
     DOC_COUNT_DESC, VALUE_ASC
   }
 
@@ -23,15 +23,10 @@ public class TermsAggregation extends BucketAggregation {
     }
   }
 
-  private static final int DEFAULT_NUM_BUCKETS = 50;
   private static final Map<String, String> SORTBY_DOC_COUNT_DESC = Collections.singletonMap("doc_count", "desc");
   private static final Map<String, String> SORTBY_VALUE_ASC = Collections.singletonMap("_key", "asc");
 
   final Terms terms;
-
-  public TermsAggregation(String field) {
-    this.terms = new Terms(field, DEFAULT_NUM_BUCKETS, null);
-  }
 
   public TermsAggregation(String field, Integer size) {
     this.terms = new Terms(field, size, null);

@@ -4,7 +4,6 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
-
 import life.catalogue.api.vocab.NomStatus;
 
 import org.gbif.nameparser.api.Rank;

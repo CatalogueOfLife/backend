@@ -50,6 +50,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
+import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
 
 /**
  * Despite its name the PgImporter not only inserts all data from the neo store into postgres,
@@ -224,7 +225,7 @@ public class PgImport implements Callable<Boolean> {
     }
   }
   
-  private void commitVerbatimBatch(SqlSession session, Map<Integer, VerbatimRecord> batchCache) {
+  private void commitVerbatimBatch(SqlSession session, Map<Integer, VerbatimRecord> batchCache) throws InterruptedException {
     interruptIfCancelled();
     session.commit();
     // we only get the new keys after we committed in batch mode!!!
@@ -326,7 +327,7 @@ public class PgImport implements Callable<Boolean> {
           nmm.create(n.getName(), n.getName().getSectorKey(), n.namesIndexId, n.namesIndexMatchType);
         }
         if (nCounter.incrementAndGet() % batchSize == 0) {
-          interruptIfCancelled();
+          runtimeInterruptIfCancelled();
           session.commit();
           LOG.debug("Inserted {} other names", nCounter.get());
         }
@@ -347,7 +348,7 @@ public class PgImport implements Callable<Boolean> {
     );
   }
 
-  private void insertTypeMaterial() {
+  private void insertTypeMaterial() throws InterruptedException {
     try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       final TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
       LOG.debug("Inserting type material");
@@ -387,7 +388,7 @@ public class PgImport implements Callable<Boolean> {
         });
         LOG.info("Loaded {} decisions for indexing", cnt);
       }
-
+      interruptIfCancelled();
       try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
         LOG.info("Inserting all taxa & synonyms");
         TreatmentMapper treatmentMapper = session.getMapper(TreatmentMapper.class);
@@ -482,7 +483,7 @@ public class PgImport implements Callable<Boolean> {
 
             // commit in batches
             if ((sCounter.get() + tCounter.get()) % batchSize == 0) {
-              interruptIfCancelled();
+              runtimeInterruptIfCancelled();
               session.commit();
               LOG.info("Inserted {} taxa, {} synonyms & {} bare names", tCounter.get(), sCounter.get(), bnCounter.get());
             }
@@ -503,7 +504,7 @@ public class PgImport implements Callable<Boolean> {
 
           @Override
           public void end(Node n) {
-            interruptIfCancelled();
+            runtimeInterruptIfCancelled();
             // remove this key from parent queue if its an accepted taxon
             if (n.hasLabel(Labels.TAXON)) {
               parents.pop();
@@ -526,6 +527,7 @@ public class PgImport implements Callable<Boolean> {
           nuw.setPublisherKey(dataset.getGbifPublisherKey());
           nuw.setIssues(mergeIssues(vKeys));
           indexer.accept(nuw);
+          runtimeInterruptIfCancelled();
         }
       }
     }
@@ -617,7 +619,7 @@ public class PgImport implements Callable<Boolean> {
             updateReferenceKey(nr);
             relMapper.create(updateUser(nr));
             if (counter.incrementAndGet() % batchSize == 0) {
-              interruptIfCancelled();
+              runtimeInterruptIfCancelled();
               session.commit();
             }
           });

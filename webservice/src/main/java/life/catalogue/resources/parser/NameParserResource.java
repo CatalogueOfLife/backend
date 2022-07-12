@@ -45,7 +45,7 @@ public class NameParserResource {
     dao = new ParserConfigDao(factory);
   }
 
-  public class CRName implements IssueContainer {
+  public static class CRName implements IssueContainer {
     private NomCode code;
     private Rank rank;
     private String name;
@@ -212,8 +212,14 @@ public class NameParserResource {
 
   private Optional<PNIssue> parse(CRName n) {
     LOG.debug("Parse: {}", n);
-    Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.authorship, n.rank, n.code, n);
-    return parsed.map(nat -> new PNIssue(nat, n.issues));
+    try {
+      Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.authorship, n.rank, n.code, n);
+      return parsed.map(nat -> new PNIssue(nat, n.issues));
+
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return Optional.empty();
+    }
   }
 
   @GET

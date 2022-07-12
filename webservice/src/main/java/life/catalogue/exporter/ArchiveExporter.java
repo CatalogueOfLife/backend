@@ -15,6 +15,8 @@ import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.dwc.terms.Term;
 
 import java.io.File;
@@ -78,6 +80,13 @@ public abstract class ArchiveExporter extends DatasetExporter {
   private String lookupReference(String id) {
     Reference r = session.getMapper(ReferenceMapper.class).get(DSID.of(datasetKey, id));
     return r == null ? null : r.getCitation();
+  }
+
+  protected String citationByID(String refID) {
+    if (!StringUtils.isBlank(refID)) {
+      return refCache.get(refID);
+    }
+    return null;
   }
 
   protected Integer sector2datasetKey(Integer sectorKey){

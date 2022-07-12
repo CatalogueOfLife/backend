@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 
@@ -48,5 +49,13 @@ public class PartitionerTest {
       assertFalse( Partitioner.isAttached(con, "x") );
       assertFalse( Partitioner.isAttached(con, "name_dds") );
     }
+  }
+
+  @Test
+  public void delete() throws Exception {
+    final var factory = PgSetupRule.getSqlSessionFactory();
+    Partitioner.delete(factory, 3, DatasetOrigin.PROJECT);
+    Partitioner.delete(factory, 11, DatasetOrigin.EXTERNAL);
+    Partitioner.delete(factory, 3567, DatasetOrigin.EXTERNAL);
   }
 }

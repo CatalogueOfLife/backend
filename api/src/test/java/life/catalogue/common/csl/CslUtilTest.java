@@ -96,6 +96,7 @@ public class CslUtilTest {
 
     data.setIssue("41");
     assertEquals("Greuter, W. (1911). J. Linn. Soc., Bot., 10(41), 141–156.", CslUtil.buildCitation(data));
+    assertEquals("<div class=\"csl-entry\">Greuter, W. (1911). <span style=\"font-style: italic\">J. Linn. Soc., Bot.</span>, <span style=\"font-style: italic\">10</span>(41), 141&ndash;156.</div>", CslUtil.buildCitationHtml(data));
   }
   
   @Test

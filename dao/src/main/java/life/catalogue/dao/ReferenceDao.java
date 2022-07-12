@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.db.mapper.ReferenceMapper;
+import life.catalogue.metadata.DoiResolver;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,10 +12,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
 import javax.validation.Validator;
-
-import life.catalogue.metadata.DoiResolver;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;

@@ -244,7 +244,8 @@ CREATE TYPE ISSUE AS ENUM (
   'WRONG_MONOMIAL_CASE',
   'AUTHORSHIP_REMOVED',
   'DOI_NOT_FOUND',
-  'DOI_UNRESOLVED'
+  'DOI_UNRESOLVED',
+  'TYPE_MATERIAL_SEX_INVALID'
 );
 
 CREATE TYPE JOBSTATUS AS ENUM (
@@ -1336,11 +1337,16 @@ CREATE TABLE type_material (
   name_id TEXT NOT NULL,
   citation TEXT,
   status TYPESTATUS,
-  locality TEXT,
   country TEXT,
-  latitude NUMERIC(8, 6) CHECK (latitude >= -90 AND latitude <= 90),
-  longitude NUMERIC(9, 6) CHECK (longitude >= -180 AND longitude <= 180),
-  altitude INTEGER,
+  locality TEXT,
+  latitude TEXT,
+  longitude TEXT,
+  coordinate POINT,
+  altitude TEXT,
+  sex SEX,
+  institution_code TEXT,
+  catalog_number TEXT,
+  associated_sequences TEXT,
   host TEXT,
   date TEXT,
   collector TEXT,

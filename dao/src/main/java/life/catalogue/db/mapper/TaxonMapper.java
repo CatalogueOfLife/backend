@@ -81,7 +81,7 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, DatasetProcessab
   void updateDatasetSectorCount(@Param("key") DSID<String> key, @Param("count") Int2IntOpenHashMap count);
   
   /**
-   * Sets all sector counts above species level to null
+   * Sets all sector counts equal or above rank genus to null
    * @param datasetKey
    */
   void resetDatasetSectorCount(@Param("datasetKey") int datasetKey);

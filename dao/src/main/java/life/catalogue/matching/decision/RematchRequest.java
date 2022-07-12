@@ -63,7 +63,7 @@ public class RematchRequest implements DSID<Integer> {
     if (this == o) return true;
     if (!(o instanceof RematchRequest)) return false;
     RematchRequest that = (RematchRequest) o;
-    return datasetKey == that.datasetKey &&
+    return Objects.equals(datasetKey, that.datasetKey) &&
       broken == that.broken &&
       Objects.equals(id, that.id);
   }

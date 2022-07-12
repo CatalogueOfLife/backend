@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 public interface NodeBatchProcessor {
   
-  void process(Node n);
+  void process(Node n) throws InterruptedException;
   
   /**
    * Indicates whether the batch should be committed or not

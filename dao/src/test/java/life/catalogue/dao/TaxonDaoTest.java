@@ -7,7 +7,9 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.SectorMapperTest;
+import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 
@@ -314,7 +316,6 @@ public class TaxonDaoTest extends DaoTestBase {
     SectorDaoTest.assertSectorCounts();
   }
 
-
   @Test
   public void updateParentChange(){
     MybatisTestUtils.populateDraftTree(session());
@@ -343,9 +344,9 @@ public class TaxonDaoTest extends DaoTestBase {
 
   @Test
   public void deleteRecursively() throws Exception {
+    MybatisTestUtils.replaceTestData(TestDataRule.TREE);
     final DSIDValue<String> key = DSID.of(TestDataRule.TREE.key, null);
-    MybatisTestUtils.populateTestData(TestDataRule.TREE, true);
-  
+
     // create some sectors in the subtree to make sure they also get removed
     SectorMapper sm = mapper(SectorMapper.class);
     Sector s1 = SectorMapperTest.create(key.id("t2"), DSID.of(TestDataRule.TREE.datasetKeys.iterator().next(), "x"));

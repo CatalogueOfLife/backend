@@ -1,8 +1,10 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
-import life.catalogue.db.mapper.*;
+import life.catalogue.api.vocab.IgnoreReason;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.lang.InterruptedRuntimeException;
+import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.matching.NameIndex;
 
 import java.util.*;
@@ -181,7 +183,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
 
   @Override
   public void reset() {
-    processLast();
+      processLast();
     ids.clear();
     super.reset();
   }

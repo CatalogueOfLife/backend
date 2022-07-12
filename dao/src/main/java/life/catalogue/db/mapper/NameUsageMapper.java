@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
@@ -57,6 +58,16 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   boolean exists(@Param("key") DSID<String> key);
 
+  /**
+   * Tests whether a given name usage key exists or throws a NotFoundException otherwise.
+   * @param key
+   */
+  default void existsOrThrow(DSID<String> key) throws NotFoundException {
+    if (!exists(key)) {
+      throw NotFoundException.notFound(NameUsage.class, key);
+    }
+  }
+
   int delete(@Param("key") DSID<String> key);
 
   int count(@Param("datasetKey") int datasetKey);
@@ -87,8 +98,16 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId, @Param("page") Page page);
 
   /**
+<<<<<<< HEAD
    * List all usages in a given dataset that have the given names index id if the nidx points to a qualified name.
    * If the given nidx is a canonical name id list all usages with or without authorship that match the canonical nidx.
+=======
+   * Warning, this does not return bare name IDs, only true usage IDs!
+   */
+  List<String> listUsageIDsByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
+
+  /**
+>>>>>>> master
    * Warning, this does not return bare names, only true usages!
    */
   List<NameUsageBase> listByNamesIndexOrCanonicalID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx, @Param("page") Page page);
@@ -121,6 +140,10 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   /**
    * Iterates over all usages for a given dataset, optionally filtered by a minimum/maximum rank to include.
+   * Warn: Read only properties are not populated to save excessive joins.
+   * In particular this is the accepted Taxon for a Synonym instance
+   * and the publishedIn and accordingTo reference citation fields.
+   * Use the respective ID fields instead.
    */
   Cursor<NameUsageBase> processDataset(@Param("datasetKey") int datasetKey,
                                        @Nullable @Param("minRank") Rank minRank,
@@ -195,6 +218,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * By default this will be in breadth-first order.
    * Depth first can also be requested, but is more expensive and will be slower.
    *
+   * Read only properties are not populated to save excessive joins.
+   * In particular this is the accepted Taxon for a Synonym instance
+   * and the publishedIn and accordingTo reference citation fields.
+   * Use the respective ID fields instead.
+   *
    * This allows a single query to efficiently stream all its values without keeping them in memory.
    *
    * An optional exclusion filter can be used to prevent traversal of subtrees.
@@ -215,17 +243,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                      @Param("includeSynonyms") boolean includeSynonyms,
                      @Param("depthFirst") boolean depthFirst);
 
-  /**
-   * Same as processTree, but it does not populate the accepted name for synonyms, thus requiring
-   * only half the amount of joins!
-   */
-  Cursor<NameUsageBase> processTreeNoAcc(@Param("datasetKey") int datasetKey,
-                                    @Param("sectorKey") Integer sectorKey,
-                                    @Param("startID") @Nullable String startID,
-                                    @Param("exclusions") @Nullable Set<String> exclusions,
-                                    @Param("lowestRank") @Nullable Rank lowestRank,
-                                    @Param("includeSynonyms") boolean includeSynonyms,
-                                    @Param("depthFirst") boolean depthFirst);
   /**
    * List all usages from a sector different to the one given including nulls,
    * which are direct children of a taxon from the given sector key.
@@ -280,5 +297,5 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
 
-  Cursor<String> processIds(@Param("datasetKey") int datasetKey);
+  Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms);
 }

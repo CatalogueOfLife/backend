@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Produces(MediaType.APPLICATION_JSON)
 public class HomoglyphParserResource {
 
-  public class HomoglyphResult {
+  public static class HomoglyphResult {
     public String original;
     public String canonical;
     public List<Integer> positions;

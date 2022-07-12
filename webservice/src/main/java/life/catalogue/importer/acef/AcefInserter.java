@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.csv.AcefReader;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoCsvInserter;
@@ -53,7 +54,7 @@ public class AcefInserter extends NeoCsvInserter {
    * quick check to see if all required files are existing.
    */
   @Override
-  protected void batchInsert() throws NormalizationFailedException {
+  protected void batchInsert() throws NormalizationFailedException, InterruptedException {
     inter = new AcefInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
     // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
@@ -141,11 +142,14 @@ public class AcefInserter extends NeoCsvInserter {
   }
   
   @Override
-  protected void postBatchInsert() throws NormalizationFailedException {
+  protected void postBatchInsert() throws NormalizationFailedException, InterruptedException {
     try (Transaction tx = store.getNeo().beginTx()){
       reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
       tx.success();
-      
+
+    } catch (InterruptedRuntimeException e) {
+      throw new InterruptedException(e.getMessage());
+
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
     }
@@ -169,7 +173,10 @@ public class AcefInserter extends NeoCsvInserter {
         }
       }
       tx.success();
-    
+
+    } catch (InterruptedRuntimeException e) {
+      throw new InterruptedException(e.getMessage());
+
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to insert ACEF files", e);
     }

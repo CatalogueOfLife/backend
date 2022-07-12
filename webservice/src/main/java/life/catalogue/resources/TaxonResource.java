@@ -5,12 +5,22 @@ import life.catalogue.api.model.*;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.*;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
+import life.catalogue.dw.jersey.MoreHttpHeaders;
+import life.catalogue.dw.jersey.MoreMediaTypes;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +46,14 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Override
   ResultPage<Taxon> searchImpl(int datasetKey, TaxonSearchRequest req, Page page) {
     return req.root ? dao.listRoot(datasetKey, page) : dao.list(datasetKey, page);
+  }
+
+  @GET
+  @Path("ids")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Cursor<String> sitemap(@PathParam("key") int datasetKey, @Context SqlSession session) {
+    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+    return num.processIds(datasetKey, false);
   }
 
   @GET

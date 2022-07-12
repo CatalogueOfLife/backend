@@ -11,7 +11,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2022-06-01 extended catalogue
+### 2022-08-01 extended catalogue
 ```
 ALTER TABLE sector ADD COLUMN priority INTEGER;
 
@@ -38,6 +38,23 @@ ALTER TABLE dataset ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASET
 ALTER TABLE dataset_archive ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_source ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_import ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+```
+
+### 2022-05-17 extend TypeMaterial
+```
+ALTER TYPE ISSUE ADD VALUE 'TYPE_MATERIAL_SEX_INVALID';
+
+ALTER TABLE type_material ADD COLUMN sex SEX;
+ALTER TABLE type_material ADD COLUMN institution_code TEXT;
+ALTER TABLE type_material ADD COLUMN catalog_number TEXT;
+ALTER TABLE type_material ADD COLUMN associated_sequences TEXT;
+ALTER TABLE type_material ADD COLUMN coordinate POINT;
+UPDATE type_material SET coordinate = POINT(longitude, latitude) WHERE latitude IS NOT NULL AND longitude IS NOT NULL;
+ALTER TABLE type_material DROP CONSTRAINT type_material_latitude_check;
+ALTER TABLE type_material DROP CONSTRAINT type_material_longitude_check;
+ALTER TABLE type_material ALTER COLUMN altitude type TEXT;
+ALTER TABLE type_material ALTER COLUMN latitude type TEXT;
+ALTER TABLE type_material ALTER COLUMN longitude type TEXT;
 ```
 
 ### 2022-05-10 add DOI issues & publishedPageLink

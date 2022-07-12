@@ -8,7 +8,11 @@ import java.util.Optional;
 
 public interface NeoInserter {
 
-  void insertAll() throws NormalizationFailedException;
+  /**
+   * @throws NormalizationFailedException if some fatal error forced the normalization to stop.
+   * @throws InterruptedException if the thread was interrupted, i.e. e.g. the import got canceled by a user
+   */
+  void insertAll() throws NormalizationFailedException, InterruptedException;
 
   void reportBadFks();
 

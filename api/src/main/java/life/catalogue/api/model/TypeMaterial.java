@@ -1,14 +1,14 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.Sex;
 import life.catalogue.api.vocab.TypeStatus;
+import life.catalogue.common.text.StringUtils;
 
 import java.net.URI;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Type material should only be associated with the original name, not with a recombination.
@@ -42,35 +42,57 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
    * Most often this is equivalent to the original publishedInID, but for subsequent designations the later reference can be cited.
    */
   private String referenceId;
-
   private URI link;
-
-  private String locality;
-
   private Country country;
-
-  /**
-   * WGS84
-   */
-  private Double latitude;
-
-  /**
-   * WGS84
-   */
-  private Double longitude;
-
-  /**
-   * In meters above mean sea level.
-   */
-  private Integer altitude;
+  private String locality;
+  private Sex sex;
+  private String institutionCode;
+  private String catalogNumber;
+  private String associatedSequences;
   private String host;
   private String date;
   private String collector;
+  private String latitude;
+  private String longitude;
+  private Coordinate coordinate; // exists only if parsable
+  private String altitude;
 
   /**
    * Any informal note about the type.
    */
   private String remarks;
+
+  /**
+   * Builds an EJT compliant citation without! the type status.
+   *
+   * COUNTRY • specimen(s) [e.g. “1 ♂”];
+   * geographic/locality data [from largest to smallest];
+   * geographic coordinates;
+   * altitude/elevation/depth [using alt. / elev. / m a.s.l. etc.];
+   * date [format: 16 Jan. 1998];
+   * collector [followed by “leg.”];
+   * other collecting data [e.g. micro habitat / host / method of collecting / “DNA voucher specimen”/ “vial with detached elements”, etc.];
+   * barcodes/identifiers [e.g. “GenBank: MG779236”];
+   * institution code and specimen code [e.g. “CBF 06023”].
+   */
+  public static String buildCitation(TypeMaterial tm) {
+    final String concat = "; ";
+    StringBuilder sb = new StringBuilder();
+    if (tm.getCountry() != null) {
+      sb.append(tm.getCountry().getName().toUpperCase());
+      sb.append(" • ");
+    }
+    if (tm.getSex() != null) {
+      sb.append(tm.getSex().getSymbol());
+    }
+    String coord = StringUtils.concat(", ", tm.getLatitude(), tm.getLongitude());
+    String specCode = StringUtils.concat(" ", tm.getInstitutionCode(), tm.getCatalogNumber());
+    StringUtils.append(sb, concat, true, tm.getLocality(), coord, tm.getAltitude(),
+      tm.getDate(), tm.getCollector(), tm.getHost(), tm.getRemarks(),
+      tm.getAssociatedSequences(), specCode
+    );
+    return sb.length() > 1 ? sb.toString() : null;
+  }
 
   @JsonIgnore
   public DSID<String> getNameKey() {
@@ -104,6 +126,9 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
   }
 
   public String getCitation() {
+    if (citation == null) {
+      citation = buildCitation(this);
+    }
     return citation;
   }
 
@@ -135,27 +160,67 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
     this.country = country;
   }
 
-  public Double getLatitude() {
+  public String getLatitude() {
     return latitude;
   }
 
-  public void setLatitude(Double latitude) {
+  public void setLatitude(String latitude) {
     this.latitude = latitude;
   }
 
-  public Double getLongitude() {
+  public String getLongitude() {
     return longitude;
   }
 
-  public void setLongitude(Double longitude) {
+  public void setLongitude(String longitude) {
     this.longitude = longitude;
   }
 
-  public Integer getAltitude() {
+  public String getInstitutionCode() {
+    return institutionCode;
+  }
+
+  public void setInstitutionCode(String institutionCode) {
+    this.institutionCode = institutionCode;
+  }
+
+  public String getCatalogNumber() {
+    return catalogNumber;
+  }
+
+  public void setCatalogNumber(String catalogNumber) {
+    this.catalogNumber = catalogNumber;
+  }
+
+  public Sex getSex() {
+    return sex;
+  }
+
+  public void setSex(Sex sex) {
+    this.sex = sex;
+  }
+
+  public String getAssociatedSequences() {
+    return associatedSequences;
+  }
+
+  public void setAssociatedSequences(String associatedSequences) {
+    this.associatedSequences = associatedSequences;
+  }
+
+  public Coordinate getCoordinate() {
+    return coordinate;
+  }
+
+  public void setCoordinate(Coordinate coordinate) {
+    this.coordinate = coordinate;
+  }
+
+  public String getAltitude() {
     return altitude;
   }
 
-  public void setAltitude(Integer altitude) {
+  public void setAltitude(String altitude) {
     this.altitude = altitude;
   }
 
@@ -212,29 +277,34 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof TypeMaterial)) return false;
     if (!super.equals(o)) return false;
     TypeMaterial that = (TypeMaterial) o;
-    return Objects.equals(sectorKey, that.sectorKey) &&
-      Objects.equals(verbatimKey, that.verbatimKey) &&
-      Objects.equals(nameId, that.nameId) &&
-      Objects.equals(citation, that.citation) &&
-      status == that.status &&
-      Objects.equals(referenceId, that.referenceId) &&
-      Objects.equals(link, that.link) &&
-      Objects.equals(locality, that.locality) &&
-      country == that.country &&
-      Objects.equals(latitude, that.latitude) &&
-      Objects.equals(longitude, that.longitude) &&
-      Objects.equals(altitude, that.altitude) &&
-      Objects.equals(host, that.host) &&
-      Objects.equals(date, that.date) &&
-      Objects.equals(collector, that.collector) &&
-      Objects.equals(remarks, that.remarks);
+    return Objects.equals(sectorKey, that.sectorKey)
+           && Objects.equals(verbatimKey, that.verbatimKey)
+           && Objects.equals(nameId, that.nameId)
+           && Objects.equals(citation, that.citation)
+           && status == that.status
+           && Objects.equals(referenceId, that.referenceId)
+           && Objects.equals(link, that.link)
+           && Objects.equals(institutionCode, that.institutionCode)
+           && Objects.equals(catalogNumber, that.catalogNumber)
+           && Objects.equals(locality, that.locality)
+           && country == that.country
+           && Objects.equals(sex, that.sex)
+           && Objects.equals(associatedSequences, that.associatedSequences)
+           && Objects.equals(host, that.host)
+           && Objects.equals(date, that.date)
+           && Objects.equals(collector, that.collector)
+           && Objects.equals(latitude, that.latitude)
+           && Objects.equals(longitude, that.longitude)
+           && Objects.equals(coordinate, that.coordinate)
+           && Objects.equals(altitude, that.altitude)
+           && Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, nameId, citation, status, referenceId, link, locality, country, latitude, longitude, altitude, host, date, collector, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, nameId, citation, status, referenceId, link, institutionCode, catalogNumber, locality, country, sex, associatedSequences, host, date, collector, latitude, longitude, coordinate, altitude, remarks);
   }
 }

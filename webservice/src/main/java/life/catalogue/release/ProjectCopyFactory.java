@@ -8,10 +8,11 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 
+import javax.validation.Validator;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import javax.validation.Validator;
 
 public class ProjectCopyFactory {
   private final ExportManager exportManager;

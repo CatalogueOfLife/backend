@@ -104,6 +104,8 @@ public class PgSetupRule extends ExternalResource {
       ScriptRunner runner = PgConfig.scriptRunner(con);
       runner.runScript(Resources.getResourceAsReader(InitDbUtils.SCHEMA_FILE));
       con.commit();
+      // this enables autocommit on the connection
+      LookupTables.recreateTables(con);
     }
     setupMybatis(cfg);
     Partitioner.createDefaultPartitions(sqlSessionFactory, 2);

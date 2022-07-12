@@ -5,10 +5,9 @@ import life.catalogue.api.model.Synonym;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.TaxonProcessable;
 
 import java.util.List;
-
-import life.catalogue.db.TaxonProcessable;
 
 import org.apache.ibatis.annotations.Param;
 

@@ -1,12 +1,10 @@
 package life.catalogue.parser;
 
-import de.undercouch.citeproc.csl.CSLType;
+import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import de.undercouch.citeproc.csl.CSLType;
 
 /**
  *

@@ -24,7 +24,7 @@ public abstract class DaoTestBase {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
   @Rule
-  public final TestDataRule testDataRule;
+  public TestDataRule testDataRule;
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();

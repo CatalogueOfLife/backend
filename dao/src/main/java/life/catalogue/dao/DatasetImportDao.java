@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.type2.StringCount;
@@ -97,6 +98,7 @@ public class DatasetImportDao {
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.origin == DatasetOrigin.RELEASE) {
       return getReleaseAttempt(datasetKey);
+
     } else {
       try (SqlSession session = factory.openSession(true)) {
         return session.getMapper(DatasetImportMapper.class).last(datasetKey);
@@ -148,8 +150,10 @@ public class DatasetImportDao {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       updateMetrics(mapper, di, key);
-  
+
+      Exceptions.runtimeInterruptIfCancelled();
       fileMetricsDao.updateTree(key, di.getDatasetKey(), di.getAttempt());
+      Exceptions.runtimeInterruptIfCancelled();
       fileMetricsDao.updateNames(key, di.getDatasetKey(), di.getAttempt());
       
     } catch (IOException e) {
@@ -262,8 +266,7 @@ public class DatasetImportDao {
   public void updateImportFailure(DatasetImport di, Throwable e) {
     di.setFinished(LocalDateTime.now());
     di.setState(ImportState.FAILED);
-    // System.out.println(ExceptionUtils.getMessage(e));
-    di.setError(e.getClass().getSimpleName() + ": " + e.getMessage());
+    di.setError(Exceptions.simpleLogWithCauses(e));
     update(di);
   }
   

@@ -4,9 +4,9 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
-import life.catalogue.csv.MappingInfos;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoRel;
@@ -187,18 +187,20 @@ public class ColdpInterpreter extends InterpreterBase {
     m.setNameId(rec.getRaw(ColdpTerm.nameID));
     m.setCitation(rec.get(ColdpTerm.citation));
     m.setStatus(SafeParser.parse(TypeStatusParser.PARSER, rec.get(ColdpTerm.status)).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec));
-    m.setLocality(rec.get(ColdpTerm.locality));
     m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(ColdpTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
+    m.setLocality(rec.get(ColdpTerm.locality));
+    m.setLatitude(rec.get(ColdpTerm.latitude));
+    m.setLongitude(rec.get(ColdpTerm.longitude));
     try {
-      Optional<CoordParser.LatLon> coord = CoordParser.PARSER.parse(rec.get(ColdpTerm.latitude), rec.get(ColdpTerm.longitude));
-      if (coord.isPresent()) {
-        m.setLatitude(coord.get().lat);
-        m.setLongitude(coord.get().lon);
-      }
+      CoordParser.PARSER.parse(m.getLatitude(), m.getLongitude()).ifPresent(m::setCoordinate);
     } catch (UnparsableException e) {
       rec.addIssue(Issue.LAT_LON_INVALID);
     }
-    m.setAltitude(integer(rec, Issue.ALTITUDE_INVALID, ColdpTerm.altitude));
+    m.setAltitude(rec.get(ColdpTerm.altitude));
+    m.setSex(SafeParser.parse(SexParser.PARSER, rec.get(ColdpTerm.sex)).orNull(Issue.TYPE_MATERIAL_SEX_INVALID, rec));
+    m.setInstitutionCode(rec.get(ColdpTerm.institutionCode));
+    m.setCatalogNumber(rec.get(ColdpTerm.catalogNumber));
+    m.setAssociatedSequences(rec.get(ColdpTerm.associatedSequences));
     m.setHost(rec.get(ColdpTerm.host));
     m.setDate(rec.get(ColdpTerm.date));
     m.setCollector(rec.get(ColdpTerm.collector));

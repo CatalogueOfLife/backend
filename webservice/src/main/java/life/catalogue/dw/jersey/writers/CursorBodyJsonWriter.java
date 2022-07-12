@@ -20,7 +20,7 @@ import org.apache.ibatis.cursor.Cursor;
  */
 @Produces(MediaType.APPLICATION_JSON)
 @Provider
-public class CursorBodyWriter implements MessageBodyWriter<Cursor<?>> {
+public class CursorBodyJsonWriter implements MessageBodyWriter<Cursor<?>> {
   
   @Override
   public boolean isWriteable(Class<?> type, Type type1, Annotation[] antns, MediaType mt) {
@@ -29,7 +29,7 @@ public class CursorBodyWriter implements MessageBodyWriter<Cursor<?>> {
   
   @Override
   public void writeTo(Cursor<?> c, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
-    try (StreamBodyWriter.JsonArrayConsumer consumer = new StreamBodyWriter.JsonArrayConsumer(out)){
+    try (StreamBodyJsonWriter.JsonArrayConsumer consumer = new StreamBodyJsonWriter.JsonArrayConsumer(out)){
       c.forEach(consumer);
     } finally {
       c.close();

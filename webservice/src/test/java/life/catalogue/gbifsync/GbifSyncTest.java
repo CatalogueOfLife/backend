@@ -1,62 +1,76 @@
 package life.catalogue.gbifsync;
 
+import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.PgSetupRule;
 
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @Ignore("Long running tests to be manually executed when working on GbifSync")
 @RunWith(MockitoJUnitRunner.class)
 public class GbifSyncTest {
   
   @ClassRule
-  public static PgSetupRule pg = new PgSetupRule();
-
-  @Mock
-  Validator validator;
+  public static final PgSetupRule pg = new PgSetupRule();
+  private static final GbifConfig cfg = new GbifConfig();
+  private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   @Mock
   DatasetImportDao diDao;
+  private static Client client;
+  private static DatasetDao ddao;
+
+  @BeforeClass
+  public static void init() {
+    cfg.syncFrequency = 1;
+    final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider()
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    ClientConfig ccfg = new ClientConfig(jacksonJsonProvider);
+    ccfg.register(new LoggingFeature(Logger.getLogger(GbifSyncTest.class.getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
+    client = ClientBuilder.newClient(ccfg);
+  }
+
+  @AfterClass
+  public static void destroy() {
+    client.close();
+  }
+
+  @Before
+  public void initTest() {
+    ddao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, diDao, validator);
+  }
 
   @Test
   public void syncNow() {
-    GbifConfig cfg = new GbifConfig();
-    cfg.syncFrequency = 1;
+    GbifSyncManager gbif = new GbifSyncManager(cfg, ddao, PgSetupRule.getSqlSessionFactory(), client);
+    gbif.syncNow();
+  }
 
-    final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    ClientConfig ccfg = new ClientConfig(jacksonJsonProvider);
-    ccfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
-    final Client client = ClientBuilder.newClient(ccfg);
-    var ddao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, diDao, validator);
-
-    try {
-      GbifSyncManager gbif = new GbifSyncManager(cfg, ddao, PgSetupRule.getSqlSessionFactory(), client);
-      gbif.syncNow();
-      
-    } finally {
-      client.close();
-    }
-    
+  @Test
+  public void syncSingle() {
+    GbifSyncJob job = new GbifSyncJob(cfg, client, ddao, PgSetupRule.getSqlSessionFactory(), Users.GBIF_SYNC, Set.of(UUID.fromString("30f55c63-a829-4cb2-9676-3b1b6f981567")));
+    job.run();
+    Assert.assertEquals(JobStatus.FINISHED, job.getStatus());
   }
 }

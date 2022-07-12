@@ -26,6 +26,7 @@ import static life.catalogue.api.vocab.DatasetOrigin.RELEASE;
 public class DatasetSourceDao {
   private final static Logger LOG = LoggerFactory.getLogger(DatasetSourceDao.class);
   private final SqlSessionFactory factory;
+  // MD5 hash by datasetKey & attempt
   private final LoadingCache<DSID<Integer>, String> md5s = Caffeine.newBuilder()
                                                               .maximumSize(1000)
                                                               .build(this::getDatasetImportMD5);

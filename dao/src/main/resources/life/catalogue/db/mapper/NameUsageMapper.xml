@@ -23,13 +23,12 @@
     ${alias}.modified_by AS ${prefix}modified_by
   </sql>
 
-  <sql id="SELECT_NO_ACCEPTED">
+  <sql id="SELECT_BASE">
     u.is_synonym,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="u"/>
       <property name="prefix" value=""/>
     </include>,
-    r.citation AS according_to,
     <include refid="life.catalogue.db.mapper.NameMapper.nameColsNidx">
       <property name="alias" value="n"/>
       <property name="aliasNI" value="nm"/>
@@ -38,7 +37,8 @@
   </sql>
 
   <sql id="SELECT">
-    <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT_NO_ACCEPTED"/>,
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT_BASE" />,
+    r.citation AS according_to,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="a"/>
       <property name="prefix" value="a_"/>
@@ -119,10 +119,13 @@
     name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id
   </sql>
 
-  <sql id="FROM_NO_ACCEPTED">
-    name_usage u
-    JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+  <sql id="FROM_BASE">
+    name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
     LEFT JOIN name_match nm ON nm.dataset_key=n.dataset_key AND nm.name_id=n.id
+  </sql>
+
+  <sql id="FROM_NO_ACCEPTED">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_BASE"/>
     LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
   </sql>
 
@@ -270,6 +273,12 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="listUsageIDsByNameID" resultType="string">
+    SELECT u.id
+    FROM name_usage u
+    WHERE u.dataset_key = #{datasetKey} AND u.name_id=#{nameId}
+  </select>
+
   <sql id="FROM_NIDX">
     names_index ni
       JOIN name_match nm ON nm.index_id=ni.id
@@ -387,8 +396,8 @@
   </insert>
 
   <select id="processDataset" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
+    SELECT <include refid="SELECT_BASE"/>
+    FROM <include refid="FROM_BASE"/>
     <where>
       u.dataset_key = #{datasetKey}
       <if test="maxRank != null">
@@ -516,51 +525,21 @@
 
   <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     WITH RECURSIVE x AS(
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT_BASE"/>
     <if test="depthFirst">
       ,concat_ws('|', n.scientific_name, u.id) AS path
     </if>
-    FROM <include refid="FROM"/>
+    FROM <include refid="FROM_BASE"/>
     WHERE u.dataset_key=#{datasetKey} AND
     <include refid="WHERE_START"/>
 
     UNION
 
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT_BASE"/>
     <if test="depthFirst">
       ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id) AS path
     </if>
-    FROM <include refid="FROM"/>
-    JOIN x ON x.id = u.parent_id
-    <where>
-      u.dataset_key=#{datasetKey}
-      <include refid="WHERE_UNION"/>
-    </where>
-    )
-    SELECT * FROM x
-    <if test="depthFirst">
-      ORDER BY x.path
-    </if>
-  </select>
-
-
-  <select id="processTreeNoAcc" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    WITH RECURSIVE x AS(
-    SELECT <include refid="SELECT_NO_ACCEPTED"/>
-    <if test="depthFirst">
-      ,concat_ws('|', n.scientific_name, u.id) AS path
-    </if>
-    FROM <include refid="FROM_NO_ACCEPTED"/>
-    WHERE u.dataset_key=#{datasetKey} AND
-    <include refid="WHERE_START"/>
-
-    UNION
-
-    SELECT <include refid="SELECT_NO_ACCEPTED"/>
-    <if test="depthFirst">
-      ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id) AS path
-    </if>
-    FROM <include refid="FROM_NO_ACCEPTED"/>
+    FROM <include refid="FROM_BASE"/>
     JOIN x ON x.id = u.parent_id
     <where>
       u.dataset_key=#{datasetKey}
@@ -631,8 +610,11 @@
     ORDER BY ni.canonical_id, ni.id
   </select>
 
-  <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+  <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="2" resultSetType="FORWARD_ONLY">
     SELECT id FROM name_usage WHERE dataset_key=#{datasetKey}
+    <if test="!synonyms">
+      AND NOT is_synonym
+    </if>
   </select>
 
   <delete id="delete" parameterType="map">

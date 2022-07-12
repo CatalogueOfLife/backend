@@ -49,6 +49,13 @@ public class CslUtil {
     return null;
   }
 
+  public static String buildCitationHtml(CslData data) {
+    if (data != null) {
+      return apaHtml.cite(data);
+    }
+    return null;
+  }
+
   public static String buildCitationHtml(CSLItemData data) {
     if (data != null) {
       return apaHtml.cite(data);

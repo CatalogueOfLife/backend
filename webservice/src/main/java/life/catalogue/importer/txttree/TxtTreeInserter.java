@@ -120,7 +120,7 @@ public class TxtTreeInserter implements NeoInserter {
     return MetadataFactory.readMetadata(folder);
   }
 
-  private void recursiveNodeInsert(Node parent, TreeNode t){
+  private void recursiveNodeInsert(Node parent, TreeNode t) throws InterruptedException {
     NeoUsage u = usage(t, false);
     store.createNameAndUsage(u);
     if (parent != null) {
@@ -142,7 +142,7 @@ public class TxtTreeInserter implements NeoInserter {
     }
   }
 
-  private NeoUsage usage(TreeNode tn, boolean synonym) {
+  private NeoUsage usage(TreeNode tn, boolean synonym) throws InterruptedException {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
     ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, v).get();
     NeoUsage u = synonym ?

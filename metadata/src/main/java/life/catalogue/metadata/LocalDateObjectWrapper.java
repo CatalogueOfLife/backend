@@ -16,7 +16,7 @@ public class LocalDateObjectWrapper extends DefaultObjectWrapper {
     super(incompatibleImprovements);
   }
 
-  public class CamelCaseEnum extends BeanModel implements TemplateScalarModel {
+  public static class CamelCaseEnum extends BeanModel implements TemplateScalarModel {
     final Enum<?> value;
 
     public CamelCaseEnum(Enum<?> value, BeansWrapper wrapper) {

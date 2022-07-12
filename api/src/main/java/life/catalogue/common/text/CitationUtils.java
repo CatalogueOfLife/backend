@@ -120,10 +120,6 @@ public class CitationUtils {
       return null;
     }
 
-    public String getOrganisations() {
-      return getOrganisations() == null ? null : String.join(", ", getOrganisations());
-    }
-
     public String getContact() {
       return d.getContact().getName();
     }

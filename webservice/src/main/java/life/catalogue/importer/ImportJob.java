@@ -18,6 +18,7 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.dao.SectorDao;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
@@ -30,6 +31,7 @@ import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
+import life.catalogue.metadata.DoiResolver;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,10 +45,9 @@ import java.util.function.Consumer;
 
 import javax.validation.Validator;
 
-import life.catalogue.metadata.DoiResolver;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +67,6 @@ public class ImportJob implements Runnable {
   private final ImportRequest req;
   private final DatasetWithSettings dataset;
   private DatasetImport di;
-  private DatasetImport last;
   private final WsServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
@@ -158,7 +158,7 @@ public class ImportJob implements Runnable {
     return di;
   }
   
-  private void updateState(ImportState state) {
+  private void updateState(ImportState state) throws InterruptedException {
     di.setState(state);
     dao.update(di);
     checkIfCancelled();
@@ -169,7 +169,7 @@ public class ImportJob implements Runnable {
     dataset.setDataFormat(format);
   }
 
-  private void checkIfCancelled() {
+  private void checkIfCancelled() throws InterruptedException {
     Exceptions.interruptIfCancelled("Import " + di.attempt() + " was cancelled");
   }
 
@@ -178,9 +178,7 @@ public class ImportJob implements Runnable {
    * This includes downloading, proxy downloads, modified checks and checks for uploads detecting the actual format
    * @return true if sourceDir should be imported
    */
-  private boolean prepareSourceData(Path sourceDir) throws IOException, IllegalArgumentException {
-    last = dao.getLast(dataset.getKey());
-
+  private boolean prepareSourceData(Path sourceDir) throws IOException, IllegalArgumentException, InterruptedException {
     File source = cfg.normalizer.source(datasetKey);
     source.getParentFile().mkdirs();
     if (req.upload) {
@@ -220,15 +218,22 @@ public class ImportJob implements Runnable {
     dao.update(di);
 
     boolean isModified = true;
-    if (last != null && di.getMd5().equals(last.getMd5())) {
-      LOG.info("MD5 unchanged: {}", di.getMd5());
-      isModified = false;
+    if (dataset.getImportAttempt() != null) {
+      try (SqlSession session = factory.openSession()) {
+        String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dataset.getImportAttempt());
+        if (Objects.equals(lastMD5, di.getMd5())) {
+          LOG.info("MD5 unchanged: {}", di.getMd5());
+          isModified = false;
+        } else {
+          LOG.info("MD5 changed from attempt {}: {} to {}", dataset.getImportAttempt(), lastMD5, di.getMd5());
+        }
+      }
     }
 
     checkIfCancelled();
     // decompress and import?
     if (isModified || req.force) {
-      if (!isModified) {
+      if (req.force) {
         LOG.info("Force reimport of unchanged archive {}", datasetKey);
       }
       LOG.info("Extracting files from archive {}", datasetKey);
@@ -247,14 +252,13 @@ public class ImportJob implements Runnable {
   private void  importDataset() throws Exception {
     di = dao.createWaiting(datasetKey, this, req.createdBy);
     LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
-    LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
+    LOG.info("Start new {}import attempt {} for {} dataset {}: {}", req.force ? "forced " : "" ,di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
 
     final Path sourceDir = cfg.normalizer.sourceDir(datasetKey).toPath();
     NeoDb store = null;
 
     try {
       final boolean doImport = prepareSourceData(sourceDir);
-      checkIfCancelled();
       if (doImport) {
         LOG.info("Normalizing {}", datasetKey);
         updateState(ImportState.PROCESSING);
@@ -311,12 +315,12 @@ public class ImportJob implements Runnable {
   
     } catch (InterruptedException | InterruptedRuntimeException e) {
       // cancelled import
-      LOG.warn("Dataset {} import cancelled. Log to db", datasetKey);
+      LOG.warn("Dataset {} import cancelled", datasetKey);
       dao.updateImportCancelled(di);
       
     } catch (Throwable e) {
       // failed import
-      LOG.error("Dataset {} import failed. {}. Log to db", datasetKey, e.getMessage(), e);
+      LOG.error("Dataset {} import failed. {}", datasetKey, e.getMessage(), e);
       dao.updateImportFailure(di, e);
       throw e;
       

@@ -2,16 +2,15 @@ package life.catalogue.common.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.*;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
-
-import com.google.common.io.Resources;
 
 /**
  *

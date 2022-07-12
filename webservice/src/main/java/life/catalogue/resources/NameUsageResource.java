@@ -89,7 +89,10 @@ public class NameUsageResource {
     if ((datasetKeys == null || datasetKeys.isEmpty()) && publisherKey == null) {
       throw new IllegalArgumentException("datasetKey or publisherKey parameter is required");
     }
-    return session.getMapper(NameUsageMapper.class).listRelated(DSID.of(datasetKey, id), datasetKeys, publisherKey);
+    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+    var key = DSID.of(datasetKey, id);
+    num.existsOrThrow(key);
+    return num.listRelated(key, datasetKeys, publisherKey);
   }
 
   @GET

@@ -1,22 +1,29 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.model.NameRelation;
-import life.catalogue.api.model.Reference;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.dao.ParserConfigDao;
+import life.catalogue.img.ImageService;
+import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.matching.NameIndexFactory;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -531,6 +538,29 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals("Cassine congonha", n.getScientificName());
     }
     assertTree();
+  }
+
+  @Test
+  public void testBatchIserterInterruptCleanup() throws Exception {
+    String resourceDir = resourceDir(1, DataFormat.COLDP);
+    URL url = getClass().getResource(resourceDir);
+
+    store = NeoDbFactory.create(1, 1, cfg);
+    dws = new DatasetWithSettings();
+    dws.setKey(store.getDatasetKey());
+    dws.setDataFormat(DataFormat.COLDP);
+    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    Normalizer norm = new Normalizer(dws, store, Paths.get(url.toURI()), NameIndexFactory.passThru(), ImageService.passThru(), validator, null);
+
+    var t = new Thread(new FutureTask<>(norm));
+    t.start();
+
+    TimeUnit.MILLISECONDS.sleep(100);
+    t.interrupt();
+    TimeUnit.MILLISECONDS.sleep(500);
+
+    assertFalse(store.isBatchMode());
+    System.out.println("Test FINISHED");
   }
 
 }

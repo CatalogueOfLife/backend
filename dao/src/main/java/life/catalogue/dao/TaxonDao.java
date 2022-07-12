@@ -6,7 +6,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.NameProcessable;
-import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -369,12 +368,18 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       // create taxon in ES
       indexService.update(t.getDatasetKey(), List.of(t.getId()));
       return t;
+
     }
   }
   
   static void parseName(Name n) {
     if (!n.isParsed()) {
-      NameParser.PARSER.parse(n, IssueContainer.VOID);
+      try {
+        NameParser.PARSER.parse(n, IssueContainer.VOID);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt(); // reset flag
+      }
+
     } else {
       if (n.getType() == null) {
         n.setType(NameType.SCIENTIFIC);
@@ -593,7 +598,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     ) {
       TaxonMapper tm = writeSession.getMapper(TaxonMapper.class);
       tm.resetDatasetSectorCount(datasetKey);
-      writeSession.commit();
       SectorCountUpdHandler scConsumer = new SectorCountUpdHandler(tm);
       readSession.getMapper(SectorMapper.class).processDataset(datasetKey).forEach(scConsumer);
       writeSession.commit();

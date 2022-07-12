@@ -17,6 +17,11 @@
     latitude,
     longitude,
     altitude,
+    coordinate,
+    sex,
+    institution_code,
+    catalog_number,
+    associated_sequences,
     host,
     date,
     collector,
@@ -48,6 +53,11 @@
     ${alias}latitude,
     ${alias}longitude,
     ${alias}altitude,
+    ${alias}coordinate,
+    ${alias}sex,
+    ${alias}institution_code,
+    ${alias}catalog_number,
+    ${alias}associated_sequences,
     ${alias}host,
     ${alias}date,
     ${alias}collector,
@@ -71,6 +81,11 @@
     #{latitude},
     #{longitude},
     #{altitude},
+    #{coordinate, typeHandler=life.catalogue.db.type.PointTypeHandler},
+    #{sex}::SEX,
+    #{institutionCode},
+    #{catalogNumber},
+    #{associatedSequences},
     #{host},
     #{date},
     #{collector},
@@ -87,6 +102,7 @@
 
   <resultMap id="typeResultMap" type="TypeMaterial" autoMapping="true">
     <id property="id" column="id"/>
+    <result property="coordinate" column="coordinate" typeHandler="life.catalogue.db.type.PointTypeHandler"/>
   </resultMap>
 
   <select id="listByName" resultMap="typeResultMap">

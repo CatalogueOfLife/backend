@@ -47,24 +47,6 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
             .forEach(countHandler);
     Assert.assertEquals(10, countHandler.counter.get());
   }
-
-  @Test
-  public void processTreeNoAcc() throws Exception {
-    countHandler = new CountHandler<>();
-    mapper().processTreeNoAcc(DATASET11.getKey(), null, "t2", Sets.newHashSet("skipID"), null, true, false)
-            .forEach(countHandler);
-    Assert.assertEquals(23, countHandler.counter.get());
-
-    countHandler.reset();
-    mapper().processTreeNoAcc(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6"), null, true, false)
-            .forEach(countHandler);
-    Assert.assertEquals(15, countHandler.counter.get());
-
-    countHandler.reset();
-    mapper().processTreeNoAcc(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6", "t30"), null, true, false)
-            .forEach(countHandler);
-    Assert.assertEquals(10, countHandler.counter.get());
-  }
   
   @Test
   public void processTreeOrder() throws Exception {
