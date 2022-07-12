@@ -23,19 +23,22 @@
     ${alias}.modified_by AS ${prefix}modified_by
   </sql>
 
-  <sql id="SELECT">
+  <sql id="SELECT_BASE">
     u.is_synonym,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="u"/>
       <property name="prefix" value=""/>
     </include>,
-    r.citation AS according_to,
     <include refid="life.catalogue.db.mapper.NameMapper.nameColsNidx">
       <property name="alias" value="n"/>
       <property name="aliasNI" value="nm"/>
       <property name="prefix" value="n_"/>
     </include>
-    ,
+  </sql>
+
+  <sql id="SELECT">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT_BASE" />,
+    r.citation AS according_to,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="a"/>
       <property name="prefix" value="a_"/>
@@ -116,9 +119,13 @@
     name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id
   </sql>
 
-  <sql id="FROM_NO_ACCEPTED">
+  <sql id="FROM_BASE">
     name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
     LEFT JOIN name_match nm ON nm.dataset_key=n.dataset_key AND nm.name_id=n.id
+  </sql>
+
+  <sql id="FROM_NO_ACCEPTED">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_BASE"/>
     LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
   </sql>
 
@@ -496,21 +503,21 @@
 
   <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     WITH RECURSIVE x AS(
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT_BASE"/>
     <if test="depthFirst">
       ,concat_ws('|', n.scientific_name, u.id) AS path
     </if>
-    FROM <include refid="FROM"/>
+    FROM <include refid="FROM_BASE"/>
     WHERE u.dataset_key=#{datasetKey} AND
     <include refid="WHERE_START"/>
 
     UNION
 
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT_BASE"/>
     <if test="depthFirst">
       ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id) AS path
     </if>
-    FROM <include refid="FROM"/>
+    FROM <include refid="FROM_BASE"/>
     JOIN x ON x.id = u.parent_id
     <where>
       u.dataset_key=#{datasetKey}

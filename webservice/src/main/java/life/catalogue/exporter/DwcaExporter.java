@@ -152,7 +152,7 @@ public class DwcaExporter extends ArchiveExporter {
     write((NameUsage)u);
 
     writer.set(DcTerm.references, u.getLink());
-    writer.set(DwcTerm.nameAccordingTo, u.getAccordingTo());
+    writer.set(DwcTerm.nameAccordingTo, citationByID(u.getAccordingToId()));
   }
 
   void write(BareName u) {
@@ -170,9 +170,7 @@ public class DwcaExporter extends ArchiveExporter {
     writer.set(DwcTerm.taxonRank, n.getRank());
     writer.set(ColdpTerm.notho, n.getNotho());
     writer.set(DwcTerm.taxonomicStatus, u.getStatus());
-    if (n.getPublishedInId() != null) {
-      writer.set(DwcTerm.namePublishedIn, refCache.get(n.getPublishedInId()));
-    }
+    writer.set(DwcTerm.namePublishedIn, citationByID(n.getPublishedInId()));
     if (n.getGenus() != null) {
       writer.set(DwcTerm.genericName, n.getGenus());
       writer.set(DwcTerm.infragenericEpithet, n.getInfragenericEpithet());

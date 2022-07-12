@@ -127,7 +127,7 @@ public class ColdpExporter extends ArchiveExporter {
     writer.set(ColdpTerm.nameReferenceID, n.getPublishedInId());
     writer.set(ColdpTerm.publishedInYear, n.getPublishedInYear());
     writer.set(ColdpTerm.publishedInPage, n.getPublishedInPage());
-    //writer.set(ColdpTerm.publishedInPageLink, null);
+    writer.set(ColdpTerm.publishedInPageLink, n.getPublishedInPageLink());
     writer.set(ColdpTerm.code, n.getCode());
     writer.set(ColdpTerm.nameStatus, n.getNomStatus());
   }

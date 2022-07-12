@@ -195,6 +195,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Iterates over all accepted descendants in a tree in breadth-first order for a given start taxon
    * and processes them with the supplied handler. If the start taxon is null all root taxa are used.
    *
+   * Read only properties are not populated to save excessive joins.
+   * In particular this is the accepted Taxon for a Synonym instance
+   * and the publishedIn and accordingTo reference citation fields.
+   * Use the respective ID fields instead.
+   *
    * This allows a single query to efficiently stream all its values without keeping them in memory.
    *
    * An optional exclusion filter can be used to prevent traversal of subtrees.
