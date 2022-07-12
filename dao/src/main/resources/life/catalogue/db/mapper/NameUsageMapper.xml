@@ -374,8 +374,8 @@
   </insert>
 
   <select id="processDataset" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
+    SELECT <include refid="SELECT_BASE"/>
+    FROM <include refid="FROM_BASE"/>
     <where>
       u.dataset_key = #{datasetKey}
       <if test="maxRank != null">
