@@ -202,7 +202,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="WHERE"/>
-    ORDER BY di.started DESC, di.attempt DESC, di.dataset_key
+    ORDER BY coalesce(di.started, di.finished) DESC NULLS LAST, di.attempt DESC, di.dataset_key
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
