@@ -1,0 +1,1 @@
+Test namePublishedInYear with other chars than the year

@@ -50,6 +50,21 @@ public class DwcaInserterTest extends InserterBaseTest {
     assertEquals("Linnaean Society of London in association with the Natural History Museum", m.getSource().get(0).getPublisher());
   }
 
+  @Test
+  public void dwca42() throws Exception {
+    NeoInserter ins = setup("/dwca/42");
+    ins.insertAll();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = store.usageWithName("530938-wcs");
+      var nn = u.getNeoName();
+
+      var ref = store.references().get(nn.getName().getPublishedInId());
+      assertEquals("Bot. J. Linn. Soc. (2018)", ref.getCitation());
+      assertEquals((Integer) 2018, ref.getYear());
+    }
+  }
+
   /**
    * EEA redlist file with unknown term columns
    */
