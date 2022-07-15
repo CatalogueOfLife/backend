@@ -18,7 +18,7 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
-  public void testByNidx() throws Exception {
+  public void listByNamesIndexIDGlobal() throws Exception {
     // with author
     var res = mapper().listByNamesIndexIDGlobal( 4, new Page());
     assertEquals(3, res.size());
@@ -33,6 +33,17 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
     // none
     assertEquals(0, mapper().listByNamesIndexIDGlobal( 1, new Page()).size());
+  }
+
+  @Test
+  public void listByCanonNIDX() throws Exception {
+    assertEquals(1, mapper().listByCanonNIDX( 100, 3).size());
+    assertEquals(1, mapper().listByCanonNIDX( 101, 3).size());
+    assertEquals(2, mapper().listByCanonNIDX( 102, 3).size());
+    // not existing dataset
+    assertEquals(0, mapper().listByCanonNIDX( 103, 3).size());
+    // not a canonical nidx
+    assertEquals(0, mapper().listByCanonNIDX( 100, 4).size());
   }
 
 }
