@@ -128,7 +128,6 @@ public class DwcaExporter extends ArchiveExporter {
 
     if (u.isSynonym()) {
       writer.set(DwcTerm.acceptedNameUsageID, u.getParentId());
-      ((Synonym)u).getAccepted().setExtinct(null); // this removes the dagger symbol from label below !!!
 
     } else {
       writer.set(DwcTerm.parentNameUsageID, u.getParentId());
