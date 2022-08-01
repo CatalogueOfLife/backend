@@ -1,21 +1,20 @@
 package life.catalogue.assembly;
 
-import kotlin.collections.EmptySet;
-
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
-import life.catalogue.db.mapper.ReferenceMapper;
+import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.IgnoreReason;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.NameIndex;
 
-import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.api.Rank;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 /**
  * Expects depth first traversal!
@@ -70,9 +69,18 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // find out matching - even if we don't include the name in the merge we want the parents matched
     var match = matcher.match(nu, parents.classification());
     LOG.debug("{} matches {}", nu.getLabel(), match);
-    parents.setMatch(match);
+    // avoid the case when an accepted name without author is being matched against synonym names with authors from the same source
+    if (match.isMatch()
+        && nu.getStatus().isTaxon() && !nu.getName().hasAuthorship()
+        && match.usage.getStatus().isSynonym() && match.usage.getName().hasAuthorship()
+        && sector.getSubjectDatasetKey().equals(match.usage.getDatasetKey())
+    ) {
+      LOG.debug("Ignore match to synonym {}. A canonical homonym from the same source for {}", match.usage.getLabel(), nu.getLabel());
+      match = UsageMatch.empty();
+    }
+    parents.setMatch(match.usage);
 
-    if (ignoreUsage(nu, decisions.get(nu.getId()))) {
+    if (ignoreUsage(nu, decisions.get(nu.getId()), match)) {
       // skip this taxon, but include children
       LOG.debug("Ignore {} {} [{}] type={}; status={}", nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), nu.getName().getType(), nu.getName().getNomStatus());
       return;
@@ -107,7 +115,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         matcher.add(nu);
       }
     } else {
-      update(nu, match);
+      update(nu, match.usage);
     }
 
     // commit in batches
@@ -126,7 +134,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     batchSession.commit();
     Taxon t = new Taxon(n);
     var m = matcher.match(t, parents.classification());
-    return usage(m);
+    return usage(m.usage);
   }
 
   @Override

@@ -259,10 +259,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
   }
 
-  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision) {
+  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, UsageMatch match) {
     if (decision != null && decision.getMode() == EditorialDecision.Mode.IGNORE) {
       return true;
     }
+    if (match.ignore) {
+      return true;
+    }
+
     Name n = u.getName();
     //TODO: make this configurable, allow in merge handler
     if (u.isTaxon()) {

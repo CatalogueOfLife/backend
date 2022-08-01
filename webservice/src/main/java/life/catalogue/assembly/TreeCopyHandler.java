@@ -3,7 +3,6 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.matching.NameIndex;
 
@@ -127,7 +126,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
     if (decisions.containsKey(u.getId())) {
       applyDecision(u, decisions.get(u.getId()));
     }
-    if (ignoreUsage(u, decisions.get(u.getId()))) {
+    if (ignoreUsage(u, decisions.get(u.getId()), match)) {
       // skip this taxon, but include children
       LOG.info("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().getLabel(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
       if (u.isTaxon()) {
