@@ -39,69 +39,20 @@ public class DuplicateResource {
 
   @GET
   @Path("/count")
-  public int count(@PathParam("key") int datasetKey,
-                              @QueryParam("entity") EntityType entity,
-                              @QueryParam("mode") MatchingMode mode,
-                              @QueryParam("minSize") Integer minSize,
-                              @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
-                              @QueryParam("sectorKey") Integer sectorKey,
-                              @QueryParam("category") NameCategory category,
-                              @QueryParam("rank") Set<Rank> ranks,
-                              @QueryParam("status") Set<TaxonomicStatus> status,
-                              @QueryParam("acceptedDifferent") Boolean acceptedDifferent,
-                              @QueryParam("authorshipDifferent") Boolean authorshipDifferent,
-                              @QueryParam("rankDifferent") Boolean rankDifferent,
-                              @QueryParam("codeDifferent") Boolean codeDifferent,
-                              @QueryParam("withDecision") Boolean withDecision,
-                              @QueryParam("catalogueKey") Integer catalogueKey) {
-    var req = new DuplicateDao.DuplicateRequest(entity, mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status,
-      authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey);
+  public int count(@BeanParam @Valid DuplicateDao.DuplicateRequest req) {
     return dao.count(req);
   }
 
   @GET
   @VaryAccept
-  public List<Duplicate> find(@PathParam("key") int datasetKey,
-                              @QueryParam("entity") EntityType entity,
-                              @QueryParam("mode") MatchingMode mode,
-                              @QueryParam("minSize") Integer minSize,
-                              @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
-                              @QueryParam("sectorKey") Integer sectorKey,
-                              @QueryParam("category") NameCategory category,
-                              @QueryParam("rank") Set<Rank> ranks,
-                              @QueryParam("status") Set<TaxonomicStatus> status,
-                              @QueryParam("acceptedDifferent") Boolean acceptedDifferent,
-                              @QueryParam("authorshipDifferent") Boolean authorshipDifferent,
-                              @QueryParam("rankDifferent") Boolean rankDifferent,
-                              @QueryParam("codeDifferent") Boolean codeDifferent,
-                              @QueryParam("withDecision") Boolean withDecision,
-                              @QueryParam("catalogueKey") Integer catalogueKey,
-                              @Valid @BeanParam Page page) {
-    var req = new DuplicateDao.DuplicateRequest(entity, mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status,
-      authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey);
+  public List<Duplicate> find(@Valid @BeanParam DuplicateDao.DuplicateRequest req, @Valid @BeanParam Page page) {
     return dao.find(req, page);
   }
 
   @GET
   @VaryAccept
   @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
-  public Stream<Object[]> download(@PathParam("key") int datasetKey,
-                                   @QueryParam("entity") EntityType entity,
-                                   @QueryParam("mode") MatchingMode mode,
-                                   @QueryParam("minSize") Integer minSize,
-                                   @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
-                                   @QueryParam("sectorKey") Integer sectorKey,
-                                   @QueryParam("category") NameCategory category,
-                                   @QueryParam("rank") Set<Rank> ranks,
-                                   @QueryParam("status") Set<TaxonomicStatus> status,
-                                   @QueryParam("acceptedDifferent") Boolean acceptedDifferent,
-                                   @QueryParam("authorshipDifferent") Boolean authorshipDifferent,
-                                   @QueryParam("rankDifferent") Boolean rankDifferent,
-                                   @QueryParam("codeDifferent") Boolean codeDifferent,
-                                   @QueryParam("withDecision") Boolean withDecision,
-                                   @QueryParam("catalogueKey") Integer catalogueKey) {
-    var req = new DuplicateDao.DuplicateRequest(entity, mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status,
-      authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey);
+  public Stream<Object[]> download(@BeanParam @Valid DuplicateDao.DuplicateRequest req) {
     return dao.list(req);
   }
   

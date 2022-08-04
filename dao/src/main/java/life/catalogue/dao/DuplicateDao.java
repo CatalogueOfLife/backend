@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleName;
@@ -20,6 +22,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Min;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -45,6 +50,7 @@ public class DuplicateDao {
   }
 
   public static class DuplicateRequest {
+    private static final int WRONG_ENTITY = -999999;
     // the dataset to be analyzed
     int datasetKey;
     DatasetInfoCache.DatasetInfo info;
@@ -90,22 +96,27 @@ public class DuplicateDao {
      * @param withDecision optionally filter duplicates to have or do not already have a decision
      * @param projectKey the project key decisions and sectors are for. Required if withDecision is given
      */
-    public DuplicateRequest(EntityType entity, MatchingMode mode, Integer minSize, int datasetKey, Integer sourceDatasetKey, Integer sectorKey,
-                            NameCategory category, Set<Rank> ranks, Set<TaxonomicStatus> status, Boolean authorshipDifferent,
-                            Boolean acceptedDifferent, Boolean rankDifferent, Boolean codeDifferent, Boolean withDecision, Integer projectKey) {
+    @JsonCreator
+    public DuplicateRequest(@QueryParam("entity") EntityType entity,
+                            @QueryParam("mode") MatchingMode mode,
+                            @QueryParam("minSize") @Min(2) Integer minSize,
+                            @PathParam("key") int datasetKey,
+                            @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
+                            @QueryParam("sectorKey") Integer sectorKey,
+                            @QueryParam("category") NameCategory category,
+                            @QueryParam("rank") Set<Rank> ranks,
+                            @QueryParam("status") Set<TaxonomicStatus> status,
+                            @QueryParam("authorshipDifferent") Boolean authorshipDifferent,
+                            @QueryParam("acceptedDifferent") Boolean acceptedDifferent,
+                            @QueryParam("rankDifferent") Boolean rankDifferent,
+                            @QueryParam("codeDifferent") Boolean codeDifferent,
+                            @QueryParam("withDecision") Boolean withDecision,
+                            @QueryParam("catalogueKey") Integer projectKey) {
       this.mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
       this.minSize = ObjectUtils.defaultIfNull(minSize, 2);
-      Preconditions.checkArgument(this.minSize > 1, "minimum group size must at least be 2");
       this.datasetKey = datasetKey;
-      info = DatasetInfoCache.CACHE.info(datasetKey);
       this.sourceDatasetKey = sourceDatasetKey;
-      if (sourceDatasetKey != null){
-        Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
-      }
       this.sectorKey = sectorKey;
-      if (sectorKey != null){
-        Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
-      }
       this.category = category;
       this.ranks = ranks;
       this.status = status;
@@ -114,9 +125,6 @@ public class DuplicateDao {
       this.rankDifferent = rankDifferent;
       this.codeDifferent = codeDifferent;
       this.withDecision = withDecision;
-      if (withDecision != null) {
-        Preconditions.checkArgument(projectKey != null, "projectKey is required if parameter withDecision is used");
-      }
       this.projectKey = projectKey;
 
       // entity specific checks & defaults
@@ -131,12 +139,33 @@ public class DuplicateDao {
         this.withDecision = null;
         this.projectKey = null;
       } else {
-        throw new IllegalArgumentException("Duplicates only supported for NAME or NAME_USAGE entity");
+        this.sectorKey = WRONG_ENTITY;
+        this.sourceDatasetKey = WRONG_ENTITY;
       }
     }
   }
 
+  private void validate(DuplicateRequest req) {
+    // wrong entity!
+    if (req.sectorKey != null && req.sectorKey == DuplicateRequest.WRONG_ENTITY
+        && req.sourceDatasetKey != null && req.sourceDatasetKey == DuplicateRequest.WRONG_ENTITY) {
+      throw new IllegalArgumentException("Duplicates only supported for NAME or NAME_USAGE entity");
+    }
+    var info = DatasetInfoCache.CACHE.info(req.datasetKey);
+    Preconditions.checkArgument(req.minSize > 1, "minimum group size must at least be 2");
+    if (req.sourceDatasetKey != null){
+      Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
+    }
+    if (req.sectorKey != null){
+      Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
+    }
+    if (req.withDecision != null) {
+      Preconditions.checkArgument(req.projectKey != null, "catalogueKey is required if parameter withDecision is used");
+    }
+  }
+
   public int count(DuplicateRequest req) {
+    validate(req);
     try (SqlSession session = factory.openSession()) {
       DuplicateMapper mapper = session.getMapper(DuplicateMapper.class);
       if (req.compareNames) {
@@ -167,7 +196,7 @@ public class DuplicateDao {
     );
   }
 
-  public Stream<Object[]> mapCSV(Duplicate d) {
+  private Stream<Object[]> mapCSV(Duplicate d) {
     // "ID", "decision", "status", "rank", "label", "scientificName", "authorship", "genus", "specificEpithet", "infraspecificEpithet", "accepted", "classification"};
     return d.getUsages().stream().map(u -> new Object[]{
       u.getUsage().getId(),
@@ -196,6 +225,7 @@ public class DuplicateDao {
   }
 
   private List<Duplicate> findOrList(DuplicateRequest req, @Nullable Page page) {
+    validate(req);
     try (SqlSession session = factory.openSession()) {
       DuplicateMapper mapper = session.getMapper(DuplicateMapper.class);
       // load all duplicate usages or names
