@@ -17,7 +17,7 @@
 	<logger name="org.apache.ibatis" level="INFO" />
   <logger name="org.apache.ibatis.io" level="INFO" />
 	<logger name="java.sql" level="INFO" />
-	<logger name="life.catalogue.db.mapper" level="INFO" />
+	<logger name="life.catalogue.db.mapper" level="DEBUG" />
 	<logger name="life.catalogue.db" level="INFO" />
 
   <!--

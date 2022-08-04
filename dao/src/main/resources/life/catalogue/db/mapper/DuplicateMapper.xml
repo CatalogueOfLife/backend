@@ -142,10 +142,7 @@
     </if>
   </sql>
 
-  <select id="duplicateNames" parameterType="map" resultMap="duplicateResultMap">
-    SELECT
-    <include refid="keyCol"/>
-    AS key, array_agg(n.id) AS ids
+  <sql id="duplicateNamesFromHaving">
     FROM name n
     <where>
       n.dataset_key=#{datasetKey}
@@ -155,15 +152,24 @@
     <include refid="keyCol"/>
     HAVING
     <include refid="commonHavingClause"/>
+  </sql>
+
+  <select id="duplicateNames" parameterType="map" resultMap="duplicateResultMap">
+    SELECT <include refid="keyCol"/> AS key, array_agg(n.id) AS ids
+    <include refid="duplicateNamesFromHaving"/>
     ORDER BY
     <include refid="keyCol"/>
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
-  <select id="duplicates" parameterType="map" resultMap="duplicateResultMap">
-    SELECT
-    <include refid="keyCol"/>
-    AS key, array_agg(u.id) AS ids
+  <select id="countNames" parameterType="map" resultType="int">
+    SELECT COUNT(*) FROM (
+    SELECT <include refid="keyCol"/>
+    <include refid="duplicateNamesFromHaving"/>
+    ) AS dupes
+  </select>
+
+  <sql id="duplicatesFromHaving">
     FROM name_usage u
     JOIN name n ON n.dataset_key=#{datasetKey} AND u.name_id=n.id
     <if test="withDecision != null">
@@ -209,8 +215,21 @@
       <!-- make sure all parent ids are the same -->
       <if test="!acceptedDifferent">&lt;= 1</if>
     </if>
+  </sql>
+
+  <select id="duplicates" parameterType="map" resultMap="duplicateResultMap">
+    SELECT <include refid="keyCol"/> AS key, array_agg(u.id) AS ids
+    <include refid="duplicatesFromHaving"/>
     ORDER BY
     <include refid="keyCol"/>
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
+
+  <select id="count" parameterType="map" resultType="int">
+    SELECT COUNT(*) FROM (
+      SELECT <include refid="keyCol"/>
+      <include refid="duplicatesFromHaving"/>
+    ) AS dupes
+  </select>
+
 </mapper>

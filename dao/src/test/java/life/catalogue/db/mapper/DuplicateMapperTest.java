@@ -133,7 +133,9 @@ public class DuplicateMapperTest {
       assertFalse(d.getUsages().isEmpty());
       assertNotNull(d.getKey());
     }
-  
+    assertEquals((Integer) 3, mapper.count(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
+      Sets.newHashSet(Rank.SPECIES), status, false, null, null, null, false, Datasets.COL));
+
     // all accepted, so not different
     // https://github.com/Sp2000/colplus-backend/issues/456
     dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
@@ -181,7 +183,9 @@ public class DuplicateMapperTest {
       assertFalse(d.getUsages().isEmpty());
       assertNotNull(d.getKey());
     }
-  
+    assertEquals((Integer) 3, mapper.countNames(MatchingMode.STRICT, 2, datasetKey,  NameCategory.BINOMIAL,
+      Sets.newHashSet(Rank.SPECIES), false, false, false));
+
     dups = mapper.duplicateNames(MatchingMode.STRICT, 2, datasetKey,  NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), false, true, true, new Page(0, 2));
     assertEquals(0, dups.size());

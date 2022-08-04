@@ -288,6 +288,7 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetDao ddao = new DatasetDao(cfg.db.minExternalDatasetKey, getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
+    DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
@@ -364,7 +365,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetReviewerResource(adao));
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));
-    j.register(new DuplicateResource());
+    j.register(new DuplicateResource(dupeDao));
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exdao, cfg));
     j.register(new ImageResource(imgService));

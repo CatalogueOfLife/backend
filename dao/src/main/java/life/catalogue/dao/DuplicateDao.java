@@ -10,6 +10,8 @@ import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DuplicateMapper;
 
+import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -36,12 +38,10 @@ public class DuplicateDao {
   }
 
 
-  private final SqlSession session;
-  private final DuplicateMapper mapper;
+  private final SqlSessionFactory factory;
 
-  public DuplicateDao(SqlSession sqlSession) {
-    this.session = sqlSession;
-    mapper = session.getMapper(DuplicateMapper.class);
+  public DuplicateDao(SqlSessionFactory factory) {
+    this.factory = factory;
   }
 
   public static class DuplicateRequest {
@@ -136,6 +136,19 @@ public class DuplicateDao {
     }
   }
 
+  public int count(DuplicateRequest req) {
+    try (SqlSession session = factory.openSession()) {
+      DuplicateMapper mapper = session.getMapper(DuplicateMapper.class);
+      if (req.compareNames) {
+        return mapper.countNames(req.mode, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
+          req.codeDifferent);
+      } else {
+        return mapper.count(req.mode, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
+          req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey);
+      }
+    }
+  }
+
   public List<Duplicate> find(DuplicateRequest req, Page page) {
     return findOrList(req, ObjectUtils.defaultIfNull(page, new Page()));
   }
@@ -183,43 +196,46 @@ public class DuplicateDao {
   }
 
   private List<Duplicate> findOrList(DuplicateRequest req, @Nullable Page page) {
-    // load all duplicate usages or names
-    List<Duplicate.Mybatis> dupsTmp;
-    if (req.compareNames) {
-      dupsTmp = mapper.duplicateNames(req.mode, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
-        req.codeDifferent, page);
-    } else {
-      dupsTmp = mapper.duplicates(req.mode, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
-        req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey, page);
+    try (SqlSession session = factory.openSession()) {
+      DuplicateMapper mapper = session.getMapper(DuplicateMapper.class);
+      // load all duplicate usages or names
+      List<Duplicate.Mybatis> dupsTmp;
+      if (req.compareNames) {
+        dupsTmp = mapper.duplicateNames(req.mode, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
+          req.codeDifferent, page);
+      } else {
+        dupsTmp = mapper.duplicates(req.mode, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
+          req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey, page);
+      }
+      if (dupsTmp.isEmpty()) {
+        return Collections.EMPTY_LIST;
+      }
+
+      Set<String> ids = dupsTmp.stream()
+          .map(Duplicate.Mybatis::getUsages)
+          .flatMap(List::stream)
+          .collect(Collectors.toSet());
+
+      Map<String, Duplicate.UsageDecision> usages;
+      if (req.compareNames) {
+        usages = mapper.namesByIds(req.datasetKey, ids).stream()
+            .collect(Collectors.toMap(d -> d.getUsage().getName().getId(), Function.identity()));
+      } else {
+        usages = mapper.usagesByIds(req.datasetKey, req.projectKey, ids).stream()
+            .collect(Collectors.toMap(d -> d.getUsage().getId(), Function.identity()));
+      }
+
+      List<Duplicate> dups = new ArrayList<>(dupsTmp.size());
+      for (Duplicate.Mybatis dm : dupsTmp) {
+        Duplicate d = new Duplicate();
+        d.setKey(dm.getKey());
+        d.setUsages(dm.getUsages().stream()
+            .map(usages::get)
+            .collect(Collectors.toList())
+        );
+        dups.add(d);
+      }
+      return dups;
     }
-    if (dupsTmp.isEmpty()) {
-      return Collections.EMPTY_LIST;
-    }
-    
-    Set<String> ids = dupsTmp.stream()
-        .map(Duplicate.Mybatis::getUsages)
-        .flatMap(List::stream)
-        .collect(Collectors.toSet());
-    
-    Map<String, Duplicate.UsageDecision> usages;
-    if (req.compareNames) {
-      usages = mapper.namesByIds(req.datasetKey, ids).stream()
-          .collect(Collectors.toMap(d -> d.getUsage().getName().getId(), Function.identity()));
-    } else {
-      usages = mapper.usagesByIds(req.datasetKey, req.projectKey, ids).stream()
-          .collect(Collectors.toMap(d -> d.getUsage().getId(), Function.identity()));
-    }
-    
-    List<Duplicate> dups = new ArrayList<>(dupsTmp.size());
-    for (Duplicate.Mybatis dm : dupsTmp) {
-      Duplicate d = new Duplicate();
-      d.setKey(dm.getKey());
-      d.setUsages(dm.getUsages().stream()
-          .map(usages::get)
-          .collect(Collectors.toList())
-      );
-      dups.add(d);
-    }
-    return dups;
   }
 }

@@ -27,7 +27,6 @@ import static org.junit.Assert.*;
 public class DuplicateDaoTest {
   final static int datasetKey = 1000;
   DuplicateDao dao;
-  SqlSession session;
   StopWatch watch = new StopWatch();
 
   public static PgSetupRule pg = new PgSetupRule();
@@ -60,14 +59,8 @@ public class DuplicateDaoTest {
 
   @Before
   public void init() {
-    session = PgSetupRule.getSqlSessionFactory().openSession(true);
-    dao = new DuplicateDao(session);
+    dao = new DuplicateDao(PgSetupRule.getSqlSessionFactory());
     watch.reset();
-  }
-
-  @After
-  public void destroy() {
-    session.close();
   }
 
   @Test(expected = IllegalArgumentException.class)

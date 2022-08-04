@@ -31,8 +31,34 @@ public class DuplicateResource {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DuplicateResource.class);
-  
-  
+  private final DuplicateDao dao;
+
+  public DuplicateResource(DuplicateDao dao) {
+    this.dao = dao;
+  }
+
+  @GET
+  @Path("/count")
+  public int count(@PathParam("key") int datasetKey,
+                              @QueryParam("entity") EntityType entity,
+                              @QueryParam("mode") MatchingMode mode,
+                              @QueryParam("minSize") Integer minSize,
+                              @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
+                              @QueryParam("sectorKey") Integer sectorKey,
+                              @QueryParam("category") NameCategory category,
+                              @QueryParam("rank") Set<Rank> ranks,
+                              @QueryParam("status") Set<TaxonomicStatus> status,
+                              @QueryParam("acceptedDifferent") Boolean acceptedDifferent,
+                              @QueryParam("authorshipDifferent") Boolean authorshipDifferent,
+                              @QueryParam("rankDifferent") Boolean rankDifferent,
+                              @QueryParam("codeDifferent") Boolean codeDifferent,
+                              @QueryParam("withDecision") Boolean withDecision,
+                              @QueryParam("catalogueKey") Integer catalogueKey) {
+    var req = new DuplicateDao.DuplicateRequest(entity, mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status,
+      authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey);
+    return dao.count(req);
+  }
+
   @GET
   @VaryAccept
   public List<Duplicate> find(@PathParam("key") int datasetKey,
@@ -50,11 +76,9 @@ public class DuplicateResource {
                               @QueryParam("codeDifferent") Boolean codeDifferent,
                               @QueryParam("withDecision") Boolean withDecision,
                               @QueryParam("catalogueKey") Integer catalogueKey,
-                              @Valid @BeanParam Page page, @Context SqlSession session) {
+                              @Valid @BeanParam Page page) {
     var req = new DuplicateDao.DuplicateRequest(entity, mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status,
       authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey);
-
-    DuplicateDao dao = new DuplicateDao(session);
     return dao.find(req, page);
   }
 
@@ -75,12 +99,9 @@ public class DuplicateResource {
                                    @QueryParam("rankDifferent") Boolean rankDifferent,
                                    @QueryParam("codeDifferent") Boolean codeDifferent,
                                    @QueryParam("withDecision") Boolean withDecision,
-                                   @QueryParam("catalogueKey") Integer catalogueKey,
-                                   @Context SqlSession session) {
+                                   @QueryParam("catalogueKey") Integer catalogueKey) {
     var req = new DuplicateDao.DuplicateRequest(entity, mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status,
       authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey);
-
-    DuplicateDao dao = new DuplicateDao(session);
     return dao.list(req);
   }
   
