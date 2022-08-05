@@ -2,26 +2,17 @@ package life.catalogue.resources;
 
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.MatchingMode;
-import life.catalogue.api.vocab.NameCategory;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.model.ResultPage;
 import life.catalogue.dao.DuplicateDao;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
-import org.gbif.nameparser.api.Rank;
-
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,15 +36,15 @@ public class DuplicateResource {
 
   @GET
   @VaryAccept
-  public List<Duplicate> find(@Valid @BeanParam DuplicateDao.DuplicateRequest req, @Valid @BeanParam Page page) {
-    return dao.find(req, page);
+  public ResultPage<Duplicate> find(@Valid @BeanParam DuplicateDao.DuplicateRequest req, @Valid @BeanParam Page page) {
+    return dao.page(req, page);
   }
 
   @GET
   @VaryAccept
   @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
   public Stream<Object[]> download(@BeanParam @Valid DuplicateDao.DuplicateRequest req) {
-    return dao.list(req);
+    return dao.stream(req);
   }
   
 }

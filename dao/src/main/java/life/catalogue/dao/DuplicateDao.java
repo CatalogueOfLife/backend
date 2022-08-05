@@ -2,10 +2,7 @@ package life.catalogue.dao;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-import life.catalogue.api.model.Duplicate;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.Synonym;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
@@ -178,14 +175,15 @@ public class DuplicateDao {
     }
   }
 
-  public List<Duplicate> find(DuplicateRequest req, Page page) {
-    return findOrList(req, ObjectUtils.defaultIfNull(page, new Page()));
+  public ResultPage<Duplicate> page(DuplicateRequest req, Page page) {
+    var result = findOrList(req, ObjectUtils.defaultIfNull(page, new Page()));
+    return new ResultPage<>(page, result, () -> count(req));
   }
 
   /**
    * @return ID	Decision	Status	scientificName	Authorship	Genus	specificEpithet	infraspecificEpithet	Accepted	Rank	Classification
    */
-  public Stream<Object[]> list(DuplicateRequest req) {
+  public Stream<Object[]> stream(DuplicateRequest req) {
     var all = findOrList(req, null);
     if (all == null || all.isEmpty()) {
       return Stream.of(EXPORT_HEADERS);
