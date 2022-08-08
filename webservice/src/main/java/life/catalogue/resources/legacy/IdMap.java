@@ -101,7 +101,7 @@ public class IdMap implements Managed {
 
   public boolean contains(String id) {
     try {
-      return map.containsKey(id);
+      return id != null && map.containsKey(id);
     } catch (IllegalAccessError e) {
       throw UnavailableException.unavailable(SERVICE_NAME);
     }

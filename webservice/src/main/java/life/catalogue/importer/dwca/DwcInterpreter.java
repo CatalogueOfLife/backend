@@ -67,8 +67,8 @@ public class DwcInterpreter extends InterpreterBase {
     if (type.isPresent()) {
       rel.setType(RelType.from(type.get()));
       rel.setRemarks(rec.get(DwcUnofficialTerm.relationRemarks));
-      if (rec.hasTerm(DwcUnofficialTerm.publishedIn)) {
-        Reference ref = refFactory.fromDWC(rec.get(DwcUnofficialTerm.publishedInID), rec.get(DwcUnofficialTerm.publishedIn), null, rec);
+      if (rec.hasTerm(DwcUnofficialTerm.relationPublishedIn)) {
+        Reference ref = refFactory.fromDWC(rec.get(DwcUnofficialTerm.relationPublishedInID), rec.get(DwcUnofficialTerm.relationPublishedIn), null, rec);
         rel.setReferenceId(ref.getId());
       }
       return Optional.of(rel);

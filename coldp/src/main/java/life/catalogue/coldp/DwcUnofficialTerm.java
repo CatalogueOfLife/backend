@@ -11,11 +11,11 @@ import java.net.URI;
  * or found in use somewhere else.
  */
 public enum DwcUnofficialTerm implements Term, AlternativeNames {
-  NameRelations(true),
+  NameRelation(true),
   relatedNameUsageID,
   relationType,
-  publishedIn,
-  publishedInID,
+  relationPublishedIn,
+  relationPublishedInID,
   relationRemarks,
 
   superkingdom,
@@ -28,8 +28,7 @@ public enum DwcUnofficialTerm implements Term, AlternativeNames {
   subclass,
   suborder,
   //subfamily # this term is already part of DwC
-  tribe,
-  ;
+  tribe;
 
   public static final DwcUnofficialTerm[] HIGHER_RANKS = {
     superkingdom,
@@ -45,7 +44,7 @@ public enum DwcUnofficialTerm implements Term, AlternativeNames {
   };
 
   private static final String PREFIX = "coldwc";
-  private static final String NS = "http://rs.catalogueoflife.org/terms/dwc";
+  private static final String NS = "http://rs.catalogueoflife.org/terms/dwc/";
   private static final String DWC_NS = "http://rs.tdwg.org/dwc/terms/";
   private static final URI NS_URI = URI.create(NS);
   

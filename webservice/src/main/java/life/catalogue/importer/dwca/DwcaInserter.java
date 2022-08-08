@@ -66,7 +66,7 @@ public class DwcaInserter extends NeoCsvInserter {
     //    u -> store.createNameAndUsage(u) != null
     //);
 
-    insertRelations(reader, DwcUnofficialTerm.NameRelations,
+    insertRelations(reader, DwcUnofficialTerm.NameRelation,
         inter::interpretNameRelations,
         store.names(),
         DwcaTerm.ID,
