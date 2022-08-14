@@ -38,7 +38,8 @@ public class DatasetArchiveResource {
       source = cfg.normalizer.archive(key, attempt);
     }
     if (!source.exists()) {
-      throw new NotFoundException(key, "Archive for dataset " + key + " not found");
+      String msg = attempt == null ? "Archive for dataset " + key + " not found" : "Archive for import attempt " + attempt + " of dataset " + key + " not found";
+      throw new NotFoundException(key, msg);
     }
     StreamingOutput stream = os -> {
       InputStream in = new FileInputStream(source);
