@@ -108,7 +108,7 @@ public class ContinuousImporter implements ManagedExtended {
         if (force) {
           LOG.info("Schedule a forced import of dataset {} which failed the last time on {}: {}", d.getFinished() ,d.getKey(), d.getTitle());
         }
-        manager.submit(new ImportRequest(d.getKey(), Users.IMPORTER, force, false, false));
+        manager.submit(ImportRequest.external(d.getKey(), Users.IMPORTER, force));
       } catch (IllegalArgumentException e) {
         LOG.warn("Failed to schedule a {}dataset import {}: {}", force? "forced ":"", d.getKey(), d.getTitle(), e);
       }

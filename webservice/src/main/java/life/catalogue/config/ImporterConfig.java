@@ -1,5 +1,8 @@
 package life.catalogue.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -9,7 +12,7 @@ import javax.validation.constraints.NotNull;
  */
 @SuppressWarnings("PublicField")
 public class ImporterConfig {
-  
+
   @Min(1)
   public int batchSize = 10000;
   

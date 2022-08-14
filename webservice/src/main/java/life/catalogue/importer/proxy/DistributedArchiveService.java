@@ -50,12 +50,23 @@ public class DistributedArchiveService {
   public DistributedArchiveService(CloseableHttpClient hc) {
     this.client = hc;
   }
-  
-  public ArchiveDescriptor download(URI url, File archiveFile) throws IOException {
-    return download(read(url.toURL().openStream()), archiveFile);
+
+  /**
+   * Reads a descriptor (proxy) file from a URL and downloads its files into a zipped archive
+   * @param descriptor proxy descriptor file
+   * @param archiveFile file to zip data into
+   * @return the descriptor instance read from the URL
+   */
+  public ArchiveDescriptor download(URI descriptor, File archiveFile) throws IOException {
+    return download(read(descriptor.toURL().openStream()), archiveFile);
   }
-  
-  public ArchiveDescriptor uploaded(File archiveFile) throws IOException {
+
+  /**
+   * Takes descriptor file and downloads its files into a zipped archive that is placed under the same file as the original descriptor
+   * @param archiveFile file to read descriptor from and zip data into
+   * @return the descriptor instance
+   */
+  public ArchiveDescriptor upload(File archiveFile) throws IOException {
     return download(read(new FileInputStream(archiveFile)), archiveFile);
   }
 

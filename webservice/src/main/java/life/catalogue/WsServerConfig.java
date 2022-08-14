@@ -228,6 +228,15 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
     return created;
   }
 
+  public void logDirectories() {
+    LOG.info("Use archive directory {}", normalizer.archiveDir);
+    LOG.info("Use scratch directory {}", normalizer.scratchDir);
+    LOG.info("Use metrics directory {}", metricsRepo);
+    LOG.info("Use export directory {}", exportDir);
+    LOG.info("Use release reports directory {}", release.reportDir);
+    LOG.info("Use release downloads directory {}", release.colDownloadDir);
+  }
+
   public String versionString() {
     if (version != null) {
       String datetime = version.getProperty("git.commit.time").substring(0, 10);

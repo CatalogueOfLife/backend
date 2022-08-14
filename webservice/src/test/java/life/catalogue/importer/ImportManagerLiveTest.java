@@ -174,7 +174,7 @@ public class ImportManagerLiveTest {
 
     importManager.submit(ImportRequest.external(d2.getKey(), Users.IMPORTER));
     importManager.submit(ImportRequest.external(d3.getKey(), Users.IMPORTER));
-    importManager.submit(new ImportRequest(d4.getKey(), Users.IMPORTER, false, true, false));
+    importManager.submit(ImportRequest.external(d4.getKey(), Users.IMPORTER, false, true));
     importManager.hasRunning();
     Thread.sleep(100);
     imports = diDao.list(new Page());

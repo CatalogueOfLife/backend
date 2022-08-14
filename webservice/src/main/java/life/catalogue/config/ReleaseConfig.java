@@ -1,5 +1,8 @@
 package life.catalogue.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 
 import javax.validation.constraints.NotNull;
@@ -8,6 +11,7 @@ import javax.validation.constraints.NotNull;
  *
  */
 public class ReleaseConfig {
+  private static final Logger LOG = LoggerFactory.getLogger(ReleaseConfig.class);
   public boolean restart = false;
   // id start
   public int start = 0;

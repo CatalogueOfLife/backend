@@ -8,6 +8,9 @@ import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -63,9 +66,11 @@ public class ReimportJob extends BackgroundJob {
           TimeUnit.MINUTES.sleep(1);
         }
         // does a local archive exist?
-        File f = cfg.normalizer.source(key);
-        if (f.exists()) {
-          ImportRequest req = new ImportRequest(key, getUserKey(), true, false, true);
+        File latestArchive = cfg.normalizer.lastestArchive(key);
+        if (latestArchive != null && latestArchive.exists()) {
+          int attempt = cfg.normalizer.attemptFromArchive(latestArchive);
+          LOG.debug("Import local archive for dataset {} from last attempt {}", key, attempt);
+          ImportRequest req = ImportRequest.reimport(key, getUserKey(), attempt);
           importManager.submit(req);
           counter++;
         } else {
@@ -80,6 +85,9 @@ public class ReimportJob extends BackgroundJob {
       } catch (InterruptedException e) {
         LOG.warn("Reimporting interrupted", e);
         break;
+
+      } catch (IOException e) {
+        LOG.warn("Error reimporting dataset {}", key, e);
       }
     }
     LOG.info("Scheduled {} datasets out of {} for reimporting. Missed {} datasets without an archive or other reasons", counter, keys.size(), missed.size());

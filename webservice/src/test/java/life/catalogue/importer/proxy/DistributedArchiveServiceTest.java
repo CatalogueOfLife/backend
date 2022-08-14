@@ -42,7 +42,7 @@ public class DistributedArchiveServiceTest {
   public void uploaded() throws Exception {
     File f = Resources.tmpCopy("proxy/1011.yaml");
     System.out.println(f.getAbsolutePath());
-    das.uploaded(f);
+    das.upload(f);
     f.delete();
   }
   

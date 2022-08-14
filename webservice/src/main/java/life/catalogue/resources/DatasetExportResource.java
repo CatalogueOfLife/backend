@@ -94,7 +94,7 @@ public class DatasetExportResource {
   public Response download(@PathParam("key") int key, @QueryParam("format") DataFormat format) {
     if (format == null) {
       // The original archive in whatever format!
-      File source = cfg.normalizer.source(key);
+      File source = cfg.normalizer.lastestArchiveSymlink(key);
       if (source.exists()) {
         StreamingOutput stream = os -> {
           InputStream in = new FileInputStream(source);

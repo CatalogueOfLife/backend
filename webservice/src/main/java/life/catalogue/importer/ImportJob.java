@@ -35,6 +35,7 @@ import life.catalogue.metadata.DoiResolver;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -120,9 +121,25 @@ public class ImportJob implements Runnable {
   private void validate() {
     if (dataset.getOrigin() == DatasetOrigin.RELEASED) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be imported");
-      
-    } else if (!req.upload && !dataset.has(Setting.DATA_ACCESS) && !cfg.normalizer.source(dataset.getKey()).exists()) {
-      throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a data access URL and has never been imported before");
+
+    } else if (req.reimportAttempt != null && req.hasUpload()) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " cannot be reimported and uploaded");
+
+    } else if (req.reimportAttempt != null) {
+
+       if(dataset.getImportAttempt() == null) {
+         throw new IllegalArgumentException("Dataset " + datasetKey + " was never imported before");
+       } else if (!cfg.normalizer.archive(dataset.getKey(), dataset.getImportAttempt()).exists()) {
+         throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a source archive for import attempt " + dataset.getImportAttempt());
+       }
+
+    } else if (req.hasUpload()) {
+      if(!Files.exists(req.upload)) {
+        throw new IllegalArgumentException("Dataset " + datasetKey + " lacks upload file at " + req.upload);
+      }
+
+    } else if (!dataset.has(Setting.DATA_ACCESS)) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a data access URL");
     }
   }
   
@@ -179,31 +196,35 @@ public class ImportJob implements Runnable {
    * @return true if sourceDir should be imported
    */
   private boolean prepareSourceData(Path sourceDir) throws IOException, IllegalArgumentException, InterruptedException {
-    File source = cfg.normalizer.source(datasetKey);
-    source.getParentFile().mkdirs();
-    if (req.upload) {
+    File archive = cfg.normalizer.archive(datasetKey, getAttempt());
+    archive.getParentFile().mkdirs();
+    if (req.hasUpload()) {
       // if data was uploaded we need to find out the format.
       // We do this after decompression, but we need to check if we have a proxy descriptor so we can download the real files first
-      if (DataFormatDetector.isProxyDescriptor(source)) {
+      if (DataFormatDetector.isProxyDescriptor(req.getUpload())) {
         updateState(ImportState.DOWNLOADING);
-        ArchiveDescriptor proxy = distributedArchiveService.uploaded(source);
+        ArchiveDescriptor proxy = distributedArchiveService.upload(archive);
         setFormat(proxy.format);
+      } else {
+        // copy uploaded data to repository
+        LOG.info("Move upload for dataset {} from {} to {}", datasetKey, req.upload, archive);
+        Files.move(req.upload, archive.toPath());
       }
 
     } else if (DatasetOrigin.EXTERNAL == dataset.getOrigin()){
       di.setDownloadUri(dataset.getDataAccess());
       updateState(ImportState.DOWNLOADING);
       if (dataset.getDataFormat() == DataFormat.PROXY) {
-        ArchiveDescriptor proxy = distributedArchiveService.download(dataset.getDataAccess(), source);
+        ArchiveDescriptor proxy = distributedArchiveService.download(dataset.getDataAccess(), archive);
         setFormat(proxy.format);
       } else {
         // download archive directly
         if (req.force) {
-          LOG.info("Force download of source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), source);
-          downloader.download(di.getDownloadUri(), source);
+          LOG.info("Force download of source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), archive);
+          downloader.download(di.getDownloadUri(), archive);
         } else {
-          LOG.info("Download source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), source);
-          downloader.downloadIfModified(di.getDownloadUri(), source);
+          LOG.info("Download source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), archive);
+          downloader.downloadIfModified(di.getDownloadUri(), archive);
         }
       }
 
@@ -213,8 +234,8 @@ public class ImportJob implements Runnable {
     }
 
 
-    di.setMd5(ChecksumUtils.getMD5Checksum(source));
-    di.setDownload(downloader.lastModified(source));
+    di.setMd5(ChecksumUtils.getMD5Checksum(archive));
+    di.setDownload(downloader.lastModified(archive));
     dao.update(di);
 
     boolean isModified = true;
@@ -224,11 +245,27 @@ public class ImportJob implements Runnable {
         if (Objects.equals(lastMD5, di.getMd5())) {
           LOG.info("MD5 unchanged: {}", di.getMd5());
           isModified = false;
+          // replace archive with symlink to last archive to save space
+          File lastArchive = cfg.normalizer.archive(datasetKey, dataset.getImportAttempt());
+          if (lastArchive.exists()) {
+            Path lastReal = lastArchive.toPath().toRealPath();
+            if (archive.exists()) {
+              archive.delete();
+            }
+            Files.createSymbolicLink(archive.toPath(), lastReal);
+          }
         } else {
           LOG.info("MD5 changed from attempt {}: {} to {}", dataset.getImportAttempt(), lastMD5, di.getMd5());
         }
       }
     }
+
+    // update latest symlink
+    File latest = cfg.normalizer.lastestArchiveSymlink(datasetKey);
+    if (latest.exists()) {
+      latest.delete();
+    }
+    Files.createSymbolicLink(latest.toPath(), archive.toPath());
 
     checkIfCancelled();
     // decompress and import?
@@ -237,7 +274,7 @@ public class ImportJob implements Runnable {
         LOG.info("Force reimport of unchanged archive {}", datasetKey);
       }
       LOG.info("Extracting files from archive {}", datasetKey);
-      CompressionUtil.decompressFile(sourceDir.toFile(), source);
+      CompressionUtil.decompressFile(sourceDir.toFile(), archive);
 
       // detect data format if not set from proxy yet
       if (dataset.getDataFormat() == null) {

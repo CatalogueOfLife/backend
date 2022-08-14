@@ -61,9 +61,9 @@ public class DataFormatDetector {
     throw new IllegalArgumentException("Unknown format in " + folder);
   }
 
-  public static boolean isProxyDescriptor(File source) {
+  public static boolean isProxyDescriptor(Path source) {
     try {
-      return DistributedArchiveService.isReadable(new FileInputStream(source));
+      return DistributedArchiveService.isReadable(new FileInputStream(source.toFile()));
     } catch (IOException e) {
       return false;
     }

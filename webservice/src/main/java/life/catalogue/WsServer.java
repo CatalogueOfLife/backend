@@ -187,6 +187,7 @@ public class WsServer extends Application<WsServerConfig> {
   public void run(WsServerConfig cfg, Environment env) throws Exception {
     final JerseyEnvironment j = env.jersey();
 
+    cfg.logDirectories();
     if (cfg.mkdirs()) {
       LOG.info("Created config repository directories");
     }
@@ -369,7 +370,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exdao, cfg));
     j.register(new ImageResource(imgService));
-    j.register(new ImporterResource(importManager, diDao));
+    j.register(new ImporterResource(cfg, importManager, diDao));
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new MatchingResource(ni));
     j.register(new NamesIndexResource(ni));
