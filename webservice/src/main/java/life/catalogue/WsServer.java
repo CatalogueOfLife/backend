@@ -357,6 +357,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
       importManager, ddao, gbifSync, ni, executor, idMap, validator));
     j.register(new DataPackageResource());
+    j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetEditorResource(adao));
     j.register(new DatasetExportResource(getSqlSessionFactory(), searchService, exportManager, diDao, cfg));

@@ -93,30 +93,17 @@ public class DatasetExportResource {
   })
   public Response download(@PathParam("key") int key, @QueryParam("format") DataFormat format) {
     if (format == null) {
-      // The original archive in whatever format!
-      File source = cfg.normalizer.lastestArchiveSymlink(key);
-      if (source.exists()) {
-        StreamingOutput stream = os -> {
-          InputStream in = new FileInputStream(source);
-          IOUtils.copy(in, os);
-          os.flush();
-        };
-
-        return Response.ok(stream)
-          .type(MoreMediaTypes.APP_ZIP)
-          .header(MoreHttpHeaders.CONTENT_DISPOSITION, ResourceUtils.fileAttachment("dataset-" + key + ".zip"))
-          .build();
-      }
-    } else {
-      // an already existing export in the given format
-      ExportRequest req = new ExportRequest(key, format);
-      DatasetExport export = exportManager.exists(req);
-      if (export != null) {
-        return Redirect.temporary(export.getDownload());
-      }
+      throw new IllegalArgumentException("Format parameter is required");
     }
 
-    throw new NotFoundException(key, format == null ? "original" : format.getName() + " archive for dataset " + key + " not found");
+    // an already existing export in the given format
+    ExportRequest req = new ExportRequest(key, format);
+    DatasetExport export = exportManager.exists(req);
+    if (export != null) {
+      return Redirect.temporary(export.getDownload());
+    }
+
+    throw new NotFoundException(key, format.getName() + " archive for dataset " + key + " not found");
   }
 
   public static class ExportQueryParams {
