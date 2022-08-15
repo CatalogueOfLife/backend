@@ -5,6 +5,8 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.config.NormalizerConfig;
+import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.es.NameUsageIndexService;
@@ -32,6 +34,7 @@ public class DatasetDaoTest extends DaoTestBase {
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     DatasetExportDao exDao = new DatasetExportDao(new File("/tmp/exports"), PgSetupRule.getSqlSessionFactory(), new EventBus(), validator);
     dao = new DatasetDao(testDataRule.keyGenerator.minExternalDatasetKey, factory(),
+      new NormalizerConfig(), new ReleaseConfig(),
       null,
       ImageService.passThru(),
       diDao, exDao,

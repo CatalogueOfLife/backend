@@ -61,7 +61,7 @@ public abstract class ProjectBaseIT {
     DoiUpdater doiUpdater = new DoiUpdater(PgSetupRule.getSqlSessionFactory(), doiService, lrCache, converter);
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    dDao = new DatasetDao(100, PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus, validator);
+    dDao = new DatasetDao(100, PgSetupRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus, validator);
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     eDao = new EstimateDao(PgSetupRule.getSqlSessionFactory(), validator);
     nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);

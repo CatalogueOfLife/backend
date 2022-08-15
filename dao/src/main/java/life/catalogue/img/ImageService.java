@@ -13,6 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public interface ImageService {
 
+  boolean delete(int datasetKey);
+
   boolean datasetLogoExists(int datasetKey);
 
   void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException;
@@ -45,6 +47,11 @@ public interface ImageService {
   
   static ImageService passThru() {
     return new ImageService() {
+      @Override
+      public boolean delete(int datasetKey) {
+        return false;
+      }
+
       @Override
       public boolean datasetLogoExists(int datasetKey) {
         return false;

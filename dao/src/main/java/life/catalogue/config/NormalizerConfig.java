@@ -9,11 +9,6 @@ import java.util.regex.Pattern;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.io.FileUtils;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.factory.GraphDatabaseSettings;
-import org.neo4j.logging.slf4j.Slf4jLogProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +58,11 @@ public class NormalizerConfig {
    * and compare files for changes.
    */
   public File archive(int datasetKey, int attempt) {
-    return new File(archiveDir, String.format("%d/%04d.%s", datasetKey, attempt, ARCHIVE_SUFFIX));
+    return new File(archiveDir(datasetKey), String.format("%04d.%s", attempt, ARCHIVE_SUFFIX));
+  }
+
+  public File archiveDir(int datasetKey) {
+    return new File(archiveDir, String.valueOf(datasetKey));
   }
 
   /**
@@ -114,28 +113,6 @@ public class NormalizerConfig {
   public File scratchFile(int datasetKey, String fileName) {
     Preconditions.checkArgument(!fileName.equalsIgnoreCase("normalizer") && !fileName.equalsIgnoreCase("source"));
     return new File(scratchDir(datasetKey), fileName);
-  }
-  
-  /**
-   * Creates a new embedded db in the directory folder.
-   *
-   * @param eraseExisting if true deletes previously existing db
-   */
-  public GraphDatabaseBuilder newEmbeddedDb(File storeDir, boolean eraseExisting) {
-    if (eraseExisting && storeDir.exists()) {
-      // erase previous db
-      LOG.debug("Removing previous neo4j database from {}", storeDir.getAbsolutePath());
-      if (!FileUtils.deleteQuietly(storeDir)) {
-        LOG.warn("Unable to remove previous neo4j database from {}", storeDir.getAbsolutePath());
-      }
-    }
-    GraphDatabaseBuilder builder = new GraphDatabaseFactory()
-        .setUserLogProvider(new Slf4jLogProvider())
-        .newEmbeddedDatabaseBuilder(storeDir)
-        .setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
-        .setConfig(GraphDatabaseSettings.allow_upgrade, "true")
-        .setConfig(GraphDatabaseSettings.pagecache_memory, mappedMemory + "M");
-    return builder;
   }
 
   /**

@@ -8,8 +8,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ClosedByInterruptException;
 
+import org.apache.commons.io.FileUtils;
 import org.mapdb.DBMaker;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
+import org.neo4j.logging.slf4j.Slf4jLogProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +45,7 @@ public class NeoDbFactory {
    */
   private static NeoDb create(int datasetKey, int attempt, NormalizerConfig cfg, File storeDir, boolean eraseExisting, DBMaker.Maker dbMaker) {
     try {
-      GraphDatabaseBuilder builder = cfg.newEmbeddedDb(storeDir, eraseExisting);
+      GraphDatabaseBuilder builder = newEmbeddedDb(cfg, storeDir, eraseExisting);
       
       // make sure mapdb parent dirs exist
       if (!storeDir.exists()) {
@@ -58,7 +62,30 @@ public class NeoDbFactory {
       throw new IllegalStateException(String.format("Failed to init NormalizerStore at %s. Cause: %s", storeDir, root), e);
     }
   }
-  
+
+
+  /**
+   * Creates a new embedded db in the directory folder.
+   *
+   * @param eraseExisting if true deletes previously existing db
+   */
+  private static GraphDatabaseBuilder newEmbeddedDb(NormalizerConfig cfg, File storeDir, boolean eraseExisting) {
+    if (eraseExisting && storeDir.exists()) {
+      // erase previous db
+      LOG.debug("Removing previous neo4j database from {}", storeDir.getAbsolutePath());
+      if (!FileUtils.deleteQuietly(storeDir)) {
+        LOG.warn("Unable to remove previous neo4j database from {}", storeDir.getAbsolutePath());
+      }
+    }
+    GraphDatabaseBuilder builder = new GraphDatabaseFactory()
+      .setUserLogProvider(new Slf4jLogProvider())
+      .newEmbeddedDatabaseBuilder(storeDir)
+      .setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
+      .setConfig(GraphDatabaseSettings.allow_upgrade, "true")
+      .setConfig(GraphDatabaseSettings.pagecache_memory, cfg.mappedMemory + "M");
+    return builder;
+  }
+
   /**
    * @return the neodb for an existing, persistent db
    */

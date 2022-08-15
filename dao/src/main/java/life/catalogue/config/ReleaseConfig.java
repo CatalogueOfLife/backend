@@ -25,7 +25,11 @@ public class ReleaseConfig {
   public File colDownloadDir = new File("/tmp/col");
 
   public File reportDir(int datasetKey, int attempt) {
-    return new File(reportDir, String.valueOf(datasetKey) + "/" + String.valueOf(attempt));
+    return new File(reportDir(datasetKey), String.valueOf(attempt));
+  }
+
+  public File reportDir(int datasetKey) {
+    return new File(reportDir, String.valueOf(datasetKey));
   }
 
   /**
@@ -33,7 +37,7 @@ public class ReleaseConfig {
    * @return true if at least one dir was newly created
    */
   public boolean mkdirs() {
-    return reportDir.mkdirs();
+    return reportDir.mkdirs() || colDownloadDir.mkdirs();
   }
 
 }

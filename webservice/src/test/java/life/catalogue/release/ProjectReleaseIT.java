@@ -5,6 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
@@ -107,7 +108,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
       // also test publishing the release
       var bus = new EventBus();
-      DatasetDao ddao = new DatasetDao(3, release.factory, null, ImageService.passThru(), diDao, null,
+      DatasetDao ddao = new DatasetDao(3, release.factory, new NormalizerConfig(), new ReleaseConfig(), null, ImageService.passThru(), diDao, null,
         NameUsageIndexService.passThru(), null, bus, validator);
       bus.register(new PublicReleaseListener(new WsServerConfig(), release.factory, null, DoiService.passThru(), null));
       var rel = ddao.get(release.newDatasetKey);

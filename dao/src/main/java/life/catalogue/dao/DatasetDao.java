@@ -13,6 +13,8 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
+import life.catalogue.config.NormalizerConfig;
+import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -36,6 +38,7 @@ import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotFoundException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -67,6 +70,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDao.class);
 
+  private final NormalizerConfig nCfg;
+  private final ReleaseConfig rCfg;
   private final DownloadUtil downloader;
   private final ImageService imgService;
   private final BiFunction<Integer, String, File> scratchFileFunc;
@@ -81,6 +86,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * @param minExternalDatasetKey The lowest dataset key to use for new external datasets.
    */
   public DatasetDao(int minExternalDatasetKey, SqlSessionFactory factory,
+                    NormalizerConfig nCfg, ReleaseConfig rCfg,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
@@ -90,6 +96,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
                     EventBus bus,
                     Validator validator) {
     super(true, factory, Dataset.class, DatasetMapper.class, validator);
+    this.nCfg = nCfg;
+    this.rCfg = rCfg;
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
@@ -107,7 +115,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    */
   @VisibleForTesting
   public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
-    this(100, factory, downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
+    this(100, factory, new NormalizerConfig(), new ReleaseConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
   }
 
   public static class KeyGenerator {
@@ -396,6 +404,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
     // now also clear filesystem
     diDao.removeMetrics(key);
+    FileUtils.deleteQuietly(nCfg.scratchDir(key));
+    FileUtils.deleteQuietly(nCfg.archiveDir(key));
+    FileUtils.deleteQuietly(rCfg.reportDir(key));
+    // remove stored logos
+    imgService.delete(key);
     // remove exports & project sources if dataset was private
     if (old != null && old.isPrivat()) {
       // project source dataset archives & its citations
