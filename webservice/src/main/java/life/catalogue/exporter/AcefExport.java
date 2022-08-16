@@ -38,7 +38,7 @@ import com.google.common.io.Files;
  * Exporter for the old AC schema.
  * Blocks parallel exports of the same dataset.
  */
-public class AcefExport extends DatasetExport {
+public class AcefExport extends DatasetExportJob {
   private static final Logger LOG = LoggerFactory.getLogger(AcefExport.class);
   private static final String EXPORT_SQL = "/export/acef/ac-export.sql";
   private static final String COPY_WITH = "CSV HEADER NULL '\\N' DELIMITER E'\\t' QUOTE E'\\f' ENCODING 'UTF8' ";

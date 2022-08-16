@@ -35,8 +35,8 @@ import com.google.common.base.Preconditions;
  * Base class for all dataset exporter that blocks parallel exports for the same dataset
  * and tracks exports by users in the database.
  */
-abstract class DatasetExport extends DatasetBlockingJob {
-  private static final Logger LOG = LoggerFactory.getLogger(DatasetExport.class);
+abstract class DatasetExportJob extends DatasetBlockingJob {
+  private static final Logger LOG = LoggerFactory.getLogger(DatasetExportJob.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
   protected final SqlSessionFactory factory;
   protected final ExportRequest req;
@@ -51,8 +51,8 @@ abstract class DatasetExport extends DatasetBlockingJob {
   private final Timer timer;
 
   @VisibleForTesting
-  DatasetExport(ExportRequest req, int userKey, DataFormat requiredFormat, Dataset d, List<SimpleName> classification, SqlSessionFactory factory,
-                WsServerConfig cfg, ImageService imageService, Timer timer) {
+  DatasetExportJob(ExportRequest req, int userKey, DataFormat requiredFormat, Dataset d, List<SimpleName> classification, SqlSessionFactory factory,
+                   WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
     if (req.getFormat() == null) {
       req.setFormat(requiredFormat);
@@ -79,8 +79,8 @@ abstract class DatasetExport extends DatasetBlockingJob {
     LOG.info("Created {} job {} by user {} for dataset {} to {}", getClass().getSimpleName(), getUserKey(), getKey(), datasetKey, archive);
   }
 
-  DatasetExport(ExportRequest req, int userKey, DataFormat requiredFormat, boolean allowExcel, SqlSessionFactory factory,
-                WsServerConfig cfg, ImageService imageService, Timer timer) {
+  DatasetExportJob(ExportRequest req, int userKey, DataFormat requiredFormat, boolean allowExcel, SqlSessionFactory factory,
+                   WsServerConfig cfg, ImageService imageService, Timer timer) {
     this(req, userKey, requiredFormat, loadDataset(factory, req.getDatasetKey()), loadClassification(factory, req), factory, cfg, imageService, timer);
     if (req.isExcel() && !allowExcel) {
       throw new IllegalArgumentException(requiredFormat.getName() + " cannot be exported in Excel");

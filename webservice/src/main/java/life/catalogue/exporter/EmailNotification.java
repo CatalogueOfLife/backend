@@ -42,7 +42,7 @@ public class EmailNotification {
     this.factory = factory;
     this.cfg = cfg;
   }
-  public void email(DatasetExport job) {
+  public void email(DatasetExportJob job) {
     try (SqlSession session = factory.openSession()) {
       User user = session.getMapper(UserMapper.class).get(job.getUserKey());
       if (user == null) {

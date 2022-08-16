@@ -115,8 +115,9 @@ public class AdminResource {
 
   @GET
   @Path("/job")
-  public List<BackgroundJob> jobQueue() {
-    return exec.getQueue();
+  @PermitAll
+  public List<? extends BackgroundJob> jobQueue(@QueryParam("datasetKey") Integer datasetKey) {
+    return datasetKey == null ? exec.getQueue() : exec.getQueueByDataset(datasetKey);
   }
 
   @GET

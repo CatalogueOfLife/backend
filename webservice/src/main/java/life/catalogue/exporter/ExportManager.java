@@ -67,7 +67,7 @@ public class ExportManager {
       return prev.getKey();
     }
     validate(req);
-    DatasetExport job;
+    DatasetExportJob job;
     switch (req.getFormat()) {
       case COLDP:
         job = new ColdpExport(req, userKey, factory, cfg, imageService, timer);

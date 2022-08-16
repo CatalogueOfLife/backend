@@ -4,7 +4,6 @@ import life.catalogue.api.vocab.JobStatus;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -170,25 +169,33 @@ public class JobExecutor implements AutoCloseable {
     return queue.contains(f);
   }
 
-  public <T extends BackgroundJob> List<T> getQueue(Class<T> jobClass) {
-    List<T> matches = new ArrayList<>();
-    List<BackgroundJob> jobs = getQueue();
-    for (var job : jobs) {
-      if (jobClass.isInstance(job)) {
-        matches.add((T) job);
-      }
-    }
-    return matches;
+  public <T extends BackgroundJob> List<T> getQueueByJobClass(Class<T> jobClass) {
+    return getQueueStream()
+      .filter(jobClass::isInstance)
+      .map(job -> (T) job)
+      .collect(Collectors.toList());
+  }
+
+  public List<DatasetBlockingJob> getQueueByDataset(int datasetKey) {
+    return getQueueStream()
+      .filter(DatasetBlockingJob.class::isInstance)
+      .map(DatasetBlockingJob.class::cast)
+      .filter(job -> job.datasetKey==datasetKey)
+      .collect(Collectors.toList());
   }
 
   public List<BackgroundJob> getQueue() {
+    return getQueueStream().collect(Collectors.toList());
+  }
+
+  private Stream<BackgroundJob> getQueueStream() {
     return Stream.concat(
       futures.values().stream()
-        .map(f -> f.task)
-        .filter(BackgroundJob::isRunning),
+             .map(f -> f.task)
+             .filter(BackgroundJob::isRunning),
       queue.stream()
-        .map(x -> ((ComparableFutureTask)x).task)
-    ).collect(Collectors.toList());
+           .map(x -> ((ComparableFutureTask)x).task)
+    );
   }
 
   public void submit(BackgroundJob job) {

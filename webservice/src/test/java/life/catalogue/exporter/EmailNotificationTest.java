@@ -45,7 +45,7 @@ public class EmailNotificationTest {
     d.setTitle("My Big Day");
 
     MetricRegistry registry = new MetricRegistry();
-    DatasetExport job = new DatasetExport(req, Users.TESTER, req.getFormat(), d, null, PgSetupRule.getSqlSessionFactory(), cfg, null, registry.timer("test.timer")) {
+    DatasetExportJob job = new DatasetExportJob(req, Users.TESTER, req.getFormat(), d, null, PgSetupRule.getSqlSessionFactory(), cfg, null, registry.timer("test.timer")) {
       @Override
       protected void export() throws Exception {
         System.out.println("EXPORT");

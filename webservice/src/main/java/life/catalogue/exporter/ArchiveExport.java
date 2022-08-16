@@ -43,7 +43,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
-public abstract class ArchiveExport extends DatasetExport {
+public abstract class ArchiveExport extends DatasetExportJob {
   private static final Logger LOG = LoggerFactory.getLogger(ArchiveExport.class);
   private static final String LOGO_FILENAME = "logo.png";
 

@@ -12,7 +12,6 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.PBQThreadPoolExecutor;
@@ -208,7 +207,7 @@ public class ImportManager implements ManagedExtended {
         .collect(Collectors.toList());
 
     // include releasing jobs if existing and sort by creation date
-    for (AbstractProjectCopy projJob : jobExecutor.getQueue(AbstractProjectCopy.class)) {
+    for (AbstractProjectCopy projJob : jobExecutor.getQueueByJobClass(AbstractProjectCopy.class)) {
       running.add(projJob.getMetrics());
     }
     running.sort(DI_STARTED_COMPARATOR);

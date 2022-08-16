@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
 
-public class TextTreeExport extends DatasetExport {
+public class TextTreeExport extends DatasetExportJob {
   private static final Logger LOG = LoggerFactory.getLogger(TextTreeExport.class);
 
   public TextTreeExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {

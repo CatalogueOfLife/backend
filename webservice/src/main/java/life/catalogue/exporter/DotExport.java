@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
 
-public class DotExport extends DatasetExport {
+public class DotExport extends DatasetExportJob {
   private static final Logger LOG = LoggerFactory.getLogger(DotExport.class);
   private File f;
 
