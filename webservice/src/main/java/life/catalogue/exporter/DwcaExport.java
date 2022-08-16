@@ -32,14 +32,14 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
 
-public class DwcaExporter extends ArchiveExporter {
-  private static final Logger LOG = LoggerFactory.getLogger(DwcaExporter.class);
+public class DwcaExport extends ArchiveExport {
+  private static final Logger LOG = LoggerFactory.getLogger(DwcaExport.class);
   private static final String EML_FILENAME = "eml.xml";
   private TermWriter writer2;
   private final Archive arch = new Archive();
   private final AtomicInteger bareNameID = new AtomicInteger(1);
 
-  public DwcaExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+  public DwcaExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(DataFormat.DWCA, userKey, req, factory, cfg, imageService, timer);
   }
 

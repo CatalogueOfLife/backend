@@ -17,10 +17,10 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
 
-public class NewickExporter extends DatasetExporter {
-  private static final Logger LOG = LoggerFactory.getLogger(NewickExporter.class);
+public class NewickExport extends DatasetExport {
+  private static final Logger LOG = LoggerFactory.getLogger(NewickExport.class);
 
-  public NewickExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+  public NewickExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(req, userKey, DataFormat.NEWICK, false, factory, cfg, imageService, timer);
     if (req.isSynonyms()) {
       throw new IllegalArgumentException("The Newick format does not support synonyms");

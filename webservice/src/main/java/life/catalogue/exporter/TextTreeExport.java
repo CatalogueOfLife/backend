@@ -17,10 +17,10 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
 
-public class TextTreeExporter extends DatasetExporter {
-  private static final Logger LOG = LoggerFactory.getLogger(TextTreeExporter.class);
+public class TextTreeExport extends DatasetExport {
+  private static final Logger LOG = LoggerFactory.getLogger(TextTreeExport.class);
 
-  public TextTreeExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+  public TextTreeExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(req, userKey, DataFormat.TEXT_TREE, false, factory, cfg, imageService, timer);
   }
 

@@ -38,15 +38,15 @@ import com.google.common.io.Files;
  * Exporter for the old AC schema.
  * Blocks parallel exports of the same dataset.
  */
-public class AcefExporter extends DatasetExporter {
-  private static final Logger LOG = LoggerFactory.getLogger(AcefExporter.class);
+public class AcefExport extends DatasetExport {
+  private static final Logger LOG = LoggerFactory.getLogger(AcefExport.class);
   private static final String EXPORT_SQL = "/export/acef/ac-export.sql";
   private static final String COPY_WITH = "CSV HEADER NULL '\\N' DELIMITER E'\\t' QUOTE E'\\f' ENCODING 'UTF8' ";
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
 
-  public AcefExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+  public AcefExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(req, userKey, DataFormat.ACEF, false, factory, cfg, imageService, timer);
     if (req.hasFilter()) {
       throw new IllegalArgumentException("ACEF exports cannot have any filters");
@@ -60,7 +60,7 @@ public class AcefExporter extends DatasetExporter {
     PgConnection c = cfg.db.connect();
     c.setAutoCommit(false);
     try {
-      InputStream sql = AcefExporter.class.getResourceAsStream(EXPORT_SQL);
+      InputStream sql = AcefExport.class.getResourceAsStream(EXPORT_SQL);
       executeAcExportSql(datasetKey, c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)));
 
     } catch (UnsupportedEncodingException e) {

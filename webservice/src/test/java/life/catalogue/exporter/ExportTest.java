@@ -14,7 +14,7 @@ import org.junit.Rule;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
-public class ExporterTest {
+public class ExportTest {
 
   WsServerConfig cfg;
   Timer timer;
@@ -25,11 +25,11 @@ public class ExporterTest {
   @Rule
   public TestDataRule testDataRule;
 
-  public ExporterTest() {
+  public ExportTest() {
     this.testDataRule = TestDataRule.apple();
   }
 
-  public ExporterTest(TestDataRule.TestData testData) {
+  public ExportTest(TestDataRule.TestData testData) {
     this.testDataRule = new TestDataRule(testData);
   }
 

@@ -27,7 +27,7 @@ import com.google.common.io.Files;
 
 import static org.junit.Assert.assertEquals;
 
-public class AcefExporterTest extends ExporterTest {
+public class AcefExportTest extends ExportTest {
   
   File arch;
 
@@ -59,7 +59,7 @@ public class AcefExporterTest extends ExporterTest {
   
   @Test
   public void export() throws Exception {
-    AcefExporter exp = new AcefExporter(new ExportRequest(Datasets.COL, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
+    AcefExport exp = new AcefExport(new ExportRequest(Datasets.COL, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
 
@@ -110,7 +110,7 @@ public class AcefExporterTest extends ExporterTest {
       dm.update(d);
     }
 
-    AcefExporter exp = new AcefExporter(new ExportRequest(key, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
+    AcefExport exp = new AcefExport(new ExportRequest(key, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
     exp.run();
     arch = exp.getArchive();
     System.out.println("LOGS:\n");

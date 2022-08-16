@@ -2,7 +2,6 @@ package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.concurrent.DatasetBlockingJob;
@@ -53,8 +52,8 @@ public class ExportManager {
    * Checks whether an export for the given request already exists and returns the key of the latest export
    * or null if there is no exiting export.
    */
-  public DatasetExport exists(ExportRequest req) {
-    DatasetExport prev = dao.current(req);
+  public life.catalogue.api.model.DatasetExport exists(ExportRequest req) {
+    life.catalogue.api.model.DatasetExport prev = dao.current(req);
     if (prev != null) {
       LOG.info("Existing {} export {} found for request {}", prev.getRequest().getFormat(), prev.getKey(), req);
       return prev;
@@ -63,30 +62,30 @@ public class ExportManager {
   }
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
-    DatasetExport prev = exists(req);
+    life.catalogue.api.model.DatasetExport prev = exists(req);
     if (prev != null && !req.isForce()) {
       return prev.getKey();
     }
     validate(req);
-    DatasetExporter job;
+    DatasetExport job;
     switch (req.getFormat()) {
       case COLDP:
-        job = new ColdpExporter(req, userKey, factory, cfg, imageService, timer);
+        job = new ColdpExport(req, userKey, factory, cfg, imageService, timer);
         break;
       case DWCA:
-        job = new DwcaExporter(req, userKey, factory, cfg, imageService, timer);
+        job = new DwcaExport(req, userKey, factory, cfg, imageService, timer);
         break;
       case ACEF:
-        job = new AcefExporter(req, userKey, factory, cfg, imageService, timer);
+        job = new AcefExport(req, userKey, factory, cfg, imageService, timer);
         break;
       case TEXT_TREE:
-        job = new TextTreeExporter(req, userKey, factory, cfg, imageService, timer);
+        job = new TextTreeExport(req, userKey, factory, cfg, imageService, timer);
         break;
       case NEWICK:
-        job = new NewickExporter(req, userKey, factory, cfg, imageService, timer);
+        job = new NewickExport(req, userKey, factory, cfg, imageService, timer);
         break;
       case DOT:
-        job = new DotExporter(req, userKey, factory, cfg, imageService, timer);
+        job = new DotExport(req, userKey, factory, cfg, imageService, timer);
         break;
 
       default:
