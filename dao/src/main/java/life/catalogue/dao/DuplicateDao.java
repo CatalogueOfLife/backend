@@ -50,6 +50,7 @@ public class DuplicateDao {
     private static final int WRONG_ENTITY = -999999;
     // the dataset to be analyzed
     int datasetKey;
+    String query;
     DatasetInfoCache.DatasetInfo info;
     // if true compare names only, if false usages
     boolean compareNames;
@@ -79,6 +80,7 @@ public class DuplicateDao {
     /**
      * @param entity the entity to look out for. Must be NAME or NAME_USAGE nothing else
      * @param mode the matching mode to detect duplicates - strict or fuzzy
+     * @param query optional prefix query string
      * @param minSize minimum number of duplicate names to exist. Defaults to 2
      * @param datasetKey the dataset to be analyzed
      * @param sourceDatasetKey the source dataset within a project to analyze. Requires datasetKey to be a project or release
@@ -96,6 +98,7 @@ public class DuplicateDao {
     @JsonCreator
     public DuplicateRequest(@QueryParam("entity") EntityType entity,
                             @QueryParam("mode") MatchingMode mode,
+                            @QueryParam("q") String query,
                             @QueryParam("minSize") @Min(2) Integer minSize,
                             @PathParam("key") int datasetKey,
                             @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
@@ -111,6 +114,7 @@ public class DuplicateDao {
                             @QueryParam("catalogueKey") Integer projectKey) {
       this.mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
       this.minSize = ObjectUtils.defaultIfNull(minSize, 2);
+      this.query = query;
       this.datasetKey = datasetKey;
       this.sourceDatasetKey = sourceDatasetKey;
       this.sectorKey = sectorKey;
@@ -166,10 +170,10 @@ public class DuplicateDao {
     try (SqlSession session = factory.openSession()) {
       DuplicateMapper mapper = session.getMapper(DuplicateMapper.class);
       if (req.compareNames) {
-        return mapper.countNames(req.mode, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
+        return mapper.countNames(req.mode, req.query, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
           req.codeDifferent);
       } else {
-        return mapper.count(req.mode, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
+        return mapper.count(req.mode, req.query, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
           req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey);
       }
     }
@@ -229,10 +233,10 @@ public class DuplicateDao {
       // load all duplicate usages or names
       List<Duplicate.Mybatis> dupsTmp;
       if (req.compareNames) {
-        dupsTmp = mapper.duplicateNames(req.mode, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
+        dupsTmp = mapper.duplicateNames(req.mode, req.query, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
           req.codeDifferent, page);
       } else {
-        dupsTmp = mapper.duplicates(req.mode, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
+        dupsTmp = mapper.duplicates(req.mode, req.query, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
           req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey, page);
       }
       if (dupsTmp.isEmpty()) {

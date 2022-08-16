@@ -22,6 +22,7 @@ public interface DuplicateMapper {
    * See DuplicateDao for parameter descriptions...
    */
   List<Duplicate.Mybatis> duplicateNames(@Param("mode") MatchingMode mode,
+                                 @Param("query") String query,
                                  @Param("minSize") Integer minSize,
                                  @Param("datasetKey") int datasetKey,
                                  @Param("category") NameCategory category,
@@ -46,6 +47,7 @@ public interface DuplicateMapper {
    * See DuplicateDao for parameter descriptions...
    */
   List<Duplicate.Mybatis> duplicates(@Param("mode") MatchingMode mode,
+                             @Param("query") String query,
                              @Param("minSize") Integer minSize,
                              @Param("datasetKey") int datasetKey,
                              @Param("sourceDatasetKey") Integer sourceDatasetKey,
@@ -65,6 +67,7 @@ public interface DuplicateMapper {
    * See DuplicateDao for parameter descriptions...
    */
   Integer count(@Param("mode") MatchingMode mode,
+                 @Param("query") String query,
                  @Param("minSize") Integer minSize,
                  @Param("datasetKey") int datasetKey,
                  @Param("sourceDatasetKey") Integer sourceDatasetKey,
@@ -80,6 +83,7 @@ public interface DuplicateMapper {
                  @Param("projectKey") Integer projectKey);
 
   Integer countNames(@Param("mode") MatchingMode mode,
+                     @Param("query") String query,
                      @Param("minSize") Integer minSize,
                      @Param("datasetKey") int datasetKey,
                      @Param("category") NameCategory category,

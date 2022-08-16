@@ -50,6 +50,7 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
     UPDATE,
   
     /**
+     * WARNING: NOT FULLY IMPLEMENTED YET !!!
      * Updates the subject and all its descendants using the configured status, environment and extinct flag
      * leaving NULL values unchanged.
      *

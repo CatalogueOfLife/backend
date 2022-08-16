@@ -97,6 +97,9 @@
   </sql>
 
   <sql id="commonWhereClause">
+    <if test="query != null">
+      AND n.scientific_name ~ '^${query}'
+    </if>
     <if test="category != null">
       <if test="category.highest != null">
         AND n.rank &gt;= #{category.highest}::rank
