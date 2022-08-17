@@ -126,7 +126,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
     if (decisions.containsKey(u.getId())) {
       applyDecision(u, decisions.get(u.getId()));
     }
-    if (ignoreUsage(u, decisions.get(u.getId()), match)) {
+    if (ignoreUsage(u, decisions.get(u.getId()), UsageMatch.empty())) {
       // skip this taxon, but include children
       LOG.info("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().getLabel(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
       if (u.isTaxon()) {
