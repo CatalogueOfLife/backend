@@ -17,11 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
 
-public class DotExporter extends DatasetExporter {
-  private static final Logger LOG = LoggerFactory.getLogger(DotExporter.class);
+public class DotExport extends DatasetExportJob {
+  private static final Logger LOG = LoggerFactory.getLogger(DotExport.class);
   private File f;
 
-  public DotExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+  public DotExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(req, userKey, DataFormat.DOT, false, factory, cfg, imageService, timer);
   }
 

@@ -50,15 +50,15 @@ public class ImgConfig extends PgDbConfig {
    * @return path to the original source dataset logo at the time the given release was created.
    */
   public Path datasetLogoArchived(int releaseKey, int datasetKey) {
-    return archive == null ? null : archive.resolve("release/"+releaseKey+"/dataset").resolve(filename(datasetKey + "-logo", Scale.ORIGINAL));
+    return archive == null ? null : archive.resolve("release/"+releaseKey+"/dataset").resolve(filename(datasetKey, Scale.ORIGINAL));
   }
 
   public Path datasetLogo(int datasetKey, Scale scale) {
-    return repo.resolve("dataset").resolve(filename(datasetKey + "-logo", scale));
+    return repo.resolve("dataset").resolve(filename(datasetKey, scale));
   }
   
-  private String filename(String prefix, Scale scale) {
-    return String.format("%s-%s.%s", prefix, scale.name().toLowerCase(), ImageServiceFS.IMAGE_FORMAT);
+  private String filename(int datasetKey, Scale scale) {
+    return String.format("%s-logo-%s.%s", datasetKey, scale.name().toLowerCase(), ImageServiceFS.IMAGE_FORMAT);
   }
   
 }

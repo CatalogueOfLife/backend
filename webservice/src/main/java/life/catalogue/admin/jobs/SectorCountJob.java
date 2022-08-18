@@ -1,6 +1,8 @@
 package life.catalogue.admin.jobs;
 
 import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.concurrent.DatasetBlockingJob;
+import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
@@ -19,26 +21,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Resets all dataset sector counts for an entire catalogue, see param datasetKey,
  * and rebuilds the counts from the currently mapped sectors
  */
-public class SectorCountJob extends BackgroundJob {
+public class SectorCountJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(SectorCountJob.class);
 
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
   private final Validator validator;
-  @JsonProperty
-  private final int datasetKey;
 
   public SectorCountJob(int userKey, SqlSessionFactory factory, NameUsageIndexService indexService, Validator validator, int datasetKey) {
-    super(userKey);
+    super(datasetKey, userKey, JobPriority.HIGH);
     this.factory = factory;
     this.indexService = indexService;
     DaoUtils.requireProject(datasetKey);
-    this.datasetKey = datasetKey;
     this.validator = validator;
   }
 
   @Override
-  public void execute() throws Exception {
+  protected void runWithLock() throws Exception {
     NameDao ndao = new NameDao(factory, indexService, NameIndexFactory.passThru(), validator);
     TaxonDao tdao = new TaxonDao(factory, ndao, indexService, validator);
     LOG.info("Starting to update sector counts for dataset {}", datasetKey);

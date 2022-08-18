@@ -8,7 +8,6 @@ import life.catalogue.dw.ManagedExtended;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;
 
-import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;

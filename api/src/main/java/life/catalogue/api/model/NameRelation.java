@@ -116,9 +116,14 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Sector
         Objects.equals(referenceId, that.referenceId) &&
         Objects.equals(remarks, that.remarks);
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), sectorKey, verbatimKey, datasetKey, type, nameId, relatedNameId, referenceId, remarks);
+  }
+
+  @Override
+  public String toString() {
+    return "NameRelation{" + type + "dataset " + datasetKey + " sector " + sectorKey + ": " + nameId + " -> " + relatedNameId + '}';
   }
 }

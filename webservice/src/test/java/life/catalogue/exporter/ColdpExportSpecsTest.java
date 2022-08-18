@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * ColDP exporter test that uses the ColDP example file from the specs which has rather complete coverage of all entities!
  */
-public class ColdpExporterSpecsTest {
+public class ColdpExportSpecsTest {
 
   static final WsServerConfig cfg = new WsServerConfig();
   static {
@@ -48,7 +48,7 @@ public class ColdpExporterSpecsTest {
   public void coldpSpecsExport() {
     MetricRegistry registry = new MetricRegistry();
     ExportRequest req = new ExportRequest(importRule.datasetKey(0, DataFormat.COLDP), DataFormat.COLDP);
-    ColdpExporter exp = new ColdpExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), registry.timer("test.timer"));
+    ColdpExport exp = new ColdpExport(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), registry.timer("test.timer"));
     exp.run();
     System.out.println(exp.getArchive());
     assertTrue(exp.getArchive().exists());

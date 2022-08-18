@@ -59,13 +59,13 @@ public class DwcaReader extends CsvReader {
       DwcTerm.Event, DwcTerm.eventID,
       DwcTerm.Taxon, DwcTerm.taxonID,
       DwcTerm.MeasurementOrFact, DwcTerm.measurementID,
-      DwcUnofficialTerm.NameRelations, DwcTerm.taxonID
+      DwcUnofficialTerm.NameRelation, DwcTerm.taxonID
   );
 
   private static final Map<Term, Term> TERM_TO_ROW_TYPE = MapUtils.linkedHashMap(
     DwcTerm.occurrenceID, DwcTerm.Occurrence,
     DwcTerm.measurementID, DwcTerm.MeasurementOrFact,
-    DwcUnofficialTerm.relatedNameUsageID, DwcUnofficialTerm.NameRelations,
+    DwcUnofficialTerm.relatedNameUsageID, DwcUnofficialTerm.NameRelation,
     DwcTerm.taxonID, DwcTerm.Taxon,
     DwcTerm.parentNameUsageID, DwcTerm.Taxon,
     DwcTerm.acceptedNameUsageID, DwcTerm.Taxon,

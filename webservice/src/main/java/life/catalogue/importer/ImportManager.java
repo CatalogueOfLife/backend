@@ -12,7 +12,6 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.PBQThreadPoolExecutor;
@@ -25,6 +24,8 @@ import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.release.AbstractProjectCopy;
+
+import org.apache.commons.io.FileUtils;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;
 
@@ -84,6 +85,7 @@ public class ImportManager implements ManagedExtended {
   private final Validator validator;
   private final Timer importTimer;
   private final Counter failed;
+  private int abortedAttempt;
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
       SqlSessionFactory factory, NameIndex index, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
@@ -205,7 +207,7 @@ public class ImportManager implements ManagedExtended {
         .collect(Collectors.toList());
 
     // include releasing jobs if existing and sort by creation date
-    for (AbstractProjectCopy projJob : jobExecutor.getQueue(AbstractProjectCopy.class)) {
+    for (AbstractProjectCopy projJob : jobExecutor.getQueueByJobClass(AbstractProjectCopy.class)) {
       running.add(projJob.getMetrics());
     }
     running.sort(DI_STARTED_COMPARATOR);
@@ -275,8 +277,17 @@ public class ImportManager implements ManagedExtended {
    *         exist or is of origin managed
    */
   public synchronized ImportRequest submit(final ImportRequest req) throws IllegalArgumentException {
-    validRequest(req);
+    validDataset(req.datasetKey);
     return submitValidDataset(req);
+  }
+
+  private Path createScratchUploadFile(final int datasetKey) throws IOException {
+    Path up = cfg.normalizer.scratchFile(datasetKey, "upload.zip").toPath();
+    Files.createDirectories(up.getParent());
+    if (Files.exists(up)) {
+      Files.delete(up);
+    }
+    return up;
   }
 
   /**
@@ -290,28 +301,42 @@ public class ImportManager implements ManagedExtended {
    */
   public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String filename, @Nullable String suffix, User user) throws IOException {
     Dataset d = validDataset(datasetKey);
-    uploadArchive(d, content, zip, filename, suffix);
-    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey()));
+    Path upload;
+    if (filename == null) {
+      upload = Files.createTempFile(cfg.normalizer.scratchDir(datasetKey).toPath(), "upload-", "." + Strings.nullToEmpty(suffix));
+    } else {
+      upload = cfg.normalizer.scratchFile(datasetKey, filename).toPath();
+    }
+    Files.createDirectories(upload.getParent());
+    LOG.info("Upload data for dataset {} to tmp file {}", d.getKey(), upload);
+    Files.copy(content, upload, StandardCopyOption.REPLACE_EXISTING);
+
+    if (zip) {
+      Path uploadZip = createScratchUploadFile(datasetKey);
+      LOG.debug("Zip uploaded file {} for dataset {} to {}", upload, d.getKey(), uploadZip);
+      CompressionUtil.zipFile(upload.toFile(), uploadZip.toFile());
+      upload = uploadZip; // use zip for the final request object
+    }
+    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey(), upload));
   }
 
   public ImportRequest uploadXls(final int datasetKey, final InputStream content, User user) throws IOException {
     Preconditions.checkNotNull(content, "No content given");
     Dataset d = validDataset(datasetKey);
     // extract CSV files
-    File tmpDir = cfg.normalizer.scratchFile(datasetKey, "xls");
-    tmpDir.mkdirs();
+    File csvDir = cfg.normalizer.scratchFile(datasetKey, "xls");
+    if (csvDir.exists()) {
+      FileUtils.deleteDirectory(csvDir);
+    }
+    csvDir.mkdirs();
 
-    LOG.info("Extracting spreadsheet data for dataset {} to {}", d.getKey(), tmpDir);
-    List<File> files = ExcelCsvExtractor.extract(content, tmpDir);
+    LOG.info("Extracting spreadsheet data for dataset {} to {}", d.getKey(), csvDir);
+    List<File> files = ExcelCsvExtractor.extract(content, csvDir);
     LOG.info("Extracted {} files from spreadsheet data for dataset {}", files.size(), d.getKey());
     // zip up as single source file for importer
-    Path source = cfg.normalizer.source(d.getKey()).toPath();
-    Files.createDirectories(source.getParent());
-    if (Files.exists(source)) {
-      Files.delete(source);
-    }
-    CompressionUtil.zipDir(tmpDir, source.toFile());
-    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey()));
+    Path uploadZip = createScratchUploadFile(datasetKey);
+    CompressionUtil.zipDir(csvDir, uploadZip.toFile());
+    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey(), uploadZip));
   }
 
   /**
@@ -350,19 +375,6 @@ public class ImportManager implements ManagedExtended {
     return req;
   }
 
-
-  private Dataset validRequest(ImportRequest request) {
-    Dataset d = validDataset(request.datasetKey);
-    // does a local archive exist for uploads?
-    if (request.upload) {
-      File f = cfg.normalizer.source(request.datasetKey);
-      if (!f.exists()) {
-        throw new IllegalArgumentException("No local archive exists for dataset " + request.datasetKey);
-      }
-    }
-    return d;
-  }
-
   private Dataset validDataset(int datasetKey) {
     if (!hasStarted()) {
       throw UnavailableException.unavailable("dataset importer");
@@ -396,37 +408,6 @@ public class ImportManager implements ManagedExtended {
   }
 
   /**
-   * Uploads an input stream to a tmp file and if no errors moves it to the archive source path.
-   */
-  private void uploadArchive(Dataset d, InputStream content, boolean zip, @Nullable String filename, @Nullable String suffix) throws NotFoundException, IOException {
-    Path tmp;
-    Path tmpDir = cfg.normalizer.scratchDir.toPath().resolve(d.getKey().toString());
-    Files.createDirectories(tmpDir);
-    if (filename == null) {
-      tmp = Files.createTempFile(tmpDir, "upload-", Strings.nullToEmpty("."+suffix));
-    } else {
-      tmp = tmpDir.resolve(filename);
-    }
-    LOG.info("Upload data for dataset {} to tmp file {}", d.getKey(), tmp);
-    Files.copy(content, tmp, StandardCopyOption.REPLACE_EXISTING);
-
-    Path source = cfg.normalizer.source(d.getKey()).toPath();
-    Files.createDirectories(source.getParent());
-    if (zip) {
-      if (Files.exists(source)) {
-        Files.delete(source);
-      }
-      LOG.debug("Zip uploaded file {} for dataset {} to source repo at {}", tmp, d.getKey(), source);
-      CompressionUtil.zipFile(tmp.toFile(), source.toFile());
-    } else {
-      LOG.debug("Move uploaded data for dataset {} to source repo at {}", d.getKey(), source);
-      Files.move(tmp, source, StandardCopyOption.REPLACE_EXISTING);
-    }
-    // remove tmp folder
-    PathUtils.deleteRecursively(tmpDir);
-  }
-
-  /**
    * @throws NotFoundException if dataset does not exist or was deleted
    * @throws IllegalArgumentException if dataset is of type managed
    */
@@ -442,9 +423,9 @@ public class ImportManager implements ManagedExtended {
         throw NotFoundException.notFound(Dataset.class, req.datasetKey);
       }
       DatasetSettings ds = dm.getSettings(req.datasetKey);
-      // clear access URL if its an upload
+      // clear access URL if it's an upload
       // https://github.com/CatalogueOfLife/backend/issues/881
-      if (req.upload && ds.has(Setting.DATA_ACCESS)) {
+      if (req.hasUpload() && ds.has(Setting.DATA_ACCESS)) {
         ds.remove(Setting.DATA_ACCESS);
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
@@ -486,7 +467,7 @@ public class ImportManager implements ManagedExtended {
       dao.updateImportCancelled(di);
       // add back to queue
       try {
-        requests.add(new ImportRequest(di.getDatasetKey(), di.getCreatedBy(), true, false, di.isUpload()));
+        requests.add(ImportRequest.reimport(di.getDatasetKey(), di.getCreatedBy(), di.getAttempt()));
       } catch (IllegalArgumentException e) {
         // swallow
       }

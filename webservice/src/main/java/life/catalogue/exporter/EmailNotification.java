@@ -2,7 +2,6 @@ package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.User;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.db.mapper.UserMapper;
@@ -43,7 +42,7 @@ public class EmailNotification {
     this.factory = factory;
     this.cfg = cfg;
   }
-  public void email(DatasetExporter job) {
+  public void email(DatasetExportJob job) {
     try (SqlSession session = factory.openSession()) {
       User user = session.getMapper(UserMapper.class).get(job.getUserKey());
       if (user == null) {
@@ -54,7 +53,7 @@ public class EmailNotification {
     }
   }
 
-  public void email(final DatasetExport export, Dataset dataset, User user) {
+  public void email(final life.catalogue.api.model.DatasetExport export, Dataset dataset, User user) {
     final var status = export.getStatus();
     if (!status.isDone()) {
       LOG.info("Do not notify users about {} export {}", export.getStatus(), export.getKey());
@@ -104,7 +103,7 @@ public class EmailNotification {
   }
 
   @VisibleForTesting
-  static String downloadMail(DatasetExport export, Dataset dataset, User user, WsServerConfig cfg) throws IOException, TemplateException{
+  static String downloadMail(life.catalogue.api.model.DatasetExport export, Dataset dataset, User user, WsServerConfig cfg) throws IOException, TemplateException{
     final DownloadModel data = new DownloadModel(export, dataset, user, cfg);
     final String template = "email/download-" + export.getStatus().name().toLowerCase() + ".ftl";
     return FmUtil.render(data, template);
@@ -112,14 +111,14 @@ public class EmailNotification {
 
   public static class DownloadModel {
     private final UUID key;
-    private final DatasetExport export;
+    private final life.catalogue.api.model.DatasetExport export;
     private final User user;
     private final Dataset dataset;
     private final String from;
     private final String fromName;
     private final String replyTo;
 
-    public DownloadModel(DatasetExport export, Dataset dataset, User user, WsServerConfig cfg) {
+    public DownloadModel(life.catalogue.api.model.DatasetExport export, Dataset dataset, User user, WsServerConfig cfg) {
       this.key = export.getKey();
       this.export = export;
       this.user = user;
@@ -145,7 +144,7 @@ public class EmailNotification {
       return replyTo;
     }
 
-    public DatasetExport getExport() {
+    public life.catalogue.api.model.DatasetExport getExport() {
       return export;
     }
 

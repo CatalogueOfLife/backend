@@ -1,14 +1,15 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.Duplicate;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.Synonym;
+import com.fasterxml.jackson.annotation.JsonCreator;
+
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DuplicateMapper;
+
+import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -18,6 +19,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Min;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -36,17 +40,17 @@ public class DuplicateDao {
   }
 
 
-  private final SqlSession session;
-  private final DuplicateMapper mapper;
+  private final SqlSessionFactory factory;
 
-  public DuplicateDao(SqlSession sqlSession) {
-    this.session = sqlSession;
-    mapper = session.getMapper(DuplicateMapper.class);
+  public DuplicateDao(SqlSessionFactory factory) {
+    this.factory = factory;
   }
 
   public static class DuplicateRequest {
+    private static final int WRONG_ENTITY = -999999;
     // the dataset to be analyzed
     int datasetKey;
+    String query;
     DatasetInfoCache.DatasetInfo info;
     // if true compare names only, if false usages
     boolean compareNames;
@@ -76,6 +80,7 @@ public class DuplicateDao {
     /**
      * @param entity the entity to look out for. Must be NAME or NAME_USAGE nothing else
      * @param mode the matching mode to detect duplicates - strict or fuzzy
+     * @param query optional prefix query string
      * @param minSize minimum number of duplicate names to exist. Defaults to 2
      * @param datasetKey the dataset to be analyzed
      * @param sourceDatasetKey the source dataset within a project to analyze. Requires datasetKey to be a project or release
@@ -90,22 +95,29 @@ public class DuplicateDao {
      * @param withDecision optionally filter duplicates to have or do not already have a decision
      * @param projectKey the project key decisions and sectors are for. Required if withDecision is given
      */
-    public DuplicateRequest(EntityType entity, MatchingMode mode, Integer minSize, int datasetKey, Integer sourceDatasetKey, Integer sectorKey,
-                            NameCategory category, Set<Rank> ranks, Set<TaxonomicStatus> status, Boolean authorshipDifferent,
-                            Boolean acceptedDifferent, Boolean rankDifferent, Boolean codeDifferent, Boolean withDecision, Integer projectKey) {
+    @JsonCreator
+    public DuplicateRequest(@QueryParam("entity") EntityType entity,
+                            @QueryParam("mode") MatchingMode mode,
+                            @QueryParam("q") String query,
+                            @QueryParam("minSize") @Min(2) Integer minSize,
+                            @PathParam("key") int datasetKey,
+                            @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
+                            @QueryParam("sectorKey") Integer sectorKey,
+                            @QueryParam("category") NameCategory category,
+                            @QueryParam("rank") Set<Rank> ranks,
+                            @QueryParam("status") Set<TaxonomicStatus> status,
+                            @QueryParam("authorshipDifferent") Boolean authorshipDifferent,
+                            @QueryParam("acceptedDifferent") Boolean acceptedDifferent,
+                            @QueryParam("rankDifferent") Boolean rankDifferent,
+                            @QueryParam("codeDifferent") Boolean codeDifferent,
+                            @QueryParam("withDecision") Boolean withDecision,
+                            @QueryParam("catalogueKey") Integer projectKey) {
       this.mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
       this.minSize = ObjectUtils.defaultIfNull(minSize, 2);
-      Preconditions.checkArgument(this.minSize > 1, "minimum group size must at least be 2");
+      this.query = query;
       this.datasetKey = datasetKey;
-      info = DatasetInfoCache.CACHE.info(datasetKey);
       this.sourceDatasetKey = sourceDatasetKey;
-      if (sourceDatasetKey != null){
-        Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
-      }
       this.sectorKey = sectorKey;
-      if (sectorKey != null){
-        Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
-      }
       this.category = category;
       this.ranks = ranks;
       this.status = status;
@@ -114,9 +126,6 @@ public class DuplicateDao {
       this.rankDifferent = rankDifferent;
       this.codeDifferent = codeDifferent;
       this.withDecision = withDecision;
-      if (withDecision != null) {
-        Preconditions.checkArgument(projectKey != null, "projectKey is required if parameter withDecision is used");
-      }
       this.projectKey = projectKey;
 
       // entity specific checks & defaults
@@ -131,19 +140,54 @@ public class DuplicateDao {
         this.withDecision = null;
         this.projectKey = null;
       } else {
-        throw new IllegalArgumentException("Duplicates only supported for NAME or NAME_USAGE entity");
+        this.sectorKey = WRONG_ENTITY;
+        this.sourceDatasetKey = WRONG_ENTITY;
       }
     }
   }
 
-  public List<Duplicate> find(DuplicateRequest req, Page page) {
-    return findOrList(req, ObjectUtils.defaultIfNull(page, new Page()));
+  private void validate(DuplicateRequest req) {
+    // wrong entity!
+    if (req.sectorKey != null && req.sectorKey == DuplicateRequest.WRONG_ENTITY
+        && req.sourceDatasetKey != null && req.sourceDatasetKey == DuplicateRequest.WRONG_ENTITY) {
+      throw new IllegalArgumentException("Duplicates only supported for NAME or NAME_USAGE entity");
+    }
+    var info = DatasetInfoCache.CACHE.info(req.datasetKey);
+    Preconditions.checkArgument(req.minSize > 1, "minimum group size must at least be 2");
+    if (req.sourceDatasetKey != null){
+      Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
+    }
+    if (req.sectorKey != null){
+      Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
+    }
+    if (req.withDecision != null) {
+      Preconditions.checkArgument(req.projectKey != null, "catalogueKey is required if parameter withDecision is used");
+    }
+  }
+
+  public int count(DuplicateRequest req) {
+    validate(req);
+    try (SqlSession session = factory.openSession()) {
+      DuplicateMapper mapper = session.getMapper(DuplicateMapper.class);
+      if (req.compareNames) {
+        return mapper.countNames(req.mode, req.query, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
+          req.codeDifferent);
+      } else {
+        return mapper.count(req.mode, req.query, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
+          req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey);
+      }
+    }
+  }
+
+  public ResultPage<Duplicate> page(DuplicateRequest req, Page page) {
+    var result = findOrList(req, ObjectUtils.defaultIfNull(page, new Page()));
+    return new ResultPage<>(page, result, () -> count(req));
   }
 
   /**
    * @return ID	Decision	Status	scientificName	Authorship	Genus	specificEpithet	infraspecificEpithet	Accepted	Rank	Classification
    */
-  public Stream<Object[]> list(DuplicateRequest req) {
+  public Stream<Object[]> stream(DuplicateRequest req) {
     var all = findOrList(req, null);
     if (all == null || all.isEmpty()) {
       return Stream.of(EXPORT_HEADERS);
@@ -154,7 +198,7 @@ public class DuplicateDao {
     );
   }
 
-  public Stream<Object[]> mapCSV(Duplicate d) {
+  private Stream<Object[]> mapCSV(Duplicate d) {
     // "ID", "decision", "status", "rank", "label", "scientificName", "authorship", "genus", "specificEpithet", "infraspecificEpithet", "accepted", "classification"};
     return d.getUsages().stream().map(u -> new Object[]{
       u.getUsage().getId(),
@@ -183,43 +227,47 @@ public class DuplicateDao {
   }
 
   private List<Duplicate> findOrList(DuplicateRequest req, @Nullable Page page) {
-    // load all duplicate usages or names
-    List<Duplicate.Mybatis> dupsTmp;
-    if (req.compareNames) {
-      dupsTmp = mapper.duplicateNames(req.mode, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
-        req.codeDifferent, page);
-    } else {
-      dupsTmp = mapper.duplicates(req.mode, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
-        req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey, page);
+    validate(req);
+    try (SqlSession session = factory.openSession()) {
+      DuplicateMapper mapper = session.getMapper(DuplicateMapper.class);
+      // load all duplicate usages or names
+      List<Duplicate.Mybatis> dupsTmp;
+      if (req.compareNames) {
+        dupsTmp = mapper.duplicateNames(req.mode, req.query, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
+          req.codeDifferent, page);
+      } else {
+        dupsTmp = mapper.duplicates(req.mode, req.query, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
+          req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey, page);
+      }
+      if (dupsTmp.isEmpty()) {
+        return Collections.EMPTY_LIST;
+      }
+
+      Set<String> ids = dupsTmp.stream()
+          .map(Duplicate.Mybatis::getUsages)
+          .flatMap(List::stream)
+          .collect(Collectors.toSet());
+
+      Map<String, Duplicate.UsageDecision> usages;
+      if (req.compareNames) {
+        usages = mapper.namesByIds(req.datasetKey, ids).stream()
+            .collect(Collectors.toMap(d -> d.getUsage().getName().getId(), Function.identity()));
+      } else {
+        usages = mapper.usagesByIds(req.datasetKey, req.projectKey, ids).stream()
+            .collect(Collectors.toMap(d -> d.getUsage().getId(), Function.identity()));
+      }
+
+      List<Duplicate> dups = new ArrayList<>(dupsTmp.size());
+      for (Duplicate.Mybatis dm : dupsTmp) {
+        Duplicate d = new Duplicate();
+        d.setKey(dm.getKey());
+        d.setUsages(dm.getUsages().stream()
+            .map(usages::get)
+            .collect(Collectors.toList())
+        );
+        dups.add(d);
+      }
+      return dups;
     }
-    if (dupsTmp.isEmpty()) {
-      return Collections.EMPTY_LIST;
-    }
-    
-    Set<String> ids = dupsTmp.stream()
-        .map(Duplicate.Mybatis::getUsages)
-        .flatMap(List::stream)
-        .collect(Collectors.toSet());
-    
-    Map<String, Duplicate.UsageDecision> usages;
-    if (req.compareNames) {
-      usages = mapper.namesByIds(req.datasetKey, ids).stream()
-          .collect(Collectors.toMap(d -> d.getUsage().getName().getId(), Function.identity()));
-    } else {
-      usages = mapper.usagesByIds(req.datasetKey, req.projectKey, ids).stream()
-          .collect(Collectors.toMap(d -> d.getUsage().getId(), Function.identity()));
-    }
-    
-    List<Duplicate> dups = new ArrayList<>(dupsTmp.size());
-    for (Duplicate.Mybatis dm : dupsTmp) {
-      Duplicate d = new Duplicate();
-      d.setKey(dm.getKey());
-      d.setUsages(dm.getUsages().stream()
-          .map(usages::get)
-          .collect(Collectors.toList())
-      );
-      dups.add(d);
-    }
-    return dups;
   }
 }

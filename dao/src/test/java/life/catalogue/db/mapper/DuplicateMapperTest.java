@@ -125,7 +125,7 @@ public class DuplicateMapperTest {
   public void duplicates() {
     Set<TaxonomicStatus> status = new HashSet<>();
     status.add(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    List<Duplicate.Mybatis> dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
+    List<Duplicate.Mybatis> dups = mapper.duplicates(MatchingMode.STRICT, null, 2, datasetKey, null, null, NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), status, false, null, null, null, false, Datasets.COL,
         new Page(0, 2));
     assertEquals(2, dups.size());
@@ -133,18 +133,20 @@ public class DuplicateMapperTest {
       assertFalse(d.getUsages().isEmpty());
       assertNotNull(d.getKey());
     }
-  
+    assertEquals((Integer) 3, mapper.count(MatchingMode.STRICT, null, 2, datasetKey, null, null, NameCategory.BINOMIAL,
+      Sets.newHashSet(Rank.SPECIES), status, false, null, null, null, false, Datasets.COL));
+
     // all accepted, so not different
     // https://github.com/Sp2000/colplus-backend/issues/456
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
+    dups = mapper.duplicates(MatchingMode.STRICT, null, 2, datasetKey, null, null, NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), status, false, true, null, null, false, Datasets.COL,
         new Page(0, 2));
     assertEquals(2, dups.size());
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
+    dups = mapper.duplicates(MatchingMode.STRICT, null, 2, datasetKey, null, null, NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), status, false, false, null, null, false, Datasets.COL,
         new Page(0, 2));
     assertEquals(0, dups.size());
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
+    dups = mapper.duplicates(MatchingMode.STRICT, null, 2, datasetKey, null, null, NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), null, null, false, null, null, null, Datasets.COL,
         new Page(0, 2));
     assertEquals(1, dups.size());
@@ -152,45 +154,59 @@ public class DuplicateMapperTest {
     
     // https://github.com/Sp2000/colplus-backend/issues/457
     // Aspidoscelis deppii subsp. schizophorus
-    dups = mapper.duplicates(MatchingMode.STRICT, 3, datasetKey, null, null, NameCategory.TRINOMIAL,
+    dups = mapper.duplicates(MatchingMode.STRICT, null, 3, datasetKey, null, null, NameCategory.TRINOMIAL,
         Sets.newHashSet(Rank.SUBSPECIES), null, true, null, null, null, null, Datasets.COL,
         new Page(0, 5));
     assertEquals(1, dups.size());
 
-    dups = mapper.duplicates(MatchingMode.FUZZY, 2, datasetKey, 999, null, null,
+    dups = mapper.duplicates(MatchingMode.FUZZY, null, 2, datasetKey, 999, null, null,
       null, null, true, null, null, null, null, null,
       new Page(0, 5));
     assertEquals(0, dups.size());
 
-    dups = mapper.duplicates(MatchingMode.FUZZY, 2, datasetKey, null, 999, null,
+    dups = mapper.duplicates(MatchingMode.FUZZY, null, 2, datasetKey, null, 999, null,
       null, null, true, null, null, null, null, null,
       new Page(0, 5));
     assertEquals(0, dups.size());
 
-    dups = mapper.duplicates(MatchingMode.FUZZY, 2, datasetKey, 999, 999, null,
+    dups = mapper.duplicates(MatchingMode.FUZZY, null, 2, datasetKey, 999, 999, null,
       null, null, true, null, null, null, null, null,
       new Page(0, 5));
     assertEquals(0, dups.size());  }
   
   @Test
   public void duplicateNames() {
-    List<Duplicate.Mybatis> dups = mapper.duplicateNames(MatchingMode.STRICT, 2, datasetKey,  NameCategory.BINOMIAL,
+    List<Duplicate.Mybatis> dups = mapper.duplicateNames(MatchingMode.STRICT, null, 2, datasetKey,  NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), false, false, false, new Page(0, 2));
     assertEquals(2, dups.size());
     for (Duplicate.Mybatis d : dups) {
       assertFalse(d.getUsages().isEmpty());
       assertNotNull(d.getKey());
     }
-  
-    dups = mapper.duplicateNames(MatchingMode.STRICT, 2, datasetKey,  NameCategory.BINOMIAL,
+    assertEquals((Integer) 3, mapper.countNames(MatchingMode.STRICT, null, 2, datasetKey,  NameCategory.BINOMIAL,
+      Sets.newHashSet(Rank.SPECIES), false, false, false));
+
+    dups = mapper.duplicateNames(MatchingMode.STRICT, null, 2, datasetKey,  NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), false, true, true, new Page(0, 2));
     assertEquals(0, dups.size());
   
     // https://github.com/Sp2000/colplus-backend/issues/457
     // Achillea asplenifolia
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
+    dups = mapper.duplicates(MatchingMode.STRICT, null, 2, datasetKey, null, null, NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES_AGGREGATE), null, true, null, null, null, null, Datasets.COL,
         new Page(0, 5));
+    assertEquals(1, dups.size());
+
+    // Achillea
+    dups = mapper.duplicates(MatchingMode.STRICT, "Achillea", 2, datasetKey, null, null, NameCategory.BINOMIAL,
+      null, null, true, null, null, null, null, Datasets.COL,
+      new Page(0, 5));
+    assertEquals(2, dups.size());
+
+    // Achillea asplenifolia
+    dups = mapper.duplicates(MatchingMode.STRICT, "Achillea asp", 2, datasetKey, null, null, NameCategory.BINOMIAL,
+      null, null, true, null, null, null, null, Datasets.COL,
+      new Page(0, 5));
     assertEquals(1, dups.size());
   }
   

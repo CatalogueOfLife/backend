@@ -43,8 +43,8 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
-public abstract class ArchiveExporter extends DatasetExporter {
-  private static final Logger LOG = LoggerFactory.getLogger(ArchiveExporter.class);
+public abstract class ArchiveExport extends DatasetExportJob {
+  private static final Logger LOG = LoggerFactory.getLogger(ArchiveExport.class);
   private static final String LOGO_FILENAME = "logo.png";
 
   protected boolean fullDataset;
@@ -61,7 +61,7 @@ public abstract class ArchiveExporter extends DatasetExporter {
   protected final DSID<String> entityKey = DSID.of(datasetKey, "");
   private final SXSSFWorkbook wb;
 
-  ArchiveExporter(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+  ArchiveExport(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(req, userKey, requiredFormat, true, factory, cfg, imageService, timer);
     logoUriBuilder = UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
     refCache = Caffeine.newBuilder()

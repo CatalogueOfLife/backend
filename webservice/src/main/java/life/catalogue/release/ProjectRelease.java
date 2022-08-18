@@ -40,6 +40,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 public class ProjectRelease extends AbstractProjectCopy {
   public static Set<DataFormat> EXPORT_FORMATS = Set.of(DataFormat.TEXT_TREE, DataFormat.COLDP, DataFormat.DWCA, DataFormat.ACEF);
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
+  private static final String DEFAULT_VERSION_TEMPLATE = "{date}";
 
   protected final WsServerConfig cfg;
   protected final NameDao nDao;
@@ -86,7 +87,9 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     final FuzzyDate today = FuzzyDate.now();
     d.setIssued(today);
-    d.setVersion(today.toString());
+
+    String version = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_VERSION_TEMPLATE, DEFAULT_VERSION_TEMPLATE);
+    d.setVersion(version);
 
     String alias = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
     d.setAlias(alias);

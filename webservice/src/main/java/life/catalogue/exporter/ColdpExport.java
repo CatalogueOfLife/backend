@@ -28,14 +28,14 @@ import com.codahale.metrics.Timer;
 /**
  * ColDP exporter using a merged NameUsage entity and usageIDs instead of nameIDs for linking.
  */
-public class ColdpExporter extends ArchiveExporter {
-  private static final Logger LOG = LoggerFactory.getLogger(ColdpExporter.class);
+public class ColdpExport extends ArchiveExport {
+  private static final Logger LOG = LoggerFactory.getLogger(ColdpExport.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
   private Writer cslWriter;
   private boolean cslFirst = true;
   private NameUsageKeyMap nameUsageKeyMap;
 
-  public ColdpExporter(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
+  public ColdpExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(DataFormat.COLDP, userKey, req, factory, cfg, imageService, timer);
   }
 

@@ -3,6 +3,7 @@ package life.catalogue.admin.jobs;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -15,18 +16,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Updates the usage counter for all managed datasets.
  */
-public class UsageCountJob extends BackgroundJob {
+public class UsageCountJob extends GlobalBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(UsageCountJob.class);
   private final SqlSessionFactory factory;
 
   public UsageCountJob(User user, JobPriority priority, SqlSessionFactory factory) {
-    super(priority, user.getKey());
+    super(user.getKey(), priority);
     this.factory = factory;
-  }
-
-  @Override
-  public boolean isDuplicate(BackgroundJob other) {
-    return other instanceof UsageCountJob;
   }
 
   @Override

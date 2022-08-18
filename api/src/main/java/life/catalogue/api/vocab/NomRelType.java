@@ -30,14 +30,14 @@ public enum NomRelType {
     " a) typographical errors in the original work describing the species, " +
     " b) errors in transliteration from non-Latin languages, " +
     " c) names that included diacritics, hyphens " +
-    " d) endings of species to match the gender of the generic name, particularly when the combination has been changed\n" +
+    " d) endings of species to match the gender of the generic name, particularly when the combination has been changed" +
 
     "For example, Hieronima and Hyeronima are orthographical variants of Hieronyma. " +
     "One of the spellings must be treated as the correct one. In this case, the spelling Hieronyma has been conserved " +
-    "and is to be used as the correct spelling.\n" +
+    "and is to be used as the correct spelling." +
 
     "Botany (Article 61).: An inadvertent use of one of the other spellings has no consequences: " +
-    "the name is to be treated as if it were correctly spelled.\n" +
+    "the name is to be treated as if it were correctly spelled." +
 
     "Zoology (Art. 32-33 ): Orthographical variants in the formal sense do not exist; " +
     "a misspelling or orthographic error is treated as a lapsus, a form of inadvertent error. " +
@@ -50,53 +50,53 @@ public enum NomRelType {
   
   BASED_ON(true, NomStatus.ESTABLISHED, NomStatus.NOT_ESTABLISHED,
     "The name is the validation of a name that was not fully published before. " +
-      "Covers the use of ex in botanical author strings. \n" +
+      "Covers the use of ex in botanical author strings. " +
 
       "ICN Art. 46.4: e.g. if this name object represents G. tomentosum Nutt. ex Seem. " +
       "then the related name should be G. tomentosum Nutt."),
 
   REPLACEMENT_NAME(true, NomStatus.ESTABLISHED, NomStatus.UNACCEPTABLE,
-    "The name is a replacement for the homotypic related name. Also called 'Nomen Novum' or 'avowed substitute'." +
-      "In zoology this is called a \"new replacement name\" or \"new substitute name\" and is easily confused with just \"replacement name\".\n" +
+    "The name is a replacement for the homotypic related name. Also called 'nomen novum' or 'avowed substitute'." +
+      "In zoology this is called a \"new replacement name\" or \"new substitute name\" and is easily confused with just \"replacement name\"." +
 
-      "ICN: Article 7.3\n" +
+      "ICN: Article 7.3" +
 
       "ICZN: Article 60.3, 67.8, 72.7"),
 
   CONSERVED(null, NomStatus.CONSERVED, NomStatus.REJECTED,
     "The name or spelling is conserved / protected against the related name " +
-      "or the related name is suppressed / rejected in favor of the current name.\n" +
+      "or the related name is suppressed / rejected in favor of the current name." +
 
       "A spelling which has been conserved relates two homotypic names, otherwise " +
-      "the related names should be based on different types.\n" +
+      "the related names should be based on different types." +
 
-      "Based on an individual publication but more often due to actions of the ICZN or ICBN exercising its Plenary Powers.\n" +
+      "Based on an individual publication but more often due to actions of the ICZN or ICBN exercising its Plenary Powers." +
 
-      "ICN: Conservation is covered under Article 14 and Appendix II and Appendix III (this name is nomina conservanda).\n" +
-      "ICZN: Reversal of precedence under Article 23.9 (this name is nomen protectum and the target name is nomen oblitum)\n" +
+      "ICN: Conservation is covered under Article 14 and Appendix II and Appendix III (this name is nomina conservanda)." +
+      "ICZN: Reversal of precedence under Article 23.9 (this name is nomen protectum and the target name is nomen oblitum)" +
       "or suppression via plenary power Article 81."),
 
   LATER_HOMONYM(false, NomStatus.UNACCEPTABLE, NomStatus.ESTABLISHED,
     "The name has the same spelling as the related name " +
-      "but was published later and has priority over it (unless conserved or sanctioned) " +
-      "and is based on a different type. Called a junior homonym in zoology.\n" +
+      "but was published later and is based on a different type. " + 
+      "The other, earlier name has priority (unless conserved or sanctioned). Called a junior homonym in zoology." +
 
       "This includes botanical parahomonyms which differ slightly in spelling " +
       "but are similar enough that they are likely to be confused (Art 53.3). " +
-      "The zoological code has a set of spelling variations (article 58) that are considered to be identical.\n" +
+      "The zoological code has a set of spelling variations (article 58) that are considered to be identical." +
 
       "When acts of conservation or suppression have occurred then the terms 'Conserved Later Homonym' " +
-      "and 'Rejected Earlier Homonym' should be used.\n" +
+      "and 'Rejected Earlier Homonym' should be used." +
 
-      "Two identical and homotypic names (isonyms) should be indicated with the superfluous relation type.\n" +
+      "Two identical and homotypic names (isonyms) should be indicated with the superfluous relation type." +
 
-      "ICN: Article 53\n" +
+      "ICN: Article 53" +
       "ICZN: Chapter 12, Article 52."),
 
   SUPERFLUOUS(true, NomStatus.UNACCEPTABLE, NomStatus.ESTABLISHED,
     "This name was superfluous at its time of publication, " +
       "i. e. it was based on the same type as the related, previously published name (ICN article 52). " +
-      "The superfluous name is available but illegitimate.\n" +
+      "The superfluous name is available but illegitimate." +
 
       "Includes the special case of isonyms which are identical names. " +
       "Zoology: unnecessary substitute name"),

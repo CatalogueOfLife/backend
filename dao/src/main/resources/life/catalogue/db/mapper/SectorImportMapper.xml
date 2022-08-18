@@ -86,7 +86,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="WHERE"/>
-    ORDER BY started DESC, sector_key ASC, attempt DESC
+    ORDER BY coalesce(started, finished) DESC NULLS LAST, sector_key ASC, attempt DESC
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 

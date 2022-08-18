@@ -47,7 +47,7 @@ public class EmailNotificationIT {
 
     MetricRegistry registry = new MetricRegistry();
     ExportRequest req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
-    ColdpExporter job = new ColdpExporter(req, TestDataRule.TEST_USER.getKey(), PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), registry.timer("test.timer"));
+    ColdpExport job = new ColdpExport(req, TestDataRule.TEST_USER.getKey(), PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), registry.timer("test.timer"));
 
     for (JobStatus status : JobStatus.values()) {
       job.getExport().setStatus(status);

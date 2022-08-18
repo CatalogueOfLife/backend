@@ -27,7 +27,6 @@ import static org.junit.Assert.*;
 public class DuplicateDaoTest {
   final static int datasetKey = 1000;
   DuplicateDao dao;
-  SqlSession session;
   StopWatch watch = new StopWatch();
 
   public static PgSetupRule pg = new PgSetupRule();
@@ -60,21 +59,15 @@ public class DuplicateDaoTest {
 
   @Before
   public void init() {
-    session = PgSetupRule.getSqlSessionFactory().openSession(true);
-    dao = new DuplicateDao(session);
+    dao = new DuplicateDao(PgSetupRule.getSqlSessionFactory());
     watch.reset();
-  }
-
-  @After
-  public void destroy() {
-    session.close();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void duplicatesIAE() {
     // no catalogue/project given but filtering decisions
-    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, MatchingMode.STRICT, null, datasetKey, null, null, null, null, null, null, null, null, null, true, null);
-    dao.find(req, null);
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, MatchingMode.STRICT, null, null, datasetKey, null, null, null, null, null, null, null, null, null, true, null);
+    dao.page(req, null);
   }
 
   @Test
@@ -217,11 +210,11 @@ public class DuplicateDaoTest {
     } else {
       watch.resume();
     }
-    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, mode, minSize, datasetKey, sourceDatasetKey, null, category, ranks, status,
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, mode, null, minSize, datasetKey, sourceDatasetKey, null, category, ranks, status,
       authorshipDifferent, acceptedDifferent, null, null, withDecision, Datasets.COL);
-    List<Duplicate> result = dao.find(req, page);
+    ResultPage<Duplicate> result = dao.page(req, page);
     watch.suspend();
-    return result;
+    return result.getResult();
   }
 
   private List<Duplicate> findNames(MatchingMode mode, Integer minSize, int datasetKey, NameCategory category, Set<Rank> ranks, Boolean authorshipDifferent, Page page) {
@@ -231,11 +224,11 @@ public class DuplicateDaoTest {
       watch.resume();
     }
 
-    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME, mode, minSize, datasetKey, null, null, category, ranks,
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME, mode, null, minSize, datasetKey, null, null, category, ranks,
       null, authorshipDifferent, null, null, null, null, Datasets.COL);
-    List<Duplicate> result = dao.find(req, page);
+    ResultPage<Duplicate> result = dao.page(req, page);
     watch.suspend();
-    return result;
+    return result.getResult();
   }
 
   private static void assertComplete(int expectedSize, List<Duplicate> dups, int minSize) {

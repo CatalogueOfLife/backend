@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Marks a Runnable that required a dataset lock to run.
+ * Marks a Runnable that requires a dataset lock to run.
  */
 public abstract class DatasetBlockingJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetBlockingJob.class);

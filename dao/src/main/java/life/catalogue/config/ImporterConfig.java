@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
  */
 @SuppressWarnings("PublicField")
 public class ImporterConfig {
-  
+
   @Min(1)
   public int batchSize = 10000;
   

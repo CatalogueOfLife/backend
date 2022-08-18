@@ -1,15 +1,14 @@
 package life.catalogue.config;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.regex.Pattern;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.io.FileUtils;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.factory.GraphDatabaseSettings;
-import org.neo4j.logging.slf4j.Slf4jLogProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +22,8 @@ public class NormalizerConfig {
   
   private static final Logger LOG = LoggerFactory.getLogger(NormalizerConfig.class);
   public static final String ARCHIVE_SUFFIX = "archive";
-  
+  private static final Pattern ARCHIVE_FN_PATTERN = Pattern.compile("^0*(\\d+)\\." + ARCHIVE_SUFFIX + "$");
+
   /**
    * Archive directory to store larger amount of data
    */
@@ -57,11 +57,44 @@ public class NormalizerConfig {
    * Stored in special archive directory so we can keep large amounts of data on cheap storage devices
    * and compare files for changes.
    */
-  public File source(int datasetKey) {
-    return new File(archiveDir, String.valueOf(datasetKey) + "." + ARCHIVE_SUFFIX);
+  public File archive(int datasetKey, int attempt) {
+    return new File(archiveDir(datasetKey), String.format("%04d.%s", attempt, ARCHIVE_SUFFIX));
   }
-  
-  
+
+  public File archiveDir(int datasetKey) {
+    return new File(archiveDir, String.valueOf(datasetKey));
+  }
+
+  /**
+   * Returns the symlink to latest archive that has been used for imports and is archived and symlinked.
+   * The method does not query the database for imports and the import returned might not be the last successful one.
+   * If no archive exists null is returned.
+   */
+  public File lastestArchive(int datasetKey) throws IOException {
+    Path latest = lastestArchiveSymlink(datasetKey).toPath();
+    if (Files.exists(latest)) {
+      return latest.toRealPath().toFile();
+    }
+    return null;
+  }
+
+  /**
+   * Return the symlink that links to the latest stored archive attempt
+   * @param datasetKey
+   * @return
+   */
+  public File lastestArchiveSymlink(int datasetKey) {
+    return new File(archiveDir, String.format("%d/latest.%s", datasetKey, ARCHIVE_SUFFIX));
+  }
+
+  public static int attemptFromArchive(File archiveFile) {
+    var m = ARCHIVE_FN_PATTERN.matcher(archiveFile.getName());
+    if (m.find()) {
+      return Integer.parseInt(m.group(1));
+    }
+    throw new IllegalArgumentException("Filename not an attempt based archive: " + archiveFile.getName());
+  }
+
   public File scratchDir(int datasetKey) {
     return new File(scratchDir, String.valueOf(datasetKey));
   }
@@ -80,28 +113,6 @@ public class NormalizerConfig {
   public File scratchFile(int datasetKey, String fileName) {
     Preconditions.checkArgument(!fileName.equalsIgnoreCase("normalizer") && !fileName.equalsIgnoreCase("source"));
     return new File(scratchDir(datasetKey), fileName);
-  }
-  
-  /**
-   * Creates a new embedded db in the directory folder.
-   *
-   * @param eraseExisting if true deletes previously existing db
-   */
-  public GraphDatabaseBuilder newEmbeddedDb(File storeDir, boolean eraseExisting) {
-    if (eraseExisting && storeDir.exists()) {
-      // erase previous db
-      LOG.debug("Removing previous neo4j database from {}", storeDir.getAbsolutePath());
-      if (!FileUtils.deleteQuietly(storeDir)) {
-        LOG.warn("Unable to remove previous neo4j database from {}", storeDir.getAbsolutePath());
-      }
-    }
-    GraphDatabaseBuilder builder = new GraphDatabaseFactory()
-        .setUserLogProvider(new Slf4jLogProvider())
-        .newEmbeddedDatabaseBuilder(storeDir)
-        .setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
-        .setConfig(GraphDatabaseSettings.allow_upgrade, "true")
-        .setConfig(GraphDatabaseSettings.pagecache_memory, mappedMemory + "M");
-    return builder;
   }
 
   /**

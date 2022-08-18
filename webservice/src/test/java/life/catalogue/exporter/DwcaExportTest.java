@@ -11,11 +11,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class DwcaExporterTest extends ExporterTest {
+public class DwcaExportTest extends ExportTest {
 
   @Test
   public void dataset() {
-    DwcaExporter exp = new DwcaExporter(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
+    DwcaExport exp = new DwcaExport(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
     exp.run();
 
     assertTrue(exp.getArchive().exists());
@@ -25,7 +25,7 @@ public class DwcaExporterTest extends ExporterTest {
   public void withBareNames() {
     var req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA);
     req.setBareNames(true);
-    DwcaExporter exp = new DwcaExporter(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
+    DwcaExport exp = new DwcaExport(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
     exp.run();
 
     assertTrue(exp.getArchive().exists());

@@ -187,6 +187,7 @@ public class WsServer extends Application<WsServerConfig> {
   public void run(WsServerConfig cfg, Environment env) throws Exception {
     final JerseyEnvironment j = env.jersey();
 
+    cfg.logDirectories();
     if (cfg.mkdirs()) {
       LOG.info("Created config repository directories");
     }
@@ -285,9 +286,10 @@ public class WsServer extends Application<WsServerConfig> {
     // daos
     AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), bus);
     DatasetExportDao exdao = new DatasetExportDao(cfg.exportDir, getSqlSessionFactory(), bus, validator);
-    DatasetDao ddao = new DatasetDao(cfg.db.minExternalDatasetKey, getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
+    DatasetDao ddao = new DatasetDao(cfg.db.minExternalDatasetKey, getSqlSessionFactory(), cfg.normalizer, cfg.release, new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
+    DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
@@ -355,6 +357,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
       importManager, ddao, gbifSync, ni, executor, idMap, validator));
     j.register(new DataPackageResource());
+    j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetEditorResource(adao));
     j.register(new DatasetExportResource(getSqlSessionFactory(), searchService, exportManager, diDao, cfg));
@@ -364,11 +367,11 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetReviewerResource(adao));
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));
-    j.register(new DuplicateResource());
+    j.register(new DuplicateResource(dupeDao));
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exdao, cfg));
     j.register(new ImageResource(imgService));
-    j.register(new ImporterResource(importManager, diDao));
+    j.register(new ImporterResource(cfg, importManager, diDao));
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new MatchingResource(ni));
     j.register(new NamesIndexResource(ni));

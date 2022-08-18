@@ -1,8 +1,5 @@
 package life.catalogue.exporter;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -25,7 +22,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -39,8 +35,8 @@ import com.google.common.base.Preconditions;
  * Base class for all dataset exporter that blocks parallel exports for the same dataset
  * and tracks exports by users in the database.
  */
-abstract class DatasetExporter extends DatasetBlockingJob {
-  private static final Logger LOG = LoggerFactory.getLogger(DatasetExporter.class);
+abstract class DatasetExportJob extends DatasetBlockingJob {
+  private static final Logger LOG = LoggerFactory.getLogger(DatasetExportJob.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
   protected final SqlSessionFactory factory;
   protected final ExportRequest req;
@@ -50,13 +46,13 @@ abstract class DatasetExporter extends DatasetBlockingJob {
   protected final WsServerConfig cfg;
   protected final ImageService imageService;
   protected final UsageCounter counter = new UsageCounter();
-  private final DatasetExport export;
+  private final life.catalogue.api.model.DatasetExport export;
   private EmailNotification emailer;
   private final Timer timer;
 
   @VisibleForTesting
-  DatasetExporter(ExportRequest req, int userKey, DataFormat requiredFormat, Dataset d, List<SimpleName> classification, SqlSessionFactory factory,
-                  WsServerConfig cfg, ImageService imageService, Timer timer) {
+  DatasetExportJob(ExportRequest req, int userKey, DataFormat requiredFormat, Dataset d, List<SimpleName> classification, SqlSessionFactory factory,
+                   WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
     if (req.getFormat() == null) {
       req.setFormat(requiredFormat);
@@ -74,7 +70,7 @@ abstract class DatasetExporter extends DatasetBlockingJob {
       throw new NotFoundException("Dataset "+datasetKey+" does not exist");
     }
     this.timer = timer;
-    export = DatasetExport.createWaiting(getKey(), userKey, req, dataset);
+    export = life.catalogue.api.model.DatasetExport.createWaiting(getKey(), userKey, req, dataset);
     export.setClassification(classification);
     // create waiting export in db
     try (SqlSession session = factory.openSession(true)) {
@@ -83,8 +79,8 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     LOG.info("Created {} job {} by user {} for dataset {} to {}", getClass().getSimpleName(), getUserKey(), getKey(), datasetKey, archive);
   }
 
-  DatasetExporter(ExportRequest req, int userKey, DataFormat requiredFormat, boolean allowExcel, SqlSessionFactory factory,
-                  WsServerConfig cfg, ImageService imageService, Timer timer) {
+  DatasetExportJob(ExportRequest req, int userKey, DataFormat requiredFormat, boolean allowExcel, SqlSessionFactory factory,
+                   WsServerConfig cfg, ImageService imageService, Timer timer) {
     this(req, userKey, requiredFormat, loadDataset(factory, req.getDatasetKey()), loadClassification(factory, req), factory, cfg, imageService, timer);
     if (req.isExcel() && !allowExcel) {
       throw new IllegalArgumentException(requiredFormat.getName() + " cannot be exported in Excel");
@@ -130,7 +126,7 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     this.emailer = emailer;
   }
 
-  public DatasetExport getExport() {
+  public life.catalogue.api.model.DatasetExport getExport() {
     return export;
   }
 

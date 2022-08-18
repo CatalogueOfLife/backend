@@ -133,7 +133,7 @@ public class ImportJobIT {
       session.commit();
     }
 
-    ImportRequest req = new ImportRequest(d.getKey(), Users.TESTER, false, false, false);
+    ImportRequest req = ImportRequest.external(d.getKey(), Users.TESTER);
     job = new ImportJob(req, d, cfg, new DownloadUtil(hc), PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator, null,
       indexService, new ImageServiceFS(cfg.img), datasetDao, sDao, dDao, this::start, this::success, this::error);
 

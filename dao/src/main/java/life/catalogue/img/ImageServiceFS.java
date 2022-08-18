@@ -11,6 +11,7 @@ import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
 import org.imgscalr.Scalr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,15 @@ public class ImageServiceFS implements ImageService {
       throw new UnsupportedFormatException("Image format not supported");
     }
     return bi;
+  }
+
+  @Override
+  public boolean delete(int datasetKey) {
+    boolean deleted = false;
+    for (ImgConfig.Scale scale : ImgConfig.Scale.values()) {
+      deleted = FileUtils.deleteQuietly(cfg.datasetLogo(datasetKey, scale).toFile()) || deleted;
+    }
+    return deleted;
   }
 
   @Override

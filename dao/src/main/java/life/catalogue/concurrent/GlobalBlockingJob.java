@@ -14,6 +14,7 @@ public abstract class GlobalBlockingJob extends BackgroundJob {
     super(priority, userKey);
   }
 
+  @Override
   public boolean isDuplicate(BackgroundJob other) {
     return getClass().equals(other.getClass());
   }

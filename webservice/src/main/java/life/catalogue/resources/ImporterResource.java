@@ -1,10 +1,12 @@
 package life.catalogue.resources;
 
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
@@ -12,6 +14,7 @@ import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -38,10 +41,12 @@ public class ImporterResource {
   private static final Logger LOG = LoggerFactory.getLogger(ImporterResource.class);
   private final ImportManager importManager;
   private final DatasetImportDao dao;
-  
-  public ImporterResource(ImportManager importManager, DatasetImportDao diDao) {
+  private final WsServerConfig cfg;
+
+  public ImporterResource(WsServerConfig cfg, ImportManager importManager, DatasetImportDao diDao) {
     this.importManager = importManager;
     dao = diDao;
+    this.cfg = cfg;
   }
   
   @GET
@@ -81,7 +86,12 @@ public class ImporterResource {
   @Path("{key}/reimport")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest reimport(@PathParam("key") int datasetKey, @Auth User user) throws IOException {
-    return importManager.submit(ImportRequest.reimport(datasetKey, user.getKey()));
+    File latest = cfg.normalizer.lastestArchive(datasetKey);
+    if (latest == null) {
+      throw new IllegalArgumentException("No previous archive existing for dataset "+datasetKey+" to reimport");
+    }
+    int attempt = NormalizerConfig.attemptFromArchive(latest);
+    return importManager.submit(ImportRequest.reimport(datasetKey, user.getKey(), attempt));
   }
 
   @POST
