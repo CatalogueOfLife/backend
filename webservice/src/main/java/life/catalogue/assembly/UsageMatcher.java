@@ -70,7 +70,7 @@ public class UsageMatcher {
         return match(nu, existing, parents);
       }
     }
-    return null;
+    return UsageMatch.empty();
   }
 
   /**
@@ -157,9 +157,7 @@ public class UsageMatcher {
     // all synonyms pointing to the same accepted? then it won't matter much for snapping
     NameUsageBase synonym = null;
     String parentID = null;
-    Iterator<NameUsageBase> iter = existing.iterator();
-    while (iter.hasNext()) {
-      NameUsageBase u = iter.next();
+    for (NameUsageBase u : existing) {
       if (u.getStatus().isTaxon()) {
         synonym = null;
         break;

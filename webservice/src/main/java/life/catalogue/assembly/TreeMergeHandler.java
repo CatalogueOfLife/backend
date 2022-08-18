@@ -108,14 +108,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
 
     // finally create or update records
-    if (match == null) {
+    if (match.isMatch()) {
+      update(nu, match.usage);
+    } else {
       if (parent != null) {
         create(nu, parent);
         parents.setMatch(nu); // this is now the modified, created usage
         matcher.add(nu);
       }
-    } else {
-      update(nu, match.usage);
     }
 
     // commit in batches

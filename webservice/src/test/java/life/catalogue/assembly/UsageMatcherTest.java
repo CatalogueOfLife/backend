@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Synonym;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -36,11 +37,12 @@ public class UsageMatcherTest {
       matcher.add(orig);
 
       var match = matcher.match(num.get(dsid), null);
-      assertEquals(match, orig);
+      ((Synonym)orig).setAccepted(null); // is purposely not populated in matches - parentID is enough
+      assertEquals(match.usage, orig);
 
       matcher.clear();
       match = matcher.match(num.get(dsid), null);
-      assertEquals(match, orig);
+      assertEquals(match.usage, orig);
     }
   }
 }
