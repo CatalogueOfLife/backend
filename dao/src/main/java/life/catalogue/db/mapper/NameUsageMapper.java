@@ -98,16 +98,14 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId, @Param("page") Page page);
 
   /**
-<<<<<<< HEAD
    * List all usages in a given dataset that have the given names index id if the nidx points to a qualified name.
    * If the given nidx is a canonical name id list all usages with or without authorship that match the canonical nidx.
-=======
+   *
    * Warning, this does not return bare name IDs, only true usage IDs!
    */
   List<String> listUsageIDsByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
 
   /**
->>>>>>> master
    * Warning, this does not return bare names, only true usages!
    */
   List<NameUsageBase> listByNamesIndexOrCanonicalID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx, @Param("page") Page page);
