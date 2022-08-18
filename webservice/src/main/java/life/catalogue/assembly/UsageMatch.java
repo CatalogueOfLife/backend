@@ -1,6 +1,5 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.MatchType;
 

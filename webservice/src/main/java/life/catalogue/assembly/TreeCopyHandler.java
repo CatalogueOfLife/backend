@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
-import static life.catalogue.api.util.ObjectUtils.coalesce;
-
 public class TreeCopyHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
 

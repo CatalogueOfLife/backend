@@ -4,12 +4,13 @@ import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.matching.Equality;
 import life.catalogue.matching.NameIndex;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nullable;
 

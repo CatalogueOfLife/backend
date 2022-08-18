@@ -1,9 +1,5 @@
 package life.catalogue.assembly;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.lang.InterruptedRuntimeException;
@@ -14,19 +10,21 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.parser.NameParser;
 
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.gbif.nameparser.api.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import java.util.*;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 
