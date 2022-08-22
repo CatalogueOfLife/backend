@@ -3,6 +3,7 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.importer.neo.model.RankedName;
@@ -38,6 +39,30 @@ public class PgImportIT extends PgImportITBase {
   public void coldpMetadata() throws Exception {
     normalizeAndImport(COLDP, 19);
     assertEquals(1, dataset.getSource().size());
+  }
+
+  @Test
+  public void testMetadataMerge() throws Exception {
+    final int datasetKey = 26;
+    dataset.setKey(datasetKey);
+    dataset.setTitle("First title");
+    dataset.setDescription("First description");
+    dataset.setContact(Agent.person("Mango", "Bird"));
+    dataset.setLicense(License.CC0);
+    dataset.setVersion("1.0");
+
+    dataset.getSettings().enable(Setting.MERGE_METADATA);
+    dataset.getSettings().put(Setting.DATA_FORMAT, COLDP);
+    dataset.setKey(datasetKey);
+
+    normalizeAndImport(dataset);
+
+    assertEquals("First description", dataset.getDescription());
+    assertEquals(Agent.person("Mango", "Bird"), dataset.getContact());
+    assertEquals(License.CC0, dataset.getLicense());
+    assertEquals("ColDP Example. The full dataset title", dataset.getTitle());
+    assertEquals("v.48", dataset.getVersion());
+    assertEquals(FuzzyDate.of("2018-06-01"), dataset.getIssued());
   }
 
   @Test

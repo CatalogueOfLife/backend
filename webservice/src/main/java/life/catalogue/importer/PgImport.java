@@ -38,6 +38,7 @@ import javax.validation.Validator;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.poi.ss.formula.functions.T;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
@@ -48,6 +49,8 @@ import org.slf4j.LoggerFactory;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
+
+import scala.annotation.meta.setter;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
@@ -167,7 +170,7 @@ public class PgImport implements Callable<Boolean> {
 
       } else {
         LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
-        updateMetadata(old.getDataset(), dataset.getDataset(), validator);
+        updateMetadata(old, dataset.getDataset(), validator);
         datasetDao.update(old.getDataset(), userKey);
       }
 
@@ -180,16 +183,22 @@ public class PgImport implements Callable<Boolean> {
    * Updates the given dataset d with the provided metadata update,
    * retaining managed properties like keys and settings.
    * Mandatory properties like title and license are only changed if not null.
-   * @param d
+   * @param ds
    * @param update
    */
-  public static Dataset updateMetadata(Dataset d, Dataset update, Validator validator) {
+  public static Dataset updateMetadata(DatasetWithSettings ds, Dataset update, Validator validator) {
+    final Dataset d = ds.getDataset();
+    final boolean merge = ds.isEnabled(Setting.MERGE_METADATA);
+    if (merge) {
+      LOG.info("Merge dataset metadata {}: {}", d.getKey(), d.getTitle());
+    }
+
     Set<String> nonNullProps = Set.of("title", "alias", "license");
     try {
       for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
         Object val = prop.getReadMethod().invoke(update);
         // for required property do not allow null
-        if (val != null || !nonNullProps.contains(prop.getName())) {
+        if (val != null || (!merge && !nonNullProps.contains(prop.getName()))) {
           prop.getWriteMethod().invoke(d, val);
         }
       }
@@ -235,7 +244,7 @@ public class PgImport implements Callable<Boolean> {
     batchCache.clear();
   }
 
-  private <T extends VerbatimEntity & UserManaged & DatasetScoped> T updateVerbatimUserEntity(T ent) {
+  private <T extends VerbatimEntity & UserManaged & DatasetScoped > T updateVerbatimUserEntity(T ent) {
     return updateVerbatimUserEntity(ent, null);
   }
 

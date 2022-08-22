@@ -1,0 +1,3 @@
+col:ID	col:parentID	col:status	col:rank	col:order	col:family	col:genus	col:species	col:scientificName	col:authorship	col:uninomial	col:genericName	col:specificEpithet	col:code
+
+1		accepted	species	Diptera	Chironomidae	[Ablabesmyia]	aurea	[Ablabesmyia] aurea	(Johannsen, 1907)		[Ablabesmyia]	aurea	zoological
