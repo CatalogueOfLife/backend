@@ -101,7 +101,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     MoreMediaTypes.APP_JSON_CSL,
     MoreMediaTypes.APP_BIBTEX
   })
-  public Dataset getArchive(@PathParam("key") Integer key, @PathParam("attempt") Integer attempt) {
+  public Dataset getMetadataArchive(@PathParam("key") Integer key, @PathParam("attempt") Integer attempt) {
     return dao.getArchive(key, attempt);
   }
 

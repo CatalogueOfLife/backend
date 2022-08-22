@@ -122,8 +122,9 @@ public class DatasetExportResource {
                            @Context SqlSession session) {
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      TextTreePrinter p = PrinterFactory.dataset(TextTreePrinter.class, key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
-      if (showID) p.showIDs();
+      TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
+      if (showID) printer.showIDs();
+      printer.print();
       writer.flush();
     };
     return Response.ok(stream).build();
