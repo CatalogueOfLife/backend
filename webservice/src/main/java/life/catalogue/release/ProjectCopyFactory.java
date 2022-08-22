@@ -10,6 +10,8 @@ import life.catalogue.img.ImageService;
 
 import javax.validation.Validator;
 
+import life.catalogue.matching.NameIndex;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -28,12 +30,14 @@ public class ProjectCopyFactory {
   private final ImageService imageService;
   private final CloseableHttpClient client;
   private final Validator validator;
+  private final NameIndex nameIndex;
   private final WsServerConfig cfg;
 
-  public ProjectCopyFactory(CloseableHttpClient client, DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
+  public ProjectCopyFactory(CloseableHttpClient client, NameIndex nameIndex, DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
                             ExportManager exportManager, NameUsageIndexService indexService, ImageService imageService,
                             DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator, WsServerConfig cfg) {
     this.client = client;
+    this.nameIndex = nameIndex;
     this.exportManager = exportManager;
     this.diDao = diDao;
     this.dDao = dDao;
@@ -56,7 +60,7 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not a release
    */
   public ExtendedRelease buildExtendedRelease(final int releaseKey, final int userKey) {
-    return new ExtendedRelease(factory, indexService, dDao, diDao, siDao, nDao, sDao, imageService, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    return new ExtendedRelease(factory, nameIndex, indexService, dDao, diDao, siDao, nDao, sDao, imageService, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**

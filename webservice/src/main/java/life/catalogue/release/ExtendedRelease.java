@@ -42,15 +42,16 @@ public class ExtendedRelease extends ProjectRelease {
   private final SectorImportDao siDao;
   private List<Sector> sectors;
   private final User fullUser = new User();;
-  NameIndex nameIndex;
+  private final NameIndex nameIndex;
   private final Int2IntMap priorities = new Int2IntOpenHashMap(); // sector keys
 
-  ExtendedRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
+  ExtendedRelease(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
                   ImageService imageService,
                   int releaseKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                   DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super(factory, indexService, diDao, dDao, nDao, sDao, imageService, DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE).sourceKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
     this.siDao = siDao;
+    this.nameIndex = nameIndex;
     baseReleaseKey = releaseKey;
     fullUser.setKey(userKey);
     LOG.info("Build extended release for project {} from public release {}", datasetKey, baseReleaseKey);

@@ -69,7 +69,7 @@ public abstract class ProjectBaseIT {
     sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     client = HttpClientUtils.httpsClient();
-    projectCopyFactory = new ProjectCopyFactory(client, diDao, dDao, siDao, nDao, sdao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), validator, cfg);
+    projectCopyFactory = new ProjectCopyFactory(client, NameIndexFactory.passThru(), diDao, dDao, siDao, nDao, sdao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), validator, cfg);
   }
 
   @After
