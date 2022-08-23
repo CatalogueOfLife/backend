@@ -105,8 +105,13 @@ public class SectorSync extends SectorRunnable {
 
   @Override
   void updateSearchIndex() throws Exception {
-    indexService.indexSector(sector);
-    LOG.info("Reindexed sector {} from search index", sectorKey);
+    if (sector.getMode() == Sector.Mode.MERGE) {
+      LOG.info("Will index merge sector {} at the end of the release. Skip immediate indexing", sectorKey);
+
+    } else {
+      indexService.indexSector(sector);
+      LOG.info("Reindexed sector {} from search index", sectorKey);
+    }
   }
 
   @Override

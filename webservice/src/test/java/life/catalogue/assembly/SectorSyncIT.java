@@ -1,10 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.*;
@@ -56,22 +53,22 @@ public class SectorSyncIT {
   final static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   final static NameMatchingRule matchingRule = new NameMatchingRule();
   final static TestDataRule dataRule = TestDataRule.draft();
-  final static PgImportRule importRule = PgImportRule.create(
-  NomCode.BOTANICAL,
-    DataFormat.ACEF,  1,
-    DataFormat.COLDP, 0, 22, 25,
-    DataFormat.DWCA, 1, 2,
-  NomCode.ZOOLOGICAL,
-    DataFormat.ACEF,  5, 6, 11,
-    DataFormat.COLDP, 2, 4, 14, 24,
-  NomCode.VIRUS,
-    DataFormat.ACEF,  14
-);
 //  final static PgImportRule importRule = PgImportRule.create(
-//    NomCode.BOTANICAL,
-//      DataFormat.COLDP, 0, 25,
-//      DataFormat.DWCA, 1, 2
+//  NomCode.BOTANICAL,
+//    DataFormat.ACEF,  1,
+//    DataFormat.COLDP, 0, 22, 25,
+//    DataFormat.DWCA, 1, 2,
+//  NomCode.ZOOLOGICAL,
+//    DataFormat.ACEF,  5, 6, 11,
+//    DataFormat.COLDP, 2, 4, 14, 24,
+//  NomCode.VIRUS,
+//    DataFormat.ACEF,  14
 //  );
+  final static PgImportRule importRule = PgImportRule.create(
+    NomCode.BOTANICAL,
+      DataFormat.COLDP, 0, 25,
+      DataFormat.DWCA, 1, 2
+  );
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   static NameIndex nidx;
   static UsageMatcher umatcher;
@@ -226,7 +223,8 @@ public class SectorSyncIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
         if (s.getMode() == Sector.Mode.MERGE) {
-          sync(s, sdao, siDao, eDao);
+          SectorSync ss = SectorSync.merge(s, PgSetupRule.getSqlSessionFactory(), nidx, umatcher, sdao, siDao, TestDataRule.TEST_USER);
+          runSync(ss);
         }
       }
     }
@@ -239,10 +237,16 @@ public class SectorSyncIT {
   static void sync(Sector s, SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
     SectorSync ss = SectorSync.any(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), umatcher, sdao, siDao, eDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
-    System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
-    ss.run();
+    runSync(ss);
   }
-  
+
+  private static void runSync(SectorSync ss) {
+    System.out.println("\n*** SECTOR " + ss.sector.getMode() + " SYNC " + ss.sectorKey + " ***");
+    ss.run();
+    if (ss.getState().getState() != ImportState.FINISHED){
+      throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
+    }
+  }
   private void deleteFull(Sector s) {
     SectorDeleteFull sd = new SectorDeleteFull(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
         sdao, siDao, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
