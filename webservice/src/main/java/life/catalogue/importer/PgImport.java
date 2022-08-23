@@ -72,7 +72,6 @@ public class PgImport implements Callable<Boolean> {
   private final NameUsageIndexService indexService;
   private final int attempt;
   private final DatasetWithSettings dataset;
-  private final Validator validator;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private LoadingCache<Integer, Set<Issue>> verbatimIssueCache;
   private final Set<String> proParteIds = new HashSet<>();
@@ -93,7 +92,7 @@ public class PgImport implements Callable<Boolean> {
   private int userKey;
 
   public PgImport(int attempt, DatasetWithSettings dataset, int userKey, NeoDb store,
-                  SqlSessionFactory sessionFactory, ImporterConfig cfg, DatasetDao datasetDao, NameUsageIndexService indexService, Validator validator) {
+                  SqlSessionFactory sessionFactory, ImporterConfig cfg, DatasetDao datasetDao, NameUsageIndexService indexService) {
     this.attempt = attempt;
     this.dataset = dataset;
     this.userKey = userKey;
@@ -102,7 +101,6 @@ public class PgImport implements Callable<Boolean> {
     this.sessionFactory = sessionFactory;
     this.indexService = indexService;
     this.datasetDao = datasetDao;
-    this.validator = validator;
     verbatimIssueCache = Caffeine.newBuilder()
       .maximumSize(10000)
       .build(key -> store.getVerbatim(key).getIssues());
@@ -170,7 +168,8 @@ public class PgImport implements Callable<Boolean> {
 
       } else {
         LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
-        datasetDao.update(dataset.getDataset(), userKey);
+        datasetDao.patchMetadata(old, dataset.getDataset());
+        datasetDao.update(old.getDataset(), userKey);
       }
 
       dm.updateLastImport(dataset.getKey(), attempt);

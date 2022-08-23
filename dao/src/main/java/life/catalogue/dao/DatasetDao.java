@@ -176,6 +176,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
+  public Dataset patchMetadata(DatasetWithSettings ds, Dataset update) {
+    return patchMetadata(ds, update, validator);
+  }
+
   /**
    * Updates the given dataset ds with the provided metadata update,
    * retaining managed properties like keys and settings.
@@ -531,13 +535,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         throw new IllegalArgumentException("A newer public release already exists. You cannot turn this private release public");
       }
     }
-    // merge metadata?
-    var settings = mapper.getSettings(obj.getKey());
-    var merged = new Dataset(old);
-    patchMetadata(new DatasetWithSettings(merged,settings), obj, validator);
-    obj = merged;
     // copy all required fields which are not patch fields from old copy if missing
     ObjectUtils.setIfNull(obj.getType(), obj::setType, old.getType());
+    ObjectUtils.setIfNull(obj.getTitle(), obj::setTitle, old.getTitle());
+    ObjectUtils.setIfNull(obj.getLicense(), obj::setLicense, old.getLicense());
     ObjectUtils.setIfNull(obj.getOrigin(), obj::setOrigin, old.getOrigin());
     if (!java.util.Objects.equals(obj.getOrigin(), old.getOrigin())) {
       throw new IllegalArgumentException("origin is immutable and must remain " + old.getOrigin());

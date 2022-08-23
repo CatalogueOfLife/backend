@@ -9,6 +9,7 @@ import life.catalogue.assembly.AssemblyState;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
@@ -27,6 +28,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import io.dropwizard.auth.Auth;
@@ -89,7 +91,18 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
   public void updateAlt(@PathParam("key") Integer key, Dataset obj, @Auth User user) {
-    this.update(key, obj, user);
+    // merge metadata?
+    Dataset old;
+    try (SqlSession session = factory.openSession(true)){
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      var settings = dm.getSettings(obj.getKey());
+      old = dm.get(obj.getKey());
+      if (settings == null || old == null) {
+        throw NotFoundException.notFound(Dataset.class, key);
+      }
+      dao.patchMetadata(new DatasetWithSettings(old,settings), obj);
+    }
+    this.update(key, old, user);
   }
 
   @GET

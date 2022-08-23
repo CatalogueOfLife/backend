@@ -130,7 +130,7 @@ public class PgImportITBase {
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(1, dataset, Users.IMPORTER, store, PgSetupRule.getSqlSessionFactory(), icfg, ddao, indexService, validator);
+      PgImport importer = new PgImport(1, dataset, Users.IMPORTER, store, PgSetupRule.getSqlSessionFactory(), icfg, ddao, indexService);
       importer.call();
       
     } catch (Exception e) {
