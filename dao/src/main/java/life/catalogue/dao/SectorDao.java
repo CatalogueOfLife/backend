@@ -105,23 +105,27 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (Sector.Mode.ATTACH == s.getMode()) {
         // one taxon in ATTACH mode
         toCopy.add(subject);
-      } else {
-        // several taxa in UNION/MERGE mode
+      } else if (Sector.Mode.UNION == s.getMode()){
+        // several taxa in UNION mode
         toCopy = tm.children(s.getSubjectAsDSID(), s.getPlaceholderRank(), new Page(0, 5));
+      } else {
+        // none in MERGE mode
       }
-  
-      for (Taxon t : toCopy) {
-        t.setSectorKey(s.getId());
-        TaxonDao.copyTaxon(session, t, did, user);
+
+      if (!toCopy.isEmpty()) {
+        for (Taxon t : toCopy) {
+          t.setSectorKey(s.getId());
+          TaxonDao.copyTaxon(session, t, did, user);
+        }
+        indexService.add(toCopy.stream()
+          .map(t -> {
+            NameUsageWrapper w = new NameUsageWrapper(t);
+            w.setSectorDatasetKey(s.getSubjectDatasetKey());
+            return w;
+          })
+          .collect(Collectors.toList()))
+        ;
       }
-      indexService.add(toCopy.stream()
-        .map(t -> {
-          NameUsageWrapper w = new NameUsageWrapper(t);
-          w.setSectorDatasetKey(s.getSubjectDatasetKey());
-          return w;
-        })
-        .collect(Collectors.toList()))
-      ;
 
       incSectorCounts(session, s, 1);
   
