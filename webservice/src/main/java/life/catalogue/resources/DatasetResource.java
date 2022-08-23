@@ -95,8 +95,8 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     Dataset old;
     try (SqlSession session = factory.openSession(true)){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      var settings = dm.getSettings(obj.getKey());
-      old = dm.get(obj.getKey());
+      var settings = dm.getSettings(key);
+      old = dm.get(key);
       if (settings == null || old == null) {
         throw NotFoundException.notFound(Dataset.class, key);
       }
