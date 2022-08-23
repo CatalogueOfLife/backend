@@ -57,13 +57,21 @@ public class ProjectRelease extends AbstractProjectCopy {
                  ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super("releasing", factory, diDao, dDao, indexService, validator, userKey, datasetKey, true);
+    this("releasing", factory, indexService, diDao, dDao, nDao, sDao, imageService, datasetKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+  }
+
+  ProjectRelease(String action, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, SectorDao sDao,
+                 ImageService imageService,
+                 int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
+                 DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
+    super(action, factory, diDao, dDao, indexService, validator, userKey, datasetKey, true);
     this.imageService = imageService;
     this.doiService = doiService;
     this.nDao = nDao;
     this.sDao = sDao;
     this.cfg = cfg;
-    this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
+    String latestRelease = String.format("L%sR", getClass().equals(ExtendedRelease.class) ? "X" : "");
+    this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}"+latestRelease);
     this.portalURI = UriBuilder.fromUri(cfg.apiURI).path("portal").build();
     this.client = client;
     this.exportManager = exportManager;
@@ -219,7 +227,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       dm.updateLastImport(datasetKey, attempt);
       dm.updateLastImport(newDatasetKey, attempt);
     }
-    // flush varnish cache for dataset/3LR and LRC
+    // flush varnish cache for dataset/3LR and LRC (or LXR & LXRC)
     if (client != null && datasetApiBuilder != null) {
       URI api = datasetApiBuilder.build(datasetKey);
       VarnishUtils.ban(client, api);

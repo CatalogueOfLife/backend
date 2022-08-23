@@ -49,7 +49,7 @@ public class ExtendedRelease extends ProjectRelease {
                   ImageService imageService,
                   int releaseKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                   DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super(factory, indexService, diDao, dDao, nDao, sDao, imageService, DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE).sourceKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    super("releasing extended", factory, indexService, diDao, dDao, nDao, sDao, imageService, DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE).sourceKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
     this.siDao = siDao;
     this.nameIndex = nameIndex;
     baseReleaseKey = releaseKey;
@@ -60,6 +60,7 @@ public class ExtendedRelease extends ProjectRelease {
   @Override
   protected void modifyDataset(Dataset d, DatasetSettings ds) {
     super.modifyDataset(d, ds);
+    d.setOrigin(DatasetOrigin.XRELEASE);
     if (ds.has(Setting.XRELEASE_ALIAS_TEMPLATE)) {
       String alias = CitationUtils.fromTemplate(d, ds.getString(Setting.XRELEASE_ALIAS_TEMPLATE));
       d.setAlias(alias);
@@ -169,9 +170,9 @@ public class ExtendedRelease extends ProjectRelease {
       checkIfCancelled();
       var ss = SectorSync.merge(s, factory, nameIndex, matcher, sDao, siDao, fullUser);
       ss.run();
-      if (ss.getState().getState() != ImportState.FINISHED){
-        throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
-      }
+        if (ss.getState().getState() != ImportState.FINISHED){
+          throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
+        }
     }
   }
 
