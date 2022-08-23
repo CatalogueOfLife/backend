@@ -170,8 +170,7 @@ public class PgImport implements Callable<Boolean> {
 
       } else {
         LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
-        updateMetadata(old, dataset.getDataset(), validator);
-        datasetDao.update(old.getDataset(), userKey);
+        datasetDao.update(dataset.getDataset(), userKey);
       }
 
       dm.updateLastImport(dataset.getKey(), attempt);
@@ -179,40 +178,6 @@ public class PgImport implements Callable<Boolean> {
     }
   }
 
-  /**
-   * Updates the given dataset d with the provided metadata update,
-   * retaining managed properties like keys and settings.
-   * Mandatory properties like title and license are only changed if not null.
-   * @param ds
-   * @param update
-   */
-  public static Dataset updateMetadata(DatasetWithSettings ds, Dataset update, Validator validator) {
-    final Dataset d = ds.getDataset();
-    final boolean merge = ds.isEnabled(Setting.MERGE_METADATA);
-    if (merge) {
-      LOG.info("Merge dataset metadata {}: {}", d.getKey(), d.getTitle());
-    }
-
-    Set<String> nonNullProps = Set.of("title", "alias", "license");
-    try {
-      for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
-        Object val = prop.getReadMethod().invoke(update);
-        // for required property do not allow null
-        if (val != null || (!merge && !nonNullProps.contains(prop.getName()))) {
-          prop.getWriteMethod().invoke(d, val);
-        }
-      }
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
-    ObjectUtils.copyIfNotNull(update::getType, d::setType);
-    // verify emails, orcids & rorid as they can break validation on insert
-    d.processAllAgents(a -> a.validateAndNullify(validator));
-    return d;
-  }
-  
-
-  
   private void insertVerbatim() throws InterruptedException {
     try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);

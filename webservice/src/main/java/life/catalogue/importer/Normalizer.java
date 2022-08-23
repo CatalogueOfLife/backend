@@ -8,6 +8,7 @@ import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.csv.MappingInfos;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
@@ -920,7 +921,7 @@ public class Normalizer implements Callable<Boolean> {
           throw new NormalizationFailedException("Unsupported data format " + format);
       }
       // first metadata, the key will be preserved by the store
-      inserter.readMetadata().ifPresent(d -> PgImport.updateMetadata(dataset, d.getDataset(), validator));
+      inserter.readMetadata().ifPresent(d -> DatasetDao.patchMetadata(dataset, d.getDataset(), validator));
       // data
       inserter.insertAll();
       meta = inserter.getMappingFlags();

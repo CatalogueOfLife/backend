@@ -34,7 +34,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   protected final SqlSessionFactory factory;
   protected final Class<T> entityClass;
   protected final Class<M> mapperClass;
-  private final Validator validator;
+  protected final Validator validator;
   private final boolean updateHook;
   private final boolean deleteHook;
 
