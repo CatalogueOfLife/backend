@@ -8,35 +8,37 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ImgConfig;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 
-@Path("/dataset/{key}/logo")
+@Path("/image")
 @SuppressWarnings("static-method")
-public class ImageResource {
-  private static final Logger LOG = LoggerFactory.getLogger(ImageResource.class);
+public class ImageResourceLegacy {
+  private static final Logger LOG = LoggerFactory.getLogger(ImageResourceLegacy.class);
   private final ImageService imgService;
 
-  public ImageResource(ImageService imgService) {
+  public ImageResourceLegacy(ImageService imgService) {
     this.imgService = imgService;
   }
 
   @GET
+  @Path("{key}/logo")
   @Produces("image/png")
   public BufferedImage logo(@PathParam("key") int key, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
     return imgService.datasetLogo(key, scale);
   }
   
   @POST
+  @Path("{key}/logo")
   @Consumes({MediaType.APPLICATION_OCTET_STREAM,
       MoreMediaTypes.IMG_BMP, MoreMediaTypes.IMG_PNG, MoreMediaTypes.IMG_GIF,
       MoreMediaTypes.IMG_JPG, MoreMediaTypes.IMG_PSD, MoreMediaTypes.IMG_TIFF
@@ -48,6 +50,7 @@ public class ImageResource {
   }
   
   @DELETE
+  @Path("{key}/logo")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response deleteLogo(@PathParam("key") int key) throws IOException {
     imgService.putDatasetLogo(key, null);
@@ -55,13 +58,13 @@ public class ImageResource {
   }
 
   @GET
-  @Path("/source/{id}")
+  @Path("/{key}/source/{id}/logo")
   @Produces("image/png")
   public BufferedImage sourceLogo(@PathParam("key") int datasetKey, @PathParam("id") int id, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
     if (!origin.isManagedOrRelease()) {
       throw new IllegalArgumentException("Dataset "+datasetKey+" is not a project");
-    } else if (origin == DatasetOrigin.RELEASE) {
+    } else if (origin == DatasetOrigin.RELEASED) {
       return imgService.archiveDatasetLogo(id, datasetKey, scale);
     }
     return imgService.datasetLogo(id, scale);

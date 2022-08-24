@@ -8,6 +8,7 @@ import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.metadata.FmUtil;
 import life.catalogue.resources.ResourceUtils;
@@ -26,6 +27,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +41,10 @@ import static life.catalogue.api.util.ObjectUtils.checkFound;
 public class PortalPageRenderer {
   private static final Logger LOG = LoggerFactory.getLogger(PortalPageRenderer.class);
 
-  public enum PortalPage {NOT_FOUND, TAXON, DATASET};
+  public enum PortalPage {NOT_FOUND, TAXON, DATASET, METADATA};
   public enum Environment {PROD, PREVIEW, DEV};
 
+  private final SqlSessionFactory factory;
   private final DatasetSourceDao sourceDao;
   private final TaxonDao tdao;
   private final LatestDatasetKeyCache cache;
@@ -53,6 +56,7 @@ public class PortalPageRenderer {
 
   public PortalPageRenderer(DatasetSourceDao sourceDao, TaxonDao tdao, LatestDatasetKeyCache cache, Path portalTemplateDir) throws IOException {
     this.sourceDao = sourceDao;
+    this.factory = tdao.getFactory();
     this.tdao = tdao;
     this.cache = cache;
     setTemplateFolder(portalTemplateDir);
@@ -124,6 +128,24 @@ public class PortalPageRenderer {
       );
       data.put("source", d);
       return render(env, PortalPage.DATASET, data);
+
+    } catch (NotFoundException e) {
+      return render(env, PortalPage.NOT_FOUND, new HashMap<>());
+    }
+  }
+
+  public Response renderMetadata(Environment env) throws TemplateException, IOException {
+    try {
+      final int datasetKey = releaseKey(env);
+      final Map<String, Object> data = buildData(datasetKey);
+
+      Dataset d;
+      try (SqlSession session = factory.openSession()){
+        d = session.getMapper(DatasetMapper.class).get(datasetKey);
+      }
+      checkFound(d, String.format("Release %s not found", datasetKey));
+      data.put("dataset", d);
+      return render(env, PortalPage.METADATA, data);
 
     } catch (NotFoundException e) {
       return render(env, PortalPage.NOT_FOUND, new HashMap<>());

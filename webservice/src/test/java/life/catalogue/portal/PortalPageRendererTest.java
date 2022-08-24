@@ -94,6 +94,11 @@ public class PortalPageRendererTest {
   }
 
   @Test
+  public void renderMetadata() throws Exception {
+    assertEquals(HttpStatus.SC_OK, renderer.renderMetadata(PROD).getStatus());
+  }
+
+  @Test
   public void store() throws Exception {
     renderer.store(PROD, PortalPageRenderer.PortalPage.DATASET, "Hergott Sackra nochamol.");
     assertEquals("Hergott Sackra nochamol.", renderer.renderDatasource(dataRule.testData.key, PROD).getEntity());
@@ -103,5 +108,8 @@ public class PortalPageRendererTest {
 
     renderer.store(PREVIEW, PortalPageRenderer.PortalPage.DATASET, "Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'");
     assertEquals("Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'", renderer.renderDatasource(dataRule.testData.key, PREVIEW).getEntity());
+
+    renderer.store(PROD, PortalPageRenderer.PortalPage.METADATA, "Hergott Sackra nochamol. ${freemarker!\"no\"} works");
+    assertEquals("Hergott Sackra nochamol. no works", renderer.renderMetadata(PROD).getEntity());
   }
 }
