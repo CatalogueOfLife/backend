@@ -10,11 +10,13 @@
     <!-- Begin SEO -->
 
 <#--
-Freemarker template with the source dataset object as available variables
+Freemarker template with the following variables:
+ releaseKey - the dataset key of the release
+ source - dataset object for the source
 -->
 
 <#assign _title>${source.title!} | COL</#assign>
-<#assign _description>${source.description!title!}</#assign>
+<#assign _description>${source.description!source.title!}</#assign>
 <#--
   try out with GOOGLE TEST TOOL https://search.google.com/test/rich-results?utm_campaign=sdtt&utm_medium=url&url=https://www.catalogueoflife.org/data/dataset/1010
 -->
@@ -22,13 +24,13 @@ Freemarker template with the source dataset object as available variables
 <meta name="description" content="${_description}" />
 <meta property="og:title" content="${_title}" />
 <meta property="og:url" content="https://www.catalogueoflife.org/data/dataset/${source.key?c}" />
-<meta property="og:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${source.key?c}/logo?size=LARGE" />
+<meta property="og:image" content="https://api.checklistbank.org/dataset/3LR/logo/source/${source.key?c}?size=LARGE" />
 <meta property="og:description" content="${_description}" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:site" content="@catalogueoflife"/>
 <meta name="twitter:title" content="${_title}" />
 <meta name="twitter:description" content="${_description}" />
-<meta name="twitter:image" content="https://api.catalogueoflife.org/dataset/3LR/source/${source.key?c}/logo?size=LARGE" />
+<meta name="twitter:image" content="https://api.checklistbank.org/dataset/3LR/logo/source/${source.key?c}?size=LARGE" />
 
 <#macro person p>
   {
@@ -76,7 +78,7 @@ Freemarker template with the source dataset object as available variables
   "publisher": {
     "@type": "Organization",
     "name": "Catalogue of Life (COL)",
-    "url": "http://www.catalogueoflife.org/"
+    "url": "https://www.catalogueoflife.org"
   },
   "provider": {
     "@type": "Organization",
@@ -101,7 +103,7 @@ Freemarker template with the source dataset object as available variables
   -->
   <link rel="stylesheet" href="/css/custom.css">
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@v1.1.0/umd/main.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@v1.2.8/umd/main.css">
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script src="/javascripts/libs.js" type="text/javascript"></script>
   <script>
@@ -125,10 +127,10 @@ Freemarker template with the source dataset object as available variables
   <script src="/javascripts/imagesloaded.pkgd.min.js" type="text/javascript"></script>
   <script src="/javascripts/slick.min.js" type="text/javascript"></script>
   <script src="/javascripts/json2.js" type="text/javascript"></script>
-  <link rel="alternate" type="application/rss+xml" title="COL" href="http://localhost:4000/feed.xml" />
+  <link rel="alternate" type="application/rss+xml" title="COL" href="https://www.catalogueoflife.org/feed.xml" />
   <script src="https://unpkg.com/react@16/umd/react.production.min.js" ></script>
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" ></script>
-  <script src="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@v1.1.0/umd/col-browser.min.js" ></script>
+  <script src="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@v1.2.8/umd/col-browser.min.js" ></script>
   <script src="https://kit.fontawesome.com/9660302c12.js" crossorigin="anonymous"></script>
 </head>
 
@@ -211,6 +213,10 @@ Freemarker template with the source dataset object as available variables
                   </li>
 
                   <li>
+                    <a href="/about/contributors">The COL contributors</a>
+                  </li>
+
+                  <li>
                     <a href="/about/colusage">Using the COL Checklist</a>
                   </li>
 
@@ -280,7 +286,7 @@ xhr.onload = function () {
 	}
 
 };
-xhr.open('GET', 'https://api.catalogueoflife.org/admin/settings');
+xhr.open('GET', 'https://download.checklistbank.org/.status.json');
 xhr.send();
 }
 getHealth()
@@ -303,7 +309,7 @@ class PublicTaxon extends React.Component {
 
       return e(
         ColBrowser.Dataset,
-        { catalogueKey: '${releaseKey?c}' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'}
+        { catalogueKey: '9830' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'}
       );
     }
   }
@@ -383,7 +389,7 @@ gtag('event', 'page_view', {
     <div class='large-3 medium-3 columns'>
       <h1>
         <a href='/index.html'>
-          <img alt="" src="http://localhost:4000/images/col_square_logo.jpg" />
+          <img alt="" src="https://www.catalogueoflife.org/images/col_square_logo.jpg" />
         </a>
       </h1>
 
@@ -394,7 +400,7 @@ gtag('event', 'page_view', {
         <ul>
           <li><a href="/about/colusage#col-api">COL API</a></li>
           <li><a href="/data/browse">Browse the COL Checklist</a></li>
-          <li><a href="https://data.catalogueoflife.org/">COL ChecklistBank</a></li>
+          <li><a href="https://www.checklistbank.org/">ChecklistBank</a></li>
         </ul>
       <div class='spacing'></div>
       <ul class='socials'>
@@ -417,15 +423,15 @@ gtag('event', 'page_view', {
         <h4>Recent posts</h4>
         <ul>
 
-            <li><a href="/2021/11/09/release">Monthly Release November 2021</a></li>
+            <li><a href="/2022/08/15/editor-vacancy">Vacancy - Global species catalogue editor</a></li>
 
-            <li><a href="/2021/11/04/20years">20 years Catalogue of Life</a></li>
+            <li><a href="/2022/08/15/archive-repository">Data repository</a></li>
 
-            <li><a href="/2021/10/18/release">Monthly Release October 2021</a></li>
+            <li><a href="/2022/07/12/release">Monthly Release July 2022</a></li>
 
-            <li><a href="/2021/09/21/release">Monthly Release September 2021</a></li>
+            <li><a href="/2022/06/23/release">Monthly Release June 2022</a></li>
 
-            <li><a href="/2021/08/25/release">Monthly Release August 2021</a></li>
+            <li><a href="/2022/05/20/release">Monthly Release May 2022</a></li>
 
         </ul>
       </div>
@@ -442,10 +448,17 @@ gtag('event', 'page_view', {
     </div>
   </div>
   <div class='creativecommons'>
-    <p>COL Checklist 2021-11-09  <a href="https://doi.org/10.48580/d4t4">doi:10.48580/d4t4</a><br>
+    <p>COL Checklist 2022-07-12  <a href="https://doi.org/10.48580/dfpz">doi:10.48580/dfpz</a><br>
       © 2020, Species 2000. This online database is copyrighted by Species 2000 on behalf of the Catalogue of Life partners.<br>
       Unless otherwise indicated, all other content offered under <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>,
-      Catalogue of Life, <a href="/data/metadata">2021-11-09</a>.
+      Catalogue of Life, <a href="/data/metadata">2022-07-12</a>.
+    </p>
+  </div>
+  <div class='spacing'></div>
+  <div class='creativecommons'>
+    <h4>Disclaimer</h4>
+    <p>
+      The Catalogue of Life cannot guarantee the accuracy or completeness of the information in the COL Checklist. <br>Be aware that the COL Checklist is still incomplete and undoubtedly contains errors. <br>Neither Catalogue of Life, Species 2000 nor any contributing database can be made liable for any direct or indirect damage arising out of the use of Catalogue of Life services.
     </p>
   </div>
   <div class='spacing'></div>

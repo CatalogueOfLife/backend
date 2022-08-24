@@ -30,6 +30,19 @@ public class PortalResource {
   }
 
   @PUT
+  @Path("metadata")
+  @RolesAllowed({Roles.ADMIN})
+  public void setMetadata(@PathParam("env") Environment env, String template) throws IOException {
+    renderer.store(env, PortalPageRenderer.PortalPage.METADATA, template);
+  }
+
+  @GET
+  @Path("metadata")
+  public Response metadata(@PathParam("env") Environment env) throws Exception {
+    return renderer.renderMetadata(env);
+  }
+
+  @PUT
   @Path("dataset")
   @RolesAllowed({Roles.ADMIN})
   public void setDatasource(@PathParam("env") Environment env, String template) throws IOException {
@@ -38,7 +51,7 @@ public class PortalResource {
 
   @GET
   @Path("dataset/{id}")
-  public Response datasource(@PathParam("env") Environment env, @PathParam("id") int id, @QueryParam("preview") boolean preview) throws Exception {
+  public Response datasource(@PathParam("env") Environment env, @PathParam("id") int id) throws Exception {
     return renderer.renderDatasource(id, env);
   }
 
@@ -51,7 +64,7 @@ public class PortalResource {
 
   @GET
   @Path("taxon/{id}")
-  public Response taxon(@PathParam("env") Environment env, @PathParam("id") String id, @QueryParam("preview") boolean preview) throws Exception {
+  public Response taxon(@PathParam("env") Environment env, @PathParam("id") String id) throws Exception {
     return renderer.renderTaxon(id, env);
   }
 
