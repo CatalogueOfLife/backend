@@ -741,22 +741,22 @@ CREATE TABLE dataset (
   deleted TIMESTAMP WITHOUT TIME ZONE,
 
   doc tsvector GENERATED ALWAYS AS (
-      setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(doi, '')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(key::text, '')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(title,'')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(issn, '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')  ||
-      setweight(to_tsvector('simple2', coalesce(identifier::text, '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(creator), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(publisher), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(contact), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(editor), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(contributor), '')), 'D') ||
-      setweight(to_tsvector('simple2', coalesce(geographic_scope,'')), 'D') ||
-      setweight(to_tsvector('simple2', coalesce(taxonomic_scope,'')), 'D') ||
-      setweight(to_tsvector('simple2', coalesce(temporal_scope,'')), 'D') ||
-      setweight(to_tsvector('simple2', coalesce(description,'')), 'D')
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(alias,''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(doi, ''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(key::text, ''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(title,''))), 'B') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(issn, ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(creator), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(publisher), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(editor), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(geographic_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(taxonomic_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(temporal_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(description,''))), 'D')
   ) STORED
 );
 
