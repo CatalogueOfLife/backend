@@ -742,22 +742,21 @@ CREATE TABLE dataset (
 
   doc tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(title,'')), 'A') ||
       setweight(to_tsvector('simple2', coalesce(doi, '')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(key::text, '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(issn, '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(identifier::text, '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(creator), '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(publisher), '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(version, '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(description,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(geographic_scope,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(taxonomic_scope,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(temporal_scope,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(key::text, '')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(title,'')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(issn, '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')  ||
+      setweight(to_tsvector('simple2', coalesce(identifier::text, '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(creator), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(publisher), '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(agent_str(contact), '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(agent_str(editor), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(contributor), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
+      setweight(to_tsvector('simple2', coalesce(agent_str(contributor), '')), 'D') ||
+      setweight(to_tsvector('simple2', coalesce(geographic_scope,'')), 'D') ||
+      setweight(to_tsvector('simple2', coalesce(taxonomic_scope,'')), 'D') ||
+      setweight(to_tsvector('simple2', coalesce(temporal_scope,'')), 'D') ||
+      setweight(to_tsvector('simple2', coalesce(description,'')), 'D')
   ) STORED
 );
 

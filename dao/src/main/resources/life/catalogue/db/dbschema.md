@@ -11,6 +11,29 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-08-25 fine tune dataset search ranking, keep plazi articles lower
+```
+ALTER TABLE dataset DROP COLUMN doc;
+ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+      setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(doi, '')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(key::text, '')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(title,'')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(issn, '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')  ||
+      setweight(to_tsvector('simple2', coalesce(identifier::text, '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(creator), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(publisher), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(contact), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(editor), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(agent_str(contributor), '')), 'D') ||
+      setweight(to_tsvector('simple2', coalesce(geographic_scope,'')), 'D') ||
+      setweight(to_tsvector('simple2', coalesce(taxonomic_scope,'')), 'D') ||
+      setweight(to_tsvector('simple2', coalesce(temporal_scope,'')), 'D') ||
+      setweight(to_tsvector('simple2', coalesce(description,'')), 'D')
+  ) STORED;
+```
+
 ### 2022-05-17 extend TypeMaterial
 ```
 ALTER TYPE ISSUE ADD VALUE 'TYPE_MATERIAL_SEX_INVALID';

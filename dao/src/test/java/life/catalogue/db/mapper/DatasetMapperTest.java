@@ -510,10 +510,15 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
       assertEquals(3, datasets.size());
       switch (by) {
         case CREATED:
-        case RELEVANCE:
           assertEquals("Bad ordering by " + by, d1, datasets.get(0).getKey());
           assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
           assertEquals("Bad ordering by " + by, d3, datasets.get(2).getKey());
+          break;
+        case RELEVANCE:
+          // relevance cannot be reverted
+          assertEquals("Bad ordering by " + by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d1, datasets.get(2).getKey());
           break;
         case TITLE:
           assertEquals("Bad ordering by " + by, d3, datasets.get(0).getKey());
