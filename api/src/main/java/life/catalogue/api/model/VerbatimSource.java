@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 
 import java.io.Serializable;
@@ -8,9 +9,6 @@ import java.util.*;
 
 public class VerbatimSource implements DSID<String>, IssueContainer, Serializable {
 
-  public enum InfoGroup {
-    NAME, AUTHORSHIP, PUBLISHED_IN, BASIONYM, STATUS, PARENT, EXTINCT, DOI, LINK
-  }
   private String id;
   private Integer datasetKey;
   private String sourceId;

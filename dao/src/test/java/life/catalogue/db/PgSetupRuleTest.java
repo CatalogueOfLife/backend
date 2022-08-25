@@ -1,8 +1,6 @@
 package life.catalogue.db;
 
-import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.User;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.db.type.BaseEnumSetTypeHandler;
@@ -63,7 +61,7 @@ public class PgSetupRuleTest {
     }
   }
   
-  private static List<Class<? extends Enum<?>>> listEnums() throws IOException {
+  static List<Class<? extends Enum<?>>> listEnums() throws IOException {
     ClassPath cp = ClassPath.from(DatasetType.class.getClassLoader());
     List<Class<? extends Enum<?>>> enums = new ArrayList<>();
     addPackageEnums(cp, enums, DatasetType.class.getPackage());
@@ -71,7 +69,6 @@ public class PgSetupRuleTest {
     enums.add(Sector.Mode.class);
     enums.add(EditorialDecision.Mode.class);
     enums.add(User.Role.class);
-    enums.add(JobStatus.class);
     // not needed for persistency
     enums.remove(Country.class);
     enums.remove(DwcUnofficialTerm.class);
@@ -87,13 +84,6 @@ public class PgSetupRuleTest {
     return enums;
   }
   
-  @Test
-  public void pgEnumSql() throws Exception {
-    for (Class<? extends Enum<?>> cle : listEnums()) {
-      printType(cle);
-    }
-  }
-  
   private static void addPackageEnums(ClassPath cp, List<Class<? extends Enum<?>>> enums, Package pack){
     for (ClassPath.ClassInfo cli : cp.getTopLevelClasses(pack.getName())) {
       Class<?> cl = cli.load();
@@ -101,24 +91,6 @@ public class PgSetupRuleTest {
         enums.add((Class<Enum<?>>) cl);
       }
     }
-  }
-  
-  private <T extends Enum<?>> void printType(Class<T> clazz) throws Exception {
-    StringBuilder sb = new StringBuilder();
-    sb.append("CREATE TYPE " + BaseEnumSetTypeHandler.pgEnumName(clazz) + " AS ENUM (\n");
-    boolean first = true;
-    for (T e : clazz.getEnumConstants()){
-      if (first) {
-        first = false;
-      } else {
-        sb.append(",\n");
-      }
-      sb.append("  '");
-      sb.append(e.name());
-      sb.append("'");
-    }
-    sb.append("\n);\n");
-    System.out.println(sb);
   }
   
 }

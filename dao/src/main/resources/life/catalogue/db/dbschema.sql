@@ -19,6 +19,7 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 
 -- all enum types produces via PgSetupRuleTest.pgEnumSql()
+
 CREATE TYPE CONTINENT AS ENUM (
   'AFRICA',
   'ANTARCTICA',
@@ -133,6 +134,18 @@ CREATE TYPE IMPORTSTATE AS ENUM (
   'FINISHED',
   'CANCELED',
   'FAILED'
+);
+
+CREATE TYPE INFOGROUP AS ENUM (
+  'NAME',
+  'AUTHORSHIP',
+  'PUBLISHED_IN',
+  'BASIONYM',
+  'STATUS',
+  'PARENT',
+  'EXTINCT',
+  'DOI',
+  'LINK'
 );
 
 CREATE TYPE ISSUE AS ENUM (
@@ -1414,10 +1427,23 @@ CREATE TABLE verbatim_source (
   source_id TEXT,
   source_dataset_key INTEGER,
   issues ISSUE[] DEFAULT '{}',
+  PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, id) REFERENCES name_usage
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
+
+CREATE TABLE verbatim_source_secondary (
+  id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  type INFOGROUP NOT NULL,
+  source_id TEXT,
+  source_dataset_key INTEGER,
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
+) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON verbatim_source_secondary (dataset_key, id);
+CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
 
 CREATE TABLE taxon_concept_rel (
   id INTEGER NOT NULL,

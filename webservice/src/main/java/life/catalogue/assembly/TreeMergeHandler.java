@@ -3,6 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.IgnoreReason;
+import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.NameIndex;
 
@@ -144,10 +145,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   private boolean update(NameUsageBase nu, NameUsageBase existing) {
     if (nu.getStatus() == existing.getStatus()) {
-      Set<VerbatimSource.InfoGroup> updated = EnumSet.noneOf(VerbatimSource.InfoGroup.class);
+      Set<InfoGroup> updated = EnumSet.noneOf(InfoGroup.class);
       var pn = existing.getName();
       if (pn.isParsed() && !pn.hasAuthorship() && nu.getName().hasAuthorship()) {
-        updated.add(VerbatimSource.InfoGroup.AUTHORSHIP);
+        updated.add(InfoGroup.AUTHORSHIP);
         pn.setCombinationAuthorship(nu.getName().getCombinationAuthorship());
         pn.setSanctioningAuthor(nu.getName().getSanctioningAuthor());
         pn.setBasionymAuthorship(nu.getName().getBasionymAuthorship());
@@ -155,7 +156,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         LOG.debug("Updated {} with authorship {}", pn.getScientificName(), pn.getAuthorship());
       }
       if (pn.getPublishedInId() == null && nu.getName().getPublishedInId() != null) {
-        updated.add(VerbatimSource.InfoGroup.PUBLISHED_IN);
+        updated.add(InfoGroup.PUBLISHED_IN);
         Reference ref = rm.get(DSID.of(nu.getDatasetKey(), nu.getName().getPublishedInId()));
         pn.setPublishedInId(lookupReference(ref));
         pn.setPublishedInPage(nu.getName().getPublishedInPage());

@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.Issue;
@@ -21,7 +22,7 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   
   IssueContainer getIssues(@Param("key") DSID<String> key);
 
-  void update(@Param("key") DSID<String> key, @Param("issues") Set<Issue> issues, @Param("sources") Map<VerbatimSource.InfoGroup, DSID<String>> secondarySources);
+  void update(@Param("key") DSID<String> key, @Param("issues") Set<Issue> issues, @Param("sources") Map<InfoGroup, DSID<String>> secondarySources);
 
   void delete(@Param("key") DSID<String> key);
 

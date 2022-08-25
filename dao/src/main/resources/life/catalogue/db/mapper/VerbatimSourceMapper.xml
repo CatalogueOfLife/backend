@@ -68,7 +68,8 @@
 
   <update id="update" parameterType="VerbatimSource">
     UPDATE verbatim_source
-    SET issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
+    SET issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[],
+        issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 

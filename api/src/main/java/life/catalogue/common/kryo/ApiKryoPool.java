@@ -171,6 +171,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(TaxonConceptRelType.class);
     kryo.register(TreatmentFormat.class);
     kryo.register(TypeStatus.class);
+    kryo.register(InfoGroup.class);
 
     // term enums
     TermFactory.instance().registerTermEnum(ColdpTerm.class);
