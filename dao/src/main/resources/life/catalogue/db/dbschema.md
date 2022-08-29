@@ -14,7 +14,7 @@ and done it manually. So we can as well log changes here.
 ### 2022-08-25 fine tune dataset search ranking, keep plazi articles lower
 ```
 ALTER TABLE dataset DROP COLUMN doc;
-ALTER TABLE dataset ADD COLUMN   doc tsvector GENERATED ALWAYS AS (
+ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('simple2', f_unaccent(coalesce(alias,''))), 'A') ||
       setweight(to_tsvector('simple2', f_unaccent(coalesce(doi, ''))), 'A') ||
       setweight(to_tsvector('simple2', f_unaccent(coalesce(key::text, ''))), 'A') ||
