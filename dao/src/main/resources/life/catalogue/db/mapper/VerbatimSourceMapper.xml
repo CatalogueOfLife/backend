@@ -40,21 +40,27 @@
     <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
   </resultMap>
 
-  <select id="get" resultMap="verbatimResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
+  <select id="getSources" resultType="life.catalogue.db.mapper.VerbatimSourceMapper$SecondarySource">
+    SELECT type, source_id, source_dataset_key
+    FROM verbatim_source_secondary
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </select>
 
-  <select id="getIssues" resultMap="verbatimResultMap">
-    SELECT v.issues
+  <select id="get" resultMap="verbatimResultMap">
+    SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
+    WHERE v.dataset_key = #{key.datasetKey} AND v.id = #{key.id}
+  </select>
+
+  <select id="getIssues" resultMap="verbatimResultMap">
+    SELECT issues
+    FROM verbatim_source
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </select>
 
   <insert id="create" parameterType="VerbatimSource">
     INSERT INTO verbatim_source (<include refid="COLS"/>)
-    VALUES (<include refid="PROPS"/>)
+    VALUES (<include refid="PROPS"/>);
   </insert>
 
   <insert id="copyDataset" parameterType="map">
@@ -63,31 +69,26 @@
     FROM verbatim_source_${datasetKey} v
     <if test="mapIds">
       LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=v.id
+    </if>;
+
+    INSERT INTO verbatim_source_secondary_${newDatasetKey} (id,dataset_key, type,source_id,source_dataset_key)
+    SELECT coalesce(<if test="mapIds">m.id2,</if>v.id),#{newDatasetKey}, type,source_id,source_dataset_key
+    FROM verbatim_source_secondary_${datasetKey} v
+    <if test="mapIds">
+      LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=v.id
     </if>
   </insert>
-
-  <update id="update" parameterType="VerbatimSource">
-    UPDATE verbatim_source
-    SET issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[],
-        issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
-    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
-  </update>
 
   <select id="listByTaxon" parameterType="map" resultMap="verbatimResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+    WHERE v.dataset_key = #{key.datasetKey} AND v.id = #{key.id}
   </select>
-
-  <delete id="deleteByTaxon" parameterType="map">
-    DELETE FROM <include refid="FROM"/>
-    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
-  </delete>
 
   <select id="processDataset" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key = #{datasetKey}
+    WHERE v.dataset_key = #{datasetKey}
   </select>
 
   <select id="processSector" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
@@ -100,23 +101,61 @@
     <!-- nothing to do, sectorKey is no the usage table! -->
   </update>
 
+  <update id="updateIssues" parameterType="map">
+    UPDATE verbatim_source
+    SET issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
+
+  <update id="insertSource" parameterType="map">
+    INSERT INTO verbatim_source_secondary (dataset_key, id, type, source_dataset_key, source_id)
+    VALUES (#{key.datasetKey}, #{key.id}, #{group}::INFOGROUP, #{source.datasetKey}, #{source.id})
+  </update>
+
+  <delete id="deleteSources" parameterType="map">
+    DELETE FROM verbatim_source_secondary
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </delete>
+
   <delete id="delete" parameterType="map">
+    DELETE FROM verbatim_source_secondary
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id};
+
+    DELETE FROM verbatim_source
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </delete>
+
+  <delete id="deleteByTaxon" parameterType="map">
+    DELETE FROM verbatim_source_secondary
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id};
+
     DELETE FROM verbatim_source
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM verbatim_source_secondary
+    WHERE dataset_key = #{datasetKey};
+
     DELETE FROM verbatim_source
     WHERE dataset_key = #{datasetKey}
   </delete>
 
   <delete id="deleteBySector" parameterType="map">
+    DELETE FROM verbatim_source_secondary v
+    USING name_usage u
+    WHERE v.dataset_key = #{key.datasetKey} AND u.dataset_key = #{key.datasetKey} AND u.id=v.id AND u.sector_key=#{key.id};
+
     DELETE FROM verbatim_source v
     USING name_usage u
     WHERE v.dataset_key = #{key.datasetKey} AND u.dataset_key = #{key.datasetKey} AND u.id=v.id AND u.sector_key=#{key.id}
   </delete>
 
   <delete id="deleteByTemp" parameterType="map">
+    DELETE FROM verbatim_source_secondary
+    USING _tmp_nu tmp
+    WHERE dataset_key=#{datasetKey} AND id = tmp.uid;
+
     DELETE FROM verbatim_source
     USING _tmp_nu tmp
     WHERE dataset_key=#{datasetKey} AND id = tmp.uid

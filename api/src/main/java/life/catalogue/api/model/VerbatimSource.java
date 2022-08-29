@@ -14,7 +14,7 @@ public class VerbatimSource implements DSID<String>, IssueContainer, Serializabl
   private String sourceId;
   private Integer sourceDatasetKey;
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
-  private Map<InfoGroup, DSID<String>> secondarySources = new EnumMap<>(InfoGroup.class);
+  private Map<InfoGroup, ? extends DSID<String>> secondarySources = new EnumMap<>(InfoGroup.class);
   // instance hash created on load to see if the instance has been changed
   private int _hashKeyOnLoad = -1;
 
@@ -72,16 +72,12 @@ public class VerbatimSource implements DSID<String>, IssueContainer, Serializabl
     this.issues = issues;
   }
 
-  public Map<InfoGroup, DSID<String>> getSecondarySources() {
+  public Map<InfoGroup, ? extends DSID<String>> getSecondarySources() {
     return secondarySources;
   }
 
-  public void setSecondarySources(Map<InfoGroup, DSID<String>> secondarySources) {
+  public void setSecondarySources(Map<InfoGroup, ? extends DSID<String>> secondarySources) {
     this.secondarySources = secondarySources;
-  }
-
-  public void setSecondarySource(InfoGroup group, DSID<String> source) {
-    secondarySources.put(group, DSID.copy(source));
   }
 
   /**

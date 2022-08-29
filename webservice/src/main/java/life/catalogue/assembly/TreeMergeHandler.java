@@ -170,13 +170,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // update name
         nm.update(pn);
         // track source
-        var v = vm.get(existing);
-        if (v != null) {
-          for (var group : updated) {
-            v.setSecondarySource(group, nu);
-          }
-          vm.update(existing, v.getIssues(), v.getSecondarySources());
-        }
+        vm.insertSources(existing, nu, updated);
         return true;
       }
     }

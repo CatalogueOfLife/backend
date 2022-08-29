@@ -51,7 +51,8 @@ public interface DatasetPartitionMapper {
   );
 
   List<String> PROJECT_TABLES = Lists.newArrayList(
-    "verbatim_source"
+    "verbatim_source",
+    "verbatim_source_secondary"
   );
   
   List<String> SERIAL_TABLES = Lists.newArrayList(

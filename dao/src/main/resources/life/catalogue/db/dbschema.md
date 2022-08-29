@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-08-29 verbatim_source_secondary
+'''
+Add verbatim_source_secondary to all projects and releases!
+'''
+
 ### 2022-08-01 extended catalogue
 ```
 ALTER TABLE sector ADD COLUMN priority INTEGER;
