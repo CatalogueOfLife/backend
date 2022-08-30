@@ -5,7 +5,10 @@ import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.common.io.InputStreamUtils;
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -20,6 +23,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
@@ -41,10 +46,16 @@ import static life.catalogue.api.util.ObjectUtils.checkFound;
 public class PortalPageRenderer {
   private static final Logger LOG = LoggerFactory.getLogger(PortalPageRenderer.class);
 
-  public enum PortalPage {NOT_FOUND, TAXON, DATASET, METADATA};
+  public enum PortalPage {
+    NOT_FOUND, TAXON, DATASET, METADATA, CLB_DATASET;
+    public boolean isChecklistBank() {
+      return this == CLB_DATASET;
+    }
+  }
   public enum Environment {PROD, PREVIEW, DEV};
 
   private final SqlSessionFactory factory;
+  private final DatasetDao datasetDao;
   private final DatasetSourceDao sourceDao;
   private final TaxonDao tdao;
   private final LatestDatasetKeyCache cache;
@@ -54,7 +65,8 @@ public class PortalPageRenderer {
   );
   private Path portalTemplateDir = Path.of("/tmp");
 
-  public PortalPageRenderer(DatasetSourceDao sourceDao, TaxonDao tdao, LatestDatasetKeyCache cache, Path portalTemplateDir) throws IOException {
+  public PortalPageRenderer(DatasetDao datasetDao, DatasetSourceDao sourceDao, TaxonDao tdao, LatestDatasetKeyCache cache, Path portalTemplateDir) throws IOException {
+    this.datasetDao = datasetDao;
     this.sourceDao = sourceDao;
     this.factory = tdao.getFactory();
     this.tdao = tdao;
@@ -64,6 +76,20 @@ public class PortalPageRenderer {
 
   public Path getPortalTemplateDir() {
     return portalTemplateDir;
+  }
+
+  public Response renderClbDataset(int datasetKey, Environment env) throws TemplateException, IOException {
+    try {
+      var d = datasetDao.getOr404(datasetKey);
+      return render(env, PortalPage.CLB_DATASET, d);
+
+    } catch (NotFoundException e) {
+      return Response
+        .status(Response.Status.NOT_FOUND)
+        .type(MediaType.TEXT_HTML)
+        .entity(readClbIndexPage())
+        .build();
+    }
   }
 
   /**
@@ -189,10 +215,29 @@ public class PortalPageRenderer {
       LOG.info("Load {} {} portal template from {}", env, pp, p);
       in = Files.newInputStream(p);
     } else {
-      LOG.info("Load {} portal template from resources", pp);
-      in = getClass().getResourceAsStream("/freemarker-templates/portal/"+pp.name()+".ftl");
+      if (pp.isChecklistBank()) {
+        LOG.info("Prepare checklistbank {} template from resources", pp);
+        // for CLB pages we first need to inject the freemarker template
+        var html = readClbIndexPage();
+        // storing does the injection
+        store(env, pp, html);
+        // now read the generated file just as we do above
+        in = Files.newInputStream(p);
+      } else {
+        LOG.info("Load {} portal template from resources", pp);
+        in = getClass().getResourceAsStream("/freemarker-templates/portal/"+pp.name()+".ftl");
+      }
     }
     loadTemplate(env, pp, in);
+  }
+
+  private String readClbIndexPage() {
+    return readTemplateResource("clb/index.html");
+  }
+
+  private String readTemplateResource(String resourceName) {
+    var in = getClass().getResourceAsStream("/freemarker-templates/portal/"+resourceName);
+    return InputStreamUtils.readEntireStream(in);
   }
 
   private void loadTemplate(Environment env, PortalPage pp, InputStream stream) throws IOException {
@@ -203,6 +248,11 @@ public class PortalPageRenderer {
   }
 
   public boolean store(Environment env, PortalPage pp, String template) throws IOException {
+    if (pp.isChecklistBank()) {
+      // inject SEO!
+      var seo = readTemplateResource("clb/"+pp.name().toLowerCase()+".ftl");
+      template = template.replaceFirst("<!-- REPLACE_WITH_SEO -->", Matcher.quoteReplacement(seo));
+    }
     LOG.info("Store new portal page template {}", pp);
     try (Writer w = UTF8IoUtils.writerFromPath(template(env, pp))) {
       // enforce xhtml freemarker setting which we cannot keep in Jekyll
