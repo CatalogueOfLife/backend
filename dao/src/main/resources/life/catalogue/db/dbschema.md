@@ -40,9 +40,15 @@ CREATE INDEX ON verbatim_source_secondary (dataset_key, id);
 CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
 ```
 
-Now you can add partition tables for all projects and releases with the command:
-`AddTableCmd`` -t verbatim_source_secondary` using the cli tools
+Now you can add partition tables for all projects and releases by executing the following template with the CLI:
+```
+./exec-sql.sh sql/create_vss.sql --origin PROJECT
+./exec-sql.sh sql/create_vss.sql --origin RELEASE
+./exec-sql.sh sql/create_vss.sql --origin XRELEASE
 
+CREATE TABLE verbatim_source_secondary_{KEY} (LIKE verbatim_source_secondary INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+ALTER TABLE verbatim_source_secondary ATTACH PARTITION verbatim_source_secondary_{KEY} FOR VALUES IN ( {KEY} );
+```
 
 ### 2022-08-01 extended catalogue
 ```
