@@ -73,8 +73,6 @@ public class AddTableCmd extends AbstractPromptCmd {
 
   public static void execute(WsServerConfig cfg, String table) throws Exception {
     final String pCreate = "CREATE TABLE %s (LIKE %s INCLUDING DEFAULTS INCLUDING CONSTRAINTS)";
-    final String pCreateIdx = "CREATE INDEX ON %s (%s)";
-    final String pCreateFk  = "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (id)";
     final String pAttach = "ALTER TABLE %s ATTACH PARTITION %s FOR VALUES IN ( %s )";
 
     LOG.info("Start adding partition tables for {}", table);
@@ -82,8 +80,6 @@ public class AddTableCmd extends AbstractPromptCmd {
          Statement st = con.createStatement();
          PreparedStatement pExists = con.prepareStatement("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name = ? ")
     ) {
-      List<ForeignKey> fks = analyze(st, table);
-
       for (String suffix : Partitioner.partitionSuffices(con, null)) {
         final String pTable = table+"_"+suffix;
         if (exists(pExists, pTable)) {
@@ -92,17 +88,6 @@ public class AddTableCmd extends AbstractPromptCmd {
         } else {
           LOG.info("Create table {}", pTable);
           st.execute(String.format(pCreate, pTable, table));
-          for (ForeignKey fk : fks) {
-            // index
-            st.execute(String.format(pCreateIdx, pTable, fk.column));
-            // foreign key with/without cascade
-            String sql = String.format(pCreateFk, pTable, pTable+"_"+fk.column+"_fk", fk.column, fk.table+"_"+suffix);
-            if (fk.cascade) {
-              sql = sql + " ON DELETE CASCADE";
-            }
-            st.execute(sql);
-          }
-
           // attach
           st.execute(String.format(pAttach, table, pTable, suffix));
         }

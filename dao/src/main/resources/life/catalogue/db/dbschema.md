@@ -12,9 +12,37 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 ### 2022-08-29 verbatim_source_secondary
-'''
 Add verbatim_source_secondary to all projects and releases!
-'''
+
+```
+CREATE TYPE INFOGROUP AS ENUM (
+  'NAME',
+  'AUTHORSHIP',
+  'PUBLISHED_IN',
+  'BASIONYM',
+  'STATUS',
+  'PARENT',
+  'EXTINCT',
+  'DOI',
+  'LINK'
+);
+
+CREATE TABLE verbatim_source_secondary (
+id TEXT NOT NULL,
+dataset_key INTEGER NOT NULL,
+type INFOGROUP NOT NULL,
+source_id TEXT,
+source_dataset_key INTEGER,
+FOREIGN KEY (dataset_key, id) REFERENCES name_usage
+) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON verbatim_source_secondary (dataset_key, id);
+CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
+```
+
+Now you can add partition tables for all projects and releases with the command:
+`AddTableCmd`` -t verbatim_source_secondary` using the cli tools
+
 
 ### 2022-08-01 extended catalogue
 ```
