@@ -105,6 +105,18 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     this.update(key, old, user);
   }
 
+  @Override
+  protected String allowUpdate(Dataset obj, User user) {
+    try (SqlSession session = factory.openSession(true)){
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      var old = dm.get(obj.getKey());
+      if (old != null && old.getGbifKey() != null) {
+        return String.format("Dataset %s is registered in GBIF %s and updates are not allowed", obj.getKey(), old.getGbifKey());
+      }
+    }
+    return null;
+  }
+
   @GET
   @Path("{key}/{attempt}")
   @VaryAccept

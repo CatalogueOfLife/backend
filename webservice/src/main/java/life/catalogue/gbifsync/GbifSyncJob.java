@@ -134,7 +134,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
           key = gbif.getKey();
           LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
 
-        } else if (curr.has(Setting.GBIF_SYNC_LOCK) && curr.getBool(Setting.GBIF_SYNC_LOCK)) {
+        } else if (curr.isEnabled(Setting.GBIF_SYNC_LOCK)) {
           LOG.info("Dataset {} is locked for GBIF updates: {}", gbif.getKey(), gbif.getTitle());
 
         } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||

@@ -2,6 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DataEntity;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.dao.DataEntityDao;
 import life.catalogue.dw.auth.Roles;
@@ -63,10 +64,24 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
     }
     obj.setKey(key);
     obj.applyUser(user);
-    int i = dao.update(obj, user.getKey());
-    if (i == 0) {
-      throw NotFoundException.notFound(objClass, key);
+    String msg = allowUpdate(obj, user);
+    if (msg == null) {
+      int i = dao.update(obj, user.getKey());
+      if (i == 0) {
+        throw NotFoundException.notFound(objClass, key);
+      }
+    } else {
+      throw new IllegalArgumentException(msg);
     }
+  }
+
+  /**
+   * Override this method if updates should be restricted.
+   * If no update is allowed a non null message must be returned that explains why.
+   * By default all updates are allowed and null is returned.
+   */
+  protected String allowUpdate(T obj, User user){
+    return null;
   }
 
   @DELETE
