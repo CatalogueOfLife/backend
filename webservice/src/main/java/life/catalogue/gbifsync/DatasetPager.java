@@ -174,13 +174,19 @@ public class DatasetPager {
     d.setTitle(g.title);
     d.setDescription(g.description);
     DOI.parse(g.doi).ifPresent(d::setDoi);
+    Optional<GEndpoint> coldp = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("COLDP")).findFirst();
     Optional<GEndpoint> dwca = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("DWC_ARCHIVE")).findFirst();
-    if (dwca.isPresent()) {
+    if (coldp.isPresent() || dwca.isPresent()) {
       d.setOrigin(DatasetOrigin.EXTERNAL);
-      d.setDataFormat(DataFormat.DWCA);
-      d.setDataAccess(uri(dwca.get().url));
+      if (coldp.isPresent()) {
+        d.setDataFormat(DataFormat.COLDP);
+        d.setDataAccess(uri(coldp.get().url));
+      } else {
+        d.setDataFormat(DataFormat.DWCA);
+        d.setDataAccess(uri(dwca.get().url));
+      }
     } else {
-      LOG.info("Skip dataset without DWCA access: {} - {}", d.getGbifKey(), d.getTitle());
+      LOG.info("Skip dataset without DWCA or COLDP access: {} - {}", d.getGbifKey(), d.getTitle());
       return null;
     }
     // type
@@ -233,7 +239,7 @@ public class DatasetPager {
     d.setContributor(contributors);
     d.setIdentifier(toIdentifier(g.key, g.identifiers));
     d.setSource(toSource(g.bibliographicCitations));
-    d.setNotes(toNotes(g.comments));
+    //d.setNotes(toNotes(g.comments));
     d.setIssued(g.pubDate);
     d.setCreated(LocalDateTime.now());
     LOG.debug("Dataset {} converted: {}", g.key, g.title);
