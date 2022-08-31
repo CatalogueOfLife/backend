@@ -251,6 +251,7 @@ public class AssemblyCoordinator implements Managed {
    */
   private void successCallBack(SectorRunnable sync) {
     syncs.remove(sync.getSectorKey());
+    clearUsageMatcher(sync);
     Duration durQueued = Duration.between(sync.getCreated(), sync.getStarted());
     Duration durRun = Duration.between(sync.getStarted(), LocalDateTime.now());
     LOG.info("Sector Sync {} finished. {} min queued, {} min to execute", sync.getSectorKey(), durQueued.toMinutes(), durRun.toMinutes());
@@ -264,11 +265,20 @@ public class AssemblyCoordinator implements Managed {
    */
   private void errorCallBack(SectorRunnable sync, Exception err) {
     syncs.remove(sync.getSectorKey());
+    clearUsageMatcher(sync);
     LOG.error("Sector Sync {} failed: {}", sync.getSectorKey(), err.getCause().getMessage(), err.getCause());
     failed.putIfAbsent(sync.sectorKey.getDatasetKey(), new AtomicInteger(0));
     failed.get(sync.sectorKey.getDatasetKey()).incrementAndGet();
   }
-  
+
+  private void clearUsageMatcher(SectorRunnable sync){
+    if (lastMatcher != null && sync.sectorKey.getDatasetKey().equals(lastMatcher.getDatasetKey()) &&
+        (sync instanceof SectorDelete || sync instanceof SectorDeleteFull)
+    ) {
+      LOG.info("Sector deletions happened. Clear usage matcher for dataset {}", sync.sectorKey.getDatasetKey());
+    }
+  }
+
   public synchronized void cancel(DSID<Integer> sectorKey, User user) {
     if (syncs.containsKey(sectorKey)) {
       LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);
