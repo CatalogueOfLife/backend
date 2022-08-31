@@ -61,8 +61,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected int tCounter = 0;
   protected int decisionCounter = 0;
 
-  public TreeBaseHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
-    this.targetDatasetKey = sector.getDatasetKey();
+  public TreeBaseHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
+    this.targetDatasetKey = targetDatasetKey;
     this.user = user;
     this.sector = sector;
     this.state = state;

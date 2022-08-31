@@ -28,8 +28,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int updCounter = 0; // updates
   private final DSID<String> targetKey = DSID.root(targetDatasetKey); // key to some target usage that can be reused
 
-  TreeMergeHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher, User user, Sector sector, SectorImport state) {
-    super(decisions, factory, nameIndex, user, sector, state);
+  TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher, User user, Sector sector, SectorImport state) {
+    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
     this.matcher = matcher;
     parents = new ParentStack(target);
   }

@@ -35,6 +35,11 @@ public class SectorDeleteFull extends SectorRunnable {
   }
 
   @Override
+  void init() throws Exception {
+    super.init(true);
+  }
+
+  @Override
   void doWork() throws Exception {
     state.setState( ImportState.DELETING);
     // do a recursive delete to make sure we have no more children

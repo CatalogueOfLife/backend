@@ -46,7 +46,6 @@ abstract class SectorRunnable implements Runnable {
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
   List<Sector> childSectors;
-  List<SimpleName> foreignChildren;
   // map with foreign child id to original parent name
   Map<String, Name> foreignChildrenParents = new HashMap<>();
   private final Consumer<SectorRunnable> successCallback;
@@ -83,7 +82,7 @@ abstract class SectorRunnable implements Runnable {
     sector = loadSectorAndUpdateDatasetImport(false);
     this.subjectDatasetKey = sector.getSubjectDatasetKey();
     try (SqlSession session = factory.openSession(true)) {
-      // make sure the target catalogue is a PROJECT and not a RELEASE!
+      // make sure the target dataset is a PROJECT
       Dataset target = session.getMapper(DatasetMapper.class).get(sectorKey.getDatasetKey());
       if (target.getOrigin() != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + target.getOrigin() + " dataset");
@@ -155,12 +154,21 @@ abstract class SectorRunnable implements Runnable {
     }
   }
 
+  /**
+   * The default runnable does not load attached sectors
+   * @throws Exception
+   */
   void init() throws Exception {
+    init(false);
+  }
+
+  void init(boolean loadChildSectors) throws Exception {
     // load latest version of the sector again to get the latest target ids
     sector = loadSectorAndUpdateDatasetImport(validateSector);
     loadDecisions();
-    loadForeignChildren();
-    loadAttachedSectors();
+    if (loadChildSectors) {
+      loadAttachedSectors();
+    }
     checkIfCancelled();
   }
   
@@ -239,14 +247,6 @@ abstract class SectorRunnable implements Runnable {
       });
     }
     LOG.info("Loaded {} editorial decisions for sector {}", decisions.size(), sectorKey);
-  }
-  
-  private void loadForeignChildren() {
-    try (SqlSession session = factory.openSession(true)) {
-      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      foreignChildren = num.foreignChildren(sectorKey);
-    }
-    LOG.info("Loaded {} children from other sectors with a parent from sector {}", foreignChildren.size(), sectorKey);
   }
   
   private void loadAttachedSectors() {

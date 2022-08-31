@@ -24,8 +24,8 @@ public class TreeCopyHandler extends TreeBaseHandler {
   private final Map<String, String> nameIds = new HashMap<>();
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
 
-  TreeCopyHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
-    super(decisions, factory, nameIndex, user, sector, state);
+  TreeCopyHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
+    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }
 
   @Override

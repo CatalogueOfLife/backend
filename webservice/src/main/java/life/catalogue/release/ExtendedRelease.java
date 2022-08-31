@@ -163,12 +163,12 @@ public class ExtendedRelease extends ProjectRelease {
   private void mergeSectors() throws Exception {
     updateState(ImportState.INSERTING);
     int priority = 0;
-    final UsageMatcher matcher = new UsageMatcher(baseReleaseKey, nameIndex, factory);
+    final UsageMatcher matcher = new UsageMatcher(newDatasetKey, nameIndex, factory);
     for (Sector s : sectors) {
       priority = s.getPriority() == null ? priority + 1 : s.getPriority();
       priorities.put((int)s.getId(), priority);
       checkIfCancelled();
-      var ss = SectorSync.release(s, factory, nameIndex, matcher, sDao, siDao, fullUser);
+      var ss = SectorSync.release(s, newDatasetKey, factory, nameIndex, matcher, sDao, siDao, fullUser);
       ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());

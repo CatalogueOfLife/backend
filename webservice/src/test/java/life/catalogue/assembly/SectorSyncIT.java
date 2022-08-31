@@ -26,7 +26,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
@@ -204,36 +206,30 @@ public class SectorSyncIT {
   }
 
   public void syncAll() {
-    syncAll(sdao, siDao, eDao);
+    syncAll(sdao, siDao, eDao, null);
   }
 
-  public static void syncAll(SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
-        sync(s, sdao, siDao, eDao);
-      }
-    }
-  }
-
-  public void syncMerges() {
-    syncMerges(sdao, siDao, eDao);
-  }
-
-  public static void syncMerges(SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
-        if (s.getMode() == Sector.Mode.MERGE) {
-          SectorSync ss = SectorSync.release(s, PgSetupRule.getSqlSessionFactory(), nidx, umatcher, sdao, siDao, TestDataRule.TEST_USER);
-          runSync(ss);
-        }
-      }
-    }
+  public void syncMergesOnly() {
+    syncAll(sdao, siDao, eDao, s -> s.getMode() == Sector.Mode.MERGE);
   }
 
   void sync(Sector s) {
     sync(s, sdao, siDao, eDao);
   }
 
+  public static void syncAll(SectorDao sdao, SectorImportDao siDao, EstimateDao eDao, @Nullable Predicate<Sector> filter) {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
+        if (filter == null || filter.test(s)) {
+          sync(s, sdao, siDao, eDao);
+        }
+      }
+    }
+  }
+
+  /**
+   * Syncs into the project
+   */
   static void sync(Sector s, SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
     SectorSync ss = SectorSync.project(s, PgSetupRule.getSqlSessionFactory(), nidx, umatcher, NameUsageIndexService.passThru(), sdao, siDao, eDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
@@ -660,7 +656,7 @@ public class SectorSyncIT {
     final NameUsageBase asteraceae = getByName(Datasets.COL, Rank.FAMILY, "Asteraceae");
     createSector(Sector.Mode.MERGE, src, asteraceae);
 
-    syncMerges();
+    syncMergesOnly();
 
     final String plantID = plant.getId();
     assertNull(plant.getSectorKey());

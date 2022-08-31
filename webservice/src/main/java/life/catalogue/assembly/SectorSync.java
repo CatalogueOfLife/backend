@@ -1,5 +1,7 @@
 package life.catalogue.assembly;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.EstimateDao;
@@ -40,20 +42,22 @@ public class SectorSync extends SectorRunnable {
   private final NameIndex nameIndex;
   private final UsageMatcher matcher;
   private final boolean project;
+  private final int targetDatasetKey; // dataset to sync into
+  private List<SimpleName> foreignChildren;
 
   public static SectorSync project(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher, NameUsageIndexService indexService,
                                    SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
                                    Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, true, factory, nameIndex, matcher, indexService, sdao, sid, estimateDao, successCallback, errorCallback, user);
+    return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, factory, nameIndex, matcher, indexService, sdao, sid, estimateDao, successCallback, errorCallback, user);
   }
 
-  public static SectorSync release(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
+  public static SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
                                    SectorDao sdao, SectorImportDao sid, User user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, false, factory, nameIndex, matcher, null, sdao, sid, null,
+    return new SectorSync(sectorKey, releaseDatasetKey, false, factory, nameIndex, matcher, null, sdao, sid, null,
       x -> {}, (s,e) -> {LOG.error("Sector merge {} failed: {}", sectorKey, e.getMessage(), e);}, user);
   }
 
-  private SectorSync(DSID<Integer> sectorKey, boolean project, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
+  private SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
                      NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
                      Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, true, factory, indexService, sdao, sid, successCallback, errorCallback, user);
@@ -62,6 +66,7 @@ public class SectorSync extends SectorRunnable {
     this.estimateDao = estimateDao;
     this.nameIndex = nameIndex;
     this.matcher = matcher;
+    this.targetDatasetKey = targetDatasetKey;
   }
   
   @Override
@@ -110,7 +115,8 @@ public class SectorSync extends SectorRunnable {
 
   @Override
   void init() throws Exception {
-    super.init();
+    super.init(true);
+    loadForeignChildren();
     // also load all sector subjects to auto block them
     try (SqlSession session = factory.openSession()) {
       AtomicInteger counter = new AtomicInteger();
@@ -128,6 +134,14 @@ public class SectorSync extends SectorRunnable {
       });
       LOG.info("Loaded {} sector subjects for auto blocking", counter);
     }
+  }
+
+  private void loadForeignChildren() {
+    try (SqlSession session = factory.openSession(true)) {
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      foreignChildren = num.foreignChildren(sectorKey);
+    }
+    LOG.info("Loaded {} children from other sectors with a parent from sector {}", foreignChildren.size(), sectorKey);
   }
 
   /**
@@ -218,11 +232,14 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(decisions, factory, nameIndex, matcher, user, sector, state);
+      return new TreeMergeHandler(targetDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state);
     }
-    return new TreeCopyHandler(decisions, factory, nameIndex, user, sector, state);
+    return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }
 
+  /**
+   * Make sure to apply all changes to targetDatasetKey not the sectors datasetKey!
+   */
   private void processTree() throws InterruptedException {
     final Set<String> blockedIds = decisions.values().stream()
         .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK) && ed.getSubject().getId() != null)
@@ -275,6 +292,9 @@ public class SectorSync extends SectorRunnable {
   }
 
   private void deleteOld() {
+    if (!sector.getDatasetKey().equals(targetDatasetKey)) {
+      throw new IllegalArgumentException(String.format("Deleting sector data can only be done in the project %s, not in dataset %s", sector.getDatasetKey(), targetDatasetKey));
+    }
     try (SqlSession session = factory.openSession(true)) {
       // TODO: deal with species estimates separately as they are on a shared table
       for (Class<? extends SectorProcessable<?>> m : SectorProcessable.MAPPERS) {
