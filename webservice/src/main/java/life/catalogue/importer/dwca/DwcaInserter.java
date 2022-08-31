@@ -2,6 +2,8 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.TypeMaterial;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
@@ -75,7 +77,7 @@ public class DwcaInserter extends NeoCsvInserter {
       true
     );
 
-    interpretTypeMaterial(reader, ColdpTerm.TypeMaterial,
+    interpretTypeMaterial(reader, DwcTerm.Occurrence,
       inter::interpretTypeMaterial
     );
 
