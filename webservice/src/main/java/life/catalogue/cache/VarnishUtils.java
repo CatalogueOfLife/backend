@@ -37,7 +37,7 @@ public class VarnishUtils {
     try (CloseableHttpResponse response = client.execute(ban)) {
       return response.getStatusLine().getStatusCode();
     } catch (Exception e) {
-      LOG.warn("Failed to BAN {}", uri, e);
+      LOG.warn("Failed to BAN {}: {}", uri, e.getMessage());
       return -1;
     }
   }
