@@ -223,7 +223,7 @@ public class SectorSyncIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
         if (s.getMode() == Sector.Mode.MERGE) {
-          SectorSync ss = SectorSync.merge(s, PgSetupRule.getSqlSessionFactory(), nidx, umatcher, sdao, siDao, TestDataRule.TEST_USER);
+          SectorSync ss = SectorSync.release(s, PgSetupRule.getSqlSessionFactory(), nidx, umatcher, sdao, siDao, TestDataRule.TEST_USER);
           runSync(ss);
         }
       }
@@ -235,7 +235,7 @@ public class SectorSyncIT {
   }
 
   static void sync(Sector s, SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
-    SectorSync ss = SectorSync.any(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), umatcher, sdao, siDao, eDao,
+    SectorSync ss = SectorSync.project(s, PgSetupRule.getSqlSessionFactory(), nidx, umatcher, NameUsageIndexService.passThru(), sdao, siDao, eDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     runSync(ss);
   }

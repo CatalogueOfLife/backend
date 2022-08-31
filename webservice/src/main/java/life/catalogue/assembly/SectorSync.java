@@ -39,31 +39,25 @@ public class SectorSync extends SectorRunnable {
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
   private final UsageMatcher matcher;
-  private final boolean delete;
+  private final boolean project;
 
-  public static SectorSync any(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, UsageMatcher matcher,
+  public static SectorSync project(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher, NameUsageIndexService indexService,
                                    SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
                                    Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, factory, nameIndex, matcher, indexService, sdao, sid, estimateDao, successCallback, errorCallback, user);
+    return new SectorSync(sectorKey, true, factory, nameIndex, matcher, indexService, sdao, sid, estimateDao, successCallback, errorCallback, user);
   }
 
-  public static SectorSync regular(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
-                                   SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
-                                   Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, factory, nameIndex, null, indexService, sdao, sid, estimateDao, successCallback, errorCallback, user);
-  }
-
-  public static SectorSync merge(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
-                                 SectorDao sdao, SectorImportDao sid, User user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, factory, nameIndex, matcher, null, sdao, sid, null,
+  public static SectorSync release(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
+                                   SectorDao sdao, SectorImportDao sid, User user) throws IllegalArgumentException {
+    return new SectorSync(sectorKey, false, factory, nameIndex, matcher, null, sdao, sid, null,
       x -> {}, (s,e) -> {LOG.error("Sector merge {} failed: {}", sectorKey, e.getMessage(), e);}, user);
   }
 
-  private SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
+  private SectorSync(DSID<Integer> sectorKey, boolean project, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
                      NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
                      Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, true, factory, indexService, sdao, sid, successCallback, errorCallback, user);
-    this.delete = sector.getMode() != Sector.Mode.MERGE;
+    this.project = project;
     this.sid = sid;
     this.estimateDao = estimateDao;
     this.nameIndex = nameIndex;
@@ -72,12 +66,12 @@ public class SectorSync extends SectorRunnable {
   
   @Override
   void doWork() throws Exception {
-    if (delete) {
+    if (project) {
       state.setState( ImportState.DELETING);
       relinkForeignChildren();
     }
     try {
-      if (delete) {
+      if (project) {
         deleteOld();
         checkIfCancelled();
       }
@@ -87,7 +81,7 @@ public class SectorSync extends SectorRunnable {
       checkIfCancelled();
 
     } finally {
-      if (delete) {
+      if (project) {
         // run these even if we get errors in the main tree copying
         state.setState( ImportState.MATCHING);
         rematchForeignChildren();
@@ -105,12 +99,12 @@ public class SectorSync extends SectorRunnable {
 
   @Override
   void updateSearchIndex() throws Exception {
-    if (sector.getMode() == Sector.Mode.MERGE) {
-      LOG.info("Will index merge sector {} at the end of the release. Skip immediate indexing", sectorKey);
-
-    } else {
+    if (project) {
       indexService.indexSector(sector);
       LOG.info("Reindexed sector {} from search index", sectorKey);
+
+    } else {
+      LOG.debug("Will index merge sector {} at the end of the release. Skip immediate indexing", sectorKey);
     }
   }
 

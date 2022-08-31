@@ -53,6 +53,13 @@ public class UsageMatcher {
     this.factory = factory;
   }
 
+  /**
+   * The dataset to match against
+   */
+  public int getDatasetKey() {
+    return datasetKey;
+  }
+
   private Integer canonNidx(Integer nidx) {
     if (nidx != null) {
       var xn = nameIndex.get(nidx);

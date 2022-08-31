@@ -168,7 +168,7 @@ public class ExtendedRelease extends ProjectRelease {
       priority = s.getPriority() == null ? priority + 1 : s.getPriority();
       priorities.put((int)s.getId(), priority);
       checkIfCancelled();
-      var ss = SectorSync.merge(s, factory, nameIndex, matcher, sDao, siDao, fullUser);
+      var ss = SectorSync.release(s, factory, nameIndex, matcher, sDao, siDao, fullUser);
       ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());

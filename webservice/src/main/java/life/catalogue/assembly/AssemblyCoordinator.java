@@ -44,6 +44,7 @@ public class AssemblyCoordinator implements Managed {
   
   private ExecutorService exec;
   private ImportManager importManager;
+  private UsageMatcher lastMatcher;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
@@ -203,7 +204,10 @@ public class AssemblyCoordinator implements Managed {
    * @throws IllegalArgumentException
    */
   private synchronized boolean syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
-    SectorSync ss = SectorSync.regular(sectorKey, factory, nameIndex, indexService, sdao, sid, estimateDao, this::successCallBack, this::errorCallBack, user);
+    if (lastMatcher == null || !sectorKey.getDatasetKey().equals(lastMatcher.getDatasetKey())) {
+      lastMatcher = new UsageMatcher(sectorKey.getDatasetKey(), nameIndex, factory);
+    }
+    SectorSync ss = SectorSync.project(sectorKey, factory, nameIndex, lastMatcher, indexService, sdao, sid, estimateDao, this::successCallBack, this::errorCallBack, user);
     return queueJob(ss);
   }
 
