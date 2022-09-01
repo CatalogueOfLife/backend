@@ -198,7 +198,7 @@ public class DwcInterpreter extends InterpreterBase {
       m.setLocality(rec.get(DwcTerm.locality));
       m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(DwcTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
       try {
-        CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLatitude), rec.get(DwcTerm.decimalLongitude)).ifPresent(m::setCoordinate);
+        CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLongitude), rec.get(DwcTerm.decimalLatitude)).ifPresent(m::setCoordinate);
       } catch (UnparsableException e) {
         rec.addIssue(Issue.LAT_LON_INVALID);
       }

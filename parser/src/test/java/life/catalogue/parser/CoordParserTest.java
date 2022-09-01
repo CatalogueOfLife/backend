@@ -12,9 +12,13 @@ public class CoordParserTest {
 
   @Test
   public void parse() throws Exception {
-    CoordParser cp = CoordParser.PARSER;
-    Optional<Coordinate> ll = cp.parse("24.134", "-13.02");
-    assertEquals(new Coordinate(24.134, -13.02), ll.get());
+    assertCoord("24.134", "-13.02", 24.134, -13.02);
+    assertCoord("13.26", "93.26", 13.26, 93.26);
+  }
+
+  void assertCoord(String lat, String lon, double latExpected, double lonExpected) throws UnparsableException {
+    Optional<Coordinate> ll = CoordParser.PARSER.parse(lon, lat);
+    assertEquals(new Coordinate(lonExpected, latExpected), ll.get());
   }
 
   @Test(expected = UnparsableException.class)
