@@ -14,6 +14,8 @@ import life.catalogue.es.NameUsageIndexService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.validation.Validator;
@@ -66,8 +68,9 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     s.applyUser(user);
     try (SqlSession session = factory.openSession(ExecutorType.SIMPLE, false)) {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
-      // make sure we have a managed dataset - otherwise sectors cannot be created and we lack a id sequence to generate a key!
+      // make sure we have a managed dataset - otherwise sectors cannot be created and we lack an id sequence to generate a key!
       DatasetOrigin origin = DatasetInfoCache.CACHE.info(s.getDatasetKey()).origin;
       if (origin == null) {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " does not exist");
@@ -75,24 +78,13 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " is not managed but of origin " + origin);
       }
 
-      final DSID<String> did = s.getTargetAsDSID();
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-
       // check if source is a placeholder node
       parsePlaceholderRank(s);
-      // reload full source and target
-      Taxon subject = tm.get(s.getSubjectAsDSID());
-      if (subject == null) {
-        throw new IllegalArgumentException("subject ID " + s.getSubject().getId() + " not existing in dataset " + s.getSubjectDatasetKey());
-      }
-      s.setSubject(subject.toSimpleNameLink());
 
-      Taxon target  = tm.get(s.getTargetAsDSID());
-      if (target == null) {
-        throw new IllegalArgumentException("target ID " + s.getTarget().getId() + " not existing in catalogue " + s.getDatasetKey());
-      }
-      s.setTarget(target.toSimpleNameLink());
-      
+      // reload full source and target
+      var subject = reloadTaxon(s, "subject", s::getSubjectAsDSID, s::setSubject, tm);
+      var target = reloadTaxon(s, "target", s::getTargetAsDSID, s::setTarget, tm);
+
       // make sure the priority is not take, otherwise make room
       updatePriorities(s, mapper);
 
@@ -115,7 +107,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (!toCopy.isEmpty()) {
         for (Taxon t : toCopy) {
           t.setSectorKey(s.getId());
-          TaxonDao.copyTaxon(session, t, did, user);
+          TaxonDao.copyTaxon(session, t, s.getTargetAsDSID(), user);
         }
         indexService.add(toCopy.stream()
           .map(t -> {
@@ -132,6 +124,25 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       session.commit();
       return s.getKey();
     }
+  }
+
+  private static Taxon reloadTaxon(Sector s, String kind, Supplier<DSID<String>> getter, Consumer<SimpleNameLink> setter, TaxonMapper tm) {
+    DSID<String> did = getter.get();
+    Taxon tax = null;
+    if (did != null) {
+      tax = tm.get(did);
+      if (tax == null) {
+        throw new IllegalArgumentException(kind + " ID " + did.getId() + " not existing in dataset " + did.getDatasetKey());
+      }
+    } else if (s.getMode() != Sector.Mode.MERGE){
+      throw new IllegalArgumentException(kind + " required for " + s.getMode() + " sector");
+    }
+    if (tax != null) {
+      setter.accept(tax.toSimpleNameLink());
+    } else {
+      setter.accept(null);
+    }
+    return tax;
   }
 
   @Override
