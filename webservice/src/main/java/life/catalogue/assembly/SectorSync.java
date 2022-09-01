@@ -54,7 +54,7 @@ public class SectorSync extends SectorRunnable {
   public static SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
                                    SectorDao sdao, SectorImportDao sid, User user) throws IllegalArgumentException {
     return new SectorSync(sectorKey, releaseDatasetKey, false, factory, nameIndex, matcher, null, sdao, sid, null,
-      x -> {}, (s,e) -> {LOG.error("Sector merge {} failed: {}", sectorKey, e.getMessage(), e);}, user);
+      x -> {}, (s,e) -> {LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e);}, user);
   }
 
   private SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
@@ -67,6 +67,9 @@ public class SectorSync extends SectorRunnable {
     this.nameIndex = nameIndex;
     this.matcher = matcher;
     this.targetDatasetKey = targetDatasetKey;
+    if (targetDatasetKey != sectorKey.getDatasetKey()) {
+      LOG.info("Syncing into release {}", targetDatasetKey);
+    }
   }
   
   @Override

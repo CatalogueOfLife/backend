@@ -70,7 +70,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     this.nameIndex = nameIndex;
 
     this.entities = Preconditions.checkNotNull(sector.getEntities(), "Sector entities required");
-    LOG.info("Process taxon extensions: {}", Joiner.on(", ").join(entities));
+    LOG.info("Include taxon extensions: {}", Joiner.on(", ").join(entities));
 
     this.ranks = Preconditions.checkNotNull(sector.getRanks(), "Sector ranks required");
     if (ranks.size() < Rank.values().length) {
