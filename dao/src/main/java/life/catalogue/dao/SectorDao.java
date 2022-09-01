@@ -174,11 +174,13 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   }
 
   public static boolean parsePlaceholderRank(Sector s){
-    RankID subjId = RankID.parseID(s.getSubjectDatasetKey(), s.getSubject().getId());
-    if (subjId.rank != null) {
-      s.setPlaceholderRank(subjId.rank);
-      s.getSubject().setId(subjId.getId());
-      return true;
+    if (s.getSubject() != null) {
+      RankID subjId = RankID.parseID(s.getSubjectDatasetKey(), s.getSubject().getId());
+      if (subjId.rank != null) {
+        s.setPlaceholderRank(subjId.rank);
+        s.getSubject().setId(subjId.getId());
+        return true;
+      }
     }
     return false;
   }
