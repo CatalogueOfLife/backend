@@ -109,8 +109,7 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.COL));
     }
 
-    var umatcher = new UsageMatcher(Datasets.COL, NameIndexFactory.passThru(), PgSetupRule.getSqlSessionFactory());
-    SectorSync ss = SectorSync.project(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), umatcher, NameUsageIndexService.passThru(),
+    SectorSync ss = SectorSync.project(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(),
         sdao, siDao, eDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
@@ -154,7 +153,7 @@ public class SectorSyncTest {
       sm.update(sector);
     }
 
-    ss = SectorSync.project(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), umatcher, NameUsageIndexService.passThru(),
+    ss = SectorSync.project(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(),
         sdao, siDao, eDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();

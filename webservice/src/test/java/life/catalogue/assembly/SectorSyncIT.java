@@ -231,7 +231,7 @@ public class SectorSyncIT {
    * Syncs into the project
    */
   static void sync(Sector s, SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
-    SectorSync ss = SectorSync.project(s, PgSetupRule.getSqlSessionFactory(), nidx, umatcher, NameUsageIndexService.passThru(), sdao, siDao, eDao,
+    SectorSync ss = SectorSync.project(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), sdao, siDao, eDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     runSync(ss);
   }

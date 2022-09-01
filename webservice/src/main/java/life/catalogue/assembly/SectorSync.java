@@ -45,9 +45,11 @@ public class SectorSync extends SectorRunnable {
   private final int targetDatasetKey; // dataset to sync into
   private List<SimpleName> foreignChildren;
 
-  public static SectorSync project(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher, NameUsageIndexService indexService,
+  public static SectorSync project(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
                                    SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
                                    Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+    // we create a new usage matcher for projects as a project sync does deletions which would need to invalidate the matcher cache otherwise - which is difficult
+    var matcher = new UsageMatcher(sectorKey.getDatasetKey(), nameIndex, factory);
     return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, factory, nameIndex, matcher, indexService, sdao, sid, estimateDao, successCallback, errorCallback, user);
   }
 
