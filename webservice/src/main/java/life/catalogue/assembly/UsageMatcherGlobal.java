@@ -1,27 +1,31 @@
 package life.catalogue.assembly;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
+import com.google.common.base.Preconditions;
+
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.NameIndex;
 
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import org.gbif.nameparser.api.Rank;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 
 /**
  * Matches usages against a given dataset. Matching is primarily based on names index matches,
@@ -29,53 +33,55 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
  *
  * Matches are retrieved from the database and are cached in particular for uninomials / higher taxa.
  */
-public class UsageMatcher {
-  private final static Logger LOG = LoggerFactory.getLogger(UsageMatcher.class);
-  private final int datasetKey;
+public class UsageMatcherGlobal {
+  private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherGlobal.class);
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   // key = canonical nidx
-  private final LoadingCache<Integer, List<NameUsageBase>> usages = Caffeine.newBuilder()
+  private final LoadingCache<DSID<Integer>, List<NameUsageBase>> usages = Caffeine.newBuilder()
                                                                                  .maximumSize(100_000)
                                                                                  .build(this::loadUsage);
 
-  private List<NameUsageBase> loadUsage(@NonNull Integer nidx) {
+  /**
+   * @param nidx a names index id wrapped by a datasetKey
+   * @return list of matching usages for the requested dataset only
+   */
+  private List<NameUsageBase> loadUsage(@NonNull DSID<Integer> nidx) {
     try (SqlSession session = factory.openSession(true)) {
-      var result = session.getMapper(NameUsageMapper.class).listByCanonNIDX(datasetKey, nidx);
+      var result = session.getMapper(NameUsageMapper.class).listByCanonNIDX(nidx.getDatasetKey(), nidx.getId());
       // avoid empty lists which get cached
       return result == null || result.isEmpty() ? null : result;
     }
   }
 
-  public UsageMatcher(int datasetKey, NameIndex nameIndex, SqlSessionFactory factory) {
-    this.datasetKey = datasetKey;
+  public UsageMatcherGlobal(NameIndex nameIndex, SqlSessionFactory factory) {
     this.nameIndex = nameIndex;
     this.factory = factory;
   }
 
-  /**
-   * The dataset to match against
-   */
-  public int getDatasetKey() {
-    return datasetKey;
-  }
-
-  private Integer canonNidx(Integer nidx) {
+  private DSID<Integer> canonNidx(int datasetKey, Integer nidx) {
     if (nidx != null) {
       var xn = nameIndex.get(nidx);
       if (xn != null) {
-        return xn.getCanonicalId();
+        return DSID.of(datasetKey, xn.getCanonicalId());
       }
     }
     return null;
   }
 
-  public UsageMatch match(NameUsageBase nu, List<ParentStack.MatchedUsage> parents) {
-    var canonNidx = matchNidxIfNeeded(nu);
+  /**
+   *
+   * @param datasetKey the target dataset to match against
+   * @param nu usage to match. Requires a name instance to exist
+   * @param parents classification of the usage to be matched
+   * @return
+   */
+  public UsageMatch match(int datasetKey, NameUsageBase nu, List<ParentStack.MatchedUsage> parents) {
+    var canonNidx = matchNidxIfNeeded(datasetKey, nu);
     if (canonNidx != null) {
       var existing = usages.get(canonNidx);
       if (existing != null && !existing.isEmpty()) {
-        return match(nu, existing, parents);
+        return match(datasetKey, nu, existing, parents);
       }
     }
     return UsageMatch.empty();
@@ -84,29 +90,30 @@ public class UsageMatcher {
   /**
    * @return the canonical names index id or null if it cant be matched
    */
-  private Integer matchNidxIfNeeded(NameUsageBase nu) {
+  private DSID<Integer> matchNidxIfNeeded(int datasetKey, NameUsageBase nu) {
     if (nu.getName().getNamesIndexId() == null) {
       var match = nameIndex.match(nu.getName(), true, false);
       if (match.hasMatch()) {
         nu.getName().setNamesIndexId(match.getName().getKey());
         nu.getName().setNamesIndexType(match.getType());
         // we know the canonical id, return it right here
-        return match.getName().getCanonicalId();
+        return DSID.of(datasetKey, match.getName().getCanonicalId());
 
       } else {
         LOG.info("No name match for {}", nu.getName());
       }
     }
-    return canonNidx(nu.getName().getNamesIndexId());
+    return canonNidx(datasetKey, nu.getName().getNamesIndexId());
   }
 
   /**
+   * @param datasetKey the target dataset to match against
    * @param nu usage to be match
    * @param existing candidates to be matched against
    * @param parents classification of the usage to be matched
    * @return single match
    */
-  private UsageMatch match(NameUsageBase nu, List<NameUsageBase> existing, List<ParentStack.MatchedUsage> parents) {
+  private UsageMatch match(int datasetKey, NameUsageBase nu, List<NameUsageBase> existing, List<ParentStack.MatchedUsage> parents) {
     final boolean qualifiedName = nu.getName().hasAuthorship();
 
     // make sure we never have bare names - we want usages!
@@ -302,12 +309,14 @@ public class UsageMatcher {
   }
 
   /**
-   * Manually adds a name usage to the cache.
+   * Manually adds a name usage to the cache. Requires the datasetKey to be set correctly.
    * The name will be matched to the names index if it does not have a names index id yet.
    */
   public void add(NameUsageBase nu) {
-    var canonNidx = matchNidxIfNeeded(nu);
+    Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
+    var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu);
     if (canonNidx != null) {
+
       var before = usages.get(canonNidx);
       if (before == null) {
         // nothing existing, even after loading the cache from the db. Create a new list
@@ -320,7 +329,19 @@ public class UsageMatcher {
     }
   }
 
+  public void clear(int datasetKey) {
+    int count = 0;
+    for (var k : usages.asMap().keySet()) {
+      if (datasetKey == k.getDatasetKey()) {
+        usages.invalidate(k);
+        count++;
+      }
+    }
+    LOG.info("Cleared {} usages from the cache", count);
+  }
+
   public void clear() {
     usages.invalidateAll();
+    LOG.warn("Cleared entire cache");
   }
 }

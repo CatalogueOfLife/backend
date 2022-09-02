@@ -23,12 +23,12 @@ import org.slf4j.LoggerFactory;
 public class TreeMergeHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
   private final ParentStack parents;
-  private final UsageMatcher matcher;
+  private final UsageMatcherGlobal matcher;
   private int counter = 0;  // all source usages
   private int updCounter = 0; // updates
   private final DSID<String> targetKey = DSID.root(targetDatasetKey); // key to some target usage that can be reused
 
-  TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher, User user, Sector sector, SectorImport state) {
+  TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, User user, Sector sector, SectorImport state) {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
     this.matcher = matcher;
     parents = new ParentStack(target);
@@ -68,7 +68,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
 
     // find out matching - even if we don't include the name in the merge we want the parents matched
-    var match = matcher.match(nu, parents.classification());
+    var match = matcher.match(targetDatasetKey, nu, parents.classification());
     LOG.debug("{} matches {}", nu.getLabel(), match);
     // avoid the case when an accepted name without author is being matched against synonym names with authors from the same source
     if (match.isMatch()
@@ -134,7 +134,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // we need to commit the batch session to see the recent inserts
     batchSession.commit();
     Taxon t = new Taxon(n);
-    var m = matcher.match(t, parents.classification());
+    var m = matcher.match(targetDatasetKey, t, parents.classification());
     return usage(m.usage);
   }
 

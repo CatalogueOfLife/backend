@@ -40,26 +40,12 @@ public class SectorSync extends SectorRunnable {
   private final EstimateDao estimateDao;
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
-  private final UsageMatcher matcher;
+  private final UsageMatcherGlobal matcher;
   private final boolean project;
   private final int targetDatasetKey; // dataset to sync into
   private List<SimpleName> foreignChildren;
 
-  public static SectorSync project(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
-                                   SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
-                                   Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    // we create a new usage matcher for projects as a project sync does deletions which would need to invalidate the matcher cache otherwise - which is difficult
-    var matcher = new UsageMatcher(sectorKey.getDatasetKey(), nameIndex, factory);
-    return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, factory, nameIndex, matcher, indexService, sdao, sid, estimateDao, successCallback, errorCallback, user);
-  }
-
-  public static SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
-                                   SectorDao sdao, SectorImportDao sid, User user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, releaseDatasetKey, false, factory, nameIndex, matcher, null, sdao, sid, null,
-      x -> {}, (s,e) -> {LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e);}, user);
-  }
-
-  private SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher,
+  SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
                      NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
                      Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, true, factory, indexService, sdao, sid, successCallback, errorCallback, user);

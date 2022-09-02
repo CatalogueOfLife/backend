@@ -4,6 +4,8 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.AssemblyCoordinator;
+import life.catalogue.assembly.SyncFactory;
+import life.catalogue.assembly.UsageMatcherGlobal;
 import life.catalogue.cache.CacheFlush;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
@@ -36,6 +38,7 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
+import life.catalogue.es.nu.QMatcher;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.exporter.ExportManager;
@@ -300,6 +303,9 @@ public class WsServer extends Application<WsServerConfig> {
     TreeDao trDao = new TreeDao(getSqlSessionFactory(), searchService);
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
+    // matcher
+    final var matcher = new UsageMatcherGlobal(ni, getSqlSessionFactory());
+
     // DOI
     DoiService doiService;
     if (cfg.doi == null) {
@@ -317,8 +323,9 @@ public class WsServer extends Application<WsServerConfig> {
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao, env.metrics());
 
-    // release
-    final var copyFactory = new ProjectCopyFactory(httpClient, ni, diDao, ddao, siDao, ndao, secdao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
+    // syncs and releases
+    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, secdao, siDao, edao, indexService);
+    final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, diDao, ddao, siDao, ndao, secdao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
 
     // importer
     importManager = new ImportManager(cfg,
@@ -341,7 +348,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(ManagedUtils.stopOnly(gbifSync));
 
     // assembly
-    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), ni, secdao, siDao, edao, indexService, env.metrics());
+    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), ni, syncFactory, env.metrics());
     env.lifecycle().manage(assembly);
 
     // link assembly and import manager so they are aware of each other
@@ -373,7 +380,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new ImageResource(imgService));
     j.register(new ImporterResource(cfg, importManager, diDao));
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
-    j.register(new MatchingResource(ni));
+    j.register(new NameMatchingResource(ni));
     j.register(new NamesIndexResource(ni));
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService));

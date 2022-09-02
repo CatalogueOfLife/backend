@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.assembly.SyncFactory;
 import life.catalogue.dao.*;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
@@ -27,17 +28,19 @@ public class ProjectCopyFactory {
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
   private final SqlSessionFactory factory;
+  private final SyncFactory syncFactory;
   private final ImageService imageService;
   private final CloseableHttpClient client;
   private final Validator validator;
   private final NameIndex nameIndex;
   private final WsServerConfig cfg;
 
-  public ProjectCopyFactory(CloseableHttpClient client, NameIndex nameIndex, DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
+  public ProjectCopyFactory(CloseableHttpClient client, NameIndex nameIndex, SyncFactory syncFactory, DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
                             ExportManager exportManager, NameUsageIndexService indexService, ImageService imageService,
                             DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator, WsServerConfig cfg) {
     this.client = client;
     this.nameIndex = nameIndex;
+    this.syncFactory = syncFactory;
     this.exportManager = exportManager;
     this.diDao = diDao;
     this.dDao = dDao;
@@ -60,7 +63,7 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not a release
    */
   public ExtendedRelease buildExtendedRelease(final int releaseKey, final int userKey) {
-    return new ExtendedRelease(factory, nameIndex, indexService, dDao, diDao, siDao, nDao, sDao, imageService, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    return new ExtendedRelease(factory, syncFactory, indexService, dDao, diDao, siDao, nDao, sDao, imageService, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**

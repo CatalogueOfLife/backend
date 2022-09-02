@@ -1,16 +1,14 @@
 package life.catalogue.release;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.assembly.SectorSync;
-import life.catalogue.assembly.UsageMatcher;
+import life.catalogue.assembly.SyncFactory;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
@@ -22,36 +20,37 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 
-import life.catalogue.matching.NameIndex;
+import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.validation.Validator;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import org.gbif.nameparser.api.Rank;
-
-import javax.validation.Validator;
-
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 public class ExtendedRelease extends ProjectRelease {
   private final static Set<Rank> PUBLISHER_SECTOR_RANKS = Set.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM);
   private final int baseReleaseKey;
   private final SectorImportDao siDao;
   private List<Sector> sectors;
-  private final User fullUser = new User();;
-  private final NameIndex nameIndex;
+  private final User fullUser = new User();
+  private final SyncFactory syncFactory;
   private final Int2IntMap priorities = new Int2IntOpenHashMap(); // sector keys
 
-  ExtendedRelease(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
+  ExtendedRelease(SqlSessionFactory factory, SyncFactory syncFactory, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
                   ImageService imageService,
                   int releaseKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                   DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super("releasing extended", factory, indexService, diDao, dDao, nDao, sDao, imageService, DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE).sourceKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
     this.siDao = siDao;
-    this.nameIndex = nameIndex;
+    this.syncFactory = syncFactory;
     baseReleaseKey = releaseKey;
     fullUser.setKey(userKey);
     LOG.info("Build extended release for project {} from public release {}", datasetKey, baseReleaseKey);
@@ -163,12 +162,11 @@ public class ExtendedRelease extends ProjectRelease {
   private void mergeSectors() throws Exception {
     updateState(ImportState.INSERTING);
     int priority = 0;
-    final UsageMatcher matcher = new UsageMatcher(newDatasetKey, nameIndex, factory);
     for (Sector s : sectors) {
       priority = s.getPriority() == null ? priority + 1 : s.getPriority();
       priorities.put((int)s.getId(), priority);
       checkIfCancelled();
-      var ss = SectorSync.release(s, newDatasetKey, factory, nameIndex, matcher, sDao, siDao, fullUser);
+      var ss = syncFactory.release(s, newDatasetKey, fullUser);
       ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());

@@ -23,13 +23,13 @@ import org.slf4j.LoggerFactory;
 
 @Path("/name/matching")
 @Produces(MediaType.APPLICATION_JSON)
-public class MatchingResource {
+public class NameMatchingResource {
   
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(MatchingResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameMatchingResource.class);
   private final NameIndex ni;
   
-  public MatchingResource(NameIndex ni) {
+  public NameMatchingResource(NameIndex ni) {
     this.ni = ni;
   }
   

@@ -101,6 +101,10 @@
     LEFT JOIN name_usage ts ON ts.id=s.subject_id AND ts.dataset_key=s.subject_dataset_key
   </sql>
 
+  <sql id="PRIORITY_ORDER">
+    ORDER BY priority NULLS LAST, id desc
+  </sql>
+
   <sql id="WHERE">
     <if test="req != null">
       <where>
@@ -247,7 +251,7 @@
       AND s.mode IN
       <foreach item="m" collection="mode" open="(" separator=" OR " close=")">#{m}::SECTOR_MODE</foreach>
     </if>
-    ORDER BY priority NULLS LAST, id
+    <include refid="PRIORITY_ORDER"/>
   </select>
 
   <select id="listDescendantSectorKeys" resultType="Integer">
@@ -286,7 +290,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="WHERE"/>
-    ORDER BY id desc
+    <include refid="PRIORITY_ORDER"/>
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
