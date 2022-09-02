@@ -2,15 +2,19 @@ package life.catalogue.release;
 
 import life.catalogue.HttpClientUtils;
 import life.catalogue.WsServerConfig;
+import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dao.*;
+import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
+import life.catalogue.importer.PgImportRule;
 import life.catalogue.matching.NameIndexFactory;
 
 import java.net.URI;
@@ -25,26 +29,29 @@ import org.junit.ClassRule;
 
 import com.google.common.eventbus.EventBus;
 
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
+
 import static org.mockito.Mockito.mock;
 
 public abstract class ProjectBaseIT {
   
-  @ClassRule
-  public static PgSetupRule pg = new PgSetupRule();
+  final static PgSetupRule pg = new PgSetupRule();
+  final static TreeRepoRule treeRepoRule = new TreeRepoRule();
+  final static NameMatchingRule matchingRule = new NameMatchingRule();
+  final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
 
   @ClassRule
-  public static final TreeRepoRule treeRepoRule = new TreeRepoRule();
+  public final static TestRule classRules = RuleChain
+    .outerRule(pg)
+    .around(treeRepoRule)
+    .around(matchingRule)
+    .around(syncFactoryRule);
 
-  DatasetImportDao diDao;
-  SectorImportDao siDao;
-  EstimateDao eDao;
-  SectorDao sdao;
   DatasetDao dDao;
-  NameDao nDao;
-  TaxonDao tdao;
-  Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   ProjectCopyFactory projectCopyFactory;
   CloseableHttpClient client;
+  Validator validator;
 
   @Before
   public void init() throws Exception {
@@ -59,17 +66,13 @@ public abstract class ProjectBaseIT {
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
     LatestDatasetKeyCacheImpl lrCache = mock(LatestDatasetKeyCacheImpl.class);
     DoiUpdater doiUpdater = new DoiUpdater(PgSetupRule.getSqlSessionFactory(), doiService, lrCache, converter);
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    dDao = new DatasetDao(100, PgSetupRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, null, ImageService.passThru(), diDao, exDao, NameUsageIndexService.passThru(), null, bus, validator);
-    siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    eDao = new EstimateDao(PgSetupRule.getSqlSessionFactory(), validator);
-    nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
-    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
-    tdao.setSectorDao(sdao);
+    validator = Validation.buildDefaultValidatorFactory().getValidator();
+    dDao = new DatasetDao(100, PgSetupRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, null, ImageService.passThru(), syncFactoryRule.getDiDao(), exDao, NameUsageIndexService.passThru(), null, bus, validator);
     client = HttpClientUtils.httpsClient();
-    projectCopyFactory = new ProjectCopyFactory(client, NameIndexFactory.passThru(), diDao, dDao, siDao, nDao, sdao, exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), validator, cfg);
+    projectCopyFactory = new ProjectCopyFactory(client, NameMatchingRule.getIndex(), syncFactoryRule.getSyncFactory(),
+      syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
+      exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), validator, cfg
+    );
   }
 
   @After

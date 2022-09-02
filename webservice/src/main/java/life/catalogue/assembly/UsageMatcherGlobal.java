@@ -55,8 +55,8 @@ public class UsageMatcherGlobal {
   }
 
   public UsageMatcherGlobal(NameIndex nameIndex, SqlSessionFactory factory) {
-    this.nameIndex = nameIndex;
-    this.factory = factory;
+    this.nameIndex = Preconditions.checkNotNull(nameIndex);
+    this.factory = Preconditions.checkNotNull(factory);
   }
 
   private DSID<Integer> canonNidx(int datasetKey, Integer nidx) {

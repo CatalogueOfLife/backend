@@ -7,53 +7,50 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.dao.*;
+import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
 
 import org.gbif.nameparser.api.Rank;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.codahale.metrics.MetricRegistry;
+
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class AssemblyCoordinatorTest {
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
 
-  final static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-
-  @Rule
   public final TestDataRule testDataRule = TestDataRule.draft();
-  
-  @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
-  
+  public final NameMatchingRule matchingRule = new NameMatchingRule();
+  public final SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
+  @Rule
+  public final TestRule classRules = RuleChain
+    .outerRule(testDataRule)
+    .around(treeRepoRule)
+    .around(matchingRule)
+    .around(syncFactoryRule);
+
   AssemblyCoordinator coord;
 
   @Before
   public void init() {
-    DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
+    MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, syncFactoryRule.getDiDao());
 
-    SectorImportDao sid = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    SectorDao sdao = Mockito.mock(SectorDao.class);
-    EstimateDao edao = Mockito.mock(EstimateDao.class);
-    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sdao, sid, edao, NameUsageIndexService.passThru(), new MetricRegistry());
+    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), syncFactoryRule.getSyncFactory(), new MetricRegistry());
   }
   
   @Test(expected = IllegalArgumentException.class)

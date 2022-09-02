@@ -25,7 +25,9 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -34,10 +36,7 @@ import javax.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
@@ -52,8 +51,9 @@ import static org.junit.Assert.*;
 public class SectorSyncIT {
   
   final static PgSetupRule pg = new PgSetupRule();
-  final static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+  final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   final static NameMatchingRule matchingRule = new NameMatchingRule();
+  final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
   final static TestDataRule dataRule = TestDataRule.draft();
   final static PgImportRule importRule = PgImportRule.create(
   NomCode.BOTANICAL,
@@ -71,56 +71,29 @@ public class SectorSyncIT {
 //      DataFormat.COLDP, 0, 25,
 //      DataFormat.DWCA, 1, 2
 //  );
-  final static TreeRepoRule treeRepoRule = new TreeRepoRule();
-  static NameIndex nidx;
-  static UsageMatcher umatcher;
 
   @ClassRule
-  public final static TestRule chain = RuleChain
+  public final static TestRule classRules = RuleChain
       .outerRule(pg)
       .around(dataRule)
       .around(treeRepoRule)
       .around(importRule)
-      .around(matchingRule);
-
-  DatasetImportDao diDao;
-  SectorImportDao siDao;
-  EstimateDao eDao;
+      .around(matchingRule)
+      .around(syncFactoryRule);
 
   TaxonDao tdao;
-  SectorDao sdao;
 
-  public static void setupNamesIndex(SqlSessionFactory factory) {
-    try {
-      nidx = NameIndexFactory.memory(factory, AuthorshipNormalizer.INSTANCE);
-      nidx.start();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   @Before
   public void init () throws IOException, SQLException {
-    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    eDao = new EstimateDao(PgSetupRule.getSqlSessionFactory(), validator);
     // reset draft
     dataRule.truncateDraft();
     dataRule.loadData();
     // rematch draft
     matchingRule.rematch(dataRule.testData.key);
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
-    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
-    setupNamesIndex(PgSetupRule.getSqlSessionFactory());
-    umatcher = new UsageMatcher(Datasets.COL, nidx, PgSetupRule.getSqlSessionFactory());
+    tdao = syncFactoryRule.getTdao();
   }
 
-  @After
-  public void tearDown () throws Exception {
-    nidx.close();
-  }
-  
   public int datasetKey(int key, DataFormat format) {
     return importRule.datasetKey(key, format);
   }
@@ -206,22 +179,18 @@ public class SectorSyncIT {
   }
 
   public void syncAll() {
-    syncAll(sdao, siDao, eDao, null);
+    syncAll(null);
   }
 
   public void syncMergesOnly() {
-    syncAll(sdao, siDao, eDao, s -> s.getMode() == Sector.Mode.MERGE);
+    syncAll(s -> s.getMode() == Sector.Mode.MERGE);
   }
 
-  void sync(Sector s) {
-    sync(s, sdao, siDao, eDao);
-  }
-
-  public static void syncAll(SectorDao sdao, SectorImportDao siDao, EstimateDao eDao, @Nullable Predicate<Sector> filter) {
+  public static void syncAll(@Nullable Predicate<Sector> filter) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
         if (filter == null || filter.test(s)) {
-          sync(s, sdao, siDao, eDao);
+          sync(s);
         }
       }
     }
@@ -230,9 +199,8 @@ public class SectorSyncIT {
   /**
    * Syncs into the project
    */
-  static void sync(Sector s, SectorDao sdao, SectorImportDao siDao, EstimateDao eDao) {
-    SectorSync ss = SectorSync.project(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), sdao, siDao, eDao,
-        SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+  static void sync(Sector s) {
+    SectorSync ss = syncFactoryRule.getSyncFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     runSync(ss);
   }
 
@@ -244,15 +212,13 @@ public class SectorSyncIT {
     }
   }
   private void deleteFull(Sector s) {
-    SectorDeleteFull sd = new SectorDeleteFull(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
-        sdao, siDao, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    SectorDeleteFull sd = syncFactoryRule.getSyncFactory().deleteFull(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR FULL DELETION " + s.getKey() + " ***");
     sd.run();
   }
 
   private void delete(Sector s) {
-    SectorDelete sd = new SectorDelete(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), sdao, siDao,
-      SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    SectorDelete sd = syncFactoryRule.getSyncFactory().delete(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();
   }

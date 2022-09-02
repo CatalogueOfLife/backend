@@ -30,18 +30,18 @@ public class UsageMatcherTest {
 
   @Test
   public void match() {
-    UsageMatcher matcher = new UsageMatcher(dataRule.testData.key, matchingRule.getIndex(), PgSetupRule.getSqlSessionFactory());
+    UsageMatcherGlobal matcher = new UsageMatcherGlobal(matchingRule.getIndex(), PgSetupRule.getSqlSessionFactory());
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
       var orig = num.get(dsid.id("u101"));
       matcher.add(orig);
 
-      var match = matcher.match(num.get(dsid), null);
+      var match = matcher.match(dsid.getDatasetKey(), num.get(dsid), null);
       ((Synonym)orig).setAccepted(null); // is purposely not populated in matches - parentID is enough
       assertEquals(match.usage, orig);
 
       matcher.clear();
-      match = matcher.match(num.get(dsid), null);
+      match = matcher.match(dsid.getDatasetKey(), num.get(dsid), null);
       assertEquals(match.usage, orig);
     }
   }

@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class NameMatchingRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(NameMatchingRule.class);
 
-  private NameIndex nidx;
+  private static NameIndex nidx;
   private final Supplier<SqlSessionFactory> factorySupplier;
 
   public NameMatchingRule() {
@@ -43,7 +43,7 @@ public class NameMatchingRule extends ExternalResource {
     RematchJob.one(TestDataRule.TEST_USER.getKey(), factorySupplier.get(), nidx, datasetKey).run();
   }
 
-  public NameIndex getIndex() {
+  public static NameIndex getIndex() {
     return nidx;
   }
 

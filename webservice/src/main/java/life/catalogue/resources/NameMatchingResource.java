@@ -38,17 +38,18 @@ public class NameMatchingResource {
    */
   @GET
   public NameMatch match(@QueryParam("q") String q,
+                         @QueryParam("authorship") String authorship,
                          @QueryParam("rank") Rank rank,
                          @QueryParam("code") NomCode code,
                          @QueryParam("verbose") boolean verbose) throws InterruptedException {
-    Name n = name(q, rank, code);
+    Name n = name(q, authorship, rank, code);
     NameMatch m = ni.match(n, false, verbose);
     LOG.debug("Matching {} to {}", n.getLabel(), m);
     return m;
   }
   
-  static Name name(String name, Rank rank, NomCode code) throws InterruptedException {
-    Optional<ParsedNameUsage> opt = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID);
+  static Name name(String name, String authorship, Rank rank, NomCode code) throws InterruptedException {
+    Optional<ParsedNameUsage> opt = NameParser.PARSER.parse(name, authorship, rank, code, IssueContainer.VOID);
     if (opt.isPresent()) {
       Name n = opt.get().getName();
       // use parser determined code and rank in case nothing was given explicitly
