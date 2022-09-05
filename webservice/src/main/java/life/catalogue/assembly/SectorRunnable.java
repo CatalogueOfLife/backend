@@ -48,6 +48,8 @@ abstract class SectorRunnable implements Runnable {
   List<Sector> childSectors;
   // map with foreign child id to original parent name
   Map<String, Name> foreignChildrenParents = new HashMap<>();
+  private final UsageMatcherGlobal matcher;
+  private final boolean clearMatcherCache;
   private final Consumer<SectorRunnable> successCallback;
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
@@ -57,10 +59,12 @@ abstract class SectorRunnable implements Runnable {
   /**
    * @throws IllegalArgumentException if the sectors dataset is not of PROJECT origin
    */
-  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, SqlSessionFactory factory,
-                 NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
+  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, boolean clearMatcherCache, SqlSessionFactory factory,
+                 UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
                  Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
+    this.matcher = matcher;
+    this.clearMatcherCache = clearMatcherCache;
     this.validateSector = validateSector;
     this.factory = factory;
     this.indexService = indexService;
@@ -113,6 +117,11 @@ abstract class SectorRunnable implements Runnable {
       state.setState( ImportState.PREPARING);
       LOG.info("Start {} for sector {}", this.getClass().getSimpleName(), sectorKey);
       init();
+
+      // clear matcher cache?
+      if (clearMatcherCache) {
+        matcher.clear(sectorKey.getDatasetKey());
+      }
 
       doWork();
 

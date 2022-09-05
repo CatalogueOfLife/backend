@@ -1,7 +1,5 @@
 package life.catalogue.assembly;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.EstimateDao;
@@ -48,7 +46,7 @@ public class SectorSync extends SectorRunnable {
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
                      NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
                      Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, true, true, factory, indexService, sdao, sid, successCallback, errorCallback, user);
+    super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, successCallback, errorCallback, user);
     this.project = project;
     this.sid = sid;
     this.estimateDao = estimateDao;

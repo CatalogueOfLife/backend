@@ -37,7 +37,7 @@ public class UsageMatcherGlobal {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherGlobal.class);
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
-  // key = canonical nidx
+  // key = datasetKey + canonical nidx
   private final LoadingCache<DSID<Integer>, List<NameUsageBase>> usages = Caffeine.newBuilder()
                                                                                  .maximumSize(100_000)
                                                                                  .build(this::loadUsage);
@@ -300,15 +300,6 @@ public class UsageMatcherGlobal {
   }
 
   /**
-   * Evicts all name usages with the given canonical nameIndexID from the cache.
-   */
-  private void delete(@Nullable Integer cidx) {
-    if (cidx != null) {
-      usages.invalidate(cidx);
-    }
-  }
-
-  /**
    * Manually adds a name usage to the cache. Requires the datasetKey to be set correctly.
    * The name will be matched to the names index if it does not have a names index id yet.
    */
@@ -329,6 +320,24 @@ public class UsageMatcherGlobal {
     }
   }
 
+  /**
+   * Removes a single entry from the matcher cache.
+   * If it is not cached yet, nothing will happen.
+   * @param nidx any names index id
+   */
+  public void clear(int datasetKey, int nidx) {
+    var n = nameIndex.get(nidx);
+    if (n != null) {
+      if (n.getCanonicalId() != null && !n.isCanonical()) {
+        nidx = n.getCanonicalId();
+      }
+      usages.invalidate(DSID.of(datasetKey, nidx));
+    }
+  }
+
+  /**
+   * Removes all usages from the given dataset from the matcher cache.
+   */
   public void clear(int datasetKey) {
     int count = 0;
     for (var k : usages.asMap().keySet()) {
@@ -340,6 +349,9 @@ public class UsageMatcherGlobal {
     LOG.info("Cleared {} usages from the cache", count);
   }
 
+  /**
+   * Wipes the entire cache.
+   */
   public void clear() {
     usages.invalidateAll();
     LOG.warn("Cleared entire cache");

@@ -615,6 +615,13 @@ public class SectorSyncIT {
     final NameUsageBase asteraceae = getByName(Datasets.COL, Rank.FAMILY, "Asteraceae");
     createSector(Sector.Mode.MERGE, src, asteraceae);
 
+    // do the merges 3 times to make sure internal deletions and the matcher cache work correct
+    mergeAndTest(plant);
+    mergeAndTest(plant);
+    mergeAndTest(plant);
+  }
+
+  void mergeAndTest(NameUsageBase plant) throws IOException {
     syncMergesOnly();
 
     final String plantID = plant.getId();
@@ -628,5 +635,4 @@ public class SectorSyncIT {
     assertNull(plant2.getSectorKey());
     assertEquals(plantID, plant2.getId());
   }
-  
 }

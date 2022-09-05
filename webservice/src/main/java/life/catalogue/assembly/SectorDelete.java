@@ -32,10 +32,10 @@ public class SectorDelete extends SectorRunnable {
   private static final Rank maxAmbiguousRank = Arrays.stream(Rank.values()).filter(Rank::isAmbiguous).max(Rank::compareTo).orElseThrow(() -> new IllegalStateException("No ambiguous ranks exist"));
   private Rank cutoffRank = Rank.SPECIES;
 
-  SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
+  SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, false, false, factory, indexService, dao, sid, successCallback, errorCallback, user);
+    super(sectorKey, false, false, true, factory, matcher, indexService, dao, sid, successCallback, errorCallback, user);
   }
 
   @Override
@@ -69,7 +69,6 @@ public class SectorDelete extends SectorRunnable {
         throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
       }
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      NameMapper nm = session.getMapper(NameMapper.class);
       VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
 
       // create a temp table that holds usage and name ids to be deleted - we need to be flexible keeping some

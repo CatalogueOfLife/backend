@@ -12,7 +12,7 @@ import org.junit.rules.TestRule;
 
 import static org.junit.Assert.assertEquals;
 
-public class ProjectDuplication2IT extends ProjectBaseIT {
+public class ProjectDuplicationEmptyIT extends ProjectBaseIT {
 
   public final static TestDataRule dataRule = TestDataRule.apple();
 

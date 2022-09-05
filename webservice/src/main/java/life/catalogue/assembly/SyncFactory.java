@@ -48,10 +48,10 @@ public class SyncFactory {
   }
 
   public SectorDelete delete(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    return new SectorDelete(sectorKey, factory, indexService, sd, sid, successCallback, errorCallback, user);
+    return new SectorDelete(sectorKey, factory, matcher, indexService, sd, sid, successCallback, errorCallback, user);
   }
 
   public SectorDeleteFull deleteFull(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    return new SectorDeleteFull(sectorKey, factory, indexService, sd, sid, successCallback, errorCallback, user);
+    return new SectorDeleteFull(sectorKey, factory, matcher, indexService, sd, sid, successCallback, errorCallback, user);
   }
 }
