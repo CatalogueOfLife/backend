@@ -748,6 +748,27 @@ public class NameIndexImplIT {
     assertEquals(20, ni.size());
   }
 
+  @Test
+  public void testMissingAuthorBrackets() throws Exception {
+    setupMemory(true);
+    assertEquals(0, ni.size());
+
+    var m = ni.match(name("Caretta caretta Linnaeus", Rank.SPECIES), true, true);
+    assertEquals("Linnaeus", m.getName().getAuthorship());
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals(2, ni.size());
+
+    m = ni.match(name("Caretta caretta (Linnaeus)", Rank.SPECIES), true, true);
+    assertEquals(MatchType.VARIANT, m.getType());
+    assertEquals("Linnaeus", m.getName().getAuthorship());
+    assertEquals(2, ni.size());
+
+    m = ni.match(name("Caretta caretta (Peter)", Rank.SPECIES), true, true);
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals("(Peter)", m.getName().getAuthorship());
+    assertEquals(3, ni.size());
+  }
+
   static Name name(String name, Rank rank) throws InterruptedException {
     Name n = TestEntityGenerator.setUserDate(NameParser.PARSER.parse(name, rank, null, IssueContainer.VOID).get().getName());
     n.setRank(rank);
