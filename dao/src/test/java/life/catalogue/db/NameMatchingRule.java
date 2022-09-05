@@ -1,5 +1,6 @@
 package life.catalogue.db;
 
+import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
@@ -36,7 +37,7 @@ public class NameMatchingRule extends ExternalResource {
     nidx = NameIndexFactory.memory(factory, AuthorshipNormalizer.INSTANCE);
     nidx.start();
     LOG.info("Rematch all names");
-    RematchJob.all(TestDataRule.TEST_USER.getKey(), factory, nidx).run();
+    RematchJob.all(Users.MATCHER, factory, nidx).run();
   }
 
   public void rematch(int datasetKey) {
