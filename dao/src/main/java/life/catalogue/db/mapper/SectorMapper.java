@@ -71,7 +71,7 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
    * @param priority priority to test
    * @return the primary key of the sector if found
    */
-  Integer getByPriority(@Param("datasetKey") Integer datasetKey, @Param("priority") Integer priority);
+  Sector getByPriority(@Param("datasetKey") Integer datasetKey, @Param("priority") Integer priority);
 
   /**
    * Increases the priority value of all sectors in the given dataset which have the same or a higher priority value currently.

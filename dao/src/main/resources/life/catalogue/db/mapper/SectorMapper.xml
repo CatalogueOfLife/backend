@@ -26,6 +26,7 @@
     s.target_code,
     tt.id IS NULL AS target_broken,
     s.mode,
+    s.priority,
     s.code,
     s.placeholder_rank,
     s.ranks,
@@ -60,6 +61,7 @@
     target_rank,
     target_code,
     mode,
+    priority,
     code,
     placeholder_rank,
     ranks,
@@ -85,6 +87,7 @@
     #{target.rank}::RANK,
     #{target.code}::NOMCODE,
     #{mode}::SECTOR_MODE,
+    #{priority},
     #{code}::NOMCODE,
     #{placeholderRank}::RANK,
     #{ranks, typeHandler=life.catalogue.db.type2.RankSetTypeHandler},
@@ -313,5 +316,16 @@
     FROM dataset d
     WHERE s.id = #{key.id} AND s.dataset_key=#{key.datasetKey}
       AND d.key=s.subject_dataset_key
+  </update>
+
+  <select id="getByPriority" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE s.priority = #{priority} AND s.dataset_key = #{datasetKey}
+  </select>
+
+  <update id="incLowerPriorities" parameterType="integer">
+    UPDATE sector SET priority = priority+1
+    WHERE dataset_key=#{datasetKey} AND priority &gt;= #{priority}
   </update>
 </mapper>

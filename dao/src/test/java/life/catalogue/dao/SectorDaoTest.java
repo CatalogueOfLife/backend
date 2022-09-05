@@ -52,6 +52,46 @@ public class SectorDaoTest extends DaoTestBase {
     assertSectorCounts();
   }
 
+  @Test
+  public void updateRedoPrios() {
+
+    try (SqlSession session = factory().openSession(true)) {
+      MybatisTestUtils.populateDraftTree(session);
+      MybatisTestUtils.populateTestTree(12, session);
+
+      TaxonMapper txm = session.getMapper(TaxonMapper.class);
+      txm.resetDatasetSectorCount(3);
+      session.commit();
+    }
+
+    Sector s = SectorMapperTest.create();
+    s.getSubject().setId("root-1");
+    s.getTarget().setId("t4"); // Coleoptera
+    dao.create(s, user);
+
+    var s2 = dao.get(s);
+    assertNull(s.getPriority());
+
+    s.setPriority(100);
+    dao.update(s,user);
+    assertEquals(100, (int) s.getPriority());
+
+
+    s2 = SectorMapperTest.create();
+    s2.setSubjectDatasetKey(12);
+    s2.getSubject().setId("t2");
+    s2.getTarget().setId("t1"); // Animalia
+    dao.create(s2, user);
+    s2.setPriority(100);
+    dao.update(s2,user);
+
+    var s3 = dao.get(s2);
+    assertEquals(100, (int) s3.getPriority());
+    s3 = dao.get(s);
+    assertEquals(101, (int) s3.getPriority());
+
+  }
+
   /**
    * 3 sectors, 2 from source 12, 1 from 11
    */
