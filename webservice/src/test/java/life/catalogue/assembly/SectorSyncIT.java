@@ -3,7 +3,6 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.*;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
@@ -11,10 +10,7 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
-import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.PgImportRule;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexFactory;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -31,11 +27,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -200,7 +193,7 @@ public class SectorSyncIT {
    * Syncs into the project
    */
   static void sync(Sector s) {
-    SectorSync ss = syncFactoryRule.getSyncFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    SectorSync ss = SyncFactoryRule.getFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     runSync(ss);
   }
 
@@ -212,13 +205,13 @@ public class SectorSyncIT {
     }
   }
   private void deleteFull(Sector s) {
-    SectorDeleteFull sd = syncFactoryRule.getSyncFactory().deleteFull(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    SectorDeleteFull sd = SyncFactoryRule.getFactory().deleteFull(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR FULL DELETION " + s.getKey() + " ***");
     sd.run();
   }
 
   private void delete(Sector s) {
-    SectorDelete sd = syncFactoryRule.getSyncFactory().delete(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    SectorDelete sd = SyncFactoryRule.getFactory().delete(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();
   }

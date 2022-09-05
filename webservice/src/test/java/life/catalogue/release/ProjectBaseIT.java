@@ -7,15 +7,12 @@ import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dao.*;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-import life.catalogue.importer.PgImportRule;
-import life.catalogue.matching.NameIndexFactory;
 
 import java.net.URI;
 
@@ -69,7 +66,7 @@ public abstract class ProjectBaseIT {
     validator = Validation.buildDefaultValidatorFactory().getValidator();
     dDao = new DatasetDao(100, PgSetupRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, null, ImageService.passThru(), syncFactoryRule.getDiDao(), exDao, NameUsageIndexService.passThru(), null, bus, validator);
     client = HttpClientUtils.httpsClient();
-    projectCopyFactory = new ProjectCopyFactory(client, NameMatchingRule.getIndex(), syncFactoryRule.getSyncFactory(),
+    projectCopyFactory = new ProjectCopyFactory(client, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(),
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, PgSetupRule.getSqlSessionFactory(), validator, cfg
     );

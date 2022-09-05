@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class SyncFactoryRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(SyncFactoryRule.class);
 
-  private SyncFactory syncFactory;
+  private static SyncFactory syncFactory;
   private UsageMatcherGlobal matcher;
   private TaxonDao tdao;
   private SectorDao sdao;
@@ -46,7 +46,7 @@ public class SyncFactoryRule extends ExternalResource {
     syncFactory = new SyncFactory(PgSetupRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru());
   }
 
-  public SyncFactory getSyncFactory() {
+  public static SyncFactory getFactory() {
     return syncFactory;
   }
 

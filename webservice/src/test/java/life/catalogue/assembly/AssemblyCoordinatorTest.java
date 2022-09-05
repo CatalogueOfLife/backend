@@ -50,7 +50,7 @@ public class AssemblyCoordinatorTest {
   public void init() {
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, syncFactoryRule.getDiDao());
 
-    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), syncFactoryRule.getSyncFactory(), new MetricRegistry());
+    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
   }
   
   @Test(expected = IllegalArgumentException.class)
