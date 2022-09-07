@@ -160,7 +160,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
     fillTaxonInfo(session, info, null, true, true, true, true, true, true,
-      false, true, true, true);
+      true, true, true, true);
     return info;
   }
 
@@ -604,7 +604,14 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       LOG.info("Updated dataset sector counts from {} sectors", scConsumer.counter);
     }
   }
-  
+
+  public Treatment getTreatment(DSIDValue<String> key) {
+    try (SqlSession session = factory.openSession()) {
+      TreatmentMapper tm = session.getMapper(TreatmentMapper.class);
+      return tm.get(key);
+    }
+  }
+
   static class SectorCountUpdHandler implements Consumer<Sector> {
     private final TaxonMapper tm;
     int counter = 0;

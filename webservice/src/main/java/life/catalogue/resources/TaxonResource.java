@@ -2,6 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.TreatmentFormat;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.*;
 
@@ -84,6 +85,23 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
       throw NotFoundException.notFound(Taxon.class, datasetKey, id);
     }
     return info;
+  }
+
+  @GET
+  @Path("{id}/treatment")
+  public Treatment treatment(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.getTreatment(DSID.of(datasetKey, id));
+  }
+
+  @GET
+  @Produces(MediaType.TEXT_HTML)
+  @Path("{id}/treatment")
+  public String treatmentAsHtml(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    var t = dao.getTreatment(DSID.of(datasetKey, id));
+    if (t != null && t.getFormat() == TreatmentFormat.HTML) {
+      return t.getDocument();
+    }
+    return null;
   }
 
   @GET
