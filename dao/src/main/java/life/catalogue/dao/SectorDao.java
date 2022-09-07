@@ -126,7 +126,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
-  private static Taxon reloadTaxon(Sector s, String kind, Supplier<DSID<String>> getter, Consumer<SimpleNameLink> setter, TaxonMapper tm) {
+  public static Taxon verifyTaxon(Sector s, String kind, Supplier<DSID<String>> getter, TaxonMapper tm) {
     DSID<String> did = getter.get();
     Taxon tax = null;
     if (did != null) {
@@ -137,6 +137,11 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     } else if (s.getMode() != Sector.Mode.MERGE){
       throw new IllegalArgumentException(kind + " required for " + s.getMode() + " sector");
     }
+    return tax;
+  }
+
+  private static Taxon reloadTaxon(Sector s, String kind, Supplier<DSID<String>> getter, Consumer<SimpleNameLink> setter, TaxonMapper tm) {
+    Taxon tax = verifyTaxon(s, kind, getter, tm);
     if (tax != null) {
       setter.accept(tax.toSimpleNameLink());
     } else {

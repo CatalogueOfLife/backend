@@ -99,7 +99,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @POST
   @Path("sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user, @Context SqlSession session) {
+  public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user) {
     DaoUtils.requireManaged(datasetKey);
     assembly.sync(datasetKey, request, user);
   }
@@ -112,6 +112,14 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
     boolean full = Boolean.parseBoolean(uri.getQueryParameters().getFirst("full"));
     assembly.deleteSector(DSID.of(datasetKey, id), full, user);
+  }
+
+  @POST
+  @Path("{id}/sync")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void runSync(@PathParam("key") int datasetKey, @PathParam("id") int id, @Auth User user) {
+    RequestScope req = RequestScope.sector(DSID.of(datasetKey, id));
+    sync(datasetKey, req, user);
   }
 
   @DELETE

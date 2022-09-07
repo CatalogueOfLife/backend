@@ -220,24 +220,9 @@ abstract class SectorRunnable implements Runnable {
       if (validate) {
         // assert that target actually exists. Subject might be bad - not needed for deletes!
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
-        
-        // check if target actually exists
-        String msg = "Sector " + s.getKey() + " does have a non existing target " + s.getTarget() + " for dataset " + sectorKey.getDatasetKey();
-        try {
-          ObjectUtils.checkNotNull(s.getTarget(), s + " does not have any target");
-          ObjectUtils.checkNotNull(tm.get(s.getTargetAsDSID()), "Sector " + s.getKey() + " does have a non existing target id");
-        } catch (PersistenceException e) {
-          throw new IllegalArgumentException(msg, e);
-        }
-  
-        // also validate the subject for syncs
-        msg = "Sector " + s.getKey() + " does have a non existing subject " + s.getSubject() + " for dataset " + subjectDatasetKey;
-        try {
-          ObjectUtils.checkNotNull(s.getSubject(), s + " does not have any subject");
-          ObjectUtils.checkNotNull(tm.get(s.getSubjectAsDSID()), msg);
-        } catch (PersistenceException e) {
-          throw new IllegalArgumentException(msg, e);
-        }
+
+        SectorDao.verifyTaxon(s, "subject", s::getSubjectAsDSID, tm);
+        SectorDao.verifyTaxon(s, "target", s::getTargetAsDSID, tm);
       }
       // load current dataset import
       var datasetImport = session.getMapper(DatasetImportMapper.class).last(subjectDatasetKey);
