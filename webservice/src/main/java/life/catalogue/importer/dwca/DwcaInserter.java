@@ -5,6 +5,8 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.TypeMaterial;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.terms.EolDocumentTerm;
+import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.csv.DwcaReader;
@@ -53,21 +55,6 @@ public class DwcaInserter extends NeoCsvInserter {
         u -> store.createNameAndUsage(u) != null
     );
 
-    // https://github.com/CatalogueOfLife/backend/issues/1071
-    // TODO: read type specimen extension and create type material & update name usage!
-    // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
-    //updateEntities(reader, DwcTerm.Taxon,
-    //    inter::interpret,
-    //    u -> store.createNameAndUsage(u) != null
-    //);
-
-    // TODO: read occurrence extension and create type material
-    // http://rs.gbif.org/extension/gbif/1.0/occurrence.xml
-    //updateEntities(reader, DwcTerm.Taxon,
-    //    inter::interpret,
-    //    u -> store.createNameAndUsage(u) != null
-    //);
-
     insertRelations(reader, DwcUnofficialTerm.NameRelation,
         inter::interpretNameRelations,
         store.names(),
@@ -80,6 +67,10 @@ public class DwcaInserter extends NeoCsvInserter {
     interpretTypeMaterial(reader, DwcTerm.Occurrence,
       inter::interpretTypeMaterial
     );
+
+    // https://github.com/CatalogueOfLife/backend/issues/1071
+    // TODO: read type specimen extension and create type material or name relation for type names
+    // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
 
     insertTaxonEntities(reader, GbifTerm.Distribution,
         inter::interpretDistribution,
@@ -100,20 +91,28 @@ public class DwcaInserter extends NeoCsvInserter {
     );
 
     insertTaxonEntities(reader, GbifTerm.Reference,
-        inter::interpretReference,
-        DwcaTerm.ID,
-        (t, r) -> {
-          if (store.references().create(r)) {
-            if (t.isNameUsageBase()) {
-              t.asNameUsageBase().getReferenceIds().add(r.getId());
-            }
-          } else {
-
-          }
+      inter::interpretReference,
+      DwcaTerm.ID,
+      (t, r) -> {
+        if (store.references().create(r) && t.isNameUsageBase()) {
+          t.asNameUsageBase().getReferenceIds().add(r.getId());
         }
+      }
     );
 
-    //TODO: insert treatments via EOL Document extension !!!
+    insertTaxonEntities(reader, EolReferenceTerm.Reference,
+      inter::interpretEolReference,
+      DwcaTerm.ID,
+      (t, r) -> {
+        if (store.references().create(r) && t.isNameUsageBase()) {
+          t.asNameUsageBase().getReferenceIds().add(r.getId());
+        }
+      }
+    );
+
+    interpretTreatment(reader, EolDocumentTerm.Document,
+      inter::interpretTreatment
+    );
   }
   
   @Override

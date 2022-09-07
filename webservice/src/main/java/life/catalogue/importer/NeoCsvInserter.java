@@ -239,6 +239,26 @@ public abstract class NeoCsvInserter implements NeoInserter {
     });
   }
 
+  protected void interpretTreatment(final CsvReader reader, final Term classTerm,
+                                       Function<VerbatimRecord, Optional<Treatment>> interpret
+  ) {
+    processVerbatim(reader, classTerm, rec -> {
+      Optional<Treatment> opt = interpret.apply(rec);
+      if (opt.isPresent()) {
+        Treatment t = opt.get();
+        var nu = store.usages().objByID(t.getId());
+        if (nu == null) {
+          rec.addIssue(Issue.TAXON_ID_INVALID);
+          return false;
+        } else {
+          nu.treatment = t;
+          store.usages().update(nu);
+        }
+      }
+      return false;
+    });
+  }
+
   /**
    * Reads all kind of metadata with preference of metadata.yaml > metadata.json > eml.xml
    */

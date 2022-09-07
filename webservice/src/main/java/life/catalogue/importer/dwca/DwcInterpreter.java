@@ -1,8 +1,13 @@
 package life.catalogue.importer.dwca;
 
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.terms.EolReferenceTerm;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
+import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
@@ -17,6 +22,8 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.DwcaTerm;
 import org.gbif.dwc.terms.GbifTerm;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -85,6 +92,13 @@ public class DwcInterpreter extends InterpreterBase {
         rec.get(DcTerm.source),
         rec
     ));
+  }
+
+  /**
+   * As used by Plazi
+   */
+  List<Reference> interpretEolReference(VerbatimRecord v) {
+    return Lists.newArrayList(refFactory.fromEOL(v));
   }
   
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
@@ -216,6 +230,17 @@ public class DwcInterpreter extends InterpreterBase {
       m.addRemarks(rec.get(DwcTerm.sex));
       setReference(m, rec);
       return Optional.of(m);
+    }
+    return Optional.empty();
+  }
+
+  public Optional<Treatment> interpretTreatment(VerbatimRecord v) {
+    if (v.hasTerm(DcTerm.description)) {
+      Treatment t = new Treatment();
+      t.setId(v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID));
+      t.setFormat(TreatmentFormat.HTML);
+      t.setDocument(v.getRaw(DcTerm.description));
+      return Optional.of(t);
     }
     return Optional.empty();
   }

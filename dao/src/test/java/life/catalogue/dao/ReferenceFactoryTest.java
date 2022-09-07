@@ -2,12 +2,18 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DoiResolution;
+import life.catalogue.api.vocab.terms.BiboOntTerm;
+import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.metadata.DoiResolver;
 
 import java.util.List;
+
+import org.gbif.dwc.terms.DcTerm;
+
+import org.gbif.dwc.terms.DwcTerm;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -119,6 +125,36 @@ public class ReferenceFactoryTest {
     assertEquals(doi, r.getCsl().getDOI());
     assertEquals(link, r.getCsl().getURL());
     assertEquals("authors. (1920). title. Source, 7(31). https://doi.org/10.1126/science.169.3946.635", r.getCitation());
+  }
+
+  @Test
+  public void fromEOL() {
+    VerbatimRecord v = new VerbatimRecord();
+    v.getTerms().put(DcTerm.identifier, "0CF2621593C45BDA86AE45DE3C908ADD.ref");
+    v.getTerms().put(DwcTerm.taxonID, "0CF2621593C45BDA86AE45DE3C908ADD.taxon");
+    v.getTerms().put(EolReferenceTerm.publicationType, "journal article");
+    v.getTerms().put(EolReferenceTerm.full_reference, "Zhang, Zhen, Zhang, Mei-Jiao, Zhang, Jian-Hang, Zhang, De-Shun, Li, Hong-Qing (2022): Ficus motuoensis (Moraceae), a new species from southwest China. PhytoKeys 206, 119-127: 119-119, DOI:http://dx.doi.org/10.3897/phytokeys.206.89338, URL:http://dx.doi.org/10.3897/phytokeys.206.89338");
+    v.getTerms().put(EolReferenceTerm.primaryTitle, "Ficus motuoensis (Moraceae), a new species from southwest China");
+    v.getTerms().put(BiboOntTerm.pages, "119");
+    v.getTerms().put(BiboOntTerm.pageStart, "119");
+    v.getTerms().put(BiboOntTerm.journal, "PhytoKeys");
+    v.getTerms().put(BiboOntTerm.volume, "206");
+    v.getTerms().put(BiboOntTerm.authorList, "Zhang, Zhen;Zhang, Mei-Jiao;Zhang, Jian-Hang;Zhang, De-Shun;Li, Hong-Qing");
+    v.getTerms().put(DcTerm.created, "2022");
+    v.getTerms().put(DcTerm.language, "en");
+
+    Reference r = rf.fromEOL(v);
+    assertEquals(v.get(DcTerm.identifier), r.getId());
+    assertEquals(2022, (int) r.getYear());
+    assertEquals("Zhang", r.getCsl().getAuthor()[0].getFamily());
+    assertEquals(v.get(EolReferenceTerm.primaryTitle), r.getCsl().getTitle());
+    assertEquals("PhytoKeys", r.getCsl().getContainerTitle());
+    assertEquals("206", r.getCsl().getVolume());
+    assertEquals("119", r.getCsl().getPage());
+    assertNull(r.getRemarks());
+    assertNull(r.getCsl().getDOI());
+    assertNull(r.getCsl().getURL());
+    assertEquals("Zhang, Z., Zhang, M.-J., Zhang, J.-H., Zhang, D.-S., & Li, H.-Q. (2022). Ficus motuoensis (Moraceae), a new species from southwest China. PhytoKeys, 206, 119.", r.getCitation());
   }
 
   @Test
