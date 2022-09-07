@@ -1537,7 +1537,7 @@ CREATE TABLE treatment (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
-  verbatim_key INTEGER NOT NULL,
+  verbatim_key INTEGER,
   format TREATMENTFORMAT,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
