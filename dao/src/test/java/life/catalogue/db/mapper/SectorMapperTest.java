@@ -71,6 +71,24 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertNull(mapper().getBySubject(targetDatasetKey, DSID.of(subjectDatasetKey +1, TestEntityGenerator.TAXON1.getId())));
     assertNull(mapper().getBySubject(targetDatasetKey, DSID.of(subjectDatasetKey, TestEntityGenerator.TAXON1.getId()+"dfrtgzh")));
   }
+
+  @Test
+  public void missingSubject() {
+    // create a few draft taxa to attach sectors to
+    MybatisTestUtils.populateDraftTree(session());
+
+    s1 = createTestEntity(targetDatasetKey);
+    s1.setMode(Sector.Mode.MERGE);
+    s1.setSubject(null);
+    s1.setTarget(null);
+    mapper().create(s1);
+
+    var s2 = mapper().get(s1);
+    assertNotNull(s2);
+    System.out.println(s2.getSubject());
+    assertNull(s2.getSubject());
+    assertNull(s2.getTarget());
+  }
   
   @Test
   public void listByTarget() {
