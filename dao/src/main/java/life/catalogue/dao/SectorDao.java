@@ -191,6 +191,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   }
 
   /**
+   * Move also root target taxa of the sector in case the target was changed.
    * We already verified the target taxon exists in the before update...
    */
   @Override
@@ -199,8 +200,8 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       incSectorCounts(session, obj, 1);
       incSectorCounts(session, old, -1);
     }
-    // update usages in case the target has changed!
-    if (!Objects.equals(simpleNameID(old.getTarget()), simpleNameID(obj.getTarget())) && obj.getTarget().getId()!=null) {
+    // update usages in case the target has changed and it wasn't a MERGE!
+    if (obj.getMode() != Sector.Mode.MERGE && simpleNameID(obj.getTarget()) != null && !Objects.equals(simpleNameID(old.getTarget()), simpleNameID(obj.getTarget()))) {
       // loop over sector root taxa as the old target id might be missing or even wrong. Only trust real usage data!
       final DSID<String> key = DSID.of(obj.getDatasetKey(), null);
       for (SimpleName sn : session.getMapper(NameUsageMapper.class).sectorRoot(obj)) {
