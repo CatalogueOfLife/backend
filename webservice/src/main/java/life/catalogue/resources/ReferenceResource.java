@@ -4,7 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
 import javax.annotation.security.RolesAllowed;

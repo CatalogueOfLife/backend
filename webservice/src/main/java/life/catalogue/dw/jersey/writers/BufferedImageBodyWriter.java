@@ -1,6 +1,6 @@
 package life.catalogue.dw.jersey.writers;
 
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

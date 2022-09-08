@@ -1,6 +1,8 @@
 package life.catalogue.dw.jersey.writers;
 
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.ws.MoreMediaTypes;
+
 import org.apache.ibatis.cursor.Cursor;
 
 import javax.ws.rs.Produces;
@@ -30,7 +32,7 @@ public class CursorBodyTxtWriter implements MessageBodyWriter<Cursor<?>> {
   
   @Override
   public void writeTo(Cursor<?> c, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
-    TxtBodyWriter.setUTF8ContentType(mt, headers);
+    MoreMediaTypes.setUTF8ContentType(mt, headers);
     try (Writer writer = UTF8IoUtils.writerFromStream(out)) {
       c.forEach(obj -> {
         try {

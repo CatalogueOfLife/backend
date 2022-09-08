@@ -4,7 +4,7 @@ import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.dao.DuplicateDao;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
 import java.util.stream.Stream;

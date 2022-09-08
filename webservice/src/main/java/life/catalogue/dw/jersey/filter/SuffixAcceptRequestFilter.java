@@ -1,6 +1,6 @@
 package life.catalogue.dw.jersey.filter;
 
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.net.URI;
 import java.util.Map;

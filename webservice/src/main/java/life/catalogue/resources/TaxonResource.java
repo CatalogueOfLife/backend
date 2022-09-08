@@ -2,12 +2,14 @@ package life.catalogue.resources;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.TreatmentFormat;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.*;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -18,11 +20,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import life.catalogue.dw.jersey.MoreHttpHeaders;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,12 +98,16 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
 
   @GET
-  @Produces(MediaType.TEXT_HTML)
+  @Produces({MediaType.TEXT_HTML, MediaType.TEXT_XML, MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_MARKDOWN})
   @Path("{id}/treatment")
-  public String treatmentAsHtml(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+  public Response treatmentAsHtml(@PathParam("key") int datasetKey, @PathParam("id") String id, @QueryParam("format") TreatmentFormat format) {
     var t = dao.getTreatment(DSID.of(datasetKey, id));
-    if (t != null && t.getFormat() == TreatmentFormat.HTML) {
-      return t.getDocument();
+    if (t != null) {
+      return Response.ok()
+                     .type(ObjectUtils.coalesce(format, TreatmentFormat.HTML).getMediaType().withCharset(StandardCharsets.UTF_8.name()))
+                     .encoding(StandardCharsets.UTF_8.name())
+                     .entity(t.getDocument())
+                     .build();
     }
     return null;
   }

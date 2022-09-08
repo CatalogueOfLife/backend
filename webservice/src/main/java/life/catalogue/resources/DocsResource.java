@@ -2,7 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.Resources;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.io.IOException;
 import java.io.InputStream;

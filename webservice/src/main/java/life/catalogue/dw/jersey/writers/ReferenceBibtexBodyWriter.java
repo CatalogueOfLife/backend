@@ -5,7 +5,7 @@ import life.catalogue.api.model.Reference;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -36,7 +36,7 @@ public class ReferenceBibtexBodyWriter implements MessageBodyWriter<Reference> {
 
   @Override
   public void writeTo(Reference ref, Class<?> aClass, Type type, Annotation[] annotations, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
-    TxtBodyWriter.setUTF8ContentType(mt, headers);
+    MoreMediaTypes.setUTF8ContentType(mt, headers);
     try (Writer w = UTF8IoUtils.writerFromStream(out)) {
       CslData csl;
       if (ref.getCsl() != null) {

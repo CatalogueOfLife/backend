@@ -1,7 +1,7 @@
 package life.catalogue.dw.jersey.writers;
 
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -25,10 +25,6 @@ import com.google.common.base.Throwables;
 @Provider
 public class TxtBodyWriter implements MessageBodyWriter<Stream<String>> {
 
-  static void setUTF8ContentType(MediaType mt, MultivaluedMap<String, Object> headers) {
-    headers.putSingle(HttpHeaders.CONTENT_TYPE, mt.toString() + ";charset=UTF-8");
-  }
-
   @Override
   public boolean isWriteable(Class<?> clazz, Type type, Annotation[] antns, MediaType mt) {
     if (type instanceof ParameterizedType) {
@@ -44,7 +40,7 @@ public class TxtBodyWriter implements MessageBodyWriter<Stream<String>> {
   
   @Override
   public void writeTo(Stream<String> rows, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
-    setUTF8ContentType(mt, headers);
+    MoreMediaTypes.setUTF8ContentType(mt, headers);
     BufferedWriter br = UTF8IoUtils.writerFromStream(out);
     try {
       rows.forEach(row -> {

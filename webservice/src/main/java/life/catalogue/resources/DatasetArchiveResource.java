@@ -3,7 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.io.File;
 import java.io.FileInputStream;

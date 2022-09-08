@@ -1,6 +1,8 @@
-package life.catalogue.dw.jersey;
+package life.catalogue.common.ws;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 
 public class MoreMediaTypes {
   public final static String IMG_BMP = "image/bmp";
@@ -36,6 +38,8 @@ public class MoreMediaTypes {
   public final static MediaType TEXT_CSV_TYPE = new MediaType("text", "csv");
   public final static String TEXT_TSV   = "text/tsv";
   public final static MediaType TEXT_TSV_TYPE = new MediaType("text", "tsv");
+  public final static String TEXT_MARKDOWN   = "text/markdown";
+  public final static MediaType TEXT_MARKDOWN_TYPE = new MediaType("text", "markdown");
   public final static String TEXT_COMMA_SEP = "text/comma-separated-values";
   public final static String TEXT_TAB_SEP   = "text/tab-separated-values";
   public final static String TEXT_CSS      = "text/css";
@@ -43,5 +47,10 @@ public class MoreMediaTypes {
   
   private MoreMediaTypes() {
   }
-  
+
+  public static void setUTF8ContentType(MediaType mt, MultivaluedMap<String, Object> headers) {
+    headers.putSingle(HttpHeaders.CONTENT_TYPE, mt.toString() + ";charset=UTF-8");
+  }
+
+
 }

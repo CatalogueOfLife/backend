@@ -12,7 +12,7 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.tree.*;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.es.NameUsageSearchService;

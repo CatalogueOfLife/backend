@@ -11,7 +11,7 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.release.AuthorlistGenerator;
 import life.catalogue.release.ProjectCopyFactory;

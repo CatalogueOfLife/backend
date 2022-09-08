@@ -5,7 +5,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MetadataFormat;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.provider.DatasetMessageBodyReader;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.eml.EmlParser;
