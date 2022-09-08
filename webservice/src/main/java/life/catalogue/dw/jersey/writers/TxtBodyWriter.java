@@ -28,10 +28,11 @@ public class TxtBodyWriter implements MessageBodyWriter<Stream<String>> {
   public boolean isWriteable(Class<?> clazz, Type type, Annotation[] antns, MediaType mt) {
     if (type instanceof ParameterizedType) {
       var pt = (ParameterizedType) type;
-      return MoreMediaTypes.TEXT_CSV_TYPE.isCompatible(mt)
-             && Stream.class.isAssignableFrom(clazz)
-             && pt.getActualTypeArguments().length == 1
-             && pt.getActualTypeArguments()[0] == String.class;
+      var b = MediaType.TEXT_PLAIN_TYPE.isCompatible(mt)
+              && Stream.class.isAssignableFrom(clazz)
+              && pt.getActualTypeArguments().length == 1
+              && pt.getActualTypeArguments()[0] == String.class;
+      return b;
     }
     return false;
   }

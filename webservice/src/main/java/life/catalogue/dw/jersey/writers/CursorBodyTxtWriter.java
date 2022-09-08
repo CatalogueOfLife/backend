@@ -16,8 +16,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 /**
- * Writer that generates an JSON array based on any postgres backed cursor
- * and streams the results to the output using the main jackson API mapper.
+ * Writer that generates a plain text file based on any postgres backed cursor
+ * and streams each record of the result to a new line using the objects toString method.
  */
 @Produces(MediaType.TEXT_PLAIN)
 @Provider
