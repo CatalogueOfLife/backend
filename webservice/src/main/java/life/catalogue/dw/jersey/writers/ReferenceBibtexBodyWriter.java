@@ -35,7 +35,8 @@ public class ReferenceBibtexBodyWriter implements MessageBodyWriter<Reference> {
   }
 
   @Override
-  public void writeTo(Reference ref, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
+  public void writeTo(Reference ref, Class<?> aClass, Type type, Annotation[] annotations, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
+    TxtBodyWriter.setUTF8ContentType(mt, headers);
     try (Writer w = UTF8IoUtils.writerFromStream(out)) {
       CslData csl;
       if (ref.getCsl() != null) {

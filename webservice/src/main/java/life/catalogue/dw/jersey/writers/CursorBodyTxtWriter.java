@@ -29,7 +29,8 @@ public class CursorBodyTxtWriter implements MessageBodyWriter<Cursor<?>> {
   }
   
   @Override
-  public void writeTo(Cursor<?> c, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
+  public void writeTo(Cursor<?> c, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
+    TxtBodyWriter.setUTF8ContentType(mt, headers);
     try (Writer writer = UTF8IoUtils.writerFromStream(out)) {
       c.forEach(obj -> {
         try {

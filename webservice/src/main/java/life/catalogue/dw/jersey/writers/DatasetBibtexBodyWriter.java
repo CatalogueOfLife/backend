@@ -31,7 +31,8 @@ public class DatasetBibtexBodyWriter implements MessageBodyWriter<Dataset> {
   }
 
   @Override
-  public void writeTo(Dataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
+  public void writeTo(Dataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
+    TxtBodyWriter.setUTF8ContentType(mt, headers);
     try (Writer w = UTF8IoUtils.writerFromStream(out)) {
       w.write( CslUtil.toBibTexString(dataset.toCSL()) );
     }
