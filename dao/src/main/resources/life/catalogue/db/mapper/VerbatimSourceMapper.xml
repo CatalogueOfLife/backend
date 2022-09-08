@@ -41,7 +41,7 @@
   </resultMap>
 
   <select id="getSources" resultType="life.catalogue.db.mapper.VerbatimSourceMapper$SecondarySource">
-    SELECT type, source_id, source_dataset_key
+    SELECT type, source_id AS id, source_dataset_key AS datasetKey
     FROM verbatim_source_secondary
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </select>

@@ -49,21 +49,19 @@ public class SectorSyncIT {
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
   final static TestDataRule dataRule = TestDataRule.draft();
   final static PgImportRule importRule = PgImportRule.create(
-  NomCode.BOTANICAL,
-    DataFormat.ACEF,  1,
-    DataFormat.COLDP, 0, 22, 25,
-    DataFormat.DWCA, 1, 2,
-  NomCode.ZOOLOGICAL,
-    DataFormat.ACEF,  5, 6, 11,
-    DataFormat.COLDP, 2, 4, 14, 24,
-  NomCode.VIRUS,
-    DataFormat.ACEF,  14
-  );
-//  final static PgImportRule importRule = PgImportRule.create(
-//    NomCode.BOTANICAL,
-//      DataFormat.COLDP, 0, 25,
-//      DataFormat.DWCA, 1, 2
+//  NomCode.BOTANICAL,
+//    DataFormat.ACEF,  1,
+//    DataFormat.COLDP, 0, 22, 25,
+//    DataFormat.DWCA, 1, 2,
+//  NomCode.ZOOLOGICAL,
+//    DataFormat.ACEF,  5, 6, 11,
+//    DataFormat.COLDP, 2, 4, 14, 24, 26,
+//  NomCode.VIRUS,
+//    DataFormat.ACEF,  14
 //  );
+
+    NomCode.ZOOLOGICAL,
+      DataFormat.COLDP, 26);
 
   @ClassRule
   public final static TestRule classRules = RuleChain
@@ -619,6 +617,43 @@ public class SectorSyncIT {
     mergeAndTest(plant);
     mergeAndTest(plant);
     mergeAndTest(plant);
+  }
+
+  @Test
+  public void mergeCarettas() throws Exception {
+    final int srcDatasetKey = datasetKey(26, DataFormat.COLDP);
+    final NameUsageBase animalia = getByName(Datasets.COL, Rank.KINGDOM, "Animalia");
+    var src = getByName(datasetKey(26, DataFormat.COLDP), Rank.FAMILY, "Cheloniidae");
+    createSector(Sector.Mode.ATTACH, src, animalia);
+
+    syncAll();
+    print(Datasets.COL);
+
+    src = getByName(srcDatasetKey, Rank.FAMILY, "Keloniidae");
+    createSector(Sector.Mode.MERGE, src, animalia);
+
+    src = getByName(srcDatasetKey, Rank.FAMILY, "Teeloniidae");
+    createSector(Sector.Mode.MERGE, src, animalia);
+
+    src = getByName(srcDatasetKey, Rank.FAMILY, "Pheloniidae");
+    createSector(Sector.Mode.MERGE, src, animalia);
+
+    // do the merges 2 times to make sure internal deletions and the matcher cache work correct
+    syncMergesOnly();
+    print(Datasets.COL);
+
+    var caretta = getByName(Datasets.COL, Rank.SPECIES, "Caretta caretta");
+    assertEquals("Caretta caretta", caretta.getName().getScientificName());
+    assertEquals("Linnaeus, 1758", caretta.getName().getAuthorship());
+
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      var vs = session.getMapper(VerbatimSourceMapper.class).getWithSources(caretta);
+      assertEquals(srcDatasetKey, (int) vs.getSourceDatasetKey());
+      assertEquals("10", vs.getSourceId());
+      assertTrue(DSID.equals(DSID.of(srcDatasetKey, "11"), vs.getSecondarySources().get(InfoGroup.AUTHORSHIP)));
+      assertTrue(DSID.equals(DSID.of(srcDatasetKey, "13"), vs.getSecondarySources().get(InfoGroup.PUBLISHED_IN)));
+      assertEquals(2, vs.getSecondarySources().size());
+    }
   }
 
   void mergeAndTest(NameUsageBase plant) throws IOException {
