@@ -2,6 +2,7 @@ package life.catalogue.admin.jobs;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
@@ -26,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 
 /**
- * Submits import jobs for all existing archives.
+ * Submits import jobs for all existing archives of external datasets.
  * Throttles the submission so the import manager does not exceed its queue
  */
 public class ReimportJob extends GlobalBlockingJob {
@@ -51,7 +52,7 @@ public class ReimportJob extends GlobalBlockingJob {
     final List<Integer> keys;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      keys = dm.keys();
+      keys = dm.keys(DatasetOrigin.EXTERNAL);
     }
 
     LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());

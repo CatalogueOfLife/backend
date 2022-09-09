@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
@@ -101,10 +102,15 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    */
   List<Dataset> listReleases(@Param("projectKey") int projectKey);
 
+  default List<Integer> keys(@Param("origin") DatasetOrigin... origin) {
+    return keys(null, origin);
+  }
+
   /**
+   * @param type optional dataset type filter
    * @return list of all dataset keys which have not been deleted
    */
-  List<Integer> keys(@Param("origin") DatasetOrigin... origin);
+  List<Integer> keys(@Nullable @Param("type") DatasetType type, @Param("origin") DatasetOrigin... origin);
 
   /**
    * list datasets which have not been imported before, ordered by date created.

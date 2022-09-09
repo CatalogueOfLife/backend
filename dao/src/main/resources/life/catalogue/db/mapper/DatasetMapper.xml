@@ -195,6 +195,9 @@
     SELECT key
     FROM dataset
     WHERE deleted IS NULL
+    <if test="type != null">
+      AND type = #{type}::DATASETTYPE
+    </if>
     <if test="origin != null and origin.length > 0">
       AND origin IN <foreach item="o" collection="origin" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
     </if>
