@@ -1,6 +1,10 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import life.catalogue.api.vocab.TaxonomicStatus;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -109,6 +113,11 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
     this.authorship = authorship;
   }
 
+  @JsonIgnore
+  public boolean hasAuthorship() {
+    return !StringUtils.isBlank(authorship);
+  }
+
   public String getPhrase() {
     return phrase;
   }
@@ -194,6 +203,10 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
       sb.append("]");
     }
     return sb;
+  }
+
+  public DSID<String> toDSID(int datasetKey){
+    return DSID.of(datasetKey, id);
   }
 
   @Override

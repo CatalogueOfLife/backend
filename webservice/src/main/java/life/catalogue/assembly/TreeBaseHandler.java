@@ -36,6 +36,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final List<Rank> implicitRanks = new ArrayList<>();
 
   protected final int targetDatasetKey;
+  protected final DSID<String> targetKey; // key to some target usage that can be reused
   protected final User user;
   protected final Sector sector;
   protected final Dataset source;
@@ -63,6 +64,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   public TreeBaseHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
     this.targetDatasetKey = targetDatasetKey;
+    this.targetKey = DSID.root(targetDatasetKey);
     this.user = user;
     this.sector = sector;
     this.state = state;
@@ -113,9 +115,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
    * Creates a new usage with the lowest current matched parent.
    * Updates the parent stack with the newly created taxon as the current parent match.
    * Increases stat counters.
-   * @return the original source taxon id
+   * @return the simple name instance of the newly created & matched usage with parent being the parentID
    */
-  protected DSID<String> create(NameUsageBase u, Usage parent) {
+  protected SimpleNameWithNidx create(NameUsageBase u, Usage parent) {
+    final String origID = u.getId();
     u.setSectorKey(sector.getId());
     u.getName().setSectorKey(sector.getId());
 
@@ -128,13 +131,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     // copy usage with all associated information. This assigns a new id !!!
-    DSID<String> parentDID = new DSIDValue<>(targetDatasetKey, parent.id);
-    DSID<String> orig = CatCopy.copyUsage(batchSession, u, parentDID, user.getKey(), entities, this::lookupReference, this::lookupReference);
+    CatCopy.copyUsage(batchSession, u, targetKey.id(parent.id), user.getKey(), entities, this::lookupReference, this::lookupReference);
     // track source
-    VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), orig.getId());
+    VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), origID);
     vm.create(v);
     // match name
-    matchName(u.getName());
+    var nm = matchName(u.getName());
     persistMatch(u.getName());
 
     if (u.isTaxon()) {
@@ -143,7 +145,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       state.setSynonymCount(++sCounter);
     }
 
-    return orig;
+    return new SimpleNameWithNidx(u, nm.getCanonicalNameKey());
   }
 
   /**
@@ -241,7 +243,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   /**
    * Matches the name, but does not store anything yet.
    */
-  protected void matchName(Name n) {
+  protected NameMatch matchName(Name n) {
     NameMatch m = nameIndex.match(n, true, false);
     if (m.hasMatch()) {
       n.setNamesIndexType(m.getType());
@@ -249,6 +251,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     } else {
       n.setNamesIndexType(MatchType.NONE);
     }
+    return m;
   }
 
   protected void persistMatch(Name n) {

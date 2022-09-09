@@ -169,7 +169,13 @@
     <result property="name" column="scientific_name"/>
     <result property="phrase" column="name_phrase" />
     <result property="namesIndexId" column="index_id" />
+    <result property="canonicalId" column="canonical_id" />
     <result property="namesIndexMatchType" column="type" />
+  </resultMap>
+
+  <resultMap id="simplePubResultMap" type="SimpleNameWithPub" autoMapping="true" extends="simpleNidxResultMap">
+    <id property="id" column="id"/>
+    <result property="publishedInID" column="published_in_id" />
   </resultMap>
 
   <resultMap id="simpleNidxResultMapParentName" type="SimpleNameWithNidx" autoMapping="true">
@@ -177,6 +183,7 @@
     <result property="name" column="scientific_name"/>
     <result property="phrase" column="name_phrase" />
     <result property="namesIndexId" column="index_id" />
+    <result property="canonicalId" column="canonical_id" />
     <result property="namesIndexMatchType" column="type" />
   </resultMap>
 
@@ -292,8 +299,8 @@
     <include refid="FROM_ACCEPTED"/>
   </sql>
 
-  <select id="listByCanonNIDX" resultMap="usageResultMap">
-    SELECT <include refid="SELECT_BASE"/>
+  <select id="listByCanonNIDX" resultMap="simplePubResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>, n.published_in_id, nm.index_id, ni.canonical_id, nm.type
     FROM <include refid="FROM_NIDX_BASE"/>
     WHERE nm.dataset_key = #{datasetKey} AND ni.canonical_id=#{nidx}
   </select>

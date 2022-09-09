@@ -7,6 +7,8 @@ import com.google.common.base.Preconditions;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsageBase;
+import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.model.SimpleNameWithPub;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -20,8 +22,6 @@ import org.gbif.nameparser.api.Rank;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,15 +38,15 @@ public class UsageMatcherGlobal {
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   // key = datasetKey + canonical nidx
-  private final LoadingCache<DSID<Integer>, List<NameUsageBase>> usages = Caffeine.newBuilder()
-                                                                                 .maximumSize(100_000)
-                                                                                 .build(this::loadUsage);
+  private final LoadingCache<DSID<Integer>, List<SimpleNameWithPub>> usages = Caffeine.newBuilder()
+                                                                                      .maximumSize(100_000)
+                                                                                      .build(this::loadUsage);
 
   /**
    * @param nidx a names index id wrapped by a datasetKey
    * @return list of matching usages for the requested dataset only
    */
-  private List<NameUsageBase> loadUsage(@NonNull DSID<Integer> nidx) {
+  private List<SimpleNameWithPub> loadUsage(@NonNull DSID<Integer> nidx) {
     try (SqlSession session = factory.openSession(true)) {
       var result = session.getMapper(NameUsageMapper.class).listByCanonNIDX(nidx.getDatasetKey(), nidx.getId());
       // avoid empty lists which get cached
@@ -87,7 +87,13 @@ public class UsageMatcherGlobal {
     return UsageMatch.empty();
   }
 
+  SimpleNameWithNidx toSimpleName(NameUsageBase nu) {
+    var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu);
+    return new SimpleNameWithNidx(nu, canonNidx.getId());
+  }
+
   /**
+   * @param datasetKey the dataset key of the DSID to be returned
    * @return the canonical names index id or null if it cant be matched
    */
   private DSID<Integer> matchNidxIfNeeded(int datasetKey, NameUsageBase nu) {
@@ -113,7 +119,7 @@ public class UsageMatcherGlobal {
    * @param parents classification of the usage to be matched
    * @return single match
    */
-  private UsageMatch match(int datasetKey, NameUsageBase nu, List<NameUsageBase> existing, List<ParentStack.MatchedUsage> parents) {
+  private UsageMatch match(int datasetKey, NameUsageBase nu, List<SimpleNameWithPub> existing, List<ParentStack.MatchedUsage> parents) {
     final boolean qualifiedName = nu.getName().hasAuthorship();
 
     // make sure we never have bare names - we want usages!
@@ -138,15 +144,16 @@ public class UsageMatcherGlobal {
 
     // first try exact single match with authorship
     if (qualifiedName) {
-      NameUsageBase match = null;
-      for (NameUsageBase u : existing) {
-        if (u.getName().getNamesIndexId().equals(nu.getName().getNamesIndexId())) {
+      SimpleNameWithPub match = null;
+      for (var u : existing) {
+        if (u.getNamesIndexId().equals(nu.getName().getNamesIndexId())) {
           if (match != null) {
             LOG.warn("Exact homonyms existing in dataset {} for {}", datasetKey, nu.getName().getLabelWithRank());
             match = null;
             break;
+          } else {
+            match = u;
           }
-          match = nu;
         }
       }
       if (match != null) {
@@ -160,27 +167,27 @@ public class UsageMatcherGlobal {
 
     // we have at least 2 match candidates here, maybe more
     // prefer a single match with authorship!
-    long canonMatches = existing.stream().filter(u -> !u.getName().hasAuthorship()).count();
+    long canonMatches = existing.stream().filter(u -> !u.hasAuthorship()).count();
     if (qualifiedName && existing.size() - canonMatches == 1) {
-      for (NameUsageBase u : existing) {
-        if (u.getName().hasAuthorship()) {
+      for (var u : existing) {
+        if (u.hasAuthorship()) {
           return UsageMatch.match(u);
         }
       }
     }
 
     // all synonyms pointing to the same accepted? then it won't matter much for snapping
-    NameUsageBase synonym = null;
+    SimpleNameWithPub synonym = null;
     String parentID = null;
-    for (NameUsageBase u : existing) {
+    for (var u : existing) {
       if (u.getStatus().isTaxon()) {
         synonym = null;
         break;
       }
       if (parentID == null) {
-        parentID = u.getParentId();
+        parentID = u.getParent();
         synonym = u;
-      } else if (!parentID.equals(u.getParentId())) {
+      } else if (!parentID.equals(u.getParent())) {
         synonym = null;
         break;
       }
@@ -197,9 +204,9 @@ public class UsageMatcherGlobal {
     }
 
     // finally pick the first accepted with the largest subtree ???
-    NameUsageBase curr = null;
+    SimpleNameWithPub curr = null;
     long maxDescendants = -1;
-    for (NameUsageBase u : existing) {
+    for (var u : existing) {
       if (u.getStatus().isTaxon()) {
         long descendants = countDescendants(u);
         if (maxDescendants < descendants) {
@@ -217,14 +224,14 @@ public class UsageMatcherGlobal {
     return UsageMatch.empty();
   }
 
-  private long countDescendants(NameUsageBase u) {
+  private long countDescendants(SimpleNameWithNidx u) {
     // TODO: implement
-    return -1;
+    return 0;
   }
 
-  private static boolean contains(Collection<NameUsageBase> usages, Rank rank) {
+  private static boolean contains(Collection<? extends SimpleNameWithNidx> usages, Rank rank) {
     if (rank != null) {
-      for (NameUsageBase u : usages) {
+      for (SimpleNameWithNidx u : usages) {
         if (u.getRank() == rank) {
           return true;
         }
@@ -234,7 +241,7 @@ public class UsageMatcherGlobal {
   }
 
   // if authors are missing require the classification to not contradict!
-  private boolean classificationMatches(NameUsageBase nu, NameUsageBase candidate, List<ParentStack.MatchedUsage> parents) {
+  private boolean classificationMatches(NameUsageBase nu, SimpleNameWithPub candidate, List<ParentStack.MatchedUsage> parents) {
     return true;
     //if (currNubParent != null &&
     //    (currNubParent.equals(incertaeSedis)
@@ -250,10 +257,10 @@ public class UsageMatcherGlobal {
    * The classification comparison below is rather strict
    * require a match to one of the higher rank homonyms (the old code even did not allow for higher rank homonyms at all!)
    */
-  private UsageMatch matchSupragenerics(List<NameUsageBase> homonyms, List<ParentStack.MatchedUsage> parents) {
+  private UsageMatch matchSupragenerics(List<SimpleNameWithPub> homonyms, List<ParentStack.MatchedUsage> parents) {
     if (parents == null || parents.isEmpty()) {
       // pick first
-      NameUsageBase first = homonyms.get(0);
+      var first = homonyms.get(0);
       LOG.debug("No parent given for homomym match {}. Pick first", first);
       return UsageMatch.match(MatchType.AMBIGUOUS, first);
     }
@@ -303,7 +310,7 @@ public class UsageMatcherGlobal {
    * Manually adds a name usage to the cache. Requires the datasetKey to be set correctly.
    * The name will be matched to the names index if it does not have a names index id yet.
    */
-  public void add(NameUsageBase nu) {
+  public SimpleNameWithNidx add(NameUsageBase nu) {
     Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
     var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu);
     if (canonNidx != null) {
@@ -314,10 +321,14 @@ public class UsageMatcherGlobal {
         before = new ArrayList<>();
         usages.put(canonNidx, before);
       }
-      before.add(nu);
+      var sn = new SimpleNameWithPub(nu, canonNidx.getId(), nu.getName().getPublishedInId());
+      before.add(sn);
+      return sn;
+
     } else {
       LOG.debug("No names index key. Cannot add name usage {}", nu);
     }
+    return null;
   }
 
   /**

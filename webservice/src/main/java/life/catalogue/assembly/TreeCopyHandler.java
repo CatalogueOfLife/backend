@@ -142,7 +142,8 @@ public class TreeCopyHandler extends TreeBaseHandler {
       parent = createImplicit(parent, (Taxon) u);
     }
     String origNameID= u.getName().getId();
-    var orig = create(u, parent);
+    final var orig = DSID.copy(u);
+    create(u, parent);
 
     // remember old to new id mappings
     ids.put(orig.getId(), usage(u));

@@ -3,6 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsageBase;
 
+import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.model.Taxon;
 
 import org.junit.Test;
@@ -13,8 +14,8 @@ public class ParentStackTest {
 
   @Test
   public void testStack() throws Exception {
-    NameUsageBase king = new Taxon();
-    king.setName(new Name());
+    SimpleNameWithNidx king = new SimpleNameWithNidx();
+    king.setName("MasterTax");
     ParentStack parents = new ParentStack(king);
 
     assertEquals(0, parents.size());
@@ -43,19 +44,17 @@ public class ParentStackTest {
     assertNotNull(parents.last());
   }
 
-  private NameUsageBase src(int key, Integer parentKey) {
-    NameUsageBase u = new Taxon();
+  private SimpleNameWithNidx src(int key, Integer parentKey) {
+    SimpleNameWithNidx u = new SimpleNameWithNidx();
     u.setId(String.valueOf(key));
-    u.setParentId(parentKey == null ? null : String.valueOf(parentKey));
-    u.setName(new Name());
-    u.getName().setScientificName("Sciname #" + key);
+    u.setParent(parentKey == null ? null : String.valueOf(parentKey));
+    u.setName("Sciname #" + key);
     return u;
   }
 
-  private NameUsageBase match(String name) {
-    NameUsageBase n = new Taxon();
-    n.setName(new Name());
-    n.getName().setScientificName(name);
+  private SimpleNameWithNidx match(String name) {
+    SimpleNameWithNidx n = new SimpleNameWithNidx();
+    n.setName(name);
     return n;
   }
 

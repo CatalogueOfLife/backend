@@ -31,6 +31,13 @@ public class NameMatch {
     return name == null ? null : name.getKey();
   }
 
+  /**
+   * @return the matched names canonical key or null if no match exists
+   */
+  public Integer getCanonicalNameKey() {
+    return name == null ? null : name.getCanonicalId();
+  }
+
   public void setName(IndexName n) {
     Preconditions.checkNotNull(n.getKey());
     name=n;

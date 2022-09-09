@@ -117,12 +117,9 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   /**
    * List all usages linked to an index name with the given canonical nidx.
-   * Warning:
-   * Read only properties are not populated to save excessive joins.
-   * In particular this is the accepted Taxon for a Synonym instance
-   * and the publishedIn and accordingTo reference citation fields.
+   * The parent property is filled with the parent ID, not the name!
    */
-  List<NameUsageBase> listByCanonNIDX(@Param("datasetKey") int datasetKey, @Param("nidx") int canonicalNidx);
+  List<SimpleNameWithPub> listByCanonNIDX(@Param("datasetKey") int datasetKey, @Param("nidx") int canonicalNidx);
 
   /**
    * Warning, this does not count bare names, only true usages!

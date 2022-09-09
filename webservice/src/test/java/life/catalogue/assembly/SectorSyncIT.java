@@ -49,19 +49,19 @@ public class SectorSyncIT {
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
   final static TestDataRule dataRule = TestDataRule.draft();
   final static PgImportRule importRule = PgImportRule.create(
-//  NomCode.BOTANICAL,
-//    DataFormat.ACEF,  1,
-//    DataFormat.COLDP, 0, 22, 25,
-//    DataFormat.DWCA, 1, 2,
-//  NomCode.ZOOLOGICAL,
-//    DataFormat.ACEF,  5, 6, 11,
-//    DataFormat.COLDP, 2, 4, 14, 24, 26,
-//  NomCode.VIRUS,
-//    DataFormat.ACEF,  14
-//  );
+  NomCode.BOTANICAL,
+    DataFormat.ACEF,  1,
+    DataFormat.COLDP, 0, 22, 25,
+    DataFormat.DWCA, 1, 2,
+  NomCode.ZOOLOGICAL,
+    DataFormat.ACEF,  5, 6, 11,
+    DataFormat.COLDP, 2, 4, 14, 24, 26, 27,
+  NomCode.VIRUS,
+    DataFormat.ACEF,  14
 
-    NomCode.ZOOLOGICAL,
-      DataFormat.COLDP, 26);
+//    NomCode.ZOOLOGICAL,
+//      DataFormat.COLDP, 27)
+  );
 
   @ClassRule
   public final static TestRule classRules = RuleChain
@@ -123,16 +123,15 @@ public class SectorSyncIT {
   }
 
   private static SimpleNameLink simple(NameUsageBase nu) {
-    return nu.toSimpleNameLink();
-    //return new SimpleName(nu.getId(), nu.getName().getLabel(), nu.getName().getRank());
+    return nu == null ? null : nu.toSimpleNameLink();
   }
   
   public static DSID<Integer> createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
     return createSector(mode, src.getDatasetKey(), simple(src), simple(target));
   }
 
-  public static DSID<Integer> createSector(Sector.Mode mode, Integer priority, NameUsageBase src, NameUsageBase target) {
-    return createSector(mode, priority, src.getDatasetKey(), simple(src), simple(target));
+  public static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, NameUsageBase src, NameUsageBase target) {
+    return createSector(mode, datasetKey, simple(src), simple(target));
   }
 
   public static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
@@ -654,6 +653,21 @@ public class SectorSyncIT {
       assertTrue(DSID.equals(DSID.of(srcDatasetKey, "13"), vs.getSecondarySources().get(InfoGroup.PUBLISHED_IN)));
       assertEquals(2, vs.getSecondarySources().size());
     }
+  }
+
+
+  @Test
+  public void mergeOutsideTarget() throws Exception {
+    final int srcDatasetKey = datasetKey(27, DataFormat.COLDP);
+    final NameUsageBase animalia = getByName(Datasets.COL, Rank.KINGDOM, "Animalia");
+    final NameUsageBase plants = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
+
+    createSector(Sector.Mode.MERGE, srcDatasetKey, null, animalia);
+
+    syncAll();
+    print(Datasets.COL);
+
+    // TODO: we have one plant that falls outside the target sector...
   }
 
   void mergeAndTest(NameUsageBase plant) throws IOException {

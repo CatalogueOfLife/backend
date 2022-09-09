@@ -7,10 +7,12 @@ import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.NameIndex;
 
+import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -26,12 +28,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final UsageMatcherGlobal matcher;
   private int counter = 0;  // all source usages
   private int updCounter = 0; // updates
-  private final DSID<String> targetKey = DSID.root(targetDatasetKey); // key to some target usage that can be reused
+  private final int subjectDatasetKey;
 
   TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, User user, Sector sector, SectorImport state) {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
     this.matcher = matcher;
-    parents = new ParentStack(target);
+    parents = new ParentStack(matcher.toSimpleName(target));
+    subjectDatasetKey = sector.getSubjectDatasetKey();
   }
 
   @Override
@@ -59,7 +62,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       nu.getName().setCode(sector.getCode());
     }
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
-    parents.put(nu);
+    parents.put(matcher.toSimpleName(nu));
     LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classification());
     counter++;
     // decisions
@@ -73,8 +76,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // avoid the case when an accepted name without author is being matched against synonym names with authors from the same source
     if (match.isMatch()
         && nu.getStatus().isTaxon() && !nu.getName().hasAuthorship()
-        && match.usage.getStatus().isSynonym() && match.usage.getName().hasAuthorship()
-        && sector.getSubjectDatasetKey().equals(match.usage.getDatasetKey())
+        && match.usage.getStatus().isSynonym() && match.usage.hasAuthorship()
+        && Objects.equals(subjectDatasetKey, match.sourceDatasetKey)
     ) {
       LOG.debug("Ignore match to synonym {}. A canonical homonym from the same source for {}", match.usage.getLabel(), nu.getLabel());
       match = UsageMatch.empty();
@@ -110,11 +113,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // finally create or update records
     if (match.isMatch()) {
-      update(nu, match.usage);
+      update(nu, match);
     } else {
       if (parent != null) {
-        create(nu, parent);
-        parents.setMatch(nu); // this is now the modified, created usage
+        var sn = create(nu, parent);
+        parents.setMatch(sn);
         matcher.add(nu);
       }
     }
@@ -143,26 +146,38 @@ public class TreeMergeHandler extends TreeBaseHandler {
     matcher.add(t);
   }
 
-  private boolean update(NameUsageBase nu, NameUsageBase existing) {
-    if (nu.getStatus() == existing.getStatus()) {
+  private Name loadFromDB(String usageID) {
+    return nm.getByUsage(targetDatasetKey, usageID);
+  }
+
+  private boolean update(NameUsageBase nu, UsageMatch existing) {
+    if (nu.getStatus() == existing.usage.getStatus()) {
       Set<InfoGroup> updated = EnumSet.noneOf(InfoGroup.class);
-      var pn = existing.getName();
-      if (pn.isParsed() && !pn.hasAuthorship() && nu.getName().hasAuthorship()) {
+      // should we try to update the name? Need to load from db, so check upfront as much as possible to avoid db calls
+      Name pn = null;
+      if (!existing.usage.hasAuthorship() && nu.getName().hasAuthorship()) {
+        pn = loadFromDB(existing.usage.getId());
         updated.add(InfoGroup.AUTHORSHIP);
         pn.setCombinationAuthorship(nu.getName().getCombinationAuthorship());
         pn.setSanctioningAuthor(nu.getName().getSanctioningAuthor());
         pn.setBasionymAuthorship(nu.getName().getBasionymAuthorship());
         pn.rebuildAuthorship();
+        // also update the original match as we cache and reuse that
+        existing.usage.setAuthorship(pn.getAuthorship());
         LOG.debug("Updated {} with authorship {}", pn.getScientificName(), pn.getAuthorship());
       }
-      if (pn.getPublishedInId() == null && nu.getName().getPublishedInId() != null) {
+      if (existing.usage.getPublishedInID() == null && nu.getName().getPublishedInId() != null) {
+        pn = pn != null ? pn : loadFromDB(existing.usage.getId());
         updated.add(InfoGroup.PUBLISHED_IN);
         Reference ref = rm.get(DSID.of(nu.getDatasetKey(), nu.getName().getPublishedInId()));
         pn.setPublishedInId(lookupReference(ref));
         pn.setPublishedInPage(nu.getName().getPublishedInPage());
         pn.setPublishedInPageLink(nu.getName().getPublishedInPageLink());
+        // also update the original match as we cache and reuse that
+        existing.usage.setPublishedInID(pn.getPublishedInId());
         LOG.debug("Updated {} with publishedIn", pn);
       }
+
       // TODO: implement updates basionym, vernaculars, etc
       // TODO: patch classification if direct parent adds to it
       if (!updated.isEmpty()) {
@@ -170,7 +185,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // update name
         nm.update(pn);
         // track source
-        vm.insertSources(existing, nu, updated);
+        vm.insertSources(targetKey.id(existing.usage.getId()), nu, updated);
         return true;
       }
     }

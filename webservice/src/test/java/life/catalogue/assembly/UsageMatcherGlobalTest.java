@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
@@ -16,7 +17,7 @@ import org.junit.rules.TestRule;
 
 import static org.junit.Assert.assertEquals;
 
-public class UsageMatcherTest {
+public class UsageMatcherGlobalTest {
 
   @ClassRule
   public final static PgSetupRule pg = new PgSetupRule();
@@ -33,16 +34,16 @@ public class UsageMatcherTest {
     UsageMatcherGlobal matcher = new UsageMatcherGlobal(matchingRule.getIndex(), PgSetupRule.getSqlSessionFactory());
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
-      var orig = num.get(dsid.id("u101"));
-      matcher.add(orig);
+      var origNU = num.get(dsid.id("u101"));
+      var origSN = matcher.add(origNU);
 
       var match = matcher.match(dsid.getDatasetKey(), num.get(dsid), null);
-      ((Synonym)orig).setAccepted(null); // is purposely not populated in matches - parentID is enough
-      assertEquals(match.usage, orig);
+      ((Synonym)origNU).setAccepted(null); // is purposely not populated in matches - parentID is enough
+      assertEquals(match.usage, origSN);
 
       matcher.clear();
       match = matcher.match(dsid.getDatasetKey(), num.get(dsid), null);
-      assertEquals(match.usage, orig);
+      assertEquals(match.usage, origSN);
     }
   }
 }
