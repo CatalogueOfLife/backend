@@ -15,9 +15,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 import javax.xml.stream.XMLInputFactory;
@@ -143,7 +141,7 @@ public class DwcaReader extends CsvReader {
             Schema.Field id = new Schema.Field(DwcaTerm.ID, s.field(idTerm.get()).index);
             List<Schema.Field> columns = Lists.newArrayList(s.columns);
             columns.add(id);
-            Schema s2 = new Schema(s.file, s.rowType, s.encoding, s.settings, columns);
+            Schema s2 = new Schema(s.files, s.rowType, s.encoding, s.settings, columns);
             updateSchema(s2);
           }
         }
@@ -192,7 +190,7 @@ public class DwcaReader extends CsvReader {
       }
     }
     if (rowTypeCol.isPresent() && !rowTypeCol.equals(rowTypeFile)) {
-      LOG.info("Different rowType detected for file {}: {} (filename) vs {} (terms)", PathUtils.getFilename(schema.file), rowTypeFile.get(), rowTypeCol.get());
+      LOG.info("Different rowType detected for file {}: {} (filename) vs {} (terms)", PathUtils.getFilename(schema.getFirstFile()), rowTypeFile.get(), rowTypeCol.get());
     }
     return rowTypeCol.isPresent() ? rowTypeCol : rowTypeFile;
   }
@@ -247,7 +245,7 @@ public class DwcaReader extends CsvReader {
     }
     
     // parse fields & file
-    Path file = resolve(attr(parser, "encoding"));
+    Set<Path> files = new HashSet<>();
     List<Schema.Field> fields = Lists.newArrayList();
     int event;
     boolean stop = false;
@@ -272,7 +270,16 @@ public class DwcaReader extends CsvReader {
         case XMLStreamConstants.END_ELEMENT:
           switch (parser.getLocalName()) {
             case "location":
-              file = resolve(text.toString());
+              var p = resolve(text.toString());
+              if (Files.exists(p)) {
+                if (files.contains(p)) {
+                  LOG.warn("File location {} is listed multiple times. Ignore redundant copies", p);
+                } else {
+                  files.add(p);
+                }
+              } else {
+                LOG.warn("DwC-A file location {} does not exist!", p);
+              }
               break;
             case "core":
             case "extension":
@@ -287,12 +294,17 @@ public class DwcaReader extends CsvReader {
           break;
       }
     }
-    
+    // assert we got at least one file
+    if (files.isEmpty()) {
+      throw new IllegalArgumentException("at least one file location must be given");
+    }
+
     // final encoding
     Charset charset;
     try {
       charset = Charset.forName(enc);
     } catch (IllegalArgumentException e) {
+      var file = files.iterator().next();
       try (CharsetDetectingStream in = CharsetDetectingStream.create(Files.newInputStream(file))) {
         charset = in.getCharset();
         LOG.debug("Use encoding {} for file {}", charset, PathUtils.getFilename(file));
@@ -300,7 +312,7 @@ public class DwcaReader extends CsvReader {
       LOG.warn("Bad charset encoding {} specified, using {}", enc, charset);
     }
     
-    Schema s = new Schema(file, rowType, charset, set, fields);
+    Schema s = new Schema(List.copyOf(files), rowType, charset, set, fields);
     LOG.debug("Found schema {}", s);
     schemas.put(rowType, s);
   }
@@ -454,7 +466,7 @@ public class DwcaReader extends CsvReader {
         Schema.Field f2 = new Schema.Field(DwcTerm.acceptedNameUsageID, f.value, f.index, f.delimiter);
         List<Schema.Field> updatedColumns = Lists.newArrayList(core.columns);
         updatedColumns.set(updatedColumns.indexOf(f), f2);
-        Schema s2 = new Schema(core.file, core.rowType, core.encoding, core.settings, updatedColumns);
+        Schema s2 = new Schema(core.files, core.rowType, core.encoding, core.settings, updatedColumns);
         putSchema(s2);
         mappingFlags.setAcceptedNameMapped(true);
       } else {

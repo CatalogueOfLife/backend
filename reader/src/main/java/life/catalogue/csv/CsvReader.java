@@ -9,10 +9,7 @@ import life.catalogue.common.io.PathUtils;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -161,7 +158,7 @@ public class CsvReader {
   }
 
   private static boolean rowTypeMatchesFilename(Schema s) {
-    String fn = PathUtils.getBasename(s.file);
+    String fn = PathUtils.getBasename(s.getFirstFile());
     return fn.equalsIgnoreCase(s.rowType.simpleName());
   }
 
@@ -171,7 +168,7 @@ public class CsvReader {
     while (iter.hasNext()) {
       Schema s = iter.next();
       if (!keepRowType.test(s.rowType)) {
-        LOG.info("Remove non COL rowType {} for file {}", s.rowType, s.file);
+        LOG.info("Remove non COL rowType {} for file {}", s.rowType, s.getFirstFile());
         iter.remove();
       }
     }
@@ -216,7 +213,7 @@ public class CsvReader {
     for (Term t : term) {
       if (hasData(rowType) && !hasData(rowType, t)) {
         Schema s = schemas.remove(rowType);
-        LOG.warn("Required term {} missing. Ignore file {}!", t, s.file);
+        LOG.warn("Required term {} missing. Ignore file {}!", t, s.getFirstFile());
       }
     }
   }
@@ -233,7 +230,7 @@ public class CsvReader {
         }
       }
       Schema s = schemas.remove(rowType);
-      LOG.warn("One term required from {} but all missing. Ignore file {}!", concat(terms), s.file);
+      LOG.warn("One term required from {} but all missing. Ignore file {}!", concat(terms), s.getFirstFile());
     }
   }
 
@@ -253,7 +250,7 @@ public class CsvReader {
           cols.add(f);
         }
       }
-      Schema s2 = new Schema(s.file, s.rowType, s.encoding, s.settings, cols);
+      Schema s2 = new Schema(s.files, s.rowType, s.encoding, s.settings, cols);
       schemas.put(rowType, s2);
     }
   }
@@ -419,7 +416,7 @@ public class CsvReader {
             set.setNumberOfRowsToSkip(1);
             
             // we create a tmp dummy schema with wrong rowType for convenience to find the real rowType - it will not survive
-            final Optional<Term> rowType = detectRowType(new Schema(df, DwcTerm.Taxon, charset, set, columns), termPrefix);
+            final Optional<Term> rowType = detectRowType(new Schema(List.of(df), DwcTerm.Taxon, charset, set, columns), termPrefix);
             if (rowType.isPresent()) {
               LOG.info("CSV {} schema with {} columns found for {} encoded file {}: {}",
                 rowType.get().prefixedName(), columns.size(), charset, PathUtils.getFilename(df),
@@ -427,7 +424,7 @@ public class CsvReader {
                        .map(Schema.Field::toString)
                        .collect(Collectors.joining(","))
               );
-              return new Schema(df, rowType.get(), charset, set, columns);
+              return new Schema(List.of(df), rowType.get(), charset, set, columns);
             }
             LOG.warn("Failed to identify row type for {}", PathUtils.getFilename(df));
           }
@@ -454,14 +451,14 @@ public class CsvReader {
   }
 
   protected Optional<Term> detectRowType(Schema schema, String termPrefix) {
-    String fn = PathUtils.getBasename(schema.file);
+    String fn = PathUtils.getBasename(schema.getFirstFile());
     // special treatment for archives which are just one CSV file - the filename does not matter in this case!
-    String ext = PathUtils.getFileExtension(schema.file);
+    String ext = PathUtils.getFileExtension(schema.getFirstFile());
     Optional<Term> rt;
     if (ext.equalsIgnoreCase(ARCHIVE_SUFFIX)) {
       // use dwc core
       rt = Optional.of(DwcTerm.Taxon);
-      LOG.info("Use dwc:Taxon rowType for single text file {}", schema.file);
+      LOG.info("Use dwc:Taxon rowType for single text file {}", schema.getFirstFile());
       
     } else {
       rt = findTerm(termPrefix, fn, true);
@@ -575,28 +572,51 @@ public class CsvReader {
   }
   
   private static class TermRecIterator implements Iterator<VerbatimRecord> {
-    private final ResultIterator<String[], ParsingContext> iter;
     private final Schema s;
     private final int maxIdx;
-    private final String filename;
+    private final Iterator<Path> fileIter;
+    private ResultIterator<String[], ParsingContext> iter;
+    private String filename;
     private long records;
     private long skipped;
+    private long recordsStartFile;
+    private long skippedStartFile;
     private boolean skippedLast;
     private String[] row;
-    
+
     TermRecIterator(Schema schema) throws IOException {
       s = schema;
-      filename = PathUtils.getFilename(schema.file);
       maxIdx = schema.columns.stream().map(f -> f.index).filter(Objects::nonNull).reduce(Integer::max).orElse(0);
-      CsvParser parser = new CsvParser(schema.settings);
-      
-      IterableResult<String[], ParsingContext> it = parser.iterate(
-          CharsetDetectingStream.createReader(Files.newInputStream(schema.file), schema.encoding)
-      );
-      this.iter = it.iterator();
-      nextRow();
+      fileIter = schema.files.iterator();
+      if (nextFile()) {
+        nextRow();
+      } else {
+        row = null;
+      }
     }
-    
+
+    private boolean nextFile() {
+      if (fileIter.hasNext()) {
+        var p = fileIter.next();
+        filename = PathUtils.getFilename(p);
+        CsvParser parser = new CsvParser(s.settings);
+
+        try {
+          IterableResult<String[], ParsingContext> it = parser.iterate(
+            CharsetDetectingStream.createReader(Files.newInputStream(p), s.encoding)
+          );
+          this.iter = it.iterator();
+          recordsStartFile = records;
+          skippedStartFile = skipped;
+          return true;
+
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      return false;
+    }
+
     @Override
     public boolean hasNext() {
       return row != null;
@@ -612,12 +632,16 @@ public class CsvReader {
         } else {
           records++;
         }
+      } else if (fileIter.hasNext()) {
+        LOG.info("Read {} records from file {}, skipping {} bad lines in total", records-recordsStartFile, filename, skipped-skippedStartFile);
+        nextFile();
+        nextRow();
       } else {
         row = null;
       }
       // log stats at the end
       if (row == null) {
-        LOG.info("Read {} records from file {}, skipping {} bad lines in total", records, filename, skipped);
+        LOG.info("Read {} records from all files incl. {}, skipping {} bad lines in total", records, filename, skipped);
       }
     }
     
@@ -677,7 +701,7 @@ public class CsvReader {
           Spliterators.spliteratorUnknownSize(new TermRecIterator(s), STREAM_CHARACTERISTICS), false);
       
     } catch (IOException | RuntimeException e) {
-      LOG.error("Failed to read {}", s.file, e);
+      LOG.error("Failed to read {}", s.getFilesLabel(), e);
       return Stream.empty();
     }
   }

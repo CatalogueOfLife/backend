@@ -34,6 +34,37 @@ public class DwcaReaderTest {
     });
     assertEquals(3, counter.get());
   }
+
+  @Test
+  public void inat() throws Exception {
+    DwcaReader reader = DwcaReader.from(Resources.toPath("dwca/inat"));
+
+    assertEquals(2, reader.size());
+    assertEquals(DwcTerm.Taxon, reader.coreRowType());
+    assertEquals(16, reader.coreSchema().columns.size());
+    assertTrue(reader.coreSchema().hasTerm(DwcaTerm.ID));
+
+    AtomicInteger counter = new AtomicInteger(0);
+    reader.stream(DwcTerm.Taxon).forEach(tr -> {
+      counter.incrementAndGet();
+      assertNotNull(tr.get(DwcTerm.scientificName));
+    });
+    assertEquals(9, counter.get());
+
+    // make sure we can stream vernacular names with hundreds of source files
+    var vOpt = reader.schema(GbifTerm.VernacularName);
+    assertTrue(vOpt.isPresent());
+    var vSchema = vOpt.get();
+    assertEquals(10, vSchema.columns.size());
+    assertTrue(vSchema.hasTerm(DwcaTerm.ID));
+
+    counter.set(0);
+    reader.stream(GbifTerm.VernacularName).forEach(tr -> {
+      counter.incrementAndGet();
+      assertNotNull(tr.get(DwcTerm.vernacularName));
+    });
+    assertEquals(5694, counter.get());
+  }
   
   @Test
   public void dwca1() throws Exception {

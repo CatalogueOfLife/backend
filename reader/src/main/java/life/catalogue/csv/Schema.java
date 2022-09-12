@@ -4,9 +4,11 @@ import life.catalogue.common.io.PathUtils;
 
 import org.gbif.dwc.terms.Term;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -18,14 +20,15 @@ import com.univocity.parsers.csv.CsvParserSettings;
  *
  */
 public class Schema {
-  public final Path file;
+  public final List<Path> files;
   public final Term rowType;
   public final Charset encoding;
   public final CsvParserSettings settings;
   public final List<Field> columns;
   
-  public Schema(Path file, Term rowType, Charset encoding, CsvParserSettings settings, List<Field> columns) {
-    this.file = Preconditions.checkNotNull(file);
+  public Schema(List<Path> files, Term rowType, Charset encoding, CsvParserSettings settings, List<Field> columns) {
+    Preconditions.checkArgument(files != null && !files.isEmpty(), "At least one file is required");
+    this.files = files;
     this.rowType = Preconditions.checkNotNull(rowType);
     this.encoding = Preconditions.checkNotNull(encoding);
     this.settings = Preconditions.checkNotNull(settings);
@@ -73,7 +76,18 @@ public class Schema {
       return sb.toString();
     }
   }
-  
+
+  public Path getFirstFile() {
+    return files.get(0);
+  }
+
+  public String getFilesLabel() {
+    return files.stream()
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .collect(Collectors.joining("; "));
+  }
+
   public Field field(Term term) {
     for (Field f : columns) {
       if (f.term != null && f.term.equals(term)) return f;
@@ -108,7 +122,7 @@ public class Schema {
   @Override
   public String toString() {
     return rowType + " ["
-        + PathUtils.getFilename(file)
+        + PathUtils.getFilename(getFirstFile())
         + " "
         + StringEscapeUtils.escapeJava(String.valueOf(settings.getFormat().getDelimiter()))
         + " "
