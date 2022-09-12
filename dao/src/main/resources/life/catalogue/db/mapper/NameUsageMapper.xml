@@ -339,7 +339,9 @@
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
       JOIN names_index ni ON ni.id=nmo.index_id
-      JOIN name_match nm ON (nm.index_id=ni.id OR nm.index_id=ni.canonical_id)
+      LEFT JOIN names_index nic ON nic.id=ni.canonical_id AND ni.id != ni.canonical_id
+      LEFT JOIN names_index nia ON nia.canonical_id=ni.canonical_id AND nia.id != ni.id AND ni.id = ni.canonical_id
+      JOIN name_match nm ON (nm.index_id=ni.id OR nm.index_id=nic.id OR nm.index_id=nia.id)
     <!-- now join the related usages -->
     JOIN name n ON nm.name_id=n.id AND nm.dataset_key=n.dataset_key
     JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
