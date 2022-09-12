@@ -49,18 +49,18 @@ public class SectorSyncIT {
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
   final static TestDataRule dataRule = TestDataRule.draft();
   final static PgImportRule importRule = PgImportRule.create(
-  NomCode.BOTANICAL,
-    DataFormat.ACEF,  1,
-    DataFormat.COLDP, 0, 22, 25,
-    DataFormat.DWCA, 1, 2,
-  NomCode.ZOOLOGICAL,
-    DataFormat.ACEF,  5, 6, 11,
-    DataFormat.COLDP, 2, 4, 14, 24, 26, 27,
-  NomCode.VIRUS,
-    DataFormat.ACEF,  14
+//  NomCode.BOTANICAL,
+//    DataFormat.ACEF,  1,
+//    DataFormat.COLDP, 0, 22, 25,
+//    DataFormat.DWCA, 1, 2,
+//  NomCode.ZOOLOGICAL,
+//    DataFormat.ACEF,  5, 6, 11,
+//    DataFormat.COLDP, 2, 4, 14, 24, 26, 27,
+//  NomCode.VIRUS,
+//    DataFormat.ACEF,  14
 
-//    NomCode.ZOOLOGICAL,
-//      DataFormat.COLDP, 27)
+    NomCode.ZOOLOGICAL,
+      DataFormat.COLDP, 27
   );
 
   @ClassRule

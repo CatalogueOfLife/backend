@@ -5,10 +5,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 
 import com.google.common.base.Preconditions;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.SimpleNameWithNidx;
-import life.catalogue.api.model.SimpleNameWithPub;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -26,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Matches usages against a given dataset. Matching is primarily based on names index matches,
@@ -36,17 +34,18 @@ import java.util.List;
 public class UsageMatcherGlobal {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherGlobal.class);
   private final NameIndex nameIndex;
+  private final UsageCache uCache;
   private final SqlSessionFactory factory;
   // key = datasetKey + canonical nidx
   private final LoadingCache<DSID<Integer>, List<SimpleNameWithPub>> usages = Caffeine.newBuilder()
-                                                                                      .maximumSize(100_000)
-                                                                                      .build(this::loadUsage);
+                                                                                         .maximumSize(100_000)
+                                                                                         .build(this::loadUsagesByNidx);
 
   /**
    * @param nidx a names index id wrapped by a datasetKey
    * @return list of matching usages for the requested dataset only
    */
-  private List<SimpleNameWithPub> loadUsage(@NonNull DSID<Integer> nidx) {
+  private List<SimpleNameWithPub> loadUsagesByNidx(@NonNull DSID<Integer> nidx) {
     try (SqlSession session = factory.openSession(true)) {
       var result = session.getMapper(NameUsageMapper.class).listByCanonNIDX(nidx.getDatasetKey(), nidx.getId());
       // avoid empty lists which get cached
@@ -54,9 +53,16 @@ public class UsageMatcherGlobal {
     }
   }
 
+  private SimpleNameWithPub loadUsage(@NonNull DSID<String> key) {
+    try (SqlSession session = factory.openSession(true)) {
+      return session.getMapper(NameUsageMapper.class).getSimplePub(key);
+    }
+  }
+
   public UsageMatcherGlobal(NameIndex nameIndex, SqlSessionFactory factory) {
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
     this.factory = Preconditions.checkNotNull(factory);
+    this.uCache = UsageCache.hashMap();
   }
 
   private DSID<Integer> canonNidx(int datasetKey, Integer nidx) {
@@ -84,7 +90,7 @@ public class UsageMatcherGlobal {
         return match(datasetKey, nu, existing, parents);
       }
     }
-    return UsageMatch.empty();
+    return UsageMatch.empty(datasetKey);
   }
 
   SimpleNameWithNidx toSimpleName(NameUsageBase nu) {
@@ -130,22 +136,27 @@ public class UsageMatcherGlobal {
       existing.removeIf(u -> u.getRank() != nu.getRank());
     }
 
-    if (nu.getRank().isSuprageneric() && existing.size() == 1) {
+    // from here on we need the classification of all candidates
+    final var existingWithCl = existing.stream()
+                                 .map(ex -> uCache.withClassification(datasetKey, ex, this::loadUsage))
+                                 .collect(Collectors.toList());
+
+    if (nu.getRank().isSuprageneric() && existingWithCl.size() == 1) {
       // no homonyms above genus level unless given in configured homonym sources (e.g. backbone patch, col)
       // snap to that single higher taxon right away!
 
-    } else if (nu.getRank().isSuprageneric() && existing.size() > 1){
-      return matchSupragenerics(existing, parents);
+    } else if (nu.getRank().isSuprageneric() && existingWithCl.size() > 1){
+      return matchSupragenerics(datasetKey, existingWithCl, parents);
 
     } else {
       // check classification for all others
-      existing.removeIf(rn -> !classificationMatches(nu, rn, parents));
+      existingWithCl.removeIf(rn -> !classificationMatches(nu, parents, datasetKey, rn));
     }
 
     // first try exact single match with authorship
     if (qualifiedName) {
-      SimpleNameWithPub match = null;
-      for (var u : existing) {
+      SimpleNameClassified match = null;
+      for (var u : existingWithCl) {
         if (u.getNamesIndexId().equals(nu.getName().getNamesIndexId())) {
           if (match != null) {
             LOG.warn("Exact homonyms existing in dataset {} for {}", datasetKey, nu.getName().getLabelWithRank());
@@ -157,29 +168,29 @@ public class UsageMatcherGlobal {
         }
       }
       if (match != null) {
-        return UsageMatch.match(match);
+        return UsageMatch.match(match, datasetKey);
       }
     }
 
-    if (existing.size() == 1) {
-      return UsageMatch.match(existing.get(0));
+    if (existingWithCl.size() == 1) {
+      return UsageMatch.match(existingWithCl.get(0), datasetKey);
     }
 
     // we have at least 2 match candidates here, maybe more
     // prefer a single match with authorship!
-    long canonMatches = existing.stream().filter(u -> !u.hasAuthorship()).count();
-    if (qualifiedName && existing.size() - canonMatches == 1) {
-      for (var u : existing) {
+    long canonMatches = existingWithCl.stream().filter(u -> !u.hasAuthorship()).count();
+    if (qualifiedName && existingWithCl.size() - canonMatches == 1) {
+      for (var u : existingWithCl) {
         if (u.hasAuthorship()) {
-          return UsageMatch.match(u);
+          return UsageMatch.match(u, datasetKey);
         }
       }
     }
 
     // all synonyms pointing to the same accepted? then it won't matter much for snapping
-    SimpleNameWithPub synonym = null;
+    SimpleNameClassified synonym = null;
     String parentID = null;
-    for (var u : existing) {
+    for (var u : existingWithCl) {
       if (u.getStatus().isTaxon()) {
         synonym = null;
         break;
@@ -193,20 +204,20 @@ public class UsageMatcherGlobal {
       }
     }
     if (synonym != null) {
-      return UsageMatch.snap(synonym);
+      return UsageMatch.snap(synonym, datasetKey);
     }
 
     // remove provisional usages
-    existing.removeIf(u -> u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    if (existing.size() == 1) {
-      var u = existing.get(0);
-      return UsageMatch.snap(u);
+    existingWithCl.removeIf(u -> u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    if (existingWithCl.size() == 1) {
+      var u = existingWithCl.get(0);
+      return UsageMatch.snap(u, datasetKey);
     }
 
     // finally pick the first accepted with the largest subtree ???
-    SimpleNameWithPub curr = null;
+    SimpleNameClassified curr = null;
     long maxDescendants = -1;
-    for (var u : existing) {
+    for (var u : existingWithCl) {
       if (u.getStatus().isTaxon()) {
         long descendants = countDescendants(u);
         if (maxDescendants < descendants) {
@@ -216,12 +227,12 @@ public class UsageMatcherGlobal {
       }
     }
     if (curr != null) {
-      LOG.info("{} ambiguous homonyms encountered for {} in source {}, picking largest taxon", existing.size(), nu.getLabel(), datasetKey);
-      return UsageMatch.snap(MatchType.AMBIGUOUS, curr);
+      LOG.info("{} ambiguous homonyms encountered for {} in source {}, picking largest taxon", existingWithCl.size(), nu.getLabel(), datasetKey);
+      return UsageMatch.snap(MatchType.AMBIGUOUS, curr, datasetKey);
     }
 
     // could not match
-    return UsageMatch.empty();
+    return UsageMatch.empty(datasetKey);
   }
 
   private long countDescendants(SimpleNameWithNidx u) {
@@ -241,7 +252,7 @@ public class UsageMatcherGlobal {
   }
 
   // if authors are missing require the classification to not contradict!
-  private boolean classificationMatches(NameUsageBase nu, SimpleNameWithPub candidate, List<ParentStack.MatchedUsage> parents) {
+  private boolean classificationMatches(NameUsageBase nu, List<ParentStack.MatchedUsage> parents, int datasetKey, SimpleNameClassified candidate) {
     return true;
     //if (currNubParent != null &&
     //    (currNubParent.equals(incertaeSedis)
@@ -257,15 +268,15 @@ public class UsageMatcherGlobal {
    * The classification comparison below is rather strict
    * require a match to one of the higher rank homonyms (the old code even did not allow for higher rank homonyms at all!)
    */
-  private UsageMatch matchSupragenerics(List<SimpleNameWithPub> homonyms, List<ParentStack.MatchedUsage> parents) {
+  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified> homonyms, List<ParentStack.MatchedUsage> parents) {
     if (parents == null || parents.isEmpty()) {
       // pick first
       var first = homonyms.get(0);
       LOG.debug("No parent given for homomym match {}. Pick first", first);
-      return UsageMatch.match(MatchType.AMBIGUOUS, first);
+      return UsageMatch.match(MatchType.AMBIGUOUS, first, datasetKey);
     }
     //TODO: remove and implement the homonym disambiguation based on parents!!!
-    return UsageMatch.match(MatchType.AMBIGUOUS, homonyms.get(0));
+    return UsageMatch.match(MatchType.AMBIGUOUS, homonyms.get(0), datasetKey);
 
 //    List<Homonym> homs = homonyms.stream()
 //                                 .map(u -> new Homonym(u, new HashSet<>(parents(u.node))))
@@ -357,7 +368,7 @@ public class UsageMatcherGlobal {
         count++;
       }
     }
-    LOG.info("Cleared {} usages from the cache", count);
+    LOG.info("Cleared all {} usages for datasetKey {} from the cache", count, datasetKey);
   }
 
   /**

@@ -35,6 +35,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   SimpleName getSimple(@Param("key") DSID<String> key);
 
   /**
+   * SimpleName.parent=parent.id
+   * @param key
+   */
+  SimpleNameWithPub getSimplePub(@Param("key") DSID<String> key);
+
+  /**
    * Retrieve the parent of the given key as a SimpleName with
    * SimpleName.parent=parent.id
    * @param key of the child to fetch the parent from

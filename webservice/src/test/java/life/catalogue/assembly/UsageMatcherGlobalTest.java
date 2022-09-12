@@ -23,6 +23,7 @@ public class UsageMatcherGlobalTest {
   public final static PgSetupRule pg = new PgSetupRule();
   final TestDataRule dataRule = TestDataRule.fish();
   final NameMatchingRule matchingRule = new NameMatchingRule();
+
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(dataRule)

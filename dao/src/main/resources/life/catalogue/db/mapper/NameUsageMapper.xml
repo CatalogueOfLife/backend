@@ -55,6 +55,10 @@
     u.id, n.scientific_name, n.authorship, u.name_phrase, n.rank, n.code, u.status, u.parent_id
   </sql>
 
+  <sql id="SELECT_SIMPLE_PUB">
+    u.id, n.scientific_name, n.authorship, u.name_phrase, n.rank, n.code, u.status, u.parent_id, n.published_in_id, nm.index_id, ni.canonical_id, nm.type
+  </sql>
+
   <sql id="COLS_COPY">
     ${alias}sector_key,
     ${alias}verbatim_key,
@@ -117,6 +121,12 @@
 
   <sql id="FROM_SIMPLE">
     name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id
+  </sql>
+
+  <sql id="FROM_SIMPLE_PUB">
+    <include refid="FROM_SIMPLE"/>
+    LEFT JOIN name_match nm ON nm.dataset_key=u.dataset_key AND nm.name_id=u.name_id
+    LEFT JOIN names_index ni ON nm.index_id=ni.id
   </sql>
 
   <sql id="FROM_BASE">
@@ -210,6 +220,12 @@
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
+  <select id="getSimplePub" resultMap="simplePubResultMap">
+    SELECT <include refid="SELECT_SIMPLE_PUB"/>
+    FROM <include refid="FROM_SIMPLE_PUB"/>
+    WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
+  </select>
+
   <select id="getSimpleParent" resultMap="simpleResultMap">
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
@@ -300,7 +316,7 @@
   </sql>
 
   <select id="listByCanonNIDX" resultMap="simplePubResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>, n.published_in_id, nm.index_id, ni.canonical_id, nm.type
+    SELECT <include refid="SELECT_SIMPLE_PUB"/>
     FROM <include refid="FROM_NIDX_BASE"/>
     WHERE nm.dataset_key = #{datasetKey} AND ni.canonical_id=#{nidx}
   </select>

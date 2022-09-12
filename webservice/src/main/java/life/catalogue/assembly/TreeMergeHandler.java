@@ -80,7 +80,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         && Objects.equals(subjectDatasetKey, match.sourceDatasetKey)
     ) {
       LOG.debug("Ignore match to synonym {}. A canonical homonym from the same source for {}", match.usage.getLabel(), nu.getLabel());
-      match = UsageMatch.empty();
+      match = UsageMatch.empty(targetDatasetKey);
     }
     parents.setMatch(match.usage);
 
