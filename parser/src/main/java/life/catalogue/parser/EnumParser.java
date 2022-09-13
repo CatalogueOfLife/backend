@@ -27,7 +27,14 @@ public abstract class EnumParser<T extends Enum> extends MapBasedParser<T> {
     addMappings(mappingResourceFile);
     addNativeEnumMappings();
   }
-  
+
+  public EnumParser(String mappingResourceFile, boolean throwUnparsableException, Class<T> enumClass) {
+    super(enumClass, throwUnparsableException);
+    this.enumClass = enumClass;
+    addMappings(mappingResourceFile);
+    addNativeEnumMappings();
+  }
+
   @Override
   protected T mapNormalisedValue(String upperCaseValue) {
     try {

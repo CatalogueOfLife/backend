@@ -27,6 +27,13 @@ public class SimpleNameWithPub extends SimpleNameWithNidx {
   }
 
   @Override
+  public void toStringAdditionalInfo(StringBuilder sb) {
+    super.toStringAdditionalInfo(sb);
+    sb.append(" | ref ");
+    sb.append(publishedInID);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof SimpleNameWithPub)) return false;

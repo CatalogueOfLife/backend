@@ -121,7 +121,7 @@ public class PgCopyUtils {
       this.funcs = parseFuncs(funcs);
       next();
     }
-  
+
     private List<Function<String[], String>> parseFuncs(Map<String, Function<String[], String>> calculators) {
       if (calculators == null) {
         return null;
@@ -145,7 +145,10 @@ public class PgCopyUtils {
       }
       return bytes[idx++];
     }
-  
+
+    /**
+     * Adds default values as new columns (header & data), but only if the column is not already existing
+     */
     private String[] parseDefaults(Map<String, Object> defaults) {
       if (defaults==null || defaults.isEmpty()) {
         return null;
@@ -153,15 +156,20 @@ public class PgCopyUtils {
       
       List<String> values = new ArrayList<>();
       for (Map.Entry<String, Object> col : defaults.entrySet()) {
-        header.add(col.getKey());
-        Object val = col.getValue();
-        if (val == null) {
-          // empty string
-          values.add(null);
-        } else if (val.getClass().isEnum()) {
-          values.add(((Enum) val).name());
+        if (header.contains(col.getKey())) {
+          LOG.debug("Default column {} already exists. Ignore default {}.", col.getKey(), col.getValue());
+
         } else {
-          values.add(val.toString());
+          header.add(col.getKey());
+          Object val = col.getValue();
+          if (val == null) {
+            // empty string
+            values.add(null);
+          } else if (val.getClass().isEnum()) {
+            values.add(((Enum) val).name());
+          } else {
+            values.add(val.toString());
+          }
         }
       }
       LOG.debug("Convert defaults {} to value columns {}", defaults, values.toString());
@@ -199,13 +207,22 @@ public class PgCopyUtils {
       writer.close();
     }
   }
-  
+
   /**
    * Uses pg copy to write a select statement to a TSV file with headers encoded in UTF8 using an empty string for NULL values
    * @param sql select statement
    * @param out file to write to
    */
-  public static void dump(PgConnection con, String sql, File out) throws IOException, SQLException {
+  public static void dumpCSV(PgConnection con, String sql, File out) throws IOException, SQLException {
+    dump(con, sql, out, "CSV HEADER NULL '' ENCODING 'UTF8'");
+  }
+
+  /**
+   * Uses pg copy to write a select statement to a TSV file with headers encoded in UTF8 using an empty string for NULL values
+   * @param sql select statement
+   * @param out file to write to
+   */
+  public static void dumpTSV(PgConnection con, String sql, File out) throws IOException, SQLException {
     dump(con, sql, out, "CSV HEADER NULL '' DELIMITER E'\t' QUOTE E'\f' ENCODING 'UTF8'");
   }
 

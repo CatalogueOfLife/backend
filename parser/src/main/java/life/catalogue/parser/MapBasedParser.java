@@ -23,7 +23,11 @@ public abstract class MapBasedParser<T> extends ParserBase<T> {
   public MapBasedParser(Class valueClass) {
     super(valueClass);
   }
-  
+
+  public MapBasedParser(Class valueClass, boolean throwUnparsableException) {
+    super(valueClass, throwUnparsableException);
+  }
+
   public void addMappings(String mappingResourceFile) {
     // read mappings from resource file?
     try (TabReader reader = dictReader(mappingResourceFile)){

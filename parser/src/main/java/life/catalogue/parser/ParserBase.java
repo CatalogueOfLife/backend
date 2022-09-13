@@ -14,18 +14,25 @@ import com.google.common.base.CharMatcher;
  */
 abstract class ParserBase<T> implements Parser<T> {
   private final static CharMatcher VISIBLE = CharMatcher.invisible().negate();
+  final boolean throwUnparsableException;
   final Class valueClass;
   
   ParserBase(Class valueClass) {
     this.valueClass = valueClass;
+    this.throwUnparsableException = true;
   }
-  
+
+  ParserBase(Class valueClass, boolean throwUnparsableException) {
+    this.valueClass = valueClass;
+    this.throwUnparsableException = throwUnparsableException;
+  }
+
   @Override
   public Optional<? extends T> parse(String value) throws UnparsableException {
     String x = normalize(value);
     if (x == null) {
       // check if we had any not invisible characters - throw Unparsable in such cases
-      if (value != null && VISIBLE.matchesAnyOf(value)) {
+      if (throwUnparsableException && value != null && VISIBLE.matchesAnyOf(value)) {
         throw new UnparsableException(valueClass, value);
       }
       return Optional.empty();
@@ -34,9 +41,13 @@ abstract class ParserBase<T> implements Parser<T> {
     T val = parseKnownValues(x);
     if (val != null) {
       return Optional.of(val);
+
+    } else if (throwUnparsableException) {
+      throw new UnparsableException(valueClass, value);
+
+    } else {
+      return Optional.empty();
     }
-    
-    throw new UnparsableException(valueClass, value);
   }
 
   /**

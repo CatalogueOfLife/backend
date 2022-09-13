@@ -63,6 +63,7 @@ public class PgImportRule extends ExternalResource {
 
   public static PgImportRule create(Object... params) {
     List<TestResource> resources = new ArrayList<>();
+    DatasetOrigin origin = DatasetOrigin.PROJECT;
     DataFormat format = null;
     NomCode code = null;
     DatasetType type = DatasetType.OTHER;
@@ -71,10 +72,12 @@ public class PgImportRule extends ExternalResource {
         format = (DataFormat) p;
       } else if (p instanceof NomCode) {
         code = (NomCode) p;
+      } else if (p instanceof DatasetOrigin) {
+        origin = (DatasetOrigin) p;
       } else if (p instanceof DatasetType) {
         type = (DatasetType) p;
       } else if (p instanceof Integer) {
-        resources.add(new TestResource((Integer)p, Preconditions.checkNotNull(format), code, type));
+        resources.add(new TestResource((Integer)p, origin, Preconditions.checkNotNull(format), code, type));
       }
     }
     return new PgImportRule(resources.toArray(new TestResource[0]));
@@ -86,12 +89,14 @@ public class PgImportRule extends ExternalResource {
   
   public static class TestResource {
     public final int key;
+    public final DatasetOrigin origin;
     public final DataFormat format;
     public final NomCode code;
     public final DatasetType type;
   
-    private TestResource(int key, DataFormat format, NomCode code, DatasetType type) {
+    private TestResource(int key, DatasetOrigin origin, DataFormat format, NomCode code, DatasetType type) {
       this.key = key;
+      this.origin = origin;
       this.format = Preconditions.checkNotNull(format);
       this.code = code;
       this.type = type;
@@ -140,7 +145,7 @@ public class PgImportRule extends ExternalResource {
   }
   
   public Integer datasetKey(int key, DataFormat format) {
-    return datasetKeyMap.get(new TestResource(key, format, null, null));
+    return datasetKeyMap.get(new TestResource(key, null, format, null, null));
   }
 
   void normalizeAndImport(TestResource tr) throws Exception {
@@ -151,7 +156,7 @@ public class PgImportRule extends ExternalResource {
     dataset.setModifiedBy(IMPORT_USER.getKey());
     dataset.setDataFormat(tr.format);
     dataset.setType(tr.type);
-    dataset.setOrigin(DatasetOrigin.PROJECT);
+    dataset.setOrigin(tr.origin);
     dataset.setCode(tr.code);
     dataset.setTitle("Test Dataset " + source.toString());
 

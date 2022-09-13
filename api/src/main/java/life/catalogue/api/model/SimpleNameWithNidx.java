@@ -12,6 +12,10 @@ public class SimpleNameWithNidx extends SimpleName {
   public SimpleNameWithNidx() {
   }
 
+  public SimpleNameWithNidx(SimpleName other) {
+    super(other);
+  }
+
   public SimpleNameWithNidx(SimpleNameWithNidx other) {
     super(other);
     canonicalId = other.canonicalId;
@@ -80,13 +84,11 @@ public class SimpleNameWithNidx extends SimpleName {
   }
 
   @Override
-  public String toString() {
-    var sb = super.toStringBuilder();
-    sb.append("| nidx ");
+  public void toStringAdditionalInfo(StringBuilder sb) {
+    sb.append(" | nidx ");
     sb.append(canonicalId);
     sb.append('-');
     sb.append(namesIndexId);
-    return sb.toString();
   }
 
 }

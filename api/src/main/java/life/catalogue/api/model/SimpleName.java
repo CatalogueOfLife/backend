@@ -40,6 +40,19 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
   private TaxonomicStatus status;
   private String parent;
 
+  public static SimpleName sn(String name) {
+    return new SimpleName(null, name, Rank.UNRANKED);
+  }
+  public static SimpleName sn(Rank rank, String name) {
+    return new SimpleName(null, name, rank);
+  }
+  public static SimpleName sn(Rank rank, String name, String authorship) {
+    return new SimpleName(null, name, authorship, rank);
+  }
+  public static SimpleName sn(String id, Rank rank, String name, String authorship) {
+    return new SimpleName(id, name, authorship, rank);
+  }
+
   public SimpleName() {}
 
   public SimpleName(SimpleName other) {
@@ -200,9 +213,14 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
         sb.append(" parent=");
         sb.append(parent);
       }
+      toStringAdditionalInfo(sb);
       sb.append("]");
     }
     return sb;
+  }
+
+  protected void toStringAdditionalInfo(StringBuilder sb) {
+    // override to add more infos into the brackets
   }
 
   public DSID<String> toDSID(int datasetKey){

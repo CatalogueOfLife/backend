@@ -7,6 +7,7 @@ import com.google.common.base.Preconditions;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.NameIndex;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +38,7 @@ public class UsageMatcherGlobal {
   private final NameIndex nameIndex;
   private final UsageCache uCache;
   private final SqlSessionFactory factory;
+  private final TaxGroupAnalyzer groupAnalyzer;
   // key = datasetKey + canonical nidx
   private final LoadingCache<DSID<Integer>, List<SimpleNameWithPub>> usages = Caffeine.newBuilder()
                                                                                          .maximumSize(100_000)
@@ -63,6 +66,7 @@ public class UsageMatcherGlobal {
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
     this.factory = Preconditions.checkNotNull(factory);
     this.uCache = UsageCache.hashMap();
+    this.groupAnalyzer = new TaxGroupAnalyzer();
   }
 
   private DSID<Integer> canonNidx(int datasetKey, Integer nidx) {
@@ -150,7 +154,11 @@ public class UsageMatcherGlobal {
 
     } else {
       // check classification for all others
-      existingWithCl.removeIf(rn -> !classificationMatches(nu, parents, datasetKey, rn));
+      List<SimpleName> parentsSN = parents.stream()
+                                      .map(p -> p.usage)
+                                      .collect(Collectors.toList());
+      var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), parentsSN);
+      existingWithCl.removeIf(rn -> !classificationMatches(group, rn));
     }
 
     // first try exact single match with authorship
@@ -252,16 +260,12 @@ public class UsageMatcherGlobal {
   }
 
   // if authors are missing require the classification to not contradict!
-  private boolean classificationMatches(NameUsageBase nu, List<ParentStack.MatchedUsage> parents, int datasetKey, SimpleNameClassified candidate) {
-    return true;
-    //if (currNubParent != null &&
-    //    (currNubParent.equals(incertaeSedis)
-    //     || existsInClassification(match.node, currNubParent.node, true)
-    //     || noClassificationContradiction(match.node, currNubParent.node)
-    //    )) {
-    //  return true;
-    //}
-    //return false;
+  private boolean classificationMatches(TaxGroup group, SimpleNameClassified candidate) {
+    if (group == null) {
+      return true;
+    }
+    var candidateGroup = groupAnalyzer.analyze(candidate, candidate.getClassification());
+    return !group.isDisparateTo(candidateGroup);
   }
 
   /**
@@ -275,53 +279,30 @@ public class UsageMatcherGlobal {
       LOG.debug("No parent given for homomym match {}. Pick first", first);
       return UsageMatch.match(MatchType.AMBIGUOUS, first, datasetKey);
     }
-    //TODO: remove and implement the homonym disambiguation based on parents!!!
-    return UsageMatch.match(MatchType.AMBIGUOUS, homonyms.get(0), datasetKey);
-
-//    List<Homonym> homs = homonyms.stream()
-//                                 .map(u -> new Homonym(u, new HashSet<>(parents(u.node))))
-//                                 .collect(Collectors.toList());
-//    // remove shared nodes, i.e. nodes that exist at least twice
-//    Map<Node, AtomicInteger> counts = new HashMap<>();
-//    for (Homonym h : homs) {
-//      for (Node n : h.nodes) {
-//        if (!counts.containsKey(n)) {
-//          counts.put(n, new AtomicInteger(1));
-//        } else {
-//          counts.get(n).incrementAndGet();
-//        }
-//      }
-//    }
-//    Set<Node> nonUnique = counts.entrySet().stream()
-//                                .filter(e -> e.getValue().get() > 1)
-//                                .map(Map.Entry::getKey)
-//                                .collect(Collectors.toSet());
-//    for (Homonym h : homs) {
-//      h.nodes.removeAll(nonUnique);
-//    }
-//    // now the node list for each homonym contains only unique discriminators
-//    // see if we can find any
-//    List<Node> parentsInclCurr = new ArrayList<>();
-//    parentsInclCurr.add(currNubParent.node);
-//    parentsInclCurr.addAll(parents(currNubParent.node));
-//    for (Node p : parentsInclCurr) {
-//      for (Homonym h : homs) {
-//        if (h.nodes.contains(p)) {
-//          return h.usage;
-//        }
-//      }
-//    }
-//    // nothing unique found, just pick the first
-//    NubUsage match = homonyms.get(0);
-//    LOG.debug("No unique higher homomym match found for {}. Pick first", match);
-//    return match;
+    // count number of equal parent names and pick most matching homonym by comparing canonical names index ids
+    Set<Integer> parentCNidx = parents.stream()
+                                      .map(p -> p.match.getCanonicalId())
+                                      .collect(Collectors.toSet());
+    SimpleNameClassified best = homonyms.get(0);
+    int max = 0;
+    for (var hom : homonyms) {
+      Set<Integer> cNidx = hom.getClassification().stream()
+                                        .map(SimpleNameWithNidx::getCanonicalId)
+                                        .collect(Collectors.toSet());
+      cNidx.retainAll(parentCNidx);
+      if (cNidx.size() > max) {
+        best = hom;
+        max = cNidx.size();
+      }
+    }
+    return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey);
   }
 
   /**
    * Manually adds a name usage to the cache. Requires the datasetKey to be set correctly.
    * The name will be matched to the names index if it does not have a names index id yet.
    */
-  public SimpleNameWithNidx add(NameUsageBase nu) {
+  public SimpleNameWithPub add(NameUsageBase nu) {
     Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
     var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu);
     if (canonNidx != null) {
