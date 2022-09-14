@@ -39,6 +39,10 @@ public class PgSetupRuleTest {
     }
   }
 
+  /**
+   * Tests the existance and completeness of pg enums against java enums.
+   * To create new SQL use PrintPgEnumSql
+   */
   @Test
   public void pgEnums() throws Exception {
     try (Connection c = pgSetupRule.connect()) {

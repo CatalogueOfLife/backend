@@ -66,12 +66,16 @@ public abstract class MapBasedParser<T> extends ParserBase<T> {
    * Adds more mappings to the main mapping dictionary, overwriting any potentially existing values.
    * Keys will be normalized with the same method used for parsing before inserting them to the mapping.
    * Blank strings and null values will be ignored!
+   *
+   * @return any previously existing value if it was different from the new one, otherwise null
    */
-  public void add(String key, T value) {
+  public T add(String key, T value) {
     key = normalize(key);
     if (key != null) {
-      this.mapping.put(key, value);
+      T prev = this.mapping.put(key, value);
+      if (prev != value) return prev;
     }
+    return null;
   }
   
   public void addNoOverwrite(String key, T value) {

@@ -16,6 +16,8 @@ public class TaxGroupParserTest extends ParserTestBase<TaxGroup> {
     assertParse(TaxGroup.Arthropods, "arthropods");
     assertParse(TaxGroup.Animals, "animalia");
     assertParse(null, "anima");
+
+    assertParse(TaxGroup.Birds, "Falconidae");
   }
 
   @Test

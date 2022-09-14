@@ -569,6 +569,42 @@ CREATE TYPE SPECIESINTERACTIONTYPE AS ENUM (
   'MUTUALIST_OF'
 );
 
+CREATE TYPE TAXGROUP AS ENUM (
+  'Prokaryotes',
+  'Bacteria',
+  'Archaea',
+  'Plants',
+  'Bryophytes',
+  'Lycophytes',
+  'Pteridophytes',
+  'Spermatophytes',
+  'Angiosperms',
+  'Gymnosperms',
+  'Fungi',
+  'Ascomycetes',
+  'Basidiomycetes',
+  'Animals',
+  'Arthropods',
+  'Insects',
+  'Coleoptera',
+  'Diptera',
+  'Lepidoptera',
+  'Hymenoptera',
+  'Hemiptera',
+  'Orthoptera',
+  'Arachnids',
+  'Crustacean',
+  'Molluscs',
+  'Chordates',
+  'Birds',
+  'Mammals',
+  'Reptiles',
+  'Fish',
+  'Protists',
+  'Viruses',
+  'Other'
+);
+
 CREATE TYPE TAXONCONCEPTRELTYPE AS ENUM (
   'EQUALS',
   'INCLUDES',
