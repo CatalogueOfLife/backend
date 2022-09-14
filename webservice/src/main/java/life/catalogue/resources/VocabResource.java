@@ -154,7 +154,8 @@ public class VocabResource {
   @GET
   @Path("language/{code}")
   public String languageTitle(@PathParam("code") String code) {
-    return Language.byCode(code).getTitle();
+    var lang = Language.byCode(code);
+    return lang == null ? null : lang.getTitle();
   }
   
   @GET
