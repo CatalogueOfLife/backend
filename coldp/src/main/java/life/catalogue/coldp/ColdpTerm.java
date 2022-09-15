@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public enum ColdpTerm implements Term, AlternativeNames {
   Reference((Class)null),
   ID,
+  alternativeID,
   sourceID,
   citation,
   type(Enum.class),
@@ -53,6 +54,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
 
   NameUsage((Class) null),
   // ID,
+  // alternativeID
   //sourceID,
   parentID,
   sequenceIndex(Integer.class),
@@ -76,6 +78,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   accordingToPage,
   accordingToPageLink,
   nameReferenceID("namePublishedInID"), // alternative term to Name.referenceID
+  nameAlternativeID, // alternative term to Name.nameAlternativeID
   publishedInYear(Year.class, "namePublishedInYear"),
   publishedInPage("namePublishedInPage"),
   publishedInPageLink("namePublishedInPageLink"),

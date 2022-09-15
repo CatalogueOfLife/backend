@@ -51,10 +51,8 @@ public class DwcInterpreter extends InterpreterBase {
   public Optional<NeoUsage> interpretUsage(VerbatimRecord v) {
     // name
     return interpretName(v).map(pnu -> {
-      NeoUsage u = interpretUsage(pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcaTerm.ID);
+      NeoUsage u = interpretUsage(DwcaTerm.ID, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcTerm.taxonConceptID);
       if (u.isNameUsageBase()) {
-        u.taxonID = v.getRaw(DwcTerm.taxonID);
-        u.taxonConceptID = v.getRaw(DwcTerm.taxonConceptID);
         u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
         if (!u.isSynonym()) {
           Taxon tax = u.asTaxon();
@@ -182,13 +180,13 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
-    Optional<ParsedNameUsage> opt = interpretName(false, v.getFirstRaw(DwcTerm.scientificNameID, DwcaTerm.ID),
+    Optional<ParsedNameUsage> opt = interpretName(false, v.getRaw(DwcaTerm.ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.getFirst(DwcTerm.infragenericEpithet, DwcTerm.subgenus),
         v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), v.get(DwcTerm.cultivarEpithet),
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
-        v.getRaw(DcTerm.references), null, v);
+        v.getRaw(DcTerm.references), null, v.getRaw(DwcTerm.scientificNameID), v);
     
     // publishedIn
     if (opt.isPresent()) {

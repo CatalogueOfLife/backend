@@ -125,7 +125,7 @@ public class ReferenceFactory {
   
   public Reference fromColDP(VerbatimRecord v) {
     CslData csl = new CslData();
-    csl.setId(v.get(ColdpTerm.ID));
+    csl.setId(v.getRaw(ColdpTerm.ID));
     CSLType type = SafeParser.parse(CSLTypeParser.PARSER, v.get(ColdpTerm.type)).orNull(Issue.UNPARSABLE_REFERENCE_TYPE, v);
     csl.setType(type);
     csl.setAuthor(parseAuthors(v.get(ColdpTerm.author), v));

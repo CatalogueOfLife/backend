@@ -52,6 +52,7 @@ public class InterpreterBase {
   private static final int MIN_YEAR = 1500;
   private static final int MAX_YEAR = Year.now().getValue() + 10;
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
+  private static final Pattern SPLIT_COMMA = Pattern.compile("(?<!\\\\),");
 
   protected final NeoDb store;
   protected final DatasetSettings settings;
@@ -367,7 +368,7 @@ public class InterpreterBase {
                                                  final String uninomial, final String genus, final String infraGenus, final String species, final String infraspecies,
                                                  final String cultivar,
                                                  String nomCode, String nomStatus,
-                                                 String link, String remarks, VerbatimRecord v) {
+                                                 String link, String remarks, String identifiers, VerbatimRecord v) {
     try {
       // parse rank & code as they improve name parsing
       final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
@@ -522,6 +523,7 @@ public class InterpreterBase {
         }
       }
       pnu.getName().setNomStatus(ObjectUtils.coalesce(status, statusAuthorship));
+      pnu.getName().setIdentifier(interpretIdentifiers(identifiers));
 
       // finally update the scientificName with the canonical form if we can
       pnu.getName().rebuildScientificName();
@@ -534,6 +536,22 @@ public class InterpreterBase {
     }
   }
 
+  protected List<Identifier> interpretIdentifiers(String idsRaw) {
+    if (!StringUtils.isBlank(idsRaw)) {
+      List<Identifier> ids = new ArrayList<>();
+      for (String altID : SPLIT_COMMA.split(idsRaw)) {
+        try {
+          var id = new Identifier(altID);
+          ids.add(id);
+        } catch (IllegalArgumentException e) {
+          LOG.info("Illegal identifier: {}", altID, e);
+        }
+      }
+      return ids;
+    }
+    return Collections.emptyList();
+  }
+
   private static void set(ParsedNameUsage pnu, Consumer<String> setter, String epithet) {
     var epi = new ExtinctName(epithet);
     setter.accept(epi.name);
@@ -542,7 +560,7 @@ public class InterpreterBase {
     }
   }
 
-  public NeoUsage interpretUsage(ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term idTerm) {
+  public NeoUsage interpretUsage(Term idTerm, ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term... altIdTerms) {
     NeoUsage u;
     // a synonym by status?
     EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
@@ -569,6 +587,16 @@ public class InterpreterBase {
     setTaxonomicNote(u.usage, pnu.getTaxonomicNote(), v);
     u.homotypic = TaxonomicStatusParser.isHomotypic(status);
 
+    if (u.isNameUsageBase()) {
+      List<Identifier> ids = new ArrayList<>();
+      for (Term t : altIdTerms) {
+        var x = interpretIdentifiers(v.getRaw(t));
+        if (x != null) {
+          ids.addAll(x);
+        }
+      }
+      ((NameUsageBase) u.usage).setIdentifier(ids);
+    }
     // flat classification via dwc or coldp
     u.classification = new Classification();
     if (v.hasDwcTerms()) {
