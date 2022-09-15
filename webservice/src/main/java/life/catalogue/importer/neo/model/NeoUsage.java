@@ -34,6 +34,8 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   public boolean homotypic = false;
 
   // supplementary infos for a taxon
+  public String taxonID;
+  public String taxonConceptID;
   public Treatment treatment;
   public List<Distribution> distributions = Lists.newArrayList();
   public List<Media> media = Lists.newArrayList();

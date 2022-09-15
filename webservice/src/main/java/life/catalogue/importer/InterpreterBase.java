@@ -14,6 +14,7 @@ import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -541,7 +542,7 @@ public class InterpreterBase {
     }
   }
 
-  public NeoUsage interpretUsage(ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term... idTerms) {
+  public NeoUsage interpretUsage(ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term idTerm) {
     NeoUsage u;
     // a synonym by status?
     EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
@@ -563,7 +564,7 @@ public class InterpreterBase {
     }
 
     // shared usage props
-    u.setId(v.getFirstRaw(idTerms));
+    u.setId(v.getRaw(idTerm));
     u.setVerbatimKey(v.getId());
     setTaxonomicNote(u.usage, pnu.getTaxonomicNote(), v);
     u.homotypic = TaxonomicStatusParser.isHomotypic(status);

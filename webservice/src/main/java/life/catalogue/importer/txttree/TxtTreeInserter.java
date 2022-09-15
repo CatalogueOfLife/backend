@@ -8,7 +8,7 @@ import life.catalogue.api.txtree.TreeLine;
 import life.catalogue.api.txtree.TreeNode;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.api.vocab.TxtTreeTerm;
+import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.MappingInfos;

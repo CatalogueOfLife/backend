@@ -5,6 +5,7 @@ import de.undercouch.citeproc.csl.CSLType;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
+import life.catalogue.api.vocab.terms.InatTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.io.InputStreamUtils;
@@ -50,8 +51,10 @@ public class DwcInterpreter extends InterpreterBase {
   public Optional<NeoUsage> interpretUsage(VerbatimRecord v) {
     // name
     return interpretName(v).map(pnu -> {
-      NeoUsage u = interpretUsage(pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcaTerm.ID);
+      NeoUsage u = interpretUsage(pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcaTerm.ID);
       if (u.isNameUsageBase()) {
+        u.taxonID = v.getRaw(DwcTerm.taxonID);
+        u.taxonConceptID = v.getRaw(DwcTerm.taxonConceptID);
         u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
         if (!u.isSynonym()) {
           Taxon tax = u.asTaxon();
@@ -128,7 +131,7 @@ public class DwcInterpreter extends InterpreterBase {
   }
   
   List<VernacularName> interpretVernacularName(VerbatimRecord rec) {
-    return super.interpretVernacular(rec,
+    var vns = super.interpretVernacular(rec,
         this::setReference,
         DwcTerm.vernacularName,
         null,
@@ -137,6 +140,13 @@ public class DwcInterpreter extends InterpreterBase {
         DwcTerm.locality,
         DwcTerm.countryCode, DwcTerm.country
     );
+    for (var vn : vns) {
+      // try with iNat lexicon - a specific iNat hack
+      if ((vn.getLanguage() == null || vn.getLanguage().equalsIgnoreCase("und")) && rec.hasTerm(InatTerm.lexicon)) {
+        vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(InatTerm.lexicon)).orNull());
+      }
+    }
+    return vns;
   }
 
   List<Media> interpretMedia(VerbatimRecord rec) {
@@ -172,7 +182,7 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
-    Optional<ParsedNameUsage> opt = interpretName(false, v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
+    Optional<ParsedNameUsage> opt = interpretName(false, v.getFirstRaw(DwcTerm.scientificNameID, DwcaTerm.ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.getFirst(DwcTerm.infragenericEpithet, DwcTerm.subgenus),

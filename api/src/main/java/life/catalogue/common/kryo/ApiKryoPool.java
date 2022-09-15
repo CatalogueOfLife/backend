@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.BiboOntTerm;
 import life.catalogue.api.vocab.terms.EolDocumentTerm;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
+import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.date.FuzzyDate;
