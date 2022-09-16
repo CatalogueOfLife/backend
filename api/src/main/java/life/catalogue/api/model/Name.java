@@ -196,7 +196,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.sectorKey = n.sectorKey;
     this.namesIndexId = n.namesIndexId;
     this.namesIndexType = n.namesIndexType;
-    this.identifier = new ArrayList<>(n.identifier);
+    this.identifier = n.identifier;
     this.scientificName = n.scientificName;
     this.authorship = n.authorship;
     this.rank = n.rank;
@@ -436,11 +436,13 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setIdentifier(List<Identifier> identifier) {
     this.identifier = identifier;
   }
+
   public void addIdentifier(String identifier) {
     if (!StringUtils.isBlank(identifier)) {
-      addIdentifier(new Identifier(identifier));
+      addIdentifier(Identifier.parse(identifier));
     }
   }
+
   public void addIdentifier(Identifier id) {
     if (this.identifier == null) {
       this.identifier = new ArrayList<>();

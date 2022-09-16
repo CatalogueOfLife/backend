@@ -48,17 +48,26 @@ public class InterpreterBaseTest {
 
   @Test
   public void identifier() throws Exception {
-    var resp = ib.interpretIdentifiers("tsn:2134,col:GHS");
-    assertEquals(List.of(new Identifier("tsn:2134"), new Identifier("col:GHS")), resp);
+    IssueContainer issues = IssueContainer.simple();
 
-    resp = ib.interpretIdentifiers(" tsn:2134, COL:GHS");
-    assertEquals(List.of(new Identifier("tsn:2134"), new Identifier("col:GHS")), resp);
+    var resp = ib.interpretIdentifiers("tsn:2134,col:GHS", issues);
+    assertEquals(List.of(new Identifier("tsn","2134"), new Identifier("col","GHS")), resp);
 
-    resp = ib.interpretIdentifiers(" tsn:2134\\,COL:GHS");
-    assertEquals(List.of(new Identifier("tsn:2134\\,COL:GHS")), resp);
+    resp = ib.interpretIdentifiers(" tsn:2134, COL:GHS", issues);
+    assertEquals(List.of(new Identifier("tsn","2134"), new Identifier("col","GHS")), resp);
 
-    resp = ib.interpretIdentifiers("https://species.wikimedia.org/wiki/Poa_annua");
-    assertEquals(List.of(new Identifier("https://species.wikimedia.org/wiki/Poa_annua")), resp);
+    resp = ib.interpretIdentifiers(" tsn:2134\\,COL:GHS", issues);
+    assertEquals(List.of(new Identifier("tsn", "2134\\,COL:GHS")), resp);
+
+    resp = ib.interpretIdentifiers("https://species.wikimedia.org/wiki/Poa_annua", issues);
+    assertEquals(List.of(new Identifier("https", "//species.wikimedia.org/wiki/Poa_annua")), resp);
+
+    assertFalse(issues.hasIssues());
+
+    resp = ib.interpretIdentifiers("Poa_annua", issues);
+    assertEquals(List.of(), resp);
+    assertTrue(issues.hasIssues());
+    assertTrue(issues.hasIssue(Issue.IDENTIFIER_WITHOUT_SCHEME));
   }
 
   @Test
@@ -119,7 +128,7 @@ public class InterpreterBaseTest {
     assertEquals("al.", n.getBasionymAuthorship().getAuthors().get(1));
     assertEquals("P.D.Sell", n.getCombinationAuthorship().getAuthors().get(0));
     assertEquals("Whitehead", n.getCombinationAuthorship().getAuthors().get(1));
-    assertEquals(List.of(new Identifier("tpl:234567")), n.getIdentifier());
+    assertEquals(List.of(new Identifier("tpl", "234567")), n.getIdentifier());
 
     pnu = ib.interpretName(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881",
       null, "Abies", null, "alba", null, null, null, null, null, null, null, v);

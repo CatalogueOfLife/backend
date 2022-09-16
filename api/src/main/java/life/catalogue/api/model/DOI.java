@@ -33,8 +33,8 @@ public class DOI implements Serializable {
   public static final String GBIF_PREFIX = "10.15468";
   public static final String COL_PREFIX = "10.48580";
   public static final String TEST_PREFIX = "10.80631";
-  private static final Pattern HTTP = Pattern.compile("^https?://(dx\\.)?doi\\.org/(urn:)?(doi:)?", 2);
-  private static final Pattern PARSER = Pattern.compile("^(?:urn:)?(?:doi:)?(10(?:\\.[0-9]+)+)/(.+)$", 2);
+  static final Pattern HTTP = Pattern.compile("^https?://(dx\\.)?doi\\.org/(urn:)?(doi:)?", 2);
+  static final Pattern PARSER = Pattern.compile("^(?:urn:)?(?:doi:)?(10(?:\\.[0-9]+)+)/(.+)$", 2);
   private static final String RESOLVER = "https://doi.org/";
 
   private static final String DATASET_PATH = "d";

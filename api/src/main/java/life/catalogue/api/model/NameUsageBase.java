@@ -297,11 +297,13 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public void setIdentifier(List<Identifier> identifier) {
     this.identifier = identifier;
   }
+
   public void addIdentifier(String identifier) {
     if (!StringUtils.isBlank(identifier)) {
-      addIdentifier(new Identifier(identifier));
+      addIdentifier(Identifier.parse(identifier));
     }
   }
+
   public void addIdentifier(Identifier id) {
     if (this.identifier == null) {
       this.identifier = new ArrayList<>();

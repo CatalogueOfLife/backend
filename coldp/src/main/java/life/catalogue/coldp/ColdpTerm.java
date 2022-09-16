@@ -224,6 +224,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   public static Map<ColdpTerm, List<ColdpTerm>> RESOURCES = Map.ofEntries(
     Map.entry(Reference, List.of(
       ID,
+      alternativeID,
       sourceID,
       citation,
       type,
@@ -250,6 +251,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
       remarks
     )), Map.entry(Name, List.of(
       ID,
+      alternativeID,
       sourceID,
       basionymID,
       scientificName,
@@ -300,6 +302,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
       remarks
     )), Map.entry(Taxon, List.of(
       ID,
+      alternativeID,
       sourceID,
       parentID,
       nameID,
@@ -351,6 +354,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
       remarks
     )), Map.entry(NameUsage, List.of(
       ID,
+      alternativeID,
+      nameAlternativeID,
       sourceID,
       parentID,
       basionymID,

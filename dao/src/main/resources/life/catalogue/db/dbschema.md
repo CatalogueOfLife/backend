@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-09-16 new issue
+```
+ALTER TYPE ISSUE ADD VALUE 'IDENTIFIER_WITHOUT_SCHEME';
+```
+
 ### 2022-09-07 drop verbatim key constraint for treatments
 ```
 ALTER TABLE treatment ALTER verbatim_key DROP NOT NULL;

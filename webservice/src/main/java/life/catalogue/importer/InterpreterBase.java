@@ -523,7 +523,7 @@ public class InterpreterBase {
         }
       }
       pnu.getName().setNomStatus(ObjectUtils.coalesce(status, statusAuthorship));
-      pnu.getName().setIdentifier(interpretIdentifiers(identifiers));
+      pnu.getName().setIdentifier(interpretIdentifiers(identifiers, v));
 
       // finally update the scientificName with the canonical form if we can
       pnu.getName().rebuildScientificName();
@@ -536,14 +536,15 @@ public class InterpreterBase {
     }
   }
 
-  protected List<Identifier> interpretIdentifiers(String idsRaw) {
+  protected List<Identifier> interpretIdentifiers(String idsRaw, IssueContainer issues) {
     if (!StringUtils.isBlank(idsRaw)) {
       List<Identifier> ids = new ArrayList<>();
       for (String altID : SPLIT_COMMA.split(idsRaw)) {
         try {
-          var id = new Identifier(altID);
+          var id = Identifier.parse(altID);
           ids.add(id);
         } catch (IllegalArgumentException e) {
+          issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCHEME);
           LOG.info("Illegal identifier: {}", altID, e);
         }
       }
@@ -590,7 +591,7 @@ public class InterpreterBase {
     if (u.isNameUsageBase()) {
       List<Identifier> ids = new ArrayList<>();
       for (Term t : altIdTerms) {
-        var x = interpretIdentifiers(v.getRaw(t));
+        var x = interpretIdentifiers(v.getRaw(t), v);
         if (x != null) {
           ids.addAll(x);
         }

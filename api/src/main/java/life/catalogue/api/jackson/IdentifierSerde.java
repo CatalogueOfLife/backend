@@ -18,7 +18,7 @@ public class IdentifierSerde {
     }
 
     public Identifier deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-      return p != null && p.getTextLength() > 0 ? new Identifier(p.getText()) : null;
+      return p != null && p.getTextLength() > 0 ? Identifier.parse(p.getText()) : null;
     }
   }
 

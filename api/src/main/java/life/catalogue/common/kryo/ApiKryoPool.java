@@ -65,6 +65,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Distribution.class);
     kryo.register(EditorialDecision.class);
     kryo.register(EditorialDecision.Mode.class);
+    kryo.register(Identifier.class);
     kryo.register(IndexName.class);
     kryo.register(Media.class);
     kryo.register(Name.class);
@@ -108,6 +109,7 @@ public class ApiKryoPool extends Pool<Kryo> {
 
     // java & commons
     kryo.register(ArrayList.class);
+    kryo.register(Collections.emptyList().getClass());
     kryo.register(HashMap.class);
     kryo.register(HashSet.class);
     kryo.register(int[].class);
