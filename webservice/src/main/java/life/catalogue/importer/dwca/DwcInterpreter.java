@@ -1,8 +1,14 @@
 package life.catalogue.importer.dwca;
 
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.terms.EolReferenceTerm;
+import life.catalogue.api.vocab.terms.InatTerm;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
+import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
@@ -17,6 +23,8 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.DwcaTerm;
 import org.gbif.dwc.terms.GbifTerm;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +51,7 @@ public class DwcInterpreter extends InterpreterBase {
   public Optional<NeoUsage> interpretUsage(VerbatimRecord v) {
     // name
     return interpretName(v).map(pnu -> {
-      NeoUsage u = interpretUsage(pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcaTerm.ID);
+      NeoUsage u = interpretUsage(DwcaTerm.ID, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcTerm.taxonConceptID);
       if (u.isNameUsageBase()) {
         u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
         if (!u.isSynonym()) {
@@ -86,6 +94,13 @@ public class DwcInterpreter extends InterpreterBase {
         rec
     ));
   }
+
+  /**
+   * As used by Plazi
+   */
+  List<Reference> interpretEolReference(VerbatimRecord v) {
+    return Lists.newArrayList(refFactory.fromEOL(v));
+  }
   
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     // try to figure out an area
@@ -114,7 +129,7 @@ public class DwcInterpreter extends InterpreterBase {
   }
   
   List<VernacularName> interpretVernacularName(VerbatimRecord rec) {
-    return super.interpretVernacular(rec,
+    var vns = super.interpretVernacular(rec,
         this::setReference,
         DwcTerm.vernacularName,
         null,
@@ -123,6 +138,13 @@ public class DwcInterpreter extends InterpreterBase {
         DwcTerm.locality,
         DwcTerm.countryCode, DwcTerm.country
     );
+    for (var vn : vns) {
+      // try with iNat lexicon - a specific iNat hack
+      if ((vn.getLanguage() == null || vn.getLanguage().equalsIgnoreCase("und")) && rec.hasTerm(InatTerm.lexicon)) {
+        vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(InatTerm.lexicon)).orNull());
+      }
+    }
+    return vns;
   }
 
   List<Media> interpretMedia(VerbatimRecord rec) {
@@ -158,13 +180,13 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
-    Optional<ParsedNameUsage> opt = interpretName(false, v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
+    Optional<ParsedNameUsage> opt = interpretName(false, v.getRaw(DwcaTerm.ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.getFirst(DwcTerm.infragenericEpithet, DwcTerm.subgenus),
         v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), v.get(DwcTerm.cultivarEpithet),
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
-        v.getRaw(DcTerm.references), null, v);
+        v.getRaw(DcTerm.references), null, v.getRaw(DwcTerm.scientificNameID), v);
     
     // publishedIn
     if (opt.isPresent()) {
@@ -198,7 +220,7 @@ public class DwcInterpreter extends InterpreterBase {
       m.setLocality(rec.get(DwcTerm.locality));
       m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(DwcTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
       try {
-        CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLatitude), rec.get(DwcTerm.decimalLongitude)).ifPresent(m::setCoordinate);
+        CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLongitude), rec.get(DwcTerm.decimalLatitude)).ifPresent(m::setCoordinate);
       } catch (UnparsableException e) {
         rec.addIssue(Issue.LAT_LON_INVALID);
       }
@@ -216,6 +238,17 @@ public class DwcInterpreter extends InterpreterBase {
       m.addRemarks(rec.get(DwcTerm.sex));
       setReference(m, rec);
       return Optional.of(m);
+    }
+    return Optional.empty();
+  }
+
+  public Optional<Treatment> interpretTreatment(VerbatimRecord v) {
+    if (v.hasTerm(DcTerm.description)) {
+      Treatment t = new Treatment();
+      t.setId(v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID));
+      t.setFormat(TreatmentFormat.HTML);
+      t.setDocument(v.getRaw(DcTerm.description));
+      return Optional.of(t);
     }
     return Optional.empty();
   }

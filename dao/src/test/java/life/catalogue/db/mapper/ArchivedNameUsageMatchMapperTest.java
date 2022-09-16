@@ -26,8 +26,8 @@ public class ArchivedNameUsageMatchMapperTest extends MapperTestBase<ArchivedNam
   @Before
   public void initMappers() {
     datasetKey = testDataRule.testData.key;
-    u = ArchivedNameMapperTest.create();
-    mapper(ArchivedNameMapper.class).create(u);
+    u = ArchivedNameUsageMapperTest.create();
+    mapper(ArchivedNameUsageMapper.class).create(u);
 
     // add names index match
     var nim = mapper(NamesIndexMapper.class);

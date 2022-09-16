@@ -38,6 +38,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   private String namePhrase;
   private String accordingTo; // read-only
   private String accordingToId;
+  private List<Identifier> identifier;
   private URI link;
   private String remarks;
   /**
@@ -48,6 +49,9 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public NameUsageBase() {
   }
 
+  /**
+   * Creates a shallow copy of the provided usage instance.
+   */
   public NameUsageBase(NameUsageBase other) {
     super(other);
     this.sectorKey = other.sectorKey;
@@ -59,6 +63,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     this.namePhrase = other.namePhrase;
     this.accordingTo = other.accordingTo;
     this.accordingToId = other.accordingToId;
+    this.identifier = other.identifier;
     this.link = other.link;
     this.remarks = other.remarks;
     this.referenceIds = other.referenceIds;
@@ -287,6 +292,27 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     this.link = link;
   }
 
+  public List<Identifier> getIdentifier() {
+    return identifier;
+  }
+
+  public void setIdentifier(List<Identifier> identifier) {
+    this.identifier = identifier;
+  }
+
+  public void addIdentifier(String identifier) {
+    if (!StringUtils.isBlank(identifier)) {
+      addIdentifier(Identifier.parse(identifier));
+    }
+  }
+
+  public void addIdentifier(Identifier id) {
+    if (this.identifier == null) {
+      this.identifier = new ArrayList<>();
+    }
+    this.identifier.add(id);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -301,6 +327,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       Objects.equals(parentId, that.parentId) &&
       Objects.equals(namePhrase, that.namePhrase) &&
       Objects.equals(accordingToId, that.accordingToId) &&
+      Objects.equals(identifier, that.identifier) &&
       Objects.equals(link, that.link) &&
       Objects.equals(remarks, that.remarks) &&
       Objects.equals(referenceIds, that.referenceIds);
@@ -308,7 +335,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, namePhrase, accordingToId, link, remarks, referenceIds);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, namePhrase, accordingToId, identifier, link, remarks, referenceIds);
   }
 
   @Override

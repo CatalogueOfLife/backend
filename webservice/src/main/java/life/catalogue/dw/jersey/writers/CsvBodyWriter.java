@@ -1,7 +1,7 @@
 package life.catalogue.dw.jersey.writers;
 
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.io.IOException;
 import java.io.OutputStream;

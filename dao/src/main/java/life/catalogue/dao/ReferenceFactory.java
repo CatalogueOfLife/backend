@@ -4,6 +4,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DoiResolution;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.terms.BiboOntTerm;
+import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
@@ -22,6 +24,9 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;
+
+import org.gbif.dwc.terms.DcTerm;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,7 +125,7 @@ public class ReferenceFactory {
   
   public Reference fromColDP(VerbatimRecord v) {
     CslData csl = new CslData();
-    csl.setId(v.get(ColdpTerm.ID));
+    csl.setId(v.getRaw(ColdpTerm.ID));
     CSLType type = SafeParser.parse(CSLTypeParser.PARSER, v.get(ColdpTerm.type)).orNull(Issue.UNPARSABLE_REFERENCE_TYPE, v);
     csl.setType(type);
     csl.setAuthor(parseAuthors(v.get(ColdpTerm.author), v));
@@ -147,6 +152,29 @@ public class ReferenceFactory {
     return fromCsl(datasetKey, csl, v.get(ColdpTerm.citation), v.get(ColdpTerm.remarks), v);
   }
 
+  /**
+   * As used by Plazi in http://eol.org/schema/reference/Reference
+   */
+  public Reference fromEOL(VerbatimRecord v) {
+    CslData csl = new CslData();
+    csl.setId(v.get(DcTerm.identifier));
+    CSLType type = SafeParser.parse(CSLTypeParser.PARSER, v.get(EolReferenceTerm.publicationType)).orNull(Issue.UNPARSABLE_REFERENCE_TYPE, v);
+    csl.setType(type);
+
+    csl.setTitle(v.get(EolReferenceTerm.primaryTitle));
+    csl.setPage(v.get(BiboOntTerm.pages));
+    csl.setContainerTitle(v.get(BiboOntTerm.journal));
+    csl.setVolume(v.get(BiboOntTerm.volume));
+    csl.setPublisher(v.get(DcTerm.publisher));
+    csl.setAuthor(parseAuthors(v.get(BiboOntTerm.authorList), v));
+    csl.setEditor(parseAuthors(v.get(BiboOntTerm.editorList), v));
+    csl.setIssued(ReferenceFactory.toCslDate(v.getFirst(DcTerm.issued, DcTerm.created)));
+    csl.setURL(v.get(BiboOntTerm.uri));
+    csl.setDOI(v.get(BiboOntTerm.doi));
+
+    return fromCsl(datasetKey, csl, v.get(EolReferenceTerm.full_reference), null, v);
+  }
+
   private void resolveDOI(Reference ref, IssueContainer issues) {
     if (ref.getCsl() != null && ref.getCsl().getDOI() != null && (
       resolveDOIs == DoiResolution.ALWAYS || resolveDOIs == DoiResolution.MISSING && !ref.getCsl().hasTitleContainerOrAuthor()
@@ -164,6 +192,10 @@ public class ReferenceFactory {
 
   public Reference fromCsl(int datasetKey, CslData csl, IssueContainer issues) {
     return fromCsl(datasetKey, csl, null, null, issues);
+  }
+
+  public Reference fromCsl(CslData csl, String citation, String remarks, IssueContainer issues) {
+    return fromCsl(datasetKey, csl, citation, remarks, issues);
   }
 
   public Reference fromCsl(int datasetKey, CslData csl, String citation, String remarks, IssueContainer issues) {

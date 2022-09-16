@@ -21,8 +21,10 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -172,6 +174,42 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
       return d.getKey();
     }
+  }
+
+  public Dataset patchMetadata(DatasetWithSettings ds, Dataset update) {
+    return patchMetadata(ds, update, validator);
+  }
+
+  /**
+   * Updates the given dataset ds with the provided metadata update,
+   * retaining managed properties like keys and settings.
+   * Mandatory properties like title and license are only changed if not null.
+   * @param ds
+   * @param update
+   */
+  public static Dataset patchMetadata(DatasetWithSettings ds, Dataset update, Validator validator) {
+    final Dataset d = ds.getDataset();
+    final boolean merge = ds.isEnabled(Setting.MERGE_METADATA);
+    if (merge) {
+      LOG.info("Merge dataset metadata {}: {}", d.getKey(), d.getTitle());
+    }
+
+    Set<String> nonNullProps = Set.of("title", "alias", "license");
+    try {
+      for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
+        Object val = prop.getReadMethod().invoke(update);
+        // for required property do not allow null
+        if (val != null || (!merge && !nonNullProps.contains(prop.getName()))) {
+          prop.getWriteMethod().invoke(d, val);
+        }
+      }
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new RuntimeException(e);
+    }
+    ObjectUtils.copyIfNotNull(update::getType, d::setType);
+    // verify emails, orcids & rorid as they can break validation on insert
+    d.processAllAgents(a -> a.validateAndNullify(validator));
+    return d;
   }
 
   private void sanitize(Dataset d) {
@@ -365,7 +403,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // remove decisions, estimates, dataset patches, archived usages, name matches,
     // but NOT sectors which are referenced from data tables
     for (Class<DatasetProcessable<?>> mClass : new Class[]{
-      DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class, ArchivedNameMapper.class, NameMatchMapper.class
+      DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class, ArchivedNameUsageMapper.class, NameMatchMapper.class
     }) {
       LOG.info("Delete {}s for dataset {}", mClass.getSimpleName().substring(0, mClass.getSimpleName().length() - 6), key);
       session.getMapper(mClass).deleteByDataset(key);
@@ -486,7 +524,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    */
   @Override
   protected void updateBefore(Dataset obj, @NotNull Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    // changing a private to a public release is only allowed if there is no newer pubic release already!
+    // changing a private to a public release is only allowed if there is no newer public release already!
     if (obj.getSourceKey() != null && obj.getOrigin() == DatasetOrigin.RELEASE
         && old.isPrivat() // was private before
         && !obj.isPrivat() // but now is public
@@ -497,14 +535,14 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         throw new IllegalArgumentException("A newer public release already exists. You cannot turn this private release public");
       }
     }
-    // copy all required fields from old copy if missing
+    // copy all required fields which are not patch fields from old copy if missing
+    ObjectUtils.setIfNull(obj.getType(), obj::setType, old.getType());
+    ObjectUtils.setIfNull(obj.getTitle(), obj::setTitle, old.getTitle());
+    ObjectUtils.setIfNull(obj.getLicense(), obj::setLicense, old.getLicense());
     ObjectUtils.setIfNull(obj.getOrigin(), obj::setOrigin, old.getOrigin());
     if (!java.util.Objects.equals(obj.getOrigin(), old.getOrigin())) {
       throw new IllegalArgumentException("origin is immutable and must remain " + old.getOrigin());
     }
-    ObjectUtils.setIfNull(obj.getType(), obj::setType, old.getType());
-    ObjectUtils.setIfNull(obj.getTitle(), obj::setTitle, old.getTitle());
-    ObjectUtils.setIfNull(obj.getLicense(), obj::setLicense, old.getLicense());
     sanitize(obj);
     // if list of creators for a project changes, adjust the max container author settings
     if (obj.getOrigin() == DatasetOrigin.PROJECT && CollectionUtils.size(obj.getCreator()) != CollectionUtils.size(old.getCreator())) {

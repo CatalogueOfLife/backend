@@ -151,6 +151,7 @@ public class ColdpInterpreter extends InterpreterBase {
       NameUsageBase nub = (NameUsageBase) u.usage;
       setReferences(v, ColdpTerm.referenceID, COMMA_SPLITTER, nub::setReferenceIds);
       nub.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
+      nub.setIdentifier(interpretIdentifiers(v.getRaw(ColdpTerm.alternativeID), v));
     }
 
     u.usage.setName(n.getName());
@@ -276,19 +277,21 @@ public class ColdpInterpreter extends InterpreterBase {
     Term genusNameTerm = ColdpTerm.genus;
     Term remarksTerm = ColdpTerm.remarks;
     Term refIdTerm = ColdpTerm.referenceID;
+    Term altIdTerm = ColdpTerm.alternativeID;
     if (ColdpTerm.NameUsage.equals(v.getType())) {
       nomStatusTerm = ColdpTerm.nameStatus;
       genusNameTerm = ColdpTerm.genericName;
       remarksTerm = ColdpTerm.nameRemarks;
       refIdTerm = ColdpTerm.nameReferenceID;
+      altIdTerm = ColdpTerm.nameAlternativeID;
     }
 
-    Optional<ParsedNameUsage> opt = interpretName(true, v.get(ColdpTerm.ID),
+    Optional<ParsedNameUsage> opt = interpretName(true, v.getRaw(ColdpTerm.ID),
         v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
         v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet),
         v.get(ColdpTerm.code), v.get(nomStatusTerm),
-        v.get(ColdpTerm.link), v.get(remarksTerm), v);
+        v.get(ColdpTerm.link), v.get(remarksTerm), v.getRaw(altIdTerm), v);
     if (opt.isPresent()) {
       // publishedIn
       Name n = opt.get().getName();

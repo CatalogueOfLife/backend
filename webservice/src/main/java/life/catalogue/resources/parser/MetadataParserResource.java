@@ -5,10 +5,12 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MetadataFormat;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.provider.DatasetMessageBodyReader;
+import life.catalogue.metadata.datacite.DataciteParser;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.eml.EmlParser;
+import life.catalogue.metadata.zenodo.ZenodoParser;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -29,6 +31,10 @@ public class MetadataParserResource {
         return ColdpMetadataParser.readYAML(stream).map(DatasetWithSettings::getDataset);
       case EML:
         return EmlParser.parse(stream).map(DatasetWithSettings::getDataset);
+      case DATACITE:
+        return DataciteParser.parse(stream).map(DatasetWithSettings::getDataset);
+      case ZENODO:
+        return ZenodoParser.parse(stream).map(DatasetWithSettings::getDataset);
       default:
         return Optional.of(ApiModule.MAPPER.readValue(stream, Dataset.class));
     }

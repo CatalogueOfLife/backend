@@ -445,7 +445,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     commit();
 
     final Integer d3 = createSearchableDataset("WORMS", "Bart", "WORMS", "The Worms dataset");
-    final Integer d4 = createSearchableDataset("FOO", "bar", "BAR", null);
+    final Integer d4 = createSearchableDataset("FOO", "bar;Döring", "BAR", null);
     final Integer d5 = createSearchableDataset("WORMS worms", "beard", "WORMS", "Worms with even more worms than worms");
     mapper().delete(d5);
     createSector(Datasets.COL, d3);
@@ -510,10 +510,15 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
       assertEquals(3, datasets.size());
       switch (by) {
         case CREATED:
-        case RELEVANCE:
           assertEquals("Bad ordering by " + by, d1, datasets.get(0).getKey());
           assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
           assertEquals("Bad ordering by " + by, d3, datasets.get(2).getKey());
+          break;
+        case RELEVANCE:
+          // relevance cannot be reverted
+          assertEquals("Bad ordering by " + by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d1, datasets.get(2).getKey());
           break;
         case TITLE:
           assertEquals("Bad ordering by " + by, d3, datasets.get(0).getKey());
@@ -564,11 +569,11 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     query.setHasSourceDataset(99); // non existing
     assertEquals(0, mapper().search(query, null, new Page()).size());
 
-    // partial search
+    // partial search not supported anymore!
     // https://github.com/Sp2000/colplus-backend/issues/353
-    query = DatasetSearchRequest.byQuery("wor");
-    List<Dataset> res = mapper().search(query, null, new Page());
-    assertEquals(1, res.size());
+//    query = DatasetSearchRequest.byQuery("wor");
+//    List<Dataset> res = mapper().search(query, null, new Page());
+//    assertEquals(1, res.size());
 
     // create another catalogue to test non draft sectors
     Dataset cat = TestEntityGenerator.newDataset("cat2");
@@ -627,6 +632,12 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     query = new DatasetSearchRequest();
     query.setRowType(List.of(ColdpTerm.TypeMaterial));
     assertEquals(0, mapper().search(query, null, new Page()).size());
+
+    // Umlauts in query
+    query = new DatasetSearchRequest();
+    query.setQ("Döring");
+    var res = mapper().search(query, null, new Page());
+    assertEquals(d4, res.get(0).getKey());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {

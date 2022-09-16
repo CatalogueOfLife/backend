@@ -54,6 +54,7 @@
   <resultMap id="synonymResultMap" type="Synonym" autoMapping="true">
     <id property="id" column="id"/>
     <id property="datasetKey" column="dataset_key"/>
+    <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.IdentifierArrayTypeHandler"/>
     <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
     <association property="accepted" javaType="Taxon" resultMap="life.catalogue.db.mapper.TaxonMapper.taxonResultMap" columnPrefix="a_"/>
   </resultMap>

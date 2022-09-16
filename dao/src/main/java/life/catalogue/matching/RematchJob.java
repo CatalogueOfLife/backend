@@ -2,7 +2,7 @@ package life.catalogue.matching;
 
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.db.mapper.ArchivedNameMapper;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 
 import java.util.Arrays;
 
@@ -30,7 +30,7 @@ public class RematchJob extends BackgroundJob {
     try (SqlSession session = factory.openSession(true)) {
       IntSet keys = DaoUtils.listDatasetWithNames(session);
       keys.addAll(
-        session.getMapper(ArchivedNameMapper.class).listProjects()
+        session.getMapper(ArchivedNameUsageMapper.class).listProjects()
       );
       return new RematchJob(userKey, factory, ni, keys.toIntArray());
     }

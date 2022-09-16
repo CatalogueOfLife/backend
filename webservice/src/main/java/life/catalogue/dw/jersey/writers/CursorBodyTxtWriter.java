@@ -1,6 +1,8 @@
 package life.catalogue.dw.jersey.writers;
 
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.ws.MoreMediaTypes;
+
 import org.apache.ibatis.cursor.Cursor;
 
 import javax.ws.rs.Produces;
@@ -16,8 +18,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 /**
- * Writer that generates an JSON array based on any postgres backed cursor
- * and streams the results to the output using the main jackson API mapper.
+ * Writer that generates a plain text file based on any postgres backed cursor
+ * and streams each record of the result to a new line using the objects toString method.
  */
 @Produces(MediaType.TEXT_PLAIN)
 @Provider
@@ -29,7 +31,8 @@ public class CursorBodyTxtWriter implements MessageBodyWriter<Cursor<?>> {
   }
   
   @Override
-  public void writeTo(Cursor<?> c, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
+  public void writeTo(Cursor<?> c, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
+    MoreMediaTypes.setUTF8ContentType(mt, headers);
     try (Writer writer = UTF8IoUtils.writerFromStream(out)) {
       c.forEach(obj -> {
         try {

@@ -106,7 +106,13 @@ public class PgImportITBase {
     dataset.setDataFormat(format);
     normalizeAndImport(Paths.get(url.toURI()));
   }
-  
+
+  void normalizeAndImport(DatasetWithSettings ds) throws Exception {
+    dataset = ds;
+    URL url = getClass().getResource("/" + ds.getDataFormat().name().toLowerCase() + "/" + ds.getKey());
+    normalizeAndImport(Paths.get(url.toURI()));
+  }
+
   void normalizeAndImport(Path source) {
     try {
       // insert trusted dataset
@@ -124,7 +130,7 @@ public class PgImportITBase {
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(1, dataset, Users.IMPORTER, store, PgSetupRule.getSqlSessionFactory(), icfg, ddao, indexService, validator);
+      PgImport importer = new PgImport(1, dataset, Users.IMPORTER, store, PgSetupRule.getSqlSessionFactory(), icfg, ddao, indexService);
       importer.call();
       
     } catch (Exception e) {

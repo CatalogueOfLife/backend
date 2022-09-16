@@ -11,7 +11,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2022-08-29 verbatim_source_secondary
+### 2022-09-17 verbatim_source_secondary
 Add verbatim_source_secondary to all projects and releases!
 
 ```
@@ -50,7 +50,7 @@ CREATE TABLE verbatim_source_secondary_{KEY} (LIKE verbatim_source_secondary INC
 ALTER TABLE verbatim_source_secondary ATTACH PARTITION verbatim_source_secondary_{KEY} FOR VALUES IN ( {KEY} );
 ```
 
-### 2022-08-01 extended catalogue
+### 2022-09-17 extended catalogue
 ```
 ALTER TABLE sector ADD COLUMN priority INTEGER;
 
@@ -77,6 +77,46 @@ ALTER TABLE dataset ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASET
 ALTER TABLE dataset_archive ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_source ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_import ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+```
+
+### 2022-09-16 alternative identifiers
+```
+ALTER TYPE ISSUE ADD VALUE 'IDENTIFIER_WITHOUT_SCHEME';
+
+ALTER TABLE name ADD COLUMN identifier TEXT[];
+ALTER TABLE name_usage ADD COLUMN identifier TEXT[];
+ALTER TABLE name_usage_archive ADD COLUMN
+  n_identifier TEXT[],
+  n_link TEXT,
+  identifier TEXT[];
+```
+
+### 2022-09-07 drop verbatim key constraint for treatments
+```
+ALTER TABLE treatment ALTER verbatim_key DROP NOT NULL;
+```
+
+### 2022-08-25 fine tune dataset search ranking, keep plazi articles lower
+```
+ALTER TABLE dataset DROP COLUMN doc;
+ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(alias,''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(doi, ''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(key::text, ''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(title,''))), 'B') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(issn, ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(creator), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(publisher), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(editor), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(geographic_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(taxonomic_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(temporal_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(description,''))), 'D')
+  ) STORED;
 ```
 
 ### 2022-05-17 extend TypeMaterial

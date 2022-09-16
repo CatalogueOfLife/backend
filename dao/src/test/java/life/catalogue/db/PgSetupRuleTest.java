@@ -2,6 +2,7 @@ package life.catalogue.db;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.db.type.BaseEnumSetTypeHandler;
 

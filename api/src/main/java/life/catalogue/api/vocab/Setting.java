@@ -61,6 +61,12 @@ public enum Setting {
   LOCK_METADATA(Boolean.class, EXTERNAL, PROJECT),
 
   /**
+   * Setting that will inform the importer to merge metadata found in archives with the existing metadata.
+   * Metadata from the archive will take precedence, but any missing value would be taken from the current metadata in ChecklistBank.
+   */
+  MERGE_METADATA(Boolean.class, EXTERNAL, PROJECT),
+
+  /**
    * Template used to build a new release alias.
    */
   RELEASE_ALIAS_TEMPLATE(String.class, PROJECT),

@@ -5,7 +5,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.db.mapper.ArchivedNameMapper;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
@@ -66,7 +66,7 @@ public class DatasetMatcher {
       // also match archived names
       if (isProject) {
         final int totalBeforeArchive = total;
-        session.getMapper(ArchivedNameMapper.class).processArchivedNames(datasetKey).forEach(hu);
+        session.getMapper(ArchivedNameUsageMapper.class).processArchivedNames(datasetKey).forEach(hu);
         archived = archived + total - totalBeforeArchive;
       }
     } catch (Exception e) {

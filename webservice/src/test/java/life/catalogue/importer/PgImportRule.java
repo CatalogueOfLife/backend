@@ -173,7 +173,7 @@ public class PgImportRule extends ExternalResource {
 
     // import into postgres
     store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-    PgImport importer = new PgImport(1, dataset, IMPORT_USER.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru(), validator);
+    PgImport importer = new PgImport(1, dataset, IMPORT_USER.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru());
     importer.call();
   }
   

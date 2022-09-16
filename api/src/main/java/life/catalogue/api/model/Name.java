@@ -7,10 +7,13 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -49,6 +52,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   private Integer namesIndexId;
   private MatchType namesIndexType = MatchType.NONE; // mybatis sets this to none if no match exists, so make this the default
+
+  private List<Identifier> identifier;
 
   /**
    * Entire canonical name string with a rank marker for infragenerics and infraspecfics, but
@@ -191,6 +196,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.sectorKey = n.sectorKey;
     this.namesIndexId = n.namesIndexId;
     this.namesIndexType = n.namesIndexType;
+    this.identifier = n.identifier;
     this.scientificName = n.scientificName;
     this.authorship = n.authorship;
     this.rank = n.rank;
@@ -256,6 +262,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setPublishedInYear(builder.publishedInYear);
     setOrigin(builder.origin);
     setType(builder.type);
+    setIdentifier(builder.identifier);
     setLink(builder.link);
     setNomenclaturalNote(builder.nomenclaturalNote);
     setUnparsed(builder.unparsed);
@@ -323,6 +330,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.publishedInYear = copy.getPublishedInYear();
     builder.origin = copy.getOrigin();
     builder.type = copy.getType();
+    builder.identifier = copy.getIdentifier();
     builder.link = copy.getLink();
     builder.nomenclaturalNote = copy.getNomenclaturalNote();
     builder.unparsed = copy.getUnparsed();
@@ -419,6 +427,27 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     if (isParsed()) {
       this.authorship = NameFormatter.authorship(this);
     }
+  }
+
+  public List<Identifier> getIdentifier() {
+    return identifier;
+  }
+
+  public void setIdentifier(List<Identifier> identifier) {
+    this.identifier = identifier;
+  }
+
+  public void addIdentifier(String identifier) {
+    if (!StringUtils.isBlank(identifier)) {
+      addIdentifier(Identifier.parse(identifier));
+    }
+  }
+
+  public void addIdentifier(Identifier id) {
+    if (this.identifier == null) {
+      this.identifier = new ArrayList<>();
+    }
+    this.identifier.add(id);
   }
 
   public String getPublishedInId() {
@@ -757,6 +786,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
            && Objects.equals(verbatimKey, name.verbatimKey)
            && Objects.equals(namesIndexId, name.namesIndexId)
            && namesIndexType == name.namesIndexType
+           && Objects.equals(identifier, name.identifier)
            && Objects.equals(scientificName, name.scientificName)
            && Objects.equals(authorship, name.authorship)
            && rank == name.rank
@@ -786,7 +816,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, remarks);
   }
 
   @Override
@@ -857,6 +887,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private Integer publishedInYear;
     private Origin origin;
     private NameType type;
+    private List<Identifier> identifier;
     private URI link;
     private String nomenclaturalNote;
     private String unparsed;
@@ -1022,6 +1053,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder type(NameType val) {
       type = val;
+      return this;
+    }
+
+    public Builder identifier(List<Identifier> identifier) {
+      this.identifier = identifier;
       return this;
     }
 

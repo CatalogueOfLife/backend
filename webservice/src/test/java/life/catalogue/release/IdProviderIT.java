@@ -68,7 +68,7 @@ public class IdProviderIT {
   public void run() throws Exception {
     // verify archived names got loaded
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      assertNotNull( session.getMapper(ArchivedNameMapper.class).get(DSID.of(projectKey, "M")));
+      assertNotNull( session.getMapper(ArchivedNameUsageMapper.class).get(DSID.of(projectKey, "M")));
     }
 
     provider.run();

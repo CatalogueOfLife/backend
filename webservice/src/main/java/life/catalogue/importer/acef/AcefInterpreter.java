@@ -87,7 +87,7 @@ public class AcefInterpreter extends InterpreterBase {
   private Optional<NeoUsage> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
     return interpretName(idTerm, v).map(nat -> {
-      NeoUsage u = interpretUsage(nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v, idTerm);
+      NeoUsage u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v);
       // status matches up?
       if (synonym != u.isSynonym()) {
         v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
@@ -208,7 +208,7 @@ public class AcefInterpreter extends InterpreterBase {
     } else {
       opt = interpretName(true, v.get(idTerm), rank, null, authorship,
           null, v.get(AcefTerm.Genus), v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet), v.get(AcefTerm.InfraSpeciesEpithet),
-          null, null, v.get(AcefTerm.GSDNameStatus), null,null, v);
+          null, null, v.get(AcefTerm.GSDNameStatus), null,null, null, v);
     }
     return opt;
   }

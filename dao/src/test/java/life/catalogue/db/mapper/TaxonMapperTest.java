@@ -61,11 +61,15 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
   @Override
   Taxon createTestEntity(int dkey) {
     Name n = TestEntityGenerator.newName(dkey);
+    n.addIdentifier("col:NN");
+    n.addIdentifier("urn:lsid:ipni.org:names:77154529-1");
     insertName(n);
     Taxon t = TestEntityGenerator.newTaxon(n);
     t.setSectorKey(sector.getId());
     t.setDatasetKey(dkey);
     t.setNamePhrase("sensu lato");
+    t.addIdentifier("col:DERF");
+    t.addIdentifier("https://www.wikidata.org/wiki/Q157571");
     return t;
   }
 

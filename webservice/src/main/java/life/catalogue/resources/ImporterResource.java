@@ -10,7 +10,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
 

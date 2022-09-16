@@ -16,6 +16,7 @@
     ${alias}.name_phrase AS ${prefix}name_phrase,
     ${alias}.according_to_id AS ${prefix}according_to_id,
     ${alias}.reference_ids AS ${prefix}reference_ids,
+    ${alias}.identifier AS ${prefix}identifier,
     ${alias}.remarks AS ${prefix}remarks,
     ${alias}.created AS ${prefix}created,
     ${alias}.created_by AS ${prefix}created_by,
@@ -68,6 +69,7 @@
     ${alias}name_phrase,
     ${alias}according_to_id,
     ${alias}reference_ids,
+    ${alias}identifier,
     ${alias}remarks,
     ${alias}created,
     ${alias}created_by,
@@ -97,6 +99,7 @@
     name_phrase,
     according_to_id,
     reference_ids,
+    identifier,
     remarks,
     created_by,
     modified_by
@@ -114,6 +117,7 @@
     #{namePhrase},
     #{accordingToId},
     #{referenceIds},
+    #{identifier, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler},
     #{remarks},
     #{createdBy},
     #{modifiedBy}

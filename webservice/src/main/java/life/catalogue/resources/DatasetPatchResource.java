@@ -7,7 +7,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetPatchMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.provider.DatasetPatch;
 
 import java.util.ArrayList;

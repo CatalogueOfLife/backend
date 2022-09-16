@@ -1,0 +1,201 @@
+{
+    "conceptdoi": "10.5281/zenodo.4139722",
+    "conceptrecid": "4139722",
+    "created": "2022-04-02T00:25:51.264408+00:00",
+    "doi": "10.5281/zenodo.6407053",
+    "files": [
+        {
+            "bucket": "b9b40663-a6dd-4ccc-a2e1-ece59da73479",
+            "checksum": "md5:8f33d8fb05dfb895d7026153611b005c",
+            "key": "Diff_v1.8-v1.9.csv",
+            "links": {
+                "self": "https://zenodo.org/api/files/b9b40663-a6dd-4ccc-a2e1-ece59da73479/Diff_v1.8-v1.9.csv"
+            },
+            "size": 12188,
+            "type": "csv"
+        },
+        {
+            "bucket": "b9b40663-a6dd-4ccc-a2e1-ece59da73479",
+            "checksum": "md5:0a0fb120cd696d44c8bb005ee71194dd",
+            "key": "MDD_v1.9_6596species.csv",
+            "links": {
+                "self": "https://zenodo.org/api/files/b9b40663-a6dd-4ccc-a2e1-ece59da73479/MDD_v1.9_6596species.csv"
+            },
+            "size": 5795087,
+            "type": "csv"
+        },
+        {
+            "bucket": "b9b40663-a6dd-4ccc-a2e1-ece59da73479",
+            "checksum": "md5:62245aeb05ef02d09c25672f71551c2d",
+            "key": "META_v1.9.csv",
+            "links": {
+                "self": "https://zenodo.org/api/files/b9b40663-a6dd-4ccc-a2e1-ece59da73479/META_v1.9.csv"
+            },
+            "size": 15862,
+            "type": "csv"
+        },
+        {
+            "bucket": "b9b40663-a6dd-4ccc-a2e1-ece59da73479",
+            "checksum": "md5:3edaea47c517667b94cd6f26f0df5cbb",
+            "key": "TypeSpecimenMetadata_v1.9.csv",
+            "links": {
+                "self": "https://zenodo.org/api/files/b9b40663-a6dd-4ccc-a2e1-ece59da73479/TypeSpecimenMetadata_v1.9.csv"
+            },
+            "size": 18685,
+            "type": "csv"
+        }
+    ],
+    "id": 6407053,
+    "links": {
+        "badge": "https://zenodo.org/badge/doi/10.5281/zenodo.6407053.svg",
+        "bucket": "https://zenodo.org/api/files/b9b40663-a6dd-4ccc-a2e1-ece59da73479",
+        "conceptbadge": "https://zenodo.org/badge/doi/10.5281/zenodo.4139722.svg",
+        "conceptdoi": "https://doi.org/10.5281/zenodo.4139722",
+        "doi": "https://doi.org/10.5281/zenodo.6407053",
+        "html": "https://zenodo.org/record/6407053",
+        "latest": "https://zenodo.org/api/records/6407053",
+        "latest_html": "https://zenodo.org/record/6407053"
+    },
+    "metadata": {
+        "access_right": "open",
+        "access_right_category": "success",
+        "contributors": [
+            {
+                "affiliation": "Arizona State University",
+                "name": "Upham, Nathan",
+                "orcid": "0000-0001-5412-9342",
+                "type": "ProjectLeader"
+            },
+            {
+                "name": "Burgin, Connor",
+                "orcid": "0000-0001-6577-2739",
+                "type": "Researcher"
+            },
+            {
+                "name": "Widness, Jane",
+                "orcid": "0000-0002-9284-2066",
+                "type": "Researcher"
+            },
+            {
+                "name": "Liphardt, Schuyler",
+                "type": "Researcher"
+            },
+            {
+                "name": "Parker, Camila",
+                "type": "Researcher"
+            },
+            {
+                "name": "Becker, Madeleine",
+                "orcid": "0000-0003-2051-2911",
+                "type": "Researcher"
+            },
+            {
+                "name": "Rochon, Ingrid",
+                "type": "Researcher"
+            },
+            {
+                "name": "Huckaby, David",
+                "type": "Researcher"
+            }
+        ],
+        "creators": [
+            {
+                "affiliation": "American Society of Mammalogists",
+                "name": "Mammal Diversity Database"
+            }
+        ],
+        "description": "<p>Accurate taxonomy is central to the study of biological diversity, as it provides the needed evolutionary framework for taxon sampling and interpreting results. While the number of recognized species in the class Mammalia has increased through time, tabulation of those increases has relied on the sporadic release of revisionary compendia like the <em>Mammal Species of the World</em> (MSW) series. Here, we present the <strong>Mammal Diversity Database</strong> (MDD), a digital, publically accessible, and updateable list of all mammalian species, now available online: <a href=\"https://mammaldiversity.org\">https://mammaldiversity.org</a>. The MDD will continue to be updated as manuscripts describing new species and higher taxonomic changes are released. Starting from the baseline of the 3rd edition of MSW (MSW3), we performed a review of taxonomic changes published since 2004 and digitally linked species names to their original descriptions and subsequent revisionary articles in an interactive, hierarchical database. The MDD provides the mammalogical community with an updateable online database of taxonomic changes, joining digital efforts already established for amphibians (AmphibiaWeb, AMNH&rsquo;s Amphibian Species of the World), birds (e.g., Avibase, IOC World Bird List, HBW Alive), non-avian reptiles (The Reptile Database), and fish (e.g., FishBase, Catalog of Fishes).</p>\n\n<p>Development for this work is funded primarily by the <a href=\"http://www.mammalsociety.org/\">American Society of Mammalogists</a> (ASM), with initial logistical and planning support (2017-2019) provided by the <a href=\"http://vertlife.org/grant/\">NSF Vertlife Terrestrial grant</a>. Logistical support is now being provided by the <a href=\"https://biokic.asu.edu/\">Biodiversity Knowledge Integration Center</a> at Arizona State University.</p>\n\n<p>The <a href=\"http://www.mammalsociety.org/committees/biodiversity\">ASM Biodiversity Committee</a> compiles and maintains the MDD, curating regular releases that are downloadable in comma-delimited format. Downstream goals include expanded hosting of ecological, trait, and taxonomic data. Overall, this initiative aims to promote the ASM&rsquo;s role as a leader in high quality research on mammalian biology.<br>\n&nbsp;</p>\n\n<p><strong>Version 1.9</strong> (1 Apr 2022). This is an incremental release that documents 6,596 total species, of which 101 are recently extinct and 6,495 are extant (19 domestic extant, 6,476 wild extant). There are now 34 species flagged for further review (addition of 6 species related to the split of <em>Lagenorhynchus</em> dolphins, along with the previous inclusion of some Cebus species). The <strong>holotypeVoucher</strong> field is now filled for 2,662 accepted species thanks to the continued efforts of Ingrid Rochon and Connor Burgin (NA&#39;s indicate a real lack of actual voucher--in need of neotype). The <strong>Tracked Differences</strong> file (&quot;Diff_v1.8-v1.9.csv&quot;) documents taxonomic changes made since the last MDD version, and here includes 15 new species recognized (8 de novo, 7 split), 10 synonymizations (lumps), 2 species with genus name changes (<em>Brachylagus idahoensis</em> to <em>Sylvilagus idahoensis </em>and <em>Nycticebus pygmaeus</em> to <em>Xanthonycticebus pygmaeus</em>), and 1 range extension (for <em>Marmosa alstoni</em> extended to Panama; https://doi.org/10.5281/zenodo.6374907). In total, there was a net increase of 5 recognized species of extant or recently extinct mammals since MDD v1.8.</p>\n\n<p><strong>Version 1.8</strong> (1 Feb 2022). This is an incremental release that documents 6,591 total species, of which 101 are recently extinct and 6,490 are extant (19 domestic extant, 6,471 wild extant). There are still 28 species flagged for further review (e.g., some Cebus species). The <strong>holotypeVoucher</strong> field is now filled for 2,665 accepted species thanks to the continued efforts of Ingrid Rochon and Connor Burgin (NA&#39;s indicate a real lack of actual voucher--in need of neotype). The <strong>Tracked Differences</strong> file (&quot;Diff_v1.7-v1.8.csv&quot;) documents taxonomic changes made since the last MDD version, and here includes 27 new species recognized (21 de novo, 6 split), 3 synonymizations, 1 genus change (Nasuella into Nasua, resulting in a reduction in the total number of genera), and 3 species name changes (2 based on new genetic evidence and naming priority, 1 on a spelling change). In total, there was a net increase of 24 recognized species of extant or recently extinct mammals since MDD v1.7.</p>\n\n<p><strong>Version 1.7</strong> (6 Nov 2021). This is an incremental release that documents 6,567 total species, of which 101 are recently extinct and 6,466 are extant (19 domestic extant, 6,447 wild extant). There are now 28 species flagged for further review (e.g., some Cebus species). The <strong>holotypeVoucher</strong> field is now filled for 2,512 accepted species thanks to the continued efforts of Ingrid Rochon and Connor Burgin (including a reduction of NA&#39;s from 103 to 26). The <strong>Tracked Differences</strong> file (&quot;Diff_v1.6-v1.7.csv&quot;) documents taxonomic changes made since the last MDD version, and here includes 19 new species recognized (13 de novo, 6 split), 9 synonymizations, 12 genus changes, and 2 de-extinctions due to taxonomic changes (extinct <em>Gazella bilkis</em> synonymized under extant <em>Gazella arabica</em> following B&auml;rmann et al. 2013<em>; </em>extinct <em>Pseudomys gouldii </em>changed to extant since extant <em>Pseudomys fieldi</em> was synonymized under it in the MDD v1.6 following Roycroft et al. 2021). In total, there was a net increase of 10 recognized species of extant or recently extinct mammals since MDD v1.6.</p>\n\n<p><strong>Version 1.6</strong> (10 Aug 2021). This is an incremental release that documents 6,557 total species, of which 103 are recently extinct and 6,454 are extant (19 domestic extant, 6,435 wild extant). There are 29 species still flagged for further review (e.g., some Cebus species). The <strong>holotypeVoucher</strong> field is now filled for 2,548 accepted species thanks to the continued efforts of Ingrid Rochon. The <strong>Tracked Differences</strong> file (&quot;Diff_v1.5-v1.6.csv&quot;) documents taxonomic changes made since the last MDD version, and here includes 9 new species recognized (5 de novo, 4 split), 5 synonymizations, 1 removal (<em>Dryomys yarkandensis</em> invalid while in pre-print), and 18 genus changes.</p>\n\n<p><strong>Version 1.5</strong> (11 Jun 2021). This is an incremental release that documents 6,554 total species, of which 103 are recently extinct and 6,451 are extant (19 domestic extant, 6,432 wild extant). There are 29 species still flagged for further review (e.g., some Cebus species). The <strong>holotypeVoucher</strong> field, which now filled for 2,459 accepted species thanks to the continued efforts of Ingrid Rochon. We also continue to maintain the <strong>Tracked Differences</strong> file (&quot;Diff_v1.4-v1.5.csv&quot;) which documents which taxonomic changes were made per species since the last MDD version. We still plan to retrospectively assemble these diff files for previous versions as well.</p>\n\n<p><strong>Version 1.4</strong> (11 Apr 2021). This is an incremental release that documents 6,533 total species, of which 103 are recently extinct, 19 are domestic extant, and 6,411 are wild extant. There are 29 species still flagged for further review (e.g., some Cebus species). Especially improved in this version is the <strong>holotypeVoucher</strong> field, which now filled for 2,153 accepted species thanks to the heroic efforts of Ingrid Rochon (nearly 1/3 of mammals!!). Additionally, this time we added a <strong>Tracked Differences</strong> file (&quot;Diff_v1.31-v1.4.csv&quot;) which documents which taxonomic changes were made per species since the last MDD version. We plan to retrospectively assemble these diff files for previous versions as well. Note also that the per-species notes (<strong>taxonomyNotes</strong>) are now updated through all mammals including Chiroptera thanks to the careful efforts of David Huckaby and Connor Burgin. Those notes should help clarify changes since MSW3, which is the well-recognized baseline for mammal taxonomy from which the MDD is updating.</p>\n\n<p><strong>Version 1.31</strong> (8 Jan 2021). This is an incremental release that, like v1.3, documents 6,513 total species, but also (i) fixes some bugs in the type locality listings; and (ii) completes the improved documentation in the <strong>per-species notes</strong> across all orders including Chiroptera (carefully curated by David Huckaby and Connor Burgin; thanks both!). These completed notes clarify changes since MSW3, which is the well-recognized baseline for mammal taxonomy from which the MDD is updating.</p>\n\n<p><strong>Version 1.3</strong> (28 Dec 2020). This is an incremental release that documents 6,513 total species, of which 103 are recently extinct, 19 are domestic extant, and 6,391 are wild extant. There are 29 species still flagged for further review (e.g., some Cebus species). Especially improved in this version are the <strong>per-species notes</strong>, which have been carefully curated by David Huckaby and Connor Burgin for all mammal orders except Chiroptera (expect those updates in the next version). These notes were written to help clarify changes since MSW3, which is the well-recognized baseline for mammal taxonomy from which the MDD is updating.</p>\n\n<p><strong>Version 1.2</strong> (24 Sep 2020). This is a major update, though still incremental toward a more definitive forthcoming release. This release documents 6,485 total species, of which 103 are recently extinct, 19 are domestic extant, and 6,363 are wild extant. Ten species are still &quot;flagged&quot; for further review. This taxonomy and associated data (type locality, authorities, common names) are improved by reference to the <em>Handbook of the Mammals of the World</em> series. Additionally, justifications and citations are now provided for any subjective decisions made, the most substantial of which has been the recommendations of Groves and Grubb (2011)&rsquo;s compendium <em>Ungulate Taxonomy</em>. That taxonomy of Perissodactyla and non-cetacean Artiodactyla was fully included in the v1.0 release of the MDD (Burgin et al. 2018). However, since Groves and Grubb (2011) was based primarily on qualitative morphological diagnoses with small sample sizes, it has since become controversial in the mammalogical community (e.g., (Holbrook 2013; Guti&eacute;rrez and Garbino 2018)). Many specialists have subsequently reverted to the taxonomic arrangement presented by Peter Grubb in MSW3. In current versions of the MDD, we use MSW3 as a baseline for ungulate taxonomy, leaving out all changes made by Groves and Grubb (2011) with the exception of those supported by other published research.</p>\n\n<p><strong>Version 1.1</strong> (29 Mar 2019). This is an incremental release that documents 6,526 total species, of which 100 are recently extinct, 17 are domestic extant, and 6,409 are wild extant.&nbsp; Of those, 212 species are &quot;flagged&quot; for further review (mostly ungulates from Groves &amp; Grubb, 2011).</p>\n\n<p><strong>Version 1.0</strong> (1 Feb 2018; described in <a href=\"https://doi.org/10.1093/jmammal/gyx147\">https://doi.org/10.1093/jmammal/gyx147</a>). We found 6,495 species of currently recognized mammals (96 recently extinct, 6,399 extant), compared to 5,416 in MSW3 (75 extinct, 5,341 extant)&mdash;an increase of 1,079 species in about 13 years, including 11 species newly described as having gone extinct in the last 500 years. We tabulate 1,251 new species recognitions, at least 172 unions, and multiple major, higher-level changes, including an additional 88 genera (1,314 now, compared to 1,226 in MSW3) and 14 newly recognized families (167 compared to 153). Analyses of the description of new species through time and across biogeographic regions show a long-term global rate of ~25 species recognized per year, with the Indomalayan biogeographic region as the overall most species-dense for mammals globally (127.1 species/km<sup>2</sup>), followed by Australasia-Oceania (90.6) and the Neotropics (85.1).</p>\n\n<p>&nbsp;</p>\n\n<p><strong>References</strong></p>\n\n<p>&nbsp;</p>\n\n<p>BURGIN, C. J., J. P. COLELLA, P. L. KAHN, AND N. S. UPHAM. 2018. How many species of mammals are there? Journal of Mammalogy 99:1&ndash;14.</p>\n\n<p>GROVES, C., AND P. GRUBB. 2011. Ungulate Taxonomy. JHU Press.</p>\n\n<p>GUTI&Eacute;RREZ, E. E., AND G. S. T. GARBINO. 2018. Species delimitation based on diagnosis and monophyly, and its importance for advancing mammalian taxonomy. Zoological Research:97.</p>\n\n<p>HOLBROOK, L. T. 2013. Taxonomy Interrupted. Journal of Mammalian Evolution 20:153&ndash;154.</p>\n\n<p>WILSON, D. E., AND D. M. REEDER. 2005. Mammal species of the world: a taxonomic and geographic reference, 3rd ed. 3rd edition. Johns Hopkins University Press, Baltimore, MD.</p>",
+        "doi": "10.5281/zenodo.6407053",
+        "grants": [
+            {
+                "acronym": "",
+                "code": "1441737",
+                "funder": {
+                    "acronyms": [],
+                    "doi": "10.13039/100000001",
+                    "links": {
+                        "self": "https://zenodo.org/api/funders/10.13039/100000001"
+                    },
+                    "name": "National Science Foundation"
+                },
+                "links": {
+                    "self": "https://zenodo.org/api/grants/10.13039/100000001::1441737"
+                },
+                "program": "Directorate for Biological Sciences",
+                "title": "Collaborative Research: VertLife Terrestrial: A complete, global assembly of phylogenetic, trait, spatial and environment characteristics for a model clade"
+            }
+        ],
+        "keywords": [
+            "Mammalia",
+            "Species",
+            "Diversity",
+            "Checklist",
+            "Rodentia",
+            "Chiroptera",
+            "Artiodactyla",
+            "Richness",
+            "Evolution",
+            "Ecology",
+            "Conservation"
+        ],
+        "language": "eng",
+        "license": {
+            "id": "CC-BY-4.0"
+        },
+        "notes": "This is a real-time upload of the MDD v.1.9 taxonomy published 1 April 2022 on the mammaldiversity.org website.\nFunded also by NIH 1R21AI164268-01 Intelligently predicting viral spillover risks from bats and other wild mammals (https://reporter.nih.gov/search/jHonNExiyEulTWBDs1zc-Q/project-details/10289637)",
+        "publication_date": "2022-04-01",
+        "related_identifiers": [
+            {
+                "identifier": "10.1093/jmammal/gyx147",
+                "relation": "isDerivedFrom",
+                "resource_type": "publication-article",
+                "scheme": "doi"
+            },
+            {
+                "identifier": "10.5281/zenodo.4139722",
+                "relation": "isVersionOf",
+                "scheme": "doi"
+            }
+        ],
+        "relations": {
+            "version": [
+                {
+                    "count": 11,
+                    "index": 10,
+                    "is_last": true,
+                    "last_child": {
+                        "pid_type": "recid",
+                        "pid_value": "6407053"
+                    },
+                    "parent": {
+                        "pid_type": "recid",
+                        "pid_value": "4139722"
+                    }
+                }
+            ]
+        },
+        "resource_type": {
+            "title": "Dataset",
+            "type": "dataset"
+        },
+        "title": "Mammal Diversity Database",
+        "version": "1.9"
+    },
+    "owners": [
+        103571
+    ],
+    "revision": 3,
+    "stats": {
+        "downloads": 189.0,
+        "unique_downloads": 115.0,
+        "unique_views": 1289.0,
+        "version_downloads": 3978.0,
+        "version_unique_downloads": 2909.0,
+        "version_unique_views": 6576.0,
+        "version_views": 8686.0,
+        "version_volume": 7274801922.0,
+        "views": 1561.0,
+        "volume": 372648377.0
+    },
+    "updated": "2022-04-02T13:50:07.916805+00:00"
+}

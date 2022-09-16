@@ -2,6 +2,7 @@ package life.catalogue.portal;
 
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.io.PathUtils;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
@@ -19,6 +20,7 @@ import org.junit.*;
 
 import static life.catalogue.portal.PortalPageRenderer.Environment.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class PortalPageRendererTest {
   final LatestDatasetKeyCache cache = new LatestDatasetKeyCache() {
@@ -66,15 +68,18 @@ public class PortalPageRendererTest {
 
   @Before
   public void init() throws IOException {
+    var dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, null, null);
     var srcDao = new DatasetSourceDao(PgSetupRule.getSqlSessionFactory());
     var nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), null, null, null);
     var tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, null, null);
-    renderer = new PortalPageRenderer(srcDao, tDao, cache, Path.of("/tmp/col/templates"));
+    var p = Path.of("/tmp/col/templates");
+    PathUtils.deleteRecursively(p);
+    renderer = new PortalPageRenderer(dDao, srcDao, tDao, cache, p);
   }
 
   @After
   public void after() throws IOException {
-    PathUtils.deleteQuietly(renderer.getPortalTemplateDir());
+    PathUtils.deleteRecursively(renderer.getPortalTemplateDir());
   }
 
   @Test
@@ -111,5 +116,11 @@ public class PortalPageRendererTest {
 
     renderer.store(PROD, PortalPageRenderer.PortalPage.METADATA, "Hergott Sackra nochamol. ${freemarker!\"no\"} works");
     assertEquals("Hergott Sackra nochamol. no works", renderer.renderMetadata(PROD).getEntity());
+
+    renderer.store(PROD, PortalPageRenderer.PortalPage.CLB_DATASET, "Can I get some SEO please?");
+    assertEquals("Can I get some SEO please?", renderer.renderClbDataset(3, PROD).getEntity());
+
+    renderer.store(PROD, PortalPageRenderer.PortalPage.CLB_DATASET, "Can I get some <!-- REPLACE_WITH_SEO --> please?");
+    assertNotEquals("Can I get some SEO please?", renderer.renderClbDataset(3, PROD).getEntity());
   }
 }

@@ -4,6 +4,10 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.terms.BiboOntTerm;
+import life.catalogue.api.vocab.terms.EolDocumentTerm;
+import life.catalogue.api.vocab.terms.EolReferenceTerm;
+import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.date.FuzzyDate;
@@ -61,6 +65,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Distribution.class);
     kryo.register(EditorialDecision.class);
     kryo.register(EditorialDecision.Mode.class);
+    kryo.register(Identifier.class);
     kryo.register(IndexName.class);
     kryo.register(Media.class);
     kryo.register(Name.class);
@@ -104,6 +109,7 @@ public class ApiKryoPool extends Pool<Kryo> {
 
     // java & commons
     kryo.register(ArrayList.class);
+    kryo.register(Collections.emptyList().getClass());
     kryo.register(HashMap.class);
     kryo.register(HashSet.class);
     kryo.register(int[].class);
@@ -174,8 +180,11 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(InfoGroup.class);
 
     // term enums
+    TermFactory.instance().registerTermEnum(BiboOntTerm.class);
     TermFactory.instance().registerTermEnum(ColdpTerm.class);
     TermFactory.instance().registerTermEnum(DwcUnofficialTerm.class);
+    TermFactory.instance().registerTermEnum(EolDocumentTerm.class);
+    TermFactory.instance().registerTermEnum(EolReferenceTerm.class);
     TermFactory.instance().registerTermEnum(TxtTreeTerm.class);
     for (Class cl : TermFactory.instance().listRegisteredTermEnums()) {
       kryo.register(cl);

@@ -98,7 +98,7 @@ public class ColdpInserter extends NeoCsvInserter {
       true
     );
     interpretTypeMaterial(reader, ColdpTerm.TypeMaterial,
-            inter::interpretTypeMaterial
+        inter::interpretTypeMaterial
     );
 
     // taxa

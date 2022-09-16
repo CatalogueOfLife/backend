@@ -11,7 +11,7 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.release.AuthorlistGenerator;
 import life.catalogue.release.ProjectCopyFactory;
@@ -91,7 +91,30 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
   public void updateAlt(@PathParam("key") Integer key, Dataset obj, @Auth User user) {
-    this.update(key, obj, user);
+    // merge metadata?
+    Dataset old;
+    try (SqlSession session = factory.openSession(true)){
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      var settings = dm.getSettings(key);
+      old = dm.get(key);
+      if (settings == null || old == null) {
+        throw NotFoundException.notFound(Dataset.class, key);
+      }
+      dao.patchMetadata(new DatasetWithSettings(old,settings), obj);
+    }
+    this.update(key, old, user);
+  }
+
+  @Override
+  protected String allowUpdate(Dataset obj, User user) {
+    try (SqlSession session = factory.openSession(true)){
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      var old = dm.get(obj.getKey());
+      if (old != null && old.getGbifKey() != null) {
+        return String.format("Dataset %s is registered in GBIF %s and updates are not allowed", obj.getKey(), old.getGbifKey());
+      }
+    }
+    return null;
   }
 
   @GET

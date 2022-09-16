@@ -258,7 +258,8 @@ CREATE TYPE ISSUE AS ENUM (
   'AUTHORSHIP_REMOVED',
   'DOI_NOT_FOUND',
   'DOI_UNRESOLVED',
-  'TYPE_MATERIAL_SEX_INVALID'
+  'TYPE_MATERIAL_SEX_INVALID',
+  'IDENTIFIER_WITHOUT_SCHEME'
 );
 
 CREATE TYPE JOBSTATUS AS ENUM (
@@ -791,23 +792,22 @@ CREATE TABLE dataset (
   deleted TIMESTAMP WITHOUT TIME ZONE,
 
   doc tsvector GENERATED ALWAYS AS (
-      setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(title,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(doi, '')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(key::text, '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(issn, '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(identifier::text, '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(creator), '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(publisher), '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(version, '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(description,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(geographic_scope,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(taxonomic_scope,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(temporal_scope,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(contact), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(editor), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(agent_str(contributor), '')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(alias,''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(doi, ''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(key::text, ''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(title,''))), 'B') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(issn, ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(creator), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(publisher), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(editor), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(geographic_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(taxonomic_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(temporal_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(description,''))), 'D')
   ) STORED
 );
 
@@ -1185,6 +1185,8 @@ CREATE TABLE name_usage_archive (
   n_published_in_page_link TEXT,
   n_nomenclatural_note TEXT,
   n_unparsed TEXT,
+  n_identifier TEXT[],
+  n_link TEXT,
   n_remarks TEXT,
   -- common with name_usage, keep in sync!
   extinct BOOLEAN,
@@ -1192,6 +1194,7 @@ CREATE TABLE name_usage_archive (
   origin ORIGIN NOT NULL,
   parent_id TEXT,
   name_phrase TEXT,
+  identifier TEXT[],
   link TEXT,
   remarks TEXT,
   -- archive specifics, will be dropped from partitioned name table
@@ -1322,9 +1325,10 @@ CREATE TABLE name (
   published_in_page_link TEXT,
   nomenclatural_note TEXT,
   unparsed TEXT,
+  identifier TEXT[],
+  link TEXT,
   remarks TEXT,
   -- additions to name_usage_archive
-  link TEXT,
   scientific_name_normalized TEXT NOT NULL,
   authorship_normalized TEXT[],
   created_by INTEGER NOT NULL,
@@ -1428,6 +1432,7 @@ CREATE TABLE name_usage (
   parent_id TEXT,
   name_id TEXT NOT NULL,
   name_phrase TEXT,
+  identifier TEXT[],
   link TEXT,
   remarks TEXT,
   -- additions to name_usage_archive
@@ -1602,7 +1607,7 @@ CREATE TABLE treatment (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
-  verbatim_key INTEGER NOT NULL,
+  verbatim_key INTEGER,
   format TREATMENTFORMAT,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,

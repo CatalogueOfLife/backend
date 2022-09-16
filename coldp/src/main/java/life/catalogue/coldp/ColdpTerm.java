@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public enum ColdpTerm implements Term, AlternativeNames {
   Reference((Class)null),
   ID,
+  alternativeID,
   sourceID,
   citation,
   type(Enum.class),
@@ -53,6 +54,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
 
   NameUsage((Class) null),
   // ID,
+  // alternativeID
   //sourceID,
   parentID,
   sequenceIndex(Integer.class),
@@ -76,6 +78,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   accordingToPage,
   accordingToPageLink,
   nameReferenceID("namePublishedInID"), // alternative term to Name.referenceID
+  nameAlternativeID, // alternative term to Name.nameAlternativeID
   publishedInYear(Year.class, "namePublishedInYear"),
   publishedInPage("namePublishedInPage"),
   publishedInPageLink("namePublishedInPageLink"),
@@ -221,6 +224,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   public static Map<ColdpTerm, List<ColdpTerm>> RESOURCES = Map.ofEntries(
     Map.entry(Reference, List.of(
       ID,
+      alternativeID,
       sourceID,
       citation,
       type,
@@ -247,6 +251,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
       remarks
     )), Map.entry(Name, List.of(
       ID,
+      alternativeID,
       sourceID,
       basionymID,
       scientificName,
@@ -297,6 +302,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
       remarks
     )), Map.entry(Taxon, List.of(
       ID,
+      alternativeID,
       sourceID,
       parentID,
       nameID,
@@ -348,6 +354,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
       remarks
     )), Map.entry(NameUsage, List.of(
       ID,
+      alternativeID,
+      nameAlternativeID,
       sourceID,
       parentID,
       basionymID,

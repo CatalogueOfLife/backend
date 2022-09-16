@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eml:eml
+    xmlns:eml="eml://ecoinformatics.org/eml-2.1.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:dc="http://purl.org/dc/terms/"
+    xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.0.1/eml-gbif-profile.xsd"
+    xml:lang="en"
+    packageId="iNaturalist.observations.eml.1662040817"
+    system="http://gbif.org"
+    scope="system">
+  <dataset>
+    <alternateIdentifier><![CDATA[https://www.inaturalist.org/taxa]]></alternateIdentifier>
+    <title xml:lang="en">
+      iNaturalist Taxonomy
+    </title>
+
+    <creator>
+  <individualName>
+    <givenName></givenName>
+    <surName>iNaturalist contributors</surName>
+  </individualName>
+  <organizationName>iNaturalist</organizationName>
+  <positionName></positionName>
+  <address>
+    
+    <city></city>
+    <administrativeArea></administrativeArea>
+    <postalCode></postalCode>
+    <country></country>
+  </address>
+  
+  <electronicMailAddress></electronicMailAddress>
+  <onlineUrl></onlineUrl>
+</creator>
+    <metadataProvider>
+  <individualName>
+    <givenName></givenName>
+    <surName>iNaturalist</surName>
+  </individualName>
+  <organizationName>iNaturalist / California Academy of Sciences</organizationName>
+  <positionName></positionName>
+  <address>
+    <deliveryPoint>55 Music Concourse Dr., Golden Gate Park</deliveryPoint>
+    <city>San Francsico</city>
+    <administrativeArea>CA</administrativeArea>
+    <postalCode>94118</postalCode>
+    <country>US</country>
+  </address>
+  
+  <electronicMailAddress>admin@inaturalist.org</electronicMailAddress>
+  <onlineUrl></onlineUrl>
+</metadataProvider>
+
+    <pubDate>2022-09-01</pubDate>
+
+    <!-- This is the RESOURCE language and not the metadata language which is at the bottom -->
+    <language>en_US</language>
+    <abstract>
+      <para>
+        Taxonomy from iNaturalist.org, an online social network of people sharing biodiversity information to help each other learn about nature. iNaturalist is a joint initiative of the California Academy of Sciences and the National Geographic Society.
+      </para>
+    </abstract>
+    <intellectualRights>
+      <para>
+        Taxonomic information should not represent creative work and thus may not be subject to intellectual property restrictions in many jurisdictions.
+      </para>
+    </intellectualRights>
+    <!-- The distributionType URL is generally meant for informational purposes, and the "function" attribute should be set to "information". -->
+    <distribution scope="document">
+      <online>
+        <url function="information">https://www.inaturalist.org/taxa</url>
+      </online>
+    </distribution>
+    <coverage>
+
+    </coverage>
+
+    <purpose>
+      <para>
+        iNaturalist.org is a website where anyone can record their observations from nature. Members record observations for numerous reasons, including participation in citizen science projects, school projects, and personal fulfillment. Volunteer curators synthesize a single taxonomy from a variety of sources, attempting to adhere to external authorities when appropriate ones can be found. See
+        <ulink url="https://www.inaturalist.org/pages/curator+guide">
+          <citetitle>Curator's Guide</citetitle>
+        </ulink> for curatorial policies and guidance.
+      </para>
+    </purpose>
+
+      <maintenance>
+        <description>
+          Taxa are constantly being added to, changed, and removed on iNaturalist. This archive only represents the state of the taxonomy and the time it was exported.
+        </description>
+        <maintenanceUpdateFrequency>monthly</maintenanceUpdateFrequency>
+      </maintenance>
+
+    <contact>
+  <individualName>
+    <givenName></givenName>
+    <surName>iNaturalist</surName>
+  </individualName>
+  <organizationName>iNaturalist / California Academy of Sciences</organizationName>
+  <positionName></positionName>
+  <address>
+    <deliveryPoint>55 Music Concourse Dr., Golden Gate Park</deliveryPoint>
+    <city>San Francsico</city>
+    <administrativeArea>CA</administrativeArea>
+    <postalCode>94118</postalCode>
+    <country>US</country>
+  </address>
+  
+  <electronicMailAddress>admin@inaturalist.org</electronicMailAddress>
+  <onlineUrl></onlineUrl>
+</contact>
+
+    <methods>
+      <qualityControl>
+        <description>
+          <para>
+            Volunteer iNaturalist users curate the iNaturalist taxonomy. Staff provide guidance and policy via the
+            <ulink url="https://www.inaturalist.org/pages/curator+guide">
+              <citetitle>Curator's Guide</citetitle>
+            </ulink>
+          </para>
+        </description>
+      </qualityControl>
+    </methods>
+  </dataset>
+  <additionalMetadata>
+    <metadata>
+      <gbif>
+        <!-- eml file creation date -->
+        <dateStamp>2022-09-01T07:00:17-07:00</dateStamp>
+        <!-- level to which the metadata document applies; default for GBIF is "dataset";  "series" is the other common level -->
+        <hierarchyLevel> dataset </hierarchyLevel>
+        <!-- URL of the logo associated with a resource -->
+        <resourceLogoUrl>https://static.inaturalist.org/sites/1-logo.svg?1573071870</resourceLogoUrl>
+      </gbif>
+    </metadata>
+  </additionalMetadata>
+</eml:eml>

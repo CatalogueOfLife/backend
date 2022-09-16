@@ -3,7 +3,7 @@ package life.catalogue.dw.jersey.writers;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,7 +31,8 @@ public class DatasetBibtexBodyWriter implements MessageBodyWriter<Dataset> {
   }
 
   @Override
-  public void writeTo(Dataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
+  public void writeTo(Dataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
+    MoreMediaTypes.setUTF8ContentType(mt, headers);
     try (Writer w = UTF8IoUtils.writerFromStream(out)) {
       w.write( CslUtil.toBibTexString(dataset.toCSL()) );
     }

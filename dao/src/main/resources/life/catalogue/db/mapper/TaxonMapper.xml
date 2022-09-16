@@ -67,6 +67,7 @@
   <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
     <id property="id" column="id"/>
     <id property="datasetKey" column="dataset_key"/>
+    <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.IdentifierArrayTypeHandler"/>
     <result property="environments" column="environments" typeHandler="life.catalogue.db.type.EnvironmentSetTypeHandler"/>
     <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
   </resultMap>

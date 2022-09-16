@@ -168,6 +168,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
         String id = rec.getRaw(taxonIdTerm);
         NeoUsage t = store.usages().objByID(id);
         if (t != null) {
+          obj.setVerbatimKey(rec.getId());
           add.accept(t, obj);
           store.usages().update(t);
         } else {
@@ -212,7 +213,9 @@ public abstract class NeoCsvInserter implements NeoInserter {
           n2 = store.getDevNullNode();
         }
         if (n1 != null && n2 != null) {
-          store.createNeoRel(n1, n2, opt.get());
+          NeoRel rel = opt.get();
+          rel.setVerbatimKey(rec.getId());
+          store.createNeoRel(n1, n2, rel);
           return true;
         }
         rec.addIssue(invalidIdIssue);
@@ -228,12 +231,34 @@ public abstract class NeoCsvInserter implements NeoInserter {
       Optional<TypeMaterial> opt = interpret.apply(rec);
       if (opt.isPresent()) {
         TypeMaterial tm = opt.get();
+        tm.setVerbatimKey(rec.getId());
         Node n = store.names().nodeByID(tm.getNameId());
         if (n != null) {
           store.typeMaterial().create(tm);
           return true;
         }
         rec.addIssue(Issue.NAME_ID_INVALID);
+      }
+      return false;
+    });
+  }
+
+  protected void interpretTreatment(final CsvReader reader, final Term classTerm,
+                                       Function<VerbatimRecord, Optional<Treatment>> interpret
+  ) {
+    processVerbatim(reader, classTerm, rec -> {
+      Optional<Treatment> opt = interpret.apply(rec);
+      if (opt.isPresent()) {
+        Treatment t = opt.get();
+        var nu = store.usages().objByID(t.getId());
+        if (nu == null) {
+          rec.addIssue(Issue.TAXON_ID_INVALID);
+        } else {
+          t.setVerbatimKey(rec.getId());
+          nu.treatment = t;
+          store.usages().update(nu);
+          return true;
+        }
       }
       return false;
     });

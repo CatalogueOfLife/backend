@@ -95,9 +95,8 @@ public class PgImportTest {
 
     DatasetWithSettings ds = new DatasetWithSettings(d2, new DatasetSettings());
     d2.setAlias(d.getAlias());
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     PgImport imp = new PgImport(1, ds, Users.TESTER, null,
-      PgSetupRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null, validator);
+      PgSetupRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null);
     imp.updateMetadata();
   }
 

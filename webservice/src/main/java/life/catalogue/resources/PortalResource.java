@@ -29,24 +29,10 @@ public class PortalResource {
     this.renderer = renderer;
   }
 
-  @PUT
-  @Path("metadata")
-  @RolesAllowed({Roles.ADMIN})
-  public void setMetadata(@PathParam("env") Environment env, String template) throws IOException {
-    renderer.store(env, PortalPageRenderer.PortalPage.METADATA, template);
-  }
-
   @GET
   @Path("metadata")
   public Response metadata(@PathParam("env") Environment env) throws Exception {
     return renderer.renderMetadata(env);
-  }
-
-  @PUT
-  @Path("dataset")
-  @RolesAllowed({Roles.ADMIN})
-  public void setDatasource(@PathParam("env") Environment env, String template) throws IOException {
-    renderer.store(env, PortalPageRenderer.PortalPage.DATASET, template);
   }
 
   @GET
@@ -55,23 +41,35 @@ public class PortalResource {
     return renderer.renderDatasource(id, env);
   }
 
-  @PUT
-  @Path("taxon")
-  @RolesAllowed({Roles.ADMIN})
-  public void setTaxon(@PathParam("env") Environment env, String template) throws IOException {
-    renderer.store(env, PortalPageRenderer.PortalPage.TAXON, template);
-  }
-
   @GET
   @Path("taxon/{id}")
   public Response taxon(@PathParam("env") Environment env, @PathParam("id") String id) throws Exception {
     return renderer.renderTaxon(id, env);
   }
 
+
+  @GET
+  @Path("clb_dataset/{id}")
+  public Response clbDataset(@PathParam("env") Environment env, @PathParam("id") int id) throws Exception {
+    return renderer.renderClbDataset(id, env);
+  }
+
   @PUT
-  @Path("404")
+  @Path("{page}")
   @RolesAllowed({Roles.ADMIN})
-  public void setNotFound(@PathParam("env") Environment env, String template) throws IOException {
-    renderer.store(env, PortalPageRenderer.PortalPage.NOT_FOUND, template);
+  public void setTemplate(@PathParam("env") Environment env, @PathParam("page") String page, String template) throws IOException {
+    renderer.store(env, parsePage(page), template);
+  }
+
+  private PortalPageRenderer.PortalPage parsePage(String page) {
+    page = page.toUpperCase();
+    if (page.equals("404")) {
+      return PortalPageRenderer.PortalPage.NOT_FOUND;
+    }
+    try {
+      return PortalPageRenderer.PortalPage.valueOf(page);
+    } catch (IllegalArgumentException e){
+      throw new NotFoundException("Page "+page+" does not exist");
+    }
   }
 }

@@ -38,6 +38,7 @@ import javax.validation.Validator;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.poi.ss.formula.functions.T;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
@@ -48,6 +49,8 @@ import org.slf4j.LoggerFactory;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
+
+import scala.annotation.meta.setter;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
@@ -69,7 +72,6 @@ public class PgImport implements Callable<Boolean> {
   private final NameUsageIndexService indexService;
   private final int attempt;
   private final DatasetWithSettings dataset;
-  private final Validator validator;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private LoadingCache<Integer, Set<Issue>> verbatimIssueCache;
   private final Set<String> proParteIds = new HashSet<>();
@@ -90,7 +92,7 @@ public class PgImport implements Callable<Boolean> {
   private int userKey;
 
   public PgImport(int attempt, DatasetWithSettings dataset, int userKey, NeoDb store,
-                  SqlSessionFactory sessionFactory, ImporterConfig cfg, DatasetDao datasetDao, NameUsageIndexService indexService, Validator validator) {
+                  SqlSessionFactory sessionFactory, ImporterConfig cfg, DatasetDao datasetDao, NameUsageIndexService indexService) {
     this.attempt = attempt;
     this.dataset = dataset;
     this.userKey = userKey;
@@ -99,7 +101,6 @@ public class PgImport implements Callable<Boolean> {
     this.sessionFactory = sessionFactory;
     this.indexService = indexService;
     this.datasetDao = datasetDao;
-    this.validator = validator;
     verbatimIssueCache = Caffeine.newBuilder()
       .maximumSize(10000)
       .build(key -> store.getVerbatim(key).getIssues());
@@ -167,7 +168,7 @@ public class PgImport implements Callable<Boolean> {
 
       } else {
         LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
-        updateMetadata(old.getDataset(), dataset.getDataset(), validator);
+        datasetDao.patchMetadata(old, dataset.getDataset());
         datasetDao.update(old.getDataset(), userKey);
       }
 
@@ -176,34 +177,6 @@ public class PgImport implements Callable<Boolean> {
     }
   }
 
-  /**
-   * Updates the given dataset d with the provided metadata update,
-   * retaining managed properties like keys and settings.
-   * Mandatory properties like title and license are only changed if not null.
-   * @param d
-   * @param update
-   */
-  public static Dataset updateMetadata(Dataset d, Dataset update, Validator validator) {
-    Set<String> nonNullProps = Set.of("title", "alias", "license");
-    try {
-      for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
-        Object val = prop.getReadMethod().invoke(update);
-        // for required property do not allow null
-        if (val != null || !nonNullProps.contains(prop.getName())) {
-          prop.getWriteMethod().invoke(d, val);
-        }
-      }
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
-    ObjectUtils.copyIfNotNull(update::getType, d::setType);
-    // verify emails, orcids & rorid as they can break validation on insert
-    d.processAllAgents(a -> a.validateAndNullify(validator));
-    return d;
-  }
-  
-
-  
   private void insertVerbatim() throws InterruptedException {
     try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
@@ -235,7 +208,7 @@ public class PgImport implements Callable<Boolean> {
     batchCache.clear();
   }
 
-  private <T extends VerbatimEntity & UserManaged & DatasetScoped> T updateVerbatimUserEntity(T ent) {
+  private <T extends VerbatimEntity & UserManaged & DatasetScoped > T updateVerbatimUserEntity(T ent) {
     return updateVerbatimUserEntity(ent, null);
   }
 

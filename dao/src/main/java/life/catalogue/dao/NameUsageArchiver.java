@@ -41,7 +41,7 @@ public class NameUsageArchiver {
       if (project.hasDeletedDate()) {
         throw new IllegalArgumentException("Project "+ projectKey+" is deleted");
       }
-      int count = session.getMapper(ArchivedNameMapper.class).count(projectKey);
+      int count = session.getMapper(ArchivedNameUsageMapper.class).count(projectKey);
       if (count > 0) {
         throw new IllegalArgumentException("Project "+projectKey+" already contains "+count+" archived name usages");
       }
@@ -83,7 +83,7 @@ public class NameUsageArchiver {
       var tm = session.getMapper(TaxonMapper.class);
       var rm = session.getMapper(ReferenceMapper.class);
       var num = session.getMapper(NameUsageMapper.class);
-      var anm = batchSession.getMapper(ArchivedNameMapper.class);
+      var anm = batchSession.getMapper(ArchivedNameUsageMapper.class);
       Integer previousKey = session.getMapper(DatasetMapper.class).previousRelease(releaseKey);
       if (previousKey == null) {
         LOG.info("Ignoring first release {} from project {}", releaseKey, projectKey);

@@ -18,6 +18,8 @@ public class LanguageTest {
     // check first and last code exists
     assertNotNull(Language.byCode("aaa"));
     assertNotNull(Language.byCode("zzj"));
+    // undetermined
+    assertNotNull(Language.byCode("und"));
 
     // custom titles
     assertEquals("Spanish", Language.byCode("spa").getTitle());

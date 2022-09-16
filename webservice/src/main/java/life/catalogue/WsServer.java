@@ -318,7 +318,7 @@ public class WsServer extends Application<WsServerConfig> {
     DoiUpdater doiUpdater = new DoiUpdater(getSqlSessionFactory(), doiService, coljersey.getCache(), converter);
 
     // portal html page renderer
-    PortalPageRenderer renderer = new PortalPageRenderer(dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
+    PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
 
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao, env.metrics());
@@ -378,6 +378,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exdao, cfg));
     j.register(new ImageResource(imgService));
+    j.register(new ImageResourceLegacy(imgService));
     j.register(new ImporterResource(cfg, importManager, diDao));
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new NameMatchingResource(ni));

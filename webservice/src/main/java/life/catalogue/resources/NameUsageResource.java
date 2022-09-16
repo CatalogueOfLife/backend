@@ -4,7 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.util.RegexUtils;
-import life.catalogue.db.mapper.ArchivedNameMapper;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.InvalidQueryException;
@@ -74,7 +74,7 @@ public class NameUsageResource {
     NameUsageBase u = session.getMapper(NameUsageMapper.class).get(key);
     if (u == null) {
       // try name usage archive
-      u = session.getMapper(ArchivedNameMapper.class).get(key);
+      u = session.getMapper(ArchivedNameUsageMapper.class).get(key);
     }
     return u;
   }

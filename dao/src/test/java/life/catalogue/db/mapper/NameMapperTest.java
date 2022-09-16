@@ -84,6 +84,8 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   @Test
   public void roundtrip2() throws Exception {
     Name n1 = TestEntityGenerator.newName("sk1");
+    n1.addIdentifier("col:DERF");
+    n1.addIdentifier("https://www.wikidata.org/wiki/Q157571");
     nameMapper.create(n1);
     assertNotNull(n1.getId());
     commit();

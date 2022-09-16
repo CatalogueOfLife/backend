@@ -2,7 +2,7 @@ package life.catalogue.importer.txttree;
 
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.TxtTreeTerm;
+import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.neo.model.NeoUsage;

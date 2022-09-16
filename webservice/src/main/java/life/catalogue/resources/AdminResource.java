@@ -1,10 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.admin.jobs.IndexJob;
-import life.catalogue.admin.jobs.ReimportJob;
-import life.catalogue.admin.jobs.SectorCountJob;
-import life.catalogue.admin.jobs.UsageCountJob;
+import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
@@ -336,6 +333,12 @@ public class AdminResource {
   @Path("/reimport")
   public BackgroundJob reimport(@Auth User user) {
     return runJob(new ReimportJob(user, factory, importManager, cfg));
+  }
+
+  @POST
+  @Path("/importArticles")
+  public BackgroundJob scheduleArticleImports(@Auth User user) {
+    return runJob(new ImportArticleJob(user, factory, importManager, cfg));
   }
 
   @POST
