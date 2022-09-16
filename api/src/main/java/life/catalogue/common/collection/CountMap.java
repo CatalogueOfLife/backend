@@ -31,6 +31,9 @@ public class CountMap<K extends Enum<K>> extends EnumMap<K, Integer> {
     }
   }
 
+  /**
+   * @return the key with the single, highest value or null if there is no key or more than one having the same highest number
+   */
   public K highest() {
     K best = null;
     int highest = -1;
@@ -39,7 +42,7 @@ public class CountMap<K extends Enum<K>> extends EnumMap<K, Integer> {
         highest = entry.getValue();
         best = entry.getKey();
       } else if (highest == entry.getValue()) {
-        best = null; // reset match if its the same
+        best = null; // reset match if it's the same
       }
     }
     return best;

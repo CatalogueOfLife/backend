@@ -15,15 +15,11 @@ public class Identifier {
 
   public enum Scheme {
     DOI,
-    HTTP,
-    URN,
-    LSID,
-
-    TSN,
-    IPNI,
-    ZOOBANK,
     COL,
-    GBIF;
+    GBIF,
+    IF,
+    IPNI,
+    ZOOBANK;
 
     public String prefix() {
       return name().toLowerCase();

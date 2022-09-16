@@ -154,11 +154,13 @@ public class UsageMatcherGlobal {
 
     } else {
       // check classification for all others
-      List<SimpleName> parentsSN = parents.stream()
-                                      .map(p -> p.usage)
-                                      .collect(Collectors.toList());
-      var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), parentsSN);
-      existingWithCl.removeIf(rn -> !classificationMatches(group, rn));
+      if (parents != null) {
+        List<SimpleName> parentsSN = parents.stream()
+                                        .map(p -> p.usage)
+                                        .collect(Collectors.toList());
+        var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), parentsSN);
+        existingWithCl.removeIf(rn -> !classificationMatches(group, rn));
+      }
     }
 
     // first try exact single match with authorship

@@ -43,6 +43,9 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
   public static SimpleName sn(String name) {
     return new SimpleName(null, name, Rank.UNRANKED);
   }
+  public static SimpleName sn(String name, String authorship) {
+    return new SimpleName(null, name, authorship, Rank.UNRANKED);
+  }
   public static SimpleName sn(Rank rank, String name) {
     return new SimpleName(null, name, rank);
   }

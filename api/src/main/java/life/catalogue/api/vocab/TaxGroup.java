@@ -8,13 +8,19 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Informal and common broad grouping of large taxonomic groups.
+ * These groups often are paraphyletic, but are convenient for broad classifications
+ * and match better the application of the nomenclatural codes, e.g. Algae, Fungi & Plants for the "botanical" code.
+ */
 public enum TaxGroup {
   Prokaryotes(NomCode.BACTERIAL),
     Bacteria(Prokaryotes),
     Archaea(Prokaryotes),
 
+  Algae(NomCode.BOTANICAL), // sensu latu incl diatoms, but excluding prokaryotic cyanobacteria
+
   Plants(NomCode.BOTANICAL),
-    Algae(Plants), // ???
     Bryophytes(Plants), // sensu latu incl liverworts, hornworts and mosses
     Pteridophytes(Plants), // sensu latu with fern allies incl clubmosses, horsetails and whisk ferns
     Angiosperms(Plants),
@@ -23,6 +29,7 @@ public enum TaxGroup {
   Fungi(NomCode.BOTANICAL),
     Ascomycetes(Fungi),
     Basidiomycetes(Fungi),
+    Oomycetes(Fungi, NomCode.BOTANICAL), // traditionally follows fungal nomenclature therefore placed here. Phylogenetically related to Algae and protists
     OtherFungi(Fungi),
 
   Animals(NomCode.ZOOLOGICAL),
@@ -75,6 +82,10 @@ public enum TaxGroup {
   TaxGroup(TaxGroup parent) {
     this.parent = parent;
     this.code = parent.code;
+  }
+  TaxGroup(TaxGroup parent, NomCode code) {
+    this.parent = parent;
+    this.code = code;
   }
 
   public TaxGroup getParent() {
