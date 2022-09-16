@@ -1134,6 +1134,8 @@ CREATE TABLE name_usage_archive (
   n_published_in_page_link TEXT,
   n_nomenclatural_note TEXT,
   n_unparsed TEXT,
+  n_identifier TEXT[],
+  n_link TEXT,
   n_remarks TEXT,
   -- common with name_usage, keep in sync!
   extinct BOOLEAN,
@@ -1141,6 +1143,7 @@ CREATE TABLE name_usage_archive (
   origin ORIGIN NOT NULL,
   parent_id TEXT,
   name_phrase TEXT,
+  identifier TEXT[],
   link TEXT,
   remarks TEXT,
   -- archive specifics, will be dropped from partitioned name table
@@ -1271,9 +1274,10 @@ CREATE TABLE name (
   published_in_page_link TEXT,
   nomenclatural_note TEXT,
   unparsed TEXT,
+  identifier TEXT[],
+  link TEXT,
   remarks TEXT,
   -- additions to name_usage_archive
-  link TEXT,
   scientific_name_normalized TEXT NOT NULL,
   authorship_normalized TEXT[],
   created_by INTEGER NOT NULL,
@@ -1377,6 +1381,7 @@ CREATE TABLE name_usage (
   parent_id TEXT,
   name_id TEXT NOT NULL,
   name_phrase TEXT,
+  identifier TEXT[],
   link TEXT,
   remarks TEXT,
   -- additions to name_usage_archive

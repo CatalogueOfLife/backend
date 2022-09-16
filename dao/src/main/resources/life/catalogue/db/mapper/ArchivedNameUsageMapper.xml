@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="life.catalogue.db.mapper.ArchivedNameMapper">
+<mapper namespace="life.catalogue.db.mapper.ArchivedNameUsageMapper">
 
   <sql id="COLS">
     id,
@@ -35,6 +35,8 @@
     n_published_in_page,
     n_nomenclatural_note,
     n_unparsed,
+    n_identifier,
+    n_link,
     n_remarks,
     <!-- NameUsageBase -->
     extinct,
@@ -42,6 +44,7 @@
     origin,
     parent_id,
     name_phrase,
+    identifier,
     link,
     remarks,
     <!-- ArchivedNameUsage -->
@@ -84,6 +87,8 @@
     #{name.publishedInPage},
     #{name.nomenclaturalNote},
     #{name.unparsed},
+    #{name.identifier, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler},
+    #{name.link},
     #{name.remarks},
     <!-- NameUsageBase -->
     #{extinct},
@@ -91,6 +96,7 @@
     #{origin}::ORIGIN,
     #{parentId},
     #{namePhrase},
+    #{identifier, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler},
     #{link},
     #{remarks},
     <!-- ArchivedNameUsage -->
@@ -104,6 +110,7 @@
 
   <resultMap id="archivedNameResultMap" type="ArchivedNameUsage" autoMapping="true">
     <id property="id" column="id"/>
+    <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.IdentifierArrayTypeHandler"/>
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
     <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
   </resultMap>
@@ -201,6 +208,8 @@
       u.n_published_in_page AS published_in_page,
       u.n_nomenclatural_note AS nomenclatural_note,
       u.n_unparsed AS unparsed,
+      u.n_identifier AS identifier,
+      u.n_link AS link,
       u.n_remarks AS remarks,
       <!-- name match -->
       ni.id AS namesIndexId,

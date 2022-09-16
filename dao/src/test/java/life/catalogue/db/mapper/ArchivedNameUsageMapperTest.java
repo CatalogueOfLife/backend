@@ -15,13 +15,13 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class ArchivedNameMapperTest extends MapperTestBase<ArchivedNameMapper> {
+public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsageMapper> {
 
   private ArchivedNameUsage orig;
   IndexName nidx;
 
-  public ArchivedNameMapperTest() {
-    super(ArchivedNameMapper.class);
+  public ArchivedNameUsageMapperTest() {
+    super(ArchivedNameUsageMapper.class);
   }
 
   @Before
@@ -83,9 +83,12 @@ public class ArchivedNameMapperTest extends MapperTestBase<ArchivedNameMapper> {
 
   public static ArchivedNameUsage create() {
     Name n = TestEntityGenerator.newName(appleKey);
+    n.addIdentifier("tsn:1234");
     Taxon t = TestEntityGenerator.newTaxon(n);
+    t.addIdentifier("col:DF2R");
+    t.addIdentifier("gbif:456789");
     ArchivedNameUsage u = new ArchivedNameUsage(t);
-     u.setDatasetKey(3); // belongs to project
+    u.setDatasetKey(3); // belongs to project
     u.setLastReleaseKey(12);
     u.setExtinct(true);
     u.setClassification(List.of(

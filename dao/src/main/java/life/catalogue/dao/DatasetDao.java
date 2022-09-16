@@ -403,7 +403,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // remove decisions, estimates, dataset patches, archived usages, name matches,
     // but NOT sectors which are referenced from data tables
     for (Class<DatasetProcessable<?>> mClass : new Class[]{
-      DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class, ArchivedNameMapper.class, NameMatchMapper.class
+      DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class, ArchivedNameUsageMapper.class, NameMatchMapper.class
     }) {
       LOG.info("Delete {}s for dataset {}", mClass.getSimpleName().substring(0, mClass.getSimpleName().length() - 6), key);
       session.getMapper(mClass).deleteByDataset(key);

@@ -13,9 +13,9 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
 /**
- * Mapper for archived names of a project. Dataset keys are expected to always be MANAGED, never releases.
+ * Mapper for archived name usages of a project. Dataset keys are expected to always be MANAGED, never releases.
  */
-public interface ArchivedNameMapper extends CRUD<DSID<String>, ArchivedNameUsage>, DatasetProcessable<ArchivedNameUsage> {
+public interface ArchivedNameUsageMapper extends CRUD<DSID<String>, ArchivedNameUsage>, DatasetProcessable<ArchivedNameUsage> {
 
   /**
    * @return number of archived usages for a given project.

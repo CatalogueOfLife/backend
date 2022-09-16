@@ -11,9 +11,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2022-09-16 new issue
+### 2022-09-16 alternative identifiers
 ```
 ALTER TYPE ISSUE ADD VALUE 'IDENTIFIER_WITHOUT_SCHEME';
+
+ALTER TABLE name ADD COLUMN identifier TEXT[];
+ALTER TABLE name_usage ADD COLUMN identifier TEXT[];
+ALTER TABLE name_usage_archive ADD COLUMN
+  n_identifier TEXT[],
+  n_link TEXT,
+  identifier TEXT[];
 ```
 
 ### 2022-09-07 drop verbatim key constraint for treatments
