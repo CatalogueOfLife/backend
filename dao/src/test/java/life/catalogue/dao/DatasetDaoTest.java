@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
@@ -13,6 +14,7 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 
 import java.io.File;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,6 +84,27 @@ public class DatasetDaoTest extends DaoTestBase {
     var d2 = dao.get(d1.getKey());
     //printDiff(u1, u2);
     assertEquals(d1, d2);
+  }
+
+  @Test
+  public void patch() throws Exception {
+    Dataset d1 = DatasetMapperTest.create();
+    d1.setSource(List.of(
+      CitationTest.create(),
+      CitationTest.create()
+    ));
+
+    dao.create(d1, Users.TESTER);
+    commit();
+
+    Dataset upd = new Dataset();
+    upd.setLogo(URI.create("https://unite.ut.ee/img/unite-logo-web.svg"));
+
+    DatasetWithSettings ds = new DatasetWithSettings(d1, dao.getSettings(d1.getKey()));
+    dao.patchMetadata(ds, upd);
+    dao.update(ds.getDataset(), Users.TESTER);
+
+    assertEquals(upd.getLogo(), dao.get(d1.getKey()).getLogo());
   }
 
   @Test(expected = IllegalArgumentException.class)
