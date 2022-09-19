@@ -11,9 +11,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(using = IdentifierSerde.Serializer.class)
 @JsonDeserialize(using = IdentifierSerde.Deserializer.class)
 public class Identifier {
-  private static final Pattern SCHEME_PARSER = Pattern.compile("^([a-zA-Z]+):(.+)$");
+  private static final Pattern SCOPE_PARSER = Pattern.compile("^([a-zA-Z]+):(.+)$");
 
-  public enum Scheme {
+  public enum Scope {
     DOI,
     HTTP,
     URN,
@@ -31,7 +31,7 @@ public class Identifier {
   }
 
 
-  private String scheme;
+  private String scope;
   private String id;
 
   public static Identifier parse(String identifier) {
@@ -45,38 +45,38 @@ public class Identifier {
       }
     }
 
-    var m = SCHEME_PARSER.matcher(identifier.trim());
+    var m = SCOPE_PARSER.matcher(identifier.trim());
     if (m.find()) {
       return new Identifier(m.group(1), m.group(2));
     } else {
-      throw new IllegalArgumentException("A colon delimited scheme is required");
+      throw new IllegalArgumentException("A colon delimited scope is required");
     }
   }
 
   public Identifier() {
   }
 
-  public Identifier(Scheme scheme, String id) {
-    this.scheme = scheme.prefix();
+  public Identifier(Scope scope, String id) {
+    this.scope = scope.prefix();
     this.id = id.trim();
   }
 
-  public Identifier(String scheme, String id) {
-    this.scheme = scheme.toLowerCase().trim();
+  public Identifier(String scope, String id) {
+    this.scope = scope.toLowerCase().trim();
     this.id = id.trim();
   }
 
   public Identifier(DOI doi) {
-    this.scheme = Scheme.DOI.prefix();
+    this.scope = Scope.DOI.prefix();
     this.id = doi.getDoiName();
   }
 
-  public String getScheme() {
-    return scheme;
+  public String getScope() {
+    return scope;
   }
 
-  public void setScheme(String scheme) {
-    this.scheme = scheme;
+  public void setScope(String scope) {
+    this.scope = scope;
   }
 
   public String getId() {
@@ -92,16 +92,16 @@ public class Identifier {
     if (this == o) return true;
     if (!(o instanceof Identifier)) return false;
     Identifier that = (Identifier) o;
-    return Objects.equals(scheme, that.scheme) && Objects.equals(id, that.id);
+    return Objects.equals(scope, that.scope) && Objects.equals(id, that.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(scheme, id);
+    return Objects.hash(scope, id);
   }
 
   @Override
   public String toString() {
-    return scheme + ':' + id;
+    return scope + ':' + id;
   }
 }

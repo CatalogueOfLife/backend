@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 public class DwcaInserter extends NeoCsvInserter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
   private DwcInterpreter inter;
-  private static final Term EOL_DOCUMENT = TermFactory.instance().findClassTerm("http://eol.org/schema/media/Document");
 
   public DwcaInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
     super(folder, DwcaReader.from(folder), store, settings, refFactory);
@@ -58,7 +57,7 @@ public class DwcaInserter extends NeoCsvInserter {
     insertRelations(reader, DwcUnofficialTerm.NameRelation,
         inter::interpretNameRelations,
         store.names(),
-        DwcaTerm.ID,
+        inter::taxonID,
         DwcUnofficialTerm.relatedNameUsageID,
         Issue.NAME_ID_INVALID,
       true
@@ -74,25 +73,25 @@ public class DwcaInserter extends NeoCsvInserter {
 
     insertTaxonEntities(reader, GbifTerm.Distribution,
         inter::interpretDistribution,
-        DwcaTerm.ID,
+        inter::taxonID,
         (t, d) -> t.distributions.add(d)
     );
 
     insertTaxonEntities(reader, GbifTerm.VernacularName,
         inter::interpretVernacularName,
-        DwcaTerm.ID,
+        inter::taxonID,
         (t, vn) -> t.vernacularNames.add(vn)
     );
 
     insertTaxonEntities(reader, GbifTerm.Multimedia,
         inter::interpretMedia,
-        DwcaTerm.ID,
+        inter::taxonID,
         (t, d) -> t.media.add(d)
     );
 
     insertTaxonEntities(reader, GbifTerm.Reference,
       inter::interpretReference,
-      DwcaTerm.ID,
+      inter::taxonID,
       (t, r) -> {
         if (store.references().create(r) && t.isNameUsageBase()) {
           t.asNameUsageBase().getReferenceIds().add(r.getId());
@@ -102,7 +101,7 @@ public class DwcaInserter extends NeoCsvInserter {
 
     insertTaxonEntities(reader, EolReferenceTerm.Reference,
       inter::interpretEolReference,
-      DwcaTerm.ID,
+      inter::taxonID,
       (t, r) -> {
         if (store.references().create(r) && t.isNameUsageBase()) {
           t.asNameUsageBase().getReferenceIds().add(r.getId());
