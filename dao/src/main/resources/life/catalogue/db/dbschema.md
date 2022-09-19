@@ -13,7 +13,7 @@ and done it manually. So we can as well log changes here.
 
 ### 2022-09-16 alternative identifiers
 ```
-ALTER TYPE ISSUE ADD VALUE 'IDENTIFIER_WITHOUT_SCHEME';
+ALTER TYPE ISSUE ADD VALUE 'IDENTIFIER_WITHOUT_SCOPE';
 
 ALTER TABLE name ADD COLUMN identifier TEXT[];
 ALTER TABLE name_usage ADD COLUMN identifier TEXT[];

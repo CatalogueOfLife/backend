@@ -67,7 +67,7 @@ public class InterpreterBaseTest {
     resp = ib.interpretIdentifiers("Poa_annua", issues);
     assertEquals(List.of(), resp);
     assertTrue(issues.hasIssues());
-    assertTrue(issues.hasIssue(Issue.IDENTIFIER_WITHOUT_SCHEME));
+    assertTrue(issues.hasIssue(Issue.IDENTIFIER_WITHOUT_SCOPE));
   }
 
   @Test

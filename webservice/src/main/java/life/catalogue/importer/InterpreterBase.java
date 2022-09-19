@@ -14,7 +14,6 @@ import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -544,7 +543,7 @@ public class InterpreterBase {
           var id = Identifier.parse(altID);
           ids.add(id);
         } catch (IllegalArgumentException e) {
-          issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCHEME);
+          issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCOPE);
           LOG.info("Illegal identifier: {}", altID, e);
         }
       }

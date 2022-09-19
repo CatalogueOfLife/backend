@@ -405,8 +405,8 @@ public enum Issue {
   TYPE_MATERIAL_SEX_INVALID(TYPE_MATERIAL, Level.WARNING,
     "A type material record attached to this name has an unparsable sex."),
 
-  IDENTIFIER_WITHOUT_SCHEME(ANY, Level.WARNING,
-    "The alternative identifier for a taxon, name or reference is lacking an identifier scheme."),
+  IDENTIFIER_WITHOUT_SCOPE(ANY, Level.WARNING,
+    "The alternative identifier for a taxon, name or reference is lacking an identifier scope."),
   ;
 
   /**
