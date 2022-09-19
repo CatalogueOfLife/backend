@@ -220,34 +220,19 @@ public class UsageMatcherGlobal {
     // remove provisional usages
     existingWithCl.removeIf(u -> u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     if (existingWithCl.size() == 1) {
-      var u = existingWithCl.get(0);
-      return UsageMatch.snap(u, datasetKey);
+      return UsageMatch.snap(existingWithCl.get(0), datasetKey);
     }
 
-    // finally pick the first accepted with the largest subtree ???
-    SimpleNameClassified curr = null;
-    long maxDescendants = -1;
-    for (var u : existingWithCl) {
-      if (u.getStatus().isTaxon()) {
-        long descendants = countDescendants(u);
-        if (maxDescendants < descendants) {
-          maxDescendants = descendants;
-          curr = u;
-        }
-      }
-    }
-    if (curr != null) {
-      LOG.info("{} ambiguous homonyms encountered for {} in source {}, picking largest taxon", existingWithCl.size(), nu.getLabel(), datasetKey);
-      return UsageMatch.snap(MatchType.AMBIGUOUS, curr, datasetKey);
+    // prefer accepted over synonyms
+    long accMatches = existingWithCl.stream().filter(u -> u.getStatus().isTaxon()).count();
+    if (accMatches == 1) {
+      existingWithCl.removeIf(u -> !u.getStatus().isTaxon());
+      LOG.debug("{} ambiguous homonyms encountered for {} in source {}, picking single accepted name", existingWithCl.size(), nu.getLabel(), datasetKey);
+      return UsageMatch.snap(existingWithCl.get(0), datasetKey);
     }
 
-    // could not match
-    return UsageMatch.empty(datasetKey);
-  }
-
-  private long countDescendants(SimpleNameWithNidx u) {
-    // TODO: implement
-    return 0;
+    LOG.debug("{} ambiguous homonyms encountered for {} in source {}, picking accepted name randomly", existingWithCl.size(), nu.getLabel(), datasetKey);
+    return UsageMatch.empty(existingWithCl, datasetKey);
   }
 
   private static boolean contains(Collection<? extends SimpleNameWithNidx> usages, Rank rank) {
@@ -315,7 +300,7 @@ public class UsageMatcherGlobal {
         before = new ArrayList<>();
         usages.put(canonNidx, before);
       }
-      var sn = new SimpleNameWithPub(nu, canonNidx.getId(), nu.getName().getPublishedInId());
+      var sn = new SimpleNameWithPub(nu, canonNidx.getId());
       before.add(sn);
       return sn;
 

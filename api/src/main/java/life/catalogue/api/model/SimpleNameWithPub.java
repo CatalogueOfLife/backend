@@ -13,9 +13,9 @@ public class SimpleNameWithPub extends SimpleNameWithNidx {
     this.publishedInID = other.publishedInID;
   }
 
-  public SimpleNameWithPub(NameUsageBase u, Integer canonicalId, String publishedInID) {
+  public SimpleNameWithPub(NameUsageBase u, Integer canonicalId) {
     super(u, canonicalId);
-    this.publishedInID = publishedInID;
+    this.publishedInID = u.getName().getPublishedInId();
   }
 
   public String getPublishedInID() {

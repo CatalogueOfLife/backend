@@ -54,9 +54,9 @@ public class UsageMatcherGlobalTest {
       var num = session.getMapper(NameUsageMapper.class);
       var origNU = num.get(dsid.id("oen3"));
       ((Synonym)origNU).setAccepted(null); // is purposely not populated in matches - parentID is enough
-      var origSN = matcher.add(origNU);
 
       var match = matcher.match(datasetKey, num.get(dsid), null);
+      var origSN = new SimpleNameWithPub(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameWithPub(match.usage), origSN);
 
       matcher.clear();
