@@ -543,8 +543,8 @@ public class InterpreterBase {
           var id = Identifier.parse(altID);
           ids.add(id);
         } catch (IllegalArgumentException e) {
+          ids.add(new Identifier(Identifier.Scope.LOCAL, altID));
           issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCOPE);
-          LOG.info("Illegal identifier: {}", altID, e);
         }
       }
       return ids;

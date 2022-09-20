@@ -14,6 +14,7 @@ public class Identifier {
   private static final Pattern SCOPE_PARSER = Pattern.compile("^([a-zA-Z]+):(.+)$");
 
   public enum Scope {
+    LOCAL,
     DOI,
     HTTP,
     URN,
