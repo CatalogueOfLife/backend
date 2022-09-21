@@ -12,7 +12,7 @@ import java.net.URI;
  */
 public enum DwcUnofficialTerm implements Term, AlternativeNames {
   NameRelation(true),
-  relatedNameUsageID,
+  relatedNameUsageID, // The object name usage this relation relates to. Refers to an existing TaxonID within the dataset.
   relationType,
   relationPublishedIn,
   relationPublishedInID,

@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<archive xmlns="http://rs.tdwg.org/dwc/text/">
+  <core encoding="UTF-8" fieldsTerminatedBy="," linesTerminatedBy="\n;" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.tdwg.org/dwc/terms/Taxon">
+    <files>
+      <location>taxa.txt</location>
+    </files>
+    <id index="0" />
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
+    <field index="2" term="http://rs.tdwg.org/dwc/terms/parentNameUsageID"/>
+    <field index="3" term="http://rs.tdwg.org/dwc/terms/scientificNameID"/>
+    <field index="4" term="http://rs.tdwg.org/dwc/terms/scientificName"/>
+  </core>
+  <extension encoding="UTF-8" fieldsTerminatedBy="," linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/VernacularName">
+    <files>
+      <location>vernacular.txt</location>
+    </files>
+    <coreid index="0"/>
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/vernacularName"/>
+  </extension>
+    <extension encoding="UTF-8" fieldsTerminatedBy="," linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.catalogueoflife.org/terms/dwc/NameRelation">
+    <files>
+      <location>name_rel.txt</location>
+    </files>
+    <coreid index="0" />
+    <field index="1" term="http://rs.catalogueoflife.org/terms/dwc/relatedNameUsageID"/>
+    <field index="2" term="http://rs.catalogueoflife.org/terms/dwc/relationType"/>
+  </extension> 
+    <extension encoding="UTF-8" fieldsTerminatedBy="," linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.tdwg.org/dwc/terms/Occurrence">
+    <files>
+      <location>occurrence.txt</location>
+    </files>
+    <coreid index="0" />
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/occurrenceID"/>
+    <field index="2" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
+    <field index="3" term="http://rs.tdwg.org/dwc/terms/catalogNumber"/> 
+    <field index="4" term="http://rs.tdwg.org/dwc/terms/typeStatus"/> 
+    <field default="NHST" term="http://rs.tdwg.org/dwc/terms/collectionCode"/>
+    <field default="MaterialCitation" term="http://rs.tdwg.org/dwc/terms/basisOfRecord"/> 
+  </extension>
+</archive>

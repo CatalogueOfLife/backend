@@ -81,14 +81,14 @@ ALTER TABLE dataset_import ALTER COLUMN origin TYPE DATASETORIGIN USING origin::
 
 ### 2022-09-16 alternative identifiers
 ```
-ALTER TYPE ISSUE ADD VALUE 'IDENTIFIER_WITHOUT_SCHEME';
+ALTER TYPE ISSUE ADD VALUE 'IDENTIFIER_WITHOUT_SCOPE';
 
 ALTER TABLE name ADD COLUMN identifier TEXT[];
 ALTER TABLE name_usage ADD COLUMN identifier TEXT[];
-ALTER TABLE name_usage_archive ADD COLUMN
-  n_identifier TEXT[],
-  n_link TEXT,
-  identifier TEXT[];
+ALTER TABLE name_usage_archive 
+  ADD COLUMN n_identifier TEXT[],
+  ADD COLUMN n_link TEXT,
+  ADD COLUMN identifier TEXT[];
 ```
 
 ### 2022-09-07 drop verbatim key constraint for treatments

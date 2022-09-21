@@ -14,7 +14,6 @@ import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -540,12 +539,10 @@ public class InterpreterBase {
     if (!StringUtils.isBlank(idsRaw)) {
       List<Identifier> ids = new ArrayList<>();
       for (String altID : SPLIT_COMMA.split(idsRaw)) {
-        try {
-          var id = Identifier.parse(altID);
-          ids.add(id);
-        } catch (IllegalArgumentException e) {
-          issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCHEME);
-          ids.add(new Identifier(Identifier.Scheme.LOCAL, altID));
+        var id = Identifier.parse(altID);
+        ids.add(id);
+        if (id.isLocal()) {
+          issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCOPE);
         }
       }
       return ids;

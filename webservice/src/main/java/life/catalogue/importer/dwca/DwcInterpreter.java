@@ -18,16 +18,11 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.parser.*;
 
-import org.gbif.dwc.terms.DcTerm;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.DwcaTerm;
-import org.gbif.dwc.terms.GbifTerm;
+import org.gbif.dwc.terms.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,16 +37,26 @@ public class DwcInterpreter extends InterpreterBase {
   private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
 
   private final MappingInfos mappingFlags;
+  private final Term idTerm;
+  private final Map<String, String> dwcaID2taxonID = new HashMap<>();
 
   public DwcInterpreter(DatasetSettings settings, MappingInfos mappingFlags, ReferenceFactory refFactory, NeoDb store) {
     super(settings, refFactory, store);
     this.mappingFlags = mappingFlags;
+    idTerm = mappingFlags.hasTaxonId() ? DwcTerm.taxonID : DwcaTerm.ID;
   }
 
   public Optional<NeoUsage> interpretUsage(VerbatimRecord v) {
     // name
     return interpretName(v).map(pnu -> {
-      NeoUsage u = interpretUsage(DwcaTerm.ID, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcTerm.taxonConceptID);
+      NeoUsage u = interpretUsage(idTerm, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonConceptID);
+      if (idTerm == DwcTerm.taxonID) {
+        // remember dwca ids for extension lookups
+        var dwcaID = v.getRaw(DwcaTerm.ID);
+        if (!u.getId().equals(dwcaID)) {
+          dwcaID2taxonID.put(dwcaID, u.getId());
+        }
+      }
       if (u.isNameUsageBase()) {
         u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
         if (!u.isSynonym()) {
@@ -68,7 +73,22 @@ public class DwcInterpreter extends InterpreterBase {
       return u;
     });
   }
-  
+
+  /**
+   * Return the taxonID for the given record by preferring explicit taxonID values over dwca.ID values that make use of the
+   * lookup from core records.
+   */
+  String taxonID(VerbatimRecord v) {
+    if (v.hasTerm(DwcTerm.taxonID)) {
+      return v.getRaw(DwcTerm.taxonID);
+    }
+    String dwcaID = v.getRaw(DwcaTerm.ID);
+    if (dwcaID2taxonID.containsKey(dwcaID)) {
+      return dwcaID2taxonID.get(dwcaID);
+    }
+    return dwcaID;
+  }
+
   Optional<NeoRel> interpretNameRelations(VerbatimRecord rec) {
     NeoRel rel = new NeoRel();
     SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(DwcUnofficialTerm.relationType));
@@ -179,8 +199,9 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
-    Optional<ParsedNameUsage> opt = interpretName(false, v.getRaw(DwcaTerm.ID),
+  private Optional<ParsedNameUsage>
+  interpretName(VerbatimRecord v) {
+    Optional<ParsedNameUsage> opt = interpretName(false, taxonID(v),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.getFirst(DwcTerm.infragenericEpithet, DwcTerm.subgenus),
@@ -214,7 +235,7 @@ public class DwcInterpreter extends InterpreterBase {
     if (rec.hasTerm(DwcTerm.typeStatus)) {
       TypeMaterial m = new TypeMaterial();
       m.setId(rec.getRaw(DwcTerm.occurrenceID));
-      m.setNameId(rec.getRaw(DwcTerm.taxonID));
+      m.setNameId(taxonID(rec)); // needs to point to a Name.ID !!!
       m.setCitation(rec.get(GbifTerm.verbatimLabel));
       m.setStatus(SafeParser.parse(TypeStatusParser.PARSER, rec.get(DwcTerm.typeStatus)).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec));
       m.setLocality(rec.get(DwcTerm.locality));

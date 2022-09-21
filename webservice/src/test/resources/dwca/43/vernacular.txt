@@ -1,0 +1,4 @@
+id,vernacularName
+1,Animals
+2,Arthropods
+3,Insects

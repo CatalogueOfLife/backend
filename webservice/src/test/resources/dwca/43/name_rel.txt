@@ -1,0 +1,3 @@
+id,relatedNameUsageID,type
+4,ns:3,type
+4,3,spelling-correction

@@ -1,0 +1,3 @@
+id,occurrenceID,taxonID,catalogNumber,typeStatus
+4,occ#345678,,12345,holotype
+4,occ#92736754,,26543,paratype

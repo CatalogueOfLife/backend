@@ -154,10 +154,18 @@ public abstract class NeoCsvInserter implements NeoInserter {
       return false;
     });
   }
-  
+
   protected <T extends VerbatimEntity> void insertTaxonEntities(final CsvReader reader, final Term classTerm,
                                                                 final Function<VerbatimRecord, List<T>> interpret,
                                                                 final Term taxonIdTerm,
+                                                                final BiConsumer<NeoUsage, T> add
+  ) {
+    insertTaxonEntities(reader, classTerm, interpret, v -> v.getRaw(taxonIdTerm), add);
+  }
+
+  protected <T extends VerbatimEntity> void insertTaxonEntities(final CsvReader reader, final Term classTerm,
+                                                                final Function<VerbatimRecord, List<T>> interpret,
+                                                                final Function<VerbatimRecord, String> idFunc,
                                                                 final BiConsumer<NeoUsage, T> add
   ) {
     processVerbatim(reader, classTerm, rec -> {
@@ -165,7 +173,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
       if (reader.isEmpty()) return false;
       boolean interpreted = true;
       for (T obj : results) {
-        String id = rec.getRaw(taxonIdTerm);
+        String id = idFunc.apply(rec);
         NeoUsage t = store.usages().objByID(id);
         if (t != null) {
           obj.setVerbatimKey(rec.getId());
@@ -173,33 +181,37 @@ public abstract class NeoCsvInserter implements NeoInserter {
           store.usages().update(t);
         } else {
           interpreted = false;
-          badTaxonFk(rec, taxonIdTerm, id);
+          badTaxonFks.get(rec.getType()).incrementAndGet();
+          LOG.warn("Non existing taxonID {} found in {} record line {}, {}", id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
         }
       }
       return interpreted;
     });
   }
-  
-  private void badTaxonFk(VerbatimRecord rec, Term taxonIdTerm, String id){
-    badTaxonFks.get(rec.getType()).incrementAndGet();
-    LOG.warn("Non existing {} {} found in {} record line {}, {}", taxonIdTerm.simpleName(), id, rec.getType().simpleName(), rec.getLine(), rec.getFile());
-  }
-  
+
   @Override
   public void reportBadFks() {
     for (Map.Entry<Term, AtomicInteger> entry : badTaxonFks.entrySet()) {
       LOG.warn("The inserted dataset contains {} bad taxon foreign keys in {}", entry.getValue(), entry.getKey().prefixedName());
     }
   }
-  
+
   protected void insertRelations(final CsvReader reader, final Term classTerm,
                                  Function<VerbatimRecord, Optional<NeoRel>> interpret,
                                  NeoCRUDStore<?> entityStore, Term idTerm, Term relatedIdTerm,
                                  Issue invalidIdIssue, boolean requireRelatedID
   ) {
+    insertRelations(reader, classTerm, interpret, entityStore, v -> v.getRaw(idTerm), relatedIdTerm, invalidIdIssue, requireRelatedID);
+  }
+
+  protected void insertRelations(final CsvReader reader, final Term classTerm,
+                                 Function<VerbatimRecord, Optional<NeoRel>> interpret,
+                                 NeoCRUDStore<?> entityStore, Function<VerbatimRecord, String> idFunc, Term relatedIdTerm,
+                                 Issue invalidIdIssue, boolean requireRelatedID
+  ) {
     processVerbatim(reader, classTerm, rec -> {
       // ignore any relation pointing to itself!
-      String from = rec.getRaw(idTerm);
+      String from = idFunc.apply(rec);
       String to = rec.getRaw(relatedIdTerm);
       if (from != null && from.equals(to)) {
         rec.addIssue(Issue.SELF_REFERENCED_RELATION);

@@ -2,12 +2,15 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.importer.neo.model.*;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.gbif.dwc.terms.DwcTerm;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,7 +34,55 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   public NormalizerDwcaIT() {
     super(DataFormat.DWCA);
   }
-  
+
+
+  @Test
+  public void testFks() throws Exception {
+    normalize(43);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage t3 = usageByID("ns:3");
+      assertEquals("Insecta", t3.usage.getName().getLabel());
+      assertEquals(1, t3.vernacularNames.size());
+      assertEquals("Insects", t3.vernacularNames.get(0).getName());
+      assertEquals(List.of(new Identifier("zoobank","1234")), t3.usage.getName().getIdentifier());
+      assertEquals(t3.getId(), t3.usage.getName().getId());
+
+      var parents = store.parents(t3.node);
+      assertEquals(2, parents.size());
+      assertEquals("Arthropoda", parents.get(0).name);
+
+
+      NeoUsage t4 = usageByID("ns:4");
+      assertEquals("Rhyniognatha hirsti", t4.usage.getName().getLabel());
+      assertEquals(List.of(new Identifier("zoobank","1234567")), t4.usage.getName().getIdentifier());
+      assertEquals(t4.getId(), t4.usage.getName().getId());
+      assertEquals(0, t4.vernacularNames.size());
+
+      int counter = 0;
+      for (var tm : store.typeMaterial().values()) {
+        counter++;
+        assertEquals(tm.getNameId(), t4.getId());
+      }
+      assertEquals(2, counter);
+
+      var rels = store.nameRelations(t4.nameNode);
+      assertEquals(1, rels.size());
+      for (var rel : rels) {
+        assertNotNull(rel.getType());
+        assertEquals(rel.getNameId(), t4.getId());
+        assertEquals(rel.getRelatedNameId(), t3.getId());
+      }
+
+      store.verbatimList(DwcUnofficialTerm.NameRelation).forEach(v -> {
+        if (v.getRaw(DwcUnofficialTerm.relatedNameUsageID).equals("3")) {
+          assertTrue(v.hasIssue(Issue.NAME_ID_INVALID));
+        } else {
+          assertFalse(v.hasIssues());
+        }
+      });
+    }
+  }
 
   @Test
   public void testBdjCsv() throws Exception {

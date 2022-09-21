@@ -37,8 +37,12 @@ public class IdentifierTest {
     assertEquals(doi.getDoiString(), id.toString());
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void iae() {
-    Identifier.parse("234567890");
+  @Test
+  public void local() {
+    String id = "234567890";
+    var id1 = Identifier.parse(id);
+    var id2 = new Identifier(Identifier.Scope.LOCAL, id);
+    assertEquals(id2, id1);
+    assertEquals("local:"+id, id1.toString());
   }
 }

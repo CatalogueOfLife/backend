@@ -1,0 +1,5 @@
+id,taxonID,parentNameUsageID,scientificNameID,scientificName
+1,ns:1,,,Animalia
+2,ns:2,ns:1,,Arthropoda
+3,ns:3,ns:2,zoobank:1234,Insecta
+4,ns:4,ns:3,zoobank:1234567,Rhyniognatha hirsti

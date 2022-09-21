@@ -15,6 +15,7 @@ import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.importer.neo.traverse.Traversals;
 
 import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
@@ -661,7 +662,11 @@ public class NeoDb {
   public Iterable<VerbatimRecord> verbatimList() {
     return verbatim.values();
   }
-  
+
+  public Stream<VerbatimRecord> verbatimList(Term rowType) {
+    return verbatim.values().stream().filter(v -> v.getType().equals(rowType));
+  }
+
   /**
    * @return a stream of name nodes which have no has_name relation to any usage
    */
