@@ -1,17 +1,17 @@
 package life.catalogue.release;
 
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -20,11 +20,11 @@ import static org.junit.Assert.assertEquals;
 
 public class ExtendedReleaseIT extends ProjectBaseIT {
 
-  final static TestDataRule.TestData XCOL_DATA = new TestDataRule.TestData("xcol", 3, 1, 2,
+  public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13, 1, 2,
     Map.of(
       "sector", Map.of("created_by", 100, "modified_by", 100)
-    ),3,11,12,13);
-  final int projectKey = XCOL_DATA.key;
+    ), Set.of(3,11,12,13));
+  final int projectKey = Datasets.COL;
 
   IdProvider provider;
   NameMatchingRule matchingRule = new NameMatchingRule();
@@ -32,7 +32,7 @@ public class ExtendedReleaseIT extends ProjectBaseIT {
 
   @Rule
   public final TestRule chain = RuleChain
-    .outerRule(new TestDataRule(XCOL_DATA))
+    .outerRule(new TestDataRule(XRELEASE_DATA))
     .around(matchingRule);
 
 

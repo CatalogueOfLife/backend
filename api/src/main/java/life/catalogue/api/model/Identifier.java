@@ -14,6 +14,7 @@ public class Identifier {
   private static final Pattern SCHEME_PARSER = Pattern.compile("^([a-zA-Z]+):(.+)$");
 
   public enum Scheme {
+    LOCAL,
     DOI,
     COL,
     GBIF,

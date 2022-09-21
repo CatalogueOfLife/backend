@@ -1,0 +1,8 @@
+id,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
+x9,Dectus,,GENUS,,,SCIENTIFIC,f,,Dectus,,,,,,{},{},,{},{},,,,,,,,,
+s1,Aranea mascha,"Fabricius, 1775",SPECIES,ZOOLOGICAL,,SCIENTIFIC,f,,,Aranea,,mascha,,,{},{},,{Fabricius},{},1775,,Fabricius1775,,,,,,
+MD2,Dectus mascha,"(Fabricius, 1775)",SPECIES,ZOOLOGICAL,ACCEPTABLE,SCIENTIFIC,f,,,Dectus,,mascha,,,{Fabricius},{},1775,{},{},,,Walckenaer1805,,,,,,
+x7,Theridiidae,,FAMILY,,,SCIENTIFIC,f,,Theridiidae,,,,,,{},{},,{},{},,,,,,,,,
+x3,Animalia,,KINGDOM,,,SCIENTIFIC,f,,Animalia,,,,,,{},{},,{},{},,,,,,,,,
+MD1,Dectus teremectus,"(Rossi, 1793)",SPECIES,ZOOLOGICAL,ACCEPTABLE,SCIENTIFIC,f,,,Dectus,,teremectus,,,{Rossi},{},1793,{},{},,,,,,,,,
+x5,Arthropoda,,PHYLUM,,,SCIENTIFIC,f,,Arthropoda,,,,,,{},{},,{},{},,,,,,,,,

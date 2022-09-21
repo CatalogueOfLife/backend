@@ -1,0 +1,4 @@
+id,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
+1,Pinaceae,,FAMILY,,,SCIENTIFIC,f,,Pinaceae,,,,,,{},{},,{},{},,,,,,,,,
+2,Pinus,,GENUS,,,SCIENTIFIC,f,,Pinus,,,,,,{},{},,{},{},,,,,,,,,
+3,Pinus alba,,SPECIES,,,SCIENTIFIC,f,,,Pinus,,alba,,,{},{},,{},{},,,,,,,,,

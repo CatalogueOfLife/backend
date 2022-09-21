@@ -80,15 +80,22 @@ public class Resources {
   }
 
   /**
+   * Copies a classpath resource to a file
+   * @return newly copied file
+   */
+  public static File copy(String resourceName, File destination) throws IOException {
+    try (OutputStream out = new FileOutputStream(destination)) {
+      IOUtils.copy(stream(resourceName), out);
+    }
+    return destination;
+  }
+
+  /**
    * Copies a classpath resource to a tmp file
    * @return newly copied tmp file
    */
   public static File tmpCopy(String resourceName) throws IOException {
-    File f = File.createTempFile("rescopy", "");
-    OutputStream out = new FileOutputStream(f);
-    IOUtils.copy(stream(resourceName), out);
-    out.close();
-    return f;
+    return copy(resourceName, File.createTempFile("rescopy", ""));
   }
   
 }

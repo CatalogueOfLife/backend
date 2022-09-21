@@ -545,7 +545,7 @@ public class InterpreterBase {
           ids.add(id);
         } catch (IllegalArgumentException e) {
           issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCHEME);
-          LOG.info("Illegal identifier: {}", altID, e);
+          ids.add(new Identifier(Identifier.Scheme.LOCAL, altID));
         }
       }
       return ids;

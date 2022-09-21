@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.TestDataGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Datasets;
@@ -30,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 public class UsageMatcherGlobalTest {
 
   public final static PgSetupRule pg = new PgSetupRule();
-  public final static TestDataRule dataRule = TestDataRule.matching();
+  public final static TestDataRule dataRule = TestDataGenerator.matching();
   public final static NameMatchingRule matchingRule = new NameMatchingRule();
   final int datasetKey = dataRule.testData.key;
 

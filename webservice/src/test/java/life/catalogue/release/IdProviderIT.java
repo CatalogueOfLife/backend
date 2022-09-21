@@ -11,6 +11,7 @@ import life.catalogue.db.mapper.*;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.SqlSession;
@@ -27,7 +28,7 @@ public class IdProviderIT {
     Map.of(
     "distribution", Map.of("gazetteer", Gazetteer.ISO, "reference_id", "Flade2008"),
       "sector", Map.of("created_by", 100, "modified_by", 100)
-    ),3,11,12,13);
+    ), Set.of(3,11,12,13));
   final int projectKey = PROJECT_DATA.key;
 
   @ClassRule
