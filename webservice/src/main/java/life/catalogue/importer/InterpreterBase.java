@@ -539,11 +539,9 @@ public class InterpreterBase {
     if (!StringUtils.isBlank(idsRaw)) {
       List<Identifier> ids = new ArrayList<>();
       for (String altID : SPLIT_COMMA.split(idsRaw)) {
-        try {
-          var id = Identifier.parse(altID);
-          ids.add(id);
-        } catch (IllegalArgumentException e) {
-          ids.add(new Identifier(Identifier.Scope.LOCAL, altID));
+        var id = Identifier.parse(altID);
+        ids.add(id);
+        if (id.isLocal()) {
           issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCOPE);
         }
       }

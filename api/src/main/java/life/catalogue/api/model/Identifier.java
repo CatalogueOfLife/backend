@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import life.catalogue.api.jackson.IdentifierSerde;
 
 import java.util.Objects;
@@ -7,6 +9,8 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import org.apache.commons.lang3.StringUtils;
 
 @JsonSerialize(using = IdentifierSerde.Serializer.class)
 @JsonDeserialize(using = IdentifierSerde.Deserializer.class)
@@ -36,6 +40,7 @@ public class Identifier {
   private String id;
 
   public static Identifier parse(String identifier) {
+    identifier = StringUtils.trimToNull(identifier);
     Objects.requireNonNull(identifier, "identifier required");
     // URN, doi or http(s) schemes can be dois - prefer those
     if (DOI.PARSER.matcher(identifier).find() || DOI.HTTP.matcher(identifier).find()) {
@@ -46,11 +51,11 @@ public class Identifier {
       }
     }
 
-    var m = SCOPE_PARSER.matcher(identifier.trim());
+    var m = SCOPE_PARSER.matcher(identifier);
     if (m.find()) {
       return new Identifier(m.group(1), m.group(2));
     } else {
-      throw new IllegalArgumentException("A colon delimited scope is required");
+      return new Identifier(Scope.LOCAL, identifier);
     }
   }
 
@@ -70,6 +75,11 @@ public class Identifier {
   public Identifier(DOI doi) {
     this.scope = Scope.DOI.prefix();
     this.id = doi.getDoiName();
+  }
+
+  @JsonIgnore
+  public boolean isLocal() {
+    return Objects.equals(scope, Scope.LOCAL.prefix());
   }
 
   public String getScope() {
