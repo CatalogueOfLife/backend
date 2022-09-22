@@ -503,13 +503,16 @@ public class CsvReader {
   }
 
   public Optional<Path> logo() {
-    List<Path> sources = Lists.newArrayList(folder);
+    List<Path> sources = Lists.newArrayList();
+    sources.add(folder);
     if (subfolder != null) {
       sources.add(folder.resolve(subfolder));
     }
     for (Path p : sources) {
       Path logo = p.resolve(LOGO_FILENAME);
-      if (Files.exists(logo)) return Optional.of(logo);
+      if (Files.exists(logo)) {
+        return Optional.of(logo);
+      }
     }
     return Optional.empty();
   }
