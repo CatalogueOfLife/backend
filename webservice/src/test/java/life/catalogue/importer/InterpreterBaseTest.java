@@ -65,7 +65,7 @@ public class InterpreterBaseTest {
     assertFalse(issues.hasIssues());
 
     resp = ib.interpretIdentifiers("Poa_annua", issues);
-    assertEquals(List.of(), resp);
+    assertEquals(List.of(new Identifier(Identifier.Scope.LOCAL, "Poa_annua")), resp);
     assertTrue(issues.hasIssues());
     assertTrue(issues.hasIssue(Issue.IDENTIFIER_WITHOUT_SCOPE));
   }
