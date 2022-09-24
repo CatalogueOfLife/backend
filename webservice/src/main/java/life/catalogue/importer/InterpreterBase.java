@@ -14,6 +14,7 @@ import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -527,12 +528,22 @@ public class InterpreterBase {
       // finally update the scientificName with the canonical form if we can
       pnu.getName().rebuildScientificName();
 
+      // look for irregularities and flag issues
+      if (pnu.getName().hasAuthorship()) {
+        verifyYear(pnu.getName().getCombinationAuthorship(), v);
+        verifyYear(pnu.getName().getBasionymAuthorship(), v);
+      }
+
       return Optional.of(pnu);
 
     } catch (InterruptedException e) {
       // interpreters are free to throw the runtime equivalent
       throw new InterruptedRuntimeException(e.getMessage());
     }
+  }
+
+  private void verifyYear(Authorship authorship, IssueContainer issues) {
+    parseYear(authorship.getYear(), issues);
   }
 
   protected List<Identifier> interpretIdentifiers(String idsRaw, IssueContainer issues) {
