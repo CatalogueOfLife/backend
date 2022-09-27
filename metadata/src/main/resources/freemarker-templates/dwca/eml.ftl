@@ -106,6 +106,7 @@
   <metadata>
    <#if citation?has_content || logo?has_content || source?has_content>
     <gbif>
+      <hierarchyLevel>dataset</hierarchyLevel>
       <@tag name="citation" value=citationText! indent=6 />
       <@tag name="resourceLogoUrl" value=logo! indent=6 />
       <#if source?has_content>

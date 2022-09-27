@@ -63,10 +63,10 @@ import static org.junit.Assert.*;
 public class SectorSyncIT {
   
   final static PgSetupRule pg = new PgSetupRule();
+  final static TestDataRule dataRule = TestDataGenerator.syncs();
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   final static NameMatchingRule matchingRule = new NameMatchingRule();
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
-  final static TestDataRule dataRule = TestDataGenerator.syncs();
 
   @ClassRule
   public final static TestRule classRules = RuleChain
@@ -77,18 +77,24 @@ public class SectorSyncIT {
       .around(syncFactoryRule);
 
   TaxonDao tdao;
+  TestDataRule draftRule;
 
 
   @Before
   public void init () throws IOException, SQLException {
     // reset draft
-    var draftRule = TestDataRule.draft();
+    draftRule = TestDataRule.draft();
     draftRule.initSession();
     draftRule.truncateDraft();
     draftRule.loadData();
     // rematch draft
     matchingRule.rematch(draftRule.testData.key);
     tdao = syncFactoryRule.getTdao();
+  }
+
+  @After
+  public void after () throws IOException, SQLException {
+    draftRule.getSqlSession().close();
   }
 
   public static NameUsageBase getByName(int datasetKey, Rank rank, String name) {
@@ -593,6 +599,7 @@ public class SectorSyncIT {
   }
 
   @Test
+  @Ignore("Work in progress")
   public void testMerge() throws Exception {
     print("cat0.txt");
     //print(datasetKey(0, DataFormat.COLDP));

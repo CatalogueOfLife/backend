@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A junit test rule that sets up a new in memory names index and a sync factory.
- * This rule requires that the PgSetupRule was run before!
+ * This rule requires that the PgSetupRule and TreeRepoRule was run before!
  */
 public class SyncFactoryRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(SyncFactoryRule.class);

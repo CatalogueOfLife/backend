@@ -24,7 +24,8 @@ import java.util.stream.Collectors;
  */
 public enum NomRelType {
   SPELLING_CORRECTION(true, null, null,
-    "The name is a spelling correction, called emendation in zoology, of the related name having the same type. " +
+    "Is Spelling Correction of."
+    + "The name is a spelling correction, called emendation in zoology, of the related name having the same type. " +
     "Intentional changes in the original spelling of an available name, whether justified or unjustified. " +
     "The binomial authority remains unchanged. Valid emendations include changes made to correct: " +
     " a) typographical errors in the original work describing the species, " +
@@ -45,18 +46,21 @@ public enum NomRelType {
     "these errors generally have no further formal standing."),
   
   BASIONYM(true, NomStatus.ESTABLISHED, NomStatus.ESTABLISHED,
-    "The name has a basionym and therefore is either a recombination (combinatio nova, comb. nov.) of the name pointed to " +
+    "Has Basionym."
+    + "The name has a basionym and therefore is either a recombination (combinatio nova, comb. nov.) of the name pointed to " +
       "(and the name pointed to is not, itself, a recombination), or a change in rank (status novus, stat. nov.)."),
   
   BASED_ON(true, NomStatus.ESTABLISHED, NomStatus.NOT_ESTABLISHED,
-    "The name is the validation of a name that was not fully published before. " +
+    "Is Based On."
+    + "The name is the validation of a name that was not fully published before. " +
       "Covers the use of ex in botanical author strings. " +
 
       "ICN Art. 46.4: e.g. if this name object represents G. tomentosum Nutt. ex Seem. " +
       "then the related name should be G. tomentosum Nutt."),
 
   REPLACEMENT_NAME(true, NomStatus.ESTABLISHED, NomStatus.UNACCEPTABLE,
-    "The name is a replacement for the homotypic related name. Also called 'nomen novum' or 'avowed substitute'." +
+    "Is Replacement Name for."
+    + "The name is a replacement for the homotypic related name. Also called 'nomen novum' or 'avowed substitute'." +
       "In zoology this is called a \"new replacement name\" or \"new substitute name\" and is easily confused with just \"replacement name\"." +
 
       "ICN: Article 7.3" +
@@ -64,7 +68,8 @@ public enum NomRelType {
       "ICZN: Article 60.3, 67.8, 72.7"),
 
   CONSERVED(null, NomStatus.CONSERVED, NomStatus.REJECTED,
-    "The name or spelling is conserved / protected against the related name " +
+    "Is Conserved Over."
+    + "The name or spelling is conserved / protected against the related name " +
       "or the related name is suppressed / rejected in favor of the current name." +
 
       "A spelling which has been conserved relates two homotypic names, otherwise " +
@@ -77,7 +82,8 @@ public enum NomRelType {
       "or suppression via plenary power Article 81."),
 
   LATER_HOMONYM(false, NomStatus.UNACCEPTABLE, NomStatus.ESTABLISHED,
-    "The name has the same spelling as the related name " +
+    "Is Later Homonym of."
+    + "The name has the same spelling as the related name " +
       "but was published later and is based on a different type. " + 
       "The other, earlier name has priority (unless conserved or sanctioned). Called a junior homonym in zoology." +
 
@@ -94,7 +100,8 @@ public enum NomRelType {
       "ICZN: Chapter 12, Article 52."),
 
   SUPERFLUOUS(true, NomStatus.UNACCEPTABLE, NomStatus.ESTABLISHED,
-    "This name was superfluous at its time of publication, " +
+    "Is Superfluous."
+    + "This name was superfluous at its time of publication, " +
       "i. e. it was based on the same type as the related, previously published name (ICN article 52). " +
       "The superfluous name is available but illegitimate." +
 
@@ -102,11 +109,13 @@ public enum NomRelType {
       "Zoology: unnecessary substitute name"),
   
   HOMOTYPIC(true, null, null,
-    "A relation indicating two homotypic names, i.e. objective or nomenclatural synonymy, but not further specifying why."),
+    "Is Homotypic With."
+    + "A relation indicating two homotypic names, i.e. objective or nomenclatural synonymy, but not further specifying why."),
   
   TYPE(null, null, null,
-    "This name is the type name (species/genus) for the related higher ranked name. " +
-      "The name should be the original combination, i.e. basionym, if subsequent recombinations exist.");
+    "HasTypeName."
+    + "This higher ranked name is typified by the related (species/genus) name. " +
+      "The related name should be the original combination, i.e. basionym, if subsequent recombinations exist.");
 
 
   public static final Set<NomRelType> HOMOTYPIC_RELATIONS = Arrays.stream(values())

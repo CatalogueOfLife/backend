@@ -138,6 +138,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       String resource = "test-data/" + testDataName.toLowerCase() + "/dataset.csv";
       var in = TestDataRule.class.getClassLoader().getResourceAsStream(resource);
       var keys = new HashSet<Integer>();
+      keys.add(Datasets.COL); // always there!
       if (in != null) {
         // requires dataset key to be the first column!
         CSVUtils.parse(in,1).forEach(d -> keys.add(Integer.valueOf(d.get(0))));
@@ -330,12 +331,17 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public void truncateDraft() throws SQLException {
     LOG.info("Truncate draft partition tables");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
+      for (String t : Lists.reverse(DatasetPartitionMapper.PROJECT_TABLES)){
+        st.execute("DELETE FROM " + t + " WHERE dataset_key=" + Datasets.COL);
+      };
+      st.execute("DELETE FROM name_match WHERE dataset_key=" + Datasets.COL);
+      session.getConnection().commit();
       for (String t : Lists.reverse(DatasetPartitionMapper.TABLES)){
         st.execute("DELETE FROM " + t + " WHERE dataset_key=" + Datasets.COL);
       };
       session.getConnection().commit();
-      for (String t : new String[]{"name_match", "sector_import", "sector"}){
-        st.execute("DELETE FROM " + t);
+      for (String t : new String[]{"sector_import", "sector"}){
+        st.execute("DELETE FROM " + t + " WHERE dataset_key=" + Datasets.COL);
       };
       session.getConnection().commit();
     }

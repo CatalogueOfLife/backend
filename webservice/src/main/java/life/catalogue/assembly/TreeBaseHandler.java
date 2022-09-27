@@ -56,7 +56,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   // tracker
   protected final Set<String> ignoredTaxa = new HashSet<>(); // usageIDs of skipped accepted names only
   // counter
-  protected final Map<IgnoreReason, Integer> ignoredCounter = new HashMap<>();
+  protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
   private final Map<String, String> refIds = new HashMap<>();
   protected int sCounter = 0;
   protected int tCounter = 0;
@@ -256,7 +256,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   protected void persistMatch(Name n) {
     if (n.getNamesIndexId() != null) {
-      session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId(), n.getNamesIndexType());
+      batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId(), n.getNamesIndexType());
     }
   }
 
