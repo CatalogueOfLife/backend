@@ -1,7 +1,5 @@
 package life.catalogue;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.DataFormat;
@@ -9,13 +7,14 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.Resources;
-import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.importer.PgImportRule;
 import life.catalogue.postgres.PgCopyUtils;
+
+import org.gbif.nameparser.api.NomCode;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,9 +25,6 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.nameparser.api.NomCode;
-
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;

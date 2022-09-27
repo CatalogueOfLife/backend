@@ -44,7 +44,7 @@ import static org.junit.Assert.assertFalse;
 /**
  * This test needs access to http://rs.gbif.org/datasets/dsmz.zip !!!
  */
-//@Ignore
+@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerLiveTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerLiveTest.class);

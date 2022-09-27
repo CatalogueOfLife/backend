@@ -61,10 +61,6 @@ public class TestDataGeneratorRuleTest {
       assertNotNull(dm.get(key));
       nm.list(key, new Page());
     }
-    if (data.key != null) {
-      List<Name> list = nm.list(data.key, new Page());
-      assertTrue(list.size() > 0);
-    }
     System.out.println("rule has run fine");
   }
 
