@@ -282,13 +282,15 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
 
   public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, @Nullable Set<Rank> ranks, List<UUID> publisherKeys) {
     int count = 0;
-    for (UUID publisher : publisherKeys) {
-      LOG.info("Retrieve newly published sectors from GBIF publisher {}", publisher);
-      List<Integer> datasetKeys;
-      try (SqlSession session = factory.openSession(true)) {
-        datasetKeys = session.getMapper(DatasetMapper.class).keysByPublisher(publisher);
+    if (publisherKeys != null) {
+      for (UUID publisher : publisherKeys) {
+        LOG.info("Retrieve newly published sectors from GBIF publisher {}", publisher);
+        List<Integer> datasetKeys;
+        try (SqlSession session = factory.openSession(true)) {
+          datasetKeys = session.getMapper(DatasetMapper.class).keysByPublisher(publisher);
+        }
+        count += createMissingMergeSectors(projectKey, userKey, ranks, datasetKeys);
       }
-      count += createMissingMergeSectors(projectKey, userKey, ranks, datasetKeys);
     }
     return count;
   }
@@ -303,20 +305,22 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
    */
   public int createMissingMergeSectors(int projectKey, int userKey, @Nullable Set<Rank> ranks, List<Integer> datasetKeys) {
     int counter = 0;
-    try (SqlSession session = factory.openSession(true)) {
-      SectorMapper sm = session.getMapper(SectorMapper.class);
-      for (int sourceDatasetKey : datasetKeys) {
-        var existing = sm.listByDataset(projectKey, sourceDatasetKey);
-        if ((existing == null || existing.isEmpty())) {
-          // not yet existing - create a new merge sector!
-          Sector s = new Sector();
-          s.setDatasetKey(projectKey);
-          s.setSubjectDatasetKey(sourceDatasetKey);
-          s.setMode(Sector.Mode.MERGE);
-          s.setRanks(ranks);
-          s.applyUser(userKey);
-          sm.create(s);
-          counter++;
+    if (datasetKeys != null) {
+      try (SqlSession session = factory.openSession(true)) {
+        SectorMapper sm = session.getMapper(SectorMapper.class);
+        for (int sourceDatasetKey : datasetKeys) {
+          var existing = sm.listByDataset(projectKey, sourceDatasetKey);
+          if ((existing == null || existing.isEmpty())) {
+            // not yet existing - create a new merge sector!
+            Sector s = new Sector();
+            s.setDatasetKey(projectKey);
+            s.setSubjectDatasetKey(sourceDatasetKey);
+            s.setMode(Sector.Mode.MERGE);
+            s.setRanks(ranks);
+            s.applyUser(userKey);
+            sm.create(s);
+            counter++;
+          }
         }
       }
     }

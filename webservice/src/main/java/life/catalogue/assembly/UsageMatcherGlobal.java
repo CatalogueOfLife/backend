@@ -98,8 +98,11 @@ public class UsageMatcherGlobal {
   }
 
   SimpleNameWithNidx toSimpleName(NameUsageBase nu) {
-    var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu);
-    return new SimpleNameWithNidx(nu, canonNidx.getId());
+    if (nu != null) {
+      var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu);
+      return new SimpleNameWithNidx(nu, canonNidx == null ? null : canonNidx.getId());
+    }
+    return null;
   }
 
   /**
