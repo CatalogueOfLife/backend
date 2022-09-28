@@ -1,32 +1,35 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.db.SectorProcessable;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.validation.Validator;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
+  private final static Set<Rank> PUBLISHER_SECTOR_RANKS = Set.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM);
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
   private final NameUsageIndexService indexService;
@@ -266,4 +269,57 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
+  public int createMissingMergeSectorsForProject(int projectKey, int userKey) {
+    DatasetSettings settings;
+    try (SqlSession session = factory.openSession(true)) {
+      settings = session.getMapper(DatasetMapper.class).getSettings(projectKey);
+    }
+    if (settings != null && settings.has(Setting.XRELEASE_SOURCE_PUBLISHER)) {
+      return createMissingMergeSectorsFromPublisher(projectKey, userKey, PUBLISHER_SECTOR_RANKS, settings.getList(Setting.XRELEASE_SOURCE_PUBLISHER));
+    }
+    return 0;
+  }
+
+  public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, @Nullable Set<Rank> ranks, List<UUID> publisherKeys) {
+    int count = 0;
+    for (UUID publisher : publisherKeys) {
+      LOG.info("Retrieve newly published sectors from GBIF publisher {}", publisher);
+      List<Integer> datasetKeys;
+      try (SqlSession session = factory.openSession(true)) {
+        datasetKeys = session.getMapper(DatasetMapper.class).keysByPublisher(publisher);
+      }
+      count += createMissingMergeSectors(projectKey, userKey, ranks, datasetKeys);
+    }
+    return count;
+  }
+
+  /**
+   * Creates a new merge sectors for each given source dataset key unless there is an existing one already.
+   * @param projectKey the project to create sectors in
+   * @param userKey the creator
+   * @param ranks optional set of ranks as sector setting to use
+   * @param datasetKeys list of source dataset keys to check
+   * @return number of newly created sectors
+   */
+  public int createMissingMergeSectors(int projectKey, int userKey, @Nullable Set<Rank> ranks, List<Integer> datasetKeys) {
+    int counter = 0;
+    try (SqlSession session = factory.openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      for (int sourceDatasetKey : datasetKeys) {
+        var existing = sm.listByDataset(projectKey, sourceDatasetKey);
+        if ((existing == null || existing.isEmpty())) {
+          // not yet existing - create a new merge sector!
+          Sector s = new Sector();
+          s.setDatasetKey(projectKey);
+          s.setSubjectDatasetKey(sourceDatasetKey);
+          s.setMode(Sector.Mode.MERGE);
+          s.setRanks(ranks);
+          s.applyUser(userKey);
+          sm.create(s);
+          counter++;
+        }
+      }
+    }
+    return counter;
+  }
 }

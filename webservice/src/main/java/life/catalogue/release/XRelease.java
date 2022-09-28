@@ -5,6 +5,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
@@ -35,8 +36,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
-public class ExtendedRelease extends ProjectRelease {
-  private final static Set<Rank> PUBLISHER_SECTOR_RANKS = Set.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM);
+public class XRelease extends ProjectRelease {
   private final int baseReleaseKey;
   private final SectorImportDao siDao;
   private List<Sector> sectors;
@@ -44,10 +44,10 @@ public class ExtendedRelease extends ProjectRelease {
   private final SyncFactory syncFactory;
   private final Int2IntMap priorities = new Int2IntOpenHashMap(); // sector keys
 
-  ExtendedRelease(SqlSessionFactory factory, SyncFactory syncFactory, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
-                  ImageService imageService,
-                  int releaseKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
-                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
+  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
+           ImageService imageService,
+           int releaseKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
+           DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super("releasing extended", factory, indexService, diDao, dDao, nDao, sDao, imageService, DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE).sourceKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
     this.siDao = siDao;
     this.syncFactory = syncFactory;
@@ -69,35 +69,12 @@ public class ExtendedRelease extends ProjectRelease {
   @Override
   void prepWork() throws Exception {
     createReleaseDOI();
+    int newSectors = sDao.createMissingMergeSectorsForProject(datasetKey, fullUser.getKey());
+    LOG.info("Created {} newly published merge sectors", newSectors);
+
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       sectors = sm.listByPriority(datasetKey, Sector.Mode.MERGE);
-      // add new sectors from dynamic publishers
-      if (settings.has(Setting.XRELEASE_SOURCE_PUBLISHER)) {
-        DatasetMapper dm = session.getMapper(DatasetMapper.class);
-        List<Integer> excludedDatasets = settings.getList(Setting.XRELEASE_EXCLUDE_SOURCE_DATASET);
-        List<UUID> publishers = settings.getList(Setting.XRELEASE_SOURCE_PUBLISHER);
-        for (UUID publisher : publishers) {
-          int counter = 0;
-          LOG.info("Retrieve newly published sectors from GBIF publisher {}", publisher);
-          for (Integer sourceDatasetKey : dm.keysByPublisher(publisher)) {
-            var existing = sm.listByDataset(datasetKey, sourceDatasetKey);
-            if ((existing == null || existing.isEmpty()) && !excludedDatasets.contains(sourceDatasetKey)) {
-              // not yet existing - create a new merge sector!
-              Sector s = new Sector();
-              s.setDatasetKey(datasetKey);
-              s.setSubjectDatasetKey(sourceDatasetKey);
-              s.setMode(Sector.Mode.MERGE);
-              s.setRanks(PUBLISHER_SECTOR_RANKS);
-              s.applyUser(fullUser);
-              sm.create(s);
-              sectors.add(s);
-              counter++;
-            }
-          }
-          LOG.info("Created {} new sectors from GBIF publisher {}", counter, publisher);
-        }
-      }
     }
   }
 

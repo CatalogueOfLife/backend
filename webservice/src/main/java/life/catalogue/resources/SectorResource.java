@@ -15,6 +15,8 @@ import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.annotation.security.RolesAllowed;
@@ -25,6 +27,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,6 +189,12 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   public RematcherBase.MatchCounter rematch(@PathParam("key") int projectKey, SectorRematchRequest req, @Auth User user) {
     req.setDatasetKey(projectKey);
     return SectorRematcher.match(dao, req, user.getKey());
+  }
+
+  @POST
+  @Path("/createFromPublisher")
+  public int createFromPublisher(@PathParam("key") int projectKey, @QueryParam("publisherKeys") List<UUID> publisherKeys, @QueryParam("ranks") Set<Rank> ranks, @Auth User user) throws Exception {
+    return dao.createMissingMergeSectorsFromPublisher(projectKey, user.getKey(), ranks, publisherKeys);
   }
 
 }
