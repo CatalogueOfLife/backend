@@ -15,7 +15,6 @@
 <#list 0..<indent as i> </#list><individualName>
     <@tag name="givenName" value=a.given! indent=indent+2 />
     <@tag name="surName" value=a.family! indent=indent+2 />
-    <@tag name="userId" value=a.orcidAsUrl! indent=indent+2 />
 <#list 0..<indent as i> </#list></individualName>
 </#if>
 <#if a.organization?has_content>
@@ -30,6 +29,9 @@
 </#if>
 <@tag name="electronicMailAddress" value=a.email! indent=indent />
 <@tag name="onlineUrl" value=a.url! indent=indent />
+<#if a.orcid?has_content>
+<#list 0..<indent as i> </#list><userId directory="http://orcid.org/">${a.orcid}</userId>
+</#if>
 </#macro>
 
 <#macro party role agents=[]>
