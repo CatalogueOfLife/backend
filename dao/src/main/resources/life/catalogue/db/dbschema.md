@@ -28,12 +28,12 @@ CREATE TYPE INFOGROUP AS ENUM (
 );
 
 CREATE TABLE verbatim_source_secondary (
-id TEXT NOT NULL,
-dataset_key INTEGER NOT NULL,
-type INFOGROUP NOT NULL,
-source_id TEXT,
-source_dataset_key INTEGER,
-FOREIGN KEY (dataset_key, id) REFERENCES name_usage
+  id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  type INFOGROUP NOT NULL,
+  source_id TEXT,
+  source_dataset_key INTEGER,
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON verbatim_source_secondary (dataset_key, id);
