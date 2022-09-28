@@ -91,6 +91,7 @@ public interface UsageCache {
 
   /**
    * A simple cache backed by an in memory hash map that grows forever.
+   * Really only for tests...
    */
   static UsageCache hashMap() {
     return new UsageCache() {

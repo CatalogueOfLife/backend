@@ -62,10 +62,10 @@ public class UsageMatcherGlobal {
     }
   }
 
-  public UsageMatcherGlobal(NameIndex nameIndex, SqlSessionFactory factory) {
+  public UsageMatcherGlobal(NameIndex nameIndex, UsageCache uCache, SqlSessionFactory factory) {
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
     this.factory = Preconditions.checkNotNull(factory);
-    this.uCache = UsageCache.hashMap();
+    this.uCache = uCache;
     this.groupAnalyzer = new TaxGroupAnalyzer();
   }
 

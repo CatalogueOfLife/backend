@@ -42,7 +42,7 @@ public class SyncFactoryRule extends ExternalResource {
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
     sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
-    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), PgSetupRule.getSqlSessionFactory());
+    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), PgSetupRule.getSqlSessionFactory());
     syncFactory = new SyncFactory(PgSetupRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru());
   }
 

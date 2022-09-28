@@ -35,7 +35,7 @@ import com.google.common.base.Preconditions;
 public class NameIndexMapDBStore implements NameIndexStore {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexMapDBStore.class);
 
-  private File dbFIle;
+  private File dbFile;
   private final DBMaker.Maker dbMaker;
   private final Pool<Kryo> pool;
   private DB db;
@@ -75,10 +75,10 @@ public class NameIndexMapDBStore implements NameIndexStore {
 
   /**
    * @param dbMaker
-   * @param dbFIle the db file if the maker creates a file based db. Slightly defeats the purpose, but we wanna deal with corrupted db files
+   * @param dbFile the db file if the maker creates a file based db. Slightly defeats the purpose, but we wanna deal with corrupted db files
    */
-  public NameIndexMapDBStore(DBMaker.Maker dbMaker, @Nullable File dbFIle) {
-    this.dbFIle = dbFIle;
+  public NameIndexMapDBStore(DBMaker.Maker dbMaker, @Nullable File dbFile) {
+    this.dbFile = dbFile;
     this.dbMaker = dbMaker;
     pool = new NameIndexKryoPool();
   }
@@ -88,9 +88,9 @@ public class NameIndexMapDBStore implements NameIndexStore {
     try {
       db = dbMaker.make();
     } catch (DBException.DataCorruption e) {
-      if (dbFIle != null) {
+      if (dbFile != null) {
         LOG.warn("NamesIndex mapdb was corrupt. Remove and rebuild index from scratch. {}", e.getMessage());
-        dbFIle.delete();
+        dbFile.delete();
         db = dbMaker.make();
       } else {
         throw e;

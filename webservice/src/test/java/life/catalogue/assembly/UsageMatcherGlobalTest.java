@@ -46,7 +46,7 @@ public class UsageMatcherGlobalTest {
 
   @Before
   public void before() {
-    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), PgSetupRule.getSqlSessionFactory());
+    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), PgSetupRule.getSqlSessionFactory());
   }
 
   @Test

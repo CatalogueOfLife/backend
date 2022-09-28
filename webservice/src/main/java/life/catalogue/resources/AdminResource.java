@@ -6,6 +6,7 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
+import life.catalogue.assembly.UsageCacheMapDB;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
@@ -66,7 +67,6 @@ public class AdminResource {
   private final WsServerConfig cfg;
   private final ImageService imgService;
   private final NameUsageIndexService indexService;
-  private final NameIndex ni;
   private final ServerSettings settings = new ServerSettings();
   // managed background processes
   private final IdMap idMap;
@@ -75,25 +75,26 @@ public class AdminResource {
   private final GbifSyncManager gbifSync;
   private final AssemblyCoordinator assembly;
   private final NameIndex namesIndex;
+  private final UsageCacheMapDB usageCache;
   private final JobExecutor exec;
   private final Validator validator;
   private final DatasetDao ddao;
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       NameIndex namesIndex, JobExecutor executor, IdMap idMap, Validator validator) {
+                       UsageCacheMapDB usageCache, JobExecutor executor, IdMap idMap, Validator validator) {
     this.factory = factory;
     this.ddao = ddao;
     this.assembly = assembly;
     this.imgService = imgService;
-    this.ni = ni;
+    this.namesIndex = ni;
     this.cfg = cfg;
     this.downloader = downloader;
     this.indexService = indexService;
     this.gbifSync = gbifSync;
     this.continuousImporter = continuousImporter;
     this.importManager = importManager;
-    this.namesIndex = namesIndex;
+    this.usageCache = usageCache;
     this.exec = executor;
     this.idMap = idMap;
     this.validator = validator;
@@ -103,7 +104,8 @@ public class AdminResource {
     public Boolean maintenance = false;
     public Boolean gbifSync;
     public Boolean scheduler;
-    public Boolean importer; // import manager & names index
+    public Boolean importer; // import manager, names index, idMap & usage cache
+
     @Nullable
     @Min(1)
     public Integer importerThreads;
@@ -210,6 +212,7 @@ public class AdminResource {
       namesIndex.start();
       importManager.start();
       idMap.start();
+      usageCache.start();
     }
   }
 
@@ -217,6 +220,7 @@ public class AdminResource {
     namesIndex.stop();
     importManager.stop();
     idMap.stop();
+    usageCache.stop();
   }
 
   /**
@@ -310,7 +314,7 @@ public class AdminResource {
     if (datasetKeys == null || datasetKeys.isEmpty()) {
       throw new IllegalArgumentException("At least one datasetKey parameter is required");
     } else {
-      return runJob(RematchJob.some(user.getKey(),factory,ni, datasetKeys.stream().mapToInt(i->i).toArray()));
+      return runJob(RematchJob.some(user.getKey(),factory, namesIndex, datasetKeys.stream().mapToInt(i->i).toArray()));
     }
   }
 

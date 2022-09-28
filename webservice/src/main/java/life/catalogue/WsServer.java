@@ -5,6 +5,7 @@ import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.SyncFactory;
+import life.catalogue.assembly.UsageCacheMapDB;
 import life.catalogue.assembly.UsageMatcherGlobal;
 import life.catalogue.cache.CacheFlush;
 import life.catalogue.coldp.ColdpTerm;
@@ -304,7 +305,10 @@ public class WsServer extends Application<WsServerConfig> {
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
     // matcher
-    final var matcher = new UsageMatcherGlobal(ni, getSqlSessionFactory());
+    UsageCacheMapDB uCache = new UsageCacheMapDB(cfg.usageCacheFile);
+    // we do not start up the usage cache automatically, we need to run 2 apps in parallel during deploys!
+    env.lifecycle().manage(ManagedUtils.stopOnly(uCache));
+    final var matcher = new UsageMatcherGlobal(ni, uCache, getSqlSessionFactory());
 
     // DOI
     DoiService doiService;
@@ -362,7 +366,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
-      importManager, ddao, gbifSync, ni, executor, idMap, validator));
+      importManager, ddao, gbifSync, uCache, executor, idMap, validator));
     j.register(new DataPackageResource());
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetDiffResource(dDiff));
