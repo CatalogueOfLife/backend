@@ -79,6 +79,10 @@ public class DatasetInfoCache {
       }
     }
 
+    public boolean isMutable(){
+      return origin == DatasetOrigin.PROJECT;
+    }
+
     public DatasetInfo requireOrigin(DatasetOrigin... origins){
       for (var o : origins) {
         if (o == this.origin) return this;

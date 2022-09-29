@@ -209,6 +209,11 @@
     VALUES (nextval('sector_${datasetKey}_id_seq'), <include refid="PROPS"/>, #{subject.id}, #{createdBy} )
   </insert>
 
+  <insert id="createWithID" parameterType="Sector" useGeneratedKeys="false" keyProperty="id">
+    INSERT INTO sector (id, <include refid="COLS"/>, original_subject_id, created_by )
+    VALUES (#{id}, <include refid="PROPS"/>, #{subject.id}, #{createdBy} )
+  </insert>
+
   <insert id="copyDataset" parameterType="map">
     INSERT INTO sector (id, dataset_key, sync_attempt, dataset_attempt, target_id, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
     SELECT s.id, #{newDatasetKey}, sync_attempt, dataset_attempt, coalesce(<if test="mapIds">m.id2,</if>s.target_id), <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by

@@ -61,7 +61,10 @@ public class NameUsageProcessor {
    * @param s the sector to process
    */
   public void processSector(Sector s, Consumer<NameUsageWrapper> consumer) {
-    if (s.getTarget().getId() == null) {
+    if (s.getTarget() == null) {
+      LOG.warn("Processing sector {} with no target not yet supported. Search index will likely be out of date!", s.getKey());
+      return;
+    } else if (s.getTarget().getId() == null) {
       LOG.warn("Sector {} with target {} is broken. Do not process", s.getKey(), s.getTarget());
       return;
     }

@@ -68,4 +68,9 @@ public class UsageMatch {
   public DSID<String> asDSID(){
     return DSID.of(datasetKey, usage.getId());
   }
+
+  @Override
+  public String toString() {
+    return String.format("%s [%s] %s", usage, type, datasetKey);
+  }
 }

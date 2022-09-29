@@ -156,6 +156,9 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @Override
   protected void updateBefore(Sector s, Sector old, int user, SectorMapper mapper, SqlSession session) {
     parsePlaceholderRank(s);
+    if (s.getMode() != Sector.Mode.MERGE && s.getTargetID() == null) {
+      throw new IllegalArgumentException(String.format("%s sector %s must have a target", s.getMode(), s.getKey()));
+    }
     requireTaxonIdExists(s.getTargetAsDSID(), session);
     if (s.getPriority() != null && !Objects.equals(s.getPriority(), old.getPriority())) {
       updatePriorities(s, mapper);
@@ -199,7 +202,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
    */
   @Override
   protected boolean updateAfter(Sector obj, Sector old, int user, SectorMapper mapper, SqlSession session, boolean keepSessionOpen) {
-    if (old.getTarget() == null || obj.getTarget() == null || !Objects.equals(old.getTarget().getId(), obj.getTarget().getId())) {
+    if (!Objects.equals(old.getTargetID(), obj.getTargetID())) {
       incSectorCounts(session, obj, 1);
       incSectorCounts(session, old, -1);
     }
@@ -208,8 +211,8 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       // loop over sector root taxa as the old target id might be missing or even wrong. Only trust real usage data!
       final DSID<String> key = DSID.of(obj.getDatasetKey(), null);
       for (SimpleName sn : session.getMapper(NameUsageMapper.class).sectorRoot(obj)) {
-        // obj.getTarget().getId() must exist as we validated this in the before update method
-        tDao.updateParent(session, key.id(sn.getId()), obj.getTarget().getId(), sn.getParent(), user);
+        // obj.getTargetID() must exist if not null as we validated this in the before update method
+        tDao.updateParent(session, key.id(sn.getId()), obj.getTargetID(), sn.getParent(), user);
       }
     }
     return false;

@@ -184,7 +184,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
       updateDataset(newDataset);
 
-      LOG.info("Use last release {} for metadata of {}", prevReleaseKey, newDatasetKey);
+      LOG.info("Use previous release {} for DOI metadata of {}", prevReleaseKey, newDatasetKey);
       var attr = doiUpdater.buildReleaseMetadata(datasetKey, false, newDataset, prevReleaseKey);
       LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
       doiService.createSilently(attr);

@@ -1,10 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.User;
+import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -117,7 +114,7 @@ public class XRelease extends ProjectRelease {
   @Override
   <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session) {
     int count = session.getMapper(mapperClass).copyDataset(baseReleaseKey, newDatasetKey, false);
-    LOG.info("Copied {} {}s", count, entity.getSimpleName());
+    LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), baseReleaseKey, newDatasetKey);
   }
 
   /**
@@ -140,14 +137,26 @@ public class XRelease extends ProjectRelease {
     updateState(ImportState.INSERTING);
     int priority = 0;
     for (Sector s : sectors) {
+      // the sector might not have been copied to the xrelease yet - we only copied all sectors from the base release, not the project.
+      // create only if missing
+      try (SqlSession session = factory.openSession(true)) {
+        SectorMapper sm = session.getMapper(SectorMapper.class);
+        if (sm.get(DSID.of(newDatasetKey, s.getId())) == null) {
+          Sector s2 = new Sector(s);
+          s2.setDatasetKey(newDatasetKey);
+          sm.createWithID(s2);
+        }
+      }
       priority = s.getPriority() == null ? priority + 1 : s.getPriority();
       priorities.put((int)s.getId(), priority);
       checkIfCancelled();
       var ss = syncFactory.release(s, newDatasetKey, fullUser);
       ss.run();
-        if (ss.getState().getState() != ImportState.FINISHED){
-          throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
-        }
+      if (ss.getState().getState() != ImportState.FINISHED){
+        throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
+      }
+      // copy sync attempt to local instances as it finished successfully
+      s.setSyncAttempt(ss.getState().getAttempt());
     }
   }
 

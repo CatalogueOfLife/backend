@@ -279,6 +279,19 @@ public class SectorSyncIT {
     assertTree("cat14b.txt");
   }
 
+  @Test
+  public void culexTarget() throws Exception {
+    print(Datasets.COL);
+    print(112);
+
+    NameUsageBase src = getByName(112, Rank.ORDER, "Diptera");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    createSector(Sector.Mode.ATTACH, src, trg);
+
+    syncAll();
+    assertTree("cat14b.txt");
+  }
+
   /**
    * https://github.com/CatalogueOfLife/testing/issues/189
    */

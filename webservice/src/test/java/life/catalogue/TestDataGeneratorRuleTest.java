@@ -1,14 +1,12 @@
 package life.catalogue;
 
-import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
 
-import life.catalogue.release.ExtendedReleaseIT;
+import life.catalogue.release.XReleaseIT;
 
 import life.catalogue.release.IdProviderIT;
 
@@ -35,7 +33,7 @@ public class TestDataGeneratorRuleTest {
       TestDataGenerator.MATCHING,
       TestDataGenerator.SYNCS,
       TestDataGenerator.XCOL,
-      ExtendedReleaseIT.XRELEASE_DATA,
+      XReleaseIT.XRELEASE_DATA,
       IdProviderIT.PROJECT_DATA
     );
     return list.stream().map(t -> new Object[]{t}).collect(Collectors.toList());

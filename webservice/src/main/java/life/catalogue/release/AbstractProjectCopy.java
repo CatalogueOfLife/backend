@@ -259,7 +259,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
 
   <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
     int count = session.getMapper(mapperClass).copyDataset(datasetKey, newDatasetKey, mapIds);
-    LOG.info("Copied {} {}s", count, entity.getSimpleName());
+    LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), datasetKey, newDatasetKey);
   }
 
 }

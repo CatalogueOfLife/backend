@@ -1,5 +1,6 @@
 package life.catalogue.db.tree;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.dao.TaxonCounter;
@@ -16,6 +17,8 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import static life.catalogue.api.exception.NotFoundException.throwNotFoundIfNull;
 
 public class PrinterFactory {
 
@@ -41,11 +44,12 @@ public class PrinterFactory {
   public static <T extends AbstractTreePrinter> T sector(Class<T> clazz, final DSID<Integer> sectorKey, SqlSessionFactory factory, Writer writer) {
     try (SqlSession session = factory.openSession(true)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      return printer(clazz, sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), true, null, null, null, factory, writer);
+      throwNotFoundIfNull(sectorKey,s,Sector.class);
+      return printer(clazz, sectorKey.getDatasetKey(), sectorKey.getId(), s.getTargetID(), true, null, null, null, factory, writer);
     }
   }
 
-  public static <T extends AbstractTreePrinter> T printer(Class<T> clazz, int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+  public static <T extends AbstractTreePrinter> T printer(Class<T> clazz, int datasetKey, @Nullable Integer sectorKey, @Nullable String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
     try {
       return clazz.getConstructor(int.class, Integer.class, String.class, boolean.class, Set.class, Rank.class, TaxonCounter.class, SqlSessionFactory.class, Writer.class)
                   .newInstance(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);

@@ -62,11 +62,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
   public Sector() {
   }
 
+  /**
+   * Deep copy constructor
+   */
   public Sector(Sector other) {
     super(other);
-    this.target = SimpleNameLink.of(other.target);
+    this.target = other.target == null ? null : SimpleNameLink.of(other.target);
     this.subjectDatasetKey = other.subjectDatasetKey;
-    this.subject = SimpleNameLink.of(other.subject);
+    this.subject = other.subject == null ? null : SimpleNameLink.of(other.subject);
     this.originalSubjectId = other.originalSubjectId;
     this.mode = other.mode;
     this.priority = other.priority;
@@ -91,7 +94,15 @@ public class Sector extends DatasetScopedEntity<Integer> {
   public SimpleNameLink getSubject() {
     return subject;
   }
-  
+
+  /**
+   * NPE safe convenience getter to yield the subjects id or null.
+   */
+  @JsonIgnore
+  public String getSubjectID() {
+    return subject == null ? null : subject.getId();
+  }
+
   public void setSubject(SimpleNameLink subject) {
     this.subject = subject;
   }
@@ -171,7 +182,15 @@ public class Sector extends DatasetScopedEntity<Integer> {
   public SimpleNameLink getTarget() {
     return target;
   }
-  
+
+  /**
+   * NPE safe convenience getter to yield the targets id or null.
+   */
+  @JsonIgnore
+  public String getTargetID() {
+    return target == null ? null : target.getId();
+  }
+
   public void setTarget(SimpleNameLink target) {
     this.target = target;
   }

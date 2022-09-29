@@ -18,7 +18,7 @@ import org.junit.rules.TestRule;
 
 import static org.junit.Assert.assertEquals;
 
-public class ExtendedReleaseIT extends ProjectBaseIT {
+public class XReleaseIT extends ProjectBaseIT {
 
   public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13, 1, 2,
     Map.of(

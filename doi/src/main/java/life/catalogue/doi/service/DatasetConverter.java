@@ -121,8 +121,8 @@ public class DatasetConverter {
       attr.setPublisher(d.getPublisher().getName());
     } else {
       // this is required !!!
-      LOG.info("No required publisher given, use COL instead");
-      attr.setPublisher("Catalogue of Life");
+      LOG.info("No required DOI publisher given, use ChecklistBank instead");
+      attr.setPublisher("ChecklistBank");
     }
     // PublicationYear
     if (d.getIssued() != null) {

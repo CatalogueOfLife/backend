@@ -7,12 +7,15 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.Managed;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 
+import life.catalogue.dao.DatasetInfoCache;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.mapdb.DB;
@@ -99,8 +102,9 @@ public class UsageCacheMapDB implements UsageCache, Managed {
     }
 
     for (String dbname : db.getAllNames()) {
-      var store = storeMaker(dbname).open();
-      datasets.put(keyFromDbName(dbname), store);
+      int dkey = keyFromDbName(dbname);
+      var store = storeMaker(dkey).open();
+      datasets.put(dkey, store);
     }
     LOG.info("UsageCache opened with cache for {} datasets", datasets.size());
   }
@@ -120,26 +124,19 @@ public class UsageCacheMapDB implements UsageCache, Managed {
     return Integer.parseInt(dbname.substring(1));
   }
 
-  private Map<String, SimpleNameWithPub> store(int datasetKey) {
-    if (!datasets.containsKey(datasetKey)) {
-      datasets.put(datasetKey, createStore(datasetKey));
-    }
-    return datasets.get(datasetKey);
-  }
-
-  private Map<String, SimpleNameWithPub> createStore(int datasetKey) {
-    LOG.info("Creating new usage cache for dataset {}", datasetKey);
-    return storeMaker(dbname(datasetKey)).create();
-  }
-
-  private DB.HashMapMaker<String, SimpleNameWithPub> storeMaker(String dbname) {
-    return db.hashMap(dbname)
+  private DB.HashMapMaker<String, SimpleNameWithPub> storeMaker(int datasetKey) {
+    String dbname = dbname(datasetKey);
+    var maker = db.hashMap(dbname)
              .keySerializer(Serializer.STRING)
              .valueSerializer(new MapDbObjectSerializer<>(SimpleNameWithPub.class, pool, 128))
              //.counterEnable()
              //.valueInline()
              //.valuesOutsideNodesEnable()
              ;
+    if (DatasetInfoCache.CACHE.info(datasetKey).isMutable()) {
+      maker.expireAfterCreate(1, TimeUnit.HOURS);
+    }
+    return maker;
   }
 
   @Override
@@ -159,7 +156,14 @@ public class UsageCacheMapDB implements UsageCache, Managed {
 
   @Override
   public SimpleNameWithPub put(int datasetKey, SimpleNameWithPub usage) {
-    var store = store(datasetKey);
+    Map<String, SimpleNameWithPub> store;
+    if (datasets.containsKey(datasetKey)) {
+      store = datasets.get(datasetKey);
+    } else {
+      LOG.info("Creating new usage cache for dataset {}", datasetKey);
+      store = storeMaker(datasetKey).create();
+      datasets.put(datasetKey, store);
+    }
     return store.put(usage.getId(), usage);
   }
 

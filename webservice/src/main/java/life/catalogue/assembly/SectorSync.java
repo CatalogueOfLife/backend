@@ -146,7 +146,7 @@ public class SectorSync extends SectorRunnable {
    * so we don't break referential integrity when deleting the sector.
    */
   private void relinkForeignChildren() {
-    final String newParentID = sector.getTarget().getId();
+    final String newParentID = sector.getTargetID(); // can be null !!!
     processForeignChildren((num, sn) -> {
         // remember original parent
         NameUsage parent = num.get(DSID.of(sectorKey.getDatasetKey(), sn.getParent()));
