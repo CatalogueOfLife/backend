@@ -156,7 +156,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @Override
   protected void updateBefore(Sector s, Sector old, int user, SectorMapper mapper, SqlSession session) {
     parsePlaceholderRank(s);
-    if (s.getMode() != Sector.Mode.MERGE && s.getTargetID() == null) {
+    if (s.getMode() != Sector.Mode.MERGE && s.getTarget() == null) {
       throw new IllegalArgumentException(String.format("%s sector %s must have a target", s.getMode(), s.getKey()));
     }
     requireTaxonIdExists(s.getTargetAsDSID(), session);
