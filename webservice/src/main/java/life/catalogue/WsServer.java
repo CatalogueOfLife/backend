@@ -305,7 +305,7 @@ public class WsServer extends Application<WsServerConfig> {
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
     // matcher
-    UsageCacheMapDB uCache = new UsageCacheMapDB(cfg.usageCacheFile);
+    UsageCacheMapDB uCache = new UsageCacheMapDB(cfg.usageCacheFile, true);
     // we do not start up the usage cache automatically, we need to run 2 apps in parallel during deploys!
     env.lifecycle().manage(ManagedUtils.stopOnly(uCache));
     final var matcher = new UsageMatcherGlobal(ni, uCache, getSqlSessionFactory());

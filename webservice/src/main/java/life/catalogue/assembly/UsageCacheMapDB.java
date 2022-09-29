@@ -44,6 +44,7 @@ public class UsageCacheMapDB implements UsageCache, Managed {
   private final DBMaker.Maker dbMaker;
   private final Pool<Kryo> pool;
   private final File dbFile;
+  private final boolean expireMutable;
   private DB db;
 
   /**
@@ -72,9 +73,11 @@ public class UsageCacheMapDB implements UsageCache, Managed {
 
   /**
    * @param location the db file for storing the values
+   * @param expireMutable if true requires mybatis to be setup and the DatasetInfoCache is used to know when mutable datasets should be expired soon (1h?)
    */
-  public UsageCacheMapDB(File location) throws IOException {
+  public UsageCacheMapDB(File location, boolean expireMutable) throws IOException {
     this.dbFile = location;
+    this.expireMutable = expireMutable;
     if (!location.exists()) {
       FileUtils.forceMkdirParent(location);
       LOG.info("Create persistent usage cache at {}", location.getAbsolutePath());
@@ -103,7 +106,7 @@ public class UsageCacheMapDB implements UsageCache, Managed {
 
     for (String dbname : db.getAllNames()) {
       int dkey = keyFromDbName(dbname);
-      var store = storeMaker(dkey).open();
+      var store = storeMaker(dkey, expireMutable).open();
       datasets.put(dkey, store);
     }
     LOG.info("UsageCache opened with cache for {} datasets", datasets.size());
@@ -124,7 +127,7 @@ public class UsageCacheMapDB implements UsageCache, Managed {
     return Integer.parseInt(dbname.substring(1));
   }
 
-  private DB.HashMapMaker<String, SimpleNameWithPub> storeMaker(int datasetKey) {
+  private DB.HashMapMaker<String, SimpleNameWithPub> storeMaker(int datasetKey, boolean expireMutable) {
     String dbname = dbname(datasetKey);
     var maker = db.hashMap(dbname)
              .keySerializer(Serializer.STRING)
@@ -133,7 +136,7 @@ public class UsageCacheMapDB implements UsageCache, Managed {
              //.valueInline()
              //.valuesOutsideNodesEnable()
              ;
-    if (DatasetInfoCache.CACHE.info(datasetKey).isMutable()) {
+    if (expireMutable && DatasetInfoCache.CACHE.info(datasetKey).isMutable()) {
       maker.expireAfterCreate(1, TimeUnit.HOURS);
     }
     return maker;
@@ -161,7 +164,7 @@ public class UsageCacheMapDB implements UsageCache, Managed {
       store = datasets.get(datasetKey);
     } else {
       LOG.info("Creating new usage cache for dataset {}", datasetKey);
-      store = storeMaker(datasetKey).create();
+      store = storeMaker(datasetKey, expireMutable).create();
       datasets.put(datasetKey, store);
     }
     return store.put(usage.getId(), usage);
