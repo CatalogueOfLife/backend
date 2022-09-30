@@ -33,6 +33,12 @@ public interface UsageCache {
 
   void clear();
 
+  /**
+   * @param datasetKey
+   * @param usage with parent property being the ID !!!
+   * @param loader
+   * @return
+   */
   default SimpleNameClassified withClassification(int datasetKey, SimpleNameWithPub usage, Function<DSID<String>, SimpleNameWithPub> loader) {
     SimpleNameClassified sncl = new SimpleNameClassified(usage);
     sncl.setClassification(new ArrayList<>());
@@ -48,11 +54,17 @@ public interface UsageCache {
       p = get(parentKey);
     } else {
       p = loader.apply(parentKey);
-      put(parentKey.getDatasetKey(), p);
+      if (p != null) {
+        put(parentKey.getDatasetKey(), p);
+      } else {
+        LOG.warn("Missing usage {}", parentKey);
+      }
     }
-    classification.add(p);
-    if (p.getParent() != null) {
-      addParents(classification, parentKey.id(p.getParent()), loader);
+    if (p != null) {
+      classification.add(p);
+      if (p.getParent() != null) {
+        addParents(classification, parentKey.id(p.getParent()), loader);
+      }
     }
   }
 

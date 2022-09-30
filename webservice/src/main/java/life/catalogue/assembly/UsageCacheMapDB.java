@@ -159,6 +159,9 @@ public class UsageCacheMapDB implements UsageCache, Managed {
 
   @Override
   public SimpleNameWithPub put(int datasetKey, SimpleNameWithPub usage) {
+    if (usage == null || usage.getId() == null) {
+      throw new IllegalArgumentException("Usage ID required");
+    }
     Map<String, SimpleNameWithPub> store;
     if (datasets.containsKey(datasetKey)) {
       store = datasets.get(datasetKey);
