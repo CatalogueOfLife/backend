@@ -18,6 +18,8 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.ibm.icu.text.Transliterator;
 
+import javax.annotation.Nullable;
+
 public class CatCopy {
   
   // Public so that the ES QMatcher class can us it and be guranteed it transliterates the Q exactly alike.
@@ -40,10 +42,10 @@ public class CatCopy {
    *
    * @return the original source taxon id
    */
-  public static <T extends NameUsageBase> DSID<String> copyUsage(final SqlSession batchSession, final T t, final DSID<String> targetParent, int user,
-                                                              Set<EntityType> include,
-                                                              Function<Reference, String> lookupReference,
-                                                              Function<String, String> lookupByIdReference) {
+  public static <T extends NameUsageBase> DSID<String> copyUsage(final SqlSession batchSession, final T t, @Nullable final DSID<String> targetParent, int user,
+                                                                 Set<EntityType> include,
+                                                                 Function<Reference, String> lookupReference,
+                                                                 Function<String, String> lookupByIdReference) {
     final DSID<String> orig = new DSIDValue<>(t);
     copyName(batchSession, t, targetParent.getDatasetKey(), user, lookupReference);
     

@@ -271,6 +271,7 @@ public class SectorSync extends SectorRunnable {
         throw new NotImplementedException(sector.getMode() + " sectors are not supported");
       }
 
+      LOG.info("Synced {} taxa and {} synonyms from sector {}", state.getTaxonCount(), state.getSynonymCount(), sectorKey);
       LOG.info("Sync name & taxon relations from sector {}", sectorKey);
       treeHandler.copyRelations();
 

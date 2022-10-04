@@ -117,7 +117,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
    * Increases stat counters.
    * @return the simple name instance of the newly created & matched usage with parent being the parentID
    */
-  protected SimpleNameWithNidx create(NameUsageBase u, Usage parent) {
+  protected SimpleNameWithNidx create(NameUsageBase u, @Nullable Usage parent) {
+    if (parent == null) {
+      LOG.warn("Creating new root usage with no parent: {} {}", u.getRank(), u.getLabel());
+    }
     final String origID = u.getId();
     u.setSectorKey(sector.getId());
     u.getName().setSectorKey(sector.getId());
@@ -131,7 +134,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     // copy usage with all associated information. This assigns a new id !!!
-    CatCopy.copyUsage(batchSession, u, targetKey.id(parent.id), user.getKey(), entities, this::lookupReference, this::lookupReference);
+    CatCopy.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user.getKey(), entities, this::lookupReference, this::lookupReference);
     // track source
     VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), origID);
     vm.create(v);
@@ -148,6 +151,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return new SimpleNameWithNidx(u, nm.getCanonicalNameKey());
   }
 
+  static String idOrNull(Usage u) {
+    return u == null ? null : u.id;
+  }
+
   /**
    * If needed creates missing implicit taxa for species or genera.
    * Implicit names are not created for:
@@ -157,7 +164,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
    *
    * @return the parent, either as supplied or the new one if implicit taxa were created
    */
-  protected Usage createImplicit(Usage parent, Taxon taxon) {
+  protected Usage createImplicit(@Nullable Usage parent, Taxon taxon) {
     // figure out if we need to create any implicit taxon
     Name origName = taxon.getName();
     // do only create implicit names if the name is parsed & not provisional
@@ -165,7 +172,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (origName.isParsed() && !origName.isIndetermined() && !taxon.isProvisional()) {
       List<Rank> neededRanks = new ArrayList<>();
       for (Rank r : implicitRanks) {
-        if (parent.rank.higherThan(r) && r.higherThan(origName.getRank())) {
+        if (parent == null || parent.rank.higherThan(r) && r.higherThan(origName.getRank())) {
           neededRanks.add(r);
         }
       }
@@ -221,7 +228,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
         DatasetEntityDao.newKey(t);
         t.setDatasetKey(targetDatasetKey);
         t.setName(n);
-        t.setParentId(parent.id);
+        if (parent != null) {
+          t.setParentId(parent.id);
+        }
         t.setSectorKey(sector.getId());
         t.setOrigin(Origin.IMPLICIT_NAME);
         t.setStatus(TaxonomicStatus.ACCEPTED);

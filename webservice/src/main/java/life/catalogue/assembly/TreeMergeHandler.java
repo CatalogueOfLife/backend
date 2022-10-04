@@ -102,7 +102,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // replace accepted taxa with doubtful ones for all nomenclators and for synonym parents
     // and allow to manually configure a doubtful status
     // http://dev.gbif.org/issues/browse/POR-2780
-    if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL || parent.status.isSynonym())) {
+    if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL || parent != null && parent.status.isSynonym())) {
       nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     }
     if (parent != null && parent.status.isSynonym()) {
@@ -115,11 +115,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (match.isMatch()) {
       update(nu, match);
     } else {
-      if (parent != null) {
-        var sn = create(nu, parent);
-        parents.setMatch(sn);
-        matcher.add(nu);
-      }
+      var sn = create(nu, parent);
+      parents.setMatch(sn);
+      matcher.add(nu);
     }
 
     // commit in batches

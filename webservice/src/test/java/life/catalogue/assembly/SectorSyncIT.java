@@ -239,19 +239,23 @@ public class SectorSyncIT {
     return getClass().getResourceAsStream("/assembly-trees/" + filename);
   }
 
+
   void assertTree(String filename) throws IOException {
-    InputStream resIn = openResourceStream(filename);
-    String expected = UTF8IoUtils.readString(resIn).trim();
+    assertTree(Datasets.COL, openResourceStream(filename));
+  }
+
+  public static void assertTree(int datasetKey, InputStream expectedTree) throws IOException {
+    String expected = UTF8IoUtils.readString(expectedTree).trim();
     
     Writer writer = new StringWriter();
-    PrinterFactory.dataset(TextTreePrinter.class, Datasets.COL, PgSetupRule.getSqlSessionFactory(), writer).print();
+    PrinterFactory.dataset(TextTreePrinter.class, datasetKey, PgSetupRule.getSqlSessionFactory(), writer).print();
     String tree = writer.toString().trim();
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
     
     // compare trees
-    System.out.println("\n*** DRAFT TREE ***");
+    System.out.println("\n*** DATASET "+datasetKey+" TREE ***");
     System.out.println(tree);
-    assertEquals("Assembled tree not as expected", expected, tree);
+    assertEquals("Tree not as expected for dataset " + datasetKey, expected, tree);
   }
   
   
