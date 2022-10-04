@@ -3,21 +3,22 @@ package life.catalogue.release;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
@@ -40,6 +41,7 @@ public class XRelease extends ProjectRelease {
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
   private final Int2IntMap priorities = new Int2IntOpenHashMap(); // sector keys
+  private Taxon incertae;
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
            ImageService imageService,
@@ -86,6 +88,7 @@ public class XRelease extends ProjectRelease {
 
   @Override
   void finalWork() throws Exception {
+    incertae = createIncertaeSedisRoot();
     mergeSectors();
 
     updateState(ImportState.PROCESSING);
@@ -130,6 +133,34 @@ public class XRelease extends ProjectRelease {
     }
   }
 
+  private Taxon createIncertaeSedisRoot() {
+    //TODO: add project setting that allows to reuse an existing incertae sedis root
+    Name n = Name.newBuilder()
+                 .datasetKey(newDatasetKey)
+                 .id(UUID.randomUUID().toString())
+                 .origin(Origin.OTHER)
+                 .type(NameType.PLACEHOLDER)
+                 .scientificName("Incertae Sedis")
+                 .rank(Rank.KINGDOM)
+                 .nomStatus(NomStatus.NOT_ESTABLISHED)
+                 .createdBy(user)
+                 .modifiedBy(user)
+                 .build();
+    Taxon t = new Taxon(n);
+    t.setDatasetKey(newDatasetKey);
+    t.setId(UUID.randomUUID().toString());
+    t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    t.setOrigin(Origin.OTHER);
+    t.setCreatedBy(user);
+    t.setModifiedBy(user);
+
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(NameMapper.class).create(n);
+      session.getMapper(TaxonMapper.class).create(t);
+    }
+    return t;
+  }
+
   /**
    * We do all extended work here, e.g. sector merging
    */
@@ -150,7 +181,7 @@ public class XRelease extends ProjectRelease {
       priority = s.getPriority() == null ? priority + 1 : s.getPriority();
       priorities.put((int)s.getId(), priority);
       checkIfCancelled();
-      var ss = syncFactory.release(s, newDatasetKey, fullUser);
+      var ss = syncFactory.release(s, newDatasetKey, incertae, fullUser);
       ss.run();
       if (ss.getState().getState() != ImportState.FINISHED){
         throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());

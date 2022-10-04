@@ -41,11 +41,13 @@ public class SectorSync extends SectorRunnable {
   private final UsageMatcherGlobal matcher;
   private final boolean project;
   private final int targetDatasetKey; // dataset to sync into
+  private final Taxon incertae;
   private List<SimpleName> foreignChildren;
 
-  SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
-                     NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
-                     Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+  SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, Taxon incertae,
+             SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
+             NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
+             Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, successCallback, errorCallback, user);
     this.project = project;
     this.sid = sid;
@@ -56,6 +58,7 @@ public class SectorSync extends SectorRunnable {
     if (targetDatasetKey != sectorKey.getDatasetKey()) {
       LOG.info("Syncing into release {}", targetDatasetKey);
     }
+    this.incertae = incertae;
   }
   
   @Override
@@ -100,6 +103,16 @@ public class SectorSync extends SectorRunnable {
     } else {
       LOG.debug("Will index merge sector {} at the end of the release. Skip immediate indexing", sectorKey);
     }
+  }
+
+  @Override
+  protected Sector loadSectorAndUpdateDatasetImport(boolean validate) {
+    Sector s = super.loadSectorAndUpdateDatasetImport(validate);
+    if (s.getTargetID() == null && incertae != null) {
+      LOG.debug("Use incertae sedis target {}", incertae);
+      s.setTarget(SimpleNameLink.of(incertae));
+    }
+    return s;
   }
 
   @Override
@@ -221,7 +234,7 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state);
+      return new TreeMergeHandler(targetDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, incertae);
     }
     return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }

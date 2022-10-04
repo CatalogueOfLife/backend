@@ -1,19 +1,14 @@
 package life.catalogue.assembly;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.IgnoreReason;
-import life.catalogue.api.vocab.InfoGroup;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.matching.NameIndex;
 
-import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -30,12 +25,18 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int updCounter = 0; // updates
   private final int subjectDatasetKey;
 
-  TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, User user, Sector sector, SectorImport state) {
+  TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, User user, Sector sector, SectorImport state, Taxon incertae) {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
     this.matcher = matcher;
-    parents = new ParentStack(matcher.toSimpleName(target));
+    if (target == null && incertae != null) {
+      parents = new ParentStack(matcher.toSimpleName(incertae));
+    } else {
+      parents = new ParentStack(matcher.toSimpleName(target));
+    }
     subjectDatasetKey = sector.getSubjectDatasetKey();
   }
+
+
 
   @Override
   public void reset() {

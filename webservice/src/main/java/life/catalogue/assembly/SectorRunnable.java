@@ -181,7 +181,7 @@ abstract class SectorRunnable implements Runnable {
     checkIfCancelled();
   }
   
-  private Sector loadSectorAndUpdateDatasetImport(boolean validate) {
+  protected Sector loadSectorAndUpdateDatasetImport(boolean validate) {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       Sector s = sm.get(sectorKey);
