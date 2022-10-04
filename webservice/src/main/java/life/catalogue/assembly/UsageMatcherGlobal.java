@@ -21,10 +21,7 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -271,6 +268,7 @@ public class UsageMatcherGlobal {
     }
     // count number of equal parent names and pick most matching homonym by comparing canonical names index ids
     Set<Integer> parentCNidx = parents.stream()
+                                      .filter(p -> p.match != null && p.match.getCanonicalId() != null)
                                       .map(p -> p.match.getCanonicalId())
                                       .collect(Collectors.toSet());
     SimpleNameClassified best = homonyms.get(0);
@@ -278,6 +276,7 @@ public class UsageMatcherGlobal {
     for (var hom : homonyms) {
       Set<Integer> cNidx = hom.getClassification().stream()
                                         .map(SimpleNameWithNidx::getCanonicalId)
+                                        .filter(Objects::nonNull)
                                         .collect(Collectors.toSet());
       cNidx.retainAll(parentCNidx);
       if (cNidx.size() > max) {
