@@ -1,5 +1,11 @@
 package life.catalogue.csv;
 
+import com.sun.source.util.TreeScanner;
+import com.univocity.parsers.common.CommonParserSettings;
+import com.univocity.parsers.common.Format;
+
+import com.univocity.parsers.tsv.TsvParserSettings;
+
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.coldp.ColdpTerm;
@@ -171,9 +177,13 @@ public class DwcaReader extends CsvReader {
       throw new SourceInvalidException("No core schema found");
     }
 
-    CsvFormat format = coreSchema().settings.getFormat();
-    LOG.info("Found {} core [delim={} quote={}] and {} extensions",
-        coreRowType, format.getDelimiter(), format.getQuote(), size() - 1);
+    Format format = coreSchema().settings.getFormat();
+    if (format instanceof CsvFormat) {
+      CsvFormat f2 = (CsvFormat) format;
+      LOG.info("Found {} core [csv delim={} quote={}] and {} extensions", coreRowType, f2.getDelimiter(), f2.getQuote(), size() - 1);
+    } else {
+      LOG.info("Found {} core [tsv] and {} extensions", coreRowType, size() - 1);
+    }
   }
   
   @Override
@@ -206,21 +216,22 @@ public class DwcaReader extends CsvReader {
     String enc = attr(parser, "encoding");
     
     // delimiter
-    final CsvParserSettings set = CSV.clone();
+    final CommonParserSettings<?> set;
+    final CsvParserSettings csvSettings = CSV.clone();
     
     String val = unescapeBackslash(attr(parser, "fieldsTerminatedBy"));
-    set.setDelimiterDetectionEnabled(true);
+    csvSettings.setDelimiterDetectionEnabled(true);
     if (val != null) {
       if (val.length() != 1) {
         throw new IllegalArgumentException("fieldsTerminatedBy needs to be a single char");
       } else {
-        set.setDelimiterDetectionEnabled(false);
-        set.getFormat().setDelimiter(val.charAt(0));
+        csvSettings.setDelimiterDetectionEnabled(false);
+        csvSettings.getFormat().setDelimiter(val.charAt(0));
         LOG.debug("Use delimiter {} for {}", StringEscapeUtils.escapeJava(val), rowType);
       }
     }
     val = unescapeBackslash(attr(parser, "fieldsEnclosedBy"));
-    set.setQuoteDetectionEnabled(false);
+    csvSettings.setQuoteDetectionEnabled(false);
     if (val == null) {
       val = String.valueOf('\0');
     }
@@ -228,13 +239,19 @@ public class DwcaReader extends CsvReader {
       throw new IllegalArgumentException("fieldsEnclosedBy needs to be a single char");
     } else {
       LOG.debug("Use quote char {} for {}", val, rowType);
-      set.getFormat().setQuote(val.charAt(0));
+      csvSettings.getFormat().setQuote(val.charAt(0));
     }
     // we ignore linesTerminatedBy
     // Its quite often wrong and people dont really use anything else than \n \r!
-    set.setLineSeparatorDetectionEnabled(true);
-    
-    //setAttrIfExists(parser, "linesTerminatedBy", set.getFormat()::setLineSeparator);
+    csvSettings.setLineSeparatorDetectionEnabled(true);
+
+    // now decide whether we want TSV or CSV parsing
+    if (csvSettings.getFormat().getDelimiter() == '\t' && csvSettings.getFormat().getQuote() == '\0') {
+      set = new TsvParserSettings();
+    } else {
+      set = csvSettings;
+    }
+
     val = attr(parser, "ignoreHeaderLines");
     if (val != null) {
       try {

@@ -1,5 +1,8 @@
 package life.catalogue.importer;
 
+import com.univocity.parsers.csv.CsvFormat;
+import com.univocity.parsers.tsv.TsvParserSettings;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
@@ -21,6 +24,7 @@ import org.gbif.dwc.terms.Term;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -53,7 +57,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
   private int vcounter;
   private Map<Term, AtomicInteger> badTaxonFks = DefaultMap.createCounter();
 
-  public NeoCsvInserter(Path folder, CsvReader reader, NeoDb store, DatasetSettings settings, ReferenceFactory refFactory) {
+  protected NeoCsvInserter(Path folder, CsvReader reader, NeoDb store, DatasetSettings settings, ReferenceFactory refFactory) {
     this.folder = folder;
     this.reader = reader;
     this.store = store;
@@ -61,10 +65,22 @@ public abstract class NeoCsvInserter implements NeoInserter {
     this.refFactory = refFactory;
     // update CSV reader with manual dataset settings if existing
     // see https://github.com/Sp2000/colplus-backend/issues/582
+    boolean isTsv =
+      String.valueOf('\t').equals(settings.getString(Setting.CSV_DELIMITER)) &&
+      settings.get(Setting.CSV_QUOTE) == null;
     for (Schema s : reader.schemas()) {
-      setChar(Setting.CSV_DELIMITER, s.settings.getFormat()::setDelimiter);
-      setChar(Setting.CSV_QUOTE, s.settings.getFormat()::setQuote);
-      setChar(Setting.CSV_QUOTE_ESCAPE, s.settings.getFormat()::setQuoteEscape);
+      if (isTsv) {
+        TsvParserSettings tsv = new TsvParserSettings();
+        tsv.setNumberOfRowsToSkip(s.settings.getNumberOfRowsToSkip());
+        Schema s2 = new Schema(s.files, s.rowType, s.encoding, tsv, s.columns);
+        reader.updateSchema(s2);
+
+      } else {
+        CsvFormat csv = (CsvFormat) s.settings.getFormat();
+        setChar(Setting.CSV_DELIMITER, csv::setDelimiter);
+        setChar(Setting.CSV_QUOTE, csv::setQuote);
+        setChar(Setting.CSV_QUOTE_ESCAPE, csv::setQuoteEscape);
+      }
     }
   }
 
