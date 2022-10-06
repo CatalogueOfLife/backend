@@ -356,9 +356,17 @@ public class CsvReader {
   }
 
   private static AbstractParser<?> newParser(CommonParserSettings<?> cfg) {
+    cfg.setLineSeparatorDetectionEnabled(true);
+    if (cfg instanceof TsvParserSettings) {
+      return new TsvParser((TsvParserSettings)cfg);
+    }
+    return new CsvParser((CsvParserSettings) cfg);
+  }
+
+  private static AbstractParser<?> newParserOLD(CommonParserSettings<?> cfg) {
     return cfg instanceof TsvParserSettings ?
-        new TsvParser((TsvParserSettings) cfg) :
-        new CsvParser((CsvParserSettings) cfg);
+           new TsvParser((TsvParserSettings) cfg) :
+           new CsvParser((CsvParserSettings) cfg);
   }
 
   private Schema buildSchema(Path df, @Nullable String termPrefix) {

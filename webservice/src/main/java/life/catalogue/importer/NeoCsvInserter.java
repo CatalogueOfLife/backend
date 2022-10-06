@@ -1,6 +1,9 @@
 package life.catalogue.importer;
 
+import com.univocity.parsers.common.CommonParserSettings;
+import com.univocity.parsers.csv.Csv;
 import com.univocity.parsers.csv.CsvFormat;
+import com.univocity.parsers.csv.CsvParserSettings;
 import com.univocity.parsers.tsv.TsvParserSettings;
 
 import life.catalogue.api.model.*;
@@ -65,23 +68,38 @@ public abstract class NeoCsvInserter implements NeoInserter {
     this.refFactory = refFactory;
     // update CSV reader with manual dataset settings if existing
     // see https://github.com/Sp2000/colplus-backend/issues/582
-    boolean isTsv =
-      String.valueOf('\t').equals(settings.getString(Setting.CSV_DELIMITER)) &&
-      settings.get(Setting.CSV_QUOTE) == null;
-    for (Schema s : reader.schemas()) {
-      if (isTsv) {
-        TsvParserSettings tsv = new TsvParserSettings();
-        tsv.setNumberOfRowsToSkip(s.settings.getNumberOfRowsToSkip());
-        Schema s2 = new Schema(s.files, s.rowType, s.encoding, tsv, s.columns);
-        reader.updateSchema(s2);
+    if (settings.has(Setting.CSV_DELIMITER) || settings.has(Setting.CSV_QUOTE) || settings.has(Setting.CSV_QUOTE_ESCAPE)) {
+      boolean isTsv =
+        String.valueOf('\t').equals(settings.getString(Setting.CSV_DELIMITER)) &&
+        settings.get(Setting.CSV_QUOTE) == null;
+      for (Schema s : reader.schemas()) {
+        if (isTsv) {
+          if (!s.isTsv()) {
+            updateSchemaSettings(s, new TsvParserSettings());
+          }
 
-      } else {
-        CsvFormat csv = (CsvFormat) s.settings.getFormat();
-        setChar(Setting.CSV_DELIMITER, csv::setDelimiter);
-        setChar(Setting.CSV_QUOTE, csv::setQuote);
-        setChar(Setting.CSV_QUOTE_ESCAPE, csv::setQuoteEscape);
+        } else {
+          CsvFormat csv;
+          if (s.isTsv()) {
+            var set = new CsvParserSettings();
+            updateSchemaSettings(s, set);
+            csv = set.getFormat();
+          } else {
+            csv = (CsvFormat) s.settings.getFormat();
+          }
+
+          setChar(Setting.CSV_DELIMITER, csv::setDelimiter);
+          setChar(Setting.CSV_QUOTE, csv::setQuote);
+          setChar(Setting.CSV_QUOTE_ESCAPE, csv::setQuoteEscape);
+        }
       }
     }
+  }
+
+  private void updateSchemaSettings(Schema old, CommonParserSettings<?> settings) {
+    settings.setNumberOfRowsToSkip(old.settings.getNumberOfRowsToSkip());
+    Schema s2 = new Schema(old.files, old.rowType, old.encoding, settings, old.columns);
+    reader.updateSchema(s2);
   }
 
   private void setChar(Setting key, Consumer<Character> setter) {
