@@ -1,12 +1,16 @@
 package life.catalogue.parser;
 
-import life.catalogue.api.util.JsonLdReader;
+import com.google.common.base.Strings;
+
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.GeoTime;
-import life.catalogue.api.vocab.GeoTimeFactory;
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.TabReader;
+import life.catalogue.common.text.CSVUtils;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,10 +34,6 @@ import com.google.common.collect.Maps;
 public class GeoTimeParser extends ParserBase<GeoTime> {
   private static final Logger LOG = LoggerFactory.getLogger(GeoTimeParser.class);
   private static final Pattern SLASH = Pattern.compile("^(.+)/(.+)$");
-  public static String INSPIRE_FILE = "INSPIRE-GeochronologicEraValue.en.csv";
-  public static String GERMAN_FILE = "GERMAN-export_20190913_120040.csv";
-  public static String PBDB_FILE = "pbdb_data.csv";
-  
   private static final Pattern STEMMING = Pattern.compile("(I?AN|EN|ANO|IUM|AIDD|AAN)$");
   public static final GeoTimeParser PARSER = new GeoTimeParser();
   
@@ -43,32 +43,15 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
   public GeoTimeParser() {
     super(GeoTime.class);
     addMappings();
-  }
-  
-  private void addMapping(String resFile, int nameCol, int... valCols) {
-    LOG.info("Reading custom geotime mapping {}", resFile);
-    try (TabReader reader = dictReader(resFile)){
+    // manual mapping file
+    try (TabReader reader = dictReader("geotime.csv")){
       for (String[] row : reader) {
-        if (row.length == 0) continue;
-        if (row.length < nameCol) {
-          LOG.info("Ignore invalid geotime mapping, {} line {} with only {} columns", resFile, reader.getContext().currentLine(), row.length);
-          continue;
-        }
-  
-        String name = row[nameCol];
-        if (name != null) {
-          GeoTime time = GeoTime.byName(name);
-          if (time == null) {
-            LOG.info("Ignore invalid geotime mapping for non existing geotime {} on line {}", name, reader.getContext().currentLine());
-          } else {
-            for (int col : valCols) {
-              add(row[col], time, false);
-            }
-          }
-        }
+        if (row.length != 2) continue;
+        GeoTime gt = GeoTime.byName(row[1]);
+        add(row[0], gt, true);
       }
     } catch (IOException e) {
-      LOG.error("Failed to load {} mappings", resFile, e);
+      throw new IllegalStateException("Bad parser file");
     }
   }
   
@@ -83,27 +66,13 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
       // TODO: translate lower/early upper/late
     });
 
-    // add alternatives from main file
-    GeoTimeFactory.readJsonLD().forEach(item -> {
-      final String acceptedName;
-      if (item.isReplacedBy == null) {
-        acceptedName = GeoTimeFactory.removePrefix(item.id);
-      } else {
-        acceptedName = GeoTimeFactory.removePrefix(item.isReplacedBy);
-      }
-      final GeoTime accepted = GeoTime.byName(acceptedName);
-      if (accepted == null) {
-        LOG.warn("Unknown accepted geotime {}", acceptedName);
-      }
-  
-      if (item.prefLabel != null) {
-        for (JsonLdReader.Label label : item.prefLabel) {
-          add(label.value, accepted, false);
-        }
-      }
-      if (item.altLabel != null) {
-        for (JsonLdReader.Label label : item.altLabel) {
-          add(label.value, accepted, false);
+    // add alternatives from CSV file
+    CSVUtils.parse(Resources.stream(GeoTime.ISC_RESOURCE), 1).forEach(row -> {
+      var gt = GeoTime.byName(row.get(0));
+      String labels = row.get(5);
+      if (labels != null) {
+        for (String label : labels.split("\\|")) {
+         add(label, gt, true);
         }
       }
     });
@@ -140,7 +109,36 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
       }
     }
   }
-  
+
+  @Override
+  public Optional<? extends GeoTime> parse(String value) throws UnparsableException {
+    // look for million years as an alternative to names geo times
+    if (value != null) {
+      Pattern MA = Pattern.compile("^([0-9]+(?:[,.][0-9]+)?)\\s*Ma");
+      var m = MA.matcher(value);
+      if (m.find()) {
+        double ma = Double.parseDouble(m.group(1).replaceFirst(",", "."));
+        return findByMa(ma);
+      }
+    }
+    return super.parse(value);
+  }
+
+  private Optional<GeoTime> findByMa(double ma) {
+    double minDuration = Double.MAX_VALUE;
+    GeoTime best = null;
+    for (var gt : GeoTime.TIMES.values()) {
+      System.out.println(String.format("%s: %s - %s", gt.toString(), gt.getStart(), gt.getEnd()));
+      if (gt.includes(ma) && (
+        best == null || gt.duration() != null && minDuration > gt.duration()
+      )) {
+        best = gt;
+        minDuration = ObjectUtils.coalesce(gt.duration(), minDuration);
+      }
+    }
+    return Optional.ofNullable(best);
+  }
+
   @Override
   String normalize(String x) {
     x = super.normalize(x);

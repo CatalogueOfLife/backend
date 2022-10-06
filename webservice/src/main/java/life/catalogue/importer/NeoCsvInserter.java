@@ -1,5 +1,11 @@
 package life.catalogue.importer;
 
+import com.univocity.parsers.common.CommonParserSettings;
+import com.univocity.parsers.csv.Csv;
+import com.univocity.parsers.csv.CsvFormat;
+import com.univocity.parsers.csv.CsvParserSettings;
+import com.univocity.parsers.tsv.TsvParserSettings;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
@@ -21,6 +27,7 @@ import org.gbif.dwc.terms.Term;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -53,7 +60,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
   private int vcounter;
   private Map<Term, AtomicInteger> badTaxonFks = DefaultMap.createCounter();
 
-  public NeoCsvInserter(Path folder, CsvReader reader, NeoDb store, DatasetSettings settings, ReferenceFactory refFactory) {
+  protected NeoCsvInserter(Path folder, CsvReader reader, NeoDb store, DatasetSettings settings, ReferenceFactory refFactory) {
     this.folder = folder;
     this.reader = reader;
     this.store = store;
@@ -61,11 +68,38 @@ public abstract class NeoCsvInserter implements NeoInserter {
     this.refFactory = refFactory;
     // update CSV reader with manual dataset settings if existing
     // see https://github.com/Sp2000/colplus-backend/issues/582
-    for (Schema s : reader.schemas()) {
-      setChar(Setting.CSV_DELIMITER, s.settings.getFormat()::setDelimiter);
-      setChar(Setting.CSV_QUOTE, s.settings.getFormat()::setQuote);
-      setChar(Setting.CSV_QUOTE_ESCAPE, s.settings.getFormat()::setQuoteEscape);
+    if (settings.has(Setting.CSV_DELIMITER) || settings.has(Setting.CSV_QUOTE) || settings.has(Setting.CSV_QUOTE_ESCAPE)) {
+      boolean isTsv =
+        String.valueOf('\t').equals(settings.getString(Setting.CSV_DELIMITER)) &&
+        settings.get(Setting.CSV_QUOTE) == null;
+      for (Schema s : reader.schemas()) {
+        if (isTsv) {
+          if (!s.isTsv()) {
+            updateSchemaSettings(s, new TsvParserSettings());
+          }
+
+        } else {
+          CsvFormat csv;
+          if (s.isTsv()) {
+            var set = new CsvParserSettings();
+            updateSchemaSettings(s, set);
+            csv = set.getFormat();
+          } else {
+            csv = (CsvFormat) s.settings.getFormat();
+          }
+
+          setChar(Setting.CSV_DELIMITER, csv::setDelimiter);
+          setChar(Setting.CSV_QUOTE, csv::setQuote);
+          setChar(Setting.CSV_QUOTE_ESCAPE, csv::setQuoteEscape);
+        }
+      }
     }
+  }
+
+  private void updateSchemaSettings(Schema old, CommonParserSettings<?> settings) {
+    settings.setNumberOfRowsToSkip(old.settings.getNumberOfRowsToSkip());
+    Schema s2 = new Schema(old.files, old.rowType, old.encoding, settings, old.columns);
+    reader.updateSchema(s2);
   }
 
   private void setChar(Setting key, Consumer<Character> setter) {

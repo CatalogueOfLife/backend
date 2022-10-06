@@ -1,5 +1,10 @@
 package life.catalogue.csv;
 
+import com.univocity.parsers.common.*;
+
+import com.univocity.parsers.tsv.TsvParser;
+import com.univocity.parsers.tsv.TsvParserSettings;
+
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.Issue;
@@ -34,10 +39,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.univocity.parsers.common.IterableResult;
-import com.univocity.parsers.common.ParsingContext;
-import com.univocity.parsers.common.ResultIterator;
-import com.univocity.parsers.common.TextParsingException;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
@@ -83,8 +84,9 @@ public class CsvReader {
   private final String subfolder;
   protected final Map<Term, Schema> schemas = Maps.newHashMap();
   protected final MappingInfos mappingFlags = new MappingInfos();
+  // if we encounter tab delimtied files we ignore any quotes!
   private static final Character[] delimiterCandidates = {'\t', ',', ';', '|'};
-  // we also use \0 for hopefully no quote...
+  // we also use \0 for hopefully no quote, but convert the combination of \t and \0 to TsvFormat
   private static final Character[] quoteCandidates = {'"', '\'', '\0'};
   
   /**
@@ -137,7 +139,7 @@ public class CsvReader {
    * Replaces an existing schema by its row type.
    * Can be used to "modify" a schema which is final.
    */
-  protected void updateSchema(Schema s) {
+  public void updateSchema(Schema s) {
     schemas.put(s.rowType, s);
   }
 
@@ -293,8 +295,10 @@ public class CsvReader {
    * and selecting the one with the most columns in a consistent manner
    */
   @VisibleForTesting
-  static CsvParserSettings discoverFormat(List<String> lines) {
-    List<CsvParserSettings> candidates = Lists.newLinkedList();
+  static CommonParserSettings<?> discoverFormat(List<String> lines) {
+    List<CommonParserSettings<?>> candidates = Lists.newLinkedList();
+    // first try with plain TSV without quotes
+    candidates.add(new TsvParserSettings());
     for (char del : delimiterCandidates) {
       for (char quote : quoteCandidates) {
         CsvParserSettings cfg = CSV.clone();
@@ -313,12 +317,12 @@ public class CsvReader {
     candidates.add(univoc);
     
     // find best settings, default to autodetection if all others fail
-    CsvParserSettings best = univoc;
+    CommonParserSettings<?> best = univoc;
     int maxCols = 0;
     int minTotalLength = 0;
-    for (CsvParserSettings cfg : candidates) {
+    for (CommonParserSettings<?> cfg : candidates) {
       try {
-        CsvParser parser = new CsvParser(cfg);
+        AbstractParser<?> parser = newParser(cfg);
         int cols = 0;
         int totalLength = 0;
         for (String[] row : parser.parseAll(new StringReader(LINE_JOIN.join(lines)))) {
@@ -350,7 +354,21 @@ public class CsvReader {
   private static int nullsafeLength(String x) {
     return x == null ? 0 : x.length();
   }
-  
+
+  private static AbstractParser<?> newParser(CommonParserSettings<?> cfg) {
+    cfg.setLineSeparatorDetectionEnabled(true);
+    if (cfg instanceof TsvParserSettings) {
+      return new TsvParser((TsvParserSettings)cfg);
+    }
+    return new CsvParser((CsvParserSettings) cfg);
+  }
+
+  private static AbstractParser<?> newParserOLD(CommonParserSettings<?> cfg) {
+    return cfg instanceof TsvParserSettings ?
+           new TsvParser((TsvParserSettings) cfg) :
+           new CsvParser((CsvParserSettings) cfg);
+  }
+
   private Schema buildSchema(Path df, @Nullable String termPrefix) {
     LOG.debug("Detecting schema for file {}", PathUtils.getFilename(df));
     try {
@@ -374,9 +392,9 @@ public class CsvReader {
           LOG.info("{} contains no tabular data", PathUtils.getFilename(df));
 
         } else {
-          CsvParserSettings set = discoverFormat(lines);
+          CommonParserSettings<?> set = discoverFormat(lines);
           
-          CsvParser parser = new CsvParser(set);
+          AbstractParser<?> parser = newParser(set);
           parser.beginParsing(new StringReader(LINE_JOIN.join(lines)));
           String[] header = parser.parseNext();
           parser.stopParsing();
@@ -602,7 +620,7 @@ public class CsvReader {
       if (fileIter.hasNext()) {
         var p = fileIter.next();
         filename = PathUtils.getFilename(p);
-        CsvParser parser = new CsvParser(s.settings);
+        AbstractParser<?> parser = newParser(s.settings);
 
         try {
           IterableResult<String[], ParsingContext> it = parser.iterate(

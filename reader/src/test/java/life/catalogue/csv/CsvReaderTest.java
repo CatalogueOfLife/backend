@@ -1,5 +1,7 @@
 package life.catalogue.csv;
 
+import com.univocity.parsers.common.CommonParserSettings;
+
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.common.io.Resources;
 
@@ -141,12 +143,15 @@ public class CsvReaderTest {
     //assertFalse(row.isPresent());
   }
   
-  private CsvParserSettings assertFormat(String resource, char delimiter, char quote) throws IOException {
-    CsvParserSettings csv = CsvReader.discoverFormat(
+  private CsvParserSettings assertCsvFormat(String resource, char delimiter, char quote) throws IOException {
+    CommonParserSettings<?> settings = CsvReader.discoverFormat(
         new BufferedReader(new InputStreamReader(ClassLoader.getSystemResource(resource).openStream(), Charsets.UTF_8))
             .lines()
             .collect(Collectors.toList())
     );
+    assertTrue(settings instanceof CsvParserSettings);
+    var csv = (CsvParserSettings) settings;
+
     assertEquals(delimiter, csv.getFormat().getDelimiter());
     assertEquals(quote, csv.getFormat().getQuote());
     return csv;
@@ -154,10 +159,10 @@ public class CsvReaderTest {
   
   @Test
   public void discoverFormat() throws Exception {
-    assertFormat("csv/15-CommonNames.txt", ',', '"');
-    assertFormat("csv/15-References.txt", ',', '"');
-    assertFormat("csv/15-Synonyms.txt", ',', '"');
-    assertFormat("csv/Media.csv", ',', '"');
-    assertFormat("csv/Media-pipe.txt", '|', '"');
+    assertCsvFormat("csv/15-CommonNames.txt", ',', '"');
+    assertCsvFormat("csv/15-References.txt", ',', '"');
+    assertCsvFormat("csv/15-Synonyms.txt", ',', '"');
+    assertCsvFormat("csv/Media.csv", ',', '"');
+    assertCsvFormat("csv/Media-pipe.txt", '|', '"');
   }
 }

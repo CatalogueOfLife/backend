@@ -1,7 +1,14 @@
 package life.catalogue.importer;
 
+import com.univocity.parsers.common.IterableResult;
+import com.univocity.parsers.common.ParsingContext;
+import com.univocity.parsers.tsv.TsvParser;
+import com.univocity.parsers.tsv.TsvParserSettings;
+
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.common.io.CharsetDetectingStream;
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.img.ImageService;
@@ -12,10 +19,7 @@ import life.catalogue.importer.neo.model.RankedName;
 import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.matching.NameIndexFactory;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -76,10 +80,9 @@ public class NormalizerTreeIT {
     //acefIds = IntStream.empty();
     //acefIds = IntStream.of(0);
     //dwcaIds = IntStream.empty();
-    //dwcaIds = IntStream.of(7,31);
+    //dwcaIds = IntStream.of(2);
     //coldpIds = IntStream.empty();
     return Stream.concat(
-        //List.<Object[]>of(new Object[] {DataFormat.DWCA, 17}).stream(),
         acefIds.mapToObj(i -> new Object[] {DataFormat.ACEF, i}),
         Stream.concat(
             dwcaIds.mapToObj(i -> new Object[] {DataFormat.DWCA, i}),
@@ -122,7 +125,7 @@ public class NormalizerTreeIT {
       store.closeAndDelete();
     }
   }
-  
+
   /**
    * Normalizes a dwca from the dwca test resources and checks its printed txt tree against the
    * expected tree

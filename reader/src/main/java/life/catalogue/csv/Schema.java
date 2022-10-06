@@ -1,5 +1,9 @@
 package life.catalogue.csv;
 
+import com.univocity.parsers.common.CommonParserSettings;
+
+import com.univocity.parsers.tsv.TsvParserSettings;
+
 import life.catalogue.common.io.PathUtils;
 
 import org.gbif.dwc.terms.Term;
@@ -23,18 +27,18 @@ public class Schema {
   public final List<Path> files;
   public final Term rowType;
   public final Charset encoding;
-  public final CsvParserSettings settings;
+  public final CommonParserSettings<?> settings;
   public final List<Field> columns;
-  
-  public Schema(List<Path> files, Term rowType, Charset encoding, CsvParserSettings settings, List<Field> columns) {
+
+  public Schema(List<Path> files, Term rowType, Charset encoding, CommonParserSettings<?> settings, List<Field> columns) {
     Preconditions.checkArgument(files != null && !files.isEmpty(), "At least one file is required");
     this.files = files;
     this.rowType = Preconditions.checkNotNull(rowType);
     this.encoding = Preconditions.checkNotNull(encoding);
-    this.settings = Preconditions.checkNotNull(settings);
     this.columns = ImmutableList.copyOf(columns);
+    this.settings = settings;
   }
-  
+
   public static class Field {
     public final Term term;
     public final String value;
@@ -118,13 +122,17 @@ public class Schema {
   public boolean isEmpty() {
     return columns.isEmpty();
   }
-  
+
+  public boolean isTsv() {
+    return settings instanceof TsvParserSettings;
+  }
+
   @Override
   public String toString() {
     return rowType + " ["
         + PathUtils.getFilename(getFirstFile())
         + " "
-        + StringEscapeUtils.escapeJava(String.valueOf(settings.getFormat().getDelimiter()))
+        + StringEscapeUtils.escapeJava(String.valueOf(settings.getFormat()))
         + " "
         + columns.size()
         + "]";

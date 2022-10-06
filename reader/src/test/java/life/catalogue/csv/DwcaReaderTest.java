@@ -1,5 +1,9 @@
 package life.catalogue.csv;
 
+import com.univocity.parsers.csv.CsvFormat;
+
+import com.univocity.parsers.tsv.TsvFormat;
+
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.common.io.Resources;
 
@@ -132,8 +136,8 @@ public class DwcaReaderTest {
   public void dwca41() throws Exception {
     DwcaReader reader = DwcaReader.from(Resources.toPath("dwca/41"));
 
-    var format = reader.coreSchema().settings.getFormat();
-    assertEquals('\t', format.getDelimiter());
+    assertTrue(reader.coreSchema().isTsv());
+    TsvFormat format = (TsvFormat) reader.coreSchema().settings.getFormat();
     assertEquals('\n', format.getNormalizedNewline());
   }
 
@@ -242,7 +246,7 @@ public class DwcaReaderTest {
     
     assertEquals(2, reader.size());
     assertEquals(DwcTerm.Taxon, reader.coreRowType());
-    assertEquals('\0', reader.coreSchema().settings.getFormat().getQuote());
+    assertTrue(reader.coreSchema().isTsv());
     assertEquals(30, reader.coreSchema().size());
     assertTrue(reader.coreSchema().hasTerm(DwcaTerm.ID));
     
