@@ -10,23 +10,22 @@
       <pattern>dataset=%X{dataset} %-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
     </encoder>
   </appender>
-  <!--
-  <appender name="DATASET" class="ch.qos.logback.classic.sift.SiftingAppender">
-    <filter class="life.catalogue.dw.logging.MDCDatasetFilter" />
+  <appender name="JOBLOGS" class="life.catalogue.dw.logging.ClosingSiftingAppender">
+    <filter class="life.catalogue.dw.logging.MDCJobFilter" />
     <discriminator>
-      <key>dataset</key>
+      <key>job</key>
       <defaultValue>unknown</defaultValue>
     </discriminator>
     <sift>
-      <appender name="FILE-${dataset}" class="ch.qos.logback.core.FileAppender">
-        <file>/Users/markus/dataset-${dataset}.log</file>
-        <append>false</append>
+      <appender name="JOBLOG-${job}" class="life.catalogue.dw.logging.GZipFileAppender">
+        <file>/Users/markus/Downloads/joblogs/job-${job}.log.gz</file>
         <encoder>
           <pattern>%d %X{task}: %msg%n</pattern>
         </encoder>
       </appender>
     </sift>
   </appender>
+  <!--
   -->
     <logger name="ch.qos.logback.classic" level="WARN"/>
     <logger name="org.gbif.dwc.terms.TermFactory" level="WARN"/>
@@ -51,7 +50,7 @@
   -->
   <root level="INFO">
     <appender-ref ref="CONSOLE"/>
-    <appender-ref ref="DATASET"/>
+    <appender-ref ref="JOBLOGS"/>
   </root>
 
 </configuration>

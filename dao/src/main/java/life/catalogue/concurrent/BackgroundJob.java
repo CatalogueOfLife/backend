@@ -94,9 +94,9 @@ public abstract class BackgroundJob implements Runnable {
           LOG.error("Failed to finish {} job {}", getClass().getSimpleName(), key, e);
         }
       }
-      LoggingUtils.removeJobMDC();
       // will cause the dataset sifting appender reach end-of-life. It will linger for a few seconds.
       LOG.info(LoggingUtils.FINALIZE_SESSION_MARKER, "About to end job " + key);
+      LoggingUtils.removeJobMDC();
     }
   }
 

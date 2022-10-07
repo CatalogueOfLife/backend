@@ -5,6 +5,7 @@ import life.catalogue.api.model.SimpleNameWithNidx;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Parent stack that expects breadth first iterations which needs to track more than a depth first one.
@@ -28,6 +29,24 @@ public class ParentStack {
 
     public MatchedUsage(SimpleNameWithNidx usage) {
       this.usage = usage;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof MatchedUsage)) return false;
+      MatchedUsage that = (MatchedUsage) o;
+      return Objects.equals(usage, that.usage) && Objects.equals(match, that.match);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(usage, match);
+    }
+
+    @Override
+    public String toString() {
+      return usage + "; match=" + match;
     }
   }
 

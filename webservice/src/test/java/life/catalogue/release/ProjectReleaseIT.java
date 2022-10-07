@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -16,17 +17,21 @@ import java.io.File;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ProjectReleaseIT extends ProjectBaseIT {
+  private static final Logger LOG = LoggerFactory.getLogger(ProjectReleaseIT.class);
 
   NameMatchingRule matchingRule = new NameMatchingRule();
 

@@ -48,7 +48,7 @@ public class JobAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
 
   @Override
   public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, LayoutFactory<ILoggingEvent> layoutFactory, LevelFilterFactory<ILoggingEvent> levelFilterFactory, AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory) {
-    var sift = new SiftingAppender();
+    var sift = new ClosingSiftingAppender();
     sift.setName("job-appender");
     sift.setContext(context);
     sift.addFilter(new MDCJobFilter());
@@ -61,9 +61,8 @@ public class JobAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
     sift.setAppenderFactory(new AppenderFactory<ILoggingEvent>() {
       @Override
       public Appender<ILoggingEvent> buildAppender(Context context, String discriminatingValue) throws JoranException {
-        var fa = new FileAppender<ILoggingEvent>();
-        fa.setAppend(false);
-        fa.setFile(new File(directory, "job-"+discriminatingValue).getAbsolutePath());
+        var fa = new GZipFileAppender<ILoggingEvent>();
+        fa.setFile(new File(directory, "job-" + discriminatingValue + ".log.gz").getAbsolutePath());
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         encoder.setPattern(PATTERN);
         encoder.setContext(context);
