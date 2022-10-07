@@ -811,39 +811,6 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-failsafe-plugin</artifactId>
-          <version>${maven-surefire-plugin.version}</version>
-          <executions>
-            <execution>
-              <id>integration-test</id>
-              <goals>
-                <goal>integration-test</goal>
-              </goals>
-            </execution>
-            <execution>
-              <id>verify</id>
-              <goals>
-                <goal>verify</goal>
-              </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <!-- Use a single forked process to execute all tests See https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html -->
-            <forkCount>1</forkCount>
-            <reuseForks>false</reuseForks>
-            <redirectTestOutputToFile>true</redirectTestOutputToFile>
-            <!-- mem settings may not be necessary but the 3rd arg is. See here: -->
-            <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
-            <!-- And here: https://talk.openmrs.org/t/error-could-not-find-or-load-main-class-org-apache-maven-surefire-booter-forkedbooter/20509 -->
-            <argLine>
-              -Djdk.net.URLClassPath.disableClassPathURLCheck=true
-              --illegal-access=permit
-            </argLine>
-            <runOrder>random</runOrder>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
           <version>${maven-install-plugin.version}</version>
         </plugin>
@@ -943,10 +910,16 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven-surefire-plugin.version}</version>
           <configuration>
+            <!--
+            Run tests in parallel with the same JVM by default for all modules.
+            Some modules run tests that share static information and will override this configuration.
+            See https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html
+            -->
+            <parallel>all</parallel>
+            <useUnlimitedThreads>true</useUnlimitedThreads>
+            <reuseForks>true</reuseForks>
+
             <useSystemClassLoader>false</useSystemClassLoader>
-            <!-- Use a new forked process for each test See https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html -->
-            <forkCount>1</forkCount>
-            <reuseForks>false</reuseForks>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <!-- use default JVM settings <argLine>-Xmx256m</argLine> -->
             <runOrder>random</runOrder>
@@ -958,6 +931,42 @@
               <!-- include regular unit tests -->
               <include>**/*Test.java</include>
             </includes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+          <executions>
+            <execution>
+              <id>integration-test</id>
+              <goals>
+                <goal>integration-test</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>verify</id>
+              <goals>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <!--
+            We have static information in tests se we cannot share the same JVM to run tests
+            See https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html
+            -->
+            <forkCount>4</forkCount>
+            <reuseForks>false</reuseForks>
+            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+            <!-- mem settings may not be necessary but the 3rd arg is. See here: -->
+            <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
+            <!-- And here: https://talk.openmrs.org/t/error-could-not-find-or-load-main-class-org-apache-maven-surefire-booter-forkedbooter/20509 -->
+            <argLine>
+              -Djdk.net.URLClassPath.disableClassPathURLCheck=true
+              --illegal-access=permit
+            </argLine>
+            <runOrder>random</runOrder>
           </configuration>
         </plugin>
         <plugin>

@@ -56,6 +56,7 @@ import com.univocity.parsers.csv.CsvParserSettings;
  */
 public class CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(CsvReader.class);
+  protected static final TsvParserSettings TSV = new TsvParserSettings();
   protected static final CsvParserSettings CSV = new CsvParserSettings();
   private static final CharMatcher SPACE_MATCHER = CharMatcher.whitespace().or(CharMatcher.javaIsoControl());
   public static final String LOGO_FILENAME = "logo.png";
@@ -63,17 +64,20 @@ public class CsvReader {
   public static final String ARCHIVE_SUFFIX = "archive";
 
   static {
-    CSV.detectFormatAutomatically();
     // try with tabs as default if autoconfig fails
+    for (CommonParserSettings<?> common : List.of(TSV, CSV)) {
+      common.setLineSeparatorDetectionEnabled(true);
+      common.setSkipEmptyLines(true);
+      common.setReadInputOnSeparateThread(false);
+      common.trimValues(true);
+      common.setNullValue(null);
+      common.setMaxColumns(256);
+      common.setMaxCharsPerColumn(1024 * 256);
+    }
+    CSV.detectFormatAutomatically();
     CSV.getFormat().setDelimiter('\t');
-    CSV.setSkipEmptyLines(true);
-    CSV.trimValues(true);
-    CSV.setReadInputOnSeparateThread(false);
-    CSV.setNullValue(null);
-    CSV.setMaxColumns(256);
-    CSV.setMaxCharsPerColumn(1024 * 256);
   }
-  
+
   private static final Set<String> SUFFICES = Set.of("csv", "tsv", "tab", "txt", "text", "archive", "dwca");
   private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL|null)\\s*$");
   private static final int STREAM_CHARACTERISTICS = Spliterator.ORDERED | Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.IMMUTABLE;
@@ -298,7 +302,7 @@ public class CsvReader {
   static CommonParserSettings<?> discoverFormat(List<String> lines) {
     List<CommonParserSettings<?>> candidates = Lists.newLinkedList();
     // first try with plain TSV without quotes
-    candidates.add(new TsvParserSettings());
+    candidates.add(TSV.clone());
     for (char del : delimiterCandidates) {
       for (char quote : quoteCandidates) {
         CsvParserSettings cfg = CSV.clone();
@@ -356,17 +360,10 @@ public class CsvReader {
   }
 
   private static AbstractParser<?> newParser(CommonParserSettings<?> cfg) {
-    cfg.setLineSeparatorDetectionEnabled(true);
     if (cfg instanceof TsvParserSettings) {
       return new TsvParser((TsvParserSettings)cfg);
     }
     return new CsvParser((CsvParserSettings) cfg);
-  }
-
-  private static AbstractParser<?> newParserOLD(CommonParserSettings<?> cfg) {
-    return cfg instanceof TsvParserSettings ?
-           new TsvParser((TsvParserSettings) cfg) :
-           new CsvParser((CsvParserSettings) cfg);
   }
 
   private Schema buildSchema(Path df, @Nullable String termPrefix) {

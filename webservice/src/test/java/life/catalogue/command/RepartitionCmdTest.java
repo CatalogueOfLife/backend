@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 public class RepartitionCmdTest extends CmdTestBase {
 
   @ClassRule
-  public static final PgSetupRule pgSetupRule = new PgSetupRule(true);
+  public static final PgSetupRule pgSetupRule = new PgSetupRule();
 
   @Rule
   public final TestDataRule testDataRule = TestDataRule.apple();

@@ -6,6 +6,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -268,8 +269,8 @@ public class UsageMatcherGlobal {
     }
     // count number of equal parent names and pick most matching homonym by comparing canonical names index ids
     Set<Integer> parentCNidx = parents.stream()
-                                      .filter(p -> p.match != null && p.match.getCanonicalId() != null)
-                                      .map(p -> p.match.getCanonicalId())
+                                      .map(p -> p.match == null ? p.usage.getCanonicalId() : p.match.getCanonicalId())
+                                      .filter(Objects::nonNull)
                                       .collect(Collectors.toSet());
     SimpleNameClassified best = homonyms.get(0);
     int max = 0;

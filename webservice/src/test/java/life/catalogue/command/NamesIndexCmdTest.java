@@ -15,7 +15,7 @@ import static org.junit.Assert.assertTrue;
 public class NamesIndexCmdTest extends CmdTestBase {
 
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule(true);
+  public static PgSetupRule pgSetupRule = new PgSetupRule();
 
   @Rule
   public final TestDataRule testDataRule = TestDataRule.apple();

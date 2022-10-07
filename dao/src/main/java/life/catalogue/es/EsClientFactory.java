@@ -1,7 +1,10 @@
 package life.catalogue.es;
 
+import life.catalogue.concurrent.NamedThreadFactory;
+
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;
@@ -29,15 +32,22 @@ public class EsClientFactory {
     }
     LOG.info("Connecting to Elasticsearch using hosts={}; ports={}", cfg.hosts, (cfg.ports == null ? "9200" : cfg.ports));
     return RestClient.builder(httpHosts)
-        .setRequestConfigCallback(
-            new RestClientBuilder.RequestConfigCallback() {
-              @Override
-              public RequestConfig.Builder customizeRequestConfig(RequestConfig.Builder requestConfigBuilder) {
-                return requestConfigBuilder
-                    .setConnectTimeout(cfg.connectTimeout)
-                    .setSocketTimeout(cfg.socketTimeout);
-              }
-            }).build();
+        .setCompressionEnabled(true)
+        .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+          @Override
+          public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+            return httpClientBuilder.setThreadFactory(new NamedThreadFactory("es-client"));
+          }
+        })
+        .setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback() {
+          @Override
+          public RequestConfig.Builder customizeRequestConfig(RequestConfig.Builder requestConfigBuilder) {
+            return requestConfigBuilder
+                .setConnectTimeout(cfg.connectTimeout)
+                .setSocketTimeout(cfg.socketTimeout);
+          }
+        })
+        .build();
   }
 
 }

@@ -36,7 +36,21 @@ public class PgSetupRuleTest {
   @Test
   public void connectionCharset() throws Exception {
     try (Connection c = pgSetupRule.connect()) {
-      PgConfigTest.connectionTest(c);
+      connectionTest(c);
+    }
+  }
+
+  public static void connectionTest(Connection c) throws Exception {
+    try (Statement st = c.createStatement()) {
+      st.execute("SHOW SERVER_ENCODING");
+      st.getResultSet().next();
+      String cs = st.getResultSet().getString(1);
+      assertEquals("Bad server encoding", "UTF8", cs);
+
+      st.execute("SHOW CLIENT_ENCODING");
+      st.getResultSet().next();
+      cs = st.getResultSet().getString(1);
+      assertEquals("Bad client encoding", "UTF8", cs);
     }
   }
 

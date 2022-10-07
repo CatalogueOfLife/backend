@@ -76,6 +76,10 @@ public class TestDataGenerator {
     );
   }
 
+  static class MatchingDataRule extends PgImportRule {
+
+  }
+
   @Test
   public void prepareSyncsData() throws Throwable {
     export("syncs",
