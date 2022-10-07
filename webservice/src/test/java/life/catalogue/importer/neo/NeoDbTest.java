@@ -30,7 +30,7 @@ import static org.junit.Assert.assertNull;
 
 
 public class NeoDbTest {
-  private final static int DATASET_KEY = 77;
+  private final int datasetKey = RandomUtils.randomInt();
   private final static NormalizerConfig cfg = new NormalizerConfig();
   
   NeoDb db;
@@ -42,8 +42,10 @@ public class NeoDbTest {
   }
   
   @Before
+  synchronized
   public void init() throws IOException {
-    db = NeoDbFactory.create(DATASET_KEY, 1, cfg);
+    System.out.println("Use datasetKey "+datasetKey);
+    db = NeoDbFactory.create(datasetKey, 1, cfg);
   }
   
   @After

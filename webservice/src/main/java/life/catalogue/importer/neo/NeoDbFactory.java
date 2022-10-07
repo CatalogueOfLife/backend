@@ -30,7 +30,7 @@ public class NeoDbFactory {
    */
   private static NeoDb persistentDb(NormalizerConfig cfg, int datasetKey, int attempt, boolean eraseExisting) throws IOException {
     final File storeDir = cfg.neoDir(datasetKey);
-    LOG.debug("{} persistent NormalizerStore at {}", eraseExisting ? "Create" : "Open", storeDir);
+    LOG.info("{} persistent NormalizerStore at {}", eraseExisting ? "Create" : "Open", storeDir);
     final File mapDbFile = mapDbFile(storeDir);
     DBMaker.Maker dbMaker = DBMaker
         .fileDB(mapDbFile)
