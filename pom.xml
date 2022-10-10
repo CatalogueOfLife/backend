@@ -173,20 +173,6 @@
       <id>gbif-all</id>
       <url>https://repository.gbif.org/repository/gbif</url>
       <snapshots>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>gbif-thirdparty</id>
-      <url>https://repository.gbif.org/repository/thirdparty</url>
-    </repository>
-    <repository>
-      <id>sonatype-snapshots</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
         <enabled>true</enabled>
         <updatePolicy>always</updatePolicy>
       </snapshots>
