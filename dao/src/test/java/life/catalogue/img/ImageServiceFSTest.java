@@ -35,9 +35,14 @@ public class ImageServiceFSTest {
     FileUtils.deleteDirectory(new File("target/imgtest"));
   }
 
-  BufferedImage logo(String filename) throws IOException {
-    InputStream res = Resources.stream("logos/"+filename);
-    return ImageIO.read(res);
+  InputStream logo(String filename) {
+    return Resources.stream("logos/"+filename);
+  }
+
+  @Test
+  public void svg() throws IOException {
+    var img = ImageServiceFS.read(logo("unite-logo-web.svg"));
+    assertNotNull(img);
   }
 
   @Test
@@ -45,7 +50,7 @@ public class ImageServiceFSTest {
     final int datasetKey = 3;
     final int sourceDatasetKey = 1010;
 
-    srv.putDatasetLogo(sourceDatasetKey, logo("fishbase.png"));
+    srv.putDatasetLogo(sourceDatasetKey, ImageServiceFS.read(logo("fishbase.png")));
     assertNotNull(srv.datasetLogo(sourceDatasetKey, ImgConfig.Scale.ORIGINAL));
     assertNotNull(srv.datasetLogo(sourceDatasetKey, ImgConfig.Scale.SMALL));
     assertNotNull(srv.datasetLogo(sourceDatasetKey, ImgConfig.Scale.MEDIUM));

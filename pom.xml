@@ -50,6 +50,7 @@
     <antlr.version>4.7.2</antlr.version>
     <asm.version></asm.version>
     <assertj.version>3.11.1</assertj.version>
+    <batik.version>1.15</batik.version>
     <citeproc.version>3.0.0-alpha.6</citeproc.version>
     <citeproc-styles.version>2.0.0</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
@@ -94,7 +95,7 @@
     <stax2.version>4.2</stax2.version>
     <text-tree.version>1.0.0</text-tree.version>
     <tika.version>1.22</tika.version>
-    <twelvemonkeys.version>3.7.0</twelvemonkeys.version>
+    <twelvemonkeys.version>3.8.1</twelvemonkeys.version>
     <validation-api.version>2.0.0.Final</validation-api.version>
     <woodstox.version>4.4.1</woodstox.version>
     <imgscalr.version>4.2</imgscalr.version>
@@ -422,6 +423,21 @@
         <groupId>com.twelvemonkeys.imageio</groupId>
         <artifactId>imageio-icns</artifactId>
         <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-webp</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-batik</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xmlgraphics</groupId>
+        <artifactId>batik-transcoder</artifactId>
+        <version>${batik.version}</version>
       </dependency>
 
       <!-- JWT -->
