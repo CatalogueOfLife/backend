@@ -11,10 +11,8 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
-import life.catalogue.importer.PgImportRule;
 
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;

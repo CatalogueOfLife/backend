@@ -1,8 +1,6 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DatasetScoped;
-import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.model.SimpleNameWithPub;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -10,7 +8,6 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.apache.ibatis.session.SqlSession;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

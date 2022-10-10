@@ -32,11 +32,9 @@ public class ProjectDuplicationIT extends ProjectBaseIT {
       DataFormat.ACEF,  5, 6
   );
 
-  @ClassRule
+  @ClassRule // this should run AFTER the ProjectBaseIT.classRules
   public final static TestRule chain = RuleChain
-    .outerRule(pg)
-    .around(dataRule)
-    .around(treeRepoRule)
+    .outerRule(dataRule)
     .around(importRule);
 
   int datasetKey(int key, DataFormat format) {

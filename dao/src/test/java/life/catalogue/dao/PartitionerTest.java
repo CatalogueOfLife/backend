@@ -1,7 +1,6 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 

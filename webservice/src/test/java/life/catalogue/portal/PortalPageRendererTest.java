@@ -14,7 +14,6 @@ import java.nio.file.Path;
 
 import org.apache.http.HttpStatus;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.*;
 

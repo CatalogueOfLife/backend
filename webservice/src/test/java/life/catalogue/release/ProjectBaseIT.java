@@ -39,7 +39,7 @@ public abstract class ProjectBaseIT {
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
 
   @ClassRule
-  public final static TestRule classRules = RuleChain
+  public static TestRule classRules = RuleChain
     .outerRule(pg)
     .around(treeRepoRule)
     .around(matchingRule)
