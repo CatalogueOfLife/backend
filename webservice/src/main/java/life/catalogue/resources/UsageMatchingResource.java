@@ -5,6 +5,7 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.assembly.UsageMatch;
 import life.catalogue.assembly.UsageMatcherGlobal;
 
@@ -13,10 +14,7 @@ import life.catalogue.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 
 import java.util.List;
 
@@ -35,13 +33,12 @@ public class UsageMatchingResource {
                                          @QueryParam("name") String name,
                                          @QueryParam("authorship") String authorship,
                                          @QueryParam("code") NomCode code,
-                                         @QueryParam("rank") Rank rank
+                                         @QueryParam("rank") Rank rank,
+                                         @BeanParam Classification classification
   ) throws InterruptedException {
-    //TODO: get from query params - provider
-    Classification classification = new Classification();
-
     Name n = NameMatchingResource.name(name, authorship, rank, code);
     Taxon t = new Taxon(n);
-    return matcher.match(datasetKey, t, List.of());
+    t.setStatus(TaxonomicStatus.ACCEPTED);
+    return matcher.match(datasetKey, t, classification);
   }
 }

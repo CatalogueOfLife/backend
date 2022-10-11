@@ -16,6 +16,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
@@ -56,12 +57,30 @@ public class UsageMatcherGlobalTest {
       var origNU = num.get(dsid.id("oen3"));
       ((Synonym)origNU).setAccepted(null); // is purposely not populated in matches - parentID is enough
 
-      var match = matcher.match(datasetKey, num.get(dsid), null);
+      var match = matcher.match(datasetKey, num.get(dsid), List.of());
       var origSN = new SimpleNameWithPub(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameWithPub(match.usage), origSN);
 
       matcher.clear();
-      match = matcher.match(datasetKey, num.get(dsid), null);
+      match = matcher.match(datasetKey, num.get(dsid), List.of());
+      assertEquals(new SimpleNameWithPub(match.usage), origSN);
+    }
+  }
+
+  @Test
+  public void matchCl() {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var origNU = num.get(dsid.id("oen5"));
+
+      var cl = Classification.newBuilder()
+         .genus("Oenanthe")
+         .family("Apiaceae")
+         .kingdom("Plantae")
+         .build();
+
+      var match = matcher.match(datasetKey, num.get(dsid), cl);
+      var origSN = new SimpleNameWithPub(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameWithPub(match.usage), origSN);
     }
   }

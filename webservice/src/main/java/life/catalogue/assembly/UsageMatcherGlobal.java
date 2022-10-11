@@ -81,6 +81,36 @@ public class UsageMatcherGlobal {
    *
    * @param datasetKey the target dataset to match against
    * @param nu usage to match. Requires a name instance to exist
+   * @param classification of the usage to be matched
+   */
+  public UsageMatch match(int datasetKey, NameUsageBase nu, Classification classification) {
+    // match classification from top down
+    List<ParentStack.MatchedUsage> parents = new ArrayList<>();
+    for (var sn : classification.asSimpleNames()) {
+      if (sn.getRank() == Rank.SPECIES) continue; // ignore binomials for now
+      Name n = Name.newBuilder()
+                   .datasetKey(datasetKey)
+                   .rank(sn.getRank())
+                   .scientificName(sn.getName())
+                   .uninomial(sn.getName())
+                   .code(nu.getName().getCode())
+                   .build();
+      Taxon t = new Taxon(n);
+      matchNidxIfNeeded(datasetKey, t);
+      var mu = new ParentStack.MatchedUsage(toSimpleName(t));
+      parents.add(mu);
+      var m = match(datasetKey, t, parents);
+      if (m.isMatch()) {
+        mu.match = m.usage;
+      }
+    }
+    return match(datasetKey, nu, parents);
+  }
+
+  /**
+   *
+   * @param datasetKey the target dataset to match against
+   * @param nu usage to match. Requires a name instance to exist
    * @param parents classification of the usage to be matched
    * @return
    */

@@ -6,11 +6,17 @@ import life.catalogue.coldp.DwcUnofficialTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.QueryParam;
 
 import static life.catalogue.common.tax.SciNameNormalizer.removeDagger;
 import static life.catalogue.common.tax.SciNameNormalizer.removeHybridMarker;
@@ -18,7 +24,7 @@ import static life.catalogue.common.tax.SciNameNormalizer.removeHybridMarker;
  *
  */
 public class Classification {
-  public static final List<Rank> RANKS = ImmutableList.of(
+  public static final List<Rank> RANKS = List.of(
       Rank.SUPERKINGDOM,
       Rank.KINGDOM,
       Rank.SUBKINGDOM,
@@ -43,26 +49,47 @@ public class Classification {
   );
   private static final List<Rank> RANKS_REVERSED = ImmutableList.copyOf(Lists.reverse(RANKS));
 
+  @QueryParam("superkingdom")
   private String superkingdom;
+  @QueryParam("kingdom")
   private String kingdom;
+  @QueryParam("subkingdom")
   private String subkingdom;
+  @QueryParam("superphylum")
   private String superphylum;
+  @QueryParam("phylum")
   private String phylum;
+  @QueryParam("subphylum")
   private String subphylum;
+  @QueryParam("superclass")
   private String superclass;
+  @QueryParam("class")
   private String class_;
+  @QueryParam("subclass")
   private String subclass;
+  @QueryParam("superorder")
   private String superorder;
+  @QueryParam("order")
   private String order;
+  @QueryParam("suborder")
   private String suborder;
+  @QueryParam("superfamily")
   private String superfamily;
+  @QueryParam("family")
   private String family;
+  @QueryParam("subfamily")
   private String subfamily;
+  @QueryParam("tribe")
   private String tribe;
+  @QueryParam("subtribe")
   private String subtribe;
+  @QueryParam("genus")
   private String genus;
+  @QueryParam("subgenus")
   private String subgenus;
+  @QueryParam("section")
   private String section;
+  @QueryParam("species")
   private String species;
 
   public Classification() {
@@ -533,6 +560,19 @@ public class Classification {
     return true;
   }
 
+  /**
+   * @return classification starting from highest rank downwards
+   */
+  public List<SimpleName> asSimpleNames() {
+    List<SimpleName> classification = new ArrayList<>();
+    for (Rank r : RANKS) {
+      if (getByRank(r) != null) {
+        classification.add(new SimpleName(null, getByRank(r), r));
+      }
+    }
+    return classification;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -584,5 +624,166 @@ public class Classification {
   private static String clean(String x) {
     return removeHybridMarker(removeDagger(x));
   }
-  
+
+  public static ClassificationBuilder newBuilder() {
+    return new ClassificationBuilder();
+  }
+
+  public static final class ClassificationBuilder {
+    private String superkingdom;
+    private String kingdom;
+    private String subkingdom;
+    private String superphylum;
+    private String phylum;
+    private String subphylum;
+    private String superclass;
+    private String class_;
+    private String subclass;
+    private String superorder;
+    private String order;
+    private String suborder;
+    private String superfamily;
+    private String family;
+    private String subfamily;
+    private String tribe;
+    private String subtribe;
+    private String genus;
+    private String subgenus;
+    private String section;
+    private String species;
+
+    private ClassificationBuilder() {
+    }
+
+    public ClassificationBuilder superkingdom(String superkingdom) {
+      this.superkingdom = superkingdom;
+      return this;
+    }
+
+    public ClassificationBuilder kingdom(String kingdom) {
+      this.kingdom = kingdom;
+      return this;
+    }
+
+    public ClassificationBuilder subkingdom(String subkingdom) {
+      this.subkingdom = subkingdom;
+      return this;
+    }
+
+    public ClassificationBuilder superphylum(String superphylum) {
+      this.superphylum = superphylum;
+      return this;
+    }
+
+    public ClassificationBuilder phylum(String phylum) {
+      this.phylum = phylum;
+      return this;
+    }
+
+    public ClassificationBuilder subphylum(String subphylum) {
+      this.subphylum = subphylum;
+      return this;
+    }
+
+    public ClassificationBuilder superclass(String superclass) {
+      this.superclass = superclass;
+      return this;
+    }
+
+    public ClassificationBuilder class_(String class_) {
+      this.class_ = class_;
+      return this;
+    }
+
+    public ClassificationBuilder subclass(String subclass) {
+      this.subclass = subclass;
+      return this;
+    }
+
+    public ClassificationBuilder superorder(String superorder) {
+      this.superorder = superorder;
+      return this;
+    }
+
+    public ClassificationBuilder order(String order) {
+      this.order = order;
+      return this;
+    }
+
+    public ClassificationBuilder suborder(String suborder) {
+      this.suborder = suborder;
+      return this;
+    }
+
+    public ClassificationBuilder superfamily(String superfamily) {
+      this.superfamily = superfamily;
+      return this;
+    }
+
+    public ClassificationBuilder family(String family) {
+      this.family = family;
+      return this;
+    }
+
+    public ClassificationBuilder subfamily(String subfamily) {
+      this.subfamily = subfamily;
+      return this;
+    }
+
+    public ClassificationBuilder tribe(String tribe) {
+      this.tribe = tribe;
+      return this;
+    }
+
+    public ClassificationBuilder subtribe(String subtribe) {
+      this.subtribe = subtribe;
+      return this;
+    }
+
+    public ClassificationBuilder genus(String genus) {
+      this.genus = genus;
+      return this;
+    }
+
+    public ClassificationBuilder subgenus(String subgenus) {
+      this.subgenus = subgenus;
+      return this;
+    }
+
+    public ClassificationBuilder section(String section) {
+      this.section = section;
+      return this;
+    }
+
+    public ClassificationBuilder species(String species) {
+      this.species = species;
+      return this;
+    }
+
+    public Classification build() {
+      Classification classification = new Classification();
+      classification.setSuperkingdom(superkingdom);
+      classification.setKingdom(kingdom);
+      classification.setSubkingdom(subkingdom);
+      classification.setSuperphylum(superphylum);
+      classification.setPhylum(phylum);
+      classification.setSubphylum(subphylum);
+      classification.setSuperclass(superclass);
+      classification.setClass_(class_);
+      classification.setSubclass(subclass);
+      classification.setSuperorder(superorder);
+      classification.setOrder(order);
+      classification.setSuborder(suborder);
+      classification.setSuperfamily(superfamily);
+      classification.setFamily(family);
+      classification.setSubfamily(subfamily);
+      classification.setTribe(tribe);
+      classification.setSubtribe(subtribe);
+      classification.setGenus(genus);
+      classification.setSubgenus(subgenus);
+      classification.setSection(section);
+      classification.setSpecies(species);
+      return classification;
+    }
+  }
 }
