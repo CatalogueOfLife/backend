@@ -37,7 +37,7 @@ public class DatasetSettingsTest extends SerdeTestBase<DatasetSettings> {
       Setting.DISTRIBUTION_GAZETTEER, Gazetteer.ISO,
       Setting.REMATCH_DECISIONS, true,
       Setting.CSV_DELIMITER, "\t",
-      Setting.CSV_QUOTE, "\"",
+      Setting.CSV_QUOTE, '\"',
       Setting.CSV_QUOTE_ESCAPE, "\\",
       Setting.NOMENCLATURAL_CODE, NomCode.BOTANICAL,
       Setting.IMPORT_FREQUENCY, Frequency.MONTHLY,
@@ -56,6 +56,13 @@ public class DatasetSettingsTest extends SerdeTestBase<DatasetSettings> {
 
     d.put(Setting.NOMENCLATURAL_CODE, NomCode.BOTANICAL);
     assertEquals(NomCode.BOTANICAL, d.getEnum(Setting.NOMENCLATURAL_CODE));
+  }
+
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testIllegalChar() throws Exception {
+    DatasetSettings d = new DatasetSettings();
+    d.put(Setting.CSV_DELIMITER, "<tab>");
   }
 
 }

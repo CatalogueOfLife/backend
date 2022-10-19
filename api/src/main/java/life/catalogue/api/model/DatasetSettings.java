@@ -43,6 +43,10 @@ public class DatasetSettings extends HashMap<Setting, Object> {
     return (String) get(key);
   }
 
+  public Character getChar(Setting key) {
+    return (Character) get(key);
+  }
+
   public Boolean getBool(Setting key) {
     try {
       return (Boolean) get(key);
@@ -89,6 +93,13 @@ public class DatasetSettings extends HashMap<Setting, Object> {
   }
 
   @Override
+  public void putAll(Map<? extends Setting, ?> m) {
+    for (var en : m.entrySet()) {
+      put(en.getKey(), en.getValue());
+    }
+  }
+
+  @Override
   public Object put(Setting key, Object value) {
     if (value == null) {
       return remove(key);
@@ -103,7 +114,15 @@ public class DatasetSettings extends HashMap<Setting, Object> {
 
     } else {
       if (!key.getType().isInstance(value)){
-        throw new IllegalArgumentException("value not of expected type " + key.getType());
+        if (key.getType().equals(Character.class) && value instanceof String) {
+          String str = (String) value;
+          if (str.length()==0) {
+            return remove(key);
+          } else if (str.length()==1) {
+            return super.put(key, str.charAt(0));
+          }
+        }
+        throw new IllegalArgumentException("value for " + key.name() + " not of expected type " + key.getType());
       }
     }
     return super.put(key, value);

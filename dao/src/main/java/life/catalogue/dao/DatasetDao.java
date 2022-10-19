@@ -310,17 +310,20 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     d.setImported(LocalDateTime.now());
     // try with all templates, throwing IAE if bad
     verifySetting(ds, Setting.RELEASE_ALIAS_TEMPLATE, d, null);
+    verifySetting(ds, Setting.RELEASE_VERSION_TEMPLATE, d, null);
   }
 
   static void verifySetting(DatasetSettings ds, Setting setting, Dataset d, Dataset d2) throws IllegalArgumentException {
-    try {
-      if (d2 == null) {
-        CitationUtils.fromTemplate(d, ds.getString(setting));
-      } else {
-        CitationUtils.fromTemplate(d, d2, ds.getString(setting));
+    if (ds.containsKey(setting)) {
+      try {
+        if (d2 == null) {
+          CitationUtils.fromTemplate(d, ds.getString(setting));
+        } else {
+          CitationUtils.fromTemplate(d, d2, ds.getString(setting));
+        }
+      } catch (RuntimeException e) {
+        throw new IllegalArgumentException("Bad template for " + setting + ": " + e.getMessage(), e);
       }
-    } catch (RuntimeException e) {
-      throw new IllegalArgumentException("Bad template for " + setting + ": " + e.getMessage(), e);
     }
   }
 

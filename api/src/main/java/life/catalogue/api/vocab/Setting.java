@@ -20,20 +20,20 @@ public enum Setting {
    * When importing data from text files this overrides
    * the field delimiter character used
    */
-  CSV_DELIMITER(String.class, EXTERNAL),
+  CSV_DELIMITER(Character.class, EXTERNAL),
 
   /**
    * When importing data from text files this overrides
    * the quote character used
    */
-  CSV_QUOTE(String.class, EXTERNAL),
+  CSV_QUOTE(Character.class, EXTERNAL),
 
   /**
    * When importing data from text files this overrides
    * the single character used for escaping quotes inside an already quoted value.
    * For example '"' for CSV
    */
-  CSV_QUOTE_ESCAPE(String.class, EXTERNAL),
+  CSV_QUOTE_ESCAPE(Character.class, EXTERNAL),
 
   /**
    * Overrides the gazetteer standard to use in all distribution interpretations for the dataset.
@@ -161,7 +161,7 @@ public enum Setting {
     this(type, false, origin);
   }
   /**
-   * Use String, Integer, Boolean, LocalDate, URI or a custom col enumeration class
+   * Use String, Character, Integer, Boolean, LocalDate, URI or a custom col enumeration class
    *
    * @param type
    * @param origin
@@ -170,6 +170,7 @@ public enum Setting {
     this.multiple = multiple;
     this.origin = origin;
     Preconditions.checkArgument(type.equals(String.class)
+      || type.equals(Character.class)
       || type.equals(Integer.class)
       || type.equals(Boolean.class)
       || type.equals(LocalDate.class)
