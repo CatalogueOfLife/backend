@@ -80,6 +80,7 @@ public class ImporterResource {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed({Roles.ADMIN})
+  @Path("/batch")
   public int scheduleMultipleExternal(@Auth User user, @Valid DatasetSearchRequest request) {
     // enforce to only schedule external datasets, never projects or releases
     request.setOrigin(List.of(DatasetOrigin.EXTERNAL));
