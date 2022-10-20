@@ -5,9 +5,14 @@ import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
+import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.config.NormalizerConfig;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.common.ws.MoreMediaTypes;
@@ -18,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -26,6 +32,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +48,13 @@ public class ImporterResource {
   private static final Logger LOG = LoggerFactory.getLogger(ImporterResource.class);
   private final ImportManager importManager;
   private final DatasetImportDao dao;
+  private final DatasetDao ddao;
   private final WsServerConfig cfg;
 
-  public ImporterResource(WsServerConfig cfg, ImportManager importManager, DatasetImportDao diDao) {
+  public ImporterResource(WsServerConfig cfg, ImportManager importManager, DatasetImportDao diDao, DatasetDao ddao) {
     this.importManager = importManager;
     dao = diDao;
+    this.ddao = ddao;
     this.cfg = cfg;
   }
   
@@ -66,6 +75,32 @@ public class ImporterResource {
   public ImportRequest schedule(@Auth User user, @Valid ImportRequest request) {
     request.createdBy = user.getKey();
     return importManager.submit(request);
+  }
+
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @RolesAllowed({Roles.ADMIN})
+  public int scheduleMultipleExternal(@Auth User user, @Valid DatasetSearchRequest request) {
+    // enforce to only schedule external datasets, never projects or releases
+    request.setOrigin(List.of(DatasetOrigin.EXTERNAL));
+    final List<Integer> keys = ddao.searchKeys(request);
+    LOG.warn("Scheduling {} dataset imports", keys.size());
+    int counter = 0;
+    for (int key : keys) {
+      try {
+        ImportRequest req = ImportRequest.external(key, user.getKey(), true);
+        req.createdBy = user.getKey();
+
+        importManager.submit(req);
+        counter++;
+
+      } catch (IllegalArgumentException e) {
+        LOG.warn("Queue appears to be full ({}). Stop scheduling after {} imports", importManager.queueSize(), counter, e);
+        break;
+      }
+    }
+    LOG.info("Scheduled {} datasets for importing", counter);
+    return counter;
   }
 
   @POST

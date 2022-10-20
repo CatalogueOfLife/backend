@@ -98,19 +98,27 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey, @Param("page") Page page);
 
   /**
+   * List all dataset keys filtered by a search request.
+   * Contrary to the regular search this will include private datasets.
+   */
+  List<Integer> searchKeys(@Param("req") DatasetSearchRequest request);
+
+  /**
    * List all releases of a project, including deleted and private ones.
    */
   List<Dataset> listReleases(@Param("projectKey") int projectKey);
 
-  default List<Integer> keys(@Param("origin") DatasetOrigin... origin) {
-    return keys(null, origin);
-  }
-
   /**
-   * @param type optional dataset type filter
+   * @param origin optional dataset origin filter, combined with OR if multiple
    * @return list of all dataset keys which have not been deleted
    */
-  List<Integer> keys(@Nullable @Param("type") DatasetType type, @Param("origin") DatasetOrigin... origin);
+  default List<Integer> keys(@Param("origin") DatasetOrigin... origin) {
+    DatasetSearchRequest req = new DatasetSearchRequest();
+    if (origin != null) {
+      req.setOrigin(List.of(origin));
+    }
+    return searchKeys(req);
+  }
 
   /**
    * list datasets which have not been imported before, ordered by date created.

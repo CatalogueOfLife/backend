@@ -372,7 +372,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new ExportResource(exdao, cfg));
     j.register(new ImageResource(imgService));
     j.register(new ImageResourceLegacy(imgService));
-    j.register(new ImporterResource(cfg, importManager, diDao));
+    j.register(new ImporterResource(cfg, importManager, diDao, ddao));
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new MatchingResource(ni));
     j.register(new NamesIndexResource(ni));

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.User;
+import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.concurrent.GlobalBlockingJob;
@@ -43,10 +44,14 @@ public class ImportArticleJob extends GlobalBlockingJob {
 
   @Override
   public void execute() {
+    DatasetSearchRequest dreq = new DatasetSearchRequest();
+    dreq.setType(List.of(DatasetType.ARTICLE));
+    dreq.setOrigin(List.of(DatasetOrigin.EXTERNAL));
+
     final List<Integer> keys;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      keys = dm.keys(DatasetType.ARTICLE, DatasetOrigin.EXTERNAL);
+      keys = dm.searchKeys(dreq);
     }
 
     LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());
