@@ -135,6 +135,7 @@ public class Dataset extends DataEntity<Integer> {
   private Agent publisher;
   @Valid
   private List<Agent> contributor;
+  private List<String> keyword = new ArrayList<>();
   private Integer containerKey;
   private String containerTitle;
   @Valid
@@ -189,6 +190,7 @@ public class Dataset extends DataEntity<Integer> {
     this.editor = other.editor;
     this.publisher = other.publisher;
     this.contributor = other.contributor;
+    this.keyword = other.keyword;
     this.containerKey = other.containerKey;
     this.containerTitle = other.containerTitle;
     this.containerCreator = other.containerCreator;
@@ -254,7 +256,9 @@ public class Dataset extends DataEntity<Integer> {
     if (key != null) {
       builder.id(key.toString());
     }
-
+    if (keyword != null && !keyword.isEmpty()) {
+      builder.keyword(String.join(", ", keyword));
+    }
     if (containerTitle != null) {
       builder
         .type(CSLType.CHAPTER)
@@ -628,6 +632,23 @@ public class Dataset extends DataEntity<Integer> {
     }
   }
 
+  public List<String> getKeyword() {
+    return keyword;
+  }
+
+  public void setKeyword(List<String> keyword) {
+    this.keyword = keyword;
+  }
+
+  public void addKeyword(String keyword) {
+    if (keyword != null) {
+      if (this.keyword == null) {
+        this.keyword = new ArrayList<>();
+      }
+      this.keyword.add(keyword);
+    }
+  }
+
   public String getGeographicScope() {
     return geographicScope;
   }
@@ -780,6 +801,7 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(editor, dataset.editor)
            && Objects.equals(publisher, dataset.publisher)
            && Objects.equals(contributor, dataset.contributor)
+           && Objects.equals(keyword, dataset.keyword)
            && Objects.equals(containerKey, dataset.containerKey)
            && Objects.equals(containerTitle, dataset.containerTitle)
            && Objects.equals(containerCreator, dataset.containerCreator)
@@ -797,7 +819,7 @@ public class Dataset extends DataEntity<Integer> {
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes,
-      doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor,
+      doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
       containerKey, containerTitle, containerCreator,
       geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, source);
   }

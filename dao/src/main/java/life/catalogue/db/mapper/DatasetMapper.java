@@ -101,7 +101,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * List all dataset keys filtered by a search request.
    * Contrary to the regular search this will include private datasets.
    */
-  List<Integer> searchKeys(@Param("req") DatasetSearchRequest request);
+  List<Integer> searchKeys(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey);
 
   /**
    * List all releases of a project, including deleted and private ones.
@@ -117,7 +117,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
     if (origin != null) {
       req.setOrigin(List.of(origin));
     }
-    return searchKeys(req);
+    return searchKeys(req, MAGIC_ADMIN_USER_KEY);
   }
 
   /**

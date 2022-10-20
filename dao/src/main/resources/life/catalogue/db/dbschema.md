@@ -11,6 +11,35 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-10-20 dataset keywords
+```
+ALTER TABLE dataset ALTER COLUMN keyword TYPE TEXT[];
+ALTER TABLE dataset_archive ALTER COLUMN keyword TYPE TEXT[];
+ALTER TABLE dataset_source ALTER COLUMN keyword TYPE TEXT[];
+ALTER TABLE dataset_patch ALTER COLUMN keyword TYPE TEXT[];
+
+ALTER TABLE dataset DROP COLUMN doc;
+ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(alias,''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(doi, ''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(key::text, ''))), 'A') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(title,''))), 'B') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(array_str(keyword),''))), 'B') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(issn, ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(creator), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(publisher), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(editor), ''))), 'C') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(geographic_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(taxonomic_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(temporal_scope,''))), 'D') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(description,''))), 'D')
+  ) STORED;
+```
+
 ### 2022-09-16 alternative identifiers
 ```
 ALTER TYPE ISSUE ADD VALUE 'IDENTIFIER_WITHOUT_SCOPE';

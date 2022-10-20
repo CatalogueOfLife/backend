@@ -313,6 +313,18 @@ public class DatasetWithSettings {
     dataset.setNotes(notes);
   }
 
+  public void addKeyword(String keyword) {
+    dataset.addKeyword(keyword);
+  }
+
+  public List<String> getKeyword() {
+    return dataset.getKeyword();
+  }
+
+  public void setKeyword(List<String> keyword) {
+    dataset.setKeyword(keyword);
+  }
+
   public Map<String, String> getIdentifier() {
     return dataset.getIdentifier();
   }

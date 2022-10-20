@@ -242,7 +242,9 @@ public class EmlParser {
                 case "additionalInfo":
                   d.setNotes(para.toString());
                   break;
-
+                case "keyword":
+                  d.addKeyword(text(text));
+                  break;
               }
             }
             if (isAdditionalMetadata) {

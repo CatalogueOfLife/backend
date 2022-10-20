@@ -102,8 +102,9 @@ public class EmlParserTest {
     assertEquals("[Brouillet L.]", d.getCreator().toString());
     assertEquals("2017-12-18", d.getIssued().toString());
     assertEquals(37, d.getSource().size());
+    assertEquals(List.of("VASCAN", "Canadensys", "Canada", "Greenland", "Saint Pierre and Miquelon", "checklist", "taxonomy", "synonymy", "hybrids", "vernacular names", "English", "French", "distribution", "provinces", "habit", "open data", "Checklist", "Inventoryregional"), d.getKeyword());
   }
-  
+
   @Test
   public void worms() throws Exception {
     DatasetWithSettings d = read("worms-eml.xml");

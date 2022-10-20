@@ -51,7 +51,7 @@ public class ImportArticleJob extends GlobalBlockingJob {
     final List<Integer> keys;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      keys = dm.searchKeys(dreq);
+      keys = dm.searchKeys(dreq, DatasetMapper.MAGIC_ADMIN_USER_KEY);
     }
 
     LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());

@@ -47,6 +47,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setType(DatasetType.TAXONOMIC);
     d.setTitle(RandomUtils.randomLatinString(80));
     d.setDescription(RandomUtils.randomLatinString(500));
+    d.setKeyword(List.of("test", "work", "bio"));
     d.setLicense(License.CC0);
     d.setCreator(new ArrayList<>());
     d.setEditor(new ArrayList<>());
@@ -325,6 +326,12 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     actual = mapper().keys(DatasetOrigin.EXTERNAL, DatasetOrigin.MANAGED);
     Collections.sort(actual);
     assertEquals(all, actual);
+
+    // also test searchKey
+    DatasetSearchRequest dr = new DatasetSearchRequest();
+    dr.setQ("Life");
+    actual = mapper().searchKeys(dr, DatasetMapper.MAGIC_ADMIN_USER_KEY);
+    assertEquals(List.of(Datasets.COL), actual);
   }
 
   private List<Dataset> createExpected() throws Exception {

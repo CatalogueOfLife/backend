@@ -341,7 +341,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   public List<Integer> searchKeys(DatasetSearchRequest req) {
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      return dm.searchKeys(req);
+      return dm.searchKeys(req, DatasetMapper.MAGIC_ADMIN_USER_KEY);
     }
   }
 

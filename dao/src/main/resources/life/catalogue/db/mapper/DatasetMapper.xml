@@ -247,61 +247,10 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
-  <select id="searchKeys" resultMap="datasetResultMap">
-    SELECT <include refid="SELECT"/>
+  <select id="searchKeys" resultType="integer">
+    SELECT d.key
     FROM <include refid="FROM"/> <include refid="FROM_PROJ"/>
     WHERE <include refid="SEARCH_WHERE"/>
-    ORDER BY
-    <bind name="rev" value="false"/>
-    <choose>
-      <when test="req == null || req.sortBy == null">
-        key
-      </when>
-      <otherwise>
-        <bind name="rev" value="req.reverse"/>
-        <bind name="sortBy" value="req.sortBy.name()"/>
-        <choose>
-          <when test="sortBy == 'RELEVANCE'">
-            ts_rank_cd(d.doc, plainto_tsquery('simple2', f_unaccent(#{req.q}))) DESC, size DESC, created DESC
-          </when>
-          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED' ">
-            ${req.sortBy.name().toLowerCase()}
-            <bind name="rev" value="!req.reverse"/>
-          </when>
-          <when test="sortBy == 'CREATOR'">
-            lower( coalesce( (d.creator[1]).family, (d.editor[1]).family ))
-          </when>
-          <when test="sortBy == 'ALIAS'">
-            lower(d.alias)
-          </when>
-          <when test="sortBy == 'TITLE'">
-            lower(d.title)
-          </when>
-          <otherwise>
-            ${req.sortBy.name().toLowerCase()}
-          </otherwise>
-        </choose>
-        <if test="sortBy != 'RELEVANCE'">
-          <choose>
-            <when test="rev">DESC NULLs LAST</when>
-            <otherwise>ASC NULLs FIRST</otherwise>
-          </choose>
-        </if>
-      </otherwise>
-    </choose>
-    <include refid="life.catalogue.db.Common.limit"/>
-  </select>
-
-  <select id="keys" resultType="integer">
-    SELECT key
-    FROM dataset
-    WHERE deleted IS NULL
-    <if test="type != null">
-      AND type = #{type}::DATASETTYPE
-    </if>
-    <if test="origin != null and origin.length > 0">
-      AND origin IN <foreach item="o" collection="origin" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
-    </if>
     ORDER BY key
   </select>
 

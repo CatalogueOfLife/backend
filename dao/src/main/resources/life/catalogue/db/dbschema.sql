@@ -721,6 +721,7 @@ CREATE TABLE dataset (
   editor agent[],
   publisher agent,
   contributor agent[],
+  keyword TEXT[],
   geographic_scope TEXT,
   taxonomic_scope TEXT,
   temporal_scope TEXT,
@@ -746,6 +747,7 @@ CREATE TABLE dataset (
       setweight(to_tsvector('simple2', f_unaccent(coalesce(doi, ''))), 'A') ||
       setweight(to_tsvector('simple2', f_unaccent(coalesce(key::text, ''))), 'A') ||
       setweight(to_tsvector('simple2', f_unaccent(coalesce(title,''))), 'B') ||
+      setweight(to_tsvector('simple2', f_unaccent(coalesce(array_str(keyword),''))), 'B') ||
       setweight(to_tsvector('simple2', f_unaccent(coalesce(issn, ''))), 'C') ||
       setweight(to_tsvector('simple2', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
       setweight(to_tsvector('simple2', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
