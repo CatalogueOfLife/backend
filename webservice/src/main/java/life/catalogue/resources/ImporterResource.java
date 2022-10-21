@@ -81,11 +81,11 @@ public class ImporterResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed({Roles.ADMIN})
   @Path("/batch")
-  public int scheduleMultipleExternal(@Auth User user, @Valid DatasetSearchRequest request) {
+  public int scheduleMultipleExternal(@Auth User user, @Valid @BeanParam DatasetSearchRequest request) {
     // enforce to only schedule external datasets, never projects or releases
     request.setOrigin(List.of(DatasetOrigin.EXTERNAL));
     final List<Integer> keys = ddao.searchKeys(request);
-    LOG.warn("Scheduling {} dataset imports", keys.size());
+    LOG.info("Scheduling {} dataset imports", keys.size());
     int counter = 0;
     for (int key : keys) {
       try {
