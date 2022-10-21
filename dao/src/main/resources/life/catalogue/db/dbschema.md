@@ -13,10 +13,10 @@ and done it manually. So we can as well log changes here.
 
 ### 2022-10-20 dataset keywords
 ```
-ALTER TABLE dataset ALTER COLUMN keyword TYPE TEXT[];
-ALTER TABLE dataset_archive ALTER COLUMN keyword TYPE TEXT[];
-ALTER TABLE dataset_source ALTER COLUMN keyword TYPE TEXT[];
-ALTER TABLE dataset_patch ALTER COLUMN keyword TYPE TEXT[];
+ALTER TABLE dataset ADD COLUMN keyword TEXT[];
+ALTER TABLE dataset_archive ADD COLUMN keyword TEXT[];
+ALTER TABLE dataset_source ADD COLUMN keyword TEXT[];
+ALTER TABLE dataset_patch ADD COLUMN keyword TEXT[];
 
 ALTER TABLE dataset DROP COLUMN doc;
 ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
