@@ -217,7 +217,7 @@ public class DwcaReader extends CsvReader {
     
     // delimiter
     final CommonParserSettings<?> set;
-    final CsvParserSettings csvSettings = CSV.clone();
+    final CsvParserSettings csvSettings = csvSetting();
     
     String val = unescapeBackslash(attr(parser, "fieldsTerminatedBy"));
     csvSettings.setDelimiterDetectionEnabled(true);
@@ -247,7 +247,7 @@ public class DwcaReader extends CsvReader {
 
     // now decide whether we want TSV or CSV parsing
     if (csvSettings.getFormat().getDelimiter() == '\t' && csvSettings.getFormat().getQuote() == '\0') {
-      set = new TsvParserSettings();
+      set = tsvSetting();
     } else {
       set = csvSettings;
     }

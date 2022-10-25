@@ -56,8 +56,8 @@ import com.univocity.parsers.csv.CsvParserSettings;
  */
 public class CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(CsvReader.class);
-  protected static final TsvParserSettings TSV = new TsvParserSettings();
-  protected static final CsvParserSettings CSV = new CsvParserSettings();
+  private static final TsvParserSettings TSV = new TsvParserSettings();
+  private static final CsvParserSettings CSV = new CsvParserSettings();
   private static final CharMatcher SPACE_MATCHER = CharMatcher.whitespace().or(CharMatcher.javaIsoControl());
   public static final String LOGO_FILENAME = "logo.png";
   private static final Term UNKNOWN_TERM = TermFactory.instance().findTerm("void", false);
@@ -74,8 +74,6 @@ public class CsvReader {
       common.setMaxColumns(256);
       common.setMaxCharsPerColumn(1024 * 256);
     }
-    CSV.detectFormatAutomatically();
-    CSV.getFormat().setDelimiter('\t');
   }
   
   private static final Set<String> SUFFICES = Set.of("csv", "tsv", "tab", "txt", "text", "archive", "dwca");
@@ -88,11 +86,17 @@ public class CsvReader {
   private final String subfolder;
   protected final Map<Term, Schema> schemas = Maps.newHashMap();
   protected final MappingInfos mappingFlags = new MappingInfos();
-  // if we encounter tab delimtied files we ignore any quotes!
+  // if we encounter tab delimted files we ignore any quotes!
   private static final Character[] delimiterCandidates = {'\t', ',', ';', '|'};
   // we also use \0 for hopefully no quote, but convert the combination of \t and \0 to TsvFormat
   private static final Character[] quoteCandidates = {'"', '\'', '\0'};
-  
+
+  public static TsvParserSettings tsvSetting() {
+    return TSV.clone();
+  }
+  public static CsvParserSettings csvSetting() {
+    return CSV.clone();
+  }
   /**
    * @param folder
    */
@@ -301,8 +305,9 @@ public class CsvReader {
   @VisibleForTesting
   static CommonParserSettings<?> discoverFormat(List<String> lines) {
     List<CommonParserSettings<?>> candidates = Lists.newLinkedList();
-    // first try with plain TSV without quotes
+    // first try with plain TSV or CSV without quotes
     candidates.add(TSV.clone());
+    candidates.add(CSV.clone());
     for (char del : delimiterCandidates) {
       for (char quote : quoteCandidates) {
         CsvParserSettings cfg = CSV.clone();
@@ -316,8 +321,7 @@ public class CsvReader {
     }
     // also try univocitys autodetection if nothing works
     CsvParserSettings univoc = CSV.clone();
-    univoc.setDelimiterDetectionEnabled(true);
-    univoc.setQuoteDetectionEnabled(true);
+    univoc.detectFormatAutomatically();
     candidates.add(univoc);
     
     // find best settings, default to autodetection if all others fail

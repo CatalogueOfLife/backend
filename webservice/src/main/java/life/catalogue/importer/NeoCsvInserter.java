@@ -69,19 +69,17 @@ public abstract class NeoCsvInserter implements NeoInserter {
     // update CSV reader with manual dataset settings if existing
     // see https://github.com/Sp2000/colplus-backend/issues/582
     if (settings.has(Setting.CSV_DELIMITER) || settings.has(Setting.CSV_QUOTE) || settings.has(Setting.CSV_QUOTE_ESCAPE)) {
-      boolean isTsv =
-        String.valueOf('\t').equals(settings.getString(Setting.CSV_DELIMITER)) &&
-        settings.get(Setting.CSV_QUOTE) == null;
+      boolean isTsv = String.valueOf('\t').equals(settings.getString(Setting.CSV_DELIMITER)) && settings.get(Setting.CSV_QUOTE) == null;
       for (Schema s : reader.schemas()) {
         if (isTsv) {
           if (!s.isTsv()) {
-            updateSchemaSettings(s, new TsvParserSettings());
+            updateSchemaSettings(s, CsvReader.tsvSetting());
           }
 
         } else {
           CsvFormat csv;
           if (s.isTsv()) {
-            var set = new CsvParserSettings();
+            var set = CsvReader.csvSetting();
             updateSchemaSettings(s, set);
             csv = set.getFormat();
           } else {
