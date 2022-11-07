@@ -22,6 +22,8 @@ import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.metadata.MetadataFactory;
 
+import lombok.val;
+
 import org.gbif.dwc.terms.Term;
 
 import java.nio.file.Path;
@@ -69,7 +71,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
     // update CSV reader with manual dataset settings if existing
     // see https://github.com/Sp2000/colplus-backend/issues/582
     if (settings.has(Setting.CSV_DELIMITER) || settings.has(Setting.CSV_QUOTE) || settings.has(Setting.CSV_QUOTE_ESCAPE)) {
-      boolean isTsv = String.valueOf('\t').equals(settings.getString(Setting.CSV_DELIMITER)) && settings.get(Setting.CSV_QUOTE) == null;
+      boolean isTsv = '\t' == settings.getChar(Setting.CSV_DELIMITER) && !settings.has(Setting.CSV_QUOTE);
       for (Schema s : reader.schemas()) {
         if (isTsv) {
           if (!s.isTsv()) {
@@ -102,14 +104,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
 
   private void setChar(Setting key, Consumer<Character> setter) {
     if (settings.has(key)) {
-      String val = settings.getString(key);
-      if (!val.isEmpty()) {
-        if (val.length() != 1) {
-          LOG.warn("Setting {} must be a single character but got >>{}<< instead. Ignore setting", key, val);
-        } else {
-          setter.accept(val.charAt(0));
-        }
-      }
+      setter.accept(settings.getChar(key));
     }
   }
 

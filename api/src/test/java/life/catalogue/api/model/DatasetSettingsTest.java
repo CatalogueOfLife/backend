@@ -15,8 +15,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -56,6 +55,17 @@ public class DatasetSettingsTest extends SerdeTestBase<DatasetSettings> {
 
     d.put(Setting.NOMENCLATURAL_CODE, NomCode.BOTANICAL);
     assertEquals(NomCode.BOTANICAL, d.getEnum(Setting.NOMENCLATURAL_CODE));
+
+    assertNull(d.getChar(Setting.CSV_QUOTE));
+    assertFalse(d.has(Setting.CSV_QUOTE));
+
+    d.put(Setting.CSV_QUOTE, null);
+    assertNull(d.getChar(Setting.CSV_QUOTE));
+    assertFalse(d.has(Setting.CSV_QUOTE));
+
+    d.put(Setting.CSV_QUOTE, '\t');
+    assertEquals(Character.valueOf('\t'), d.getChar(Setting.CSV_QUOTE));
+    assertTrue(d.has(Setting.CSV_QUOTE));
   }
 
 
