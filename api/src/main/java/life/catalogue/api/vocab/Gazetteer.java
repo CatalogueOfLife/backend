@@ -9,6 +9,7 @@ public enum Gazetteer {
 
   TDWG("World Geographical Scheme for Recording Plant Distributions",
     "http://www.tdwg.org/standards/109",
+    null,
     "World Geographical Scheme for Recording Plant Distributions published by TDWG at level 1, 2, 3 or 4. " +
       " Level 1 = Continents," +
       " Level 2 = Regions," +
@@ -26,6 +27,7 @@ public enum Gazetteer {
    */
   ISO("ISO 3166 Country Codes",
     "https://en.wikipedia.org/wiki/ISO_3166",
+    "https://www.iso.org/obp/ui/#iso:code:3166:",
     "ISO 3166 codes for the representation of names of countries and their subdivisions. " +
       "Codes for current countries (ISO 3166-1), " +
       "country subdivisions (ISO 3166-2) " +
@@ -34,42 +36,50 @@ public enum Gazetteer {
 
   FAO("FAO Major Fishing Areas",
     "http://www.fao.org/fishery/cwp/handbook/H/en",
+    "https://www.fao.org/fishery/en/area/",
     "FAO Major Fishing Areas"),
 
   LONGHURST("Longhurst Biogeographical Provinces",
     "http://www.marineregions.org/sources.php#longhurst",
+    null,
     "Longhurst Biogeographical Provinces, a partition of the world oceans into provinces as defined by Longhurst, A.R. (2006). " +
       "Ecological Geography of the Sea. 2nd Edition."),
 
   TEOW("Terrestrial Ecoregions of the World",
     "https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world",
+    null,
     "Terrestrial Ecoregions of the World is a biogeographic regionalization of the Earth's terrestrial biodiversity. " +
       "See Olson et al. 2001. Terrestrial ecoregions of the world: a new map of life on Earth. Bioscience 51(11):933-938."),
 
   IHO("International Hydrographic Organization See Areas",
+    null,
     null,
     "Sea areas published by the International Hydrographic Organization as boundaries of the major oceans and seas of the world. " +
       "See Limits of Oceans & Seas, Special Publication No. 23 published by the International Hydrographic Organization in 1953."),
 
   MRGID("Marine Regions Geographic Identifier",
     "https://www.marineregions.org/gazetteer.php",
+    "http://marineregions.org/mrgid/",
     "Standard, relational list of geographic names developed by VLIZ covering mainly marine names such as seas, sandbanks, ridges, bays or even standard sampling stations used in marine research." +
       "The geographic cover is global; however the gazetteer is focused on the Belgian Continental Shelf, the Scheldt Estuary and the Southern Bight of the North Sea."),
 
   TEXT("Free Text",
     null,
+    null,
     "Free text not following any standard");
 
 
-  Gazetteer(String title, String link, String description) {
+  Gazetteer(String title, String link, String areaLink, String description) {
     this.title = title;
     this.link = link == null ? null : URI.create(link);
+    this.areaLinkTemplate = areaLink;
     this.description = description;
   }
 
   private final String title;
   private final URI link;
   private final String description;
+  private final String areaLinkTemplate;
 
   public String getTitle() {
     return title;
@@ -77,6 +87,21 @@ public enum Gazetteer {
 
   public URI getLink() {
     return link;
+  }
+
+  public URI getAreaLink(String id) {
+    if (areaLinkTemplate != null) {
+      if (this == FAO && id.contains(".")) {
+        // FAO only provides pages for the main division
+        id = id.split("\\.", 2)[0];
+      }
+      return URI.create(areaLinkTemplate + id);
+
+    } else if (this != TEXT) {
+      // default to API URLs for all non text gazetteers that do not provide a custom template
+      return URI.create("https://api.checklistbank.org/vocab/area/" + locationID(id));
+    }
+    return null;
   }
 
   public String getDescription() {

@@ -1,10 +1,11 @@
 package life.catalogue.api.vocab;
 
+import java.net.URI;
 import java.util.Objects;
 
 /**
  * An area without any identifier and just an english name.
- * Not ennumerated.
+ * Not enumerated.
  */
 public class AreaImpl implements Area {
 
@@ -61,6 +62,15 @@ public class AreaImpl implements Area {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  @Override
+  public URI getLink() {
+    switch (gazetteer) {
+      case MRGID:
+        return URI.create("http://marineregions.org/mrgid/48213");
+    }
+    return null;
   }
 
   @Override

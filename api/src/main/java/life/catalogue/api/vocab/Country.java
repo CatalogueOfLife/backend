@@ -12,6 +12,7 @@
  */
 package life.catalogue.api.vocab;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +22,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * Enumeration for all current ISO 3166-1 ALPHA2 country codes using 2 letters,
@@ -1314,7 +1317,7 @@ public enum Country implements Area {
    */
   public static final Set<String> CUSTOM_CODES;
   public static final List<Country> OFFICIAL_COUNTRIES;
-  
+
   private final String alpha2;
   private final String alpha3;
   private final int numericalCode;
@@ -1421,7 +1424,7 @@ public enum Country implements Area {
   public String getName() {
     return name;
   }
-  
+
   /**
    * @return the 2 letter ISO 3166-1 ALPHA2 code in upper case.
    */

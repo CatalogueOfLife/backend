@@ -236,7 +236,16 @@ public class InterpreterBase {
       
       } else {
         List<Distribution> distributions = new ArrayList<>();
-        for (String loc : words(locRaw)) {
+        List<String> values;
+
+        var ns = AreaParser.parsePrefix(locRaw);
+        if (ns != null && (ns.equals("http") || ns.equals("https") || ns.equals("ftp") || ns.equals("urn"))) {
+          values = List.of(locRaw);
+        } else {
+          values = words(locRaw);
+        }
+
+        for (String loc : values) {
           // add gazetteer prefix for the parser if not yet included
           if (standard != null && loc.indexOf(':') < 0) {
             loc = standard.locationID(loc);
@@ -246,7 +255,7 @@ public class InterpreterBase {
             // check if we have contradicting extracted a gazetteer
             if (standard != null && area.getGazetteer() != Gazetteer.TEXT && area.getGazetteer() != standard) {
               LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
-                        area.getGazetteer(), area.getGazetteer(), standard, rec);
+                area.getGazetteer(), area.getGazetteer(), standard, rec);
             }
             distributions.add(createDistribution(rec, area, status, addReference));
           }

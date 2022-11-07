@@ -12,6 +12,7 @@
  */
 package life.catalogue.api.vocab;
 
+import java.net.URI;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -27,6 +28,14 @@ public class CountryTest {
   public void testFromIsoCode() throws Exception {
     Assert.assertEquals(Country.ARGENTINA, Country.fromIsoCode("ar").get());
     assertEquals(Country.ARGENTINA, Country.fromIsoCode("AR").get());
+  }
+
+  @Test
+  public void testLink() throws Exception {
+    Assert.assertEquals(URI.create("https://www.iso.org/obp/ui/#iso:code:3166:AI"), Country.ANGUILLA.getLink());
+    for (Country c : Country.values()) {
+      assertNotNull(c.getLink());
+    }
   }
   
   @Test

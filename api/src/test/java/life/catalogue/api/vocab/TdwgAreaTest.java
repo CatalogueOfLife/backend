@@ -1,8 +1,10 @@
 package life.catalogue.api.vocab;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -27,5 +29,12 @@ public class TdwgAreaTest {
     }
     assertEquals(1039, ids.size());
     assertEquals(ids.size(), TdwgArea.AREAS.size());
+  }
+
+  @Test
+  public void testLink() throws Exception {
+    for (var tdwg : TdwgArea.AREAS) {
+      assertNotNull(tdwg.getLink());
+    }
   }
 }
