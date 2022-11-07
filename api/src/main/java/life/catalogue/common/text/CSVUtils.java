@@ -106,6 +106,10 @@ public class CSVUtils {
    */
   public static Stream<List<String>> parse(InputStream in, long skip, char delimiter) {
     BufferedReader br = UTF8IoUtils.readerFromStream(in);
+    return parse(br, skip, delimiter);
+  }
+
+  public static Stream<List<String>> parse(BufferedReader br, long skip, char delimiter) {
     return br.lines().skip(skip).map(line -> CSVUtils.parseLine(line, delimiter));
   }
   

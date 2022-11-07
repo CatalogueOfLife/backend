@@ -37,7 +37,7 @@ public abstract class TermWriter implements AutoCloseable {
       super(setupWriter(dir, rowType), rowType, cols);
     }
 
-    static RowWriter setupWriter(File dir, Term rowType) {
+    private static RowWriter setupWriter(File dir, Term rowType) {
       File f = new File(dir, filename(rowType));
       return TabWriter.fromFile(f);
     }

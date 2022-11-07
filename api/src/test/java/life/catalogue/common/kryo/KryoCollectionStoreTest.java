@@ -2,7 +2,7 @@ package life.catalogue.common.kryo;
 
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Reference;
-import life.catalogue.common.io.TempFile;
+import life.catalogue.common.io.TmpIO;
 
 import org.junit.Test;
 
@@ -22,7 +22,7 @@ public class KryoCollectionStoreTest {
 
     Pool<Kryo> pool = new ApiKryoPool(4);
 
-    try (TempFile tf = new TempFile("kryo-", ".bin");
+    try (TmpIO tf = new TmpIO.File("kryo-", ".bin");
          KryoCollectionStore<Page> store = new KryoCollectionStore(Page.class, tf.file, pool)) {
 
       for (int i = 0; i < 100; i++) {

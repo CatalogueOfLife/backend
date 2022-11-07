@@ -107,11 +107,11 @@ FAL*Falkland Is.*90,00*FK**
 FIJ*Fiji*60,00*FJ**
 FIN*Finland*10,00*FI**
 FLA*Florida*78,00*US**
-FOR*F¯royar*10,00*FO**
+FOR*F√∏royar*10,00*FO**
 FRA*France*12,00***
 FRG*French Guiana*82,00*GF**
 GAB*Gabon*23,00*GA**
-GAL*Gal·pagos*83,00*EC**
+GAL*Gal√°pagos*83,00*EC**
 GAM*Gambia, The*22,00*GM**
 GEO*Georgia*78,00*US**
 GER*Germany*11,00*DE**
@@ -147,7 +147,7 @@ IVO*Ivory Coast*22,00*CI**
 JAM*Jamaica*81,00*JM**
 JAP*Japan*38,00*JP**
 JAW*Jawa*42,00*ID**
-JNF*Juan Fern·ndez Is.*85,00*CL**
+JNF*Juan Fern√°ndez Is.*85,00*CL**
 KAM*Kamchatka*31,00*RU**
 KAN*Kansas*74,00*US**
 KAZ*Kazakhstan*32,00*KZ**
@@ -255,7 +255,7 @@ ONT*Ontario*72,00*CA**
 ORE*Oregon*73,00*US**
 PAK*Pakistan*40,00*PK**
 PAL*Palestine*34,00***
-PAN*Panam·*80,00*PA**
+PAN*Panam√°*80,00*PA**
 PAR*Paraguay*85,00*PY**
 PEI*Prince Edward I.*72,00*CA**
 PEN*Pennsylvania*75,00*US**
@@ -268,8 +268,8 @@ POR*Portugal*12,00*PT**
 PRM*Primorye*31,00*RU**
 PUE*Puerto Rico*81,00*PR**
 QLD*Queensland*50,00*AU**
-QUE*QuÈbec*72,00*CA**
-REU*RÈunion*29,00*RE**
+QUE*Qu√©bec*72,00*CA**
+REU*R√©union*29,00*RE**
 RHO*Rhode I.*75,00*US**
 ROD*Rodrigues*29,00*MU**
 ROM*Romania*13,00*RO**

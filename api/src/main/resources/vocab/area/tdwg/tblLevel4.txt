@@ -4,17 +4,17 @@ AFG-OO*Afghanistan*AFG*AF**
 AGE-BA*Buenos Aires*AGE*AR**
 AGE-CH*Chaco*AGE*AR**
 AGE-CN*Corrientes*AGE*AR**
-AGE-CO*CÛrdoba*AGE*AR**
+AGE-CO*C√≥rdoba*AGE*AR**
 AGE-DF*Argentina Distrito Federal*AGE*AR**
-AGE-ER*Entre RÌos*AGE*AR**
+AGE-ER*Entre R√≠os*AGE*AR**
 AGE-FO*Formosa*AGE*AR**
 AGE-LP*La Pampa*AGE*AR**
 AGE-MI*Misiones*AGE*AR**
 AGS-CB*Chubut*AGS*AR**
-AGS-NE*NeuquÈn*AGS*AR**
+AGS-NE*Neuqu√©n*AGS*AR**
 AGS-RN*Rio Negro*AGS*AR**
 AGS-SC*Santa Cruz*AGS*AR**
-AGS-SF*Santa FÈ*AGS*AR**
+AGS-SF*Santa F√©*AGS*AR**
 AGS-TF*Tierra del Fuego (Argentina)*AGS*AR**
 AGW-CA*Catamarca*AGW*AR**
 AGW-JU*Jujuy*AGW*AR**
@@ -51,7 +51,7 @@ ASS-TR*Tripura*ASS*IN**
 ATP-OO*Antipodean Is.*ATP*NZ**
 AUT-AU*Austria*AUT*AT**
 AUT-LI*Liechtenstein*AUT*LI**
-AZO-OO*AÁÙres*AZO*PT**
+AZO-OO*A√ß√¥res*AZO*PT**
 BAH-OO*Bahamas*BAH*BS**
 BAL-OO*Baleares*BAL*ES**
 BAN-OO*Bangladesh*BAN*BD**
@@ -79,32 +79,32 @@ BRY-OO*Buryatiya*BRY*RU**
 BUL-OO*Bulgaria*BUL*BG**
 BUR-OO*Burundi*BUR*BI**
 BZC-DF*Brazilia Distrito Federal*BZC*BR**
-BZC-GO*Goi·s*BZC*BR**
+BZC-GO*Goi√°s*BZC*BR**
 BZC-MS*Mato Grosso do Sul*BZC*BR**
 BZC-MT*Mato Grosso*BZC*BR**
 BZE-AL*Alagoas*BZE*BR**
 BZE-BA*Bahia*BZE*BR**
-BZE-CE*Cear·*BZE*BR**
+BZE-CE*Cear√°*BZE*BR**
 BZE-FN*Fernando de Noronha*BZE*BR**
 BZE-MA*Maranhao*BZE*BR**
-BZE-PB*ParaÌba*BZE*BR**
+BZE-PB*Para√≠ba*BZE*BR**
 BZE-PE*Pernambuco*BZE*BR**
-BZE-PI*PiauÌ*BZE*BR**
+BZE-PI*Piau√≠*BZE*BR**
 BZE-RN*Rio Grande do Norte*BZE*BR**
 BZE-SE*Sergipe*BZE*BR**
 BZL-ES*Espirito Santo*BZL*BR**
 BZL-MG*Minas Gerais*BZL*BR**
 BZL-RJ*Rio de Janeiro*BZL*BR**
-BZL-SP*S„o Paulo*BZL*BR**
+BZL-SP*S√£o Paulo*BZL*BR**
 BZL-TR*Trindade*BZL*BR**
 BZN-AC*Acre*BZN*BR**
 BZN-AM*Amazonas*BZN*BR**
-BZN-AP*Amap·*BZN*BR**
-BZN-PA*Par·*BZN*BR**
+BZN-AP*Amap√°*BZN*BR**
+BZN-PA*Par√°*BZN*BR**
 BZN-RM*Roraima*BZN*BR**
-BZN-RO*RondÙnia*BZN*BR**
+BZN-RO*Rond√¥nia*BZN*BR**
 BZN-TO*Tocantins*BZN*BR**
-BZS-PR*Paran·*BZS*BR**
+BZS-PR*Paran√°*BZS*BR**
 BZS-RS*Rio Grande do Sul*BZS*BR**
 BZS-SC*Santa Catarina*BZS*BR**
 CAB-OO*Cabinda*CAB*AO**
@@ -143,24 +143,24 @@ CHS-JS*Jiangsu*CHS*CN**
 CHS-JX*Jiangxi*CHS*CN**
 CHS-KI*Kin-Men*CHS*TW**
 CHS-MA*Macau*CHS*MO**
-CHS-MP*Ma-tsu-Pai-ch˙an*CHS*TW**
+CHS-MP*Ma-tsu-Pai-ch√∫an*CHS*TW**
 CHS-SH*Shanghai*CHS*CN**
 CHS-ZJ*Zhejiang*CHS*CN**
-CHT-OO*Tibet*CHT*CN**Sube del nivel 4 al nivel 3. El cÛdigo en el libro es CHT-XI.
+CHT-OO*Tibet*CHT*CN**Sube del nivel 4 al nivel 3. El c√≥digo en el libro es CHT-XI.
 CHX-OO*Xinjiang*CHX*CN**
 CKI-OO*Cocos (Keeling) Is.*CKI*CC**
-CLC-BI*BiobÌo*CLC*CL**
+CLC-BI*Biob√≠o*CLC*CL**
 CLC-CO*Coquimbo*CLC*CL**
 CLC-LA*La Araucania*CLC*CL**
 CLC-MA*Maule*CLC*CL**
 CLC-OH*O'Higgins*CLC*CL**
 CLC-SA*Santiago*CLC*CL**
-CLC-VA*ValparaÌso*CLC*CL**
+CLC-VA*Valpara√≠so*CLC*CL**
 CLM-OO*Colombia*CLM*CO**
 CLN-AN*Antofagasta*CLN*CL**
 CLN-AT*Atacama*CLN*CL**
 CLN-TA*Tarapaca*CLN*CL**
-CLS-AI*AisÈn*CLS*CL**
+CLS-AI*Ais√©n*CLS*CL**
 CLS-LL*Los Lagos*CLS*CL**
 CLS-MG*Magellanes*CLS*CL**
 CMN-OO*Cameroon*CMN*CM**
@@ -211,20 +211,20 @@ FAL-OO*Falkland Is.*FAL*FK**
 FIJ-OO*Fiji*FIJ*FJ**
 FIN-OO*Finland*FIN*FI**
 FLA-OO*Florida*FLA*US**
-FOR-OO*F¯royar*FOR*FO**
+FOR-OO*F√∏royar*FOR*FO**
 FRA-CI*Channel Is.*FRA*UK**
 FRA-FR*France*FRA*FR**
 FRA-MO*Monaco*FRA*MC**
 FRG-OO*French Guiana*FRG*GF**
 GAB-OO*Gabon*GAB*GA**
-GAL-OO*Gal·pagos*GAL*EC**
+GAL-OO*Gal√°pagos*GAL*EC**
 GAM-OO*Gambia, The*GAM*GM**
 GEO-OO*Georgia*GEO*US**
 GER-OO*Germany*GER*DE**
-GGI-AN*AnnobÛn*GGI*GQ**
+GGI-AN*Annob√≥n*GGI*GQ**
 GGI-BI*Bioko*GGI*GQ**
 GGI-PR*Principe*GGI*ST**
-GGI-ST*S„o TomÈ*GGI*ST**
+GGI-ST*S√£o Tom√©*GGI*ST**
 GHA-OO*Ghana*GHA*GH**
 GIL-OO*Gilbert Is.*GIL*KI**
 GNB-OO*Guinea-Bissau*GNB*GW**
@@ -262,7 +262,7 @@ IND-HA*Haryana*IND*IN**
 IND-KE*Kerala*IND*IN**
 IND-KL*Karaikal*IND*IN**
 IND-KT*Karnataka*IND*IN**
-IND-MH*MahÈ*IND*IN**
+IND-MH*Mah√©*IND*IN**
 IND-MP*Madhya Pradesh*IND*IN**
 IND-MR*Maharashtra*IND*IN**
 IND-OR*Orissa*IND*IN**
@@ -290,7 +290,7 @@ JAP-HN*Honshu*JAP*JP**
 JAP-KY*Kyushu*JAP*JP**
 JAP-SH*Shikoku*JAP*JP**
 JAW-OO*Jawa*JAW*ID**
-JNF-OO*Juan Fern·ndez Is.*JNF*CL**
+JNF-OO*Juan Fern√°ndez Is.*JNF*CL**
 KAM-OO*Kamchatka*KAM*RU**
 KAN-OO*Kansas*KAN*US**
 KAZ-OO*Kazakhstan*KAZ*KZ**
@@ -323,7 +323,7 @@ LEE-GU*Guadeloupe*LEE*GP**
 LEE-MO*Montserrat*LEE*MS**
 LEE-NL*Netherlands Leeward Is.*LEE*AN**
 LEE-SK*St.Kitts-Nevis*LEE*KN**
-LEE-SM*St.Martin-St.BarthÈlÈmy*LEE*GP**
+LEE-SM*St.Martin-St.Barth√©l√©my*LEE*GP**
 LEE-VI*Virgin Is.*LEE*VI**
 LES-OO*Lesotho*LES*LS**
 LIN-KI*Kiribati Line Is.*LIN*KI**
@@ -365,7 +365,7 @@ MSI-OO*Mississippi*MSI*US**
 MSO-OO*Missouri*MSO*US**
 MTN-OO*Mauritania*MTN*MR**
 MXC-DF*Mexico Distrito Federal*MXC*MX**
-MXC-ME*MÈxico State*MXC*MX**
+MXC-ME*M√©xico State*MXC*MX**
 MXC-MO*Morelos*MXC*MX**
 MXC-PU*Puebla*MXC*MX**
 MXC-TL*Tlaxcala*MXC*MX**
@@ -375,9 +375,9 @@ MXE-CU*Chihuahua*MXE*MX**
 MXE-DU*Durango*MXE*MX**
 MXE-GU*Guanajuato*MXE*MX**
 MXE-HI*Hidalgo*MXE*MX**
-MXE-NL*Nuevo LeÛn*MXE*MX**
-MXE-QU*QuerÈtaro*MXE*MX**
-MXE-SL*San Luis PotosÌ*MXE*MX**
+MXE-NL*Nuevo Le√≥n*MXE*MX**
+MXE-QU*Quer√©taro*MXE*MX**
+MXE-SL*San Luis Potos√≠*MXE*MX**
 MXE-TA*Tamaulipas*MXE*MX**
 MXE-ZA*Zacatecas*MXE*MX**
 MXG-VC*Veracruz*MXG*MX**
@@ -391,14 +391,14 @@ MXN-SO*Sonora*MXN*MX**
 MXS-CL*Colima*MXS*MX**
 MXS-GR*Guerrero*MXS*MX**
 MXS-JA*Jalisco*MXS*MX**
-MXS-MI*Michoac·n*MXS*MX**
+MXS-MI*Michoac√°n*MXS*MX**
 MXS-NA*Nayarit*MXS*MX**
 MXS-OA*Oaxaca*MXS*MX**
 MXT-CA*Campeche*MXT*MX**
 MXT-CI*Chiapas*MXT*MX**
 MXT-QR*Quintana Roo*MXT*MX**
 MXT-TB*Tabasco*MXT*MX**
-MXT-YU*Yucat·n*MXT*MX**
+MXT-YU*Yucat√°n*MXT*MX**
 MYA-OO*Myanmar*MYA*MM**
 NAM-OO*Namibia*NAM*ZA**
 NAT-OO*KwaZulu-Natal*NAT*ZA**
@@ -424,7 +424,7 @@ NGA-OO*Nigeria*NGA*NG**
 NGR-OO*Niger*NGR*NE**
 NIC-OO*Nicaragua*NIC*NI**
 NLA-BO*Bonaire*NLA*AN**
-NLA-CU*CuraÁao*NLA*AN**
+NLA-CU*Cura√ßao*NLA*AN**
 NNS-OO*Nansei-shoto*NNS*JP**
 NOR-OO*Norway*NOR*NO**
 NRU-OO*Nauru*NRU*NR**
@@ -454,7 +454,7 @@ ORE-OO*Oregon*ORE*US**
 PAK-OO*Pakistan*PAK*PK**
 PAL-IS*Israel*PAL*IL**
 PAL-JO*Jordan*PAL*JO**
-PAN-OO*Panam·*PAN*PA**
+PAN-OO*Panam√°*PAN*PA**
 PAR-OO*Paraguay*PAR*PY**
 PEI-OO*Prince Edward I.*PEI*CA**
 PEN-OO*Pennsylvania*PEN*US**
@@ -468,8 +468,8 @@ PRM-OO*Primorye*PRM*RU**
 PUE-OO*Puerto Rico*PUE*PR**
 QLD-CS*Coral Sea Is. Territory*QLD*AU**
 QLD-QU*Queensland*QLD*AU**
-QUE-OO*QuÈbec*QUE*CA**
-REU-OO*RÈunion*REU*RE**
+QUE-OO*Qu√©bec*QUE*CA**
+REU-OO*R√©union*REU*RE**
 RHO-OO*Rhode I.*RHO*US**
 ROD-OO*Rodrigues*ROD*MU**
 ROM-OO*Romania*ROM*RO**
