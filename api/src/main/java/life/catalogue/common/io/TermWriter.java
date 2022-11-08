@@ -11,10 +11,7 @@ import org.gbif.dwc.terms.Term;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -105,7 +102,7 @@ public abstract class TermWriter implements AutoCloseable {
   public void set(Term term, String value) {
     int idx = cols.getOrDefault(term, -1);
     if (idx < 0) throw new IllegalArgumentException(term.prefixedName() + " is not mapped for " + rowType.prefixedName());
-    row[idx]=value;
+    row[idx]=StringUtils.trimToNull(value);
   }
 
   public <T> void set(Term term, T value, Function<T, String> converter) {
@@ -138,6 +135,7 @@ public abstract class TermWriter implements AutoCloseable {
   public <T> void set(Term term, Collection<T> value, String delimiter, Function<T, String> converter) {
     if (value != null && !value.isEmpty()) {
       set(term, value.stream()
+                     .filter(Objects::nonNull)
                      .map(converter)
                      .filter(StringUtils::isNotBlank)
                      .collect(Collectors.joining(delimiter))
