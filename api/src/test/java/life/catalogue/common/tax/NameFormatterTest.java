@@ -83,6 +83,12 @@ public class NameFormatterTest {
     Matcher m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies");
     assertTrue(m.find());
 
+    m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies (Pina)");
+    assertTrue(m.find());
+
+    m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies (Pina) alba");
+    assertTrue(m.find());
+
     m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba");
     assertTrue(m.find());
 

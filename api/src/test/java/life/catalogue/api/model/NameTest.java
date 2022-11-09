@@ -61,17 +61,16 @@ public class NameTest extends SerdeTestBase<Name> {
    * https://github.com/CatalogueOfLife/checklistbank/issues/1122
    */
   @Test
-  @Ignore("work in progress")
   public void subgenericHtml() throws Exception {
     Name n = new Name();
     n.setGenus("Acritus");
     n.setRank(Rank.GENUS);
+    n.rebuildScientificName();
     assertEquals("Acritus", n.getLabel());
     assertEquals("<i>Acritus</i>", n.getLabelHtml());
 
     n.setInfragenericEpithet("Acritus");
     n.setRank(Rank.SUBGENUS);
-
     n.rebuildScientificName();
     assertEquals("Acritus (Acritus)", n.getLabel());
     assertEquals("<i>Acritus (Acritus)</i>", n.getLabelHtml());

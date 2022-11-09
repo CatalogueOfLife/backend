@@ -30,7 +30,11 @@ public class NameFormatter {
   // matches only uninomials or binomials without any authorship
   private static String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
   @VisibleForTesting
-  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^[A-ZÆŒ]"+EPITHET+"(?: "+EPITHET+"(?: "+EPITHET+")?)?$");
+  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^[A-ZÆŒ]"+EPITHET                  // genus
+                                                          + "(?: \\([A-ZÆŒ]"+EPITHET+"\\))?"  // infrageneric
+                                                          + "(?: "+EPITHET                    // species
+                                                              +"(?: "+EPITHET+")?"            // subspecies
+                                                          + ")?$");
 
   private NameFormatter() {
 
