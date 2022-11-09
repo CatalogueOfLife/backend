@@ -151,7 +151,7 @@ public class ColdpInterpreter extends InterpreterBase {
       NameUsageBase nub = (NameUsageBase) u.usage;
       setReferences(v, ColdpTerm.referenceID, COMMA_SPLITTER, nub::setReferenceIds);
       nub.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
-      nub.setIdentifier(interpretIdentifiers(v.getRaw(ColdpTerm.alternativeID), v));
+      nub.setIdentifier(interpretIdentifiers(v.getRaw(ColdpTerm.alternativeID), null, v));
     }
 
     u.usage.setName(n.getName());

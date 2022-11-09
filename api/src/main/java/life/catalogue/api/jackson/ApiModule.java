@@ -49,7 +49,7 @@ public class ApiModule extends SimpleModule {
   public static final ObjectMapper MAPPER = configureMapper(new ObjectMapper());
 
   static {
-    // register new term enums
+    // register all new term enums found in these packages
     registerTermPackages(ColdpTerm.class, TxtTreeTerm.class);
   }
 
@@ -79,6 +79,7 @@ public class ApiModule extends SimpleModule {
     mapper.enable(MapperFeature.USE_STD_BEAN_NAMING);
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
+    mapper.enable(MapperFeature.DEFAULT_VIEW_INCLUSION);
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
     mapper.enable(JsonParser.Feature.ALLOW_TRAILING_COMMA);

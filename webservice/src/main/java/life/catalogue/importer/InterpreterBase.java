@@ -532,7 +532,7 @@ public class InterpreterBase {
         }
       }
       pnu.getName().setNomStatus(ObjectUtils.coalesce(status, statusAuthorship));
-      pnu.getName().setIdentifier(interpretIdentifiers(identifiers, v));
+      pnu.getName().setIdentifier(interpretIdentifiers(identifiers, null, v));
 
       // finally update the scientificName with the canonical form if we can
       pnu.getName().rebuildScientificName();
@@ -555,14 +555,18 @@ public class InterpreterBase {
     parseYear(authorship.getYear(), issues);
   }
 
-  protected List<Identifier> interpretIdentifiers(String idsRaw, IssueContainer issues) {
+  protected List<Identifier> interpretIdentifiers(String idsRaw, @Nullable Identifier.Scope defaultScope, IssueContainer issues) {
     if (!StringUtils.isBlank(idsRaw)) {
       List<Identifier> ids = new ArrayList<>();
       for (String altID : SPLIT_COMMA.split(idsRaw)) {
         var id = Identifier.parse(altID);
         ids.add(id);
         if (id.isLocal()) {
-          issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCOPE);
+          if (defaultScope != null) {
+            id.setScope(defaultScope);
+          } else {
+            issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCOPE);
+          }
         }
       }
       return ids;
@@ -578,7 +582,7 @@ public class InterpreterBase {
     }
   }
 
-  public NeoUsage interpretUsage(Term idTerm, ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term... altIdTerms) {
+  public NeoUsage interpretUsage(Term idTerm, ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Map<Term, Identifier.Scope> altIdTerms) {
     NeoUsage u;
     // a synonym by status?
     EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
@@ -607,8 +611,8 @@ public class InterpreterBase {
 
     if (u.isNameUsageBase()) {
       List<Identifier> ids = new ArrayList<>();
-      for (Term t : altIdTerms) {
-        var x = interpretIdentifiers(v.getRaw(t), v);
+      for (var te : altIdTerms.entrySet()) {
+        var x = interpretIdentifiers(v.getRaw(te.getKey()), te.getValue(), v);
         if (x != null) {
           ids.addAll(x);
         }

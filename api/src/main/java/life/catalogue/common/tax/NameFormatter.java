@@ -1,6 +1,8 @@
 package life.catalogue.common.tax;
 
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.model.FormattableName;
 
 import org.gbif.nameparser.api.Authorship;
@@ -11,6 +13,7 @@ import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Joiner;
@@ -23,6 +26,11 @@ public class NameFormatter {
   private static final String NOTHO_PREFIX = "notho";
   private static final Joiner AUTHORSHIP_JOINER = Joiner.on(", ").skipNulls();
   private static final Pattern AL = Pattern.compile("^al\\.?$");
+  private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?( .+)?$");
+  // matches only uninomials or binomials without any authorship
+  private static String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
+  @VisibleForTesting
+  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^[A-ZÆŒ]"+EPITHET+"(?: "+EPITHET+"(?: "+EPITHET+")?)?$");
 
   private NameFormatter() {
 
@@ -386,6 +394,39 @@ public class NameFormatter {
         sb.append(auth.getYear());
       }
     }
+  }
+
+  /**
+   * Adds italics around the epithets but not rank markers or higher ranked names.
+   */
+  public static String scientificNameHtml(String scientificName, Rank rank){
+    // only genus names and below are shown in italics
+    if (scientificName != null && rank != null && rank.ordinal() >= Rank.GENUS.ordinal()) {
+      Matcher m = RANK_MATCHER.matcher(scientificName);
+      if (m.find()) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(NameFormatter.inItalics(m.group(1)));
+        sb.append(" ");
+        sb.append(m.group(2));
+        if (m.group(3) != null) {
+          sb.append(" ");
+          sb.append(NameFormatter.inItalics(m.group(3).trim()));
+        }
+        if (m.group(4) != null) {
+          sb.append(" ");
+          sb.append(m.group(4).trim());
+        }
+        return sb.toString();
+
+      } else {
+        m = LINNEAN_NAME_NO_AUTHOR.matcher(scientificName);
+        if (m.find()) {
+          return NameFormatter.inItalics(scientificName);
+        }
+      }
+    }
+    //TODO: Candidatus or Ca.
+    return scientificName;
   }
 
 }

@@ -24,7 +24,9 @@ public class Identifier {
     URN,
     LSID,
 
-    TSN,
+    TPL, // plant list
+    WFO,
+    TSN, // ITIS
     IPNI,
     ZOOBANK,
     COL,
@@ -88,6 +90,10 @@ public class Identifier {
 
   public void setScope(String scope) {
     this.scope = scope;
+  }
+
+  public void setScope(Scope scope) {
+    this.scope = scope.prefix();
   }
 
   public String getId() {

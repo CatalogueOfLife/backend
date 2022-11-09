@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.terms.*;
 import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.dwc.terms.*;
@@ -128,6 +129,11 @@ public class ApiKryoPoolTest {
         GbifTerm.canonicalName,
         IucnTerm.threatStatus,
         AcefTerm.Family,
+        WfoTerm.ipniID,
+        TxtTreeTerm.content,
+        BiboOntTerm.journal,
+        EolDocumentTerm.Document,
+        InatTerm.lexicon,
         UnknownTerm.build("http://gbif.org/abcdefg")
     );
     assertSerde(terms);

@@ -1,5 +1,18 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.core.JsonGenerator;
+
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+
+import com.fasterxml.jackson.databind.ser.PropertyWriter;
+
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
@@ -7,8 +20,7 @@ import life.catalogue.api.vocab.MatchType;
 
 import org.gbif.nameparser.api.*;
 
-import java.util.regex.Matcher;
-
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,6 +51,31 @@ public class NameTest extends SerdeTestBase<Name> {
   public Name genTestValue() throws Exception {
     Name n = TestEntityGenerator.newName();
     return n;
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/checklistbank/issues/1122
+   */
+  @Test
+  @Ignore("work in progress")
+  public void subgenericHtml() throws Exception {
+    Name n = new Name();
+    n.setGenus("Acritus");
+    n.setRank(Rank.GENUS);
+    assertEquals("Acritus", n.getLabel());
+    assertEquals("<i>Acritus</i>", n.getLabelHtml());
+
+    n.setInfragenericEpithet("Acritus");
+    n.setRank(Rank.SUBGENUS);
+
+    n.rebuildScientificName();
+    assertEquals("Acritus (Acritus)", n.getLabel());
+    assertEquals("<i>Acritus (Acritus)</i>", n.getLabelHtml());
+
+    n.setSpecificEpithet("fidjiensis");
+    n.rebuildScientificName();
+    assertEquals("Acritus (Acritus) fidjiensis", n.getLabel());
+    assertEquals("<i>Acritus (Acritus) fidjiensis</i>", n.getLabelHtml());
   }
 
   @Test
@@ -140,8 +177,8 @@ public class NameTest extends SerdeTestBase<Name> {
     n.rebuildScientificName();
     n.rebuildAuthorship();
 
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel(false));
-    assertEquals("<i>Abies × alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel(true));
+    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel());
+    assertEquals("<i>Abies × alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabelHtml());
 
     // https://github.com/CatalogueOfLife/backend/issues/1090
     n = new Name();
@@ -150,15 +187,15 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setRank(Rank.SPECIES);
     n.rebuildScientificName();
     n.rebuildAuthorship();
-    assertEquals("Hieracium brevifolium", n.getLabel(false));
-    assertEquals("<i>Hieracium brevifolium</i>", n.getLabel(true));
+    assertEquals("Hieracium brevifolium", n.getLabel());
+    assertEquals("<i>Hieracium brevifolium</i>", n.getLabelHtml());
 
     n.setRank(Rank.SUBSPECIES);
     n.setInfraspecificEpithet("malyi-caroli");
     n.rebuildScientificName();
     n.rebuildAuthorship();
-    assertEquals("Hieracium brevifolium malyi-caroli", n.getLabel(false));
-    assertEquals("<i>Hieracium brevifolium malyi-caroli</i>", n.getLabel(true));
+    assertEquals("Hieracium brevifolium malyi-caroli", n.getLabel());
+    assertEquals("<i>Hieracium brevifolium malyi-caroli</i>", n.getLabelHtml());
 
     n.setCombinationAuthorship(Authorship.yearAuthors(null, "Zahn"));
     n.setBasionymAuthorship(Authorship.yearAuthors(null,"Gus. Schneid."));
@@ -166,35 +203,56 @@ public class NameTest extends SerdeTestBase<Name> {
 
     n.rebuildScientificName();
     n.rebuildAuthorship();
-    assertEquals("Hieracium brevifolium subsp. malyi-caroli (Gus. Schneid.) Zahn", n.getLabel(false));
-    assertEquals("<i>Hieracium brevifolium</i> subsp. <i>malyi-caroli</i> (Gus. Schneid.) Zahn", n.getLabel(true));
+    assertEquals("Hieracium brevifolium subsp. malyi-caroli (Gus. Schneid.) Zahn", n.getLabel());
+    assertEquals("<i>Hieracium brevifolium</i> subsp. <i>malyi-caroli</i> (Gus. Schneid.) Zahn", n.getLabelHtml());
+
+    FilterProvider filters = new SimpleFilterProvider().addFilter("labelFilter", new LabelFilter());
+    ApiModule.MAPPER.setFilterProvider(filters);
+    var writer = ApiModule.MAPPER.writerFor(Person.class);
+
+    Person p = new Person("Carla", 12);
+    var regular = writer.writeValueAsString(p);
+    System.out.println(regular);
+  }
+  public static class LabelFilter extends SimpleBeanPropertyFilter {
+    @Override
+    public void serializeAsField
+      (Object pojo, JsonGenerator jgen, SerializerProvider provider, PropertyWriter writer) throws Exception {
+      if (include(writer)) {
+        if (!writer.getName().startsWith("label")) {
+          writer.serializeAsField(pojo, jgen, provider);
+          return;
+        } else {
+          Person p = (Person) pojo;
+          return;
+        }
+      } else if (!jgen.canOmitFields()) { // since 2.3
+        writer.serializeAsOmittedField(pojo, jgen, provider);
+      }
+    }
+    @Override
+    protected boolean include(BeanPropertyWriter writer) {
+      return true;
+    }
+    @Override
+    protected boolean include(PropertyWriter writer) {
+      return true;
+    }
   }
 
-  @Test
-  public void linneanPattern() throws Exception {
-    Matcher m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies");
-    assertTrue(m.find());
+  @JsonFilter("labelFilter")
+  public static class Person {
+    public final String name;
+    public final int age;
 
-    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba");
-    assertTrue(m.find());
+    public Person(String name, int age) {
+      this.name = name;
+      this.age = age;
+    }
 
-    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba Mill.");
-    assertFalse(m.find());
-
-    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies DC");
-    assertFalse(m.find());
-
-    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies 4-color");
-    assertTrue(m.find());
-
-    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba alpina");
-    assertTrue(m.find());
-
-    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba subsp. alpina");
-    assertFalse(m.find());
-
-    m = Name.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba ssp.");
-    assertFalse(m.find());
+    public String getLabel() {
+      return name + " (" + age+")";
+    }
   }
 
   @Test
@@ -204,31 +262,31 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setRank(Rank.SPECIES);
     n.setGenus("Abies");
     n.setScientificName("Abies alba");
-    assertEquals("<i>Abies alba</i>", n.scientificNameHtml());
+    assertEquals("<i>Abies alba</i>", n.getLabelHtml());
 
     n.setRank(Rank.SUBSPECIES);
     n.setScientificName("Abies alba subsp. montana");
-    assertEquals("<i>Abies alba</i> subsp. <i>montana</i>", n.scientificNameHtml());
+    assertEquals("<i>Abies alba</i> subsp. <i>montana</i>", n.getLabelHtml());
 
     n.setScientificName("Abies alba nothosubsp. montana");
-    assertEquals("<i>Abies alba</i> nothosubsp. <i>montana</i>", n.scientificNameHtml());
+    assertEquals("<i>Abies alba</i> nothosubsp. <i>montana</i>", n.getLabelHtml());
 
     n.setScientificName("Abies × alba subsp. montana");
-    assertEquals("<i>Abies × alba</i> subsp. <i>montana</i>", n.scientificNameHtml());
+    assertEquals("<i>Abies × alba</i> subsp. <i>montana</i>", n.getLabelHtml());
 
     n.setRank(Rank.GENUS);
     n.setScientificName(n.getGenus());
-    assertEquals("<i>Abies</i>", n.scientificNameHtml());
+    assertEquals("<i>Abies</i>", n.getLabelHtml());
 
     n.setRank(Rank.FAMILY);
     n.setScientificName("Pinaceae");
-    assertEquals("Pinaceae", n.scientificNameHtml());
+    assertEquals("Pinaceae", n.getLabelHtml());
 
     for (Rank r : Rank.values()) {
       if (r.isSpeciesOrBelow() && r.getMarker() != null) {
         n.setRank(r);
         n.setScientificName("Abies alba "+r.getMarker()+" montana");
-        assertEquals("<i>Abies alba</i> "+r.getMarker()+" <i>montana</i>", n.scientificNameHtml());
+        assertEquals("<i>Abies alba</i> "+r.getMarker()+" <i>montana</i>", n.getLabelHtml());
       }
     }
 
@@ -236,7 +294,7 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setRank(Rank.SPECIES);
     n.setScientificName("Abutilon yellows virus ICTV");
     n.setType(NameType.VIRUS);
-    assertEquals("Abutilon yellows virus ICTV", n.scientificNameHtml());
+    assertEquals("Abutilon yellows virus ICTV", n.getLabelHtml());
   }
 
 }

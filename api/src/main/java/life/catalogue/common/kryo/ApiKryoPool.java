@@ -4,10 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
-import life.catalogue.api.vocab.terms.BiboOntTerm;
-import life.catalogue.api.vocab.terms.EolDocumentTerm;
-import life.catalogue.api.vocab.terms.EolReferenceTerm;
-import life.catalogue.api.vocab.terms.TxtTreeTerm;
+import life.catalogue.api.vocab.terms.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.date.FuzzyDate;
@@ -184,7 +181,9 @@ public class ApiKryoPool extends Pool<Kryo> {
     TermFactory.instance().registerTermEnum(DwcUnofficialTerm.class);
     TermFactory.instance().registerTermEnum(EolDocumentTerm.class);
     TermFactory.instance().registerTermEnum(EolReferenceTerm.class);
+    TermFactory.instance().registerTermEnum(InatTerm.class);
     TermFactory.instance().registerTermEnum(TxtTreeTerm.class);
+    TermFactory.instance().registerTermEnum(WfoTerm.class);
     for (Class cl : TermFactory.instance().listRegisteredTermEnums()) {
       kryo.register(cl);
     }

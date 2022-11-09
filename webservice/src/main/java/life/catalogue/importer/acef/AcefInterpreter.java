@@ -19,6 +19,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,7 +88,7 @@ public class AcefInterpreter extends InterpreterBase {
   private Optional<NeoUsage> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
     return interpretName(idTerm, v).map(nat -> {
-      NeoUsage u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v);
+      NeoUsage u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
       // status matches up?
       if (synonym != u.isSynonym()) {
         v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);

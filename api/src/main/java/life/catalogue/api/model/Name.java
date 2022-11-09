@@ -1,6 +1,9 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import life.catalogue.api.jackson.IsEmptyFilter;
+import life.catalogue.api.jackson.Views;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
@@ -41,12 +44,6 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
  */
 public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, FormattableName, Remarkable {
 
-  private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?( .+)?$");
-  // matches only uninomials or binomials without any authorship
-  private static String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
-  @VisibleForTesting
-  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^[A-ZÆŒ]"+EPITHET+"(?: "+EPITHET+"(?: "+EPITHET+")?)?$");
-
   private Integer sectorKey;
   private Integer verbatimKey;
 
@@ -62,7 +59,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    */
   @Nonnull
   private String scientificName;
-  
+
   private String authorship;
 
   /**
@@ -705,13 +702,18 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     return scientificName == null && !isParsed();
   }
 
-  @JsonIgnore
+  @JsonView(Views.Label.class)
   @Override
   public String getLabel() {
     return getLabel(false);
   }
 
-  public String getLabel(boolean html) {
+  @JsonView(Views.Label.class)
+  public String getLabelHtml() {
+    return getLabel(true);
+  }
+
+  private String getLabel(boolean html) {
     return appendNameLabel(new StringBuilder(), null, html).toString();
   }
 
@@ -720,7 +722,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * @param preAuthorship optional prefix to be placed just before the authorship
    */
   StringBuilder appendNameLabel(StringBuilder sb, @Nullable String preAuthorship, boolean html) {
-    String name = html ? scientificNameHtml() : scientificName;
+    String name = html ? NameFormatter.scientificNameHtml(scientificName, rank) : scientificName;
     if (name != null) {
       sb.append(name);
     }
@@ -733,46 +735,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       sb.append(authorship);
     }
     return sb;
-  }
-
-  /**
-   * Adds italics around the epithets but not rank markers or higher ranked names.
-   */
-  String scientificNameHtml() {
-    return scientificNameHtml(scientificName, rank);
-  }
-
-  /**
-   * Adds italics around the epithets but not rank markers or higher ranked names.
-   */
-  public static String scientificNameHtml(String scientificName, Rank rank){
-    // only genus names and below are shown in italics
-    if (scientificName != null && rank != null && rank.ordinal() >= Rank.GENUS.ordinal()) {
-      Matcher m = RANK_MATCHER.matcher(scientificName);
-      if (m.find()) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(NameFormatter.inItalics(m.group(1)));
-        sb.append(" ");
-        sb.append(m.group(2));
-        if (m.group(3) != null) {
-          sb.append(" ");
-          sb.append(NameFormatter.inItalics(m.group(3).trim()));
-        }
-        if (m.group(4) != null) {
-          sb.append(" ");
-          sb.append(m.group(4).trim());
-        }
-        return sb.toString();
-
-      } else {
-        m = LINNEAN_NAME_NO_AUTHOR.matcher(scientificName);
-        if (m.find()) {
-          return NameFormatter.inItalics(scientificName);
-        }
-      }
-    }
-    //TODO: Candidatus or Ca.
-    return scientificName;
   }
 
   @Override

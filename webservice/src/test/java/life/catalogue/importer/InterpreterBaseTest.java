@@ -1,5 +1,7 @@
 package life.catalogue.importer;
 
+import io.dropwizard.util.Maps;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
@@ -13,6 +15,7 @@ import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -50,24 +53,28 @@ public class InterpreterBaseTest {
   public void identifier() throws Exception {
     IssueContainer issues = IssueContainer.simple();
 
-    var resp = ib.interpretIdentifiers("tsn:2134,col:GHS", issues);
+    var resp = ib.interpretIdentifiers("tsn:2134,col:GHS", null, issues);
     assertEquals(List.of(new Identifier("tsn","2134"), new Identifier("col","GHS")), resp);
 
-    resp = ib.interpretIdentifiers(" tsn:2134, COL:GHS", issues);
+    resp = ib.interpretIdentifiers(" tsn:2134, COL:GHS", null, issues);
     assertEquals(List.of(new Identifier("tsn","2134"), new Identifier("col","GHS")), resp);
 
-    resp = ib.interpretIdentifiers(" tsn:2134\\,COL:GHS", issues);
+    resp = ib.interpretIdentifiers(" tsn:2134\\,COL:GHS", null, issues);
     assertEquals(List.of(new Identifier("tsn", "2134\\,COL:GHS")), resp);
 
-    resp = ib.interpretIdentifiers("https://species.wikimedia.org/wiki/Poa_annua", issues);
+    resp = ib.interpretIdentifiers("https://species.wikimedia.org/wiki/Poa_annua", null, issues);
     assertEquals(List.of(new Identifier("https", "//species.wikimedia.org/wiki/Poa_annua")), resp);
 
     assertFalse(issues.hasIssues());
 
-    resp = ib.interpretIdentifiers("Poa_annua", issues);
+    resp = ib.interpretIdentifiers("Poa_annua", null, issues);
     assertEquals(List.of(new Identifier(Identifier.Scope.LOCAL, "Poa_annua")), resp);
     assertTrue(issues.hasIssues());
     assertTrue(issues.hasIssue(Issue.IDENTIFIER_WITHOUT_SCOPE));
+
+    resp = ib.interpretIdentifiers("wfo-0001057524", Identifier.Scope.WFO, issues);
+    assertEquals(List.of(new Identifier(Identifier.Scope.WFO, "wfo-0001057524")), resp);
+    assertFalse(issues.hasIssues());
   }
 
   @Test
@@ -351,7 +358,7 @@ public class InterpreterBaseTest {
 
     ParsedNameUsage pnu = new ParsedNameUsage(n, true, "sensu Döring 1999", "Döring 1999. Travels through the Middle East");
 
-    NeoUsage u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v);
+    NeoUsage u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
 
     assertTrue(u.usage.isTaxon());
     Taxon t = u.asTaxon();

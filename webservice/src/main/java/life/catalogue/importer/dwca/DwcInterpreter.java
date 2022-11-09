@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.api.vocab.terms.InatTerm;
+import life.catalogue.api.vocab.terms.WfoTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.io.InputStreamUtils;
@@ -34,7 +35,13 @@ import com.google.common.collect.Lists;
  */
 public class DwcInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(DwcInterpreter.class);
-  private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
+  private static final Map<Term, Identifier.Scope> ALT_ID_TERMS = new HashMap<>();
+  static {
+    ALT_ID_TERMS.put(DwcTerm.taxonConceptID, null);
+    ALT_ID_TERMS.put(WfoTerm.wfoID, Identifier.Scope.WFO);
+    ALT_ID_TERMS.put(WfoTerm.tplID, Identifier.Scope.TPL);
+    ALT_ID_TERMS.put(WfoTerm.ipniID, Identifier.Scope.IPNI);
+  }
 
   private final MappingInfos mappingFlags;
   private final Term idTerm;
@@ -49,7 +56,7 @@ public class DwcInterpreter extends InterpreterBase {
   public Optional<NeoUsage> interpretUsage(VerbatimRecord v) {
     // name
     return interpretName(v).map(pnu -> {
-      NeoUsage u = interpretUsage(idTerm, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonConceptID);
+      NeoUsage u = interpretUsage(idTerm, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, ALT_ID_TERMS);
       if (idTerm == DwcTerm.taxonID) {
         // remember dwca ids for extension lookups
         var dwcaID = v.getRaw(DwcaTerm.ID);

@@ -10,8 +10,10 @@ import org.gbif.nameparser.api.Rank;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import java.util.regex.Matcher;
+
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 public class NameFormatterTest {
 
@@ -73,6 +75,34 @@ public class NameFormatterTest {
 
     assertNull(n.getAuthorship());
     assertEquals("(D.Reinhardt, 1923) Morrison & Hendrix, 1967", NameFormatter.authorship(n));
+  }
+
+
+  @Test
+  public void linneanPattern() throws Exception {
+    Matcher m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies");
+    assertTrue(m.find());
+
+    m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba");
+    assertTrue(m.find());
+
+    m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba Mill.");
+    assertFalse(m.find());
+
+    m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies DC");
+    assertFalse(m.find());
+
+    m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies 4-color");
+    assertTrue(m.find());
+
+    m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba alpina");
+    assertTrue(m.find());
+
+    m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba subsp. alpina");
+    assertFalse(m.find());
+
+    m = NameFormatter.LINNEAN_NAME_NO_AUTHOR.matcher("Abies alba ssp.");
+    assertFalse(m.find());
   }
 
   @Test

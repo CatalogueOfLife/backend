@@ -2,6 +2,8 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import life.catalogue.common.tax.NameFormatter;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -159,7 +161,7 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
 
 
   private StringBuilder appendFullName(StringBuilder sb, boolean html) {
-    sb.append(html ? Name.scientificNameHtml(name, rank) : name);
+    sb.append(html ? NameFormatter.scientificNameHtml(name, rank) : name);
     if (authorship != null) {
       sb.append(" ");
       sb.append(authorship);

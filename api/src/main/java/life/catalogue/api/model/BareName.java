@@ -28,12 +28,12 @@ public class BareName implements NameUsage {
 
   @Override
   public String getLabel() {
-    return name == null ? null : name.getLabel(false);
+    return name == null ? null : name.getLabel();
   }
 
   @Override
   public String getLabelHtml() {
-    return name == null ? null : name.getLabel(true);
+    return name == null ? null : name.getLabelHtml();
   }
 
   @Override
