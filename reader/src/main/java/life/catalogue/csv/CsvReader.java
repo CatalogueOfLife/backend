@@ -608,7 +608,12 @@ public class CsvReader {
 
     TermRecIterator(Schema schema) throws IOException {
       s = schema;
-      maxIdx = schema.columns.stream().map(f -> f.index).filter(Objects::nonNull).reduce(Integer::max).orElse(0);
+      maxIdx = schema.columns.stream()
+                             .filter(f -> f.value == null) // only consider fields that do not have a default value
+                             .map(f -> f.index)
+                             .filter(Objects::nonNull)
+                             .reduce(Integer::max)
+                             .orElse(0);
       fileIter = schema.files.iterator();
       if (nextFile()) {
         nextRow();
@@ -694,7 +699,7 @@ public class CsvReader {
       for (Schema.Field f : s.columns) {
         if (f != null) {
           String val = null;
-          if (f.index != null) {
+          if (f.index != null && row.length > f.index) {
             if (!Strings.isNullOrEmpty(row[f.index])) {
               val = clean(row[f.index]);
             }
