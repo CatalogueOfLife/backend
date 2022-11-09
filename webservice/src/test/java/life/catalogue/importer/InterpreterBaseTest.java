@@ -1,7 +1,5 @@
 package life.catalogue.importer;
 
-import io.dropwizard.util.Maps;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
@@ -72,6 +70,7 @@ public class InterpreterBaseTest {
     assertTrue(issues.hasIssues());
     assertTrue(issues.hasIssue(Issue.IDENTIFIER_WITHOUT_SCOPE));
 
+    issues.clear();
     resp = ib.interpretIdentifiers("wfo-0001057524", Identifier.Scope.WFO, issues);
     assertEquals(List.of(new Identifier(Identifier.Scope.WFO, "wfo-0001057524")), resp);
     assertFalse(issues.hasIssues());

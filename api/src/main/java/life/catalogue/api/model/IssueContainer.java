@@ -35,6 +35,10 @@ public interface IssueContainer {
     return getIssues().remove(issue);
   }
 
+  default void clear() {
+    getIssues().clear();
+  }
+
   default boolean hasIssue(Issue issue) {
     return getIssues().contains(issue);
   }

@@ -20,18 +20,14 @@ public enum WfoTerm implements Term, AlternativeNames {
   private static final String NS = "http://rs.worldfloraonline.org/terms/";
   private static final URI NS_URI = URI.create(NS);
 
-  private final boolean isClass;
+  private final boolean isClass = false;
   private final String[] alternatives;
 
   WfoTerm() {
-    this(false);
+    // bad domain in WFO downloads!
+    this.alternatives = new String[]{"http://rs.worldfloraonline/terms/"+name()};
   }
 
-  WfoTerm(boolean isClass) {
-    this.alternatives = new String[0];
-    this.isClass = isClass;
-  }
-  
   @Override
   public String prefix() {
     return PREFIX;
