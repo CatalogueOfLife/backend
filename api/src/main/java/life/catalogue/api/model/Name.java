@@ -3,7 +3,6 @@ package life.catalogue.api.model;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import life.catalogue.api.jackson.IsEmptyFilter;
-import life.catalogue.api.jackson.Views;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
@@ -702,13 +701,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     return scientificName == null && !isParsed();
   }
 
-  @JsonView(Views.Label.class)
   @Override
   public String getLabel() {
     return getLabel(false);
   }
 
-  @JsonView(Views.Label.class)
   public String getLabelHtml() {
     return getLabel(true);
   }

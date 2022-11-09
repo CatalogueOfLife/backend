@@ -1,5 +1,8 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+
+import life.catalogue.api.jackson.LabelPropertyFilter;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
@@ -16,6 +19,7 @@ import org.slf4j.LoggerFactory;
 public class BareName implements NameUsage {
   private static final Logger LOG = LoggerFactory.getLogger(BareName.class);
 
+  @JsonFilter(LabelPropertyFilter.NAME)
   private Name name;
   
   public BareName() {

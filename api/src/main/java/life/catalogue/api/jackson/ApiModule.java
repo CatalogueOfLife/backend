@@ -1,5 +1,7 @@
 package life.catalogue.api.jackson;
 
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.ClassPath;
 
@@ -94,6 +96,10 @@ public class ApiModule extends SimpleModule {
     mapper.registerModule(new AfterburnerModule());
   
     mapper.addHandler(new CslArrayMismatchHandler());
+
+    FilterProvider filters = new SimpleFilterProvider().addFilter(LabelPropertyFilter.NAME, new LabelPropertyFilter());
+    mapper.setFilterProvider(filters);
+
     return mapper;
   }
 

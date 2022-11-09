@@ -18,12 +18,16 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.MatchType;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.*;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -206,53 +210,14 @@ public class NameTest extends SerdeTestBase<Name> {
     assertEquals("Hieracium brevifolium subsp. malyi-caroli (Gus. Schneid.) Zahn", n.getLabel());
     assertEquals("<i>Hieracium brevifolium</i> subsp. <i>malyi-caroli</i> (Gus. Schneid.) Zahn", n.getLabelHtml());
 
-    FilterProvider filters = new SimpleFilterProvider().addFilter("labelFilter", new LabelFilter());
-    ApiModule.MAPPER.setFilterProvider(filters);
-    var writer = ApiModule.MAPPER.writerFor(Person.class);
+    var jsonN = ApiModule.MAPPER.writeValueAsString(n);
+    System.out.println(jsonN);
+    assertEquals(2, StringUtils.countMatches(jsonN, "\"label"));
 
-    Person p = new Person("Carla", 12);
-    var regular = writer.writeValueAsString(p);
-    System.out.println(regular);
-  }
-  public static class LabelFilter extends SimpleBeanPropertyFilter {
-    @Override
-    public void serializeAsField
-      (Object pojo, JsonGenerator jgen, SerializerProvider provider, PropertyWriter writer) throws Exception {
-      if (include(writer)) {
-        if (!writer.getName().startsWith("label")) {
-          writer.serializeAsField(pojo, jgen, provider);
-          return;
-        } else {
-          Person p = (Person) pojo;
-          return;
-        }
-      } else if (!jgen.canOmitFields()) { // since 2.3
-        writer.serializeAsOmittedField(pojo, jgen, provider);
-      }
-    }
-    @Override
-    protected boolean include(BeanPropertyWriter writer) {
-      return true;
-    }
-    @Override
-    protected boolean include(PropertyWriter writer) {
-      return true;
-    }
-  }
-
-  @JsonFilter("labelFilter")
-  public static class Person {
-    public final String name;
-    public final int age;
-
-    public Person(String name, int age) {
-      this.name = name;
-      this.age = age;
-    }
-
-    public String getLabel() {
-      return name + " (" + age+")";
-    }
+    var u = new BareName(n);
+    var jsonU = ApiModule.MAPPER.writeValueAsString(u);
+    System.out.println(jsonU);
+    assertEquals(2, StringUtils.countMatches(jsonU, "\"label"));
   }
 
   @Test

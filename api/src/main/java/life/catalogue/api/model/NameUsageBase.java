@@ -1,5 +1,8 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+
+import life.catalogue.api.jackson.LabelPropertyFilter;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.NameFormatter;
@@ -29,6 +32,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   private Integer sectorKey;
   private Integer verbatimKey;
   @Nonnull
+  @JsonFilter(LabelPropertyFilter.NAME)
   private Name name;
   @Nonnull
   private TaxonomicStatus status;
