@@ -9,6 +9,7 @@ public enum Frequency {
   DAILY(1),
   WEEKLY(7),
   MONTHLY(30),
+  QUARTERLY(91),
   YEARLY(365);
   
   private final int days;
@@ -25,10 +26,20 @@ public enum Frequency {
   }
   
   public static Frequency fromDays(Integer days) {
-    if (days == null) return WEEKLY;
-    for (Frequency f : Frequency.values()) {
-      if (f.days == days) return f;
+    Frequency best = WEEKLY;
+    if (days != null) {
+      if (days < 0) {
+        return NEVER;
+      }
+      for (Frequency f : Frequency.values()) {
+        if (f.days == days) return f;
+        if (f.days < days) {
+          best = f;
+        } else {
+          return best;
+        }
+      }
     }
-    return WEEKLY;
+    return best;
   }
 }

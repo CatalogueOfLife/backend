@@ -16,8 +16,11 @@ public class FrequencyTest {
   
   @Test
   public void fromDays() {
+    assertEquals(Frequency.NEVER, Frequency.fromDays(-431));
     assertEquals(Frequency.WEEKLY, Frequency.fromDays(null));
-    assertEquals(Frequency.WEEKLY, Frequency.fromDays(3456789));
+    assertEquals(Frequency.YEARLY, Frequency.fromDays(3456789));
+    assertEquals(Frequency.MONTHLY, Frequency.fromDays(35));
+    assertEquals(Frequency.WEEKLY, Frequency.fromDays(17));
     for (Frequency f : Frequency.values()) {
       assertEquals(f, Frequency.fromDays(f.getDays()));
     }
