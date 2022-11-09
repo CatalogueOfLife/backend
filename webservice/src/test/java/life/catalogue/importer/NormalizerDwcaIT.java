@@ -3,6 +3,7 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.DwcUnofficialTerm;
+import life.catalogue.db.PgSetupRule;
 import life.catalogue.importer.neo.model.*;
 
 import java.net.URI;
@@ -10,7 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.dwc.terms.DwcTerm;
+
+import org.gbif.nameparser.api.Rank;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -23,6 +28,7 @@ import org.neo4j.helpers.collection.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import static life.catalogue.api.vocab.DataFormat.DWCA;
 import static org.junit.Assert.*;
 
 /**
@@ -361,7 +367,51 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       //assertTrue(store.getVerbatim(u.usage.getName().getVerbatimKey()).hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
     }
   }
-  
+
+  @Test
+  public void wcvpUnplacedReplacement() throws Exception {
+    normalize(44);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      var u = usageByID("1");
+      assertEquals("Aa Rchb.f.", u.usage.getLabel());
+      assertEquals(Rank.GENUS, u.usage.getRank());
+      // check tdwg distributions
+      assertEquals(9, u.distributions.size());
+      for (var d : u.distributions) {
+        assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
+      }
+      // synonym of an unplaced name also becomes a bare name
+      var n = nameByID("398576");
+      assertEquals("398576", n.getName().getId());
+      assertNull(usageByID(n.getId())); // a bare name
+      assertEquals("Bambos fax (Lour.) Poir.", n.getName().getLabel());
+      assertEquals(Rank.SPECIES, n.getName().getRank());
+      assertEquals(1, n.getName().getIdentifier().size());
+      assertEquals(new Identifier(Identifier.Scope.IPNI, "77236313-1"), n.getName().getIdentifier().get(0));
+
+      var rels = store.nameRelations(n.node);
+      assertEquals(1, rels.size());
+
+      n = nameByID("396648");
+      assertNull(usageByID(n.getId())); // a bare name
+      assertEquals("Arundo fax Lour.", n.getName().getLabel());
+      assertEquals(Rank.SPECIES, n.getName().getRank());
+
+      // replacement name rel
+      u = usageByID("100200");
+      assertEquals("Hormidium uniflorum Heynh.", u.usage.getLabel());
+      assertEquals(TaxonomicStatus.SYNONYM, u.usage.getStatus());
+      assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
+      rels = store.nameRelations(u.nameNode);
+      assertEquals(1, rels.size());
+      var rel = rels.get(0);
+      assertEquals(NomRelType.REPLACEMENT_NAME, rel.getType());
+      assertEquals(", nom. superfl.", rel.getRemarks());
+      assertEquals("69807", rel.getRelatedNameId());
+    }
+  }
+
   @Test
   @Ignore
   public void testExternal() throws Exception {

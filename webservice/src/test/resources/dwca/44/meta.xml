@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='utf-8'?>
+<archive xmlns="http://rs.tdwg.org/dwc/text/" metadata="eml.xml">
+  <core encoding="UTF-8" fieldsTerminatedBy="|" linesTerminatedBy="\n" fieldsEnclosedBy='' ignoreHeaderLines="1" rowType="http://rs.tdwg.org/dwc/terms/Taxon">
+    <files>
+      <location>wcvp_taxon.csv</location>
+    </files>
+    <id index="0" />
+    <field index="0" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/family"/>
+    <field index="2" term="http://rs.tdwg.org/dwc/terms/genus"/>
+    <field index="3" term="http://rs.tdwg.org/dwc/terms/specificEpithet"/>
+    <field index="4" term="http://rs.tdwg.org/dwc/terms/infraSpecificEpithet"/>
+    <field index="5" term="http://rs.tdwg.org/dwc/terms/scientificName"/>
+    <field index="6" term="http://rs.tdwg.org/dwc/terms/scientificNameAuthorship"/>
+    <field index="7" term="http://rs.tdwg.org/dwc/terms/taxonRank"/>
+    <field index="8" term="http://rs.tdwg.org/dwc/terms/taxonomicStatus"/>
+    <field index="9" term="http://rs.tdwg.org/dwc/terms/acceptedNameUsageID"/>
+    <field index="10" term="http://rs.tdwg.org/dwc/terms/parentNameUsageID"/>
+    <field index="11" term="http://rs.tdwg.org/dwc/terms/originalNameUsageID"/>
+    <field index="12" term="http://rs.tdwg.org/dwc/terms/namePublishedIn"/>
+    <field index="13" term="http://rs.tdwg.org/dwc/terms/nomenclaturalStatus"/>
+    <field index="14" term="http://rs.tdwg.org/dwc/terms/taxonRemarks"/>
+    <field index="15" term="http://rs.tdwg.org/dwc/terms/scientificNameID"/>
+    <field index="16" term="http://rs.tdwg.org/dwc/terms/dynamicProperties"/>
+  </core>
+  <extension encoding="UTF-8" fieldsTerminatedBy="|" linesTerminatedBy="\n" fieldsEnclosedBy='' ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/Distribution">
+    <files>
+      <location>wcvp_distribution.csv</location>
+    </files>
+    <coreid index="0" />
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/locality"/>
+    <field index="2" term="http://rs.tdwg.org/dwc/terms/establishmentMeans"/>
+    <field index="3" term="http://rs.tdwg.org/dwc/terms/locationID"/>
+    <field index="4" term="http://rs.tdwg.org/dwc/terms/occurrenceStatus"/>
+    <field index="5" term="http://iucn.org/terms/threatStatus"/>
+    <field index="6" default="http://creativecommons.org/licenses/by/3.0" term="http://purl.org/dc/terms/license"/>
+    <field index="7" default="The Trustees of the Royal Botanic Gardens, Kew" term="http://purl.org/dc/terms/rightsHolder"/>
+  </extension>
+  <extension encoding="UTF-8" fieldsTerminatedBy="|" linesTerminatedBy="\n" fieldsEnclosedBy='' ignoreHeaderLines="1" rowType="http://rs.catalogueoflife.org/terms/dwc/NameRelation">
+    <files>
+      <location>wcvp_replacementNames.csv</location>
+    </files>
+    <coreid index="0" />
+    <field index="1" term="http://rs.catalogueoflife.org/terms/dwc/relatedNameUsageID"/>
+    <field index="2" term="http://rs.catalogueoflife.org/terms/dwc/relationType"/>
+    <field index="3" term="	http://rs.catalogueoflife.org/terms/dwc/relationRemarks"/>
+  </extension>  
+</archive>

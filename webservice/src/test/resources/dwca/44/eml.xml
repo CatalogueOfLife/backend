@@ -1,0 +1,320 @@
+<?xml version='1.0' encoding='utf-8'?>
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.0.1"
+    xmlns:md="eml://ecoinformatics.org/methods-2.0.1"
+    xmlns:proj="eml://ecoinformatics.org/project-2.0.1"
+    xmlns:d="eml://ecoinformatics.org/dataset-2.0.1" 
+    xmlns:res="eml://ecoinformatics.org/resource-2.0.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:dc="http://purl.org/dc/terms/"
+    packageId="http://sftp.kew.org/pub/data-repositories/WCVP/wcvp_dwca.zip" system="URL" scope="system">
+    <dataset>
+        <title>The World Checklist of Vascular Plants (WCVP)</title>
+        <shortName>WCVP</shortName>
+        <creator>
+            <individualName>
+                  <givenName>Rafaël</givenName>
+                  <surName>Govaerts</surName>
+            </individualName>
+            <organizationName>The Royal Botanic Gardens, Kew</organizationName>
+            <address>
+                <city>London</city>
+                <postalCode>TW93AE</postalCode>
+                <country>UK</country>
+            </address>
+            <onlineUrl>https://www.kew.org/</onlineUrl>
+            <userId directory="http://orcid.org/">0000-0003-2991-5282</userId>
+        </creator>
+        <associatedParty>
+            <individualName>
+            <givenName>WCVP Family Reviewers</givenName>
+            </individualName>
+            <organizationName>https://wcsp.science.kew.org/reviewers.do</organizationName>
+            <onlineUrl>https://wcsp.science.kew.org/reviewers.do</onlineUrl>
+        </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Alrich</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>L.</givenName>              <surName>Andersson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Giovani Carlos</givenName>              <surName>Andrella</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Andrews</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Ashton</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Margoth</givenName>              <surName>Atahuachi Burgos</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Atkins</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Ângela Lúcia</givenName>              <surName>Bagnatori Sartori</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Anoop</givenName>              <surName>Balan</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Subir</givenName>              <surName>Bandyopadhyay</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Rafael</givenName>              <surName>Barbosa Pinto</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>C.</givenName>              <surName>Barker</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Russel L.</givenName>              <surName>Barrett</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>F.</givenName>              <surName>Barrie</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>K.A.</givenName>              <surName>Barringer</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Bernet</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.E.</givenName>              <surName>Berry</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>James S.</givenName>              <surName>Boatwright</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Bogner</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Boos</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>W.</givenName>              <surName>Bopp</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Boyce</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>D.</givenName>              <surName>Bridson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>B.G.</givenName>              <surName>Briggs</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Steven L.</givenName>              <surName>Broich</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Bruhl</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Savatore</givenName>              <surName>Brullo</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Brullo</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Anne</givenName>              <surName>Bruneau</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.A.</givenName>              <surName>Campacci</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Warren</givenName>              <surName>Cardinal-McTeague</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Domingos</givenName>              <surName>Cardoso</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>G.</givenName>              <surName>Carr</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Carter</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Isabella C.</givenName>              <surName>Castro Silva</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Angélica</givenName>              <surName>Cervantes</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.</givenName>              <surName>Cheek</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Le Min</givenName>              <surName>Choo</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>W.D.</givenName>              <surName>Clayton,</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Thiago</givenName>              <surName>Cobra e Monteiro</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>James</givenName>              <surName>Compton</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>A.</givenName>              <surName>Coombes</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>B.</givenName>              <surName>Cosgriff</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Simon</givenName>              <surName>Crameri</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Cribb</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>T.</givenName>              <surName>Croat</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Davies</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>A.</givenName>              <surName>Davis</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Manuel</givenName>              <surName>De la Estrella</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Haroldo C.</givenName>              <surName>De Lima</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Miranda</givenName>              <surName>de Melo</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.</givenName>              <surName>del Rosario García Peña</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Alfonso</givenName>              <surName>Delgado-Salinas</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Oscar</givenName>              <surName>Dorado</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Dransfield</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Lei</givenName>              <surName>Duan</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Ashley N.</givenName>              <surName>Egan</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>T.</givenName>              <surName>Egorova</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>R.</givenName>              <surName>Eriksson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>H.J.</givenName>              <surName>Esser</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>R.</givenName>              <surName>Faden</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Marcus</givenName>              <surName>Falcão</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>A.</givenName>              <surName>Farjon</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Frank</givenName>              <surName>Farruggia</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>F.</givenName>              <surName>Fernanda Mazine</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>F.J.</givenName>              <surName>Fernández Casas</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>R.</givenName>              <surName>Figlar</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Ana Paula</givenName>              <surName>Fortuna-Perez</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>N.</givenName>              <surName>Friesen</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>R.</givenName>              <surName>Fritsch</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Peter</givenName>              <surName>Fritsch</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>D.G.</givenName>              <surName>Frodin</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Alex</givenName>              <surName>George</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>G.</givenName>              <surName>Gerlach</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.</givenName>              <surName>Gilbert</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Gian Pietro</givenName>              <surName>Giusso del Galdo</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Goetghebeur</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>E.</givenName>              <surName>Gonçalves</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Mikhail</givenName>              <surName>Goncharov</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>D.</givenName>              <surName>Goyder</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Grant</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.</givenName>              <surName>Grayum</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.S.</givenName>              <surName>Green</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Bernarda de Souza</givenName>              <surName>Gregório</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName></givenName>              <surName>Häkkinen</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>K.T.</givenName>              <surName>Harman</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Y.</givenName>              <surName>Harvey</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>A.</givenName>              <surName>Hay</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>A.</givenName>              <surName>Henderson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>W.</givenName>              <surName>Hetterscheid</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>K.D.</givenName>              <surName>Hill</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>D.R.</givenName>              <surName>Hodel</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Hoffmann</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>A.</givenName>              <surName>Hofreiter</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>D.</givenName>              <surName>Holland Baptista</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>B.K.</givenName>              <surName>Holst</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>C.</givenName>              <surName>Hong-Wa</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>D.</givenName>              <surName>Hunt</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>José</givenName>              <surName>Iranildo</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Ittenbach</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.C.</givenName>              <surName>Jaszczerski</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Firouzeh</givenName>              <surName>Javadi</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>L.</givenName>              <surName>Jessup</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Jimenez-Mejias</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>H.</givenName>              <surName>Kennedy</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Kington</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Bente B.</givenName>              <surName>Klitgaard</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Koopman</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Tatiana</givenName>              <surName>Kramina</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>K.</givenName>              <surName>Kratochvil</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Kress</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>K.</givenName>              <surName>Kreuz</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Olivier</givenName>              <surName>Lachenaud</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>T.G.</givenName>              <surName>Lammers</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Lorena</givenName>              <surName>Lana C. Atunes</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>E.</givenName>              <surName>Landolt</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>L.L.</givenName>              <surName>Landrum</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M. Marianne</givenName>              <surName>Le Roux</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>José</givenName>              <surName>Ledis Linares</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>A.</givenName>              <surName>Leeuwenberg</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Gwilym P.</givenName>              <surName>Lewis</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Shi-Jin</givenName>              <surName>Li</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Linder</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.M.</givenName>              <surName>Lock</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.M.</givenName>              <surName>Lock</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>L.G.</givenName>              <surName>Lohmann</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.P.</givenName>              <surName>Lowry</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>E.</givenName>              <surName>Lucas</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>H.E.</givenName>              <surName>Luther</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.J.M.</givenName>              <surName>Maas</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>H.</givenName>              <surName>Maas-van de Kamer</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Maas-van de Kamer</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Vidal</givenName>              <surName>Mansano</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>R.</givenName>              <surName>Marcucci</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Kagiso S.</givenName>              <surName>Mashego</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>K.</givenName>              <surName>Matsumoto</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Sawai</givenName>              <surName>Mattapha</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Mayo</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>José Francisco</givenName>              <surName>Montenegro Valls</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Mori</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Annah</givenName>              <surName>Moteetee</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Murata</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Bruce</givenName>              <surName>Murphy</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>T.</givenName>              <surName>Navarro</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.</givenName>              <surName>Newman</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>L.</givenName>              <surName>Newton</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>V.D.</givenName>              <surName>Nguyen</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>E.</givenName>              <surName>Nic Lughadha</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>K.</givenName>              <surName>Nixon</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>H.</givenName>              <surName>Nooteboom</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Kazuaki</givenName>              <surName>Ohashi</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Hiroyoshi</givenName>              <surName>Ohashi</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Arun</givenName>              <surName>Pandey</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>A.</givenName>              <surName>Paton</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>T.D.</givenName>              <surName>Pennington</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>R. Toby</givenName>              <surName>Pennington</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>K.</givenName>              <surName>Persson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Pfahl</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Phillipson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Pete</givenName>              <surName>Phillipson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Maria</givenName>              <surName>Povydysh</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>G.T.</givenName>              <surName>Prance &amp; C.A.Sothers</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>A.M.</givenName>              <surName>Pridgeon</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>C.</givenName>              <surName>Proenca</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>A.</givenName>              <surName>Radcliffe-Smith</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Nivohenintsoa</givenName>              <surName>Rakotonirina</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Gustavo</givenName>              <surName>Ramos</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Fabiana</givenName>              <surName>Ranzato Filardi</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>L.</givenName>              <surName>Raz</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>E.</givenName>              <surName>Robbrecht</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.</givenName>              <surName>Ruhsam</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>C.M.</givenName>              <surName>Sakuragui</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.J.S.</givenName>              <surName>Sands</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Munivenkatappa</givenName>              <surName>Sanjappa</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Arnoldo</givenName>              <surName>Santos-Guerra</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>R.M.K.</givenName>              <surName>Saunders</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>I.</givenName>              <surName>Schanzer</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Rowan</givenName>              <surName>Schley</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Brian</givenName>              <surName>Schrire</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Rodrigo</givenName>              <surName>Schütz Rodrigues</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Guillermo</givenName>              <surName>Seijo</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Elidiene Priscila</givenName>              <surName>Seleme</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Ozan</givenName>              <surName>Sentürk</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Shaw</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Catarina</givenName>              <surName>Silva de Carvalho</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Andréia</givenName>              <surName>Silva Flores</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.A.</givenName>              <surName>Silverstone-Sopkin</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>D.</givenName>              <surName>Simpson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Charles E.</givenName>              <surName>Simpson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Y.</givenName>              <surName>Singh</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Yotsawate</givenName>              <surName>Sirichamorn</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>D.A.</givenName>              <surName>Snijman</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Danilo</givenName>              <surName>Soares Gissi</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>L.H.</givenName>              <surName>Soares-Silva</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.</givenName>              <surName>Sobral</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Dmitry</givenName>              <surName>Sokoloff</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>B.</givenName>              <surName>Sonké</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Spongberg</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>V.</givenName>              <surName>Steinmann</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Charles H.</givenName>              <surName>Stirton</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Shweta</givenName>              <surName>Subramaniam</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>N.</givenName>              <surName>Tanaka</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>O.</givenName>              <surName>Téllez-Valdés</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.</givenName>              <surName>Thomas</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.</givenName>              <surName>Thompson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Mats</givenName>              <surName>Thulin</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>H.</givenName>              <surName>Tigges</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Benjamin M.</givenName>              <surName>Torke</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.</givenName>              <surName>Tulig,</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>C.</givenName>              <surName>Ulloa</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Xander</givenName>              <surName>Van der Burgt</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>van Welzen</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Mohammad</givenName>              <surName>Vatanparast</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>W.</givenName>              <surName>Vink</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>M.</givenName>              <surName>Vorontsova	</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Wen</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>T.</givenName>              <surName>Whitmoore</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Nicholas</givenName>              <surName>Wilding</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.</givenName>              <surName>Wilkin</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>H.</givenName>              <surName>Williamson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>P.G.</givenName>              <surName>Wilson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>K.</givenName>              <surName>Wilson</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Martin</givenName>              <surName>Wojciechowski</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>J.</givenName>              <surName>Wood</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Tingshuang</givenName>              <surName>Yi</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>D.X.</givenName>              <surName>Zhang</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>Rong</givenName>              <surName>Zhang</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>G.</givenName>              <surName>Zhu</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>S.A.</givenName>              <surName>Zona</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>
+    <associatedParty>      <individualName>              <givenName>B.J.M.</givenName>              <surName>Zonneveld</surName>      </individualName>      <role>family reviewer</role>   </associatedParty>	
+        <pubDate>2022-10-27</pubDate>
+        <language>en</language>
+        <abstract>
+            <para>The World Checklist of Vascular Plants (WCVP) is a global consensus view of all known vascular plant species (flowering plants, conifers, ferns, clubmosses and firmosses).</para>
+            <para>WCVP aims to represent a global consensus view of current plant taxonomy by reflecting the latest published taxonomies while incorporating the opinions of taxonomists based around the world.</para>
+            <para>WCVP is built on the nomenclatural data provided by the International Plant Names Index (IPNI), which is the product of a collaboration between The Royal Botanic Gardens, Kew, The Harvard University Herbaria, and the Australian National Herbarium, combined with the taxonomic data provided by an international collaborative programme with a large number of contributors from around the world. Our thanks go to the compilers, editors and reviewers of IPNI and WCVP and in particular the thousands of users who have contributed corrections over the past decades, improving those data for the global user community.</para>
+        </abstract>
+        <keywordSet>
+        	<keyword>Kew</keyword>
+        	<keyword>WCVP</keyword>
+          <keyword>Plants</keyword>
+          <keyword>World</keyword>
+          <keyword>Taxonomy</keyword>
+        </keywordSet>
+        <intellectualRights>
+            <para>This work is licensed under a <ulink url="https://creativecommons.org/licenses/by/3.0/"><citetitle>Creative Commons Attribution 3.0 Unported (CC BY 3.0) License</citetitle></ulink>.</para>
+        </intellectualRights>
+        <distribution scope="document">
+            <online>
+                <url function="information">http://sftp.kew.org/pub/data-repositories/WCVP/</url>
+            </online>
+        </distribution>
+        <coverage>
+            <geographicCoverage>
+                <geographicDescription>Global</geographicDescription>
+            </geographicCoverage>
+            <taxonomicCoverage>
+                <generalTaxonomicCoverage>Vascular Plants</generalTaxonomicCoverage>
+            </taxonomicCoverage>
+        </coverage>        
+        <contact>
+            <organizationName>Digital Revolution, Kew</organizationName>
+            <electronicMailAddress>bi@kew.org</electronicMailAddress>
+        </contact>
+        <publisher>
+            <organizationName>The Royal Botanic Gardens, Kew,</organizationName>
+            <address>
+                <city>London</city>
+                <postalCode>TW9 3AE</postalCode>
+                <country>UK</country>
+            </address>
+            <onlineUrl>https://www.kew.org/</onlineUrl>
+        </publisher>
+    </dataset>
+    <additionalMetadata>
+        <metadata>
+            <gbif>
+                <dateStamp>2022-10-27T15:07:11Z</dateStamp>
+                <citation>The World Checklist of Vascular Plants (WCVP) Facilitated by the Royal Botanic Gardens, Kew. Published on the Internet; http://sftp.kew.org/pub/data-repositories/WCVP/ Retrieved 28 September 2022.</citation>
+                <resourceLogoUrl>https://api.checklistbank.org/image/2232/logo?size=ORIGINAL</resourceLogoUrl>
+            </gbif>
+            <col>
+                <completeness>95</completeness>
+            </col>            
+        </metadata>
+    </additionalMetadata>
+</eml:eml>
