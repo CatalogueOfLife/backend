@@ -6,12 +6,12 @@ import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.User;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.tax.RankUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.tree.*;
-import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
@@ -32,7 +32,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -109,8 +108,20 @@ public class DatasetExportResource {
   public static class ExportQueryParams {
     @QueryParam("taxonID") String taxonID;
     @QueryParam("rank") Set<Rank> ranks;
+    @QueryParam("minRank") Rank minRank;
+    @QueryParam("maxRank") Rank maxRank;
     @QueryParam("synonyms") boolean synonyms;
     @QueryParam("countBy") Rank countBy;
+
+    void init() throws IllegalArgumentException {
+      if (minRank != null || maxRank != null) {
+        if (ranks == null || ranks.isEmpty()) {
+          ranks = RankUtils.between(ObjectUtils.coalesce(minRank, Rank.UNRANKED), ObjectUtils.coalesce(maxRank, Rank.values()[0]), true);
+        } else {
+          throw new IllegalArgumentException("Parameters min/maxRank and rank are mutually exclusive");
+        }
+      }
+    }
   }
 
   @GET
@@ -120,6 +131,7 @@ public class DatasetExportResource {
                            @BeanParam ExportQueryParams params,
                            @QueryParam("showID") boolean showID,
                            @Context SqlSession session) {
+    params.init();
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
       TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
@@ -137,6 +149,7 @@ public class DatasetExportResource {
                              @QueryParam("flat") boolean flat,
                              @BeanParam ExportQueryParams params,
                              @Context SqlSession session) {
+    params.init();
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
       AbstractTreePrinter printer;
@@ -161,6 +174,7 @@ public class DatasetExportResource {
                              @QueryParam("flat") boolean flat,
                              @BeanParam ExportQueryParams params,
                              @Context SqlSession session) {
+    params.init();
     params.taxonID = taxonID;
     return simpleName(key, flat, params, session);
   }
@@ -173,6 +187,7 @@ public class DatasetExportResource {
                                     @Context SqlSession session) {
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
 
+    params.init();
     return Stream.concat(
       Stream.of(EXPORT_HEADERS),
       Streams.stream(num.processTreeSimple(datasetKey, null, params.taxonID, null, RankUtils.lowestRank(params.ranks), params.synonyms))
