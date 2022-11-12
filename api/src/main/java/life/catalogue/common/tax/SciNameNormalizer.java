@@ -2,8 +2,8 @@ package life.catalogue.common.tax;
 
 import java.util.regex.Pattern;
 
-import static life.catalogue.common.text.StringUtils.foldToAscii;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
+import static org.gbif.nameparser.util.UnicodeUtils.foldToAscii;
 
 
 /**

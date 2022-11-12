@@ -11,14 +11,15 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.gbif.nameparser.util.UnicodeUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
-import static life.catalogue.common.text.StringUtils.foldToAscii;
 
 /**
  * Utility to compare scientific name authorships, i.e. the recombination and basionym author and publishing year.
@@ -133,7 +134,7 @@ public class AuthorshipNormalizer {
     // normalize filius
     x = FIL.matcher(x).replaceAll("$1 filius");
     // fold to ascii
-    x = foldToAscii(x);
+    x = UnicodeUtils.foldToAscii(x);
     // simplify umlauts transliterated properly with additional e
     x = TRANSLITERATIONS.matcher(x).replaceAll("$1");
     // replace all punctuation but commas

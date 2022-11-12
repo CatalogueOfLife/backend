@@ -11,7 +11,6 @@ import life.catalogue.common.func.Predicates;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
@@ -373,7 +372,7 @@ public class NameIndexImpl implements NameIndex {
    */
   private static String key(FormattableName n) {
     String origName = NameFormatter.canonicalName(n);
-    return StringUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)), '*');
+    return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)), '*');
   }
   
   /**

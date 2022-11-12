@@ -3,12 +3,12 @@ package life.catalogue.db.tree;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.common.tax.RankUtils;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.RankUtils;
 
 import java.io.IOException;
 import java.io.Writer;

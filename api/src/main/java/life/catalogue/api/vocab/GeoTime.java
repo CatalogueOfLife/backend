@@ -3,7 +3,6 @@ package life.catalogue.api.vocab;
 import life.catalogue.api.jackson.GeoTimeSerde;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.text.CSVUtils;
-import life.catalogue.common.text.StringUtils;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -17,6 +16,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+
+import static org.gbif.nameparser.util.UnicodeUtils.foldToAscii;
 
 /**
  * A geochronological time span with a given scale.
@@ -66,7 +67,7 @@ public class GeoTime implements Comparable<GeoTime> {
   }
   
   private static String norm(String x) {
-    return x == null ? null : StringUtils.foldToAscii(x).trim().toUpperCase();
+    return x == null ? null : foldToAscii(x).trim().toUpperCase();
   }
   
   /**
