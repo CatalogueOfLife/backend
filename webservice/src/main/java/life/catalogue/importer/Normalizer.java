@@ -6,7 +6,6 @@ import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.tax.MisappliedNameMatcher;
-import life.catalogue.common.tax.RankUtils;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.ReferenceFactory;
@@ -27,6 +26,7 @@ import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.RankUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;

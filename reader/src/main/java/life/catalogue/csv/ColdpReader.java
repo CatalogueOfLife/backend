@@ -3,10 +3,10 @@ package life.catalogue.csv;
 
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.PathUtils;
-import life.catalogue.common.tax.RankUtils;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,15 +55,32 @@ public class ColdpReader extends CsvReader {
     TAXID_SCHEMAS = Set.copyOf(taxID);
     NAMEID_SCHEMAS = Set.copyOf(nameID);
   }
-  
+  public static Map<Rank, ColdpTerm> RANK2COLDP = Map.ofEntries(
+    Map.entry(Rank.KINGDOM, ColdpTerm.kingdom),
+    Map.entry(Rank.PHYLUM, ColdpTerm.phylum),
+    Map.entry(Rank.SUBPHYLUM, ColdpTerm.subphylum),
+    Map.entry(Rank.CLASS, ColdpTerm.class_),
+    Map.entry(Rank.SUBCLASS, ColdpTerm.subclass),
+    Map.entry(Rank.ORDER, ColdpTerm.order),
+    Map.entry(Rank.SUBORDER, ColdpTerm.suborder),
+    Map.entry(Rank.SUPERFAMILY, ColdpTerm.superfamily),
+    Map.entry(Rank.FAMILY, ColdpTerm.family),
+    Map.entry(Rank.SUBFAMILY, ColdpTerm.subfamily),
+    Map.entry(Rank.TRIBE, ColdpTerm.tribe),
+    Map.entry(Rank.SUBTRIBE, ColdpTerm.subtribe),
+    Map.entry(Rank.GENUS, ColdpTerm.genus),
+    Map.entry(Rank.SUBGENUS, ColdpTerm.subgenus),
+    Map.entry(Rank.SECTION, ColdpTerm.section)
+  );
+
   private File bibtex;
   private File cslJson;
   private Path treatments;
 
   private ColdpReader(Path folder) throws IOException {
     super(folder, "col", "coldp");
-    detectMappedClassification(ColdpTerm.Taxon, RankUtils.RANK2COLDP.entrySet().stream()
-         .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey))
+    detectMappedClassification(ColdpTerm.Taxon, RANK2COLDP.entrySet().stream()
+                                                                       .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey))
     );
   }
 

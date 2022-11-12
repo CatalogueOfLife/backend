@@ -8,19 +8,21 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.User;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.common.tax.RankUtils;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.tree.*;
-import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.exporter.ExportManager;
 
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.RankUtils;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;

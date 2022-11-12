@@ -5,7 +5,6 @@ import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.common.text.UnicodeUtils;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -23,6 +22,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.undercouch.citeproc.csl.CSLType;
+
+import org.gbif.nameparser.util.UnicodeUtils;
 
 public class DataPackageBuilder {
   private static final String MONOMIAL_PATTERN = "^[A-Z\\p{Lu}]\\p{L}+$";
@@ -95,7 +96,7 @@ public class DataPackageBuilder {
   
   private String titleToName(String t) {
     if (StringUtils.hasContent(t)) {
-      return UnicodeUtils.ascii(t).replaceAll("\\s+", "-");
+      return UnicodeUtils.foldToAscii(t).replaceAll("\\s+", "-");
     }
     return null;
   }

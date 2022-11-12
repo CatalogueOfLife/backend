@@ -1,6 +1,6 @@
 package life.catalogue.resources.parser;
 
-import life.catalogue.common.text.UnicodeUtils;
+import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
