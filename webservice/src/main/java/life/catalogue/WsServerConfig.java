@@ -114,6 +114,12 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public JobConfig job = new JobConfig();
 
   /**
+   * The name parser timeout in milliseconds
+   */
+  @Min(100)
+  public int parserTimeout = 5000;
+
+  /**
    * The maximum allowed time in seconds for a unix diff to take before throwing a time out.
    */
   @Min(1)

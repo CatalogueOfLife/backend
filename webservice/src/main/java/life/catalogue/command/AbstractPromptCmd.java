@@ -5,6 +5,8 @@ import life.catalogue.api.jackson.ApiModule;
 
 import java.util.concurrent.TimeUnit;
 
+import life.catalogue.parser.NameParser;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +69,8 @@ public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig
       TimeUnit.SECONDS.sleep(prompt);
     }
     this.cfg = cfg;
+    // update name parser timeout settings
+    NameParser.PARSER.setTimeout(cfg.parserTimeout);
     // use a custom jackson mapper
     ObjectMapper om = ApiModule.configureMapper(Jackson.newMinimalObjectMapper());
     bootstrap.setObjectMapper(om);

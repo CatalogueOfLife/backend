@@ -197,6 +197,9 @@ public class WsServer extends Application<WsServerConfig> {
     }
     clearTmp(cfg);
 
+    // update name parser timeout settings
+    NameParser.PARSER.setTimeout(cfg.parserTimeout);
+
     // configure static download base URI
     DatasetExport.setDownloadBaseURI(cfg.downloadURI);
 
