@@ -94,7 +94,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * @param timeout
    */
   public void setTimeout(int timeout) {
-    parserInternal.setTimout(timeout);
+    parserInternal.setTimeout(timeout);
   }
 
   /**
