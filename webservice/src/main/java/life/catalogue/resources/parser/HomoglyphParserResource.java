@@ -1,12 +1,14 @@
 package life.catalogue.resources.parser;
 
-import life.catalogue.common.text.UnicodeUtils;
+import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -27,13 +29,13 @@ public class HomoglyphParserResource {
 
 
   @GET
-  public HomoglyphResult parse(@QueryParam("q") String input) {
+  public HomoglyphResult parse(@QueryParam("q") String input, @QueryParam("hyphen") boolean hyphen, @QueryParam("keep") String keep) {
     if (input == null) {
       throw new IllegalArgumentException("Input string required");
     }
     HomoglyphResult result = new HomoglyphResult();
     result.original = input;
-    result.canonical = UnicodeUtils.replaceHomoglyphs(input);
+    result.canonical = UnicodeUtils.replaceHomoglyphs(input, hyphen, StringUtils.trimToNull(keep));
     if (result.hasHomoglyphs()) {
       result.positions = new ArrayList<>();
       int pos = 0;
@@ -53,8 +55,8 @@ public class HomoglyphParserResource {
   
   @POST
   @Consumes({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
-  public HomoglyphResult parseJson(String input) {
-    return parse(input);
+  public HomoglyphResult parseJson(@QueryParam("hyphen") boolean hyphen, @QueryParam("keep") String keep, String input) {
+    return parse(input, hyphen, keep);
   }
 
 }
