@@ -12,7 +12,9 @@
     </appender>
 
     <logger name="org.gbif" level="INFO"/>
+    <!--
     <logger name="life.catalogue.parser" level="DEBUG"/>
+    -->
 
     <root level="WARN">
         <appender-ref ref="CONSOLE"/>
