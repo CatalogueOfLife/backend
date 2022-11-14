@@ -49,6 +49,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
 
   private static final Map<String, Issue> WARN_TO_ISSUE = ImmutableMap.<String, Issue>builder()
       .put(Warnings.NULL_EPITHET, Issue.NULL_EPITHET)
+      .put(Warnings.HOMOGLYHPS, Issue.HOMOGLYPH_CHARACTERS)
       .put(Warnings.UNUSUAL_CHARACTERS, Issue.UNUSUAL_NAME_CHARACTERS)
       .put(Warnings.SUBSPECIES_ASSIGNED, Issue.SUBSPECIES_ASSIGNED)
       .put(Warnings.LC_MONOMIAL, Issue.LC_MONOMIAL)
@@ -93,8 +94,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Sets the timeout for the internal name parser
    * @param timeout
    */
-  public void setTimeout(int timeout) {
-    parserInternal.setTimout(timeout);
+  public void setTimeout(long timeout) {
+    parserInternal.setTimeout(timeout);
   }
 
   /**
