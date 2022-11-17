@@ -135,11 +135,15 @@ public class TreeDao {
     return nodes;
   }
 
+  /**
+   * @param id not null, but might be a root with id=null
+   */
   private ResultPage<TreeNode> rootOrChildren(final DSID<String> id, final int projectKey, final boolean placeholder, Rank countBy, boolean inclExtinct, final TreeNode.Type type, final Page page) {
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
+      // not null, but parent.id might be null
       final RankID parent = RankID.parseID(id);
       final TreeNode tnParent = parent.getId() == null ? null : trm.get(projectKey, type, parent);
       final Integer sectorKey = tnParent == null ? null : tnParent.getSectorKey();
@@ -235,23 +239,26 @@ public class TreeDao {
     return tn;
   }
 
-  private void addCounts(@Nullable RankID parent, @Nullable Rank countBy, List<TreeNode> nodes, boolean calcPlaceholders) {
+  /**
+   * @param parent not null, but parent.id might be null
+   */
+  private void addCounts(RankID parent, @Nullable Rank countBy, List<TreeNode> nodes, boolean calcPlaceholders) {
     if (countBy != null) {
-      final String pid = parent == null ? null : parent.getId();
       int all = 0;
       TreeNode placeholder = null;
+      final DSID<String> key = DSID.root(parent.getDatasetKey());
       for (TreeNode n : nodes) {
         if (n.isPlaceholder() && !calcPlaceholders) {
           placeholder = n;
         } else if (!n.isPlaceholder()) {
-          n.setCount(taxonCounter.count(parent.id(n.getId()), countBy));
-          all =+ n.getCount();
+          n.setCount(taxonCounter.count(key.id(n.getId()), countBy));
+          all += n.getCount();
         } else {
           //TODO: calculate placeholders for the classification which can be multiple placeholders...
         }
       }
-      if (placeholder != null) {
-        int parentCount = taxonCounter.count(parent.id(pid), countBy);
+      if (placeholder != null && parent.hasId()) {
+        int parentCount = taxonCounter.count(parent, countBy);
         placeholder.setCount(parentCount - all);
       }
     }

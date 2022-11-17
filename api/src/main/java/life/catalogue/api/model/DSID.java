@@ -41,6 +41,13 @@ public interface DSID<K> extends DatasetScoped, Entity<DSID<K>> {
   }
 
   /**
+   * @return true when the DSID has an ID value
+   */
+  default boolean hasId() {
+    return getId() == null;
+  }
+
+  /**
    * Returns a colon concatenated version of both dataset key and id
    */
   default String concat() {

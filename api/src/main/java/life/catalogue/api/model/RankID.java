@@ -9,12 +9,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 public class RankID extends DSIDValue<String> {
   private static final Logger LOG = LoggerFactory.getLogger(RankID.class);
   private static final String INC_SEDIS = "--incertae-sedis--";
   private static final Pattern ID_PATTERN = Pattern.compile("^(.*)"+INC_SEDIS+"([A-Z_]+)$", Pattern.CASE_INSENSITIVE);
 
-  public static RankID parseID(DSID<String> id){
+  public static RankID parseID(@Nullable DSID<String> id){
     if (id != null) {
       return parseID(id.getDatasetKey(), id.getId());
     }
