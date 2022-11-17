@@ -6,6 +6,8 @@ import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import life.catalogue.dao.TreeDao;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collection;
@@ -16,7 +18,11 @@ import org.apache.ibatis.annotations.Param;
 
 import com.google.common.collect.Iterables;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public interface DuplicateMapper {
+  Logger LOG = LoggerFactory.getLogger(DuplicateMapper.class);
 
   /**
    * See DuplicateDao for parameter descriptions...
@@ -36,6 +42,7 @@ public interface DuplicateMapper {
    * @param ids usage ids to return usage decisions for
    */
   default List<Duplicate.UsageDecision> namesByIds(@Param("datasetKey") int datasetKey, Collection<String> ids) {
+    LOG.info("Query {} duplicate names by id in dataset {}", ids.size(), datasetKey);
     createIdTable();
     Iterables.partition(ids, 10000).forEach(this::insertTableIdBatch);
     var res = namesByTableIds(datasetKey);
@@ -95,6 +102,7 @@ public interface DuplicateMapper {
    * @param ids usage ids to return usage decisions for
    */
   default List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("projectKey") Integer projectKey, Collection<String> ids) {
+    LOG.info("Query {} duplicate usages by id in dataset {}", ids.size(), datasetKey);
     createIdTable();
     Iterables.partition(ids, 10000).forEach(this::insertTableIdBatch);
     var res = usagesByTableIds(datasetKey, projectKey);
