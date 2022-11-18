@@ -66,11 +66,14 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   int count(@Param("datasetKey") int datasetKey);
 
-  List<SimpleName> listByRegex(@Param("datasetKey") int datasetKey,
-                               @Param("regex") String regex,
-                               @Param("status") TaxonomicStatus status,
-                               @Param("rank") Rank rank,
-                               @Param("page") Page page);
+  List<SimpleNameWithDecision> listByRegex(@Param("datasetKey") int datasetKey,
+                                           @Param("projectKey") Integer projectKey,
+                                           @Param("regex") String regex,
+                                           @Param("status") TaxonomicStatus status,
+                                           @Param("rank") Rank rank,
+                                           @Param("withDecision") Boolean withDecision,
+                                           @Param("decisionMode") EditorialDecision.Mode decisionMode,
+                                           @Param("page") Page page);
 
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 

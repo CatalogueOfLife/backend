@@ -125,29 +125,42 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void listByRegex() throws Exception {
-    List<SimpleName> res = mapper().listByRegex(testDataRule.testData.key, ".", null, null, new Page());
+    List<SimpleNameWithDecision> res = mapper().listByRegex(testDataRule.testData.key, null,".", null, null, null, null, new Page());
     assertEquals(4, res.size());
 
-    res = mapper().listByRegex(testDataRule.testData.key, ".", TaxonomicStatus.ACCEPTED, null, new Page());
+    res = mapper().listByRegex(testDataRule.testData.key, null,".", TaxonomicStatus.ACCEPTED, null, null, null, new Page());
     assertEquals(2, res.size());
 
-    res = mapper().listByRegex(testDataRule.testData.key, ".", TaxonomicStatus.ACCEPTED, Rank.GENUS, new Page());
+    res = mapper().listByRegex(testDataRule.testData.key, null,".", TaxonomicStatus.ACCEPTED, Rank.GENUS, null, null, new Page());
     assertEquals(0, res.size());
 
-    res = mapper().listByRegex(testDataRule.testData.key, ".*fu[ns]", null, null, new Page());
+    res = mapper().listByRegex(testDataRule.testData.key, null,".*fu[ns]", null, null, null, null, new Page());
     assertEquals(3, res.size());
 
-    res = mapper().listByRegex(testDataRule.testData.key, ".*fus", null, null, new Page());
+    res = mapper().listByRegex(testDataRule.testData.key, null,".*fus", null, null, null, null, new Page());
     assertEquals(2, res.size());
 
-    res = mapper().listByRegex(testDataRule.testData.key, "La", null, null, new Page());
+    res = mapper().listByRegex(testDataRule.testData.key, null,"La", null, null, null, null, new Page());
     assertEquals(3, res.size());
 
-    res = mapper().listByRegex(testDataRule.testData.key, ".+ .+tris$", null, null, new Page());
+    res = mapper().listByRegex(testDataRule.testData.key, null,".+ .+tris$", null, null, null, null, new Page());
     assertEquals(1, res.size());
 
-    res = mapper().listByRegex(testDataRule.testData.key, "[A-Za-z]+\\s", null, null, new Page());
+    res = mapper().listByRegex(testDataRule.testData.key, null,"[A-Za-z]+\\s", null, null, null, null, new Page());
     assertEquals(4, res.size());
+
+    // no decisions, so should be the same but tests decision sql query
+    res = mapper().listByRegex(testDataRule.testData.key, 3,"[A-Za-z]+\\s", null, null, null, null, new Page());
+    assertEquals(4, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, 3,"[A-Za-z]+\\s", null, null, false, null, new Page());
+    assertEquals(4, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, 3,"[A-Za-z]+\\s", null, null, true, null, new Page());
+    assertEquals(0, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, 3,"[A-Za-z]+\\s", null, null, null, EditorialDecision.Mode.UPDATE, new Page());
+    assertEquals(0, res.size());
   }
 
   @Test

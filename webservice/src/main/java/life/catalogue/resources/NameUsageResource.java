@@ -11,6 +11,8 @@ import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
@@ -101,15 +103,30 @@ public class NameUsageResource {
   @GET
   @Timed
   @Path("pattern")
-  public List<SimpleName> searchDatasetByRegex(@PathParam("key") int datasetKey,
-                                                  @QueryParam("regex") String regex,
-                                                  @QueryParam("status") TaxonomicStatus status,
-                                                  @QueryParam("rank") Rank rank,
-                                                  @Valid @BeanParam Page page,
-                                                  @Context SqlSession session) {
+  public List<SimpleNameWithDecision> searchDatasetByRegex(@PathParam("key") int datasetKey,
+                                               @QueryParam("projectKey") Integer projectKey,
+                                               @QueryParam("regex") String regex,
+                                               @QueryParam("status") TaxonomicStatus status,
+                                               @QueryParam("rank") Rank rank,
+                                               @QueryParam("decisionMode") String decisionMode,
+                                               @Valid @BeanParam Page page,
+                                               @Context SqlSession session) {
     RegexUtils.validatePattern(regex);
     Page p = page == null ? new Page() : page;
-    return session.getMapper(NameUsageMapper.class).listByRegex(datasetKey, regex, status, rank, p);
+    Boolean withDecision = null; // true if decision need to be present, null indifferent
+    EditorialDecision.Mode mode = null; // mode of decision to filter by
+    if (NameUsageRequest.IS_NULL.equalsIgnoreCase(decisionMode)) {
+      withDecision = false;
+    } else if (NameUsageRequest.IS_NOT_NULL.equalsIgnoreCase(decisionMode)) {
+      withDecision = true;
+    } else if (!StringUtils.isBlank(decisionMode)) {
+      withDecision = true;
+      mode = EditorialDecision.Mode.valueOf(decisionMode.toUpperCase().trim());
+    }
+    if (withDecision != null && projectKey == null) {
+      throw new IllegalArgumentException("projectKey required when decisionMode is present");
+    }
+    return session.getMapper(NameUsageMapper.class).listByRegex(datasetKey, projectKey, regex, status, rank, withDecision, mode, p);
   }
 
   @GET

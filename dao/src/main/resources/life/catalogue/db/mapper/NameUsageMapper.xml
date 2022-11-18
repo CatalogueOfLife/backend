@@ -167,6 +167,14 @@
     <result property="phrase" column="name_phrase" />
   </resultMap>
 
+  <resultMap id="simpleDecisionResultMap" type="SimpleNameWithDecision" autoMapping="true">
+    <id property="id" column="id"/>
+    <result property="parent" column="parent_id"/>
+    <result property="name" column="scientific_name"/>
+    <result property="phrase" column="name_phrase" />
+    <association property="decision" resultMap="life.catalogue.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_" notNullColumn="id"/>
+  </resultMap>
+
   <resultMap id="simpleNidxResultMap" type="SimpleNameWithNidx" autoMapping="true">
     <id property="id" column="id"/>
     <result property="name" column="scientific_name"/>
@@ -230,9 +238,24 @@
     )
   </select>
 
-  <select id="listByRegex" resultMap="simpleResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>
+  <select id="listByRegex" resultMap="simpleDecisionResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>,
+    <if test="projectKey == null">
+      NULL AS ed_id
+    </if>
+    <if test="projectKey != null">
+      false AS ed_subject_broken,
+      <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
+        <property name="alias" value="ed."/>
+        <property name="prefix" value="ed_"/>
+      </include>
+    </if>
     FROM <include refid="FROM_SIMPLE"/>
+    <if test="projectKey != null">
+      LEFT JOIN decision ed ON ed.dataset_key=#{projectKey}
+                            AND ed.subject_dataset_key = #{datasetKey}
+                            AND ed.subject_id = u.id
+    </if>
     WHERE u.dataset_key = #{datasetKey}
       AND n.scientific_name ~ '^${regex}'
     <if test="rank != null">
@@ -240,6 +263,12 @@
     </if>
     <if test="status != null">
       AND u.status = #{status}::TAXONOMICSTATUS
+    </if>
+    <if test="withDecision != null">
+      AND ed.id IS <if test="withDecision">NOT</if> NULL
+    </if>
+    <if test="decisionMode != null">
+      AND ed.mode = #{decisionMode}::EDITORIALDECISION_MODE
     </if>
     ORDER BY n.scientific_name
     <include refid="life.catalogue.db.Common.limit"/>
