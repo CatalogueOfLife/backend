@@ -33,7 +33,7 @@ public class NameMatchingRule extends ExternalResource {
   @Override
   protected void before() throws Throwable {
     SqlSessionFactory factory = factorySupplier.get();
-    LOG.info("Setup names index");
+    LOG.info("Setup in-memory names index");
     nidx = NameIndexFactory.memory(factory, AuthorshipNormalizer.INSTANCE);
     nidx.start();
     LOG.info("Rematch all names");

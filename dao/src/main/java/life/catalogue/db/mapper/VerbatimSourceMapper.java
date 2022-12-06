@@ -27,7 +27,9 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   default VerbatimSource getWithSources(@Param("key") DSID<String> key) {
     VerbatimSource v = get(key);
-    v.setSecondarySources(getSources(key));
+    if (v != null) {
+      v.setSecondarySources(getSources(key));
+    }
     return v;
   }
 

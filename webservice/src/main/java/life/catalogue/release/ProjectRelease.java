@@ -72,7 +72,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.cfg = cfg;
     String latestRelease = String.format("L%sR", getClass().equals(XRelease.class) ? "X" : "");
     this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}"+latestRelease);
-    this.portalURI = UriBuilder.fromUri(cfg.apiURI).path("portal").build();
+    this.portalURI = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("portal").build();
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;

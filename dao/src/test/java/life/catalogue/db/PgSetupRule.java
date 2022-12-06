@@ -50,7 +50,7 @@ public class PgSetupRule extends ExternalResource {
     try {
       cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
       // modify database name to be unique
-      cfg.database = cfg.database + "-" + UUID.randomUUID();
+      cfg.database = cfg.database + UUID.randomUUID().toString().replace('-', 'x');
       System.out.println("psql -U postgres " + cfg.database);
       adminCfg = YamlUtils.read(PgConfig.class, "/pg-admin.yaml");
       initDb(cfg, adminCfg);

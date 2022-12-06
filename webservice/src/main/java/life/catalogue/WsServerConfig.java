@@ -149,7 +149,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public File exportDir = new File("/tmp/exports");
 
-  public URI apiURI = URI.create("https://api.checklistbank.org");
+  public URI apiURI;
 
   /**
    * JSON status file to be updated for maintenance mode.

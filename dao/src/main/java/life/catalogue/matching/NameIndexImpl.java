@@ -104,7 +104,8 @@ public class NameIndexImpl implements NameIndex {
   }
 
   private static boolean needsInsert(NameMatch m, Name name){
-    return (!m.hasMatch() || m.getType() == MatchType.CANONICAL) && INDEX_NAME_TYPES.contains(name.getType());
+    return (!m.hasMatch() || (name.hasAuthorship() && m.getType() == MatchType.CANONICAL))
+           && INDEX_NAME_TYPES.contains(name.getType());
   }
 
   @Override

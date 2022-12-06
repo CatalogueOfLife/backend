@@ -236,8 +236,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   @Override
   protected void before() throws Throwable {
-    LOG.info("Loading {} test data", testData);
     initSession();
+    LOG.info("Loading {} test data into {}", testData, session.getConnection().getMetaData().getURL());
     if (testData != KEEP) {
       // remove potential old data
       truncate(session);
@@ -415,6 +415,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   private void copyDataset(PgConnection pgc, int key) throws IOException, SQLException {
+    System.out.format("Copy dataset %s\n", key);
     copyPartitionedTable(pgc, "verbatim", key, ImmutableMap.of("dataset_key", key));
     copyPartitionedTable(pgc, "reference", key, datasetEntityDefaults(key));
     copyPartitionedTable(pgc, "name", key,
@@ -434,6 +435,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         "is_synonym", this::isSynonym
       )
     );
+    copyPartitionedTable(pgc, "verbatim_source", key, ImmutableMap.of("dataset_key", key));
     copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key));
     copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key));
   }
