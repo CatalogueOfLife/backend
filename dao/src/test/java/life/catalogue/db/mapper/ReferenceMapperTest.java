@@ -121,9 +121,9 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
     //ref-1
     //ref-1b
     //ref-2
-    in.add(REF1);
-    in.add(REF1b);
-    in.add(REF2);
+    in.add(new Reference(REF1));
+    in.add(new Reference(REF1b));
+    in.add(new Reference(REF2));
 
     List<Reference> out = mapper().list(DATASET11.getKey(), new Page());
     assertEquals(8, out.size());

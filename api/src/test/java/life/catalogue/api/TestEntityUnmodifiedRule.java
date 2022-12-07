@@ -8,4 +8,9 @@ public class TestEntityUnmodifiedRule extends ExternalResource {
   protected void before() throws Throwable {
     TestEntityGenerator.throwIfObjectsChanged();
   }
+
+  @Override
+  protected void after() {
+    TestEntityGenerator.throwIfObjectsChanged();
+  }
 }

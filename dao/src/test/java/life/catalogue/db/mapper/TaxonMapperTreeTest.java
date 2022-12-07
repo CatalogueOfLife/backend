@@ -19,8 +19,6 @@ import static org.junit.Assert.*;
 
 public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
   
-  NameUsageMapperTreeTest.CountHandler<Taxon> countHandler;
-  
   public TaxonMapperTreeTest() {
     super(TaxonMapper.class, TestDataRule.tree());
   }
