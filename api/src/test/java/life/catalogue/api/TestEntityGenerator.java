@@ -7,6 +7,8 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.ApiKryoPool;
 
+import org.apache.jena.base.Sys;
+
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 
@@ -95,6 +97,14 @@ public class TestEntityGenerator {
   public final static int VERBATIM_KEY5 = 5;
   // we keep the initial hashes of our test objects stored to compare if they have accidently changed during tests
   private final static int[] ORIGINAL_HASHES;
+  private final static Entity<?>[] INSTANCES = new Entity[]{
+    USER_USER, USER_EDITOR, USER_ADMIN,
+    DATASET11, DATASET12,
+    REF1, REF1b, REF2,
+    NAME1, NAME2, NAME3, NAME4,
+    TAXON1, TAXON2, SYN1, SYN2
+  };
+
   static {
     USER_ADMIN.setKey(91);
     USER_ADMIN.setUsername("'admin'");
@@ -233,20 +243,24 @@ public class TestEntityGenerator {
     ORIGINAL_HASHES = buildHashes();
   }
 
-  public static void throwIfObjectsChanged() {
-    if (!Objects.deepEquals(ORIGINAL_HASHES, buildHashes())) {
-      throw new IllegalStateException("static test instances have been changed");
+  public static boolean hasObjectsChanged() {
+    for (int i=0; i<INSTANCES.length; i++) {
+      Entity<?> obj = INSTANCES[i];
+      int hash = obj.hashCode();
+      if (hash != ORIGINAL_HASHES[i]){
+        System.out.println("Static " + obj.getClass().getSimpleName() + " test instance " + obj.getKey() + " has changed");
+        return true;
+      }
     }
+    return false;
   }
 
   private static int[] buildHashes() {
-    return new int[]{
-      USER_USER.hashCode(), USER_EDITOR.hashCode(), USER_ADMIN.hashCode(),
-      DATASET11.hashCode(), DATASET12.hashCode(),
-      REF1.hashCode(), REF1b.hashCode(), REF2.hashCode(),
-      NAME1.hashCode(), NAME2.hashCode(), NAME3.hashCode(), NAME4.hashCode(),
-      TAXON1.hashCode(), TAXON2.hashCode(), SYN1.hashCode(), SYN2.hashCode()
-    };
+    int[] hashes = new int[INSTANCES.length];
+    for (int i=0; i<INSTANCES.length; i++) {
+      hashes[i] = INSTANCES[i].hashCode();
+    }
+    return hashes;
   }
 
   /*
@@ -622,7 +636,7 @@ public class TestEntityGenerator {
 
   public static NameUsageWrapper newNameUsageTaxonWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(TAXON1);
+    nuw.setUsage(new Taxon(TAXON1));
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
@@ -631,7 +645,7 @@ public class TestEntityGenerator {
 
   public static NameUsageWrapper newNameUsageSynonymWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(SYN2);
+    nuw.setUsage(new Synonym(SYN2));
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
@@ -652,7 +666,7 @@ public class TestEntityGenerator {
   public static NameUsageWrapper newNameUsageBareNameWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
     BareName bn = new BareName();
-    bn.setName(NAME4);
+    bn.setName(new Name(NAME4));
     nuw.setUsage(bn);
     EnumSet<Issue> issues = EnumSet.of(Issue.ID_NOT_UNIQUE);
     nuw.setIssues(issues);

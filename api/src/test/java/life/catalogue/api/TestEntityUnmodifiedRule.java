@@ -6,11 +6,15 @@ public class TestEntityUnmodifiedRule extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    TestEntityGenerator.throwIfObjectsChanged();
+    if (TestEntityGenerator.hasObjectsChanged()) {
+      throw new IllegalStateException("static test instances have been changed before a " + getClass().getSimpleName() + " test");
+    }
   }
 
   @Override
   protected void after() {
-    TestEntityGenerator.throwIfObjectsChanged();
+    if (TestEntityGenerator.hasObjectsChanged()) {
+      throw new IllegalStateException("static test instances have been changed after a " + getClass().getSimpleName() + " test");
+    }
   }
 }
