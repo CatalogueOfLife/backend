@@ -308,7 +308,7 @@ public class TestEntityGenerator {
    * Creates a new taxon with the specified id, belonging to dataset DATASET11.
    */
   public static Taxon newTaxon(String id) {
-    return newTaxon(NAME1, id, TAXON1.getId());
+    return newTaxon(new Name(NAME1), id, TAXON1.getId());
   }
 
   /*
@@ -636,7 +636,7 @@ public class TestEntityGenerator {
 
   public static NameUsageWrapper newNameUsageTaxonWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(new Taxon(TAXON1));
+    nuw.setUsage(TAXON1);
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
@@ -645,7 +645,7 @@ public class TestEntityGenerator {
 
   public static NameUsageWrapper newNameUsageSynonymWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(new Synonym(SYN2));
+    nuw.setUsage(SYN2);
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
@@ -666,7 +666,7 @@ public class TestEntityGenerator {
   public static NameUsageWrapper newNameUsageBareNameWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
     BareName bn = new BareName();
-    bn.setName(new Name(NAME4));
+    bn.setName(NAME4);
     nuw.setUsage(bn);
     EnumSet<Issue> issues = EnumSet.of(Issue.ID_NOT_UNIQUE);
     nuw.setIssues(issues);
