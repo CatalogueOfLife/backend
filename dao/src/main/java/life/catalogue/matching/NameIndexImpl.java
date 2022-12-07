@@ -21,6 +21,7 @@ import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -198,7 +199,7 @@ public class NameIndexImpl implements NameIndex {
     } else if (matches.size() == 1) {
       IndexName m0 = matches.get(0);
       m.setName(m0);
-      if (query.getLabel().equalsIgnoreCase(m0.getLabel()) && query.getRank() == m0.getRank()) {
+      if (normExact(query.getLabel()).equalsIgnoreCase(normExact(m0.getLabel())) && query.getRank() == m0.getRank()) {
         m.setType(MatchType.EXACT);
       } else if (m0.isCanonical() && (hasAuthorship || !querycanonical.equals(queryfullname) || query.getRank() != m0.getRank())) {
         m.setType(MatchType.CANONICAL);
@@ -238,7 +239,12 @@ public class NameIndexImpl implements NameIndex {
     m.setAlternatives(candidates);
     return m;
   }
-  
+
+  private static String normExact(String name) {
+    Pattern EXACT = Pattern.compile("[. -]+");
+    return EXACT.matcher(name).replaceAll(" ").trim();
+  }
+
   /**
    * @return new best score
    */

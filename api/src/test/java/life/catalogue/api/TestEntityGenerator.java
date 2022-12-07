@@ -93,7 +93,8 @@ public class TestEntityGenerator {
   public final static int VERBATIM_KEY3 = 3;
   public final static int VERBATIM_KEY4 = 4;
   public final static int VERBATIM_KEY5 = 5;
-
+  // we keep the initial hashes of our test objects stored to compare if they have accidently changed during tests
+  private final static int[] ORIGINAL_HASHES;
   static {
     USER_ADMIN.setKey(91);
     USER_ADMIN.setUsername("'admin'");
@@ -228,6 +229,24 @@ public class TestEntityGenerator {
     SYN2.setVerbatimKey(133);
     SYN2.setCreatedBy(Users.DB_INIT);
     SYN2.setModifiedBy(Users.DB_INIT);
+
+    ORIGINAL_HASHES = buildHashes();
+  }
+
+  public static void throwIfObjectsChanged() {
+    if (!Objects.deepEquals(ORIGINAL_HASHES, buildHashes())) {
+      throw new IllegalStateException("static test instances have been changed");
+    }
+  }
+
+  private static int[] buildHashes() {
+    return new int[]{
+      USER_USER.hashCode(), USER_EDITOR.hashCode(), USER_ADMIN.hashCode(),
+      DATASET11.hashCode(), DATASET12.hashCode(),
+      REF1.hashCode(), REF1b.hashCode(), REF2.hashCode(),
+      NAME1.hashCode(), NAME2.hashCode(), NAME3.hashCode(), NAME4.hashCode(),
+      TAXON1.hashCode(), TAXON2.hashCode(), SYN1.hashCode(), SYN2.hashCode()
+    };
   }
 
   /*
