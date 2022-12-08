@@ -63,7 +63,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   ArchiveExport(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
     super(req, userKey, requiredFormat, true, factory, cfg, imageService, timer);
-    logoUriBuilder = UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
+    logoUriBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
     refCache = Caffeine.newBuilder()
                        .maximumSize(10000)
                        .build(this::lookupReference);
@@ -124,7 +124,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
     LOG.info("Prepare export metadata");
     // add CLB logo URL if missing
     if (imageService.datasetLogoExists(dataset.getKey())) {
-      if (dataset.getLogo() == null) {
+      if (dataset.getLogo() == null && logoUriBuilder != null) {
         dataset.setLogo(logoUriBuilder.build(dataset.getKey()));
       }
       // include logo image file

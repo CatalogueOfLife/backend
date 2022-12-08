@@ -1,5 +1,5 @@
 # Dataset templates
-Projects offer various [template options](https://data.catalogue.life/catalogue/3/options) to build a title or citation for a release.
+Projects offer various [template options](https://www.checklistbank.org/catalogue/3/options) to build a title or citation for a release.
 The templates can include lower case variables in curly brackets, e.g `{editors} ({date})`.
 
 ## Variables

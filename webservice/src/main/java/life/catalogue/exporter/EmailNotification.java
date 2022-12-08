@@ -96,7 +96,7 @@ public class EmailNotification {
       if (text != null) {
         LOG.info(text);
       }
-      if (cfg.mail.block) {
+      if (cfg.mail != null && cfg.mail.block) {
         throw Exceptions.asRuntimeException(e);
       }
     }
@@ -123,9 +123,15 @@ public class EmailNotification {
       this.export = export;
       this.user = user;
       this.dataset = dataset;
-      this.from = cfg.mail.from;
-      this.fromName = cfg.mail.fromName;
-      this.replyTo = cfg.mail.replyTo;
+      if (cfg.mail != null) {
+        this.from = cfg.mail.from;
+        this.fromName = cfg.mail.fromName;
+        this.replyTo = cfg.mail.replyTo;
+      } else {
+        this.from = null;
+        this.fromName = null;
+        this.replyTo = null;
+      }
     }
 
     public UUID getKey() {
