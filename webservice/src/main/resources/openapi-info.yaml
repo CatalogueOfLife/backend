@@ -1,5 +1,5 @@
 title: COL ChecklistBank API
-description: 'This is the Catalogue of Life ChecklistBank API that drives all of [CoL ChecklistBank](http://data.catalogue.life).
+description: 'This is the Catalogue of Life ChecklistBank API that drives all of [CoL ChecklistBank](https://www.checklistbank.org).
 The API is still in active development and not finalized, small changes are still expected to take place before the release of version 1.0.
 
 For questions, suggestions and discussion please subscribe to our [API mailing list](https://lists.gbif.org/mailman/listinfo/col-users)

@@ -358,7 +358,7 @@ gtag('event', 'page_view', {
         <ul>
           <li><a href="/about/colusage#col-api">COL API</a></li>
           <li><a href="/data/browse">Browse the COL Checklist</a></li>
-          <li><a href="https://data.catalogueoflife.org/">COL ChecklistBank</a></li>
+          <li><a href="https://www.checklistbank.org/">COL ChecklistBank</a></li>
         </ul>
       <div class='spacing'></div>
       <ul class='socials'>

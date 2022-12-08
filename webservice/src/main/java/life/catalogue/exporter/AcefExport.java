@@ -1,5 +1,7 @@
 package life.catalogue.exporter;
 
+import com.zaxxer.hikari.pool.HikariProxyConnection;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
@@ -57,19 +59,20 @@ public class AcefExport extends DatasetExportJob {
   protected void export() throws Exception {
     LOG.info("Export dataset {} to {}", datasetKey, tmpDir.getAbsolutePath());
     // create csv files
-    PgConnection c = cfg.db.connect();
-    c.setAutoCommit(false);
-    try {
-      InputStream sql = AcefExport.class.getResourceAsStream(EXPORT_SQL);
-      executeAcExportSql(datasetKey, c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)));
+    try (Connection c = factory.openSession(false).getConnection()) {
+      c.setAutoCommit(false);
 
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
+      try {
+        InputStream sql = AcefExport.class.getResourceAsStream(EXPORT_SQL);
+        executeAcExportSql(datasetKey, c.unwrap(PgConnection.class), new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)));
 
-    } finally {
-      dropSchema(c);
-      c.commit();
-      c.close();
+      } catch (UnsupportedEncodingException e) {
+        throw new RuntimeException(e);
+
+      } finally {
+        dropSchema(c);
+        c.commit();
+      }
     }
     // include images
     exportLogos();
