@@ -1,0 +1,10 @@
+id,scientific_name,authorship,basionym_authors,basionym_year,combination_authors,combination_year,uninomial,genus,specific_epithet,infraspecific_epithet,rank
+1,Animalia,,,,,,Animalia,,,,KINGDOM
+2,Chordata,,,,,,Chordata,,,,PHYLUM
+3,Actinopterygii,,,,,,Actinopterygii,,,,CLASS
+4,Perciformes,,,,,,Perciformes,,,,ORDER
+40,Percoidea,,,,,,Percoidea,,,,SUPERFAMILY
+41,Perciliidae,,,,,,Perciliidae,,,,FAMILY
+5,Gobiiformes,,,,,,Gobiiformes,,,,ORDER
+50,Gobioidei,,,,,,Gobioidei,,,,SUBORDER
+51,Xenisthmidae,,,,,,Xenisthmidae,,,,FAMILY
