@@ -27,6 +27,7 @@ public class RankParser extends EnumParser<Rank> {
     super("rank.csv", Rank.class);
     for (Rank r : Rank.values()) {
       add(r.getMarker(), r);
+      add(r.getPlural(), r);
     }
   }
 

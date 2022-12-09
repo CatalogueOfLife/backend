@@ -25,6 +25,10 @@ public class RankParserTest extends ParserTestBase<Rank> {
     assertParse(Rank.SUBSPECIES, "subsp.");
     assertParse(Rank.SUBSPECIES, "subsp ");
     assertParse(Rank.SUBSPECIES, "ssp ");
+    // plural
+    assertParse(Rank.GENUS, "genera");
+    assertParse(Rank.PROLES, "prole");
+    assertParse(Rank.PROLES, "proles");
   }
 
   @Override
