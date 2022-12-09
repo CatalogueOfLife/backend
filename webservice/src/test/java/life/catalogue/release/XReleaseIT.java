@@ -51,7 +51,7 @@ public class XReleaseIT  {
   public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13, 1, 2,
     Map.of(
       "sector", Map.of("created_by", 100, "modified_by", 100)
-    ), Set.of(3,11,12,13,100,101,102));
+    ), null);
   final int projectKey = Datasets.COL;
 
 

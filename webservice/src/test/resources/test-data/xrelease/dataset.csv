@@ -5,3 +5,4 @@ key,source_key,type,title,origin,attempt,created_by,modified_by,created,issued
 100,,OTHER,Source #1,EXTERNAL,1,100,100,2019-12-01,2019-12-01
 101,,OTHER,Source #2,EXTERNAL,3,100,100,2019-12-01,2019-12-11
 102,,ARTICLE,Plazi Perciformes,EXTERNAL,1,100,100,2019-12-01,2019-12-11
+103,,TAXONOMIC,Hierarchy,EXTERNAL,1,100,100,2019-12-01,2019-12-11

@@ -8,10 +8,7 @@ import life.catalogue.api.model.SimpleNameWithPub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -49,6 +46,10 @@ public interface UsageCache {
   }
 
   private void addParents(List<SimpleNameWithPub> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameWithPub> loader) {
+    addParents(classification, parentKey, loader, new HashSet<>());
+  }
+
+  private void addParents(List<SimpleNameWithPub> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameWithPub> loader, Set<String> visitedIDs) {
     SimpleNameWithPub p;
     if (contains(parentKey)) {
       p = get(parentKey);
@@ -61,9 +62,14 @@ public interface UsageCache {
       }
     }
     if (p != null) {
+      visitedIDs.add(parentKey.getId());
       classification.add(p);
       if (p.getParent() != null) {
-        addParents(classification, parentKey.id(p.getParent()), loader);
+        if (visitedIDs.contains(p.getParent())) {
+          LOG.warn("Bad classification tree with parent circles involving {}", p);
+        } else {
+          addParents(classification, parentKey.id(p.getParent()), loader);
+        }
       }
     }
   }

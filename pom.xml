@@ -37,11 +37,11 @@
         by these BOMs (use the right versions):
 
         Main two Dropwizard BOMs:
-        https://github.com/dropwizard/dropwizard/blob/v2.0.28/dropwizard-bom/pom.xml
-        https://github.com/dropwizard/dropwizard/blob/v2.0.28/dropwizard-dependencies/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v2.1.4/dropwizard-bom/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v2.1.4/dropwizard-dependencies/pom.xml
 
-        Which also imports the Jersey BOM: https://github.com/eclipse-ee4j/jersey/blob/2.33/bom/pom.xml
-        and Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.10.5.20201202/pom.xml
+        Which also imports the Jersey BOM: https://github.com/eclipse-ee4j/jersey/blob/2.37/bom/pom.xml
+        and Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.13.4.20221013/pom.xml
 
         These BOMs manage dependency versions for many things including:
         commons-lang3, caffeine, guava, jersey, commons-text, servlet api, httpclient,
@@ -66,35 +66,35 @@
     <hk2.version>2.5.0-b32</hk2.version>
     <!-- even though managed in DW BOM, it conflicts with ES BOM and we gotta manage this manually -->
     <httpcore.version>4.4.12</httpcore.version>
-    <icu4j.version>64.2</icu4j.version>
+    <icu4j.version>72.1</icu4j.version>
     <jakarta.xml.version>2.3.3</jakarta.xml.version>
     <java-diff-utils.version>4.0</java-diff-utils.version>
     <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
-    <javers.version>5.6.3</javers.version>
+    <javers.version>6.8.0</javers.version>
     <jbibtex.version>1.0.20</jbibtex.version>
     <jcommander.version>1.82</jcommander.version>
-    <jjwt.version>0.10.7</jjwt.version>
+    <jjwt.version>0.11.5</jjwt.version>
     <jsoup.version>1.15.3</jsoup.version>
     <junit.version>4.12</junit.version>
     <kryo-serializers.version>0.45</kryo-serializers.version>
     <kryo.version>5.3.0</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
     <logstash-logback.version>6.4</logstash-logback.version>
-    <mapdb.version>3.0.8</mapdb.version>
+    <mapdb.version>3.0.9</mapdb.version>
     <mockito.version>3.1.0</mockito.version>
     <mybatis.version>3.5.11</mybatis.version>
-    <name-parser.version>3.8.3</name-parser.version>
+    <name-parser.version>3.8.4</name-parser.version>
     <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
     <neo4j.version>3.4.17</neo4j.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.2.3</poi.version>
-    <postgresql.version>42.5.0</postgresql.version>
+    <postgresql.version>42.5.1</postgresql.version>
     <scribejava.version>8.3.1</scribejava.version>
     <simple-mail.version>6.6.1</simple-mail.version>
-    <stax2.version>4.2</stax2.version>
+    <stax2.version>4.2.1</stax2.version>
     <text-tree.version>1.0.0</text-tree.version>
     <tika.version>1.22</tika.version>
-    <twelvemonkeys.version>3.7.0</twelvemonkeys.version>
+    <twelvemonkeys.version>3.9.4</twelvemonkeys.version>
     <validation-api.version>2.0.0.Final</validation-api.version>
     <woodstox.version>4.4.1</woodstox.version>
     <imgscalr.version>4.2</imgscalr.version>

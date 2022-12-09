@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class SimpleNameClassified extends SimpleNameWithPub {
+  // classificaiton starting with direct parent
   private List<SimpleNameWithPub> classification;
 
   public SimpleNameClassified() {

@@ -11,6 +11,9 @@ import org.gbif.nameparser.api.Rank;
 import java.util.*;
 
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.util.RankUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,6 +155,21 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private boolean update(NameUsageBase nu, UsageMatch existing) {
     if (nu.getStatus() == existing.usage.getStatus()) {
       Set<InfoGroup> updated = EnumSet.noneOf(InfoGroup.class);
+      // set targetKey to the existing usage
+      targetKey.id(existing.usage.getId());
+      // patch classification if direct parent adds to it
+      var matchedParents = parents.matchedParentsOnly(existing.usage.getId());
+      if (!matchedParents.isEmpty()) {
+        var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
+        var parent = matchedParents.getLast().match;
+        if (parent != null && (existingParent == null || existingParent.getRank().higherThan(parent.getRank()) && !existingParent.getId().equals(parent.getId()))) {
+          LOG.debug("Updated {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
+          batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
+          num.updateParentId(targetKey, parent.getId(), user.getKey());
+          updated.add(InfoGroup.PARENT);
+        }
+      }
+
       // should we try to update the name? Need to load from db, so check upfront as much as possible to avoid db calls
       Name pn = null;
       if (!existing.usage.hasAuthorship() && nu.getName().hasAuthorship()) {
@@ -176,15 +194,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
         existing.usage.setPublishedInID(pn.getPublishedInId());
         LOG.debug("Updated {} with publishedIn", pn);
       }
-
       // TODO: implement updates basionym, vernaculars, etc
-      // TODO: patch classification if direct parent adds to it
       if (!updated.isEmpty()) {
         updCounter++;
         // update name
         nm.update(pn);
         // track source
-        vm.insertSources(targetKey.id(existing.usage.getId()), nu, updated);
+        vm.insertSources(targetKey, nu, updated);
         return true;
       }
     }

@@ -33,7 +33,7 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   List<Sector> listChildSectors(@Param("key") DSID<Integer> sectorKey);
 
   /**
-   * List all sectors for a given dataset and mode ordered by priority.
+   * List all sectors for a given dataset and mode ordered by priority starting with the lowest priority and sorting nulls last.
    * @param datasetKey project or release key
    * @param modes modes to include in the sector listing. If null all modes will be considered
    */

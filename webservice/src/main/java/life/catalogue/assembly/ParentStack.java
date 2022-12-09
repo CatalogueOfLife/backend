@@ -3,9 +3,8 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.SimpleNameWithNidx;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Parent stack that expects breadth first iterations which needs to track more than a depth first one.
@@ -82,6 +81,20 @@ public class ParentStack {
       }
     }
     return root;
+  }
+
+  /**
+   * Filters parents so that only those remain which have a non null match property and which are not listed in the optional exclusion list.
+   * @return
+   *
+   * @param excludeIDs optional list of ids to be excluded from the result list
+   */
+  public LinkedList<MatchedUsage> matchedParentsOnly(String... excludeIDs) {
+    Set<String> exclusion = new HashSet<>();
+    if (excludeIDs != null) {
+      exclusion.addAll(Arrays.asList(excludeIDs));
+    }
+    return parents.stream().filter(u -> u.match != null && !exclusion.contains(u.match.getId())).collect(Collectors.toCollection(LinkedList::new));
   }
 
   public MatchedUsage secondLast() {
