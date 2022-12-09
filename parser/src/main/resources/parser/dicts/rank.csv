@@ -18,6 +18,7 @@
 [infrasp unranked],INFRASPECIFIC_NAME
 [unranked],UNRANKED
 abber,ABERRATION
+abberatio,ABERRATION
 abberation,ABERRATION
 aberrancy,ABERRATION
 abt,PHYLUM
@@ -51,6 +52,7 @@ coll sp,INFRASPECIFIC_NAME
 coll species,INFRASPECIFIC_NAME
 complex,SPECIES_AGGREGATE
 convar,CONVARIETY
+convarietas,CONVARIETY
 ct,CHEMOFORM
 cv,CULTIVAR
 div,PHYLUM
@@ -147,11 +149,13 @@ p,PHYLUM
 pathotype,PATHOVAR
 ph,PHYLUM
 phagotype,PHAGOVAR
+phalanx,FALANX
 phyl,PHYLUM
 phylumclade,PHYLUM
 phylumdivision,PHYLUM
 physiological type,BIOVAR
 prol,PROLES
+prole,PROLES
 prolata,PROLES
 race,PROLES
 reg,KINGDOM
@@ -227,6 +231,7 @@ subtribus,SUBTRIBE
 subvar,SUBVARIETY
 subvarietas,SUBVARIETY
 superclassis,SUPERCLASS
+superforma,SUPERFORM
 superordo,SUPERORDER
 superphyl,SUPERPHYLUM
 superregnum,SUPERKINGDOM
@@ -236,6 +241,7 @@ superspecies,SPECIES_AGGREGATE
 supersubtrib,SUPRAGENERIC_NAME
 supersubtribe,SUPRAGENERIC_NAME
 supertrib,SUPERTRIBE
+supervarietas,SUPERVARIETY
 suprasect,SUPRAGENERIC_NAME
 susbp,SUBSPECIES
 t infgen,INFRAGENERIC_NAME

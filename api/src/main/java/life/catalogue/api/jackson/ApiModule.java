@@ -177,12 +177,7 @@ public class ApiModule extends SimpleModule {
     protected URIDeserializer() {
       super(URI.class);
     }
-  
-    @Override
-    protected URI _deserializeFromEmptyString() throws IOException {
-      return null;
-    }
-  
+    
     @Override
     protected URI _deserialize(String value, DeserializationContext ctxt) throws IOException {
       return URI.create(value);
