@@ -67,6 +67,10 @@ public class UsageMatcherGlobal {
     this.groupAnalyzer = new TaxGroupAnalyzer();
   }
 
+  UsageCache getUCache() {
+    return uCache;
+  }
+
   private DSID<Integer> canonNidx(int datasetKey, Integer nidx) {
     if (nidx != null) {
       var xn = nameIndex.get(nidx);

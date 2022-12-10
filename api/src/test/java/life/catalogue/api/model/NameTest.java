@@ -228,6 +228,7 @@ public class NameTest extends SerdeTestBase<Name> {
       if (r.isSpeciesOrBelow() && r.getMarker() != null) {
         n.setRank(r);
         n.setScientificName("Abies alba "+r.getMarker()+" montana");
+        System.out.printf("%s -> %s%n", r, n.scientificNameHtml());
         assertEquals("<i>Abies alba</i> "+r.getMarker()+" <i>montana</i>", n.scientificNameHtml());
       }
     }

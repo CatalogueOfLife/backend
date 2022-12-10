@@ -1,18 +1,18 @@
 package life.catalogue.assembly;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.NameIndex;
+
+import org.apache.ibatis.session.SqlSession;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.util.RankUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +24,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
   private final ParentStack parents;
   private final UsageMatcherGlobal matcher;
+  private final UsageCache uCache;
   private int counter = 0;  // all source usages
   private int updCounter = 0; // updates
   private final int subjectDatasetKey;
@@ -31,6 +32,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, User user, Sector sector, SectorImport state, Taxon incertae) {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
     this.matcher = matcher;
+    uCache = matcher.getUCache();
     if (target == null && incertae != null) {
       parents = new ParentStack(matcher.toSimpleName(incertae));
     } else {
@@ -152,6 +154,20 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return nm.getByUsage(targetDatasetKey, usageID);
   }
 
+  private boolean proposedParentDoesNotConflict(SimpleName existingParent, SimpleName proposedParent) {
+    if (existingParent.getRank().higherThan(proposedParent.getRank())
+           && !existingParent.getId().equals(proposedParent.getId())) {
+      // now check the newly proposed classification does also contain the current parent to avoid changes - we only want to patch missing ranks
+      var proposedClassification = uCache.getClassification(proposedParent.toDSID(targetDatasetKey), num::getSimplePub);
+      for (var propHigherTaxon : proposedClassification) {
+        if (propHigherTaxon.getId().equals(existingParent.getId())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   private boolean update(NameUsageBase nu, UsageMatch existing) {
     if (nu.getStatus() == existing.usage.getStatus()) {
       Set<InfoGroup> updated = EnumSet.noneOf(InfoGroup.class);
@@ -160,11 +176,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // patch classification if direct parent adds to it
       var matchedParents = parents.matchedParentsOnly(existing.usage.getId());
       if (!matchedParents.isEmpty()) {
-        var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
         var parent = matchedParents.getLast().match;
-        if (parent != null && (existingParent == null || existingParent.getRank().higherThan(parent.getRank()) && !existingParent.getId().equals(parent.getId()))) {
+        var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
+        batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
+        if (parent != null && (existingParent == null || proposedParentDoesNotConflict(existingParent, parent))) {
           LOG.debug("Updated {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
-          batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
           num.updateParentId(targetKey, parent.getId(), user.getKey());
           updated.add(InfoGroup.PARENT);
         }

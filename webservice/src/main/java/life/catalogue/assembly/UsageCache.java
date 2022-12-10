@@ -45,6 +45,12 @@ public interface UsageCache {
     return sncl;
   }
 
+  default List<SimpleNameWithPub> getClassification(DSID<String> start, Function<DSID<String>, SimpleNameWithPub> loader) {
+    List<SimpleNameWithPub> classification = new ArrayList<>();
+    addParents(classification, start, loader);
+    return classification;
+  }
+
   private void addParents(List<SimpleNameWithPub> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameWithPub> loader) {
     addParents(classification, parentKey, loader, new HashSet<>());
   }
