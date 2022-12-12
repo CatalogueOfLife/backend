@@ -130,11 +130,20 @@
       <if test="req.modified != null">
         AND di.finished > #{req.modified}
       </if>
+      <if test="req.modifiedBefore != null">
+        AND di.finished &lt; #{req.modifiedBefore}
+      </if>
       <if test="req.created != null">
         AND d.created > #{req.created}
       </if>
+      <if test="req.createdBefore != null">
+        AND d.created &lt; #{req.createdBefore}
+      </if>
       <if test="req.issued != null">
         AND d.issued > #{req.issued}
+      </if>
+      <if test="req.issuedBefore != null">
+        AND d.issued &lt; #{req.issuedBefore}
       </if>
       <if test="req.rowType != null and !req.rowType.isEmpty()">
         <foreach item="rt" collection="req.rowType" separator=""> AND exist(di.verbatim_by_term_count, '${rt}')</foreach>

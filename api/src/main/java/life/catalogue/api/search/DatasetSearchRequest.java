@@ -117,12 +117,21 @@ public class DatasetSearchRequest {
 
   @QueryParam("modified")
   private LocalDate modified;
-  
+
+  @QueryParam("modifiedBefore")
+  private LocalDate modifiedBefore;
+
   @QueryParam("created")
   private LocalDate created;
+
+  @QueryParam("createdBefore")
+  private LocalDate createdBefore;
   
   @QueryParam("issued")
   private FuzzyDate issued;
+
+  @QueryParam("issuedBefore")
+  private FuzzyDate issuedBefore;
 
   @Min(0)
   @QueryParam("minSize")
@@ -291,23 +300,47 @@ public class DatasetSearchRequest {
   public void setModified(LocalDate modified) {
     this.modified = modified;
   }
-  
+
+  public LocalDate getModifiedBefore() {
+    return modifiedBefore;
+  }
+
+  public void setModifiedBefore(LocalDate modifiedBefore) {
+    this.modifiedBefore = modifiedBefore;
+  }
+
   public FuzzyDate getIssued() {
     return issued;
   }
-  
+
   public void setIssued(FuzzyDate issued) {
     this.issued = issued;
   }
-  
+
+  public FuzzyDate getIssuedBefore() {
+    return issuedBefore;
+  }
+
+  public void setIssuedBefore(FuzzyDate issuedBefore) {
+    this.issuedBefore = issuedBefore;
+  }
+
   public LocalDate getCreated() {
     return created;
   }
-  
+
   public void setCreated(LocalDate created) {
     this.created = created;
   }
-  
+
+  public LocalDate getCreatedBefore() {
+    return createdBefore;
+  }
+
+  public void setCreatedBefore(LocalDate createdBefore) {
+    this.createdBefore = createdBefore;
+  }
+
   public SortBy getSortBy() {
     return sortBy;
   }
