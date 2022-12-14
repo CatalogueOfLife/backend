@@ -1,7 +1,6 @@
 package life.catalogue.api.model;
 
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
@@ -285,44 +284,6 @@ public class Classification {
         return true;
       case subgenus:
         setSubgenus(name);
-        return true;
-    }
-    return false;
-  }
-
-  public boolean setByTerm(DwcUnofficialTerm rank, String name) {
-    switch (rank) {
-      case superkingdom:
-        setSuperkingdom(name);
-        return true;
-      case superphylum:
-        setSuperphylum(name);
-        return true;
-      case superclass:
-        setSuperclass(name);
-        return true;
-      case superorder:
-        setSuperorder(name);
-        return true;
-      case superfamily:
-        setSuperfamily(name);
-        return true;
-
-      case subkingdom:
-        setSubkingdom(name);
-        return true;
-      case subphylum:
-        setSubphylum(name);
-        return true;
-      case subclass:
-        setSubclass(name);
-        return true;
-      case suborder:
-        setSuborder(name);
-        return true;
-
-      case tribe:
-        setTribe(name);
         return true;
     }
     return false;

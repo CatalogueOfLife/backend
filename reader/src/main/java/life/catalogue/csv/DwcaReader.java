@@ -1,15 +1,8 @@
 package life.catalogue.csv;
 
-import com.sun.source.util.TreeScanner;
-import com.univocity.parsers.common.CommonParserSettings;
-import com.univocity.parsers.common.Format;
-
-import com.univocity.parsers.tsv.TsvParserSettings;
-
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
@@ -39,6 +32,8 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.univocity.parsers.common.CommonParserSettings;
+import com.univocity.parsers.common.Format;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
 
@@ -63,13 +58,13 @@ public class DwcaReader extends CsvReader {
       DwcTerm.Event, DwcTerm.eventID,
       DwcTerm.Taxon, DwcTerm.taxonID,
       DwcTerm.MeasurementOrFact, DwcTerm.measurementID,
-      DwcUnofficialTerm.NameRelation, DwcTerm.taxonID
+      ColdpTerm.NameRelation, DwcTerm.taxonID
   );
 
   private static final Map<Term, Term> TERM_TO_ROW_TYPE = MapUtils.linkedHashMap(
     DwcTerm.occurrenceID, DwcTerm.Occurrence,
     DwcTerm.measurementID, DwcTerm.MeasurementOrFact,
-    DwcUnofficialTerm.relatedNameUsageID, DwcUnofficialTerm.NameRelation,
+    ColdpTerm.relatedNameID, ColdpTerm.NameRelation,
     DwcTerm.taxonID, DwcTerm.Taxon,
     DwcTerm.parentNameUsageID, DwcTerm.Taxon,
     DwcTerm.acceptedNameUsageID, DwcTerm.Taxon,
@@ -80,7 +75,7 @@ public class DwcaReader extends CsvReader {
 
   static {
     // make sure we are aware of ColTerms
-    TermFactory.instance().registerTermEnum(DwcUnofficialTerm.class);
+    TermFactory.instance().registerTermEnum(ColdpTerm.class);
     TermFactory.instance().registerTerm(DwcaTerm.ID);
   }
   

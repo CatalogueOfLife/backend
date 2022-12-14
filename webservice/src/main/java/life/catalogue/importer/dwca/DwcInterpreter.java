@@ -1,15 +1,10 @@
 package life.catalogue.importer.dwca;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.api.vocab.terms.InatTerm;
 import life.catalogue.api.vocab.terms.WfoTerm;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
-import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
@@ -21,8 +16,6 @@ import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.*;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 
 import org.slf4j.Logger;
@@ -98,12 +91,12 @@ public class DwcInterpreter extends InterpreterBase {
 
   Optional<NeoRel> interpretNameRelations(VerbatimRecord rec) {
     NeoRel rel = new NeoRel();
-    SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(DwcUnofficialTerm.relationType));
+    SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColdpTerm.type));
     if (type.isPresent()) {
       rel.setType(RelType.from(type.get()));
-      rel.setRemarks(rec.get(DwcUnofficialTerm.relationRemarks));
-      if (rec.hasTerm(DwcUnofficialTerm.relationPublishedIn)) {
-        Reference ref = refFactory.fromDWC(rec.get(DwcUnofficialTerm.relationPublishedInID), rec.get(DwcUnofficialTerm.relationPublishedIn), null, rec);
+      rel.setRemarks(rec.get(ColdpTerm.remarks));
+      if (rec.hasTerm(DcTerm.bibliographicCitation)) {
+        Reference ref = refFactory.fromDWC(rec.get(ColdpTerm.referenceID), rec.get(DcTerm.bibliographicCitation), null, rec);
         rel.setReferenceId(ref.getId());
       }
       return Optional.of(rel);

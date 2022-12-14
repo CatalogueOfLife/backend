@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.ReferenceFactory;
@@ -623,9 +622,6 @@ public class InterpreterBase {
     u.classification = new Classification();
     if (v.hasDwcTerms()) {
       for (DwcTerm t : DwcTerm.HIGHER_RANKS) {
-        u.classification.setByTerm(t, v.get(t));
-      }
-      for (DwcUnofficialTerm t : DwcUnofficialTerm.HIGHER_RANKS) {
         u.classification.setByTerm(t, v.get(t));
       }
     }

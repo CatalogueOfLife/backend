@@ -2,20 +2,15 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.coldp.DwcUnofficialTerm;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.neo.model.*;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.dwc.terms.DwcTerm;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,7 +23,6 @@ import org.neo4j.helpers.collection.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import static life.catalogue.api.vocab.DataFormat.DWCA;
 import static org.junit.Assert.*;
 
 /**
@@ -80,8 +74,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
         assertEquals(rel.getRelatedNameId(), t3.getId());
       }
 
-      store.verbatimList(DwcUnofficialTerm.NameRelation).forEach(v -> {
-        if (v.getRaw(DwcUnofficialTerm.relatedNameUsageID).equals("3")) {
+      store.verbatimList(ColdpTerm.NameRelation).forEach(v -> {
+        if (v.getRaw(ColdpTerm.relatedNameID).equals("3")) {
           assertTrue(v.hasIssue(Issue.NAME_ID_INVALID));
         } else {
           assertFalse(v.hasIssues());

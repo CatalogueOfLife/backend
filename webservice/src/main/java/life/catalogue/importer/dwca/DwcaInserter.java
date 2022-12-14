@@ -2,13 +2,10 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.TypeMaterial;
-import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.terms.EolDocumentTerm;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.csv.DwcaReader;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoCsvInserter;
@@ -18,7 +15,8 @@ import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.eml.EmlParser;
 
-import org.gbif.dwc.terms.*;
+import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.GbifTerm;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,11 +52,11 @@ public class DwcaInserter extends NeoCsvInserter {
         u -> store.createNameAndUsage(u) != null
     );
 
-    insertRelations(reader, DwcUnofficialTerm.NameRelation,
+    insertRelations(reader, ColdpTerm.NameRelation,
         inter::interpretNameRelations,
         store.names(),
         inter::taxonID,
-        DwcUnofficialTerm.relatedNameUsageID,
+        ColdpTerm.relatedNameID,
         Issue.NAME_ID_INVALID,
       true
     );

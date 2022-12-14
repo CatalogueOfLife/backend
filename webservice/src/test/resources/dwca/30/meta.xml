@@ -8,15 +8,14 @@
     <field index="2" term="http://rs.tdwg.org/dwc/terms/namePublishedIn"/>
   </core> 
 
-  <extension encoding="UTF-8" fieldsTerminatedBy="\t" linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.catalogueoflife.org/terms/dwc/NameRelation">
+  <extension encoding="UTF-8" fieldsTerminatedBy="\t" linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="https://terms.catalogueoflife.org/NameRelation">
     <files>
       <location>rels.txt</location>
     </files>
     <coreid index="0" />
-    <field index="1" term="http://rs.catalogueoflife.org/terms/dwc/relatedNameUsageID"/>
-    <field index="2" term="http://rs.catalogueoflife.org/terms/dwc/relationType"/>
-    <field index="3" term="http://rs.catalogueoflife.org/terms/dwc/relationPublishedIn"/>
-    <field index="4" term="http://rs.catalogueoflife.org/terms/dwc/relationRemarks"/>
-  </extension> 
-
+    <field index="1" term="https://terms.catalogueoflife.org/relatedNameID"/>
+    <field index="2" term="https://terms.catalogueoflife.org/type"/>
+    <field index="3" term="http://purl.org/dc/terms/bibliographicCitation"/>
+    <field index="4" term="https://terms.catalogueoflife.org/remarks"/>
+  </extension>
 </archive>

@@ -469,7 +469,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
     ));
 
   private static final String PREFIX = "col";
-  private static final String NS = "http://catalogueoflife.org/terms/";
+  private static final String NS = "https://terms.catalogueoflife.org/";
   private static final URI NS_URI = URI.create(NS);
 
   private final Class<?> dataType;

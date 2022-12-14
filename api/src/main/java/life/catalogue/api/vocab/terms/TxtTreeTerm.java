@@ -14,7 +14,7 @@ public enum TxtTreeTerm implements Term, AlternativeNames {
   content;
 
   private static final String PREFIX = "tt";
-  private static final String NS = "http://gbif.org/txttree/";
+  private static final String NS = "http://rs.gbif.org.org/terms/1.0/txtree/";
   private static final URI NS_URI = URI.create(NS);
 
   private final boolean isClass;

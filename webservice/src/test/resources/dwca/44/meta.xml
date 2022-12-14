@@ -36,13 +36,13 @@
     <field index="6" default="http://creativecommons.org/licenses/by/3.0" term="http://purl.org/dc/terms/license"/>
     <field index="7" default="The Trustees of the Royal Botanic Gardens, Kew" term="http://purl.org/dc/terms/rightsHolder"/>
   </extension>
-  <extension encoding="UTF-8" fieldsTerminatedBy="|" linesTerminatedBy="\n" fieldsEnclosedBy='' ignoreHeaderLines="1" rowType="http://rs.catalogueoflife.org/terms/dwc/NameRelation">
+  <extension encoding="UTF-8" fieldsTerminatedBy="|" linesTerminatedBy="\n" fieldsEnclosedBy='' ignoreHeaderLines="1" rowType="https://terms.catalogueoflife.org/NameRelation">
     <files>
       <location>wcvp_replacementNames.csv</location>
     </files>
     <coreid index="0" />
-    <field index="1" term="http://rs.catalogueoflife.org/terms/dwc/relatedNameUsageID"/>
-    <field index="2" term="http://rs.catalogueoflife.org/terms/dwc/relationType"/>
-    <field index="3" term="	http://rs.catalogueoflife.org/terms/dwc/relationRemarks"/>
-  </extension>  
+    <field index="1" term="https://terms.catalogueoflife.org/relatedNameID"/>
+    <field index="2" default="replacement name" term="https://terms.catalogueoflife.org/type"/>
+    <field index="3" term="https://terms.catalogueoflife.org/remarks"/>
+  </extension>
 </archive>

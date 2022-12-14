@@ -2,7 +2,6 @@ package life.catalogue.api.model;
 
 
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
@@ -57,12 +56,6 @@ public class ClassificationTest {
 
     for (DwcTerm t : DwcTerm.HIGHER_RANKS) {
       assertTrue("unused term "+t, c.setByTerm(t, "foo"));
-      assertNotEquals("unused term "+t, hash, c.hashCode());
-      hash = c.hashCode();
-    }
-
-    for (DwcUnofficialTerm t : DwcUnofficialTerm.HIGHER_RANKS) {
-      assertTrue("unused term "+t, c.setByTerm(t, "bar"));
       assertNotEquals("unused term "+t, hash, c.hashCode());
       hash = c.hashCode();
     }

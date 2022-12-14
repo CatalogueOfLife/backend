@@ -17,14 +17,14 @@
     <coreid index="0"/>
     <field index="1" term="http://rs.tdwg.org/dwc/terms/vernacularName"/>
   </extension>
-    <extension encoding="UTF-8" fieldsTerminatedBy="," linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.catalogueoflife.org/terms/dwc/NameRelation">
+    <extension encoding="UTF-8" fieldsTerminatedBy="," linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="https://terms.catalogueoflife.org/NameRelation">
     <files>
       <location>name_rel.txt</location>
     </files>
     <coreid index="0" />
-    <field index="1" term="http://rs.catalogueoflife.org/terms/dwc/relatedNameUsageID"/>
-    <field index="2" term="http://rs.catalogueoflife.org/terms/dwc/relationType"/>
-  </extension> 
+    <field index="1" term="https://terms.catalogueoflife.org/relatedNameID"/>
+    <field index="2" term="https://terms.catalogueoflife.org/type"/>
+  </extension>
     <extension encoding="UTF-8" fieldsTerminatedBy="," linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.tdwg.org/dwc/terms/Occurrence">
     <files>
       <location>occurrence.txt</location>

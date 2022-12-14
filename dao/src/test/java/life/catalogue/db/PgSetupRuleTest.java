@@ -5,7 +5,6 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.db.type.BaseEnumSetTypeHandler;
 
 import org.gbif.nameparser.api.Rank;
@@ -75,7 +74,6 @@ public class PgSetupRuleTest {
     enums.add(JobStatus.class);
     // not needed for persistency
     enums.remove(Country.class);
-    enums.remove(DwcUnofficialTerm.class);
     enums.remove(TxtTreeTerm.class);
     enums.remove(Frequency.class);
     enums.remove(GeoTimeType.class);

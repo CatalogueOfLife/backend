@@ -6,7 +6,6 @@ import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.*;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.jdk.JdkImmutableListSerializer;
 import life.catalogue.common.kryo.jdk.JdkImmutableMapSerializer;
@@ -178,7 +177,6 @@ public class ApiKryoPool extends Pool<Kryo> {
     // term enums
     TermFactory.instance().registerTermEnum(BiboOntTerm.class);
     TermFactory.instance().registerTermEnum(ColdpTerm.class);
-    TermFactory.instance().registerTermEnum(DwcUnofficialTerm.class);
     TermFactory.instance().registerTermEnum(EolDocumentTerm.class);
     TermFactory.instance().registerTermEnum(EolReferenceTerm.class);
     TermFactory.instance().registerTermEnum(InatTerm.class);

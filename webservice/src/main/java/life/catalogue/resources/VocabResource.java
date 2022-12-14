@@ -8,7 +8,6 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
-import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.UnparsableException;
@@ -83,7 +82,6 @@ public class VocabResource {
     names.add("language");
     names.add("geotime");
     names.add("terms");
-    names.remove(binaryName(DwcUnofficialTerm.class));
     Collections.sort(names);
     vocabNames = List.copyOf(names);
   }

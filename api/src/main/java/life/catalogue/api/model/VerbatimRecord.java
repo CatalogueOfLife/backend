@@ -2,11 +2,11 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.common.text.StringUtils;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -18,9 +18,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.apache.commons.text.StringEscapeUtils;
-
-import org.gbif.nameparser.util.UnicodeUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,7 +147,7 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   @JsonIgnore
   public boolean hasDwcTerms() {
     for (Term t : terms.keySet()) {
-      if (t instanceof DwcTerm || t instanceof DwcUnofficialTerm) {
+      if (t instanceof DwcTerm) {
         return true;
       }
     }

@@ -6,7 +6,6 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.cache.CacheFlush;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
 import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -128,7 +127,6 @@ public class WsServer extends Application<WsServerConfig> {
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
     bootstrap.addBundle(auth);
     // register CoLTerms
-    TermFactory.instance().registerTermEnum(DwcUnofficialTerm.class);
     TermFactory.instance().registerTermEnum(ColdpTerm.class);
     // use a custom jackson mapper
     ObjectMapper om = ApiModule.configureMapper(Jackson.newMinimalObjectMapper());

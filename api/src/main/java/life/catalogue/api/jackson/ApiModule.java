@@ -1,15 +1,8 @@
 package life.catalogue.api.jackson;
 
-import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import com.google.common.collect.Lists;
-import com.google.common.reflect.ClassPath;
-
 import life.catalogue.api.vocab.Country;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.terms.*;
+import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.coldp.DwcUnofficialTerm;
 
 import org.gbif.dwc.terms.AlternativeNames;
 import org.gbif.dwc.terms.Term;
@@ -20,8 +13,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -32,15 +27,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+import com.google.common.collect.Lists;
+import com.google.common.reflect.ClassPath;
 
 import de.undercouch.citeproc.csl.CSLType;
-
-import org.gbif.nameparser.api.Rank;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Jackson module that defines all serde rules for all CoL API model classes.
