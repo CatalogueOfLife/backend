@@ -11,6 +11,28 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2022-12-14 coldwc term changes
+```
+UPDATE verbatim SET type = 'col:NameRelation' WHERE type = 'coldwc:NameRelation';
+  
+UPDATE verbatim SET terms = terms - 'coldwc:relatedNameUsageID' || jsonb_build_object('col:relatedNameID', terms->'coldwc:relatedNameUsageID') WHERE terms ? 'coldwc:relatedNameUsageID';
+UPDATE verbatim SET terms = terms - 'coldwc:relationType' || jsonb_build_object('dc:type', terms->'coldwc:relationType') WHERE terms ? 'coldwc:relationType'; 
+UPDATE verbatim SET terms = terms - 'coldwc:relationPublishedIn' || jsonb_build_object('dc:bibliographicCitation', terms->'coldwc:relationPublishedIn') WHERE terms ? 'coldwc:relationPublishedIn'; 
+UPDATE verbatim SET terms = terms - 'coldwc:relationPublishedInID' || jsonb_build_object('col:referenceID', terms->'coldwc:relationPublishedInID') WHERE terms ? 'coldwc:relationPublishedInID'; 
+UPDATE verbatim SET terms = terms - 'coldwc:relationRemarks' || jsonb_build_object('col:remarks', terms->'coldwc:relationRemarks') WHERE terms ? 'coldwc:relationRemarks';
+ 
+UPDATE verbatim SET terms = terms - 'coldwc:superkingdom' || jsonb_build_object('col:superkingdom', terms->'coldwc:superkingdom') WHERE terms ? 'coldwc:superkingdom'; 
+UPDATE verbatim SET terms = terms - 'coldwc:subkingdom' || jsonb_build_object('col:subkingdom', terms->'coldwc:subkingdom') WHERE terms ? 'coldwc:subkingdom'; 
+UPDATE verbatim SET terms = terms - 'coldwc:superphylum' || jsonb_build_object('col:superphylum', terms->'coldwc:superphylum') WHERE terms ? 'coldwc:superphylum'; 
+UPDATE verbatim SET terms = terms - 'coldwc:subphylum' || jsonb_build_object('col:subphylum', terms->'coldwc:subphylum') WHERE terms ? 'coldwc:subphylum'; 
+UPDATE verbatim SET terms = terms - 'coldwc:superclass' || jsonb_build_object('col:superclass', terms->'coldwc:superclass') WHERE terms ? 'coldwc:superclass'; 
+UPDATE verbatim SET terms = terms - 'coldwc:subclass' || jsonb_build_object('col:subclass', terms->'coldwc:subclass') WHERE terms ? 'coldwc:subclass'; 
+UPDATE verbatim SET terms = terms - 'coldwc:superorder' || jsonb_build_object('col:superorder', terms->'coldwc:superorder') WHERE terms ? 'coldwc:superorder'; 
+UPDATE verbatim SET terms = terms - 'coldwc:suborder' || jsonb_build_object('col:suborder', terms->'coldwc:suborder') WHERE terms ? 'coldwc:suborder'; 
+UPDATE verbatim SET terms = terms - 'coldwc:superfamily' || jsonb_build_object('col:superfamily', terms->'coldwc:superfamily') WHERE terms ? 'coldwc:superfamily'; 
+UPDATE verbatim SET terms = terms - 'coldwc:tribe' || jsonb_build_object('col:tribe', terms->'coldwc:tribe') WHERE terms ? 'coldwc:tribe'; 
+```
+
 ### 2022-10-20 dataset keywords
 ```
 ALTER TABLE dataset ADD COLUMN keyword TEXT[];
