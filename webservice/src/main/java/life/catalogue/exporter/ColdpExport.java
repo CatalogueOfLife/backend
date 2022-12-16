@@ -199,12 +199,18 @@ public class ColdpExport extends ArchiveExport {
 
   @Override
   void write(NameRelation rel) {
-    writer.set(ColdpTerm.nameID, nameUsageKeyMap.getFirst(rel.getNameId()));
-    writer.set(ColdpTerm.relatedNameID, nameUsageKeyMap.getFirst(rel.getRelatedNameId()));
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(rel.getSectorKey()));
-    writer.set(ColdpTerm.type, rel.getType());
-    writer.set(ColdpTerm.referenceID, rel.getReferenceId());
-    writer.set(ColdpTerm.remarks, rel.getRemarks());
+    String nameID = nameUsageKeyMap.getFirst(rel.getNameId());
+    String relatedNameID = nameUsageKeyMap.getFirst(rel.getRelatedNameId());
+    if (nameID == null || relatedNameID == null) {
+      LOG.warn("Ignore {} NameRelation with missing nameID {} or relatedNameID {}", rel.getType(), rel.getNameId(), rel.getRelatedNameId());
+    } else {
+      writer.set(ColdpTerm.nameID, nameID);
+      writer.set(ColdpTerm.relatedNameID, relatedNameID);
+      writer.set(ColdpTerm.sourceID, sector2datasetKey(rel.getSectorKey()));
+      writer.set(ColdpTerm.type, rel.getType());
+      writer.set(ColdpTerm.referenceID, rel.getReferenceId());
+      writer.set(ColdpTerm.remarks, rel.getRemarks());
+    }
   }
 
   @Override
