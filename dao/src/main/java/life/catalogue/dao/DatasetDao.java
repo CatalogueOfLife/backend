@@ -145,7 +145,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         int ext = Math.max(minExternalDatasetKey, intDefault(dm.getMaxKey(null), 0));
         int proj = intDefault(dm.getMaxKey(minExternalDatasetKey), 10);
         keyGenExternalGaps.addAll(dm.getKeyGaps(minExternalDatasetKey, 5000));
-        LOG.info("Loaded {} dataset gap keys, starting with {}", keyGenExternalGaps.size(), keyGenExternalGaps.getFirst());
+        LOG.info("Loaded {} dataset gap keys, starting with {}", keyGenExternalGaps.size(), keyGenExternalGaps.isEmpty() ? "none" : keyGenExternalGaps.getFirst());
         setMax(ext, proj);
       }
     }
