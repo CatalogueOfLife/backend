@@ -27,9 +27,11 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -122,6 +124,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   public static class KeyGenerator {
     public final int minExternalDatasetKey;
+    private final LinkedList<Integer> keyGenExternalGaps = new LinkedList<>();
     private final AtomicInteger keyGenExternal;
     private final AtomicInteger keyGenProject;
 
@@ -136,11 +139,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       this.keyGenProject = new AtomicInteger(maxProject);
     }
 
-    public void setMax(SqlSessionFactory factory) {
+    private void setMax(SqlSessionFactory factory) {
       try (SqlSession session = factory.openSession(true)) {
         var dm = session.getMapper(DatasetMapper.class);
         int ext = Math.max(minExternalDatasetKey, intDefault(dm.getMaxKey(null), 0));
         int proj = intDefault(dm.getMaxKey(minExternalDatasetKey), 10);
+        keyGenExternalGaps.addAll(dm.getKeyGaps(minExternalDatasetKey, 5000));
+        LOG.info("Loaded {} dataset gap keys, starting with {}", keyGenExternalGaps.size(), keyGenExternalGaps.getFirst());
         setMax(ext, proj);
       }
     }
@@ -151,7 +156,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       LOG.info("Set dataset key generator to {} for external and {} for others", keyGenExternal.get(), keyGenProject.get());
     }
 
-    public int nextExternalKey() {
+    public synchronized int nextExternalKey() {
+      if (!keyGenExternalGaps.isEmpty()) {
+        return keyGenExternalGaps.removeFirst();
+      }
       return keyGenExternal.incrementAndGet();
     }
 
@@ -174,6 +182,20 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
       return d.getKey();
     }
+  }
+
+  /**
+   * @return the number of gaps keys still listed
+   */
+  public int gapSize() {
+    return keyGenerator.keyGenExternalGaps.size();
+  }
+
+  /**
+   * Updates the key generators sequence values
+   */
+  public void updateKeyGenSequence() {
+    keyGenerator.setMax(factory);
   }
 
   public Dataset patchMetadata(DatasetWithSettings ds, Dataset update) {

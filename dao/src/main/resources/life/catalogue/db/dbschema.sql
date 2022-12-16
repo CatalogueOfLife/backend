@@ -1296,6 +1296,7 @@ CREATE TABLE name (
 CREATE INDEX ON name (dataset_key, sector_key);
 CREATE INDEX ON name (dataset_key, verbatim_key);
 CREATE INDEX ON name (dataset_key, published_in_id);
+CREATE INDEX ON name (dataset_key, lower(scientific_name));
 CREATE INDEX ON name (dataset_key, scientific_name text_pattern_ops);
 CREATE INDEX ON name (dataset_key, scientific_name_normalized);
 

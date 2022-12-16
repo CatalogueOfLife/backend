@@ -210,4 +210,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    */
   Integer getMaxKey(@Param("limit") Integer limit);
 
+  /**
+   * List unused dataset keys (gaps) the are above a given maximum and below the current maximum dataset key
+   * @param min
+   * @param limit limit of gap keys to return
+   */
+  List<Integer> getKeyGaps(@Param("min") Integer min, @Param("limit") Integer limit);
+
 }

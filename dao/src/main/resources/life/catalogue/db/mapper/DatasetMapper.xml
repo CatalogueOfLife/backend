@@ -369,6 +369,13 @@
     </if>
   </select>
 
+  <select id="getKeyGaps" parameterType="map" resultType="integer">
+    SELECT key
+    FROM generate_series(#{min}, (SELECT max(key) FROM dataset)) AS key
+    LEFT JOIN dataset d USING (key)
+    WHERE d.key IS NULL LIMIT #{limit}
+  </select>
+
   <select id="getByGBIF" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
