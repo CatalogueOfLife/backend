@@ -14,6 +14,8 @@ import java.net.URL;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import life.catalogue.dw.ManagedExtended;
+
 import org.apache.commons.io.FileUtils;
 import org.mapdb.DB;
 import org.mapdb.DBException;
@@ -22,9 +24,7 @@ import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.dropwizard.lifecycle.Managed;
-
-public class IdMap implements Managed {
+public class IdMap implements ManagedExtended {
   private static final Logger LOG = LoggerFactory.getLogger(IdMap.class);
   private static final String SERVICE_NAME = "legacy ID redirection";
 
@@ -70,6 +70,16 @@ public class IdMap implements Managed {
     return new IdMap(file, tsvResourceName, () -> Resources.stream(tsvResourceName));
   }
 
+  /**
+   * @return the persistent map and make sure it is working and online
+   */
+  private Map<String, String> onlineMap() {
+    if (map != null && mapDb != null && !mapDb.isClosed()) {
+      return map;
+    }
+    throw UnavailableException.unavailable(SERVICE_NAME);
+  }
+
   public boolean reload() throws IOException {
     if (tsvSupplier != null) {
       LOG.info("Reload IdMap from {}", tsvName);
@@ -100,43 +110,19 @@ public class IdMap implements Managed {
   }
 
   public boolean contains(String id) {
-    try {
-      return id != null && map.containsKey(id);
-    } catch (IllegalAccessError e) {
-      throw UnavailableException.unavailable(SERVICE_NAME);
-    }
+    return id != null && onlineMap().containsKey(id);
   }
 
   public String lookup(String id) {
-    try {
-      return map.get(id);
-    } catch (IllegalAccessError e) {
-      throw UnavailableException.unavailable(SERVICE_NAME);
-    }
+    return onlineMap().get(id);
   }
 
   public int size() {
-    try {
-      return map.size();
-    } catch (IllegalAccessError e) {
-      throw UnavailableException.unavailable(SERVICE_NAME);
-    }
-  }
-
-  public boolean isEmpty() {
-    try {
-      return map.isEmpty();
-    } catch (IllegalAccessError e) {
-      throw UnavailableException.unavailable(SERVICE_NAME);
-    }
+    return onlineMap().size();
   }
 
   public void clear() {
-    try {
-      map.clear();
-    } catch (IllegalAccessError e) {
-      throw UnavailableException.unavailable(SERVICE_NAME);
-    }
+    onlineMap().clear();
   }
 
   @Override
@@ -175,15 +161,13 @@ public class IdMap implements Managed {
     }
   }
 
+  @Override
   public boolean hasStarted() {
     try {
-      if (mapDb != null && !mapDb.isClosed()) {
-        map.get("something1234567");
-        return true;
-      }
+      var notNeeded = onlineMap().get("something1234567");
+      return true;
     } catch (UnavailableException | IllegalAccessError e) {
       return false;
     }
-    return false;
   }
 }
