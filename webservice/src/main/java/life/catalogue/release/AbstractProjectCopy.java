@@ -111,6 +111,11 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       // prepare new tables
       updateState(ImportState.PROCESSING);
       Partitioner.partition(factory, newDatasetKey, newDatasetOrigin);
+      // TODO: build indices concurrently AFTER copying data to be much quicker
+      // Note: attaching also creates missing indices and constraint from the master partition - if they are missing that takes long and blocks queries menwhile
+      // build indices and attach partition - the actual copy commands use the concrete table names so we can load them without being attached yet
+      Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
+
       // is an id mapping table needed?
       if (mapIds) {
         LOG.info("Create clean id mapping tables for project {}", datasetKey);
@@ -133,9 +138,6 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
 
       // copy data
       copyData();
-
-      // build indices and attach partition - the actual copy commands use the concrete table names so we can load them without being attached yet
-      Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
 
       // at last copy name matches - we need an attached table for this to fulfill constraints
       try (SqlSession session = factory.openSession(true)) {
