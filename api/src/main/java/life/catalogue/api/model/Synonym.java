@@ -2,7 +2,10 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import java.util.Comparator;
 import java.util.Objects;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
 
@@ -10,8 +13,11 @@ import com.google.common.base.Preconditions;
  * A taxonomic synonym, linking a name to potentially multiple taxa.
  * Can be used for both homo-and heterotypic synonyms as well as misapplied names.
  */
-public class Synonym extends NameUsageBase {
-  
+public class Synonym extends NameUsageBase implements Comparable<Synonym> {
+  private static final Comparator<Synonym> NATURAL_ORDER = Comparator.<Synonym, Integer>comparing(s -> s.getName().getPublishedInYear(), Comparator.nullsLast(Comparator.naturalOrder()))
+                                                                     .thenComparing(s -> s.getName().getLabel());
+
+                                                                     ;
   private Taxon accepted;
 
   public Synonym() {
@@ -50,7 +56,12 @@ public class Synonym extends NameUsageBase {
   public void setAccepted(Taxon accepted) {
     this.accepted = accepted;
   }
-  
+
+  @Override
+  public int compareTo(@NotNull Synonym o) {
+    return NATURAL_ORDER.compare(this, o);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

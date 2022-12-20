@@ -149,6 +149,10 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
           }
         }
       }
+      // sort homotypic groups by year, then name
+      syn.getHeterotypicGroups().forEach(Collections::sort);
+      // finally sort the groups themselves by their first entry
+      syn.getHeterotypicGroups().sort(Comparator.comparing(hg -> hg.get(0)));
       return syn;
     }
   }
