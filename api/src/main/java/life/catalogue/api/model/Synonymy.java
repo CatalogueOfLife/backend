@@ -16,7 +16,8 @@ public class Synonymy implements Iterable<Synonym> {
   private final List<Synonym> homotypic = new ArrayList<>();
   private final List<Synonym> heterotypic = new ArrayList<>();
   private final List<Synonym> misapplied = new ArrayList<>();
-  
+  private final List<List<Synonym>> heterotypicGroups = new ArrayList<>();
+
   @JsonIgnore
   public boolean isEmpty() {
     return homotypic.isEmpty() && heterotypic.isEmpty() && misapplied.isEmpty();
@@ -32,6 +33,10 @@ public class Synonymy implements Iterable<Synonym> {
 
   public List<Synonym> getMisapplied() {
     return misapplied;
+  }
+
+  public List<List<Synonym>> getHeterotypicGroups() {
+    return heterotypicGroups;
   }
 
   @JsonIgnore

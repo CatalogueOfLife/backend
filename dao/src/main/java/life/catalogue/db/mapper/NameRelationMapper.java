@@ -32,7 +32,7 @@ public interface NameRelationMapper extends Create<NameRelation>,
    * Returns the unique list of ids from all related names within the same dataset that are (transitively) connected by relations of the given types.
    * The starting key is excluded from the result.
    *
-   * Because of potential db overload by recursions this is limited to a max transitive path depth of 100 - more than enough
+   * Because of potential db overload by recursions this is limited to a max transitive path depth of 25 - more than enough
    * for any real nomenclatural situations.
    *
    * @param key the name id to start our from

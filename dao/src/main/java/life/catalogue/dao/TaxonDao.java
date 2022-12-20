@@ -126,6 +126,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       var homotypicNamesIds = nrm.listRelatedNameIDs(DSID.of(datasetKey, nameId), NomRelType.HOMOTYPIC_RELATIONS);
 
       // now go through synonym usages and add to misapplied, heterotypic or skip if seen before
+      List<HomGroup> heterotypics = new ArrayList<>();
       for (Synonym s : sm.listByTaxon(DSID.of(datasetKey, taxonId))) {
         if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
           syn.getMisapplied().add(s);
@@ -133,12 +134,35 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
           syn.getHomotypic().add(s);
         } else {
           syn.getHeterotypic().add(s);
+          boolean found = false;
+          for (var hg : heterotypics) {
+            if (hg.nameIds.contains(s.getName().getId())) {
+              found = true;
+              hg.homotypic.add(s);
+              break;
+            }
+          }
+          if (!found) {
+            var hg = new HomGroup(s, nrm.listRelatedNameIDs(DSID.of(datasetKey, s.getName().getId()), NomRelType.HOMOTYPIC_RELATIONS));
+            heterotypics.add(hg);
+            syn.getHeterotypicGroups().add(hg.homotypic);
+          }
         }
       }
       return syn;
     }
   }
-  
+
+  static class HomGroup {
+    final List<Synonym> homotypic = new ArrayList<>();
+    final Set<String> nameIds;
+
+    HomGroup(Synonym synonym, Collection<String> nameIds) {
+      this.nameIds = new HashSet<>(nameIds);
+      homotypic.add(synonym);
+    }
+  }
+
   public TaxonInfo getTaxonInfo(DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);

@@ -128,7 +128,7 @@
       INNER JOIN graph g ON (g.nid = nr.name_id AND nr.related_name_id != ALL(g.path)) OR (g.nid = nr.related_name_id AND nr.name_id != ALL(g.path))
     WHERE nr.dataset_key = #{key.datasetKey}
       AND nr.type IN <foreach item="t" collection="types" open="(" separator="," close=")">'${t.name()}'::NOMRELTYPE</foreach>
-      AND array_length(g.path,1) &lt; 100
+      AND array_length(g.path,1) &lt; 25
 
     ) SELECT DISTINCT nid FROM graph
   </select>
