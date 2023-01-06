@@ -137,6 +137,65 @@
     WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
   </update>
 
+  <!-- requires a base name usage table nu to exist to join to -->
+  <sql id="usageIssues">
+    SELECT nu.id, v.issues
+      FROM nu JOIN verbatim v ON nu.uvkey=v.id
+      WHERE v.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+      SELECT nu.id, v.issues
+      FROM nu JOIN verbatim v ON nu.nvkey=v.id
+      WHERE v.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+      SELECT nu.id, v.issues
+      FROM nu JOIN taxon_concept_rel x ON x.taxon_id=nu.id   JOIN verbatim v ON x.verbatim_key=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+      SELECT nu.id, v.issues
+      FROM nu JOIN species_interaction x ON x.taxon_id=nu.id JOIN verbatim v ON x.verbatim_key=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+      SELECT nu.id, v.issues
+      FROM nu JOIN distribution x ON x.taxon_id=nu.id        JOIN verbatim v ON x.verbatim_key=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+      SELECT nu.id, v.issues
+      FROM nu JOIN media x ON x.taxon_id=nu.id               JOIN verbatim v ON x.verbatim_key=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+      SELECT nu.id, v.issues
+      FROM nu JOIN vernacular_name x ON x.taxon_id=nu.id     JOIN verbatim v ON x.verbatim_key=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+      SELECT nu.id, v.issues
+      FROM nu JOIN type_material x ON x.name_id=nu.name_id   JOIN verbatim v ON x.verbatim_key=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+      SELECT nu.id, v.issues
+      FROM nu JOIN name_rel x ON x.name_id=nu.name_id        JOIN verbatim v ON x.verbatim_key=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+  </sql>
+
+  <update id="createTmpIssuesTable" parameterType="map">
+    WITH nu AS (
+      SELECT u.id, u.name_id, u.verbatim_key AS uvkey, n.verbatim_key AS nvkey
+      FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
+      WHERE u.dataset_key=#{datasetKey}
+      <if test="sectorKey != null">
+        AND u.sector_key = #{sectorKey}
+      </if>
+    )
+    SELECT vs.id, array_cat_agg(vs.issues) AS issues
+    INTO TEMPORARY TABLE tmp_usage_issues
+    FROM (
+    <include refid="usageIssues"/>
+    ) vs
+    GROUP BY vs.id;
+
+    CREATE INDEX ON tmp_usage_issues (id);
+    ANALYZE tmp_usage_issues;
+  </update>
+
   <select id="processDataset" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

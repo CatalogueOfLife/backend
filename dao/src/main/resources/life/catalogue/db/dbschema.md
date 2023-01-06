@@ -11,6 +11,46 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-01-06 Add array concatenation aggregate function
+```
+CREATE AGGREGATE array_cat_agg(anycompatiblearray) (
+  SFUNC=array_cat,
+  STYPE=anycompatiblearray
+);
+
+CREATE INDEX on verbatim(dataset_key, id) WHERE array_length(issues, 1) > 0;
+```
+
+### 2023-01-04 Improved classification functions using SQL only
+```
+-- return all parent names as an array
+CREATE OR REPLACE FUNCTION classification(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS TEXT[] AS $$
+  WITH RECURSIVE x AS (
+  SELECT t.id, n.scientific_name, t.parent_id FROM name_usage t 
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id 
+    WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+   UNION ALL 
+  SELECT t.id, n.scientific_name, t.parent_id FROM x, name_usage t 
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id 
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id
+  ) SELECT array_reverse(array_agg(scientific_name)) FROM x WHERE v_inc_self OR id != v_id;
+$$ LANGUAGE SQL;
+
+
+-- return all parent name usages as a simple_name array
+CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS simple_name[] AS $$
+  WITH RECURSIVE x AS (
+  SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage t 
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id 
+    WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+   UNION ALL 
+  SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name FROM x, name_usage t 
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id 
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id
+  ) SELECT array_reverse(array_agg(sn)) FROM x WHERE v_inc_self OR id != v_id;
+$$ LANGUAGE SQL;
+```
+
 ### 2022-12-16 new ranks
 ```
 ALTER TYPE RANK ADD VALUE 'FALANX' BEFORE 'MEGAFAMILY';

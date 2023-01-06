@@ -2,6 +2,7 @@ package life.catalogue.es.nu;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
@@ -17,10 +18,7 @@ import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -295,9 +293,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   private int indexNameUsages(int datasetKey, Collection<String> usageIds) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     try (SqlSession session = factory.openSession()) {
+      final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       List<NameUsageWrapper> usages = usageIds.stream()
-          .map(id -> mapper.get(datasetKey, id))
+          .map(id -> {
+            var nuw = mapper.get(datasetKey, id);
+            nuw.setPublisherKey(publisher);
+            return nuw;
+          })
           .filter(Objects::nonNull)
           .collect(Collectors.toList());
       if (usages.isEmpty()) {

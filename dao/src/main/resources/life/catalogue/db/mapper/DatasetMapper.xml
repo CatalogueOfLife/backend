@@ -385,6 +385,12 @@
     WHERE gbif_key = #{key}
   </select>
 
+  <select id="getPublisherKey" resultType="java.util.UUID">
+    SELECT gbif_publisher_key
+    FROM dataset
+    WHERE key = #{key}
+  </select>
+
   <select id="listGBIF" resultType="integer">
     SELECT key
     FROM dataset

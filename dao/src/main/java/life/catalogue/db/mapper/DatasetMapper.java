@@ -199,6 +199,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   Dataset getByGBIF(@Param("key") UUID key);
 
   /**
+   * Just looks up the publisher key for a dataset
+   */
+  UUID getPublisherKey(@Param("key") int key);
+
+  /**
    * Lists all dataset keys of non deleted datasets that have a UUID GBIF registry key.
    */
   List<Integer> listGBIF();
