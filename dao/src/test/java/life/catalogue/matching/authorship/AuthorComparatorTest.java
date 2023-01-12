@@ -294,6 +294,9 @@ public class AuthorComparatorTest {
     assertAuth("Pauly", "1986", null, null, Equality.EQUAL, null, null, "Pauly", "1986");
     
     assertAuth("Erichson", "1847", null, null, Equality.UNKNOWN, null, null, "Linnaeus", "1758");
+
+    // missing brackets - do we want this to compare as equal???
+    assertAuth("Linnaeus", null, null, null, Equality.EQUAL, null, null, "L.", null);
   }
   
   @Test

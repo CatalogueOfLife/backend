@@ -1,10 +1,16 @@
 package life.catalogue.importer;
 
+import it.unimi.dsi.fastutil.Pair;
+
+import it.unimi.dsi.fastutil.objects.ObjectIntImmutablePair;
+
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.common.io.Resources;
+import life.catalogue.common.io.TempFile;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
@@ -18,6 +24,8 @@ import life.catalogue.matching.NameIndexFactory;
 
 import org.gbif.nameparser.api.NomCode;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,23 +66,30 @@ public class PgImportRule extends ExternalResource {
   private ImporterConfig icfg = new ImporterConfig();
   private DatasetWithSettings dataset;
   private final TestResource[] datasets;
-  private final Map<TestResource, Integer> datasetKeyMap = new HashMap<>();
+  private final Map<Pair<DataFormat, Integer>, Integer> datasetKeyMap = new HashMap<>();
   private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+  private final TempFile sourceDir;
 
   public static PgImportRule create(Object... params) {
     List<TestResource> resources = new ArrayList<>();
+    DatasetOrigin origin = DatasetOrigin.PROJECT;
     DataFormat format = null;
     NomCode code = null;
     DatasetType type = DatasetType.OTHER;
+    String resourceFile = null;
     for (Object p : params) {
       if (p instanceof DataFormat) {
         format = (DataFormat) p;
       } else if (p instanceof NomCode) {
         code = (NomCode) p;
+      } else if (p instanceof DatasetOrigin) {
+        origin = (DatasetOrigin) p;
       } else if (p instanceof DatasetType) {
         type = (DatasetType) p;
+      } else if (p instanceof String) {
+        resourceFile = (String) p;
       } else if (p instanceof Integer) {
-        resources.add(new TestResource((Integer)p, Preconditions.checkNotNull(format), code, type));
+        resources.add(new TestResource((Integer)p, resourceFile, origin, Preconditions.checkNotNull(format), code, type));
       }
     }
     return new PgImportRule(resources.toArray(new TestResource[0]));
@@ -82,16 +97,25 @@ public class PgImportRule extends ExternalResource {
 
   public PgImportRule(TestResource... datasets) {
     this.datasets = datasets;
+    try {
+      sourceDir = TempFile.directory();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
   
   public static class TestResource {
     public final int key;
+    public final DatasetOrigin origin;
     public final DataFormat format;
     public final NomCode code;
     public final DatasetType type;
-  
-    private TestResource(int key, DataFormat format, NomCode code, DatasetType type) {
+    final String resourceFile;
+
+    private TestResource(int key, String resourceFile, DatasetOrigin origin, DataFormat format, NomCode code, DatasetType type) {
       this.key = key;
+      this.resourceFile = resourceFile;
+      this.origin = origin;
       this.format = Preconditions.checkNotNull(format);
       this.code = code;
       this.type = type;
@@ -112,10 +136,10 @@ public class PgImportRule extends ExternalResource {
   }
   
   @Override
-  protected void before() throws Throwable {
+  public void before() throws Throwable {
     LOG.info("run PgImportRule with {} datasets", datasets.length);
     super.before();
-  
+
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
@@ -125,33 +149,48 @@ public class PgImportRule extends ExternalResource {
   
     for (TestResource tr : datasets) {
       normalizeAndImport(tr);
-      datasetKeyMap.put(tr, dataset.getKey());
+      Pair<DataFormat, Integer> key = new ObjectIntImmutablePair<>(tr.format, tr.key);
+      datasetKeyMap.put(key, dataset.getKey());
     }
   }
   
   @Override
-  protected void after() {
+  public void after() {
     super.after();
     if (store != null) {
       store.closeAndDelete();
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
     }
+    if (sourceDir.exists()) {
+      FileUtils.deleteQuietly(sourceDir.file);
+    }
   }
-  
+
+  public Map<Pair<DataFormat, Integer>, Integer> getDatasetKeyMap() {
+    return datasetKeyMap;
+  }
+
   public Integer datasetKey(int key, DataFormat format) {
-    return datasetKeyMap.get(new TestResource(key, format, null, null));
+    return datasetKeyMap.get(new ObjectIntImmutablePair<>(format, key));
   }
 
   void normalizeAndImport(TestResource tr) throws Exception {
-    URL url = getClass().getResource("/" + tr.format.name().toLowerCase() + "/" + tr.key);
-    Path source = Paths.get(url.toURI());
+    Path source;
+    if (tr.resourceFile == null) {
+      var url = getClass().getResource("/" + tr.format.name().toLowerCase() + "/" + tr.key);
+      source = Paths.get(url.toURI());
+    } else {
+      FileUtils.cleanDirectory(sourceDir.file);
+      Resources.copy(tr.resourceFile, new File(sourceDir.file, "textree.txt"));
+      source = sourceDir.file.toPath();
+    }
     dataset = new DatasetWithSettings();
     dataset.setCreatedBy(IMPORT_USER.getKey());
     dataset.setModifiedBy(IMPORT_USER.getKey());
     dataset.setDataFormat(tr.format);
     dataset.setType(tr.type);
-    dataset.setOrigin(DatasetOrigin.MANAGED);
+    dataset.setOrigin(tr.origin);
     dataset.setCode(tr.code);
     dataset.setTitle("Test Dataset " + source.toString());
 

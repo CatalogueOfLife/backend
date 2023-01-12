@@ -37,6 +37,11 @@ public class Synonym extends NameUsageBase implements Comparable<Synonym> {
   }
 
   @Override
+  public NameUsageBase copy() {
+    return new Synonym(this);
+  }
+
+  @Override
   public String getLabel(boolean html) {
     return labelBuilder(getName(), accepted != null ? accepted.isExtinct() : null, getStatus(), getNamePhrase(), getAccordingTo(), html).toString();
   }

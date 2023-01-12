@@ -67,7 +67,7 @@ public class PgCopyUtilsTest {
     File tmp = File.createTempFile("colplus", "csv");
     System.out.println(tmp.getAbsolutePath());
     try {
-      PgCopyUtils.dump(con, "SELECT name AS title, key AS id FROM p", tmp);
+      PgCopyUtils.dumpTSV(con, "SELECT name AS title, key AS id FROM p", tmp);
     } finally {
       tmp.delete();
     }

@@ -29,7 +29,6 @@ public class BareName implements NameUsage {
     this.name = name;
   }
 
-
   @Override
   public String getLabel() {
     return name == null ? null : name.getLabel();

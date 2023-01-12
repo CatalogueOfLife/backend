@@ -1,5 +1,6 @@
 package life.catalogue.db;
 
+import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory;
 public class NameMatchingRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(NameMatchingRule.class);
 
-  private NameIndex nidx;
+  private static NameIndex nidx;
   private final Supplier<SqlSessionFactory> factorySupplier;
 
   public NameMatchingRule() {
@@ -32,14 +33,18 @@ public class NameMatchingRule extends ExternalResource {
   @Override
   protected void before() throws Throwable {
     SqlSessionFactory factory = factorySupplier.get();
-    LOG.info("Setup names index");
+    LOG.info("Setup in-memory names index");
     nidx = NameIndexFactory.memory(factory, AuthorshipNormalizer.INSTANCE);
     nidx.start();
     LOG.info("Rematch all names");
-    RematchJob.all(TestDataRule.TEST_USER.getKey(), factory, nidx).run();
+    RematchJob.all(Users.MATCHER, factory, nidx).run();
   }
 
-  public NameIndex getIndex() {
+  public void rematch(int datasetKey) {
+    RematchJob.one(TestDataRule.TEST_USER.getKey(), factorySupplier.get(), nidx, datasetKey).run();
+  }
+
+  public static NameIndex getIndex() {
     return nidx;
   }
 

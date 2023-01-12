@@ -1,0 +1,4 @@
+id,name_id,parent_id,status,name_phrase,according_to_id,reference_ids,extinct,environments,link
+1,1,,ACCEPTED,,,{},,{},
+2,2,1,ACCEPTED,,,{},,{},
+3,3,2,ACCEPTED,,,{},,{},

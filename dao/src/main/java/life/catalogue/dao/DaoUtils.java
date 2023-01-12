@@ -32,7 +32,7 @@ public class DaoUtils {
    */
   public static void requireManaged(int datasetKey, String message) throws NotFoundException {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
-    if (origin != DatasetOrigin.MANAGED) {
+    if (origin != DatasetOrigin.PROJECT) {
       throw new IllegalArgumentException(message + " Dataset " + datasetKey + " is of origin " + origin);
     }
   }
@@ -77,7 +77,7 @@ public class DaoUtils {
     Dataset d = dm.get(datasetKey);
     if (d == null || d.hasDeletedDate()) {
       throw NotFoundException.notFound(Dataset.class, datasetKey);
-    } else if (d.getOrigin() == DatasetOrigin.RELEASED) {
+    } else if (d.getOrigin() == DatasetOrigin.RELEASE) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be " + action);
     }
     return d;

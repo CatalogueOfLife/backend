@@ -38,35 +38,53 @@ public class SectorSync extends SectorRunnable {
   private final EstimateDao estimateDao;
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
+  private final UsageMatcherGlobal matcher;
+  private final boolean project;
+  private final int targetDatasetKey; // dataset to sync into
+  private final Taxon incertae;
+  private List<SimpleName> foreignChildren;
 
-  public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
-                    SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
-                    Consumer<SectorRunnable> successCallback,
-                    BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, true, true, factory, indexService, sdao, sid, successCallback, errorCallback, user);
+  SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, Taxon incertae,
+             SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
+             NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
+             Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+    super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, successCallback, errorCallback, user);
+    this.project = project;
     this.sid = sid;
     this.estimateDao = estimateDao;
     this.nameIndex = nameIndex;
+    this.matcher = matcher;
+    this.targetDatasetKey = targetDatasetKey;
+    if (targetDatasetKey != sectorKey.getDatasetKey()) {
+      LOG.info("Syncing into release {}", targetDatasetKey);
+    }
+    this.incertae = incertae;
   }
   
   @Override
   void doWork() throws Exception {
-    state.setState( ImportState.DELETING);
-    relinkForeignChildren();
+    if (project) {
+      state.setState( ImportState.DELETING);
+      relinkForeignChildren();
+    }
     try {
-      deleteOld();
-      checkIfCancelled();
+      if (project) {
+        deleteOld();
+        checkIfCancelled();
+      }
 
       state.setState(ImportState.INSERTING);
       processTree();
       checkIfCancelled();
 
     } finally {
-      // run these even if we get errors in the main tree copying
-      state.setState( ImportState.MATCHING);
-      rematchForeignChildren();
-      relinkAttachedSectors();
-      rematchEstimates();
+      if (project) {
+        // run these even if we get errors in the main tree copying
+        state.setState( ImportState.MATCHING);
+        rematchForeignChildren();
+        relinkAttachedSectors();
+        rematchEstimates();
+      }
     }
   }
 
@@ -78,13 +96,29 @@ public class SectorSync extends SectorRunnable {
 
   @Override
   void updateSearchIndex() throws Exception {
-    indexService.indexSector(sector);
-    LOG.info("Reindexed sector {} from search index", sectorKey);
+    if (project) {
+      indexService.indexSector(sector);
+      LOG.info("Reindexed sector {} from search index", sectorKey);
+
+    } else {
+      LOG.debug("Will index merge sector {} at the end of the release. Skip immediate indexing", sectorKey);
+    }
+  }
+
+  @Override
+  protected Sector loadSectorAndUpdateDatasetImport(boolean validate) {
+    Sector s = super.loadSectorAndUpdateDatasetImport(validate);
+    if (s.getTargetID() == null && incertae != null) {
+      LOG.debug("Use incertae sedis target {}", incertae);
+      s.setTarget(SimpleNameLink.of(incertae));
+    }
+    return s;
   }
 
   @Override
   void init() throws Exception {
-    super.init();
+    super.init(true);
+    loadForeignChildren();
     // also load all sector subjects to auto block them
     try (SqlSession session = factory.openSession()) {
       AtomicInteger counter = new AtomicInteger();
@@ -104,6 +138,14 @@ public class SectorSync extends SectorRunnable {
     }
   }
 
+  private void loadForeignChildren() {
+    try (SqlSession session = factory.openSession(true)) {
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      foreignChildren = num.foreignChildren(sectorKey);
+    }
+    LOG.info("Loaded {} children from other sectors with a parent from sector {}", foreignChildren.size(), sectorKey);
+  }
+
   /**
    * Rematch all broken estimates that fall into this sector
    */
@@ -117,7 +159,7 @@ public class SectorSync extends SectorRunnable {
    * so we don't break referential integrity when deleting the sector.
    */
   private void relinkForeignChildren() {
-    final String newParentID = sector.getTarget().getId();
+    final String newParentID = sector.getTargetID(); // can be null !!!
     processForeignChildren((num, sn) -> {
         // remember original parent
         NameUsage parent = num.get(DSID.of(sectorKey.getDatasetKey(), sn.getParent()));
@@ -190,6 +232,16 @@ public class SectorSync extends SectorRunnable {
     }
   }
 
+  private TreeHandler sectorHandler(){
+    if (sector.getMode() == Sector.Mode.MERGE) {
+      return new TreeMergeHandler(targetDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, incertae);
+    }
+    return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
+  }
+
+  /**
+   * Make sure to apply all changes to targetDatasetKey not the sectors datasetKey!
+   */
   private void processTree() throws InterruptedException {
     final Set<String> blockedIds = decisions.values().stream()
         .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK) && ed.getSubject().getId() != null)
@@ -197,14 +249,15 @@ public class SectorSync extends SectorRunnable {
         .collect(Collectors.toSet());
 
     try (SqlSession session = factory.openSession(false);
-         TreeCopyHandler treeHandler = new TreeCopyHandler(decisions, factory, nameIndex, user, sector, state)
+         TreeHandler treeHandler = sectorHandler()
     ){
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       LOG.info("{} taxon tree {} to {}. Blocking {} nodes", sector.getMode(), sector.getSubject(), sector.getTarget(), blockedIds.size());
-      if (sector.getMode() == Sector.Mode.ATTACH) {
-        for (var u : um.processTree(subjectDatasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)) {
-          treeHandler.acceptThrows(u);
-        }
+
+      if (sector.getMode() == Sector.Mode.ATTACH || sector.getMode() == Sector.Mode.MERGE) {
+        String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
+        um.processTree(subjectDatasetKey, null, rootID, blockedIds, null, true,sector.getMode() == Sector.Mode.MERGE)
+            .forEach(treeHandler);
 
       } else if (sector.getMode() == Sector.Mode.UNION) {
         LOG.info("Traverse taxon tree at {}, ignoring immediate children above rank {}. Blocking {} nodes", sector.getSubject().getId(), sector.getPlaceholderRank(), blockedIds.size());
@@ -228,19 +281,23 @@ public class SectorSync extends SectorRunnable {
         }
 
       } else {
-        throw new NotImplementedException("Only attach and union sectors are implemented");
+        throw new NotImplementedException(sector.getMode() + " sectors are not supported");
       }
 
+      LOG.info("Synced {} taxa and {} synonyms from sector {}", state.getTaxonCount(), state.getSynonymCount(), sectorKey);
       LOG.info("Sync name & taxon relations from sector {}", sectorKey);
       treeHandler.copyRelations();
 
       // copy handler stats to metrics
-      state.setAppliedDecisionCount(treeHandler.decisionCounter);
-      state.setIgnoredByReasonCount(Map.copyOf(treeHandler.ignoredCounter));
+      state.setAppliedDecisionCount(treeHandler.getDecisionCounter());
+      state.setIgnoredByReasonCount(Map.copyOf(treeHandler.getIgnoredCounter()));
     }
   }
 
   private void deleteOld() {
+    if (!sector.getDatasetKey().equals(targetDatasetKey)) {
+      throw new IllegalArgumentException(String.format("Deleting sector data can only be done in the project %s, not in dataset %s", sector.getDatasetKey(), targetDatasetKey));
+    }
     try (SqlSession session = factory.openSession(true)) {
       // TODO: deal with species estimates separately as they are on a shared table
       for (Class<? extends SectorProcessable<?>> m : SectorProcessable.MAPPERS) {

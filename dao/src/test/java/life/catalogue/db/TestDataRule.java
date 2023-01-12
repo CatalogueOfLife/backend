@@ -5,7 +5,9 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.common.text.CSVUtils;
 import life.catalogue.common.util.PrimitiveUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
@@ -22,10 +24,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -73,26 +72,26 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   /**
    * NONE does wipe all data so every test starts with an empty db.
    */
-  public final static TestData EMPTY = new TestData("empty", null, null, null, true, null, Collections.emptyMap(),3);
+  public final static TestData EMPTY = new TestData("empty", null, null, null, true, null, Collections.emptyMap(),Set.of(3));
   /**
    * KEEP keeps existing data and does not wipe or create anything new. Can be used with class based data loading rules, e.g. TxtTreeDataRule
    */
-  public final static TestData KEEP = new TestData("keep", null, null, null, true, null, Collections.emptyMap(),3);
+  public final static TestData KEEP = new TestData("keep", null, null, null, true, null, Collections.emptyMap(),Set.of(3));
   /**
    * Inits the datasets table with real col data from colplus-repo
    * The dataset.csv file was generated as a dump from production with psql:
    *
    * \copy (SELECT key,type,gbif_key,gbif_publisher_key,license,issued,confidence,completeness,origin,title,alias,description,version,geographic_scope,taxonomic_scope,url,logo,notes,settings,source_key,contact,creator,editor,publisher,contributor FROM dataset WHERE not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
    */
-  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, null, Collections.emptyMap());
-  public final static TestData APPLE = new TestData("apple", 11, 2, 2, 3, 11, 12);
-  public final static TestData FISH = new TestData("fish", 100, 2, 4, 3, 100, 101, 102);
-  public final static TestData TREE = new TestData("tree", 11, 1, 2, 3, 11, 12);
-  public final static TestData TREE2 = new TestData("tree2", 11, 1, 2, 3, 11);
-  public final static TestData DRAFT = new TestData("draft", 3, 1, 2, 3);
-  public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, 3);
-  public final static TestData DUPLICATES = new TestData("duplicates", 1000, 3, 5, row -> AuthorshipNormFunc.normAuthorship(15, row), 3, 1000);
-  public final static TestData NIDX = new TestData("nidx", null, 1, 3, 100, 101, 102);
+  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, null, Collections.emptyMap(), Set.of());
+  public final static TestData APPLE = new TestData("apple", 11, 2, 2, Set.of(3, 11, 12));
+  public final static TestData FISH = new TestData("fish", 100, 2, 4, Set.of(3, 100, 101, 102));
+  public final static TestData TREE = new TestData("tree", 11, 1, 2, Set.of(3, 11, 12));
+  public final static TestData TREE2 = new TestData("tree2", 11, 1, 2, Set.of(3, 11));
+  public final static TestData DRAFT = new TestData("draft", 3, 1, 2, Set.of(3));
+  public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, Set.of(3));
+  public final static TestData DUPLICATES = new TestData("duplicates", 1000, 3, 5, row -> AuthorshipNormFunc.normAuthorship(15, row), Set.of(3, 1000));
+  public final static TestData NIDX = new TestData("nidx", null, 1, 3, Set.of(100, 101, 102));
 
   public static class TestData {
     public final String name;
@@ -104,28 +103,23 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     final Map<String, Map<String, Object>> defaultValues;
     private final boolean none;
 
-    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Integer... datasetKeys) {
+    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Set<Integer> datasetKeys) {
       this(name, key, sciNameColumn, taxStatusColumn, Collections.emptyMap(), datasetKeys);
     }
 
-    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Function<String[], String> authorshipNormalizer, Integer... datasetKeys) {
+    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Function<String[], String> authorshipNormalizer, Set<Integer> datasetKeys) {
       this(name, key, sciNameColumn, taxStatusColumn, false, authorshipNormalizer, Collections.emptyMap(), datasetKeys);
     }
 
-    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
+    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys) {
       this(name, key, sciNameColumn, taxStatusColumn, false, null, defaultValues, datasetKeys);
     }
 
-    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, Function<String[], String> authorshipNormalizer, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
+    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, Function<String[], String> authorshipNormalizer, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys) {
       this.name = name;
       this.key = key;
       this.sciNameColumn = sciNameColumn;
       this.taxStatusColumn = taxStatusColumn;
-      if (datasetKeys == null) {
-        this.datasetKeys = Collections.EMPTY_SET;
-      } else {
-        this.datasetKeys = ImmutableSet.copyOf(datasetKeys);
-      }
       this.none = none;
       this.defaultValues = defaultValues;
       if (authorshipNormalizer != null) {
@@ -133,6 +127,23 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       } else {
         this.authorshipNormalizer = row -> null;
       }
+      if (datasetKeys == null) {
+        this.datasetKeys = readDatasetKeys(name);
+      } else {
+        this.datasetKeys = ImmutableSet.copyOf(datasetKeys);
+      }
+    }
+
+    private static Set<Integer> readDatasetKeys(String testDataName) {
+      String resource = "test-data/" + testDataName.toLowerCase() + "/dataset.csv";
+      var in = TestDataRule.class.getClassLoader().getResourceAsStream(resource);
+      var keys = new HashSet<Integer>();
+      keys.add(Datasets.COL); // always there!
+      if (in != null) {
+        // requires dataset key to be the first column!
+        CSVUtils.parse(in,1).forEach(d -> keys.add(Integer.valueOf(d.get(0))));
+      }
+      return keys;
     }
 
     public int maxDatasetKey() {
@@ -225,8 +236,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   @Override
   protected void before() throws Throwable {
-    LOG.info("Loading {} test data", testData);
     initSession();
+    LOG.info("Loading {} test data into {}", testData, session.getConnection().getMetaData().getURL());
     if (testData != KEEP) {
       // remove potential old data
       truncate(session);
@@ -320,12 +331,17 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public void truncateDraft() throws SQLException {
     LOG.info("Truncate draft partition tables");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
+      for (String t : Lists.reverse(DatasetPartitionMapper.PROJECT_TABLES)){
+        st.execute("DELETE FROM " + t + " WHERE dataset_key=" + Datasets.COL);
+      };
+      st.execute("DELETE FROM name_match WHERE dataset_key=" + Datasets.COL);
+      session.getConnection().commit();
       for (String t : Lists.reverse(DatasetPartitionMapper.TABLES)){
         st.execute("DELETE FROM " + t + " WHERE dataset_key=" + Datasets.COL);
       };
       session.getConnection().commit();
-      for (String t : new String[]{"name_match", "sector_import", "sector"}){
-        st.execute("DELETE FROM " + t);
+      for (String t : new String[]{"sector_import", "sector"}){
+        st.execute("DELETE FROM " + t + " WHERE dataset_key=" + Datasets.COL);
       };
       session.getConnection().commit();
     }
@@ -399,6 +415,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   private void copyDataset(PgConnection pgc, int key) throws IOException, SQLException {
+    System.out.format("Copy dataset %s\n", key);
     copyPartitionedTable(pgc, "verbatim", key, ImmutableMap.of("dataset_key", key));
     copyPartitionedTable(pgc, "reference", key, datasetEntityDefaults(key));
     copyPartitionedTable(pgc, "name", key,
@@ -418,6 +435,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         "is_synonym", this::isSynonym
       )
     );
+    copyPartitionedTable(pgc, "verbatim_source", key, ImmutableMap.of("dataset_key", key));
     copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key));
     copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key));
   }

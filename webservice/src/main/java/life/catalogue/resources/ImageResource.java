@@ -61,7 +61,7 @@ public class ImageResource {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
     if (!origin.isManagedOrRelease()) {
       throw new IllegalArgumentException("Dataset "+datasetKey+" is not a project");
-    } else if (origin == DatasetOrigin.RELEASED) {
+    } else if (origin == DatasetOrigin.RELEASE) {
       return imgService.archiveDatasetLogo(id, datasetKey, scale);
     }
     return imgService.datasetLogo(id, scale);

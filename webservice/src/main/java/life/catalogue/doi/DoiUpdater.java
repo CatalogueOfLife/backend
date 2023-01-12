@@ -67,12 +67,12 @@ public class DoiUpdater {
         datasetKey = event.getDoi().datasetKey();
         // make sure we have a project release
         var info = DatasetInfoCache.CACHE.info(datasetKey, true);
-        if (info.origin != DatasetOrigin.RELEASED || info.sourceKey == null) {
+        if (info.origin != DatasetOrigin.RELEASE || info.sourceKey == null) {
           LOG.warn("COL dataset DOI {} that is not a release: {}", event.getDoi(), datasetKey);
           return;
         }
       } catch (NotFoundException e) {
-        LOG.warn("COL dataset DOI {} that points to a non existing dataset {}", event.getDoi(), datasetKey);
+        LOG.warn("COL dataset DOI {} points to a non existing dataset {}", event.getDoi(), datasetKey);
         return;
 
       } catch (IllegalArgumentException e) {
@@ -82,7 +82,7 @@ public class DoiUpdater {
         sourceKey = key.getId();
         var project = DatasetInfoCache.CACHE.info(sourceKey);
         var source = DatasetInfoCache.CACHE.info(sourceKey);
-        if (project.origin != DatasetOrigin.MANAGED || project.key != source.sourceKey) {
+        if (project.origin != DatasetOrigin.PROJECT || project.key != source.sourceKey) {
           LOG.warn("COL source dataset DOI {} that is not a source dataset key {}", event.getDoi(), sourceKey);
           return;
         }

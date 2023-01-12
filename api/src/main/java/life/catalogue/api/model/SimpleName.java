@@ -1,8 +1,11 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import life.catalogue.common.tax.NameFormatter;
+import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -37,6 +40,22 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
   private NomCode code;
   private TaxonomicStatus status;
   private String parent;
+
+  public static SimpleName sn(String name) {
+    return new SimpleName(null, name, Rank.UNRANKED);
+  }
+  public static SimpleName sn(String name, String authorship) {
+    return new SimpleName(null, name, authorship, Rank.UNRANKED);
+  }
+  public static SimpleName sn(Rank rank, String name) {
+    return new SimpleName(null, name, rank);
+  }
+  public static SimpleName sn(Rank rank, String name, String authorship) {
+    return new SimpleName(null, name, authorship, rank);
+  }
+  public static SimpleName sn(String id, Rank rank, String name, String authorship) {
+    return new SimpleName(id, name, authorship, rank);
+  }
 
   public SimpleName() {}
 
@@ -109,6 +128,11 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
 
   public void setAuthorship(String authorship) {
     this.authorship = authorship;
+  }
+
+  @JsonIgnore
+  public boolean hasAuthorship() {
+    return !StringUtils.isBlank(authorship);
   }
 
   public String getPhrase() {
@@ -193,9 +217,18 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
         sb.append(" parent=");
         sb.append(parent);
       }
+      toStringAdditionalInfo(sb);
       sb.append("]");
     }
     return sb;
+  }
+
+  protected void toStringAdditionalInfo(StringBuilder sb) {
+    // override to add more infos into the brackets
+  }
+
+  public DSID<String> toDSID(int datasetKey){
+    return DSID.of(datasetKey, id);
   }
 
   @Override

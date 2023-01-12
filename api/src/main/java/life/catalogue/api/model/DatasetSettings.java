@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.SettingsDeserializer;
 import life.catalogue.api.vocab.Setting;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +90,15 @@ public class DatasetSettings extends HashMap<Setting, Object> {
     } catch (Exception e) {
       LOG.warn("Failed to convert setting {}={} to enum", key, get(key), e);
       return null;
+    }
+  }
+
+  public <T> List<T> getList(Setting key) {
+    try {
+      return (List<T>) get(key);
+    } catch (Exception e) {
+      LOG.warn("Failed to convert setting {}={} to list", key, get(key), e);
+      return Collections.emptyList();
     }
   }
 

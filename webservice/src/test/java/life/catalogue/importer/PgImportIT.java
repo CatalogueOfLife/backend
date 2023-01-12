@@ -43,7 +43,7 @@ public class PgImportIT extends PgImportITBase {
 
   @Test
   public void testMetadataMerge() throws Exception {
-    final int datasetKey = 26;
+    final int datasetKey = 29;
     dataset.setKey(datasetKey);
     dataset.setTitle("First title");
     dataset.setDescription("First description");

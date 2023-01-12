@@ -21,9 +21,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -33,6 +31,8 @@ import com.google.common.base.Preconditions;
 
 abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
+  private final static Set<Rank> MERGE_RANKS_DEFAULT = Set.of(Rank.FAMILY, Rank.GENUS, Rank.SPECIES,
+    Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM, Rank.UNRANKED);
 
   protected final DSID<Integer> sectorKey;
   protected final int subjectDatasetKey;
@@ -45,9 +45,10 @@ abstract class SectorRunnable implements Runnable {
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
   List<Sector> childSectors;
-  List<SimpleName> foreignChildren;
   // map with foreign child id to original parent name
   Map<String, Name> foreignChildrenParents = new HashMap<>();
+  private final UsageMatcherGlobal matcher;
+  private final boolean clearMatcherCache;
   private final Consumer<SectorRunnable> successCallback;
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
@@ -55,12 +56,14 @@ abstract class SectorRunnable implements Runnable {
   final SectorImport state;
 
   /**
-   * @throws IllegalArgumentException if the sectors dataset is not of MANAGED origin
+   * @throws IllegalArgumentException if the sectors dataset is not of PROJECT origin
    */
-  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, SqlSessionFactory factory,
-                 NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
+  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, boolean clearMatcherCache, SqlSessionFactory factory,
+                 UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
                  Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
+    this.matcher = matcher;
+    this.clearMatcherCache = clearMatcherCache;
     this.validateSector = validateSector;
     this.factory = factory;
     this.indexService = indexService;
@@ -82,9 +85,9 @@ abstract class SectorRunnable implements Runnable {
     sector = loadSectorAndUpdateDatasetImport(false);
     this.subjectDatasetKey = sector.getSubjectDatasetKey();
     try (SqlSession session = factory.openSession(true)) {
-      // make sure the target catalogue is MANAGED and not RELEASED!
+      // make sure the target dataset is a PROJECT
       Dataset target = session.getMapper(DatasetMapper.class).get(sectorKey.getDatasetKey());
-      if (target.getOrigin() != DatasetOrigin.MANAGED) {
+      if (target.getOrigin() != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + target.getOrigin() + " dataset");
       }
       if (validateLicenses) {
@@ -113,6 +116,11 @@ abstract class SectorRunnable implements Runnable {
       state.setState( ImportState.PREPARING);
       LOG.info("Start {} for sector {}", this.getClass().getSimpleName(), sectorKey);
       init();
+
+      // clear matcher cache?
+      if (clearMatcherCache) {
+        matcher.clear(sectorKey.getDatasetKey());
+      }
 
       doWork();
 
@@ -154,20 +162,25 @@ abstract class SectorRunnable implements Runnable {
     }
   }
 
+  /**
+   * The default runnable does not load attached sectors
+   * @throws Exception
+   */
   void init() throws Exception {
+    init(false);
+  }
+
+  void init(boolean loadChildSectors) throws Exception {
     // load latest version of the sector again to get the latest target ids
     sector = loadSectorAndUpdateDatasetImport(validateSector);
-    if (sector.getMode() == Sector.Mode.MERGE) {
-      //TODO: https://github.com/Sp2000/colplus-backend/issues/509
-      throw new NotImplementedException("Sector merging not implemented yet");
-    }
     loadDecisions();
-    loadForeignChildren();
-    loadAttachedSectors();
+    if (loadChildSectors) {
+      loadAttachedSectors();
+    }
     checkIfCancelled();
   }
   
-  private Sector loadSectorAndUpdateDatasetImport(boolean validate) {
+  protected Sector loadSectorAndUpdateDatasetImport(boolean validate) {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       Sector s = sm.get(sectorKey);
@@ -190,9 +203,15 @@ abstract class SectorRunnable implements Runnable {
         }
 
         if (s.getRanks() == null || s.getRanks().isEmpty()) {
-          if (ds.has(Setting.SECTOR_RANKS)) {
+          if(s.getMode() == Sector.Mode.MERGE) {
+            // in merge mode we dont want any higher ranks than family by default!
+            s.setRanks(MERGE_RANKS_DEFAULT);
+
+          } else if (ds.has(Setting.SECTOR_RANKS)) {
             s.setRanks(Set.copyOf(ds.getEnumList(Setting.SECTOR_RANKS)));
+
           } else {
+            // all
             s.setRanks(Set.of(Rank.values()));
           }
         }
@@ -200,24 +219,9 @@ abstract class SectorRunnable implements Runnable {
       if (validate) {
         // assert that target actually exists. Subject might be bad - not needed for deletes!
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
-        
-        // check if target actually exists
-        String msg = "Sector " + s.getKey() + " does have a non existing target " + s.getTarget() + " for dataset " + sectorKey.getDatasetKey();
-        try {
-          ObjectUtils.checkNotNull(s.getTarget(), s + " does not have any target");
-          ObjectUtils.checkNotNull(tm.get(s.getTargetAsDSID()), "Sector " + s.getKey() + " does have a non existing target id");
-        } catch (PersistenceException e) {
-          throw new IllegalArgumentException(msg, e);
-        }
-  
-        // also validate the subject for syncs
-        msg = "Sector " + s.getKey() + " does have a non existing subject " + s.getSubject() + " for dataset " + subjectDatasetKey;
-        try {
-          ObjectUtils.checkNotNull(s.getSubject(), s + " does not have any subject");
-          ObjectUtils.checkNotNull(tm.get(s.getSubjectAsDSID()), msg);
-        } catch (PersistenceException e) {
-          throw new IllegalArgumentException(msg, e);
-        }
+
+        SectorDao.verifyTaxon(s, "subject", s::getSubjectAsDSID, tm);
+        SectorDao.verifyTaxon(s, "target", s::getTargetAsDSID, tm);
       }
       // load current dataset import
       var datasetImport = session.getMapper(DatasetImportMapper.class).last(subjectDatasetKey);
@@ -236,14 +240,6 @@ abstract class SectorRunnable implements Runnable {
       });
     }
     LOG.info("Loaded {} editorial decisions for sector {}", decisions.size(), sectorKey);
-  }
-  
-  private void loadForeignChildren() {
-    try (SqlSession session = factory.openSession(true)) {
-      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      foreignChildren = num.foreignChildren(sectorKey);
-    }
-    LOG.info("Loaded {} children from other sectors with a parent from sector {}", foreignChildren.size(), sectorKey);
   }
   
   private void loadAttachedSectors() {

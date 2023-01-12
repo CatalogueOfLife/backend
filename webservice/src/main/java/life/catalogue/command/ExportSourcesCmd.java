@@ -64,7 +64,7 @@ public class ExportSourcesCmd extends AbstractPromptCmd {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       project = dm.get(projectKey);
-      if (project.getOrigin() != DatasetOrigin.MANAGED) {
+      if (project.getOrigin() != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("Dataset key "+projectKey+" is not a project!");
       }
     }

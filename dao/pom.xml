@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.catalogueoflife</groupId>
 		<artifactId>motherpom</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dao</artifactId>
@@ -35,6 +35,24 @@
             </excludes>
           </testResource>
 		</testResources>
+
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <!--
+            Run tests in parallel with the same JVM by default for all modules.
+            Some modules run tests that share static information and will override this configuration.
+            See https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html
+            -->
+            <parallel>none</parallel>
+            <useUnlimitedThreads>false</useUnlimitedThreads>
+            <forkCount>4</forkCount>
+            <reuseForks>true</reuseForks>
+          </configuration>
+        </plugin>
+      </plugins>
 	</build>
 
 	<dependencies>

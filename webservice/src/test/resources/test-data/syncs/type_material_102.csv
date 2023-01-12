@@ -1,0 +1,4 @@
+id,name_id,citation,status,country,locality,latitude,longitude,altitude,sex,institution_code,catalog_number,associated_sequences,host,date,collector,reference_id,link,remarks
+MIN1000737,1001c,"United States; Idaho, Nes Perces; May 1892; J.H.Sandberg; Dry hillsides; MIN 1000737",ISOTYPE,US,"Idaho, Nes Perces",,,,,,,,,May 1892,J.H.Sandberg,,https://plants.jstor.org/stable/10.5555/al.ap.specimen.min1000737,
+GH00006265,1001c,"United States; Valley of the Clearwater River; 30th May 1892; J.H.Sandberg, D. T. MacDougal & A. A. Heller; GH 00006265",HOLOTYPE,US,Valley of the Clearwater River,,,,,,,,,1892-05-30,"J.H.Sandberg, D. T. MacDougal & A. A.",,https://plants.jstor.org/stable/10.5555/al.ap.specimen.gh00006265,
+NDG65570,1001,"U.S.A.; California, (Modoc Co.); June 1894; Rebecca M. Austin; lava beds, under juniper trees; NDG 65570",HOLOTYPE,US,"California, (Modoc Co.)",,,,,,,,,1894-06,,,https://plants.jstor.org/stable/10.5555/al.ap.specimen.ndg65570,

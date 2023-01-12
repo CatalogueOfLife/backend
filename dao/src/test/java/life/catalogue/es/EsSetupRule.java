@@ -5,6 +5,7 @@ import life.catalogue.common.util.YamlUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.elasticsearch.client.RestClient;
@@ -49,7 +50,9 @@ public class EsSetupRule extends ExternalResource {
   protected void before() throws Throwable {
     super.before();
     cfg = YamlUtils.read(EsConfig.class, "/es-test.yaml");
-    LOG.info("Connecting to Elasticsearch on {}:{}", cfg.hosts, cfg.ports);
+    // use a unique index name
+    cfg.nameUsage.name = cfg.nameUsage.name + "-" + UUID.randomUUID();
+    LOG.info("Connecting to Elasticsearch on {}:{} using index {}", cfg.hosts, cfg.ports, cfg.nameUsage.name);
     // connect and verify version
     client = new EsClientFactory(cfg).createClient();
     LOG.info("Using Elasticsearch on {}:{}", cfg.hosts, cfg.ports);
@@ -72,7 +75,9 @@ public class EsSetupRule extends ExternalResource {
   protected void after() {
     super.after();
     if (client != null) {
+      // delete index
       try {
+        EsUtil.deleteIndex(client, cfg.nameUsage);
         client.close();
       } catch (IOException e) {
         throw new RuntimeException(e);

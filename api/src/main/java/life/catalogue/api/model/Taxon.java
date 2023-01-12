@@ -28,6 +28,7 @@ public class Taxon extends NameUsageBase {
 
   public Taxon(Name n) {
     setName(n);
+    setDatasetKey(n.getDatasetKey());
   }
 
   public Taxon(NameUsageBase other) {
@@ -46,6 +47,11 @@ public class Taxon extends NameUsageBase {
 
   public Taxon(SimpleName sn) {
     super(sn);
+  }
+
+  @Override
+  public NameUsageBase copy() {
+    return new Taxon(this);
   }
 
   @Override

@@ -46,6 +46,7 @@ public class LookupTables {
       return cnt;
 
     } catch (PSQLException e) {
+      // table might not exist yet
       return -1;
     }
   }

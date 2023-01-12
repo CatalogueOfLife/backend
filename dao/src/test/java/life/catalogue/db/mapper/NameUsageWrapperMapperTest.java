@@ -9,6 +9,7 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -90,15 +91,6 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     assertNotNull(w);
     assertNotNull(w.getUsage());
     Taxon wt = (Taxon) w.getUsage();
-    assertNotNull(wt.getName());
-    assertEquals(s.getId(), wt.getSectorKey());
-    assertEquals(TAXON2.getDatasetKey(), w.getSectorDatasetKey());
-    assertEquals(d.getGbifPublisherKey(), w.getPublisherKey());
-
-    w = mapper().getWithoutClassification(Datasets.COL, t.getId());
-    assertNotNull(w);
-    assertNotNull(w.getUsage());
-    wt = (Taxon) w.getUsage();
     assertNotNull(wt.getName());
     assertEquals(s.getId(), wt.getSectorKey());
     assertEquals(TAXON2.getDatasetKey(), w.getSectorDatasetKey());

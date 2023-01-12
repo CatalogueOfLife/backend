@@ -57,7 +57,7 @@ public class NameUsageResource {
     List<NameUsageBase> result;
     Supplier<Integer> count;
     if (namesIndexID != null) {
-      result = mapper.listByNamesIndexID(datasetKey, namesIndexID, p);
+      result = mapper.listByNamesIndexOrCanonicalID(datasetKey, namesIndexID, p);
       count = () -> mapper.countByNamesIndexID(namesIndexID, datasetKey);
     } else if (q != null) {
       result = mapper.listByName(datasetKey, q, rank, p);

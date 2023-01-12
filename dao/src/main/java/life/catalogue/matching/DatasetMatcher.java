@@ -60,7 +60,7 @@ public class DatasetMatcher {
       NameMapper nm = session.getMapper(NameMapper.class);
 
       update = nmm.exists(datasetKey);
-      final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.MANAGED;
+      final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT;
       LOG.info("{} name matches for {}{}", update ? "Update" : "Create", isProject ? "project " : "", datasetKey);
       nm.processDataset(datasetKey).forEach(hn);
       // also match archived names

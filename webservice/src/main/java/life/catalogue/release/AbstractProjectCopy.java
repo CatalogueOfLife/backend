@@ -107,17 +107,19 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   @Override
   public void runWithLock() throws InterruptedException {
     try {
+      checkIfCancelled();
       LOG.info("{} project {} to new dataset {}", actionName, datasetKey, getNewDatasetKey());
       // prepare new tables
       updateState(ImportState.PROCESSING);
       Partitioner.partition(factory, newDatasetKey, newDatasetOrigin);
       // TODO: build indices concurrently AFTER copying data to be much quicker
-      // Note: attaching also creates missing indices and constraint from the master partition - if they are missing that takes long and blocks queries menwhile
+      // Note: attaching also creates missing indices and constraint from the master partition - if they are missing that takes long and blocks queries meanwhile
       // build indices and attach partition - the actual copy commands use the concrete table names so we can load them without being attached yet
       Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
 
       // is an id mapping table needed?
       if (mapIds) {
+        checkIfCancelled();
         LOG.info("Create clean id mapping tables for project {}", datasetKey);
         try (SqlSession session = factory.openSession(true)) {
           DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
@@ -134,20 +136,26 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       }
 
       // call prep
+      checkIfCancelled();
       prepWork();
 
       // copy data
+      checkIfCancelled();
       copyData();
 
       // at last copy name matches - we need an attached table for this to fulfill constraints
+      checkIfCancelled();
       try (SqlSession session = factory.openSession(true)) {
         copyTable(NameMatch.class, NameMatchMapper.class, session);
       }
 
       // subclass specifics
+      checkIfCancelled();
       finalWork();
 
+      checkIfCancelled();
       metrics();
+      checkIfCancelled();
 
       try {
         // ES index
@@ -251,9 +259,9 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     indexService.indexDataset(newDatasetKey);
   }
 
-  private <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
+  <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
     int count = session.getMapper(mapperClass).copyDataset(datasetKey, newDatasetKey, mapIds);
-    LOG.info("Copied {} {}s", count, entity.getSimpleName());
+    LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), datasetKey, newDatasetKey);
   }
 
 }

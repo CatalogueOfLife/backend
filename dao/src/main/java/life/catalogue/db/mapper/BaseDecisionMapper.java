@@ -14,4 +14,9 @@ public interface BaseDecisionMapper<T extends DatasetScopedEntity<Integer>, R> e
   DatasetProcessable<T>,
   Searchable<T, R>,
   CopyDataset {
+
+  /**
+   * Creates a new entity using the provided id instead of a sequence generated one.
+   */
+  void createWithID(T obj);
 }

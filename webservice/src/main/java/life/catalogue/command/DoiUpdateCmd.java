@@ -28,7 +28,7 @@ import com.google.common.eventbus.EventBus;
 
 import net.sourceforge.argparse4j.inf.Subparser;
 
-import static life.catalogue.api.vocab.DatasetOrigin.MANAGED;
+import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
 
 /**
  * Tool for managing / updating DOIs for projects and it's releases.
@@ -77,7 +77,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       Dataset d = dm.get(key);
       if (d == null) {
         throw NotFoundException.notFound(Dataset.class, key);
-      } else if (d.getOrigin() != MANAGED) {
+      } else if (d.getOrigin() != PROJECT) {
         throw new IllegalArgumentException("Dataset "+key+" is not a project but a "+d.getOrigin()+" dataset");
       }
       // update project DOI

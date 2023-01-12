@@ -27,15 +27,6 @@ public interface NameUsageWrapperMapper {
   NameUsageWrapper getBareName(@Param("datasetKey") int datasetKey, @Param("id") String nameId);
 
   /**
-   * @return the full wrapper object but without the recursive classification property
-   */
-  NameUsageWrapper getWithoutClassification(@Param("datasetKey") int datasetKey,
-                                            @Param("id") String taxonId);
-
-  List<NameUsageWrapper> getSomeWithoutClassification(@Param("datasetKey") int datasetKey,
-                                                @Param("ids") List<String> taxonIds);
-
-  /**
    * Iterates over all usages for a given dataset.
    * The returned wrapper does only include the usage and issues related to name and usage, but no further information.
    */
@@ -47,6 +38,18 @@ public interface NameUsageWrapperMapper {
   Cursor<NameUsageWrapper> processDatasetBareNames(@Param("datasetKey") Integer datasetKey,
                                @Nullable @Param("sectorKey") Integer sectorKey);
 
+
+  /**
+   * Processes usages without classification and accepted Taxon for synonyms from a dataset, optional restricted to a single sector.
+   * Results are ordered by status (accepted first) and rank (highest rank first).
+   * This gets close to a tree traversal, but is more performant. Badly arranged trees and unranked or uncomparable taxa can cause unexpected problems
+   * that should be catered for by the consumer.
+   *
+   * @param datasetKey the dataset, e.g. catalogue, to process
+   * @param sectorKey the optional sector to restrict the processed usages to
+   */
+  Cursor<NameUsageWrapper> processWithoutClassification(@Param("datasetKey") Integer datasetKey,
+                                          @Nullable @Param("sectorKey") Integer sectorKey);
 
   /**
    * Traverses a subtree returning classifications as list of simple names objects only.

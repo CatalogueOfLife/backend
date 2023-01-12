@@ -1,30 +1,35 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.db.SectorProcessable;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.validation.Validator;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
+  private final static Set<Rank> PUBLISHER_SECTOR_RANKS = Set.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM);
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
   private final NameUsageIndexService indexService;
@@ -66,34 +71,26 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     s.applyUser(user);
     try (SqlSession session = factory.openSession(ExecutorType.SIMPLE, false)) {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
-      // make sure we have a managed dataset - otherwise sectors cannot be created and we lack a id sequence to generate a key!
+      // make sure we have a managed dataset - otherwise sectors cannot be created and we lack an id sequence to generate a key!
       DatasetOrigin origin = DatasetInfoCache.CACHE.info(s.getDatasetKey()).origin;
       if (origin == null) {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " does not exist");
-      } else if (origin != DatasetOrigin.MANAGED) {
+      } else if (origin != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " is not managed but of origin " + origin);
       }
 
-      final DSID<String> did = s.getTargetAsDSID();
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-
       // check if source is a placeholder node
       parsePlaceholderRank(s);
-      // reload full source and target
-      Taxon subject = tm.get(s.getSubjectAsDSID());
-      if (subject == null) {
-        throw new IllegalArgumentException("subject ID " + s.getSubject().getId() + " not existing in dataset " + s.getSubjectDatasetKey());
-      }
-      s.setSubject(subject.toSimpleNameLink());
 
-      Taxon target  = tm.get(s.getTargetAsDSID());
-      if (target == null) {
-        throw new IllegalArgumentException("target ID " + s.getTarget().getId() + " not existing in catalogue " + s.getDatasetKey());
-      }
-      s.setTarget(target.toSimpleNameLink());
-      
-      
+      // reload full source and target
+      var subject = reloadTaxon(s, "subject", s::getSubjectAsDSID, s::setSubject, tm);
+      var target = reloadTaxon(s, "target", s::getTargetAsDSID, s::setTarget, tm);
+
+      // make sure the priority is not take, otherwise make room
+      updatePriorities(s, mapper);
+
       // creates sector key
       mapper.create(s);
 
@@ -103,23 +100,27 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (Sector.Mode.ATTACH == s.getMode()) {
         // one taxon in ATTACH mode
         toCopy.add(subject);
-      } else {
-        // several taxa in UNION/MERGE mode
+      } else if (Sector.Mode.UNION == s.getMode()){
+        // several taxa in UNION mode
         toCopy = tm.children(s.getSubjectAsDSID(), s.getPlaceholderRank(), new Page(0, 5));
+      } else {
+        // none in MERGE mode
       }
-  
-      for (Taxon t : toCopy) {
-        t.setSectorKey(s.getId());
-        TaxonDao.copyTaxon(session, t, did, user);
+
+      if (!toCopy.isEmpty()) {
+        for (Taxon t : toCopy) {
+          t.setSectorKey(s.getId());
+          TaxonDao.copyTaxon(session, t, s.getTargetAsDSID(), user);
+        }
+        indexService.add(toCopy.stream()
+          .map(t -> {
+            NameUsageWrapper w = new NameUsageWrapper(t);
+            w.setSectorDatasetKey(s.getSubjectDatasetKey());
+            return w;
+          })
+          .collect(Collectors.toList()))
+        ;
       }
-      indexService.add(toCopy.stream()
-        .map(t -> {
-          NameUsageWrapper w = new NameUsageWrapper(t);
-          w.setSectorDatasetKey(s.getSubjectDatasetKey());
-          return w;
-        })
-        .collect(Collectors.toList()))
-      ;
 
       incSectorCounts(session, s, 1);
   
@@ -128,13 +129,41 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
+  public static Taxon verifyTaxon(Sector s, String kind, Supplier<DSID<String>> getter, TaxonMapper tm) {
+    DSID<String> did = getter.get();
+    Taxon tax = null;
+    if (did != null) {
+      tax = tm.get(did);
+      if (tax == null) {
+        throw new IllegalArgumentException(kind + " ID " + did.getId() + " not existing in dataset " + did.getDatasetKey());
+      }
+    } else if (s.getMode() != Sector.Mode.MERGE){
+      throw new IllegalArgumentException(kind + " required for " + s.getMode() + " sector");
+    }
+    return tax;
+  }
+
+  private static Taxon reloadTaxon(Sector s, String kind, Supplier<DSID<String>> getter, Consumer<SimpleNameLink> setter, TaxonMapper tm) {
+    Taxon tax = verifyTaxon(s, kind, getter, tm);
+    if (tax != null) {
+      setter.accept(tax.toSimpleNameLink());
+    } else {
+      setter.accept(null);
+    }
+    return tax;
+  }
+
   @Override
   protected void updateBefore(Sector s, Sector old, int user, SectorMapper mapper, SqlSession session) {
     parsePlaceholderRank(s);
+    if (s.getMode() != Sector.Mode.MERGE && s.getTarget() == null) {
+      throw new IllegalArgumentException(String.format("%s sector %s must have a target", s.getMode(), s.getKey()));
+    }
     requireTaxonIdExists(s.getTargetAsDSID(), session);
-    super.updateBefore(s, old, user, mapper, session);
+    if (s.getPriority() != null && !Objects.equals(s.getPriority(), old.getPriority())) {
+      updatePriorities(s, mapper);
+    }
   }
-
   private static void requireTaxonIdExists(DSID<String> key, SqlSession session){
     if (key != null && key.getId() != null) {
       if (!session.getMapper(NameUsageMapper.class).exists(key)) {
@@ -143,32 +172,47 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
+  private static void updatePriorities(Sector s, SectorMapper mapper){
+    if (s.getPriority() != null) {
+      // does that priority already exist? If so, make room
+      var pk = mapper.getByPriority(s.getDatasetKey(), s.getPriority());
+      if (pk != null) {
+        // to avoid constraint problems we need to shift this and lower prios
+        int num = mapper.incLowerPriorities(s.getDatasetKey(), s.getPriority());
+        LOG.debug("Shifted {} lower priority sectors for dataset {}", num, s.getDatasetKey());
+      }
+    }
+  }
+
   public static boolean parsePlaceholderRank(Sector s){
-    RankID subjId = RankID.parseID(s.getSubjectDatasetKey(), s.getSubject().getId());
-    if (subjId.rank != null) {
-      s.setPlaceholderRank(subjId.rank);
-      s.getSubject().setId(subjId.getId());
-      return true;
+    if (s.getSubject() != null) {
+      RankID subjId = RankID.parseID(s.getSubjectDatasetKey(), s.getSubject().getId());
+      if (subjId.rank != null) {
+        s.setPlaceholderRank(subjId.rank);
+        s.getSubject().setId(subjId.getId());
+        return true;
+      }
     }
     return false;
   }
 
   /**
+   * Move also root target taxa of the sector in case the target was changed.
    * We already verified the target taxon exists in the before update...
    */
   @Override
   protected boolean updateAfter(Sector obj, Sector old, int user, SectorMapper mapper, SqlSession session, boolean keepSessionOpen) {
-    if (old.getTarget() == null || obj.getTarget() == null || !Objects.equals(old.getTarget().getId(), obj.getTarget().getId())) {
+    if (!Objects.equals(old.getTargetID(), obj.getTargetID())) {
       incSectorCounts(session, obj, 1);
       incSectorCounts(session, old, -1);
     }
-    // update usages in case the target has changed!
-    if (!Objects.equals(simpleNameID(old.getTarget()), simpleNameID(obj.getTarget())) && obj.getTarget().getId()!=null) {
+    // update usages in case the target has changed and it wasn't a MERGE!
+    if (obj.getMode() != Sector.Mode.MERGE && simpleNameID(obj.getTarget()) != null && !Objects.equals(simpleNameID(old.getTarget()), simpleNameID(obj.getTarget()))) {
       // loop over sector root taxa as the old target id might be missing or even wrong. Only trust real usage data!
       final DSID<String> key = DSID.of(obj.getDatasetKey(), null);
       for (SimpleName sn : session.getMapper(NameUsageMapper.class).sectorRoot(obj)) {
-        // obj.getTarget().getId() must exist as we validated this in the before update method
-        tDao.updateParent(session, key.id(sn.getId()), obj.getTarget().getId(), sn.getParent(), user);
+        // obj.getTargetID() must exist if not null as we validated this in the before update method
+        tDao.updateParent(session, key.id(sn.getId()), obj.getTargetID(), sn.getParent(), user);
       }
     }
     return false;
@@ -228,4 +272,61 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
+  public int createMissingMergeSectorsForProject(int projectKey, int userKey) {
+    DatasetSettings settings;
+    try (SqlSession session = factory.openSession(true)) {
+      settings = session.getMapper(DatasetMapper.class).getSettings(projectKey);
+    }
+    if (settings != null && settings.has(Setting.XRELEASE_SOURCE_PUBLISHER)) {
+      return createMissingMergeSectorsFromPublisher(projectKey, userKey, PUBLISHER_SECTOR_RANKS, settings.getList(Setting.XRELEASE_SOURCE_PUBLISHER));
+    }
+    return 0;
+  }
+
+  public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, @Nullable Set<Rank> ranks, List<UUID> publisherKeys) {
+    int count = 0;
+    if (publisherKeys != null) {
+      for (UUID publisher : publisherKeys) {
+        LOG.info("Retrieve newly published sectors from GBIF publisher {}", publisher);
+        List<Integer> datasetKeys;
+        try (SqlSession session = factory.openSession(true)) {
+          datasetKeys = session.getMapper(DatasetMapper.class).keysByPublisher(publisher);
+        }
+        count += createMissingMergeSectors(projectKey, userKey, ranks, datasetKeys);
+      }
+    }
+    return count;
+  }
+
+  /**
+   * Creates a new merge sectors for each given source dataset key unless there is an existing one already.
+   * @param projectKey the project to create sectors in
+   * @param userKey the creator
+   * @param ranks optional set of ranks as sector setting to use
+   * @param datasetKeys list of source dataset keys to check
+   * @return number of newly created sectors
+   */
+  public int createMissingMergeSectors(int projectKey, int userKey, @Nullable Set<Rank> ranks, List<Integer> datasetKeys) {
+    int counter = 0;
+    if (datasetKeys != null) {
+      try (SqlSession session = factory.openSession(true)) {
+        SectorMapper sm = session.getMapper(SectorMapper.class);
+        for (int sourceDatasetKey : datasetKeys) {
+          var existing = sm.listByDataset(projectKey, sourceDatasetKey);
+          if ((existing == null || existing.isEmpty())) {
+            // not yet existing - create a new merge sector!
+            Sector s = new Sector();
+            s.setDatasetKey(projectKey);
+            s.setSubjectDatasetKey(sourceDatasetKey);
+            s.setMode(Sector.Mode.MERGE);
+            s.setRanks(ranks);
+            s.applyUser(userKey);
+            sm.create(s);
+            counter++;
+          }
+        }
+      }
+    }
+    return counter;
+  }
 }

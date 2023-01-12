@@ -1,0 +1,10 @@
+id,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
+13,Caretta caretta,(Linnaeus,SPECIES,ZOOLOGICAL,,SCIENTIFIC,f,,,Caretta,,caretta,,,{},{},,{(Linnaeus},{},,,r1,,,,,,
+x7,Keloniidae,,FAMILY,,,SCIENTIFIC,f,,Keloniidae,,,,,,{},{},,{},{},,,,,,,,,
+12,Caretta caretta,(Linnaeus),SPECIES,ZOOLOGICAL,,SCIENTIFIC,f,,,Caretta,,caretta,,,{Linnaeus},{},,{},{},,,,,,,,,
+11,Caretta caretta,"Linnaeus, 1758",SPECIES,ZOOLOGICAL,,SCIENTIFIC,f,,,Caretta,,caretta,,,{},{},,{Linnaeus},{},1758,,,,,,,,
+x5,Cheloniidae,,FAMILY,,,SCIENTIFIC,f,,Cheloniidae,,,,,,{},{},,{},{},,,,,,,,,
+x9,Teeloniidae,,FAMILY,,,SCIENTIFIC,f,,Teeloniidae,,,,,,{},{},,{},{},,,,,,,,,
+10,Caretta caretta,,SPECIES,ZOOLOGICAL,,SCIENTIFIC,f,,,Caretta,,caretta,,,{},{},,{},{},,,,,,,,,
+x3,Animalia,,KINGDOM,,,SCIENTIFIC,f,,Animalia,,,,,,{},{},,{},{},,,,,,,,,
+xC,Pheloniidae,,FAMILY,,,SCIENTIFIC,f,,Pheloniidae,,,,,,{},{},,{},{},,,,,,,,,

@@ -19,6 +19,7 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 
 -- all enum types produces via PgSetupRuleTest.pgEnumSql()
+
 CREATE TYPE CONTINENT AS ENUM (
   'AFRICA',
   'ANTARCTICA',
@@ -41,8 +42,9 @@ CREATE TYPE DATAFORMAT AS ENUM (
 
 CREATE TYPE DATASETORIGIN AS ENUM (
   'EXTERNAL',
-  'MANAGED',
-  'RELEASED'
+  'PROJECT',
+  'RELEASE',
+  'XRELEASE'
 );
 
 CREATE TYPE DATASETTYPE AS ENUM (
@@ -132,6 +134,18 @@ CREATE TYPE IMPORTSTATE AS ENUM (
   'FINISHED',
   'CANCELED',
   'FAILED'
+);
+
+CREATE TYPE INFOGROUP AS ENUM (
+  'NAME',
+  'AUTHORSHIP',
+  'PUBLISHED_IN',
+  'BASIONYM',
+  'STATUS',
+  'PARENT',
+  'EXTINCT',
+  'DOI',
+  'LINK'
 );
 
 CREATE TYPE ISSUE AS ENUM (
@@ -446,6 +460,7 @@ CREATE TYPE RANK AS ENUM (
   'SUBORDER',
   'INFRAORDER',
   'PARVORDER',
+  'FALANX',
   'MEGAFAMILY',
   'GRANDFAMILY',
   'SUPERFAMILY',
@@ -458,6 +473,7 @@ CREATE TYPE RANK AS ENUM (
   'SUBTRIBE',
   'INFRATRIBE',
   'SUPRAGENERIC_NAME',
+  'SUPERGENUS',
   'GENUS',
   'SUBGENUS',
   'INFRAGENUS',
@@ -472,16 +488,19 @@ CREATE TYPE RANK AS ENUM (
   'SPECIES',
   'INFRASPECIFIC_NAME',
   'GREX',
+  'KLEPTON',
   'SUBSPECIES',
   'CULTIVAR_GROUP',
   'CONVARIETY',
   'INFRASUBSPECIFIC_NAME',
-  'PROLES',
+  'PROLE',
   'NATIO',
   'ABERRATION',
   'MORPH',
+  'SUPERVARIETY',
   'VARIETY',
   'SUBVARIETY',
+  'SUPERFORM',
   'FORM',
   'SUBFORM',
   'PATHOVAR',
@@ -492,7 +511,9 @@ CREATE TYPE RANK AS ENUM (
   'SEROVAR',
   'CHEMOFORM',
   'FORMA_SPECIALIS',
+  'LUSUS',
   'CULTIVAR',
+  'MUTATIO',
   'STRAIN',
   'OTHER',
   'UNRANKED'
@@ -554,6 +575,49 @@ CREATE TYPE SPECIESINTERACTIONTYPE AS ENUM (
   'HAS_EPIPHYTE',
   'COMMENSALIST_OF',
   'MUTUALIST_OF'
+);
+
+CREATE TYPE TAXGROUP AS ENUM (
+  'Prokaryotes',
+  'Bacteria',
+  'Archaea',
+  'Algae',
+  'Plants',
+  'Bryophytes',
+  'Pteridophytes',
+  'Angiosperms',
+  'Gymnosperms',
+  'Fungi',
+  'Ascomycetes',
+  'Basidiomycetes',
+  'Oomycetes',
+  'OtherFungi',
+  'Animals',
+  'Arthropods',
+  'Insects',
+  'Coleoptera',
+  'Diptera',
+  'Lepidoptera',
+  'Hymenoptera',
+  'Hemiptera',
+  'Orthoptera',
+  'Trichoptera',
+  'OtherInsects',
+  'Arachnids',
+  'Crustacean',
+  'OtherArthropods',
+  'Molluscs',
+  'Chordates',
+  'Amphibians',
+  'Birds',
+  'Mammals',
+  'Reptiles',
+  'Fish',
+  'OtherChordates',
+  'OtherAnimals',
+  'Protists',
+  'Viruses',
+  'Other'
 );
 
 CREATE TYPE TAXONCONCEPTRELTYPE AS ENUM (
@@ -942,6 +1006,7 @@ CREATE TABLE sector (
   code NOMCODE,
   sync_attempt INTEGER,
   dataset_attempt INTEGER,
+  priority INTEGER,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -1211,6 +1276,7 @@ CREATE TABLE verbatim (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON verbatim (dataset_key, type);
+CREATE INDEX on verbatim (dataset_key, id) WHERE array_length(issues, 1) > 0;
 CREATE INDEX ON verbatim USING GIN (dataset_key, doc);
 CREATE INDEX ON verbatim USING GIN (dataset_key, issues);
 CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_path_ops);
@@ -1420,10 +1486,23 @@ CREATE TABLE verbatim_source (
   source_id TEXT,
   source_dataset_key INTEGER,
   issues ISSUE[] DEFAULT '{}',
+  PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, id) REFERENCES name_usage
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
+
+CREATE TABLE verbatim_source_secondary (
+  id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  type INFOGROUP NOT NULL,
+  source_id TEXT,
+  source_dataset_key INTEGER,
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
+) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON verbatim_source_secondary (dataset_key, id);
+CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
 
 CREATE TABLE taxon_concept_rel (
   id INTEGER NOT NULL,
@@ -1721,6 +1800,10 @@ CREATE AGGREGATE array_agg_nonull(ANYARRAY) (
     INITCOND = '{}'
 );
 
+CREATE AGGREGATE array_cat_agg(anycompatiblearray) (
+  SFUNC=array_cat,
+  STYPE=anycompatiblearray
+);
 
 CREATE OR REPLACE FUNCTION array_reverse(anyarray) RETURNS anyarray AS $$
 SELECT ARRAY(
@@ -1733,52 +1816,30 @@ $$ LANGUAGE 'sql' STRICT IMMUTABLE PARALLEL SAFE;
 
 -- return all parent names as an array
 CREATE OR REPLACE FUNCTION classification(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS TEXT[] AS $$
-	declare seql TEXT;
-	declare parents TEXT[];
-BEGIN
-    seql := 'WITH RECURSIVE x AS ('
-        || 'SELECT t.id, n.scientific_name, t.parent_id FROM name_usage_' || v_dataset_key || ' t '
-        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = $1'
-        || ' UNION ALL '
-        || 'SELECT t.id, n.scientific_name, t.parent_id FROM x, name_usage_' || v_dataset_key || ' t '
-        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = x.parent_id'
-        || ') SELECT array_agg(scientific_name) FROM x';
-
-    IF NOT v_inc_self THEN
-        seql := seql || ' WHERE id != $1';
-    END IF;
-
-    EXECUTE seql
-    INTO parents
-    USING v_id;
-    RETURN (array_reverse(parents));
-END;
-$$ LANGUAGE plpgsql;
+  WITH RECURSIVE x AS (
+  SELECT t.id, n.scientific_name, t.parent_id FROM name_usage t
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+   UNION ALL
+  SELECT t.id, n.scientific_name, t.parent_id FROM x, name_usage t
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id
+  ) SELECT array_reverse(array_agg(scientific_name)) FROM x WHERE v_inc_self OR id != v_id;
+$$ LANGUAGE SQL;
 
 
 -- return all parent name usages as a simple_name array
 CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS simple_name[] AS $$
-	declare seql TEXT;
-	declare parents simple_name[];
-BEGIN
-    seql := 'WITH RECURSIVE x AS ('
-        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage t '
-        || '  JOIN name n ON n.dataset_key=$1 AND n.id=t.name_id WHERE t.dataset_key=$1 AND t.id = $2'
-        || ' UNION ALL '
-        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name FROM x, name_usage t '
-        || '  JOIN name n ON n.dataset_key=$1 AND n.id=t.name_id WHERE t.dataset_key=$1 AND t.id = x.parent_id'
-        || ') SELECT array_agg(sn) FROM x';
-
-    IF NOT v_inc_self THEN
-        seql := seql || ' WHERE id != $1';
-    END IF;
-
-    EXECUTE seql
-    INTO parents
-    USING v_dataset_key, v_id;
-    RETURN (array_reverse(parents));
-END;
-$$ LANGUAGE plpgsql;
+  WITH RECURSIVE x AS (
+  SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage t
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+   UNION ALL
+  SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name FROM x, name_usage t
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id
+  ) SELECT array_reverse(array_agg(sn)) FROM x WHERE v_inc_self OR id != v_id;
+$$ LANGUAGE SQL;
 
 
 -- useful views

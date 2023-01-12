@@ -18,9 +18,6 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -55,10 +52,10 @@ public class PgImportTest {
     public Boolean call() throws Exception {
       System.out.println("START " + datasetKey);
       System.out.println("PARTITION " + datasetKey);
-      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.MANAGED);
+      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.PROJECT);
 
       System.out.println("INDEX & ATTACH " + datasetKey);
-      Partitioner.attach(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.MANAGED);
+      Partitioner.attach(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.PROJECT);
       System.out.println("FINISHED " + datasetKey);
       return true;
     }

@@ -29,8 +29,8 @@ public class DatasetInfoCacheTest {
 
   @Test
   public void origin() {
-    assertEquals(DatasetOrigin.MANAGED, DatasetInfoCache.CACHE.info(3).origin);
-    assertEquals(DatasetOrigin.MANAGED, DatasetInfoCache.CACHE.info(11).origin);
+    assertEquals(DatasetOrigin.PROJECT, DatasetInfoCache.CACHE.info(3).origin);
+    assertEquals(DatasetOrigin.PROJECT, DatasetInfoCache.CACHE.info(11).origin);
     assertEquals(DatasetOrigin.EXTERNAL, DatasetInfoCache.CACHE.info(12).origin);
   }
 

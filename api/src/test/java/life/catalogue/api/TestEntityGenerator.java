@@ -7,6 +7,8 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.ApiKryoPool;
 
+import org.apache.jena.base.Sys;
+
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 
@@ -93,6 +95,15 @@ public class TestEntityGenerator {
   public final static int VERBATIM_KEY3 = 3;
   public final static int VERBATIM_KEY4 = 4;
   public final static int VERBATIM_KEY5 = 5;
+  // we keep the initial hashes of our test objects stored to compare if they have accidently changed during tests
+  private final static int[] ORIGINAL_HASHES;
+  private final static Entity<?>[] INSTANCES = new Entity[]{
+    USER_USER, USER_EDITOR, USER_ADMIN,
+    DATASET11, DATASET12,
+    REF1, REF1b, REF2,
+    NAME1, NAME2, NAME3, NAME4,
+    TAXON1, TAXON2, SYN1, SYN2
+  };
 
   static {
     USER_ADMIN.setKey(91);
@@ -228,6 +239,28 @@ public class TestEntityGenerator {
     SYN2.setVerbatimKey(133);
     SYN2.setCreatedBy(Users.DB_INIT);
     SYN2.setModifiedBy(Users.DB_INIT);
+
+    ORIGINAL_HASHES = buildHashes();
+  }
+
+  public static boolean hasObjectsChanged() {
+    for (int i=0; i<INSTANCES.length; i++) {
+      Entity<?> obj = INSTANCES[i];
+      int hash = obj.hashCode();
+      if (hash != ORIGINAL_HASHES[i]){
+        System.out.println("Static " + obj.getClass().getSimpleName() + " test instance " + obj.getKey() + " has changed");
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static int[] buildHashes() {
+    int[] hashes = new int[INSTANCES.length];
+    for (int i=0; i<INSTANCES.length; i++) {
+      hashes[i] = INSTANCES[i].hashCode();
+    }
+    return hashes;
   }
 
   /*
@@ -256,7 +289,7 @@ public class TestEntityGenerator {
     d.setAlias(title);
     d.setType(DatasetType.TAXONOMIC);
     d.setLicense(License.CC0);
-    d.setOrigin(DatasetOrigin.MANAGED);
+    d.setOrigin(DatasetOrigin.PROJECT);
     return d;
   }
 
@@ -275,7 +308,7 @@ public class TestEntityGenerator {
    * Creates a new taxon with the specified id, belonging to dataset DATASET11.
    */
   public static Taxon newTaxon(String id) {
-    return newTaxon(NAME1, id, TAXON1.getId());
+    return newTaxon(new Name(NAME1), id, TAXON1.getId());
   }
 
   /*

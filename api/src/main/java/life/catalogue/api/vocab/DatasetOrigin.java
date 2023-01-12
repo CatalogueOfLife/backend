@@ -11,14 +11,19 @@ public enum DatasetOrigin {
   EXTERNAL,
 
   /**
-   * A dataset which is managed directly inside the Clearinghouse through the taxonomic editor.
+   * A project dataset which is managed directly inside the Clearinghouse through the taxonomic editor.
    */
-  MANAGED,
+  PROJECT,
 
   /**
    * A previously managed dataset that has been released into an immutable release copy.
    */
-  RELEASED;
+  RELEASE,
+
+  /**
+   * An extended release pointing to a base release via the sourceKey property.
+   */
+  XRELEASE;
 
   /**
    * @return true if the origin is a project with decisions and sectors, i.e. the origin is either managed or released.

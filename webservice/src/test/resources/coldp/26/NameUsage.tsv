@@ -1,3 +1,6 @@
-col:ID	col:parentID	col:status	col:rank	col:order	col:family	col:genus	col:species	col:scientificName	col:authorship	col:uninomial	col:genericName	col:specificEpithet	col:code
+col:ID	col:kingdom	col:family	col:rank	col:scientificName	col:authorship	col:nameReferenceID
 
-1		accepted	species	Diptera	Chironomidae	[Ablabesmyia]	aurea	[Ablabesmyia] aurea	(Johannsen, 1907)		[Ablabesmyia]	aurea	zoological
+10	Animalia	Cheloniidae	species	Caretta caretta		
+11	Animalia	Keloniidae	species	Caretta caretta	Linnaeus, 1758	
+12	Animalia	Teeloniidae	species	Caretta caretta	(Linnaeus)	
+13	Animalia	Pheloniidae	species	Caretta caretta	(Linnaeus	r1

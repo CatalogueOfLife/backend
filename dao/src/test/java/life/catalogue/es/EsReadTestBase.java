@@ -1,5 +1,6 @@
 package life.catalogue.es;
 
+import life.catalogue.api.TestEntityUnmodifiedRule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
@@ -22,6 +23,7 @@ import java.util.stream.IntStream;
 
 import org.elasticsearch.client.RestClient;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +47,9 @@ public class EsReadTestBase {
 
   @ClassRule
   public static EsSetupRule esSetupRule = new EsSetupRule();
+
+  @Rule
+  public final TestEntityUnmodifiedRule unomidifedRule = new TestEntityUnmodifiedRule();
 
   protected EsConfig getEsConfig() {
     return esSetupRule.getEsConfig();

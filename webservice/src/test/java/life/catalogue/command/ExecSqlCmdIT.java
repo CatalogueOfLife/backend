@@ -21,6 +21,6 @@ public class ExecSqlCmdIT extends CmdTestBase {
   public void managed() throws Exception {
     File f = new File("target/test-classes/exec-test.sql");
     assertTrue(f.exists());
-    assertTrue(run("execSql", "--prompt", "0", "--origin", "MANAGED", "--sqlfile", f.getAbsolutePath()).isEmpty());
+    assertTrue(run("execSql", "--prompt", "0", "--origin", "PROJECT", "--sqlfile", f.getAbsolutePath()).isEmpty());
   }
 }

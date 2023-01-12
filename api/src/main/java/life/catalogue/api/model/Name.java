@@ -780,7 +780,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public String toString() {
-    return getId() + " " + getLabel(false);
+    return getId() + " " + getLabel();
   }
   
   public String toStringComplete() {

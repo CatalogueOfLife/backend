@@ -141,7 +141,7 @@ public class ExportCmd extends AbstractMybatisCmd {
         throw NotFoundException.notFound(Dataset.class, ns.getInt(ARG_KEY));
       }
 
-      if (d.getOrigin() == DatasetOrigin.MANAGED) {
+      if (d.getOrigin() == DatasetOrigin.PROJECT) {
         latestReleaseKey = dm.latestRelease(d.getKey(), true);
         boolean inclPrivate = ns.getBoolean(ARG_PRIVATE);
         DatasetSearchRequest req = new DatasetSearchRequest();

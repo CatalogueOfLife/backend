@@ -106,7 +106,7 @@ public class AcefExportTest extends ExportTest {
       d.setEditor(Agent.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
       d.setContributor(Agent.parse("Species 2000", "ITIS Catalogue of Life"));
       d.setIssued(null);
-      d.setOrigin(DatasetOrigin.MANAGED);
+      d.setOrigin(DatasetOrigin.PROJECT);
       dm.update(d);
     }
 

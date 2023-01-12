@@ -9,6 +9,40 @@ public class SimpleNameWithNidx extends SimpleName {
   private Integer namesIndexId;
   private MatchType namesIndexMatchType;
 
+  public SimpleNameWithNidx() {
+  }
+
+  public SimpleNameWithNidx(SimpleName other) {
+    super(other);
+  }
+
+  public SimpleNameWithNidx(SimpleNameWithNidx other) {
+    super(other);
+    canonicalId = other.canonicalId;
+    namesIndexId = other.namesIndexId;
+    namesIndexMatchType = other.namesIndexMatchType;
+  }
+
+  /**
+   * @param canonicalId the canonicalId as its not included in a Name instance
+   */
+  public SimpleNameWithNidx(Name n, Integer canonicalId) {
+    super(n);
+    this.canonicalId = canonicalId;
+    namesIndexId = n.getNamesIndexId();
+    namesIndexMatchType = n.getNamesIndexType();
+  }
+
+  /**
+   * @param canonicalId the canonicalId as its not included in a Name instance
+   */
+  public SimpleNameWithNidx(NameUsageBase u, Integer canonicalId) {
+    super(u);
+    this.canonicalId = canonicalId;
+    namesIndexId = u.getName().getNamesIndexId();
+    namesIndexMatchType = u.getName().getNamesIndexType();
+  }
+
   public MatchType getNamesIndexMatchType() {
     return namesIndexMatchType;
   }
@@ -50,13 +84,11 @@ public class SimpleNameWithNidx extends SimpleName {
   }
 
   @Override
-  public String toString() {
-    var sb = super.toStringBuilder();
-    sb.append("| nidx ");
+  public void toStringAdditionalInfo(StringBuilder sb) {
+    sb.append(" | nidx ");
     sb.append(canonicalId);
     sb.append('-');
     sb.append(namesIndexId);
-    return sb.toString();
   }
 
 }

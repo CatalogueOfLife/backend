@@ -1,33 +1,16 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.core.JsonGenerator;
-
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.FilterProvider;
-
-import com.fasterxml.jackson.databind.ser.PropertyWriter;
-
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.MatchType;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.gbif.nameparser.api.*;
 
-import org.junit.Ignore;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -250,6 +233,8 @@ public class NameTest extends SerdeTestBase<Name> {
       if (r.isSpeciesOrBelow() && r.getMarker() != null) {
         n.setRank(r);
         n.setScientificName("Abies alba "+r.getMarker()+" montana");
+
+        System.out.printf("%s -> %s%n", r, n.getLabelHtml());
         assertEquals("<i>Abies alba</i> "+r.getMarker()+" <i>montana</i>", n.getLabelHtml());
       }
     }

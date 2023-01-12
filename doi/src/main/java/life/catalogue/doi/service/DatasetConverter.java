@@ -50,7 +50,7 @@ public class DatasetConverter {
    *  - url
    *
    * @param release
-   * @param latest if true points to the life.catalogue.portal, not checklist bank
+   * @param latest if true points to the COL portal, not checklist bank
    * @return
    */
   public DoiAttributes release(Dataset release, boolean latest, @Nullable DOI project, @Nullable DOI previousVersion) {
@@ -121,8 +121,8 @@ public class DatasetConverter {
       attr.setPublisher(d.getPublisher().getName());
     } else {
       // this is required !!!
-      LOG.info("No required publisher given, use COL instead");
-      attr.setPublisher("Catalogue of Life");
+      LOG.info("No required DOI publisher given, use ChecklistBank instead");
+      attr.setPublisher("ChecklistBank");
     }
     // PublicationYear
     if (d.getIssued() != null) {

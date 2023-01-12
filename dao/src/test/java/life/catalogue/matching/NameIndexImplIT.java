@@ -259,7 +259,21 @@ public class NameIndexImplIT {
     assertCanonicalNidx(m, canonID);
     final int m5Key = m.getNameKey();
 
+    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
+      n.setRank(Rank.FORM);
+      n.setCombinationAuthorship(Authorship.authors("Miller"));
+      n.setScientificName("Abies alba f. alba");
+      n.setAuthorship("Miller");
+    });
+
     m = matchNameCopy(n1, MatchType.EXACT, n -> {
+      n.setRank(Rank.FORM);
+      n.setCombinationAuthorship(Authorship.authors("Mill"));
+      n.setScientificName("Abies alba f. alba");
+      n.setAuthorship("Mill");
+    });
+
+    m = matchNameCopy(n1, MatchType.CANONICAL, n -> {
       n.setRank(Rank.FORM);
       n.setAuthorship(null);
       n.setCombinationAuthorship(null);
@@ -303,11 +317,18 @@ public class NameIndexImplIT {
 
     // we query with a canonical, hence exact
     m = matchNameCopy(n1, MatchType.EXACT, n -> {
-      n.setRank(Rank.SUBGENUS);
+      n.setRank(Rank.GENUS);
       n.setAuthorship(null);
       n.setCombinationAuthorship(null);
     });
     assertCanonicalNidx(m, canonID);
+
+    // we query with a canonical, but rank differ. Not exact
+    m = matchNameCopy(n1, MatchType.CANONICAL, n -> {
+      n.setRank(Rank.SUBGENUS);
+      n.setAuthorship(null);
+      n.setCombinationAuthorship(null);
+    });
   }
 
   private NameMatch matchNameCopy(Name original, MatchType matchTypeAssertion, Consumer<Name> modifier) {
@@ -746,6 +767,27 @@ public class NameIndexImplIT {
     assertInsert("Myrmedonia alternans Krill, 1925", Rank.SPECIES);
 
     assertEquals(20, ni.size());
+  }
+
+  @Test
+  public void testMissingAuthorBrackets() throws Exception {
+    setupMemory(true);
+    assertEquals(0, ni.size());
+
+    var m = ni.match(name("Caretta caretta Linnaeus", Rank.SPECIES), true, true);
+    assertEquals("Linnaeus", m.getName().getAuthorship());
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals(2, ni.size());
+
+    m = ni.match(name("Caretta caretta (Linnaeus)", Rank.SPECIES), true, true);
+    assertEquals(MatchType.VARIANT, m.getType());
+    assertEquals("Linnaeus", m.getName().getAuthorship());
+    assertEquals(2, ni.size());
+
+    m = ni.match(name("Caretta caretta (Peter)", Rank.SPECIES), true, true);
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals("(Peter)", m.getName().getAuthorship());
+    assertEquals(3, ni.size());
   }
 
   static Name name(String name, Rank rank) throws InterruptedException {

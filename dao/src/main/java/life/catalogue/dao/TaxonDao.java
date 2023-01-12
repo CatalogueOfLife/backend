@@ -48,8 +48,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     this.nameDao = nameDao;
   }
 
-  public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user) {
-    return copyTaxon(session, t, target, user, Collections.emptySet());
+  public static void copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user) {
+    copyTaxon(session, t, target, user, Collections.emptySet());
   }
 
   public void setSectorDao(SectorDao sectorDao) {
@@ -67,8 +67,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    *
    * @return the original source taxon id
    */
-  public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
-    return CatCopy.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
+  public static void copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
+    CatCopy.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
 
   /**

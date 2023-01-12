@@ -130,9 +130,18 @@ public class NameParserTest {
 
   @Test
   @Ignore
+  public void parseLinnaeusPubIn() throws Exception {
+    assertName("Poa annua L. Sp. Pl. 1: 68 1753", "Poa annua")
+      .species("Poa", "annua")
+      .combAuthors(null, "L.", "Sp.", "Pl.")
+      .unparsed("1: 68 1753")
+      .nothingElse();
+  }
+
+  @Test
   public void parsePhrases() throws Exception {
-    assertName("Lepidoptera sp. JGP0404", "Lepidoptera sp.")
-      .monomial("Lepidoptera", Rank.SPECIES)
+    assertName("Lepidoptera sp. JGP0404", "Lepidoptera sp.JGP0404", NameType.INFORMAL)
+      .species("Lepidoptera", "sp.JGP0404")
       .type(NameType.INFORMAL)
       .status(NomStatus.MANUSCRIPT)
       .nothingElse();

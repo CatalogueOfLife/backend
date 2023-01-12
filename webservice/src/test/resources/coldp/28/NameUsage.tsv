@@ -1,0 +1,12 @@
+ID	parentID	status	rank	scientificName	authorship	nameReferenceID	kingdom	phylum	subphylum	class	subclass	order	suborder	superfamily	family	subfamily	genus
+
+cc1			species	Caretta caretta			Animalia								Cheloniidae		
+cc2			species	Caretta caretta	Linnaeus, 1758		Animalia								Keloniidae		
+cc3			species	Caretta caretta	(Linnaeus)		Animalia								Teeloniidae		
+cc4			species	Caretta caretta	(Linnaeus	brian	Animalia								Pheloniidae		
+
+oen1			genus	Oenanthe	L.	SpPl	Plantae	Tracheophyta		Magnoliopsida		Apiales			Apiaceae		
+oen2			genus	Oenanthe	Vieillot, 1816	RAF1815	Animalia	Chordata		Aves		Passeriformes			Muscicapidae		
+oen3	oen2	synonym	genus	Oenanthe	Pallas, 1771	RR											
+oen4			species	Oenanthe oenanthe	(Linnaeus, 1758)		Animalia	Chordata		Aves		Passeriformes			Muscicapidae		Oenanthe
+oen5			species	Oenanthe pimpinelloides	L.		Plantae	Tracheophyta		Magnoliopsida		Apiales			Apiaceae		Oenanthe

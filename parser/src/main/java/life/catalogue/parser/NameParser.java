@@ -91,6 +91,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   }
 
   /**
+<<<<<<< HEAD
    * Sets the timeout for the internal name parser
    * @param timeout
    */
@@ -99,6 +100,17 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   }
 
   /**
+||||||| d66ea45f2
+=======
+   * Sets the timeout for the internal name parser
+   * @param timeout
+   */
+  public void setTimeout(int timeout) {
+    parserInternal.setTimeout(timeout);
+  }
+
+  /**
+>>>>>>> xcol
    * @deprecated use parse(name, rank, code, issues) instead!
    */
   @Deprecated

@@ -30,7 +30,7 @@ public class UsageCountJob extends GlobalBlockingJob {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-      for (int key : dm.keys(DatasetOrigin.MANAGED)) {
+      for (int key : dm.keys(DatasetOrigin.PROJECT)) {
         int cnt = dpm.updateUsageCounter(key);
         LOG.info("Updated usage counter for managed dataset {} to {}", key, cnt);
       }

@@ -29,11 +29,23 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   NameUsageBase get(@Param("key") DSID<String> key);
 
   /**
-   * SimpleName.parent=parentName
+   * SimpleName.parent=parent.id
    * @param key
-   * @return
    */
   SimpleName getSimple(@Param("key") DSID<String> key);
+
+  /**
+   * SimpleName.parent=parent.id
+   * @param key
+   */
+  SimpleNameWithPub getSimplePub(@Param("key") DSID<String> key);
+
+  /**
+   * Retrieve the parent of the given key as a SimpleName with
+   * SimpleName.parent=parent.id
+   * @param key of the child to fetch the parent from
+   */
+  SimpleName getSimpleParent(@Param("key") DSID<String> key);
 
   List<SimpleName> findSimple(@Param("datasetKey") int datasetKey,
                               @Param("sectorKey") Integer sectorKey,
@@ -95,6 +107,9 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId, @Param("page") Page page);
 
   /**
+   * List all usages in a given dataset that have the given names index id if the nidx points to a qualified name.
+   * If the given nidx is a canonical name id list all usages with or without authorship that match the canonical nidx.
+   *
    * Warning, this does not return bare name IDs, only true usage IDs!
    */
   List<String> listUsageIDsByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
@@ -102,12 +117,18 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   /**
    * Warning, this does not return bare names, only true usages!
    */
-  List<NameUsageBase> listByNamesIndexID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx, @Param("page") Page page);
+  List<NameUsageBase> listByNamesIndexOrCanonicalID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx, @Param("page") Page page);
 
   /**
    * Warning, this does not return bare names, only true usages!
    */
   List<NameUsageBase> listByNamesIndexIDGlobal(@Param("nidx") int nidx, @Param("page") Page page);
+
+  /**
+   * List all usages linked to an index name with the given canonical nidx.
+   * The parent property is filled with the parent ID, not the name!
+   */
+  List<SimpleNameWithPub> listByCanonNIDX(@Param("datasetKey") int datasetKey, @Param("nidx") int canonicalNidx);
 
   /**
    * Warning, this does not count bare names, only true usages!
@@ -199,8 +220,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<String> deleteSubtree(@Param("key") DSID<String> key);
 
   /**
-   * Iterates over all accepted descendants in a tree in breadth-first order for a given start taxon
+   * Iterates over all accepted descendants in a tree for a given start taxon
    * and processes them with the supplied handler. If the start taxon is null all root taxa are used.
+   *
+   * By default this will be in breadth-first order.
+   * Depth first can also be requested, but is more expensive and will be slower.
    *
    * Read only properties are not populated to save excessive joins.
    * In particular this is the accepted Taxon for a Synonym instance
@@ -217,7 +241,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
    * @param lowestRank optional rank cutoff filter to only include children with a rank above or equal to the one given
    * @param includeSynonyms if true includes synonyms, otherwise only taxa
-   * @param depthFirst if true uses a depth first traversal which is more expensive then breadth first!
+   * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
    */
   Cursor<NameUsageBase> processTree(@Param("datasetKey") int datasetKey,
                      @Param("sectorKey") Integer sectorKey,
@@ -277,6 +301,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   /**
    * Iterate over all usages ordered by their canonical names index id.
+   * The parent property is filled with the parent name, not its ID.
    */
   Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
 

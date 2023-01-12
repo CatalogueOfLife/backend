@@ -26,7 +26,7 @@
  * An adaptation of the generic DropwizardAppRule that can be used as a junit class rule
  * to create integration tests against a running dropwizard instance.
  * <p>
- * WsServerRule spins up an embedded postgres server
+ * WsServerRule connects to a postgres server, inits a new unique database
  * and updates the PgConfig with the matching config parameters to access it via the MyBatisModule.
  * <p>
  * It also selects and configures DW to use a free application port.

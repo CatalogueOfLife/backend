@@ -1,0 +1,7 @@
+col:ID	col:parentID	col:status	col:rank	col:scientificName	col:authorship	col:code
+
+
+10		accepted	family	Asteraceae		botanical
+11	10	accepted	species	Crepis museliana	Greene	botanical
+12	11	synonym	species	Crepis muelleri	Müller	botanical
+13	10	accepted	species	Aster grandis	L.	botanical

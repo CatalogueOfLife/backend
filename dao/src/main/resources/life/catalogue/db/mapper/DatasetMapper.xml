@@ -40,7 +40,7 @@
 
   <sql id="FROM_PROJ">
     <if test="userKey != null">
-      LEFT JOIN dataset proj ON d.source_key=proj.key AND d.origin = 'RELEASED'::DATASETORIGIN
+      LEFT JOIN dataset proj ON d.source_key=proj.key AND <include refid="IS_RELEASE"/>
     </if>
   </sql>
 
@@ -52,6 +52,10 @@
         OR COALESCE(${projAlias}.acl_reviewer, ${alias}.acl_reviewer) @> ARRAY[#{userKey}::int]</if>
       )
     </if>
+  </sql>
+
+  <sql id="IS_RELEASE">
+    d.origin IN ('RELEASE'::DATASETORIGIN, 'XRELEASE'::DATASETORIGIN)
   </sql>
 
   <sql id="SEARCH_WHERE">
@@ -98,7 +102,7 @@
       </if>
       <if test="req.releasedFrom != null">
         AND d.source_key=#{req.releasedFrom}
-        AND d.origin = 'RELEASED'::DATASETORIGIN
+        AND <include refid="IS_RELEASE"/>
       </if>
       <if test="req.hasGbifKey != null">
         AND d.gbif_key
@@ -198,6 +202,26 @@
     WHERE key = #{key}
   </update>
 
+  <select id="keys" resultType="integer">
+    SELECT key
+    FROM dataset
+    WHERE deleted IS NULL
+    <if test="type != null">
+      AND type = #{type}::DATASETTYPE
+    </if>
+    <if test="origin != null and origin.length > 0">
+      AND origin IN <foreach item="o" collection="origin" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
+    </if>
+    ORDER BY key
+  </select>
+
+  <select id="keysByPublisher" resultType="integer">
+    SELECT key
+    FROM dataset
+    WHERE deleted IS NULL AND gbif_publisher_key = #{publisher}
+    ORDER BY key
+  </select>
+
   <select id="process" parameterType="map" resultMap="datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
@@ -274,7 +298,7 @@
   <select id="listReleases" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE d.origin='RELEASED' AND d.source_key=#{projectKey}
+    WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
     ORDER BY d.created, d.key
   </select>
 
@@ -333,7 +357,9 @@
 
   <select id="latestRelease" resultType="integer">
     SELECT key FROM dataset
-    WHERE source_key = #{key} AND deleted IS NULL <if test="public">AND NOT private</if>
+    WHERE source_key = #{key} AND deleted IS NULL
+      <if test="origin != null">AND origin = #{origin}::DATASETORIGIN</if>
+      <if test="public">AND NOT private</if>
     ORDER BY created DESC
     LIMIT 1
   </select>
@@ -380,6 +406,12 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE gbif_key = #{key}
+  </select>
+
+  <select id="getPublisherKey" resultType="java.util.UUID">
+    SELECT gbif_publisher_key
+    FROM dataset
+    WHERE key = #{key}
   </select>
 
   <select id="listGBIF" resultType="integer">

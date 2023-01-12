@@ -24,13 +24,14 @@ public class Identifier {
     URN,
     LSID,
 
-    TPL, // plant list
+    COL,
+    GBIF,
     WFO,
+    TPL, // plant list
     TSN, // ITIS
     IPNI,
-    ZOOBANK,
-    COL,
-    GBIF;
+    IF,
+    ZOOBANK;
 
     public String prefix() {
       return name().toLowerCase();

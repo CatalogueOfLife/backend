@@ -104,7 +104,7 @@ public class IdProvider {
     prepare();
     mapIds();
     report();
-    LOG.info("Reused {} stable IDs for project release {}-{} ({}), resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, releaseDatasetKey, resurrected.size(), created.size(), deleted.size());
+    LOG.info("ID provision done. Reused {} stable IDs for project release {}-{} ({}), resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, releaseDatasetKey, resurrected.size(), created.size(), deleted.size());
     return getReport();
   }
 
@@ -198,7 +198,9 @@ public class IdProvider {
       reportFile(dir,"created.tsv", created, id -> -1, false);
       // clear instable names, removing the ones with just deletions
       unstable.entrySet().removeIf(entry -> entry.getValue().parallelStream().allMatch(n -> n.del));
-      try (Writer writer = UTF8IoUtils.writerFromFile(new File(dir, "unstable.txt"));
+      final var unstableFile = new File(dir, "unstable.txt");
+      LOG.info("Writing unstable ID report for project release {}-{} to {}", projectKey, attempt, unstableFile);
+      try (Writer writer = UTF8IoUtils.writerFromFile(unstableFile);
           SqlSession session = factory.openSession(true)
       ) {
         nmm = session.getMapper(NameMatchMapper.class);

@@ -12,9 +12,9 @@ import com.google.common.io.Files;
 
 public class TreeRepoRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(TreeRepoRule.class);
-  File repo;
+  private static File repo;
   
-  public File getRepo() {
+  public static File getRepo() {
     return repo;
   }
   

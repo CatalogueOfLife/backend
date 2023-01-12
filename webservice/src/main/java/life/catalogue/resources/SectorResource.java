@@ -15,6 +15,8 @@ import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.annotation.security.RolesAllowed;
@@ -25,6 +27,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +104,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @POST
   @Path("sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user, @Context SqlSession session) {
+  public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user) {
     DaoUtils.requireManaged(datasetKey);
     assembly.sync(datasetKey, request, user);
   }
@@ -112,6 +117,14 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
     boolean full = Boolean.parseBoolean(uri.getQueryParameters().getFirst("full"));
     assembly.deleteSector(DSID.of(datasetKey, id), full, user);
+  }
+
+  @POST
+  @Path("{id}/sync")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void runSync(@PathParam("key") int datasetKey, @PathParam("id") int id, @Auth User user) {
+    RequestScope req = RequestScope.sector(DSID.of(datasetKey, id));
+    sync(datasetKey, req, user);
   }
 
   @DELETE
@@ -136,7 +149,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     } else if (s.getSyncAttempt() == null) {
       throw new NotFoundException(skey, "Sector " + skey + " was never synced");
     }
-    if (info.origin == DatasetOrigin.RELEASED) {
+    if (info.origin == DatasetOrigin.RELEASE) {
       Integer projectKey = info.sourceKey;
       skey = DSID.of(projectKey, id);
     }
@@ -176,6 +189,12 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   public RematcherBase.MatchCounter rematch(@PathParam("key") int projectKey, SectorRematchRequest req, @Auth User user) {
     req.setDatasetKey(projectKey);
     return SectorRematcher.match(dao, req, user.getKey());
+  }
+
+  @POST
+  @Path("/createFromPublisher")
+  public int createFromPublisher(@PathParam("key") int projectKey, @QueryParam("publisherKey") List<UUID> publisherKeys, @QueryParam("ranks") Set<Rank> ranks, @Auth User user) throws Exception {
+    return dao.createMissingMergeSectorsFromPublisher(projectKey, user.getKey(), ranks, publisherKeys);
   }
 
 }

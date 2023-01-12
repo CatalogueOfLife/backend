@@ -18,14 +18,15 @@
     s.subject_code,
     s.subject_status,
     s.subject_parent,
-    ts.id IS NULL AS subject_broken,
+    CASE WHEN coalesce(subject_id, subject_name) IS NULL THEN null ELSE ts.id IS NULL END AS subject_broken,
     s.target_id,
     s.target_name,
     s.target_authorship,
     s.target_rank,
     s.target_code,
-    tt.id IS NULL AS target_broken,
+    CASE WHEN coalesce(subject_id, subject_name) IS NULL THEN null ELSE tt.id IS NULL END AS target_broken,
     s.mode,
+    s.priority,
     s.code,
     s.placeholder_rank,
     s.ranks,
@@ -60,6 +61,7 @@
     target_rank,
     target_code,
     mode,
+    priority,
     code,
     placeholder_rank,
     ranks,
@@ -85,6 +87,7 @@
     #{target.rank}::RANK,
     #{target.code}::NOMCODE,
     #{mode}::SECTOR_MODE,
+    #{priority},
     #{code}::NOMCODE,
     #{placeholderRank}::RANK,
     #{ranks, typeHandler=life.catalogue.db.type2.RankSetTypeHandler},
@@ -99,6 +102,10 @@
     LEFT JOIN sector_import si ON s.id=si.sector_key AND s.dataset_key=si.dataset_key AND s.sync_attempt=si.attempt
     LEFT JOIN name_usage tt ON tt.id=s.target_id AND tt.dataset_key=s.dataset_key
     LEFT JOIN name_usage ts ON ts.id=s.subject_id AND ts.dataset_key=s.subject_dataset_key
+  </sql>
+
+  <sql id="PRIORITY_ORDER">
+    ORDER BY priority NULLS LAST, id desc
   </sql>
 
   <sql id="WHERE">
@@ -174,10 +181,14 @@
   <select id="listByDataset" resultMap="sectorResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE subject_dataset_key = #{subjectDatasetKey}
-    <if test="datasetKey != null">
-      AND s.dataset_key = #{datasetKey}
-    </if>
+    <where>
+      <if test="subjectDatasetKey != null">
+        s.subject_dataset_key = #{subjectDatasetKey}
+      </if>
+      <if test="datasetKey != null">
+        AND s.dataset_key = #{datasetKey}
+      </if>
+    </where>
   </select>
 
   <delete id="deleteByDataset" parameterType="map">
@@ -200,6 +211,11 @@
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO sector (id, <include refid="COLS"/>, original_subject_id, created_by )
     VALUES (nextval('sector_${datasetKey}_id_seq'), <include refid="PROPS"/>, #{subject.id}, #{createdBy} )
+  </insert>
+
+  <insert id="createWithID" parameterType="Sector" useGeneratedKeys="false" keyProperty="id">
+    INSERT INTO sector (id, <include refid="COLS"/>, original_subject_id, created_by )
+    VALUES (#{id}, <include refid="PROPS"/>, #{subject.id}, #{createdBy} )
   </insert>
 
   <insert id="copyDataset" parameterType="map">
@@ -239,6 +255,17 @@
     ORDER BY id
   </select>
 
+  <select id="listByPriority" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE s.dataset_key=#{datasetKey}
+    <if test="mode != null and mode.length &gt; 0">
+      AND s.mode IN
+      <foreach item="m" collection="mode" open="(" separator=" OR " close=")">#{m}::SECTOR_MODE</foreach>
+    </if>
+    <include refid="PRIORITY_ORDER"/>
+  </select>
+
   <select id="listDescendantSectorKeys" resultType="Integer">
     WITH RECURSIVE x AS (
       SELECT t.id, s.id AS sid
@@ -252,7 +279,6 @@
     )
     SELECT DISTINCT sid FROM x WHERE sid IS NOT NULL
   </select>
-
 
   <select id="count" resultType="integer">
     SELECT count(*)
@@ -269,14 +295,14 @@
   <select id="listProjectKeys" parameterType="map" resultType="integer">
     SELECT DISTINCT x.dataset_key
     FROM sector x JOIN dataset d ON d.key=x.dataset_key
-    WHERE d.origin='MANAGED' AND x.subject_dataset_key = #{subjectDatasetKey}
+    WHERE d.origin='PROJECT' AND x.subject_dataset_key = #{subjectDatasetKey}
   </select>
 
   <select id="search" resultMap="sectorResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="WHERE"/>
-    ORDER BY id desc
+    <include refid="PRIORITY_ORDER"/>
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
@@ -299,5 +325,16 @@
     FROM dataset d
     WHERE s.id = #{key.id} AND s.dataset_key=#{key.datasetKey}
       AND d.key=s.subject_dataset_key
+  </update>
+
+  <select id="getByPriority" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE s.priority = #{priority} AND s.dataset_key = #{datasetKey}
+  </select>
+
+  <update id="incLowerPriorities" parameterType="integer">
+    UPDATE sector SET priority = priority+1
+    WHERE dataset_key=#{datasetKey} AND priority &gt;= #{priority}
   </update>
 </mapper>

@@ -61,7 +61,7 @@ import static life.catalogue.metadata.MetadataFactory.stripHtml;
  * in other areas, e.g. exports, import metrics, images.
  *
  * The Partitioning of CLB is dataset key based and differs between EXTERNAL datasets that live on the default partition
- * and MANAGED & RELEASED datasets that live on their own, dedicated partition.
+ * and PROJECT, RELEASE & X_RELEASE datasets that live on their own, dedicated partition.
  * When a new non external dataset is created, new tables need to be created and finally attached to the main tables.
  * Without a pre-existing constraint on the default partition to not include these dataset keys, postgres has to scan all default partiotions
  * which takes several minutes with a fully indexed checklistbank.
@@ -323,7 +323,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     d.setKey(1);
     d.setAlias("alias");
     d.setTitle("title");
-    d.setOrigin(DatasetOrigin.MANAGED);
+    d.setOrigin(DatasetOrigin.PROJECT);
     d.setIssued(FuzzyDate.now());
     d.setLogo(URI.create("https://gbif.org"));
     d.setUrl(d.getLogo());
@@ -405,7 +405,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     // avoid deletions of annual releases of COL
     if (old != null
-        && old.getOrigin() == DatasetOrigin.RELEASED
+        && old.getOrigin() == DatasetOrigin.RELEASE
         && old.getSourceKey().equals(Datasets.COL)
         && !old.isPrivat()
         && old.getVersion().startsWith("Annual")
@@ -414,7 +414,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
 
     DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-    if (old != null && old.getOrigin() == DatasetOrigin.MANAGED) {
+    if (old != null && old.getOrigin() == DatasetOrigin.PROJECT) {
       // This is a recursive project delete.
       List<Dataset> releases = mapper.listReleases(key);
       LOG.warn("Deleting project {} with all its {} releases", key, releases.size());
@@ -443,7 +443,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     // remove id reports only for private releases - we want to keep public releases forever to track ids!!!
     if (old != null
-        && old.getOrigin() == DatasetOrigin.RELEASED
+        && old.getOrigin() == DatasetOrigin.RELEASE
         && old.isPrivat()
     ) {
       LOG.info("Delete id reports for private release {}", key);
@@ -540,7 +540,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     // data partitions
-    if (obj.getOrigin() == DatasetOrigin.MANAGED) {
+    if (obj.getOrigin() == DatasetOrigin.PROJECT) {
       recreatePartition(obj.getKey(), obj.getOrigin());
     }
     session.commit();
@@ -557,7 +557,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   @Override
   protected void updateBefore(Dataset obj, @NotNull Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     // changing a private to a public release is only allowed if there is no newer public release already!
-    if (obj.getSourceKey() != null && obj.getOrigin() == DatasetOrigin.RELEASED
+    if (obj.getSourceKey() != null && obj.getOrigin() == DatasetOrigin.RELEASE
         && old.isPrivat() // was private before
         && !obj.isPrivat() // but now is public
     ) {
@@ -577,7 +577,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     sanitize(obj);
     // if list of creators for a project changes, adjust the max container author settings
-    if (obj.getOrigin() == DatasetOrigin.MANAGED && CollectionUtils.size(obj.getCreator()) != CollectionUtils.size(old.getCreator())) {
+    if (obj.getOrigin() == DatasetOrigin.PROJECT && CollectionUtils.size(obj.getCreator()) != CollectionUtils.size(old.getCreator())) {
       var ds = getSettings(obj.getKey());
       ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, CollectionUtils.size(obj.getCreator()));
       putSettings(obj.getKey(), ds, user);
@@ -599,7 +599,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     // data partitions
-    if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey(), obj.getOrigin())) {
+    if (obj.getOrigin() == DatasetOrigin.PROJECT && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey(), obj.getOrigin())) {
       // suspicious. Should there ever be a managed dataset without partitions?
       recreatePartition(obj.getKey(), obj.getOrigin());
     }

@@ -1,7 +1,6 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 
@@ -29,13 +28,13 @@ public class PartitionerTest {
       Set<String> keys = Partitioner.partitionSuffices(con, null);
       assertEquals(Set.of("3","11", "mod1", "mod0"), keys); // 12 is external, so kept in default partition
 
-      keys = Partitioner.partitionSuffices(con, DatasetOrigin.MANAGED);
+      keys = Partitioner.partitionSuffices(con, DatasetOrigin.PROJECT);
       assertEquals(Set.of("3","11"), keys);
 
       keys = Partitioner.partitionSuffices(con, DatasetOrigin.EXTERNAL);
       assertEquals(Set.of("mod1", "mod0"), keys);
 
-      keys = Partitioner.partitionSuffices(con, DatasetOrigin.RELEASED);
+      keys = Partitioner.partitionSuffices(con, DatasetOrigin.RELEASE);
       assertEquals(Set.of(), keys);
     }
   }
@@ -54,7 +53,7 @@ public class PartitionerTest {
   @Test
   public void delete() throws Exception {
     final var factory = PgSetupRule.getSqlSessionFactory();
-    Partitioner.delete(factory, 3, DatasetOrigin.MANAGED);
+    Partitioner.delete(factory, 3, DatasetOrigin.PROJECT);
     Partitioner.delete(factory, 11, DatasetOrigin.EXTERNAL);
     Partitioner.delete(factory, 3567, DatasetOrigin.EXTERNAL);
   }

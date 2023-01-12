@@ -9,13 +9,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public interface LatestDatasetKeyCache {
   void setSqlSessionFactory(SqlSessionFactory factory);
 
-  @Nullable Integer getLatestRelease(@NonNull Integer key);
+  @Nullable Integer getLatestRelease(int projectKey, boolean extended);
 
-  @Nullable Integer getLatestReleaseCandidate(@NonNull Integer key);
+  @Nullable Integer getLatestReleaseCandidate(int projectKey, boolean extended);
 
   @Nullable Integer getReleaseByAttempt(int projectKey, int attempt);
 
-  @Nullable Integer getColAnnualRelease(int year);
+  @Nullable Integer getColAnnualRelease(int year, boolean extended);
 
   boolean isLatestRelease(int datasetKey);
 

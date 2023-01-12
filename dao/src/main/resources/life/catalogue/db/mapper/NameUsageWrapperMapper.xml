@@ -45,43 +45,57 @@
     <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
     d.gbif_publisher_key AS publisherKey,
     s.subject_dataset_key AS sectorDatasetKey,
-    array_distinct(vbn.issues || vbt.issues || tcrel.issues || sirel.issues || xdis.issues || xmed.issues || xver.issues || xtyp.issues || nrel.issues) AS issues,
-    ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode
+    ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
+    array_distinct(vbn.issues || vbt.issues || tcrel.issues || sirel.issues || xdis.issues || xmed.issues || xver.issues || xtyp.issues || nrel.issues) AS issues
     FROM
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
     JOIN dataset d ON d.key=u.dataset_key
-    LEFT JOIN sector s ON s.id=u.sector_key
+    LEFT JOIN sector s ON s.dataset_key=u.dataset_key AND s.id=u.sector_key
+    LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
     LEFT JOIN verbatim vbt ON vbt.id=u.verbatim_key AND vbt.dataset_key=#{datasetKey}
     LEFT JOIN verbatim vbn ON vbn.id=n.verbatim_key AND vbn.dataset_key=#{datasetKey}
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM taxon_concept_rel x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
-      WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
+      SELECT taxon_id, array_agg(v.issues) AS issues
+      FROM taxon_concept_rel x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+      GROUP BY x.taxon_id
     ) tcrel ON tcrel.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM species_interaction x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
-      WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
+      SELECT taxon_id, array_agg(v.issues) AS issues
+      FROM species_interaction x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+      GROUP BY x.taxon_id
     ) sirel ON sirel.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM distribution x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
-      WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
+      SELECT taxon_id, array_agg(v.issues) AS issues
+      FROM distribution x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+      GROUP BY x.taxon_id
     ) xdis ON xdis.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM media x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
-      WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
+      SELECT taxon_id, array_agg(v.issues) AS issues
+      FROM media x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+      GROUP BY x.taxon_id
     ) xmed ON xmed.taxon_id=u.id
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM vernacular_name x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
-      WHERE x.dataset_key=#{datasetKey} GROUP BY x.taxon_id
+      SELECT taxon_id, array_agg(v.issues) AS issues
+      FROM vernacular_name x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+      GROUP BY x.taxon_id
     ) xver ON xver.taxon_id=u.id
     LEFT JOIN (
-      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM type_material x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
-      WHERE x.dataset_key=#{datasetKey} GROUP BY x.name_id
+      SELECT name_id, array_agg(v.issues) AS issues
+      FROM type_material x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+      GROUP BY x.name_id
     ) xtyp ON xtyp.name_id=u.name_id
     LEFT JOIN (
-      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM name_rel x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
-      WHERE x.dataset_key=#{datasetKey} GROUP BY x.name_id
+      SELECT name_id, array_agg(v.issues) AS issues
+      FROM name_rel x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+      WHERE x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+      GROUP BY x.name_id
     ) nrel ON nrel.name_id=u.name_id
-    LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
   </sql>
 
   <sql id="bareNameSelectFrom">
@@ -96,7 +110,6 @@
     WHERE n.dataset_key=#{datasetKey}
       AND u.id IS NULL
   </sql>
-
 
   <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     WITH RECURSIVE tree AS (
@@ -136,32 +149,53 @@
     </if>
   </select>
 
-  <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">
-    SELECT u.id AS uid,
-    <include refid="taxonSelectFrom"/>
-    WHERE u.dataset_key=#{datasetKey}
-      AND u.id = #{id}
-  </select>
-
   <select id="getBareName" parameterType="map" resultMap="bareNameResultMap">
     SELECT
     <include refid="bareNameSelectFrom"/>
     AND n.id = #{id}
   </select>
 
-  <select id="getWithoutClassification" parameterType="map" resultMap="usageResultMap">
-    SELECT u.id AS uid, NULL AS classification,
-    <include refid="taxonSelectFrom"/>
-    WHERE u.dataset_key=#{datasetKey}
-      AND u.id = #{id}
+  <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">
+    WITH nu AS (
+      SELECT u.id, u.name_id, u.verbatim_key AS uvkey, n.verbatim_key AS nvkey
+      FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
+      WHERE u.dataset_key=#{datasetKey} AND u.id = #{id}
+    ), nuissues AS (
+      SELECT vs.id, array_cat_agg(vs.issues) AS issues
+      FROM (
+      <include refid="life.catalogue.db.mapper.VerbatimRecordMapper.usageIssues"/>
+      ) vs
+      GROUP BY vs.id
+    )
+
+    SELECT u.id AS uid,
+      <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
+      d.gbif_publisher_key AS publisherKey,
+      s.subject_dataset_key AS sectorDatasetKey,
+      ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
+      v.issues
+    FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
+      JOIN dataset d ON d.key=u.dataset_key
+      LEFT JOIN nuissues v ON v.id=u.id
+      LEFT JOIN sector s ON s.dataset_key=u.dataset_key AND s.id=u.sector_key
+      LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
+    WHERE u.dataset_key=#{datasetKey} AND u.id = #{id}
   </select>
 
-  <select id="getSomeWithoutClassification" parameterType="map" resultMap="usageResultMap">
+  <select id="processWithoutClassification" parameterType="map" resultMap="usageResultMap">
     SELECT u.id AS uid, NULL AS classification,
-    <include refid="taxonSelectFrom"/>
+      <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT_BASE" />,
+      r.citation AS according_to,
+      v.issues,
+      ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode
+    FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_NO_ACCEPTED"/>
+      LEFT JOIN tmp_usage_issues v ON v.id=u.id
+      LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
     WHERE u.dataset_key=#{datasetKey}
-      AND u.id IN
-    <foreach item="id" collection="ids" open="(" separator="," close=")">#{id}</foreach>
+    <if test="sectorKey != null">
+      AND u.sector_key = #{sectorKey}
+    </if>
+    ORDER BY u.is_synonym, n.rank
   </select>
 
 </mapper>

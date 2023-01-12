@@ -1,40 +1,37 @@
 package life.catalogue.release;
 
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.doi.service.DoiService;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.img.ImageService;
 
 import java.io.File;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import com.google.common.eventbus.EventBus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ProjectReleaseIT extends ProjectBaseIT {
+  private static final Logger LOG = LoggerFactory.getLogger(ProjectReleaseIT.class);
 
   NameMatchingRule matchingRule = new NameMatchingRule();
 
@@ -107,15 +104,8 @@ public class ProjectReleaseIT extends ProjectBaseIT {
       assertEquals(25, imp.getUsagesCount());
 
       // also test publishing the release
-      var bus = new EventBus();
-      DatasetDao ddao = new DatasetDao(3, release.factory, new NormalizerConfig(), new ReleaseConfig(), null, ImageService.passThru(), diDao, null,
-        NameUsageIndexService.passThru(), null, bus, validator);
-      bus.register(new PublicReleaseListener(new WsServerConfig(), release.factory, null, DoiService.passThru(), null));
-      var rel = ddao.get(release.newDatasetKey);
+      var rel = session.getMapper(DatasetMapper.class).get(release.newDatasetKey);
       assertTrue(rel.isPrivat());
-      rel.setPrivat(false);
-      ddao.update(rel, release.user);
-      System.out.println("Published release " + rel.getKey());
     }
   }
 

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
@@ -18,7 +19,7 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
-  public void testByNidx() throws Exception {
+  public void listByNamesIndexIDGlobal() throws Exception {
     // with author
     var res = mapper().listByNamesIndexIDGlobal( 4, new Page());
     assertEquals(3, res.size());
@@ -33,6 +34,29 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
     // none
     assertEquals(0, mapper().listByNamesIndexIDGlobal( 1, new Page()).size());
+  }
+
+  @Test
+  public void listByCanonNIDX() throws Exception {
+    assertCanonNIDX(1, 100, 3);
+    assertCanonNIDX(1, 101, 3);
+    assertCanonNIDX(2, 102, 3);
+    // not existing dataset
+    assertCanonNIDX(0, 103, 3);
+    // not a canonical nidx
+    assertCanonNIDX(0, 100, 4);
+  }
+
+  void assertCanonNIDX(int expectedNum, int datasetKey, int canonNidx) {
+    var res = mapper().listByCanonNIDX( datasetKey, canonNidx);
+    assertEquals(expectedNum, res.size());
+    for (var sn : res) {
+      assertEquals((Integer)canonNidx, sn.getCanonicalId());
+      assertNotNull(sn.getNamesIndexId());
+      assertNotNull(sn.getNamesIndexMatchType());
+      assertNotNull(sn.getRank());
+      assertNotNull(sn.getName());
+    }
   }
 
 }

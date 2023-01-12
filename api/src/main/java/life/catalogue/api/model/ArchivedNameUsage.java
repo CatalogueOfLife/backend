@@ -40,6 +40,11 @@ public class ArchivedNameUsage extends NameUsageBase {
     this.lastReleaseKey = other.lastReleaseKey;
   }
 
+  @Override
+  public NameUsageBase copy() {
+    return new ArchivedNameUsage(this);
+  }
+
   /**
    * Expose flag for clients to tell archived usages easily apart from others
    */

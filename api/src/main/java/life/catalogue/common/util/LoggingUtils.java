@@ -6,9 +6,16 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.slf4j.MDC;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 public class LoggingUtils {
 
+  /**
+   * Taken from logback classic so we dont have to import logback here.
+   * Marks finalized sessions, e.g. for sifting appenders.
+   */
+  public static final String FINALIZE_SESSION = "FINALIZE_SESSION";
   public static final String MDC_KEY_JOB = "job";
   public static final String MDC_KEY_TASK = "task";
   public static final String MDC_KEY_DATASET = "dataset";
@@ -66,4 +73,6 @@ public class LoggingUtils {
     MDC.remove(MDC_KEY_SECTOR);
     MDC.remove(MDC_KEY_ATTEMPT);
   }
+  public static final Marker FINALIZE_SESSION_MARKER = MarkerFactory.getMarker(FINALIZE_SESSION);
+
 }

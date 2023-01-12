@@ -155,7 +155,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
       return Rank.SPECIES;
 
     } else if (r.isInfraspecific()) {
-      return Rank.SUBSPECIES;
+      return Rank.INFRASPECIFIC_NAME;
     }
     // should never reach here
     throw new IllegalArgumentException("Unknown rank " + r);

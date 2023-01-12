@@ -7,14 +7,31 @@
   <!-- Always good to have it in here for debugging -->
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
+      <pattern>dataset=%X{dataset} %-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
     </encoder>
   </appender>
-
+  <appender name="JOBLOGS" class="life.catalogue.dw.logging.ClosingSiftingAppender">
+    <filter class="life.catalogue.dw.logging.MDCJobFilter" />
+    <discriminator>
+      <key>job</key>
+      <defaultValue>unknown</defaultValue>
+    </discriminator>
+    <sift>
+      <appender name="JOBLOG-${job}" class="life.catalogue.dw.logging.GZipFileAppender">
+        <file>/Users/markus/Downloads/joblogs/job-${job}.log.gz</file>
+        <encoder>
+          <pattern>%d %X{task}: %msg%n</pattern>
+        </encoder>
+      </appender>
+    </sift>
+  </appender>
+  <!--
+  -->
     <logger name="ch.qos.logback.classic" level="WARN"/>
     <logger name="org.gbif.dwc.terms.TermFactory" level="WARN"/>
     <logger name="life.catalogue" level="INFO"/>
-    <logger name="life.catalogue.importer" level="DEBUG"/>
+    <logger name="life.catalogue.assembly" level="DEBUG"/>
+    <logger name="life.catalogue.importer" level="INFO"/>
     <logger name="life.catalogue.release" level="INFO"/>
     <logger name="life.catalogue.admin" level="INFO"/>
     <logger name="life.catalogue.csv" level="INFO"/>
@@ -23,13 +40,17 @@
     <logger name="life.catalogue.release" level="INFO"/>
     <logger name="life.catalogue.db.tree" level="INFO"/>
     <logger name="org.apache.http" level="INFO"/>
+    <logger name="org.apache.ibatis.jdbc" level="WARN" />
 
   <!--
-    <logger name="life.catalogue.importer" level="DEBUG"/>
+    <logger name="life.catalogue.db" level="DEBUG"/>
     <logger name="life.catalogue.db.mapper" level="DEBUG"/>
+    <logger name="java.sql" level="INFO" />
+    <logger name="life.catalogue.importer" level="DEBUG"/>
   -->
-    <root level="INFO">
+  <root level="INFO">
     <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="JOBLOGS"/>
   </root>
 
 </configuration>

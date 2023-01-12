@@ -1,0 +1,17 @@
+key,type,alias,title,origin,url,created_by,modified_by,created
+101,TAXONOMIC,ILDIS,ILDIS World,EXTERNAL,http://www.ildis.o,101,101,2022-09-20 22:31:21.9303
+102,OTHER,ColDP Example,ColDP Example. The full dataset title,EXTERNAL,https://www.fishbase.org,101,101,2022-09-20 22:31:37.415885
+103,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/coldp/22,EXTERNAL,,101,101,2022-09-20 22:31:45.658466
+104,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/coldp/25,EXTERNAL,,101,101,2022-09-20 22:31:54.592576
+105,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/dwca/1,EXTERNAL,,101,101,2022-09-20 22:32:03.805279
+106,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/dwca/2,EXTERNAL,,101,101,2022-09-20 22:32:10.915174
+107,TAXONOMIC,Systema Dipterorum,Systema Dipterorum,EXTERNAL,http://www.diptera.org,101,101,2022-09-20 22:32:19.038661
+108,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/acef/6,EXTERNAL,,101,101,2022-09-20 22:32:27.15059
+109,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/acef/11,EXTERNAL,,101,101,2022-09-20 22:32:34.338408
+110,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/coldp/2,EXTERNAL,,101,101,2022-09-20 22:32:42.354774
+111,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/coldp/4,EXTERNAL,,101,101,2022-09-20 22:32:50.403877
+112,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/coldp/14,EXTERNAL,,101,101,2022-09-20 22:32:58.709173
+113,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/coldp/24,EXTERNAL,,101,101,2022-09-20 22:33:07.154
+114,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/coldp/26,EXTERNAL,,101,101,2022-09-20 22:33:15.590836
+115,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/coldp/27,EXTERNAL,,101,101,2022-09-20 22:33:24.165964
+116,TAXONOMIC,ICTV_MSL,International Committee on Taxonomy of Viruses / Master Species List,EXTERNAL,http://ictvonline.org,101,101,2022-09-20 22:33:32.199169

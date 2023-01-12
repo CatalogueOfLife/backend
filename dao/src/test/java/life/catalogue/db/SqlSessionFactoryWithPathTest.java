@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 public class SqlSessionFactoryWithPathTest {
 
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule(false);
+  public static PgSetupRule pgSetupRule = new PgSetupRule();
 
   @Test
   public void testSearchPath() throws Exception {

@@ -17,6 +17,8 @@ db:
   database: ${db.database}
   user: ${db.user}
   password: ${db.password}
+  maximumPoolSize: 50
+  minimumIdle: 0
 adminDb:
   database: ${admindb.database}
   user: ${admindb.user}

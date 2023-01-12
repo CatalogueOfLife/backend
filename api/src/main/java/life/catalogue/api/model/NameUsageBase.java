@@ -85,6 +85,8 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     setParentId(sn.getParent());
   }
 
+  public abstract NameUsageBase copy();
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;

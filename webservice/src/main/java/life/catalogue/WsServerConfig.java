@@ -129,7 +129,13 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    * Names index kvp file to persist map on disk. If empty will use a volatile memory index.
    */
   public File namesIndexFile;
-  
+
+  /**
+   * Usage cache mapdb file to persist map on disk. If empty will use a volatile memory index.
+   */
+  @NotNull
+  public File usageCacheFile = new File("/tmp/usage-cache");
+
   /**
    * Directory to store text tree, name index lists and other metrics for each dataset and sector import attempt
    * on disc.
@@ -143,6 +149,8 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public File exportDir = new File("/tmp/exports");
 
+  public URI apiURI;
+
   /**
    * JSON status file to be updated for maintenance mode.
    * Should be served as a static file from https://download.checklistbank.org/.status.json
@@ -150,13 +158,11 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public File statusFile = new File("/tmp/.status.json");
 
-  public URI apiURI = URI.create("https://api.catalogueoflife.org");
+  @NotNull
+  public URI downloadURI = URI.create("https://download.checklistbank.org");
 
   @NotNull
-  public URI downloadURI = URI.create("https://download.catalogueoflife.org");
-
-  @NotNull
-  public URI clbURI = URI.create("https://data.catalogueoflife.org");
+  public URI clbURI = URI.create("https://www.checklistbank.org");
 
   @NotNull
   public URI portalURI = URI.create("https://www.catalogueoflife.org");

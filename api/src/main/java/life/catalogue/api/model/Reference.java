@@ -35,6 +35,19 @@ public class Reference extends DatasetScopedEntity<String> implements VerbatimEn
    */
   private String remarks;
 
+  public Reference() {
+  }
+
+  public Reference(Reference other) {
+    super(other);
+    this.sectorKey = other.sectorKey;
+    this.verbatimKey = other.verbatimKey;
+    this.csl = other.csl;
+    this.citation = other.citation;
+    this.year = other.year;
+    this.remarks = other.remarks;
+  }
+
   public Integer getSectorKey() {
     return sectorKey;
   }

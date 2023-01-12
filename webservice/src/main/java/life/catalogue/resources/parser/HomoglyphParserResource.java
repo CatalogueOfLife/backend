@@ -1,7 +1,5 @@
 package life.catalogue.resources.parser;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.util.ArrayList;
@@ -9,6 +7,8 @@ import java.util.List;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

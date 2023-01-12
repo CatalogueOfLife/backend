@@ -29,6 +29,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private SimpleNameLink subject;
   private String originalSubjectId;
   private Mode mode = Sector.Mode.ATTACH;
+  private Integer priority; // the lower the higher prio. NULL sorts last
   private Integer syncAttempt;
   private Integer datasetAttempt;
   private NomCode code;
@@ -61,13 +62,17 @@ public class Sector extends DatasetScopedEntity<Integer> {
   public Sector() {
   }
 
+  /**
+   * Deep copy constructor
+   */
   public Sector(Sector other) {
     super(other);
-    this.target = SimpleNameLink.of(other.target);
+    this.target = other.target == null ? null : SimpleNameLink.of(other.target);
     this.subjectDatasetKey = other.subjectDatasetKey;
-    this.subject = SimpleNameLink.of(other.subject);
+    this.subject = other.subject == null ? null : SimpleNameLink.of(other.subject);
     this.originalSubjectId = other.originalSubjectId;
     this.mode = other.mode;
+    this.priority = other.priority;
     this.syncAttempt = other.syncAttempt;
     this.datasetAttempt = other.datasetAttempt;
     this.code = other.code;
@@ -89,7 +94,15 @@ public class Sector extends DatasetScopedEntity<Integer> {
   public SimpleNameLink getSubject() {
     return subject;
   }
-  
+
+  /**
+   * NPE safe convenience getter to yield the subjects id or null.
+   */
+  @JsonIgnore
+  public String getSubjectID() {
+    return subject == null ? null : subject.getId();
+  }
+
   public void setSubject(SimpleNameLink subject) {
     this.subject = subject;
   }
@@ -128,6 +141,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.mode = mode;
   }
 
+  public Integer getPriority() {
+    return priority;
+  }
+
+  public void setPriority(Integer priority) {
+    this.priority = priority;
+  }
+
   /**
    * @return the last successful sync attempt that created the current data
    */
@@ -161,7 +182,15 @@ public class Sector extends DatasetScopedEntity<Integer> {
   public SimpleNameLink getTarget() {
     return target;
   }
-  
+
+  /**
+   * NPE safe convenience getter to yield the targets id or null.
+   */
+  @JsonIgnore
+  public String getTargetID() {
+    return target == null ? null : target.getId();
+  }
+
   public void setTarget(SimpleNameLink target) {
     this.target = target;
   }
@@ -197,26 +226,27 @@ public class Sector extends DatasetScopedEntity<Integer> {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof Sector)) return false;
     if (!super.equals(o)) return false;
     Sector sector = (Sector) o;
-    return Objects.equals(target, sector.target) &&
-           Objects.equals(subjectDatasetKey, sector.subjectDatasetKey) &&
-           Objects.equals(subject, sector.subject) &&
-           Objects.equals(originalSubjectId, sector.originalSubjectId) &&
-      mode == sector.mode &&
-           Objects.equals(syncAttempt, sector.syncAttempt) &&
-           Objects.equals(datasetAttempt, sector.datasetAttempt) &&
-      code == sector.code &&
-      placeholderRank == sector.placeholderRank &&
-           Objects.equals(ranks, sector.ranks) &&
-           Objects.equals(entities, sector.entities) &&
-           Objects.equals(note, sector.note);
+    return Objects.equals(target, sector.target)
+           && Objects.equals(subjectDatasetKey, sector.subjectDatasetKey)
+           && Objects.equals(subject, sector.subject)
+           && Objects.equals(originalSubjectId, sector.originalSubjectId)
+           && mode == sector.mode
+           && Objects.equals(priority, sector.priority)
+           && Objects.equals(syncAttempt, sector.syncAttempt)
+           && Objects.equals(datasetAttempt, sector.datasetAttempt)
+           && code == sector.code
+           && placeholderRank == sector.placeholderRank
+           && Objects.equals(ranks, sector.ranks)
+           && Objects.equals(entities, sector.entities)
+           && Objects.equals(note, sector.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, mode, syncAttempt, datasetAttempt, code, placeholderRank, ranks, entities, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, mode, priority, syncAttempt, datasetAttempt, code, placeholderRank, ranks, entities, note);
   }
 
   @Override

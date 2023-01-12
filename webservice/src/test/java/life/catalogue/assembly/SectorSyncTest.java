@@ -3,13 +3,14 @@ package life.catalogue.assembly;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.dao.*;
+import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.TaxonDao;
+import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.MybatisTestUtils;
+import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -18,14 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
@@ -33,27 +33,27 @@ import static org.junit.Assert.fail;
 
 public class SectorSyncTest {
 
-  final static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
-  @Rule
-  public final TestDataRule testDataRule = TestDataRule.tree();
-  
-  @Rule
-  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
 
-  DatasetImportDao diDao;
-  SectorImportDao siDao;
-  EstimateDao eDao;
-  SectorDao sdao;
+  public final TestDataRule testDataRule = TestDataRule.tree();
+  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
+  public final NameMatchingRule matchingRule = new NameMatchingRule();
+  public final SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
+  @Rule
+  public final TestRule classRules = RuleChain
+    .outerRule(testDataRule)
+    .around(treeRepoRule)
+    .around(matchingRule)
+    .around(syncFactoryRule);
+
   TaxonDao tdao;
+  DatasetImportDao diDao;
 
   final int datasetKey = DATASET11.getKey();
   Sector sector;
   Taxon colAttachment;
-  
+
   @Before
   public void init() {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
@@ -93,12 +93,8 @@ public class SectorSyncTest {
       session.commit();
     }
   
-    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    eDao = new EstimateDao(PgSetupRule.getSqlSessionFactory(), validator);
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
-    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
+    tdao = syncFactoryRule.getTdao();
+    diDao = syncFactoryRule.getDiDao();
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
   }
 
@@ -109,8 +105,7 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.COL));
     }
 
-    SectorSync ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), sdao, siDao, eDao,
-        SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
+    SectorSync ss = SyncFactoryRule.getFactory().project(sector, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
@@ -152,10 +147,8 @@ public class SectorSyncTest {
       sm.update(sector);
     }
 
-    ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), sdao, siDao, eDao,
-        SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
+    ss = SyncFactoryRule.getFactory().project(sector, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
-
   }
   
   /**

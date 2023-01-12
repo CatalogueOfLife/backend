@@ -11,6 +11,59 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-01-06 Add array concatenation aggregate function
+```
+CREATE AGGREGATE array_cat_agg(anycompatiblearray) (
+  SFUNC=array_cat,
+  STYPE=anycompatiblearray
+);
+
+CREATE INDEX on verbatim(dataset_key, id) WHERE array_length(issues, 1) > 0;
+```
+
+### 2023-01-04 Improved classification functions using SQL only
+```
+-- return all parent names as an array
+CREATE OR REPLACE FUNCTION classification(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS TEXT[] AS $$
+  WITH RECURSIVE x AS (
+  SELECT t.id, n.scientific_name, t.parent_id FROM name_usage t 
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id 
+    WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+   UNION ALL 
+  SELECT t.id, n.scientific_name, t.parent_id FROM x, name_usage t 
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id 
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id
+  ) SELECT array_reverse(array_agg(scientific_name)) FROM x WHERE v_inc_self OR id != v_id;
+$$ LANGUAGE SQL;
+
+
+-- return all parent name usages as a simple_name array
+CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS simple_name[] AS $$
+  WITH RECURSIVE x AS (
+  SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage t 
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id 
+    WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+   UNION ALL 
+  SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name FROM x, name_usage t 
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id 
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id
+  ) SELECT array_reverse(array_agg(sn)) FROM x WHERE v_inc_self OR id != v_id;
+$$ LANGUAGE SQL;
+```
+
+### 2022-12-16 new ranks
+```
+ALTER TYPE RANK ADD VALUE 'FALANX' BEFORE 'MEGAFAMILY';
+ALTER TYPE RANK ADD VALUE 'SUPERGENUS' BEFORE 'GENUS';
+ALTER TYPE RANK ADD VALUE 'KLEPTON' BEFORE 'SUBSPECIES';
+ALTER TYPE RANK ADD VALUE 'SUPERVARIETY' BEFORE 'VARIETY';
+ALTER TYPE RANK ADD VALUE 'SUPERFORM' BEFORE 'FORM';
+ALTER TYPE RANK ADD VALUE 'LUSUS' BEFORE 'CULTIVAR';
+ALTER TYPE RANK ADD VALUE 'MUTATIO' BEFORE 'STRAIN';
+
+ALTER TYPE RANK RENAME VALUE 'PROLES' TO 'PROLE';
+```
+
 ### 2022-12-14 coldwc term changes
 ```
 UPDATE verbatim SET type = 'col:NameRelation' WHERE type = 'coldwc:NameRelation';
@@ -62,6 +115,75 @@ ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
   ) STORED;
 ```
 
+### 2022-09-17 verbatim_source_secondary
+Add verbatim_source_secondary to all projects and releases!
+
+```
+CREATE TYPE INFOGROUP AS ENUM (
+  'NAME',
+  'AUTHORSHIP',
+  'PUBLISHED_IN',
+  'BASIONYM',
+  'STATUS',
+  'PARENT',
+  'EXTINCT',
+  'DOI',
+  'LINK'
+);
+
+CREATE TABLE verbatim_source_secondary (
+  id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  type INFOGROUP NOT NULL,
+  source_id TEXT,
+  source_dataset_key INTEGER,
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
+) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON verbatim_source_secondary (dataset_key, id);
+CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
+```
+
+Now you can add partition tables for all projects and releases by executing the following template with the CLI:
+```
+./exec-sql.sh sql/create_vss.sql --origin PROJECT
+./exec-sql.sh sql/create_vss.sql --origin RELEASE
+./exec-sql.sh sql/create_vss.sql --origin XRELEASE
+
+CREATE TABLE verbatim_source_secondary_{KEY} (LIKE verbatim_source_secondary INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+ALTER TABLE verbatim_source_secondary ATTACH PARTITION verbatim_source_secondary_{KEY} FOR VALUES IN ( {KEY} );
+```
+
+### 2022-09-17 extended catalogue
+```
+ALTER TABLE sector ADD COLUMN priority INTEGER;
+
+ALTER TABLE dataset ALTER COLUMN origin TYPE text;
+ALTER TABLE dataset_archive ALTER COLUMN origin TYPE text;
+ALTER TABLE dataset_source ALTER COLUMN origin TYPE text;
+ALTER TABLE dataset_import ALTER COLUMN origin TYPE text;
+UPDATE dataset SET origin = 'PROJECT' WHERE origin = 'MANAGED';
+UPDATE dataset SET origin = 'RELEASE' WHERE origin = 'RELEASED';
+UPDATE dataset_archive SET origin = 'PROJECT' WHERE origin = 'MANAGED';
+UPDATE dataset_archive SET origin = 'RELEASE' WHERE origin = 'RELEASED';
+UPDATE dataset_source SET origin = 'PROJECT' WHERE origin = 'MANAGED';
+UPDATE dataset_source SET origin = 'RELEASE' WHERE origin = 'RELEASED';
+UPDATE dataset_import SET origin = 'PROJECT' WHERE origin = 'MANAGED';
+UPDATE dataset_import SET origin = 'RELEASE' WHERE origin = 'RELEASED';
+DROP TYPE DATASETORIGIN;
+CREATE TYPE DATASETORIGIN AS ENUM (
+  'EXTERNAL',
+  'PROJECT',
+  'RELEASE',
+  'XRELEASE'
+);
+ALTER TABLE dataset ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+ALTER TABLE dataset_archive ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+ALTER TABLE dataset_source ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+ALTER TABLE dataset_import ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+```
+
+>>>>>>> xcol
 ### 2022-09-16 alternative identifiers
 ```
 ALTER TYPE ISSUE ADD VALUE 'IDENTIFIER_WITHOUT_SCOPE';
@@ -749,7 +871,7 @@ SELECT p.key AS project_key, r.key AS release_key, r.attempt, (
   WHERE origin='RELEASED' AND deleted IS NULL AND NOT private AND source_key=p.key
 )  
 FROM dataset p JOIN dataset r ON r.source_key=p.key 
-WHERE p.origin='MANAGED' AND r.origin='RELEASED' AND r.deleted IS NULL AND NOT r.private
+WHERE p.origin='PROJECT' AND r.origin='RELEASED' AND r.deleted IS NULL AND NOT r.private
 ORDER BY p.key, r.created;
 
 -- copy ids into a faster temp table
@@ -941,7 +1063,7 @@ LANGUAGE 'plpgsql';
 
 execute the following to clean project tables for managed and released datasets each:
 ```
-./exec-sql.sh sql/partitioning1.sql --origin MANAGED
+./exec-sql.sh sql/partitioning1.sql --origin PROJECT
 ./exec-sql.sh sql/partitioning1.sql --origin RELEASED
 
 ALTER TABLE verbatim_source_{KEY} DROP CONSTRAINT IF EXISTS verbatim_source_{KEY}_id_fkey;
@@ -1743,7 +1865,7 @@ CREATE TABLE verbatim_source (
 CREATE INDEX ON verbatim_source USING GIN(issues);
 ```
 
-and for all MANAGED data partitions `./exec-sql {YOURFILE} --managed true`
+and for all PROJECT data partitions `./exec-sql {YOURFILE} --managed true`
 ```
 CREATE TABLE verbatim_source_{KEY} (LIKE verbatim_source INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
 ALTER TABLE verbatim_source_{KEY} ADD PRIMARY KEY (id);
@@ -3256,19 +3378,19 @@ ALTER TABLE dataset_import ALTER COLUMN origin TYPE text;
 DROP TYPE DATASETORIGIN;
 CREATE TYPE DATASETORIGIN AS ENUM (
   'EXTERNAL',
-  'MANAGED',
+  'PROJECT',
   'RELEASED'
 );
 UPDATE dataset SET origin='EXTERNAL' WHERE origin='UPLOADED' AND data_access IS NOT NULL;
-UPDATE dataset SET origin='MANAGED' WHERE origin='UPLOADED';
-UPDATE dataset SET origin='RELEASED' WHERE origin='MANAGED' AND locked;
+UPDATE dataset SET origin='PROJECT' WHERE origin='UPLOADED';
+UPDATE dataset SET origin='RELEASED' WHERE origin='PROJECT' AND locked;
 UPDATE dataset SET source_key=3 WHERE origin='RELEASED';
 UPDATE dataset_archive SET origin='EXTERNAL' WHERE origin='UPLOADED' AND data_access IS NOT NULL;
-UPDATE dataset_archive SET origin='MANAGED' WHERE origin='UPLOADED';
-UPDATE dataset_archive SET origin='RELEASED' WHERE origin='MANAGED' AND locked;
+UPDATE dataset_archive SET origin='PROJECT' WHERE origin='UPLOADED';
+UPDATE dataset_archive SET origin='RELEASED' WHERE origin='PROJECT' AND locked;
 UPDATE dataset_archive SET source_key=3 WHERE origin='RELEASED';
 UPDATE dataset_import SET origin='EXTERNAL' WHERE origin='UPLOADED' AND download_uri IS NOT NULL;
-UPDATE dataset_import SET origin='MANAGED' WHERE origin='UPLOADED';
+UPDATE dataset_import SET origin='PROJECT' WHERE origin='UPLOADED';
 ALTER TABLE dataset ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_archive ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_import ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;

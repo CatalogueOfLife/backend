@@ -24,12 +24,11 @@ public class IdMapTest {
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
-    final File file = new File("/tmp/idmap.bin");
     final String resource = "idmap-test.tsv";
     Object[] param1 = new Object[]{null, null};
     Object[] param2 = new Object[]{null, resource};
-    Object[] param3 = new Object[]{file, null};
-    Object[] param4 = new Object[]{file, resource};
+    Object[] param3 = new Object[]{new File("/tmp/idmap1.bin"), null};
+    Object[] param4 = new Object[]{new File("/tmp/idmap2.bin"), resource};
     return List.of(param1, param2, param3, param4);
   }
 

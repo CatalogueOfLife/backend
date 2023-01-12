@@ -46,10 +46,7 @@ public class AssemblyCoordinator implements Managed {
   private ImportManager importManager;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
-  private final NameUsageIndexService indexService;
-  private final SectorImportDao sid;
-  private final EstimateDao estimateDao;
-  private final SectorDao sdao;
+  private final SyncFactory syncFactory;
   private final Map<DSID<Integer>, SectorFuture> syncs = Collections.synchronizedMap(new LinkedHashMap<>());
   private final Timer timer;
   private final Map<Integer, AtomicInteger> counter = new HashMap<>(); // by dataset (project) key
@@ -69,12 +66,9 @@ public class AssemblyCoordinator implements Managed {
     }
   }
   
-  public AssemblyCoordinator(SqlSessionFactory factory, NameIndex nameIndex, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao, NameUsageIndexService indexService, MetricRegistry registry) {
+  public AssemblyCoordinator(SqlSessionFactory factory, NameIndex nameIndex, SyncFactory syncFactory, MetricRegistry registry) {
     this.factory = factory;
-    this.sid = sid;
-    this.sdao = sdao;
-    this.estimateDao = estimateDao;
-    this.indexService = indexService;
+    this.syncFactory = syncFactory;
     this.nameIndex = nameIndex;
     timer = registry.timer("life.catalogue.assembly.timer");
   }
@@ -197,12 +191,13 @@ public class AssemblyCoordinator implements Managed {
     }
   }
 
+
   /**
    * @return true if it was actually queued
    * @throws IllegalArgumentException
    */
   private synchronized boolean syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
-    SectorSync ss = new SectorSync(sectorKey, factory, nameIndex, indexService, sdao, sid, estimateDao, this::successCallBack, this::errorCallBack, user);
+    SectorSync ss = syncFactory.project(sectorKey, this::successCallBack, this::errorCallBack, user);
     return queueJob(ss);
   }
 
@@ -214,9 +209,9 @@ public class AssemblyCoordinator implements Managed {
     nameIndex.assertOnline();
     SectorRunnable sd;
     if (full) {
-      sd = new SectorDeleteFull(sectorKey, factory, indexService, sdao, sid, this::successCallBack, this::errorCallBack, user);
+      sd = syncFactory.deleteFull(sectorKey, this::successCallBack, this::errorCallBack, user);
     } else {
-      sd = new SectorDelete(sectorKey, factory, indexService, sdao, sid, this::successCallBack, this::errorCallBack, user);
+      sd = syncFactory.delete(sectorKey, this::successCallBack, this::errorCallBack, user);
     }
     return queueJob(sd);
   }
@@ -229,9 +224,10 @@ public class AssemblyCoordinator implements Managed {
     nameIndex.assertOnline();
     // is this sector already syncing?
     if (syncs.containsKey(job.sectorKey)) {
-      LOG.info("{} already busy", job.sector);
+      LOG.info("{} already queued or running", job.sector);
+      // ignore
       return false;
-    
+
     } else {
       assertStableData(job);
       syncs.put(job.sectorKey, new SectorFuture(job, exec.submit(job)));
@@ -262,7 +258,7 @@ public class AssemblyCoordinator implements Managed {
     failed.putIfAbsent(sync.sectorKey.getDatasetKey(), new AtomicInteger(0));
     failed.get(sync.sectorKey.getDatasetKey()).incrementAndGet();
   }
-  
+
   public synchronized void cancel(DSID<Integer> sectorKey, User user) {
     if (syncs.containsKey(sectorKey)) {
       LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);

@@ -126,7 +126,7 @@ public class DatasetPager {
   }
 
   public List<DatasetWithSettings> next() {
-    LOG.info("retrieve {}", page);
+    LOG.debug("retrieve {}", page);
     try {
       return datasetPage()
           .request()

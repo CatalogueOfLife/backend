@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.TestEntityUnmodifiedRule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
@@ -36,6 +37,9 @@ public abstract class MapperTestBase<M> {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
+
+  @Rule
+  public final TestEntityUnmodifiedRule unomidifedRule = new TestEntityUnmodifiedRule();
 
   @Rule
   public final TestDataRule testDataRule;

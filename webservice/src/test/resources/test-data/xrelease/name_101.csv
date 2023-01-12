@@ -1,0 +1,11 @@
+id,scientific_name,authorship,basionym_authors,basionym_year,combination_authors,combination_year,uninomial,genus,specific_epithet,infraspecific_epithet,rank,published_in_id
+83,Mammalia,,,,,,Mammalia,,,,CLASS,
+85,Canidae,,,,,,Canidae,,,,FAMILY,
+
+823,Canis adustus,,,,,,,Canis,adustus,,SPECIES,R1
+824,Canis argentina,,,,,,,Canis,argentinus,,SPECIES,R1
+
+831,Urocyon citrinus,"Stoker, 1887",,,"{Stoker}",1887,,Urocyon,citrinus,,SPECIES,R2
+832,Urocyon littoralis,,,,,,,Urocyon,littoralis,,SPECIES,
+833,Urocyon minicephalus,,,,,,,Urocyon,minicephalus,,SPECIES,
+834,Urocyon webi,,,,,,,Urocyon,webbi,,SPECIES,

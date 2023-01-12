@@ -1,0 +1,8 @@
+id,scientific_name,authorship,basionym_authors,basionym_year,combination_authors,combination_year,uninomial,genus,specific_epithet,infraspecific_epithet,rank
+1,Animalia,,,,,,Animalia,,,,KINGDOM
+2,Chordata,,,,,,Chordata,,,,PHYLUM
+3,Actinopterygii,,,,,,Actinopterygii,,,,CLASS
+4,Perciformes,,,,,,Perciformes,,,,ORDER
+5,Xenisthmidae,,,,,,Xenisthmidae,,,,FAMILY
+6,Xenisthmus,,,,,,Xenisthmus,,,,GENUS
+7,Xenisthmus nigrolateralis,"Chen, Harefa, Jiang, & Chang, 2022",,,"{Chen, Harefa, Jiang, Chang}",2022,,Xenisthmus,nigrolateralis,,SPECIES

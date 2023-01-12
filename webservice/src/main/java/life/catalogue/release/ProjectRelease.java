@@ -12,10 +12,7 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.text.CitationUtils;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.DatasetSourceDao;
-import life.catalogue.dao.NameDao;
+import life.catalogue.dao.*;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
@@ -45,26 +42,37 @@ public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
   private static final String DEFAULT_VERSION_TEMPLATE = "{date}";
 
-  private final ImageService imageService;
-  private final WsServerConfig cfg;
+  protected final WsServerConfig cfg;
+  protected final NameDao nDao;
+  protected final SectorDao sDao;
   private final UriBuilder datasetApiBuilder;
-  private final URI colseo;
+  private final URI portalURI;
   private final CloseableHttpClient client;
+  private final ImageService imageService;
   private final ExportManager exportManager;
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
-  private final NameDao nDao;
 
-  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, ImageService imageService,
+  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, SectorDao sDao,
+                 ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super("releasing", factory, diDao, dDao, indexService, validator, userKey, datasetKey, true);
+    this("releasing", factory, indexService, diDao, dDao, nDao, sDao, imageService, datasetKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+  }
+
+  ProjectRelease(String action, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, SectorDao sDao,
+                 ImageService imageService,
+                 int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
+                 DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
+    super(action, factory, diDao, dDao, indexService, validator, userKey, datasetKey, true);
     this.imageService = imageService;
     this.doiService = doiService;
     this.nDao = nDao;
+    this.sDao = sDao;
     this.cfg = cfg;
-    this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}LR");
-    this.colseo = UriBuilder.fromUri(cfg.apiURI).path("colseo").build();
+    String latestRelease = String.format("L%sR", getClass().equals(XRelease.class) ? "X" : "");
+    this.datasetApiBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("dataset/{key}"+latestRelease);
+    this.portalURI = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("portal").build();
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
@@ -83,7 +91,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   }
 
   public static void modifyDataset(int datasetKey, Dataset d, DatasetSettings ds, DatasetSourceDao srcDao, AuthorlistGenerator authGen) {
-    d.setOrigin(DatasetOrigin.RELEASED);
+    d.setOrigin(DatasetOrigin.RELEASE);
 
     final FuzzyDate today = FuzzyDate.now();
     d.setIssued(today);
@@ -109,21 +117,9 @@ public class ProjectRelease extends AbstractProjectCopy {
       LOG.info("Removed {} bare names from project {}", num, datasetKey);
     }
 
+    final Integer prevReleaseKey = createReleaseDOI();
+
     try (SqlSession session = factory.openSession(true)) {
-      // find previous public release needed for DOI management
-      final Integer prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
-      LOG.info("Last public release was {}", prevReleaseKey);
-
-      // assign DOIs?
-      if (cfg.doi != null) {
-        newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
-        updateDataset(newDataset);
-
-        var attr = doiUpdater.buildReleaseMetadata(datasetKey, false, newDataset, prevReleaseKey);
-        LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
-        doiService.createSilently(attr);
-      }
-
       // treat source. Archive dataset metadata & logos & assign a potentially new DOI
       updateState(ImportState.ARCHIVING);
       DatasetSourceDao dao = new DatasetSourceDao(factory);
@@ -166,6 +162,37 @@ public class ProjectRelease extends AbstractProjectCopy {
   }
 
   /**
+   * Creates a new DOI for the new release using the latest public release for the prevReleaseKey
+   * @return the previous releases datasetKey
+   */
+  protected Integer createReleaseDOI() throws Exception {
+    try (SqlSession session = factory.openSession(true)) {
+      // find previous public release needed for DOI management
+      final Integer prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
+      return createReleaseDOI(prevReleaseKey);
+    }
+  }
+
+  /**
+   * Creates a new DOI for the new release
+   * @return the previous releases datasetKey
+   * @param prevReleaseKey the previous release key to build the metadata with
+   */
+  protected Integer createReleaseDOI(Integer prevReleaseKey) throws Exception {
+    // assign DOIs?
+    if (cfg.doi != null) {
+      newDataset.setDoi(cfg.doi.datasetDOI(newDatasetKey));
+      updateDataset(newDataset);
+
+      LOG.info("Use previous release {} for DOI metadata of {}", prevReleaseKey, newDatasetKey);
+      var attr = doiUpdater.buildReleaseMetadata(datasetKey, false, newDataset, prevReleaseKey);
+      LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
+      doiService.createSilently(attr);
+    }
+    return prevReleaseKey;
+  }
+
+  /**
    * Looks up a previous DOI and verifies the core metrics have not changed since.
    * Otherwise NULL is returned and a new DOI should be issued.
    * @param prevReleaseKey the datasetKey of the previous release or NULL if never released before
@@ -193,17 +220,18 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   void finalWork() throws Exception {
+    checkIfCancelled();
     // update both the projects and release datasets import attempt pointer
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.updateLastImport(datasetKey, attempt);
       dm.updateLastImport(newDatasetKey, attempt);
     }
-    // flush varnish cache for dataset/3LR and LRC
+    // flush varnish cache for dataset/3LR and LRC (or LXR & LXRC)
     if (client != null && datasetApiBuilder != null) {
       URI api = datasetApiBuilder.build(datasetKey);
       VarnishUtils.ban(client, api);
-      VarnishUtils.ban(client, colseo); // flush also /colseo which also points to latest releases
+      VarnishUtils.ban(client, portalURI); // flush also /colseo which also points to latest releases
     }
     // kick off exports
     if (settings.isEnabled(Setting.RELEASE_PREPARE_DOWNLOADS)) {

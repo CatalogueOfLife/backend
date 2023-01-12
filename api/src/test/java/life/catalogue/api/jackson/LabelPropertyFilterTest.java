@@ -1,7 +1,5 @@
 package life.catalogue.api.jackson;
 
-import life.catalogue.api.model.NameTest;
-
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;

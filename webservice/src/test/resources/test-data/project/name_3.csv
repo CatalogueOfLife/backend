@@ -1,26 +1,26 @@
-id,scientific_name,authorship,uninomial,genus,specific_epithet,infraspecific_epithet,rank,published_in_id,sector_key
-1,Animalia,,Animalia,,,,KINGDOM,r1,1
-2,Chordata,,Chordata,,,,PHYLUM,r1,1
-3,Mammalia,,Mammalia,,,,CLASS,r1,1
-4,Carnivora,,Carnivora,,,,ORDER,r1,1
-5,Canidae,,Canidae,,,,FAMILY,r1,1
-6,Felidae,,Felidae,,,,FAMILY,r1,1
-10,Lynx,,Lynx,,,,GENUS,r1,1
-11,Pardina,,Pardina,,,,GENUS,r1,1
-12,Lynx lynx,"(Linnaeus, 1758)",,Lynx,lynx,,SPECIES,r1,1
-12b,Felis lynx,"Linnaeus, 1758",,Lynx,lynx,,SPECIES,r1,1
-13,Lynx rufus,,,Lynx,rufus,,SPECIES,r1,1
-14,Felis rufa,,,Felis,rufa,,SPECIES,r1,1
-15,Lynx rufus baileii,,,Lynx,rufus,baileii,SUBSPECIES,r1,1
-16,Lynx rufus gigas,,,Lynx,rufus,gigas,SUBSPECIES,r1,1
-20,Canis,,Canis,,,,GENUS,r1,1
-21,Alopsis,,Alopsis,,,,GENUS,r1,1
-22,Lupulus,,Lupulus,,,,GENUS,r1,1
-23,Canis adustus,,,Canis,adustus,,SPECIES,r1,1
-24,Canis argentinus,,,Canis,argentinus,,SPECIES,r1,1
-25,Canis aureus,,,Canis,aureus,,SPECIES,r1,1
-30,Urocyon,,Urocyon,,,,GENUS,r1,1
-31,Urocyon citrinus,,,Urocyon,citrinus,,SPECIES,r1,1
-32,Urocyon littoralis,,,Urocyon,littoralis,,SPECIES,r1,1
-33,Urocyon minicephalus,,,Urocyon,minicephalus,,SPECIES,r1,1
-34,Urocyon webbi,,,Urocyon,webbi,,SPECIES,r1,1
+id,scientific_name,authorship,uninomial,basionym_authors,basionym_year,combination_authors,combination_year,genus,specific_epithet,infraspecific_epithet,rank,published_in_id,sector_key
+1,Animalia,,Animalia,,,,,,,,KINGDOM,r1,1
+2,Chordata,,Chordata,,,,,,,,PHYLUM,r1,1
+3,Mammalia,,Mammalia,,,,,,,,CLASS,r1,1
+4,Carnivora,,Carnivora,,,,,,,,ORDER,r1,1
+5,Canidae,,Canidae,,,,,,,,FAMILY,r1,1
+6,Felidae,,Felidae,,,,,,,,FAMILY,r1,1
+10,Lynx,,Lynx,,,,,,,,GENUS,r1,1
+11,Pardina,,Pardina,,,,,,,,GENUS,r1,1
+12,Lynx lynx,"(Linnaeus, 1758)",,"{Linnaeus}",1758,,,Lynx,lynx,,SPECIES,r1,1
+12b,Felis lynx,"Linnaeus, 1758",,,,"{Linnaeus}",1758,Felis,lynx,,SPECIES,r1,1
+13,Lynx rufus,,,,,,,Lynx,rufus,,SPECIES,r1,1
+14,Felis rufa,,,,,,,Felis,rufa,,SPECIES,r1,1
+15,Lynx rufus baileii,,,,,,,Lynx,rufus,baileii,SUBSPECIES,r1,1
+16,Lynx rufus gigas,,,,,,,Lynx,rufus,gigas,SUBSPECIES,r1,1
+20,Canis,,Canis,,,,,,,,GENUS,r1,1
+21,Alopsis,,Alopsis,,,,,,,,GENUS,r1,1
+22,Lupulus,,Lupulus,,,,,,,,GENUS,r1,1
+23,Canis adustus,,,,,,,Canis,adustus,,SPECIES,r1,1
+24,Canis argentinus,,,,,,,Canis,argentinus,,SPECIES,r1,1
+25,Canis aureus,,,,,,,Canis,aureus,,SPECIES,r1,1
+30,Urocyon,,Urocyon,,,,,,,,GENUS,r1,1
+31,Urocyon citrinus,,,,,,,Urocyon,citrinus,,SPECIES,r1,1
+32,Urocyon littoralis,,,,,,,Urocyon,littoralis,,SPECIES,r1,1
+33,Urocyon minicephalus,,,,,,,Urocyon,minicephalus,,SPECIES,r1,1
+34,Urocyon webbi,,,,,,,Urocyon,webbi,,SPECIES,r1,1
