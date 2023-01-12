@@ -1,17 +1,26 @@
 package life.catalogue.command;
 
+import com.google.common.base.Charsets;
+
 import life.catalogue.WsServer;
 import life.catalogue.WsServerConfig;
+import life.catalogue.common.io.TempFile;
+import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.util.YamlUtils;
+import life.catalogue.db.PgConfig;
+import life.catalogue.db.PgConnectRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -33,7 +42,7 @@ import static org.mockito.Mockito.when;
  */
 public abstract class CmdTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(CmdTestBase.class);
-  protected final File cfg;
+  protected final TempFile cfg;
   private final Supplier<Command> cmdSupply;
 
   @ClassRule
@@ -48,8 +57,16 @@ public abstract class CmdTestBase {
     this.cmdSupply = cmdSupply;
     try {
       URL res = Resources.getResource("config-test.yaml");
-      cfg = Paths.get(res.toURI()).toFile();
-      LOG.info("Use config file at {}", cfg.getAbsolutePath());
+      String wsCfg = Resources.toString(res, Charsets.UTF_8);
+      // update database in cfg file to random one used by the pg setup rule
+      var db = PgConnectRule.getCfg().database;
+      wsCfg = wsCfg.replaceAll("\n {2}database: .+\n", "\n  database: " + db + "\n");
+      System.out.println(wsCfg);
+      cfg = new TempFile("col-cfg", "yaml");
+      try (var w = UTF8IoUtils.writerFromFile(cfg.file)) {
+        w.write(wsCfg);
+      }
+      LOG.info("Wrote cli config file with db {} to {}", db, cfg.file.getAbsolutePath());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -69,6 +86,11 @@ public abstract class CmdTestBase {
     cli = new Cli(location, bootstrap, System.out, System.err);
   }
 
+  @After
+  public void tearDown() throws Exception {
+    cfg.close();
+  }
+
   /**
    * Executes the cli with the given arguments, adding a final argument to the test config file.
    */
@@ -76,7 +98,7 @@ public abstract class CmdTestBase {
     // now run the real arg
     final int N = args.length;
     args = Arrays.copyOf(args, N + 1);
-    args[N] = cfg.getAbsolutePath();
+    args[N] = cfg.file.getAbsolutePath();
 
     //System.exit(1);
     // make sure the cli run fine
