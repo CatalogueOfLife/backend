@@ -1,21 +1,17 @@
 package life.catalogue.command;
 
-import com.google.common.base.Charsets;
-
 import life.catalogue.WsServer;
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.util.YamlUtils;
-import life.catalogue.db.PgConfig;
-import life.catalogue.db.PgConnectRule;
+import life.catalogue.db.PgDbConfig;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -27,6 +23,7 @@ import org.junit.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
 import io.dropwizard.cli.Cli;
@@ -55,18 +52,25 @@ public abstract class CmdTestBase {
   
   public CmdTestBase(Supplier<Command> cmdSupply) {
     this.cmdSupply = cmdSupply;
+    cfg = new TempFile("col-cfg", ".yaml");
+    // prepare config file
     try {
       URL res = Resources.getResource("config-test.yaml");
-      String wsCfg = Resources.toString(res, Charsets.UTF_8);
-      // update database in cfg file to random one used by the pg setup rule
-      var db = PgConnectRule.getCfg().database;
-      wsCfg = wsCfg.replaceAll("\n {2}database: .+\n", "\n  database: " + db + "\n");
-      System.out.println(wsCfg);
-      cfg = new TempFile("col-cfg", "yaml");
       try (var w = UTF8IoUtils.writerFromFile(cfg.file)) {
-        w.write(wsCfg);
+        w.write(Resources.toString(res, Charsets.UTF_8));
+        // append db & adminDb cfg for pg container
+        var db = PgSetupRule.getCfg();
+        w.write("\ndb:\n");
+        YamlUtils.write(db, 2, w);
+
+        w.write("\nadminDb:\n");
+        PgDbConfig adb = new PgDbConfig();
+        adb.database = PgSetupRule.ADMIN_DB_NAME;
+        adb.password = db.password;
+        adb.user = db.user;
+        YamlUtils.write(adb, 2, w);
       }
-      LOG.info("Wrote cli config file with db {} to {}", db, cfg.file.getAbsolutePath());
+      LOG.info("Wrote cli config file to {}", cfg.file.getAbsolutePath());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

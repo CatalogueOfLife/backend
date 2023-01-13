@@ -26,10 +26,18 @@ public class TempFile implements AutoCloseable {
     this("col-", "");
   }
   
-  public TempFile(String prefix, String suffix) throws IOException {
-    this(File.createTempFile(prefix, suffix));
+  public TempFile(String prefix, String suffix) {
+    this(createTempFile(prefix, suffix));
   }
-  
+
+  private static File createTempFile(String prefix, String suffix) {
+    try {
+      return File.createTempFile(prefix, suffix);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public TempFile(File file) {
     this.file = Preconditions.checkNotNull(file);
   }

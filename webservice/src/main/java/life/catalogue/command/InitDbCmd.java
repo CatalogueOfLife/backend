@@ -13,6 +13,8 @@ import java.io.Reader;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import life.catalogue.db.PgUtils;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
@@ -58,18 +60,8 @@ public class InitDbCmd extends AbstractPromptCmd {
   public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace ns, WsServerConfig cfg) throws Exception {
     int partitions = RepartitionCmd.getPartitionConfig(ns);
     LOG.info("Starting database initialisation with {} default partitions and admin connection {}", partitions, cfg.adminDb);
-    try (Connection con = cfg.db.connect(cfg.adminDb);
-         Statement st = con.createStatement()
-    ) {
-      LOG.info("Drop existing database {}", cfg.db.database);
-      st.execute("DROP DATABASE IF EXISTS \"" + cfg.db.database + "\"");
-      
-      LOG.info("Create new database {}", cfg.db.database);
-      st.execute("CREATE DATABASE  \"" + cfg.db.database + "\"" +
-          " WITH ENCODING UTF8 LC_COLLATE 'C' LC_CTYPE 'C' OWNER " + cfg.db.user + " TEMPLATE template0");
-
-      LOG.info("Use UTC timezone for {}", cfg.db.database);
-      st.execute("ALTER DATABASE  \"" + cfg.db.database + "\" SET timezone TO 'UTC'");
+    try (Connection con = cfg.db.connect(cfg.adminDb)) {
+      PgUtils.createDatabase(con, cfg.db.database, cfg.db.user);
     }
     
     try (Connection con = cfg.db.connect()) {

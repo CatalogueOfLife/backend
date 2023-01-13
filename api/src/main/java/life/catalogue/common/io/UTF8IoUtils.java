@@ -43,6 +43,10 @@ public class UTF8IoUtils {
     return new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
   }
 
+  public static BufferedReader readerFromString(String string) {
+    return new BufferedReader(new StringReader(string));
+  }
+
   public static String readString(File f) throws IOException {
     return readString(new FileInputStream(f));
   }

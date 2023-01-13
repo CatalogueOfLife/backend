@@ -12,6 +12,7 @@
  import java.util.logging.Level;
 
  import org.apache.ibatis.session.SqlSessionFactory;
+ import org.checkerframework.checker.units.qual.C;
  import org.glassfish.jersey.client.JerseyClientBuilder;
  import org.glassfish.jersey.logging.LoggingFeature;
  import org.slf4j.Logger;
@@ -21,6 +22,8 @@
 
  import io.dropwizard.testing.ConfigOverride;
  import io.dropwizard.testing.junit.DropwizardAppRule;
+
+ import org.testcontainers.containers.PostgreSQLContainer;
 
  /**
  * An adaptation of the generic DropwizardAppRule that can be used as a junit class rule
@@ -41,8 +44,10 @@
  */
 public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServerRule.class);
-  
-  public WsServerRule(String configPath, ConfigOverride... configOverrides) {
+
+   private static final PostgreSQLContainer<?> CONTAINER = PgSetupRule.setupPostgres();
+
+   public WsServerRule(String configPath, ConfigOverride... configOverrides) {
     super(WsServer.class, configPath, setupPg(configPath, configOverrides));
   }
   
@@ -61,16 +66,16 @@ public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
   static ConfigOverride[] setupPg(String configPath, ConfigOverride... configOverrides) {
     List<ConfigOverride> overrides = Lists.newArrayList(configOverrides);
     try {
-      PgConfigInApp cfg = YamlUtils.read(PgConfigInApp.class, new File(configPath));
-      LOG.info("Use external Postgres server {}/{}", cfg.db.host, cfg.db.database);
-  
-      PgSetupRule.initDb(cfg.db);
+      LOG.info("Use Postgres container {}/{}", CONTAINER.getHost(), CONTAINER.getDatabaseName());
+      CONTAINER.start(); // we need to start up the container to know the mapped port
+      var cfg = PgSetupRule.buildContainerConfig(CONTAINER);
+      PgSetupRule.initDb(CONTAINER, cfg);
 
-      overrides.add(ConfigOverride.config("db.host", cfg.db.host));
-      overrides.add(ConfigOverride.config("db.port", String.valueOf(cfg.db.port)));
-      overrides.add(ConfigOverride.config("db.database", cfg.db.database));
-      overrides.add(ConfigOverride.config("db.user", cfg.db.user));
-      overrides.add(ConfigOverride.config("db.password", cfg.db.password));
+      overrides.add(ConfigOverride.config("db.host", cfg.host));
+      overrides.add(ConfigOverride.config("db.port", String.valueOf(cfg.port)));
+      overrides.add(ConfigOverride.config("db.database", cfg.database));
+      overrides.add(ConfigOverride.config("db.user", cfg.user));
+      overrides.add(ConfigOverride.config("db.password", cfg.password));
 
     } catch (Exception e) {
       throw new RuntimeException("Failed to read postgres configuration from " + configPath, e);
@@ -107,5 +112,10 @@ public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
            .register(logF);
     return builder;
   }
-  
-}
+
+   @Override
+   protected void after() {
+     super.after();
+     CONTAINER.stop();
+   }
+ }

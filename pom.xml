@@ -93,6 +93,7 @@
     <scribejava.version>8.3.1</scribejava.version>
     <simple-mail.version>6.6.1</simple-mail.version>
     <stax2.version>4.2.1</stax2.version>
+    <testcontainers.version>1.17.6</testcontainers.version>
     <text-tree.version>1.0.0</text-tree.version>
     <tika.version>1.22</tika.version>
     <twelvemonkeys.version>3.9.4</twelvemonkeys.version>
@@ -743,6 +744,18 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>${mockito.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${testcontainers.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${testcontainers.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

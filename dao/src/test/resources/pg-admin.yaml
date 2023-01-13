@@ -1,5 +1,0 @@
-host: ${db.host}
-port: ${db.port}
-database: ${admindb.database}
-user: ${admindb.user}
-password: ${admindb.password}

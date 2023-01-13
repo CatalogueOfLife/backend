@@ -1,16 +1,21 @@
 package life.catalogue.common.util;
 
+import com.sun.source.doctree.TextTree;
+
 import life.catalogue.api.jackson.ApiModule;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+
+import life.catalogue.api.vocab.terms.TxtTreeTerm;
+import life.catalogue.common.io.UTF8IoUtils;
+
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Text;
 
 /**
  *
@@ -51,5 +56,36 @@ public class YamlUtils {
    */
   public static <T> void write(T obj, File file) throws IOException {
     MAPPER.writeValue(file, obj);
+  }
+
+  /**
+   * Appends a serialized object to a given yaml file
+   */
+  public static <T> void write(T obj, Writer w) throws IOException {
+    MAPPER.writeValue(w, obj);
+  }
+
+  /**
+   * Appends a serialized object to a given yaml file
+   */
+  public static <T> void write(T obj, int indentation, Writer w) throws IOException {
+    final String indent;
+    if (indentation > 0) {
+      indent = StringUtils.repeat(' ', indentation);
+    } else {
+      indent = "";
+    }
+
+    StringWriter yaml = new StringWriter();
+    write(obj, yaml);
+
+    try (BufferedReader br = UTF8IoUtils.readerFromString(yaml.toString())) {
+      for (String line = br.readLine(); line != null; line = br.readLine()) {
+        if (line.startsWith("---")) continue;
+        w.write(indent);
+        w.write(line);
+        w.write("\n");
+      }
+    }
   }
 }

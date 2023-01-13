@@ -11,18 +11,6 @@ logging:
     "life.catalogue": INFO
   appenders:
     - type: console
-db:
-  host: ${db.host}
-  port: ${db.port}
-  database: ${db.database}
-  user: ${db.user}
-  password: ${db.password}
-  maximumPoolSize: 50
-  minimumIdle: 0
-adminDb:
-  database: ${admindb.database}
-  user: ${admindb.user}
-  password: ${admindb.password}
 normalizer:
   scratchDir: /tmp/colplus/scratch
   archiveDir: /tmp/colplus/archives
