@@ -134,12 +134,16 @@ public class PgSetupRule extends ExternalResource {
 
   @Override
   public void after() {
+    shutdownDbPool();
+    PG_CONTAINER.stop();
+  }
+
+  public void shutdownDbPool() {
     if (dataSource != null) {
       LOG.info("Shutdown dbpool");
       dataSource.close();
       DatasetInfoCache.CACHE.setFactory(null);
     }
-    PG_CONTAINER.stop();
   }
 
 }
