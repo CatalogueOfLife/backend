@@ -49,6 +49,7 @@ public class EmlWriterTest {
         Agent.person("Fax", "Feier")
       ));
       d.setLicense(License.CC0);
+      d.setKeyword(List.of("Foo", "Bar Z"));
       d.setSource(List.of(
         CitationTest.create(),
         CitationTest.create()

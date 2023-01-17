@@ -65,6 +65,14 @@
     <para>${description}</para>
   </abstract>
   </#if>
+  <#if keyword??>
+  <keywordSet>
+   <#list keyword as k>
+    <keyword>${k}</keyword>
+   </#list>
+  </keywordSet>
+  </#if>
+
   <#if license?? && license.isCreativeCommons()>
   <intellectualRights>
     <para><ulink url="${license.url}"><citetitle>${license.title}</citetitle></ulink></para>
