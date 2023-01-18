@@ -1,0 +1,1 @@
+Homotypic Grouping test data, see TestDataGenerator.GROUPING

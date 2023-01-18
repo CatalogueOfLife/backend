@@ -1,0 +1,5 @@
+col:ID	col:status	col:rank	col:order	col:family	col:scientificName	col:authorship
+1	accepted	species	Diptera	Chironomidae	Ablabesmyia aurea	(Johannsen, 1907)
+2	accepted	species	Diptera	Chironomidae	Ablamius aureus	Johannsen, 1907
+3	accepted	species	Diptera	Chironomidae	Ablabesmyia kara	(Johannsen, 1927)
+4	accepted	species	Diptera	Chironomidae	Ablamius karus	(Johannsen, 1927)

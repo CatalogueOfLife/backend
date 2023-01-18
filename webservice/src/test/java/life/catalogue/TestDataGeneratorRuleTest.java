@@ -34,9 +34,9 @@ public class TestDataGeneratorRuleTest {
       TestDataGenerator.MATCHING,
       TestDataGenerator.SYNCS,
       TestDataGenerator.XCOL,
+      TestDataGenerator.GROUPING,
       IdProviderIT.PROJECT_DATA
     );
-    list = List.of(XReleaseIT.XRELEASE_DATA);
     return list.stream().map(t -> new Object[]{t}).collect(Collectors.toList());
   }
 

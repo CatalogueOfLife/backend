@@ -249,7 +249,9 @@
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
     WHERE u.dataset_key = #{datasetKey}
+    <if test="name != null">
       AND n.scientific_name = #{name}
+    </if>
     <if test="sectorKey != null">
       AND u.sector_key = #{sectorKey}
     </if>

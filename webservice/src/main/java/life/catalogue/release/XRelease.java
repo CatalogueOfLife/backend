@@ -2,7 +2,6 @@ package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.common.text.CitationUtils;
@@ -22,7 +21,6 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.validation.Validator;
@@ -40,7 +38,7 @@ public class XRelease extends ProjectRelease {
   private List<Sector> sectors;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
-  private final Int2IntMap priorities = new Int2IntOpenHashMap(); // sector keys
+  private final Int2IntMap sectorPriorities = new Int2IntOpenHashMap(); // sector keys
   private Taxon incertae;
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
@@ -93,7 +91,7 @@ public class XRelease extends ProjectRelease {
 
     updateState(ImportState.PROCESSING);
     // detect and group basionyms
-    homotypicGrouping();
+    new HomotypicConsolidator(factory, newDatasetKey, sectorPriorities).groupAll();
 
     // flagging of suspicous usages
     resolveParentMismatches();
@@ -179,7 +177,7 @@ public class XRelease extends ProjectRelease {
         }
       }
       priority = s.getPriority() == null ? priority + 1 : s.getPriority();
-      priorities.put((int)s.getId(), priority);
+      sectorPriorities.put((int)s.getId(), priority);
       checkIfCancelled();
       var ss = syncFactory.release(s, newDatasetKey, incertae, fullUser);
       ss.run();
@@ -191,16 +189,12 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  private void homotypicGrouping() {
-    LOG.info("Start homotypic grouping of names");
-  }
-
   private void manageAutonyms() {
-    LOG.info("Start homotypic grouping of names");
+    LOG.info("Manage autonyms - not implemented");
   }
 
   private void cleanImplicitTaxa() {
-    LOG.info("Start homotypic grouping of names");
+    LOG.info("Clean implicit taxa - not implemented");
   }
 
   /**

@@ -47,10 +47,14 @@ public class TestDataGenerator {
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   final static TestDataRule dataRule = TestDataRule.empty();
 
-  public final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, 1, 3, Set.of(101));
-  public final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, 1, 3, null);
-  public final static TestDataRule.TestData XCOL = new TestDataRule.TestData("xcol", 3, 1, 3, null);
+  final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, 1, 3, Set.of(101));
+  final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, 1, 3, null);
+  final static TestDataRule.TestData XCOL = new TestDataRule.TestData("xcol", 3, 1, 3, null);
+  final static TestDataRule.TestData GROUPING = new TestDataRule.TestData("homgroup", 101, 1, 3, null);
 
+  public static TestDataRule homotypigGrouping() {
+    return new TestDataRule(GROUPING);
+  }
   public static TestDataRule matching() {
     return new TestDataRule(MATCHING);
   }
@@ -71,7 +75,7 @@ public class TestDataGenerator {
 
   @Test
   public void prepareMatchingData() throws Throwable {
-    export("matching",
+    export(MATCHING.name,
       PgImportRule.create(DatasetOrigin.EXTERNAL, DatasetType.TAXONOMIC, DataFormat.COLDP, 28)
     );
   }
@@ -82,7 +86,7 @@ public class TestDataGenerator {
 
   @Test
   public void prepareSyncsData() throws Throwable {
-    export("syncs",
+    export(SYNCS.name,
       PgImportRule.create(
         DatasetOrigin.EXTERNAL,
           NomCode.BOTANICAL,
@@ -115,6 +119,15 @@ public class TestDataGenerator {
     for (String fn : List.of("name_3.csv", "name_usage_3.csv")) {
       Resources.copy("/test-data/" + TestDataRule.DRAFT.name + "/" + fn, new File(dir, fn));
     }
+  }
+
+  @Test
+  public void prepareHomotypicGroupingData() throws Throwable {
+    export(GROUPING.name,
+      PgImportRule.create(
+        DatasetOrigin.EXTERNAL, DataFormat.COLDP, 30
+      )
+    );
   }
 
   void export(String name, PgImportRule importRule) throws Throwable {

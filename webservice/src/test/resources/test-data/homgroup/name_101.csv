@@ -1,0 +1,7 @@
+id,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
+1,Ablabesmyia aurea,"(Johannsen, 1907)",SPECIES,,,SCIENTIFIC,f,,,Ablabesmyia,,aurea,,,{Johannsen},{},1907,{},{},,,,,,,,,
+3,Ablabesmyia kara,"(Johannsen, 1927)",SPECIES,,,SCIENTIFIC,f,,,Ablabesmyia,,kara,,,{Johannsen},{},1927,{},{},,,,,,,,,
+2,Ablamius aureus,"Johannsen, 1907",SPECIES,,,SCIENTIFIC,f,,,Ablamius,,aureus,,,{},{},,{Johannsen},{},1907,,,,,,,,
+4,Ablamius karus,"(Johannsen, 1927)",SPECIES,,,SCIENTIFIC,f,,,Ablamius,,karus,,,{Johannsen},{},1927,{},{},,,,,,,,,
+x5,Chironomidae,,FAMILY,,,SCIENTIFIC,f,,Chironomidae,,,,,,{},{},,{},{},,,,,,,,,
+x3,Diptera,,ORDER,,,SCIENTIFIC,f,,Diptera,,,,,,{},{},,{},{},,,,,,,,,
