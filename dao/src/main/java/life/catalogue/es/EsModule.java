@@ -3,9 +3,7 @@ package life.catalogue.es;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
-import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.jackson.FastutilsSerde;
-import life.catalogue.api.jackson.LabelPropertyFilter;
+import life.catalogue.api.jackson.*;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.ddl.IndexDefinition;
@@ -236,7 +234,7 @@ public class EsModule extends SimpleModule {
 
   private static ObjectMapper configureContentMapper(ObjectMapper mapper) {
     configureMapper(mapper);
-    mapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
+    mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
     FilterProvider filters = new SimpleFilterProvider().addFilter(LabelPropertyFilter.NAME, new LabelPropertyFilter());
     mapper.setFilterProvider(filters);
     return mapper;

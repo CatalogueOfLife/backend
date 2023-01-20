@@ -23,7 +23,7 @@ public abstract class MappingsFactory {
     return new GetterMappingsFactory();
   }
 
-  private boolean mapEnumToInt = true;
+  private boolean mapEnumToInt = false;
 
   /**
    * Creates a document type mapping for the specified class.
