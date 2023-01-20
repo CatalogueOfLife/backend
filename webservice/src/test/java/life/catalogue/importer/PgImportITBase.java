@@ -121,6 +121,8 @@ public class PgImportITBase {
       if (dataset.getKey() == null) {
         // this creates a new key, usually 101!
         ddao.create(dataset, Users.IMPORTER);
+      } else {
+        ddao.update(dataset.getDataset(), Users.IMPORTER);
       }
 
       // normalize

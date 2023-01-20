@@ -45,19 +45,17 @@ public class PgImportIT extends PgImportITBase {
 
   @Test
   public void testMetadataMerge() throws Exception {
-    final int datasetKey = 29;
-    dataset.setKey(datasetKey);
     dataset.setTitle("First title");
     dataset.setDescription("First description");
     dataset.setContact(Agent.person("Mango", "Bird"));
     dataset.setLicense(License.CC0);
     dataset.setVersion("1.0");
+    assertNull(dataset.getIssued());
 
     dataset.getSettings().enable(Setting.MERGE_METADATA);
     dataset.getSettings().put(Setting.DATA_FORMAT, COLDP);
-    dataset.setKey(datasetKey);
 
-    normalizeAndImport(dataset);
+    normalizeAndImport(COLDP, 29);
 
     assertEquals("First description", dataset.getDescription());
     assertEquals(Agent.person("Mango", "Bird"), dataset.getContact());
