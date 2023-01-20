@@ -5,6 +5,8 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.AuthFilter;
@@ -106,9 +108,17 @@ public class UserResource {
 
   @GET
   @Path("/dataset")
-  public List<Dataset> datasets(@Auth User user, @Context SqlSession session) {
+  public List<Dataset> datasets(@Auth User user, @QueryParam("origin") DatasetOrigin origin, @Context SqlSession session) {
     final DatasetMapper dm = session.getMapper(DatasetMapper.class);
-    return user.getEditor().stream()
+    return user.getEditor().intStream()
+               .filter(dk -> {
+                 if (origin != null) {
+                   return DatasetInfoCache.CACHE.info(dk).origin == origin;
+                 } else {
+                   return true;
+                 }
+               })
+               .boxed()
                .map(dm::get)
                .collect(Collectors.toList());
   }
