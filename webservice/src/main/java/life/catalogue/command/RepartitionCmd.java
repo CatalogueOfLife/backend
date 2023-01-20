@@ -84,7 +84,7 @@ public class RepartitionCmd extends AbstractMybatisCmd {
       DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
 
       LOG.info("Analyze table columns");
-      for (String t : Lists.reverse(DatasetPartitionMapper.TABLES)) {
+      for (String t : Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES)) {
         tables.put(t, dpm.columns(t).stream()
                          .map(c -> '"'+c+'"')
                          .collect(Collectors.joining(","))
@@ -94,7 +94,7 @@ public class RepartitionCmd extends AbstractMybatisCmd {
       for (String key : Partitioner.partitionSuffices(con, DatasetOrigin.EXTERNAL)) {
         existing.add(key);
         final boolean isDefault = key.startsWith("m");
-        for (String t : Lists.reverse(DatasetPartitionMapper.TABLES)) {
+        for (String t : Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES)) {
           try {
             final String src = String.format("%s_%s", t, key);
             String parentTable = t + (isDefault ? "_default" : "");
@@ -122,14 +122,14 @@ public class RepartitionCmd extends AbstractMybatisCmd {
 
       for (String suffix : existing) {
         LOG.info("  source partition "+suffix);
-        for (String t : DatasetPartitionMapper.TABLES) {
+        for (String t : DatasetPartitionMapper.PARTITIONED_TABLES) {
           final String src = String.format("%s_%s", t, suffix);
           LOG.info("    copy " + src);
           String cols = tables.get(t);
           st.execute(String.format("INSERT INTO %s (%s) SELECT %s FROM _%s", t, cols, cols, src));
           con.commit();
         }
-        for (String t : Lists.reverse(DatasetPartitionMapper.TABLES)) {
+        for (String t : Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES)) {
           final String src = String.format("%s_%s", t, suffix);
           LOG.info("    delete " + src);
           st.execute(String.format("DROP TABLE _%s", src));

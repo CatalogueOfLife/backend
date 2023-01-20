@@ -8,6 +8,8 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.importer.neo.model.RankedName;
 
+import org.apache.commons.io.FileUtils;
+
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
@@ -427,6 +429,7 @@ public class PgImportIT extends PgImportITBase {
   @Test
   public void testColdpSpecs() throws Exception {
     normalizeAndImport(COLDP, 0);
+    testColdpSpecsMetrics(metrics());
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Name n = ndao.get(key(dataset.getKey(), "1000"));
       assertEquals("Platycarpha glomerata", n.getScientificName());
@@ -480,8 +483,16 @@ public class PgImportIT extends PgImportITBase {
         assertEquals(dataset.getKey(), est.getDatasetKey());
       });
     }
-  
-    DatasetImport di = metrics();
+
+    // now try to import again to make sure deletions of previous data work
+    store.closeAndDelete();
+    FileUtils.deleteQuietly(cfg.archiveDir);
+    FileUtils.deleteQuietly(cfg.scratchDir);
+    normalizeAndImport(COLDP, 0);
+    testColdpSpecsMetrics(metrics());
+  }
+
+  private void testColdpSpecsMetrics(DatasetImport di) {
     assertEquals(2, (int) metrics().getTreatmentCount());
     assertEquals(9, (int) di.getDistributionCount());
     assertEquals(1, (int) di.getMediaCount());

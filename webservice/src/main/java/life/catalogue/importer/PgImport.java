@@ -286,10 +286,6 @@ public class PgImport implements Callable<Boolean> {
       final NameMapper nm = session.getMapper(NameMapper.class);
       final NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
 
-      LOG.debug("Remove existing name matches");
-      nmm.deleteByDataset(dataset.getKey());
-      session.commit();
-
       LOG.debug("Inserting all names");
       store.names().all().forEach(n -> {
         n.getName().setDatasetKey(dataset.getKey());

@@ -118,8 +118,10 @@ public class PgImportITBase {
       // insert trusted dataset
       dataset.setTitle("Test Dataset " + source.toString());
       
-      // this creates a new key, usually 2000!
-      ddao.create(dataset, Users.IMPORTER);
+      if (dataset.getKey() == null) {
+        // this creates a new key, usually 101!
+        ddao.create(dataset, Users.IMPORTER);
+      }
 
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);

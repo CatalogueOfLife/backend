@@ -35,7 +35,7 @@ public interface DatasetPartitionMapper {
   );
 
   // order is important !!!
-  List<String> TABLES = Lists.newArrayList(
+  List<String> PARTITIONED_TABLES = Lists.newArrayList(
       "verbatim",
       "reference",
       "name",
@@ -48,6 +48,12 @@ public interface DatasetPartitionMapper {
       "media",
       "treatment",
       "vernacular_name"
+  );
+
+  List<String> NON_PARTITIONED_TABLES = Lists.newArrayList(
+    "name_match",
+    "estimate"
+
   );
 
   List<String> PROJECT_TABLES = Lists.newArrayList(
@@ -77,12 +83,12 @@ public interface DatasetPartitionMapper {
    */
   default void createDefaultPartitions(int number, boolean createDefaultPartition) {
     if (createDefaultPartition) {
-      TABLES.forEach(this::createDefaultPartition);
+      PARTITIONED_TABLES.forEach(this::createDefaultPartition);
     }
     for (int i=0; i<number; i++) {
       int remainder = i;
       String suffix = "mod"+remainder;
-      TABLES.forEach(t -> createDefaultSubPartition(t, number, remainder));
+      PARTITIONED_TABLES.forEach(t -> createDefaultSubPartition(t, number, remainder));
       // create triggers
       attachTriggers(suffix);
     }
@@ -110,7 +116,7 @@ public interface DatasetPartitionMapper {
       if (origin == DatasetOrigin.PROJECT) {
         createManagedSequences(key);
       }
-      TABLES.forEach(t -> {
+      PARTITIONED_TABLES.forEach(t -> {
         createTable(t, key);
         createDatasetKeyCheck(t, key);
       });
@@ -173,14 +179,18 @@ public interface DatasetPartitionMapper {
    * @param key
    */
   default void delete(int key, DatasetOrigin origin) {
-    LOG.info("Delete partition data for {} dataset {}", origin, key);
+    LOG.info("Delete non partitioned data for {} dataset {}", origin, key);
+    Lists.reverse(NON_PARTITIONED_TABLES).forEach(t -> deleteData(t, key));
     deleteUsageCounter(key);
+
     if (origin.isManagedOrRelease()) {
+      LOG.info("Drop partition tables for {} dataset {}", origin, key);
       PROJECT_TABLES.forEach(t -> dropTable(t, key));
-      Lists.reverse(TABLES).forEach(t -> dropTable(t, key));
+      Lists.reverse(PARTITIONED_TABLES).forEach(t -> dropTable(t, key));
       IDMAP_TABLES.forEach(t -> dropTable(t, key));
     } else {
-      Lists.reverse(TABLES).forEach(t -> deleteData(t, key));
+      LOG.info("Delete data for {} dataset {}", origin, key);
+      Lists.reverse(PARTITIONED_TABLES).forEach(t -> deleteData(t, key));
       SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
     }
   }
@@ -210,7 +220,7 @@ public interface DatasetPartitionMapper {
   default void attach(int key, DatasetOrigin origin) {
     if (origin.isManagedOrRelease()) {
       // attach, this also creates indices, pks and fks
-      TABLES.forEach(t -> attachTable(t, key));
+      PARTITIONED_TABLES.forEach(t -> attachTable(t, key));
       // create triggers
       final String suffix = String.valueOf(key);
       attachTriggers(suffix);
@@ -271,8 +281,8 @@ public interface DatasetPartitionMapper {
    * with a check that all keys are either below or beyond a given value.
    */
   default void updateDatasetKeyChecks(int below, int beyond) {
-    TABLES.forEach(this::dropDatasetKeyCheck);
-    TABLES.forEach(t -> addDatasetKeyCheck(t, below, beyond));
+    PARTITIONED_TABLES.forEach(this::dropDatasetKeyCheck);
+    PARTITIONED_TABLES.forEach(t -> addDatasetKeyCheck(t, below, beyond));
   }
 
   void dropDatasetKeyCheck(@Param("table") String table);

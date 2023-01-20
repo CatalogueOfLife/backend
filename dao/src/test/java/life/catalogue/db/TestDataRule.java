@@ -5,7 +5,6 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.text.CSVUtils;
 import life.catalogue.common.util.PrimitiveUtils;
@@ -336,7 +335,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       };
       st.execute("DELETE FROM name_match WHERE dataset_key=" + Datasets.COL);
       session.getConnection().commit();
-      for (String t : Lists.reverse(DatasetPartitionMapper.TABLES)){
+      for (String t : Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES)){
         st.execute("DELETE FROM " + t + " WHERE dataset_key=" + Datasets.COL);
       };
       session.getConnection().commit();

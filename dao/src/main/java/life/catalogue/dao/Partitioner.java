@@ -104,9 +104,8 @@ public class Partitioner {
   }
 
   public static synchronized void partition(SqlSessionFactory factory, int datasetKey, DatasetOrigin origin) {
-    try (SqlSession session = factory.openSession(false)) {
+    try (SqlSession session = factory.openSession(true)) {
       partition(session, datasetKey, origin);
-      session.commit();
     }
   }
 
