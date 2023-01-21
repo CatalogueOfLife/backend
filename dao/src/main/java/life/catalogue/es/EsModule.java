@@ -1,9 +1,8 @@
 package life.catalogue.es;
 
-import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-
-import life.catalogue.api.jackson.*;
+import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.jackson.FastutilsSerde;
+import life.catalogue.api.jackson.LabelPropertyFilter;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.ddl.IndexDefinition;
@@ -23,6 +22,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
