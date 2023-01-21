@@ -366,32 +366,21 @@ public class Normalizer implements Callable<Boolean> {
 
   private void reduceRedundantNameRels(NomRelType type) {
     RelType rt = RelType.from(type);
-    final String query = String.format("MATCH (n:NAME)-[r1:%s]->(b:NAME)<-[r2:%s]-(n:NAME)", rt, rt) +
-      "RETURN r1, r2 " +
-      "LIMIT 1";
-
-    int counter = 0;
+    final String query = String.format("MATCH (n1:NAME)-[r:%s]->(n2:NAME)"
+                                     + " WITH n1,n2, tail(collect(r)) as coll "
+                                     + " FOREACH (x in coll | delete x)"
+                                     + " RETURN sum(size(coll)) AS cnt", rt);
     try (Transaction tx = store.getNeo().beginTx()) {
-      Result result = store.getNeo().execute(query);
-      while (result.hasNext()) {
-        Map<String, Object> row = result.next();
-        Relationship r1 = (Relationship) row.get("r1");
-        Relationship r2 = (Relationship) row.get("r2");
-
-        NameRelation nr1 = store.toNameRelation(r1);
-
-        // delete the relation with the least info
-        Relationship del = nr1.isRich() ? r2 : r1;
-        del.delete();
-        counter++;
-        LOG.debug("Deleted redundant {} relation {}", type, del);
-
-        result = store.getNeo().execute(query);
+      try (Result result = store.getNeo().execute(query)) {
+        if (result.hasNext()) {
+          var row = result.next();
+          var cnt = (Long) row.get("cnt");
+          if (cnt > 0) {
+            LOG.info("{} redundant {} relations removed", cnt, type);
+          }
+        }
       }
       tx.success();
-    }
-    if (counter > 0) {
-      LOG.info("{} redundant {} relations removed", counter, type);
     }
   }
 
