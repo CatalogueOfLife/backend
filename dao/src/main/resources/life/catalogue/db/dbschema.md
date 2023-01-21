@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-01-21 new superdomain
+```
+ALTER TYPE RANK ADD VALUE 'SUPERDOMAIN' BEFORE 'DOMAIN';
+```
+
 ### 2023-01-06 Add array concatenation aggregate function
 ```
 CREATE AGGREGATE array_cat_agg(anycompatiblearray) (
