@@ -133,7 +133,7 @@ public abstract class NameUsageRequest {
 
   public void addFilter(NameUsageSearchParameter param, Enum<?> value) {
     nonNull(value);
-    addFilter(param, value.name());
+    addFilter(param, String.valueOf(value.ordinal()));
   }
 
   public void addFilter(NameUsageSearchParameter param, UUID value) {
@@ -200,7 +200,7 @@ public abstract class NameUsageRequest {
    * Extracts all query parameters that match a NameSearchParameter and registers them as query
    * filters. Values of query parameters that are associated with an enum type can be supplied using
    * the name of the enum constant or using the ordinal of the enum constant. In both cases it is the
-   * name that will be registered as the query filter.
+   * ordinal that will be registered as the query filter.
    */
   public void addFilters(MultivaluedMap<String, String> params) {
     params.entrySet().stream().filter(e -> !NON_FILTERS.contains(e.getKey())).forEach(e -> {
@@ -259,8 +259,17 @@ public abstract class NameUsageRequest {
         throw illegalValueForParameter(param, value);
       }
     } else if (param.type().isEnum()) {
+      try {
+        int i = Integer.parseInt(value);
+        if (i < 0 || i >= param.type().getEnumConstants().length) {
+          throw illegalValueForParameter(param, value);
+        }
+        addFilterValue(param, Integer.valueOf(i));
+      } catch (NumberFormatException e) {
+        @SuppressWarnings("unchecked")
         Enum<?> c = VocabularyUtils.lookupEnum(value, (Class<? extends Enum<?>>) param.type());
-        addFilterValue(param, c.name());
+        addFilterValue(param, Integer.valueOf(c.ordinal()));
+      }
     } else {
       throw new IllegalArgumentException("Unexpected parameter type: " + param.type());
     }

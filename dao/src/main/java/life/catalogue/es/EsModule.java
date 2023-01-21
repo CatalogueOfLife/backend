@@ -234,7 +234,7 @@ public class EsModule extends SimpleModule {
 
   private static ObjectMapper configureContentMapper(ObjectMapper mapper) {
     configureMapper(mapper);
-    mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
+    mapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
     FilterProvider filters = new SimpleFilterProvider().addFilter(LabelPropertyFilter.NAME, new LabelPropertyFilter());
     mapper.setFilterProvider(filters);
     return mapper;
