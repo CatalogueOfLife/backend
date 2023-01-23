@@ -132,9 +132,13 @@ public class InitCmd extends AbstractPromptCmd {
       final String indexToday = IndexCmd.indexNameToday();
       LOG.info("Create new elasticsearch index {} with alias {}", indexToday, indexAlias);
       try (RestClient client = new EsClientFactory(cfg.es).createClient()) {
-        EsUtil.deleteIndex(client, index); // alias
+        if (EsUtil.indexExists(client, index.name)) {
+          EsUtil.deleteIndex(client, index); // alias
+        }
         index.name = indexToday;
-        EsUtil.deleteIndex(client, index); // today - just in case we use the command several times a day
+        if (EsUtil.indexExists(client, index.name)) {
+          EsUtil.deleteIndex(client, index); // today - just in case we use the command several times a day
+        }
         EsUtil.createIndex(client, EsNameUsage.class, index);
         LOG.info("Bind alias {} to new search index {}", indexAlias, index.name);
         EsUtil.createAlias(client, index.name, indexAlias);
