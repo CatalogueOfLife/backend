@@ -11,14 +11,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.Reader;
 import java.sql.Connection;
-import java.sql.Statement;
 
 import life.catalogue.db.PgUtils;
+
+import life.catalogue.es.EsClientFactory;
+import life.catalogue.es.EsNameUsage;
+import life.catalogue.es.EsUtil;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,14 +34,14 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
- * Command to initialise a new database schema.
+ * Command to initialise a new database schema and an elasticsearch index.
  */
-public class InitDbCmd extends AbstractPromptCmd {
-  private static final Logger LOG = LoggerFactory.getLogger(InitDbCmd.class);
+public class InitCmd extends AbstractPromptCmd {
+  private static final Logger LOG = LoggerFactory.getLogger(InitCmd.class);
   private static final String ARG_DATASET = "dataset";
 
-  public InitDbCmd() {
-    super("initdb", "Initialises a new database schema");
+  public InitCmd() {
+    super("init", "Initialises a new database & search schema");
   }
 
   @Override
@@ -59,7 +63,7 @@ public class InitDbCmd extends AbstractPromptCmd {
   @Override
   public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace ns, WsServerConfig cfg) throws Exception {
     int partitions = RepartitionCmd.getPartitionConfig(ns);
-    LOG.info("Starting database initialisation with {} default partitions and admin connection {}", partitions, cfg.adminDb);
+    LOG.info("Starting database & elasticsearch initialisation with {} default partitions and admin connection {}", partitions, cfg.adminDb);
     try (Connection con = cfg.db.connect(cfg.adminDb)) {
       PgUtils.createDatabase(con, cfg.db.database, cfg.db.user);
     }
@@ -119,6 +123,23 @@ public class InitDbCmd extends AbstractPromptCmd {
       InitDbUtils.updateDatasetKeyConstraints(factory, cfg.db.minExternalDatasetKey);
       // add project partitions & dataset key constraints
       InitDbUtils.createNonDefaultPartitions(factory);
+    }
+
+    // create new ES index
+    if (cfg.es != null) {
+      final var index = cfg.es.nameUsage;
+      final String indexAlias = cfg.es.nameUsage.name;
+      final String indexToday = IndexCmd.indexNameToday();
+      LOG.info("Create new elasticsearch index {} with alias {}", indexToday, indexAlias);
+      try (RestClient client = new EsClientFactory(cfg.es).createClient()) {
+        EsUtil.deleteIndex(client, index); // alias
+        index.name = indexToday;
+        EsUtil.deleteIndex(client, index); // today - just in case we use the command several times a day
+        EsUtil.createIndex(client, EsNameUsage.class, index);
+        LOG.info("Bind alias {} to new search index {}", indexAlias, index.name);
+        EsUtil.createAlias(client, index.name, indexAlias);
+        index.name = indexAlias;
+      }
     }
   }
 

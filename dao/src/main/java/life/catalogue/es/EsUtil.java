@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
+import javax.ws.rs.PUT;
+
 import static life.catalogue.common.text.StringUtils.EMPTY_STRING_ARRAY;
 
 /**
@@ -58,18 +60,6 @@ public class EsUtil {
     return executeRequest(client, request).getStatusLine().getStatusCode();
   }
 
-  /**
-   * Creates an alias with the current timestamp appended to the base name of the index.
-   * 
-   * @param client
-   * @param index
-   * @throws IOException
-   */
-  public static void createDefaultAlias(RestClient client, String index) {
-    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuuMMddHHmmss");
-    String alias = index + "-" + dtf.format(Instant.now());
-    createAlias(client, index, alias);
-  }
 
   /**
    * Creates the provided alias for the provided index.

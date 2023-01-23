@@ -7,10 +7,10 @@ import static org.junit.Assert.assertTrue;
 /**
  *
  */
-public class InitDbCmdTest extends CmdTestBase {
+public class InitCmdTest extends CmdTestBase {
   
-  public InitDbCmdTest() {
-    super(InitDbCmd::new);
+  public InitCmdTest() {
+    super(InitCmd::new);
   }
   
   @Test
@@ -18,7 +18,7 @@ public class InitDbCmdTest extends CmdTestBase {
     // we need to close all db connections for a db init to work!
     testDataRule.skipAfter();
     pgSetupRule.shutdownDbPool();
-    assertTrue(run("initdb", "--prompt", "0", "--num", "3").isEmpty());
+    assertTrue(run("init", "--prompt", "0", "--num", "3").isEmpty());
   }
 
 }

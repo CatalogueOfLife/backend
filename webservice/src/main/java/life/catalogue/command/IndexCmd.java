@@ -65,7 +65,7 @@ public class IndexCmd extends AbstractMybatisCmd {
     }
   }
 
-  private static String indexNameToday(){
+  static String indexNameToday(){
     String date = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
     return "col-" + date;
   }

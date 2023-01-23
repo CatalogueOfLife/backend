@@ -38,7 +38,6 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import life.catalogue.es.nu.QMatcher;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.exporter.ExportManager;
@@ -140,7 +139,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new AddTableCmd());
     bootstrap.addCommand(new ExecSqlCmd());
     bootstrap.addCommand(new IndexCmd());
-    bootstrap.addCommand(new InitDbCmd());
+    bootstrap.addCommand(new InitCmd());
     bootstrap.addCommand(new NamesIndexCmd());
     bootstrap.addCommand(new UpdMetricCmd());
     bootstrap.addCommand(new ExportCmd());

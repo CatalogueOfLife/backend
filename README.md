@@ -14,7 +14,7 @@ The COL backend is a [Dropwizard](https://www.dropwizard.io/) application, that 
 1. cd into `webservice`
 1. Run `mvn clean install` to build your application
 1. create a local [config.yml](webservice/src/main/resources/config.yaml) file
-1. On the first run init a new, empty database with `java -jar target/webservice-1.0-SNAPSHOT.jar initdb config.yml`
+1. On the first run init a new, empty database & search index with `java -jar target/webservice-1.0-SNAPSHOT.jar init --num 4 config.yml`. --num 4 will configure the number of partitions to use for external datasets
 1. Start application with `java -jar target/webservice-1.0-SNAPSHOT.jar server config.yml`
 1. To check that your application is running enter url `http://localhost:8080`
 
