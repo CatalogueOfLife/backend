@@ -372,8 +372,16 @@ public class InterpreterBase {
     }
   }
 
-  public Optional<ParsedNameUsage> interpretName(final boolean preferAtoms, final String id, final String vrank, final String sciname, final String authorship,
-                                                 final String uninomial, final String genus, final String infraGenus, final String species, final String infraspecies,
+  public Optional<ParsedNameUsage> interpretName(final boolean preferAtoms, final String id, String vrank, final String sciname, final String authorship,
+                                                 final String uninomial, final String genus, final String infraGenus, final String species, String infraspecies,
+                                                 final String cultivar,
+                                                 String nomCode, String nomStatus,
+                                                 String link, String remarks, String identifiers, VerbatimRecord v) {
+    return interpretName(preferAtoms, id, vrank, Rank.UNRANKED, sciname, authorship, uninomial, genus, infraGenus, species, infraspecies, cultivar, nomCode, nomStatus, link, remarks, identifiers, v);
+  }
+
+  public Optional<ParsedNameUsage> interpretName(final boolean preferAtoms, final String id, String vrank, Rank defaultRank, final String sciname, final String authorship,
+                                                 final String uninomial, final String genus, final String infraGenus, final String species, String infraspecies,
                                                  final String cultivar,
                                                  String nomCode, String nomStatus,
                                                  String link, String remarks, String identifiers, VerbatimRecord v) {
@@ -381,7 +389,16 @@ public class InterpreterBase {
       // parse rank & code as they improve name parsing
       final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
-      Rank rank = Rank.UNRANKED;
+      // sometimes a rank marker is given as part of the epithet
+      if (vrank == null && infraspecies != null) {
+        Pattern rankMarker = Pattern.compile("^((?:var|f|subsp)[. ])");
+        var m = rankMarker.matcher(infraspecies);
+        if (m.find()) {
+          vrank = m.group(1).trim();
+          infraspecies = m.replaceFirst("").trim();
+        }
+      }
+      Rank rank = defaultRank;
       // we only parse ranks given with more than one char. c or g alone can be very ambiguous, see https://github.com/CatalogueOfLife/data/issues/302
       if (vrank != null && (vrank.length()>1 || vrank.equals("f") || vrank.equals("v"))) {
         try {
@@ -485,7 +502,7 @@ public class InterpreterBase {
       // see https://github.com/CatalogueOfLife/data/issues/438
       if (rank.otherOrUnranked() && StringUtils.isBlank(vrank)) {
         // we can infer the rank a little but be careful
-        Rank inferred = Rank.UNRANKED;
+        Rank inferred;
         if (pnu.getName().getRank() != null && pnu.getName().getRank().notOtherOrUnranked()) {
           // might be inferred already by the parser
           inferred = pnu.getName().getRank();
@@ -531,6 +548,10 @@ public class InterpreterBase {
         }
       }
       pnu.getName().setNomStatus(ObjectUtils.coalesce(status, statusAuthorship));
+      if (nomStatus != null && pnu.getName().getNomenclaturalNote() == null) {
+        // add unparsable status to nomenclatural notes
+        pnu.getName().setNomenclaturalNote(nomStatus);
+      }
       pnu.getName().setIdentifier(interpretIdentifiers(identifiers, null, v));
 
       // finally update the scientificName with the canonical form if we can

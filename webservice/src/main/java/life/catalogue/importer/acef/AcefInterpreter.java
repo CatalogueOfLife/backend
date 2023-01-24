@@ -1,6 +1,7 @@
 package life.catalogue.importer.acef;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -153,17 +154,19 @@ public class AcefInterpreter extends InterpreterBase {
    */
   private Optional<ParsedNameUsage> interpretName(Term idTerm, VerbatimRecord v) {
     String authorship;
-    String rank;
+    String vrank = null;
+    Rank rank;
     if (v.hasTerm(AcefTerm.InfraSpeciesEpithet)) {
-      rank = v.getOrDefault(AcefTerm.InfraSpeciesMarker, Rank.SUBSPECIES.name());
+      rank = Rank.SUBSPECIES;
+      vrank = v.get(AcefTerm.InfraSpeciesMarker);
       authorship = v.get(AcefTerm.InfraSpeciesAuthorString);
     } else {
       if (v.hasTerm(AcefTerm.SpeciesEpithet)) {
-        rank = Rank.SPECIES.name();
+        rank = Rank.SPECIES;
       } else if (v.hasTerm(AcefTerm.SubGenusName)) {
-        rank = Rank.SUBGENUS.name();
+        rank = Rank.SUBGENUS;
       } else if (v.hasTerm(AcefTerm.Genus)) {
-        rank = Rank.GENUS.name();
+        rank = Rank.GENUS;
       } else {
         // missing name data!
         v.addIssue(Issue.NOT_INTERPRETED);
@@ -188,7 +191,7 @@ public class AcefInterpreter extends InterpreterBase {
       nat.setName(new Name());
       nat.getName().setId(v.get(idTerm));
       nat.getName().setRank(
-          SafeParser.parse(RankParser.PARSER, rank).orElse(Rank.INFRASPECIFIC_NAME)
+          SafeParser.parse(RankParser.PARSER, vrank).orElse(ObjectUtils.coalesce(rank, Rank.INFRASPECIFIC_NAME))
       );
       opt = Optional.of(nat);
 
@@ -202,12 +205,12 @@ public class AcefInterpreter extends InterpreterBase {
       String fullname = v.get(AcefTerm.SpeciesEpithet).trim() + " " + authorship.trim();
       nat.getName().setScientificName(fullname.trim());
       nat.getName().setRank(
-          SafeParser.parse(RankParser.PARSER, rank).orElse(Rank.SPECIES)
+          SafeParser.parse(RankParser.PARSER, vrank).orElse(ObjectUtils.coalesce(rank, Rank.SPECIES))
       );
       opt = Optional.of(nat);
       
     } else {
-      opt = interpretName(true, v.get(idTerm), rank, null, authorship,
+      opt = interpretName(true, v.get(idTerm), vrank, rank, null, authorship,
           null, v.get(AcefTerm.Genus), v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet), v.get(AcefTerm.InfraSpeciesEpithet),
           null, null, v.get(AcefTerm.GSDNameStatus), null,null, null, v);
     }
