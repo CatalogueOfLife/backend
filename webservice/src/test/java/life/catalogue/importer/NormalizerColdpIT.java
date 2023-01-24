@@ -306,6 +306,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertEquals("Rosanae", n.getName().getScientificName());
     assertEquals(NameType.SCIENTIFIC, n.getName().getType());
     assertEquals(Rank.SUPERORDER, n.getName().getRank());
+    assertEquals("http://purl.obolibrary.org/obo/NOMEN_0000383", n.getName().getRemarks());
     assertNull(n.getName().getNomenclaturalNote());
     assertNull(n.getName().getUnparsed());
     assertNull(n.getName().getGenus());

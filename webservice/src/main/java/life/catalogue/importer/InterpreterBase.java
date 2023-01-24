@@ -548,9 +548,9 @@ public class InterpreterBase {
         }
       }
       pnu.getName().setNomStatus(ObjectUtils.coalesce(status, statusAuthorship));
-      if (nomStatus != null && pnu.getName().getNomenclaturalNote() == null) {
-        // add unparsable status to nomenclatural notes
-        pnu.getName().setNomenclaturalNote(nomStatus);
+      if (nomStatus != null && (pnu.getName().getNomStatus() == null || !nomStatus.trim().equalsIgnoreCase(pnu.getName().getNomStatus().name()))) {
+        // add raw status to remarks
+        pnu.getName().addRemarks(nomStatus);
       }
       pnu.getName().setIdentifier(interpretIdentifiers(identifiers, null, v));
 

@@ -46,7 +46,7 @@ public class AcefInterpreterTest extends InterpreterTestAbstractBase<AcefInterpr
     assertEquals("1858", n.getBasionymAuthorship().getYear());
     assertEquals("Walker", n.getBasionymAuthorship().getAuthors().get(0));
     assertEquals(1, n.getBasionymAuthorship().getAuthors().size());
-    assertEquals("new combination, valid: No", n.getNomenclaturalNote());
+    assertEquals("new combination, valid: No", n.getRemarks());
 
     // same but without rank marker in epithet
     v.put(AcefTerm.InfraSpeciesEpithet, "triscipta");
@@ -64,7 +64,7 @@ public class AcefInterpreterTest extends InterpreterTestAbstractBase<AcefInterpr
     assertEquals("1858", n.getBasionymAuthorship().getYear());
     assertEquals("Walker", n.getBasionymAuthorship().getAuthors().get(0));
     assertEquals(1, n.getBasionymAuthorship().getAuthors().size());
-    assertEquals("new combination, valid: No", n.getNomenclaturalNote());
+    assertEquals("new combination, valid: No", n.getRemarks());
   }
 
   @Override
