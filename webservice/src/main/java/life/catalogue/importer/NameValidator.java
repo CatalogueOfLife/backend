@@ -164,12 +164,12 @@ public class NameValidator {
     for (String part : n.nameParts()) {
       // no whitespace
       if (WHITE.matcher(part).find()) {
-        LOG.info("Name part contains whitespace {}", n.toStringComplete());
+        LOG.info("{} part contains whitespace: {}", part, n.toStringComplete());
         issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
       }
       // non ascii chars
       if (NON_LETTER.matcher(part).find()) {
-        LOG.info("Name part contains non ASCII letters {}", n.toStringComplete());
+        LOG.info("{} part contains non ASCII letters: {}", part, n.toStringComplete());
         issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
       }
     }

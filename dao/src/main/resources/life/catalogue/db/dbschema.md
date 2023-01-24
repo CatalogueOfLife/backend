@@ -11,9 +11,27 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2023-01-21 new superdomain
+### 2023-01-24 new superdomain
+change verbatim terms index to support has key queries which we use in mappers.
+The jsonb_ops index is larger and slower for value queries, but it is the only one that supports has key ? queries
+```
+CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_ops);
+DROP INDEX verbatim_dataset_key_terms_idx;
+```
+
+### 2023-01-24 new ranks
+TOOO: add to prod!
 ```
 ALTER TYPE RANK ADD VALUE 'SUPERDOMAIN' BEFORE 'DOMAIN';
+ALTER TYPE RANK ADD VALUE 'FALANX' BEFORE 'MEGAFAMILY';
+ALTER TYPE RANK ADD VALUE 'SUPERGENUS' BEFORE 'GENUS';
+ALTER TYPE RANK ADD VALUE 'KLEPTON' BEFORE 'SUBSPECIES';
+ALTER TYPE RANK ADD VALUE 'SUPERVARIETY' BEFORE 'VARIETY';
+ALTER TYPE RANK ADD VALUE 'SUPERFORM' BEFORE 'FORM';
+ALTER TYPE RANK ADD VALUE 'LUSUS' BEFORE 'CULTIVAR';
+ALTER TYPE RANK ADD VALUE 'MUTATIO' BEFORE 'STRAIN';
+
+ALTER TYPE RANK RENAME VALUE 'PROLES' TO 'PROLE';
 ```
 
 ### 2023-01-06 Add array concatenation aggregate function
@@ -54,19 +72,6 @@ CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v
     WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id
   ) SELECT array_reverse(array_agg(sn)) FROM x WHERE v_inc_self OR id != v_id;
 $$ LANGUAGE SQL;
-```
-
-### 2022-12-16 new ranks
-```
-ALTER TYPE RANK ADD VALUE 'FALANX' BEFORE 'MEGAFAMILY';
-ALTER TYPE RANK ADD VALUE 'SUPERGENUS' BEFORE 'GENUS';
-ALTER TYPE RANK ADD VALUE 'KLEPTON' BEFORE 'SUBSPECIES';
-ALTER TYPE RANK ADD VALUE 'SUPERVARIETY' BEFORE 'VARIETY';
-ALTER TYPE RANK ADD VALUE 'SUPERFORM' BEFORE 'FORM';
-ALTER TYPE RANK ADD VALUE 'LUSUS' BEFORE 'CULTIVAR';
-ALTER TYPE RANK ADD VALUE 'MUTATIO' BEFORE 'STRAIN';
-
-ALTER TYPE RANK RENAME VALUE 'PROLES' TO 'PROLE';
 ```
 
 ### 2022-12-14 coldwc term changes
@@ -188,7 +193,6 @@ ALTER TABLE dataset_source ALTER COLUMN origin TYPE DATASETORIGIN USING origin::
 ALTER TABLE dataset_import ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ```
 
->>>>>>> xcol
 ### 2022-09-16 alternative identifiers
 ```
 ALTER TYPE ISSUE ADD VALUE 'IDENTIFIER_WITHOUT_SCOPE';

@@ -1272,7 +1272,7 @@ CREATE INDEX ON verbatim (dataset_key, type);
 CREATE INDEX on verbatim (dataset_key, id) WHERE array_length(issues, 1) > 0;
 CREATE INDEX ON verbatim USING GIN (dataset_key, doc);
 CREATE INDEX ON verbatim USING GIN (dataset_key, issues);
-CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_path_ops);
+CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_ops);
 
 
 CREATE TABLE reference (
