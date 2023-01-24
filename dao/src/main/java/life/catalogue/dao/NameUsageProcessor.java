@@ -103,14 +103,14 @@ public class NameUsageProcessor {
           NameUsageBase curr = (NameUsageBase) nuw.getUsage();
           classification.add(new SimpleName(curr));
           while (curr.getParentId() != null) {
-            if (!taxa.containsKey(curr.getParentId())) {
+            if (taxa.containsKey(curr.getParentId())) {
+              curr = taxa.get(curr.getParentId());
+            } else {
               // fetch taxon before the main cursor hits it - ranks are not always properly ordered according to the tree
               Taxon t = tm.get(taxKey.id(curr.getParentId()));
               loadCounter++;
               taxa.put(curr.getId(), t);
               curr = t;
-            } else {
-              curr = taxa.get(curr.getParentId());
             }
             classification.add(new SimpleName(curr));
           }

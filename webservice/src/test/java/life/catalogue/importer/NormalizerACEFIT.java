@@ -205,7 +205,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
       assertNull(u.usage.getAccordingToId());
-      assertNull(u.usage.getName().getRemarks());
+      assertEquals("superfluous at its time of publication", u.usage.getName().getRemarks());
       assertEquals("non. A.lancea.", u.usage.getNamePhrase());
       assertTrue(u.usage.isTaxon());
       Taxon t = (Taxon) u.usage;
@@ -217,7 +217,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       u = usageByID("11");
       assertEquals("Abies alba", u.usage.getName().getScientificName());
       assertEquals("Mill.", u.usage.getName().getAuthorship());
-      assertNull(u.usage.getName().getRemarks());
+      assertEquals("valid", u.usage.getName().getRemarks());
       assertNull(u.usage.getAccordingToId());
       assertEquals(NomStatus.ACCEPTABLE, u.usage.getName().getNomStatus());
       assertNull(u.usage.getAccordingToId());

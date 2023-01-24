@@ -489,7 +489,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       nn = nameByID("124");
       assertEquals("Jupunba nuduta", nn.getName().getScientificName());
       assertEquals("L.", nn.getName().getAuthorship());
-      assertEquals("nom.nud.", nn.getName().getRemarks());
+      assertEquals("nom.nud.; unavailable", nn.getName().getRemarks());
       assertEquals(NomStatus.NOT_ESTABLISHED, nn.getName().getNomStatus());
       nu = usageByID(nn.getId());
       assertNull(nu);
