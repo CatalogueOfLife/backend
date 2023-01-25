@@ -298,7 +298,9 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       List<NameUsageWrapper> usages = usageIds.stream()
           .map(id -> {
             var nuw = mapper.get(datasetKey, id);
-            nuw.setPublisherKey(publisher);
+            if (nuw != null) {
+              nuw.setPublisherKey(publisher);
+            }
             return nuw;
           })
           .filter(Objects::nonNull)

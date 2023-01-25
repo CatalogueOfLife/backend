@@ -20,7 +20,6 @@ DROP INDEX verbatim_dataset_key_terms_idx;
 ```
 
 ### 2023-01-24 new ranks
-TOOO: add to prod!
 ```
 ALTER TYPE RANK ADD VALUE 'SUPERDOMAIN' BEFORE 'DOMAIN';
 ALTER TYPE RANK ADD VALUE 'FALANX' BEFORE 'MEGAFAMILY';
