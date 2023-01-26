@@ -17,6 +17,7 @@ import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -46,11 +47,11 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   private final SqlSessionFactory factory;
   private final NameUsageProcessor processor;
 
-  public NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
+  public NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, File tmpDir, SqlSessionFactory factory) {
     this.client = client;
     this.esConfig = esConfig;
     this.factory = factory;
-    this.processor = new NameUsageProcessor(factory);
+    this.processor = new NameUsageProcessor(factory, tmpDir);
   }
 
   @Override

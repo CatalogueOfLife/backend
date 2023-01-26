@@ -213,6 +213,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   }
 
   @Override
+  @JsonIgnore
   public MailConfig getMailConfig() {
     return mail;
   }

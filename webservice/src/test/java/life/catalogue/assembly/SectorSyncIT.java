@@ -195,7 +195,7 @@ public class SectorSyncIT {
   /**
    * Syncs into the project
    */
-  static void sync(Sector s) {
+  public static void sync(Sector s) {
     SectorSync ss = SyncFactoryRule.getFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     runSync(ss);
   }

@@ -5,9 +5,9 @@ import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.SyncFactory;
-import life.catalogue.assembly.UsageCacheMapDB;
 import life.catalogue.assembly.UsageMatcherGlobal;
 import life.catalogue.cache.CacheFlush;
+import life.catalogue.cache.UsageCacheMapDB;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
@@ -61,6 +61,7 @@ import life.catalogue.swagger.OpenApiFactory;
 
 import org.gbif.dwc.terms.TermFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 
@@ -251,7 +252,7 @@ public class WsServer extends Application<WsServerConfig> {
       final RestClient esClient = new EsClientFactory(cfg.es).createClient();
       env.lifecycle().manage(new ManagedEsClient(esClient));
       env.healthChecks().register("elastic", new EsHealthCheck(esClient, cfg.es));
-      indexService = new NameUsageIndexServiceEs(esClient, cfg.es, getSqlSessionFactory());
+      indexService = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("nuproc"), getSqlSessionFactory());
       searchService = new NameUsageSearchServiceEs(cfg.es.nameUsage.name, esClient);
       suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
     }

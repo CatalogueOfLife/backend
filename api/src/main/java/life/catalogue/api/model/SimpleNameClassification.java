@@ -6,10 +6,11 @@ import java.util.Objects;
 /**
  * A flexible classification as a list of SimpleName objects.
  */
-public class SimpleNameClassification {
+public class SimpleNameClassification implements HasID<String> {
   private String id;
   private List<SimpleName> classification;
-  
+
+  @Override
   public String getId() {
     return id;
   }

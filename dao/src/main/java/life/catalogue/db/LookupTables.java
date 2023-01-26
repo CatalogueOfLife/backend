@@ -24,7 +24,7 @@ public class LookupTables {
    */
   public static void recreateTables(Connection c) throws SQLException, IOException {
     LOG.info("Check existing lookup tables");
-    c.setAutoCommit(true);
+    c.setAutoCommit(false);
     if (count(c, "__ranks") != Arrays.stream(Rank.values()).filter(Predicates.not(Rank::isUncomparable)).count()) {
       ranks(c);
     }
@@ -51,11 +51,12 @@ public class LookupTables {
     }
   }
 
-  private static void ranks(Connection c) throws SQLException, IOException {
+  private static void ranks(Connection c) throws SQLException {
     try (Statement st = c.createStatement();
          PreparedStatement pst = c.prepareStatement("INSERT INTO __ranks (key, marker) values (?::rank, ?)")
     ) {
       LOG.info("Recreate lookup table for ranks");
+      c.commit();
       st.execute("DROP TABLE IF EXISTS __ranks");
       st.execute("CREATE TABLE __ranks (key rank PRIMARY KEY, marker TEXT)");
       for (Rank r : Rank.values()) {
@@ -65,6 +66,7 @@ public class LookupTables {
         pst.setString(2, r.getMarker());
         pst.execute();
       }
+      c.commit();
     }
   }
 
@@ -73,6 +75,7 @@ public class LookupTables {
          PreparedStatement pst = c.prepareStatement("INSERT INTO __country (code, title) values (?, ?)")
     ) {
       LOG.info("Recreate lookup table for countries");
+      c.commit();
       st.execute("DROP TABLE IF EXISTS __country");
       st.execute("CREATE TABLE __country (code text PRIMARY KEY, title TEXT)");
       for (Country cn : Country.values()) {
@@ -80,6 +83,7 @@ public class LookupTables {
         pst.setString(2, cn.getName());
         pst.execute();
       }
+      c.commit();
     }
   }
 
@@ -88,6 +92,7 @@ public class LookupTables {
          PreparedStatement pst = c.prepareStatement("INSERT INTO __language (code, title) values (?, ?)")
     ) {
       LOG.info("Recreate lookup table for languages");
+      c.commit();
       st.execute("DROP TABLE IF EXISTS __language");
       st.execute("CREATE TABLE __language (code text PRIMARY KEY, title TEXT)");
       for (Language l : Language.values()) {
@@ -95,6 +100,7 @@ public class LookupTables {
         pst.setString(2, l.getTitle());
         pst.execute();
       }
+      c.commit();
     }
   }
 }

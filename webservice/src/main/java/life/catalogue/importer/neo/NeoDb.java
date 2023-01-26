@@ -111,7 +111,7 @@ public class NeoDb {
     this.batchTimeout = batchTimeout;
     
     try {
-      pool = new NeoKryoPool(32);
+      pool = new NeoKryoPool(8);
       verbatim = mapDb.hashMap("verbatim")
           .keySerializer(Serializer.INTEGER)
           .valueSerializer(new MapDbObjectSerializer(VerbatimRecord.class, pool, 128))

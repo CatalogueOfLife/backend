@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.common.io.TempFile;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -30,7 +31,7 @@ public class NameUsageProcessorTest extends DaoTestBase {
   @Test
   public void processDataset() {
     DRH handler = new DRH();
-    NameUsageProcessor proc = new NameUsageProcessor(PgSetupRule.getSqlSessionFactory());
+    NameUsageProcessor proc = new NameUsageProcessor(PgSetupRule.getSqlSessionFactory(), TempFile.directoryFile());
     proc.processDataset(NAME4.getDatasetKey(), handler);
     Assert.assertEquals(24, handler.counter.get());
     Assert.assertEquals(4, handler.synCounter.get());
@@ -96,7 +97,7 @@ public class NameUsageProcessorTest extends DaoTestBase {
       con.commit();
     }
     
-    NameUsageProcessor proc = new NameUsageProcessor(PgSetupRule.getSqlSessionFactory());
+    NameUsageProcessor proc = new NameUsageProcessor(PgSetupRule.getSqlSessionFactory(), TempFile.directoryFile());
     proc.processSector(s, new Consumer<NameUsageWrapper>() {
       public void accept(NameUsageWrapper obj) {
         counter.incrementAndGet();

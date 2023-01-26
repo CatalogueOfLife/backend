@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.cache.UsageCache;
 import life.catalogue.dao.*;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;

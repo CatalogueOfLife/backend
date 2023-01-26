@@ -36,7 +36,8 @@ public class TestDataRuleTest {
       TestDataRule.DRAFT,
       TestDataRule.DRAFT_WITH_SECTORS,
       TestDataRule.DUPLICATES,
-      TestDataRule.NIDX
+      TestDataRule.NIDX,
+      TestDataRule.COL_SYNCED
     );
     return list.stream().map(t -> new Object[]{t}).collect(Collectors.toList());
   }

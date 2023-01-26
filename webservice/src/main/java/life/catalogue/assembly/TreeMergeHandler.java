@@ -2,6 +2,7 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.NameIndex;
 

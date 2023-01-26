@@ -6,6 +6,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;

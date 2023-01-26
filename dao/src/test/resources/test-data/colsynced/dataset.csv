@@ -1,0 +1,4 @@
+key,type,alias,title,origin,url,created_by,modified_by,created
+100,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/coldp/25,EXTERNAL,,101,101,2023-01-26 06:05:33.167137
+101,OTHER,ColDP Example,ColDP Example. The full dataset title,EXTERNAL,https://www.fishbase.org,101,101,2023-01-26 06:05:21.384259
+102,OTHER,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/dwca/1,EXTERNAL,,101,101,2023-01-26 06:05:40.314151

@@ -10,7 +10,7 @@ import static life.catalogue.api.vocab.Datasets.COL;
 /**
  * DatasetScopedID: Entity with an ID property scoped within a single dataset.
  */
-public interface DSID<K> extends DatasetScoped, Entity<DSID<K>> {
+public interface DSID<K> extends DatasetScoped, Entity<DSID<K>>, HasID<K> {
   
   K getId();
   

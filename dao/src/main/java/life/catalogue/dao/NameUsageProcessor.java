@@ -4,8 +4,14 @@ import com.google.common.base.Preconditions;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.cache.ObjectCache;
+import life.catalogue.cache.ObjectCacheMapDB;
+import life.catalogue.cache.UsageCache;
+import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.db.mapper.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -16,13 +22,20 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Not thread safe !
+ */
 public class NameUsageProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageProcessor.class);
+  private static final int LOG_INTERVAL = 1000;
 
   private final SqlSessionFactory factory;
+  private int loadCounter = 0;
+  private final File tmpDir;
 
-  public NameUsageProcessor(SqlSessionFactory factory) {
+  public NameUsageProcessor(SqlSessionFactory factory, File tmpDir) {
     this.factory = factory;
+    this.tmpDir = tmpDir;
   }
   
   /**
@@ -56,11 +69,10 @@ public class NameUsageProcessor {
   private void processTree(int datasetKey, @Nullable Integer sectorKey, Consumer<NameUsageWrapper> consumer) {
     try (SqlSession session = factory.openSession()) {
       final NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
-      final TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      final NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final var sm = session.getMapper(SectorMapper.class);
 
       // reusable dsids for this dataset
-      final DSID<String> taxKey = DSID.of(datasetKey, null);
       final DSID<Integer> sKey = DSID.of(datasetKey, null);
       // we exclude some rather static info from our already massive joins and set them manually in code:
       final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
@@ -75,54 +87,80 @@ public class NameUsageProcessor {
       // build temporary table collecting issues from all usage related tables
       // we do this in a separate step to not overload postgres with gigantic joins later on
       session.getMapper(VerbatimRecordMapper.class).createTmpIssuesTable(datasetKey, sectorKey);
+      UsageCache usageCache = UsageCache.passThru();
+      try (ObjectCache<NameUsageWrapper> taxa = buildTmpStorage()) {
+        int counter = 0;
+        // processing first returns all taxa before any synonym is returned - cache these and process them at the end
+        for (var nuw : nuwm.processWithoutClassification(datasetKey, sectorKey)) {
+          // set preloaded infos excluded in sql results as they are very repetitive
+          nuw.setPublisherKey(publisher);
+          if (nuw.getUsage().getName().getSectorKey() != null) {
+            nuw.setSectorDatasetKey(sectorDatasetKeys.get(nuw.getUsage().getName().getSectorKey()));
+          }
 
-      // reusable lookup for classifications and synonyms
-      final Map<String, Taxon> taxa = new HashMap<>();
-      int counter = 0;
-      int loadCounter = 0;
-      for (var nuw : nuwm.processWithoutClassification(datasetKey, sectorKey)) {
-        // set preloaded infos excluded in sql results as they are very repetitive
-        nuw.setPublisherKey(publisher);
-        if (nuw.getUsage().getName().getSectorKey() != null) {
-          nuw.setSectorDatasetKey(sectorDatasetKeys.get(nuw.getUsage().getName().getSectorKey()));
-        }
+          if (nuw.getUsage().isTaxon()) {
+            taxa.put(nuw);
+            // dont do anything else here now - we load all taxa first and process them later to build up the classification
 
-        if (nuw.getUsage().isTaxon()) {
-          Taxon t = (Taxon) nuw.getUsage();
-          taxa.put(t.getId(), t);
-        }
-
-        if (nuw.getUsage().isSynonym()) {
-          Synonym syn = (Synonym) nuw.getUsage();
-          // we list all accepted first, so the key must exist
-          syn.setAccepted(Preconditions.checkNotNull(taxa.get(syn.getParentId()), "accepted name for synonym "+ syn +" missing"));
-        }
-
-        List<SimpleName> classification = new ArrayList<>();
-        if (!nuw.getUsage().isBareName()) {
-          NameUsageBase curr = (NameUsageBase) nuw.getUsage();
-          classification.add(new SimpleName(curr));
-          while (curr.getParentId() != null) {
-            if (taxa.containsKey(curr.getParentId())) {
-              curr = taxa.get(curr.getParentId());
-            } else {
-              // fetch taxon before the main cursor hits it - ranks are not always properly ordered according to the tree
-              Taxon t = tm.get(taxKey.id(curr.getParentId()));
-              loadCounter++;
-              taxa.put(curr.getId(), t);
-              curr = t;
+          } else {
+            // synonym or bare name
+            if (nuw.getUsage().isSynonym()) {
+              // when we see a synonym all taxa must already been loaded
+              Synonym syn = (Synonym) nuw.getUsage();
+              // we list all accepted first, so the key must exist
+              Taxon acc = (Taxon) Preconditions.checkNotNull(taxa.get(syn.getParentId()).getUsage(), "accepted name for synonym "+ syn +" missing");
+              syn.setAccepted(acc);
+              addClassification(nuw, taxa, usageCache, num);
             }
-            classification.add(new SimpleName(curr));
+            consumer.accept(nuw);
+            if (counter++ % LOG_INTERVAL == 0) {
+              LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);
+            }
           }
         }
-        Collections.reverse(classification);
-        nuw.setClassification(classification);
 
-        consumer.accept(nuw);
-        if (counter++ % 1000 == 0) {
-          LOG.debug("Processed {} usages of dataset {}; preloaded taxa={}; cached taxa={}", counter, datasetKey, loadCounter, taxa.size());
+        // now lets do the cached taxa
+        LOG.info("Process {} taxa of dataset {}; loaded taxa={}", taxa.size(), datasetKey, loadCounter);
+        for (var nuw : taxa) {
+          addClassification(nuw, taxa, usageCache, num);
+          consumer.accept(nuw);
+          if (counter++ % LOG_INTERVAL == 0) {
+            LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);
+          }
         }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
     }
+  }
+
+  private void addClassification(NameUsageWrapper nuw, ObjectCache<NameUsageWrapper> taxa, UsageCache usageCache, NameUsageMapper num) {
+    List<SimpleName> classification = new ArrayList<>();
+    DSID<String> uKey = null;
+    if (!nuw.getUsage().isBareName()) {
+      SimpleName curr = new SimpleName((NameUsageBase) nuw.getUsage());
+      classification.add(curr);
+      while (curr.getParent() != null) {
+        if (taxa.contains(curr.getParent())) {
+          curr = new SimpleName((NameUsageBase) taxa.get(curr.getParent()).getUsage());
+        } else {
+          // need to fetch usage which lies outside the scope of this processor, e.g. a merge sector with parents outside of the sector
+          if (uKey == null) {
+            uKey = DSID.of(nuw.getUsage().getDatasetKey(), curr.getParent());
+          } else {
+            uKey.id(curr.getParent());
+          }
+          curr = usageCache.getOrLoad(uKey, num::getSimplePub);
+          loadCounter++;
+        }
+        classification.add(curr);
+      }
+    }
+    Collections.reverse(classification);
+    nuw.setClassification(classification);
+  }
+
+  private ObjectCache<NameUsageWrapper> buildTmpStorage() throws IOException {
+    return new ObjectCacheMapDB(NameUsageWrapper.class, new File(tmpDir, UUID.randomUUID().toString()), new ApiKryoPool(8));
   }
 }

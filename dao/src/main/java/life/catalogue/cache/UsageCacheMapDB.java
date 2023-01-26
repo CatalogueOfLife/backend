@@ -1,4 +1,4 @@
-package life.catalogue.assembly;
+package life.catalogue.cache;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameWithPub;
@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.Managed;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
-
 import life.catalogue.dao.DatasetInfoCache;
 
 import org.gbif.nameparser.api.NomCode;

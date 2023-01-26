@@ -6,7 +6,7 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
-import life.catalogue.assembly.UsageCacheMapDB;
+import life.catalogue.cache.UsageCacheMapDB;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
@@ -45,7 +45,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.neo4j.internal.kernel.api.Write;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

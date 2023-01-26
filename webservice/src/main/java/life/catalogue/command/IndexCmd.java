@@ -5,6 +5,7 @@ import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
@@ -79,7 +80,7 @@ public class IndexCmd extends AbstractMybatisCmd {
   @Override
   void execute() throws Exception {
     try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
-      NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
+      NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("nuproc"), factory);
       if (ns.getInt(ARG_THREADS) != null) {
         cfg.es.indexingThreads = ns.getInt(ARG_THREADS);
         Preconditions.checkArgument(cfg.es.indexingThreads > 0, "Needs at least one indexing thread");

@@ -1,4 +1,4 @@
-package life.catalogue.assembly;
+package life.catalogue.cache;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameWithPub;

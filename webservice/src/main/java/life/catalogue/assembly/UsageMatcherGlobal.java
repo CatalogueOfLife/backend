@@ -1,29 +1,27 @@
 package life.catalogue.assembly;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.NameIndex;
+
+import org.gbif.nameparser.api.Rank;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.base.Preconditions;
 
 /**
  * Matches usages against a given dataset. Matching is primarily based on names index matches,

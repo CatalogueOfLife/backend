@@ -42,9 +42,9 @@ import static org.junit.Assert.assertNull;
  * them to be compared, but not much. (For example the recursive query we execute in Postgres, and the resulting sort order, cannot be
  * emulated with Elasticsearch.)
  */
-public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
+public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
 
-  private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexServiceIT.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexServiceEsIT.class);
 
   @Test
   public void indexDatasetTaxaOnly() throws IOException {

@@ -1,0 +1,4 @@
+dataset_key,id,subject_dataset_key,subject_id,subject_name,subject_rank,subject_status,subject_parent,original_subject_id,target_id,target_name,target_rank,mode,code,sync_attempt,dataset_attempt,created_by,modified_by,created
+3,1,101,1,Plantae,KINGDOM,,,1,root,Biota,UNRANKED,ATTACH,,1,1,100,100,2023-01-26 06:05:47.291741
+3,2,100,,,,,,,,,,MERGE,,1,1,100,100,2023-01-26 06:05:48.308764
+3,3,102,,,,,,,,,,MERGE,,1,1,100,100,2023-01-26 06:05:48.568775

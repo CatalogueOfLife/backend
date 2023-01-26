@@ -338,19 +338,29 @@ public class TestEntityGenerator {
    * Creates a new taxon with the specified id, belonging to the specified dataset.
    */
   public static Taxon newTaxon(int datasetKey, String id, String scientificName) {
-    Taxon t = setUserDate(new Taxon());
-    t.setStatus(TaxonomicStatus.ACCEPTED);
+    return newTaxon(datasetKey, id, TAXON1.getId(), Rank.SPECIES, scientificName);
+  }
+
+  public static Taxon newTaxon(int datasetKey, String id, String parentID, Rank rank, String scientificName) {
+    Taxon t = newMinimalTaxon(datasetKey, id, parentID, rank, scientificName);
     t.setAccordingTo("Foo");
     t.setScrutinizerDate(FuzzyDate.of(2010, 11, 24));
-    t.setDatasetKey(datasetKey);
     t.setLink(URI.create("http://foo-bar.com"));
     t.setExtinct(true);
-    t.setId(id);
     t.setEnvironments(EnumSet.of(Environment.BRACKISH, Environment.FRESHWATER, Environment.TERRESTRIAL));
-    t.setName(setUserDate(newName(datasetKey, id + "_name_id", scientificName)));
-    t.setOrigin(Origin.SOURCE);
-    t.setParentId(TAXON1.getId());
+    t.setName(setUserDate(newName(datasetKey, id + "_name_id", scientificName, rank)));
     t.setRemarks("Foo != Bar");
+    return t;
+  }
+
+  public static Taxon newMinimalTaxon(int datasetKey, String id, String parentID, Rank rank, String scientificName) {
+    Taxon t = setUserDate(new Taxon());
+    t.setDatasetKey(datasetKey);
+    t.setId(id);
+    t.setStatus(TaxonomicStatus.ACCEPTED);
+    t.setName(setUserDate(newMinimalName(datasetKey, id, scientificName, rank)));
+    t.setOrigin(Origin.SOURCE);
+    t.setParentId(parentID);
     return t;
   }
 
@@ -408,9 +418,7 @@ public class TestEntityGenerator {
   }
 
   public static Name newName(int datasetKey, String id, String scientificName, Rank rank) {
-    Name n = setUserDate(new Name());
-    n.setId(id);
-    n.setDatasetKey(datasetKey);
+    Name n = newMinimalName(datasetKey, id, scientificName, rank);
     n.setCombinationAuthorship(createAuthorship());
     if (RND.nextBoolean()) {
       n.setBasionymAuthorship(createAuthorship());
@@ -418,30 +426,42 @@ public class TestEntityGenerator {
     if (RND.nextInt(10) == 1) {
       n.setSanctioningAuthor("Fr.");
     }
-    List<String> tokens = SPACE_SPLITTER.splitToList(scientificName);
-    if (tokens.size() == 1) {
-      n.setUninomial(tokens.get(0));
-    } else {
-      n.setGenus(tokens.get(0));
+    if (n.getSpecificEpithet() != null) {
       n.setInfragenericEpithet("Igen");
-      n.setSpecificEpithet(tokens.get(1));
-      if (tokens.size() > 2) {
-        n.setInfraspecificEpithet(tokens.get(2));
-      }
     }
     n.setCandidatus(true);
     n.setCultivarEpithet("Red Rose");
     n.setLink(URI.create("http://gbif.org"));
     n.setNotho(NamePart.SPECIFIC);
-    n.setRank(rank);
-    n.setOrigin(Origin.SOURCE);
-    n.setType(NameType.SCIENTIFIC);
     n.setCode(NomCode.BOTANICAL);
     n.setNomStatus(NomStatus.ACCEPTABLE);
     n.setNomenclaturalNote("nom.illeg.");
     n.setUnparsed("debnnj$&%%");
     n.addRemarks("my first note");
     n.addRemarks("my second note");
+
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
+    return n;
+  }
+
+  public static Name newMinimalName(int datasetKey, String id, String scientificName, Rank rank) {
+    Name n = setUserDate(new Name());
+    n.setId(id);
+    n.setDatasetKey(datasetKey);
+    List<String> tokens = SPACE_SPLITTER.splitToList(scientificName);
+    if (tokens.size() == 1) {
+      n.setUninomial(tokens.get(0));
+    } else {
+      n.setGenus(tokens.get(0));
+      n.setSpecificEpithet(tokens.get(1));
+      if (tokens.size() > 2) {
+        n.setInfraspecificEpithet(tokens.get(2));
+      }
+    }
+    n.setRank(rank);
+    n.setOrigin(Origin.SOURCE);
+    n.setType(NameType.SCIENTIFIC);
 
     n.rebuildScientificName();
     n.rebuildAuthorship();

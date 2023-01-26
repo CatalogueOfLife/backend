@@ -91,6 +91,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, Set.of(3));
   public final static TestData DUPLICATES = new TestData("duplicates", 1000, 3, 5, row -> AuthorshipNormFunc.normAuthorship(15, row), Set.of(3, 1000));
   public final static TestData NIDX = new TestData("nidx", null, 1, 3, Set.of(100, 101, 102));
+  public final static TestData COL_SYNCED = new TestData("colsynced", 3, 2, 4, null);
 
   public static class TestData {
     public final String name;
@@ -205,6 +206,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public static TestDataRule nidx() {
     return new TestDataRule(NIDX);
+  }
+
+  public static TestDataRule colSynced() {
+    return new TestDataRule(COL_SYNCED);
   }
 
   private TestDataRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {

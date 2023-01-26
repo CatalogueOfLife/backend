@@ -1,0 +1,5 @@
+id,sector_key,name_id,parent_id,status,name_phrase,according_to_id,reference_ids,extinct,environments,link
+10,,10,,ACCEPTED,,,{},f,{},
+13,,13,10,ACCEPTED,,,{},f,{},
+11,,11,10,ACCEPTED,,,{},f,{},
+12,,12,11,SYNONYM,,,{},,{},

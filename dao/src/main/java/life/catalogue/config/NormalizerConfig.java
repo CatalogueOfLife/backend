@@ -95,6 +95,10 @@ public class NormalizerConfig {
     throw new IllegalArgumentException("Filename not an attempt based archive: " + archiveFile.getName());
   }
 
+  public File scratchDir(String subdir) {
+    return new File(scratchDir, subdir);
+  }
+
   public File scratchDir(int datasetKey) {
     return new File(scratchDir, String.valueOf(datasetKey));
   }

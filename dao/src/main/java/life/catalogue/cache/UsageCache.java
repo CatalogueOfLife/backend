@@ -1,15 +1,14 @@
-package life.catalogue.assembly;
+package life.catalogue.cache;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameClassified;
-
 import life.catalogue.api.model.SimpleNameWithPub;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple KVP style cache for name usages in the form of SimpleNameWithPub instances.
@@ -29,6 +28,15 @@ public interface UsageCache {
   void clear(int datasetKey);
 
   void clear();
+
+  default SimpleNameWithPub getOrLoad(DSID<String> key, Function<DSID<String>, SimpleNameWithPub> loader) {
+    var sn = get(key);
+    if (sn == null) {
+      sn = loader.apply(key);
+      put(key.getDatasetKey(), sn);
+    }
+    return sn;
+  }
 
   /**
    * @param datasetKey

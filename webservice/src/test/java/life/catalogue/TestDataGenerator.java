@@ -1,16 +1,19 @@
 package life.catalogue;
 
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.*;
+import life.catalogue.assembly.SectorSyncIT;
+import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.importer.PgImportRule;
 import life.catalogue.postgres.PgCopyUtils;
 
@@ -22,17 +25,21 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.postgresql.jdbc.PgConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 /**
  * Manual tool to generate test data CSV files for the TestDataRule from regular CoLDP or DwC archives.
@@ -41,11 +48,11 @@ import org.slf4j.LoggerFactory;
 
 @Ignore("for manual use only")
 public class TestDataGenerator {
-  private static final Logger LOG = LoggerFactory.getLogger(TestDataGenerator.class);
-
   final static PgSetupRule pg = new PgSetupRule();
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   final static TestDataRule dataRule = TestDataRule.empty();
+  final static NameMatchingRule matchingRule = new NameMatchingRule();
+  final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
 
   final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, 1, 3, Set.of(101));
   final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, 1, 3, null);
@@ -65,11 +72,15 @@ public class TestDataGenerator {
     return new TestDataRule(XCOL);
   }
 
+  final Taxon COL_ROOT = TestEntityGenerator.newMinimalTaxon(Datasets.COL, "root", null, Rank.UNRANKED, "Biota");
+
   @ClassRule
   public final static TestRule classRules = RuleChain
     .outerRule(pg)
     .around(dataRule)
-    .around(treeRepoRule);
+    .around(treeRepoRule)
+    .around(matchingRule)
+    .around(syncFactoryRule);
 
   private File dir;
 
@@ -78,10 +89,6 @@ public class TestDataGenerator {
     export(MATCHING.name,
       PgImportRule.create(DatasetOrigin.EXTERNAL, DatasetType.TAXONOMIC, DataFormat.COLDP, 28)
     );
-  }
-
-  static class MatchingDataRule extends PgImportRule {
-
   }
 
   @Test
@@ -100,6 +107,48 @@ public class TestDataGenerator {
             DataFormat.ACEF,  14
       )
     );
+  }
+
+  @Test
+  public void prepareSyncedData() throws Throwable {
+    export(TestDataRule.COL_SYNCED.name,
+      PgImportRule.create(
+        DatasetOrigin.EXTERNAL,
+          NomCode.BOTANICAL,
+            DataFormat.COLDP, 0, 25,
+            DataFormat.DWCA, 1
+      ), this::supplyMergedSectors
+    );
+  }
+
+  List<Sector> supplyMergedSectors(PgImportRule importRule) {
+    List<Sector> sectors = new ArrayList<>();
+    sectors.add(
+      sector(Sector.Mode.ATTACH,null, importRule.datasetKey(0, DataFormat.COLDP),
+        SimpleNameLink.of("1", "Plantae", Rank.KINGDOM),
+        SimpleNameLink.of(COL_ROOT)
+      )
+    );
+    sectors.add(
+      sector(Sector.Mode.MERGE,1, importRule.datasetKey(25, DataFormat.COLDP), null, null)
+    );
+    sectors.add(
+      sector(Sector.Mode.MERGE,2, importRule.datasetKey(1, DataFormat.DWCA), null, null)
+    );
+    return sectors;
+  }
+
+  public static Sector sector(Sector.Mode mode, Integer priority, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
+    Sector sector = new Sector();
+    sector.setMode(mode);
+    sector.setPriority(priority);
+    sector.setDatasetKey(Datasets.COL);
+    sector.setSubjectDatasetKey(datasetKey);
+    sector.setSubject(src);
+    sector.setTarget(target);
+    sector.setEntities(Set.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION, EntityType.REFERENCE));
+    sector.applyUser(TestDataRule.TEST_USER);
+    return sector;
   }
 
   @Test
@@ -131,10 +180,33 @@ public class TestDataGenerator {
   }
 
   void export(String name, PgImportRule importRule) throws Throwable {
+    export(name, importRule, (x) -> List.of());
+  }
+
+  void export(String name, PgImportRule importRule, Function<PgImportRule, List<Sector>> sectorSupplier) throws Throwable {
     importRule.before();
     System.out.println("KEY MAP:");
     for (var ent : importRule.getDatasetKeyMap().entrySet()) {
-      System.out.println(String.format(" %s %s -> %s", ent.getKey().first(), ent.getKey().second(), ent.getValue()));
+      System.out.printf(" %s %s -> %s%n", ent.getKey().first(), ent.getKey().second(), ent.getValue());
+    }
+
+    // once we have datasets imported and a key map supply the sectors with proper subject keys
+    var sectors = sectorSupplier.apply(importRule);
+    if (!sectors.isEmpty()) {
+      System.out.printf("Create COL project root taxon");
+      try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+        session.getMapper(NameMapper.class).create(COL_ROOT.getName());
+        session.getMapper(TaxonMapper.class).create(COL_ROOT);
+        session.commit();
+      }
+
+      System.out.printf("Create and sync %s sectors%n", sectors.size());
+      for (var s : sectors) {
+        try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+          session.getMapper(SectorMapper.class).create(s);
+        }
+        SectorSyncIT.sync(s);
+      }
     }
 
     List<Dataset> datasets;
@@ -142,7 +214,6 @@ public class TestDataGenerator {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       datasets = dm.list(new Page(0,1000));
     }
-    datasets.removeIf(d -> d.getKey() == Datasets.COL);
 
     dir = new File("/Users/markus/Downloads/test-data/"+name);
     FileUtils.deleteQuietly(dir);
@@ -150,20 +221,27 @@ public class TestDataGenerator {
 
     System.out.println("cd " + dir.getAbsolutePath());
     try (var con = pg.connect()) {
-      File fd = new File(dir, "dataset.csv");
-      PgCopyUtils.dumpCSV(con,
-        "SELECT key,type,alias,title,origin,url,created_by,modified_by,created FROM dataset WHERE key != " + Datasets.COL + " ORDER BY key"
-      , fd);
+      // DATASET
+      dump("dataset",
+        "key,type,alias,title,origin,url,created_by,modified_by,created",
+        "key != " + Datasets.COL, con
+      );
+
+      // SECTOR
+      dump("sector",
+        "dataset_key,id,subject_dataset_key,subject_id,subject_name,subject_rank,subject_status,subject_parent,original_subject_id,target_id,target_name,target_rank,mode,code,sync_attempt,dataset_attempt,created_by,modified_by,created",
+        null, con
+      );
 
       for (Dataset d : datasets) {
         System.out.println("Dump dataset " + d.getKey());
-        dump(d, "reference", "id,citation", con);
-        dump(d, "name", "id, scientific_name, authorship, rank, code, nom_status, type, candidatus, notho, "
+        dump(d, "reference", "id,sector_key,citation,year", con);
+        dump(d, "name", "id, sector_key, scientific_name, authorship, rank, code, nom_status, type, candidatus, notho, "
                         + "uninomial, genus, infrageneric_epithet, specific_epithet, infraspecific_epithet, cultivar_epithet,"
                         + "basionym_authors, basionym_ex_authors, basionym_year, combination_authors, combination_ex_authors, combination_year, sanctioning_author, "
                         + "published_in_id, published_in_page, published_in_page_link, nomenclatural_note, unparsed, remarks, link"
                         , con);
-        dump(d, "name_usage", "id,name_id,parent_id,status,name_phrase,according_to_id,reference_ids,extinct,environments,link", con);
+        dump(d, "name_usage", "id,sector_key,name_id,parent_id,status,name_phrase,according_to_id,reference_ids,extinct,environments,link", con);
         dump(d, "vernacular_name", "id,taxon_id,language,country,name,latin,area,sex,reference_id", con);
         dump(d, "distribution", "id,taxon_id,gazetteer,status,area,reference_id", con);
         dump(d, "media", "id,taxon_id,type,captured,license,url,format,title,captured_by,link,reference_id", con);
@@ -175,18 +253,37 @@ public class TestDataGenerator {
     importRule.after();
   }
 
-  private void dump(Dataset d, String table, String columns, PgConnection con) throws SQLException, IOException {
-    File f = new File(dir, table + "_" + d.getKey() + ".csv");
-    String sql = String.format("SELECT %s FROM %s WHERE dataset_key=%s", columns, table, d.getKey());
-    // check if there is any data at all
-    try (var st = con.createStatement()) {
-      st.execute(sql + " limit 1");
-      if (!st.getResultSet().next()) {
-        LOG.info("No {} data for dataset {}", table, d.getKey());
-        return;
-      }
+  private void dump(String table, String columns, @Nullable String where, PgConnection con) throws SQLException, IOException {
+    // only export if there is any data at all
+    if (hasData(table, null, con)) {
+      File f = new File(dir, table + ".csv");
+      where = where == null ? "" : "WHERE " + where;
+      String sql = String.format("SELECT %s FROM %s %s ORDER BY 1,2", columns, table, where);
+      PgCopyUtils.dumpCSV(con, sql, f);
     }
+  }
 
-    PgCopyUtils.dumpCSV(con, sql, f);
+  private void dump(Dataset d, String table, String columns, PgConnection con) throws SQLException, IOException {
+    // only export if there is any data at all
+    if (hasData(table, d.getKey(), con)) {
+      File f = new File(dir, table + "_" + d.getKey() + ".csv");
+      String sql = String.format("SELECT %s FROM %s WHERE dataset_key=%s", columns, table, d.getKey());
+      PgCopyUtils.dumpCSV(con, sql, f);
+    }
+  }
+
+  private boolean hasData(String table, @Nullable Integer datasetKey, PgConnection con) throws SQLException {
+    try (var st = con.createStatement()) {
+      StringBuilder sql = new StringBuilder();
+      sql.append("SELECT * FROM ");
+      sql.append(table);
+      if (datasetKey != null) {
+        sql.append(" WHERE dataset_key=");
+        sql.append(datasetKey);
+      }
+      sql.append(" LIMIT 1");
+      st.execute(sql.toString());
+      return st.getResultSet().next();
+    }
   }
 }

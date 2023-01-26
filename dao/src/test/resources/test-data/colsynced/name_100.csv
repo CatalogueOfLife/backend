@@ -1,0 +1,5 @@
+id,sector_key,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
+13,,Aster grandis,L.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Aster,,grandis,,,{},{},,{L.},{},,,,,,,,,
+10,,Asteraceae,,FAMILY,BOTANICAL,,SCIENTIFIC,f,,Asteraceae,,,,,,{},{},,{},{},,,,,,,,,
+12,,Crepis muelleri,Müller,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,muelleri,,,{},{},,{Müller},{},,,,,,,,,
+11,,Crepis museliana,Greene,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,museliana,,,{},{},,{Greene},{},,,,,,,,,

@@ -1,0 +1,7 @@
+id,name_id,type,related_name_id,reference_id,remarks
+1,1006,BASIONYM,1006-s3,,
+2,fake,SPELLING_CORRECTION,hybrid,rel,a relation remark
+3,fake,BASED_ON,hybrid,rel,another relation remark
+4,fake,REPLACEMENT_NAME,hybrid,rel,yet another relation remark
+5,hybrid,LATER_HOMONYM,fake,rel,yet another relation remark
+6,hybrid,SUPERFLUOUS,fake,rel,yet another relation remark
