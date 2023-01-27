@@ -3,8 +3,11 @@ package life.catalogue.matching;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
+import life.catalogue.common.kryo.FastUtilsSerializers;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 
 import org.gbif.nameparser.api.Authorship;
@@ -65,6 +68,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
       kryo.register(HashMap.class);
       kryo.register(HashSet.class);
       kryo.register(int[].class);
+      kryo.register(ObjectArrayList.class, new FastUtilsSerializers.ArrayListSerializer());
       return kryo;
     }
   }

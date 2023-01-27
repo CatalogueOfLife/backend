@@ -129,7 +129,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     JdkImmutableMapSerializer.registerSerializers(kryo);
     JdkImmutableSetSerializer.registerSerializers(kryo);
     // fastutils
-    FastUtilsSerializer.registerSerializers(kryo, true);
+    FastUtilsSerializers.registerSerializers(kryo);
 
     // areas
     var areaSerde = new AreaSerializer();

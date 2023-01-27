@@ -1,5 +1,7 @@
 package life.catalogue.common.kryo;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
@@ -152,6 +154,15 @@ public class ApiKryoPoolTest {
     assertSerde(new Reference());
     assertSerde(new Dataset());
     assertSerde(new DatasetImport());
+  }
+
+
+  @Test
+  public void testFastutilList() throws Exception {
+    Name n = TestEntityGenerator.newName("1234567");
+    var authors = n.getCombinationAuthorship().getAuthors();
+    n.getCombinationAuthorship().setAuthors(new ObjectArrayList<>(authors));
+    assertSerde(n);
   }
 
   private void assertSerde(Object obj) {
