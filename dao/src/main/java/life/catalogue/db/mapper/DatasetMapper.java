@@ -224,7 +224,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   int updateLastImport(@Param("key") int key, @Param("attempt") int attempt);
 
   /**
-   * @param limit optional limit to consider when looking for the maximum. If null the global maximum is returned, if existing the maximum key below the given imit
+   * @param limit optional limit to consider when looking for the maximum.
+   *              If null the global maximum is returned, if existing the maximum key below the given limit
    */
   Integer getMaxKey(@Param("limit") Integer limit);
 

@@ -6,6 +6,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.func.BatchConsumer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -249,7 +250,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     createEmptyIndex();
 
     final Stats total = new Stats();
-    List<Integer> keys;
+    final List<Integer> keys;
     try (SqlSession session = factory.openSession(true)) {
       keys = session.getMapper(DatasetMapper.class).keys();
       int allDatasets = keys.size();

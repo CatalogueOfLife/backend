@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NameUsageProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageProcessor.class);
-  private static final int LOG_INTERVAL = 1000;
+  private static final int LOG_INTERVAL = 5000;
 
   private final SqlSessionFactory factory;
   private int loadCounter = 0;
@@ -65,7 +65,7 @@ public class NameUsageProcessor {
     LOG.info("Process sector{} of dataset {}", sectorKey.getKey(), sectorKey.getDatasetKey());
     processTree(sectorKey.getDatasetKey(), sectorKey.getId(), consumer);
   }
-  
+
   private void processTree(int datasetKey, @Nullable Integer sectorKey, Consumer<NameUsageWrapper> consumer) {
     try (SqlSession session = factory.openSession()) {
       final NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
@@ -87,8 +87,10 @@ public class NameUsageProcessor {
       // build temporary table collecting issues from all usage related tables
       // we do this in a separate step to not overload postgres with gigantic joins later on
       session.getMapper(VerbatimRecordMapper.class).createTmpIssuesTable(datasetKey, sectorKey);
-      UsageCache usageCache = UsageCache.passThru();
-      try (ObjectCache<NameUsageWrapper> taxa = buildTmpStorage()) {
+
+      try (ObjectCache<NameUsageWrapper> taxa = buildObjCache();
+           UsageCache usageCache = buildUsageCache()
+      ) {
         int counter = 0;
         // processing first returns all taxa before any synonym is returned - cache these and process them at the end
         for (var nuw : nuwm.processWithoutClassification(datasetKey, sectorKey)) {
@@ -101,14 +103,22 @@ public class NameUsageProcessor {
           if (nuw.getUsage().isTaxon()) {
             taxa.put(nuw);
             // dont do anything else here now - we load all taxa first and process them later to build up the classification
+            if (counter++ % LOG_INTERVAL == 0) {
+              LOG.debug("Cached {} taxa of dataset {}", counter, datasetKey);
+            }
 
           } else {
             // synonym or bare name
             if (nuw.getUsage().isSynonym()) {
               // when we see a synonym all taxa must already been loaded
               Synonym syn = (Synonym) nuw.getUsage();
+              if (syn.getParentId()==null) {
+                // major data inconsistency - cant work with this one!
+                LOG.warn("Synonym {} without parentID found {}", syn.getId(), syn.getLabel());
+                continue;
+              }
               // we list all accepted first, so the key must exist
-              Taxon acc = (Taxon) Preconditions.checkNotNull(taxa.get(syn.getParentId()).getUsage(), "accepted name for synonym "+ syn +" missing");
+              Taxon acc = (Taxon) Preconditions.checkNotNull(taxa.get(syn.getParentId()), "accepted name for synonym "+ syn +" missing").getUsage();
               syn.setAccepted(acc);
               addClassification(nuw, taxa, usageCache, num);
             }
@@ -160,7 +170,10 @@ public class NameUsageProcessor {
     nuw.setClassification(classification);
   }
 
-  private ObjectCache<NameUsageWrapper> buildTmpStorage() throws IOException {
-    return new ObjectCacheMapDB(NameUsageWrapper.class, new File(tmpDir, UUID.randomUUID().toString()), new ApiKryoPool(8));
+  private ObjectCache<NameUsageWrapper> buildObjCache() throws IOException {
+    return new ObjectCacheMapDB<>(NameUsageWrapper.class, new File(tmpDir, UUID.randomUUID().toString()), new ApiKryoPool(8));
+  }
+  private UsageCache buildUsageCache() throws IOException {
+    return UsageCache.mapDB(new File(tmpDir, UUID.randomUUID().toString()), 8);
   }
 }

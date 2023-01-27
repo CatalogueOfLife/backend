@@ -29,7 +29,7 @@ public class UsageCacheMapDBTest {
   @Before
   public void init() throws Exception {
     dbf = File.createTempFile("coltest", "mapdb");
-    cache = new UsageCacheMapDB(dbf, false);
+    cache = new UsageCacheMapDB(dbf, false, 8);
     cache.start();
   }
 

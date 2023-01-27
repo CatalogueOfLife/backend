@@ -195,7 +195,7 @@
     <if test="sectorKey != null">
       AND u.sector_key = #{sectorKey}
     </if>
-    ORDER BY u.is_synonym, n.rank
+    ORDER BY u.is_synonym
   </select>
 
 </mapper>

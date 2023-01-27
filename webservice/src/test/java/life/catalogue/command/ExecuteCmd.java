@@ -15,6 +15,6 @@ public class ExecuteCmd {
   @Test
   public void test() throws Exception {
     // to run a command that needs configs please point the second argument to a matching yaml file
-    new WsServer().run(new String[]{"initdb", "/Users/markus/Desktop/config-admin.yml", "--prompt", "2"});
+    new WsServer().run(new String[]{"index", "/Users/markus/code/col/backend/webservice/config-dev.yaml", "--prompt", "0", "--all", "true"});
   }
 }

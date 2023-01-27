@@ -49,11 +49,13 @@ public class UsageCacheMapDB implements UsageCache, Managed {
   /**
    * We use a separate kryo pool for the usage cache to avoid too often changes to the serialisation format
    * that then requires us to rebuilt the mapdb file. Register just the needed classes, no more.
+   *
+   * The cache implements both AutoCloseable and Managed if used in the DW application to shutdown mapdb nicely.
    */
   static class UsageCacheKryoPool extends Pool<Kryo> {
 
-    public UsageCacheKryoPool() {
-      super(true, true, 128);
+    public UsageCacheKryoPool(int maxCapacity) {
+      super(true, true, maxCapacity);
     }
 
     @Override
@@ -74,7 +76,7 @@ public class UsageCacheMapDB implements UsageCache, Managed {
    * @param location the db file for storing the values
    * @param expireMutable if true requires mybatis to be setup and the DatasetInfoCache is used to know when mutable datasets should be expired soon (1h?)
    */
-  public UsageCacheMapDB(File location, boolean expireMutable) throws IOException {
+  public UsageCacheMapDB(File location, boolean expireMutable, int kryoMaxCapacity) throws IOException {
     this.dbFile = location;
     this.expireMutable = expireMutable;
     if (!location.exists()) {
@@ -86,7 +88,7 @@ public class UsageCacheMapDB implements UsageCache, Managed {
     this.dbMaker = DBMaker
       .fileDB(location)
       .fileMmapEnableIfSupported();
-    pool = new UsageCacheKryoPool();
+    pool = new UsageCacheKryoPool(kryoMaxCapacity);
   }
 
   @Override
@@ -117,6 +119,11 @@ public class UsageCacheMapDB implements UsageCache, Managed {
       db.close();
       db = null;
     }
+  }
+
+  @Override
+  public void close() {
+    stop();
   }
 
   private static String dbname(int datasetKey) {

@@ -4,6 +4,8 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.model.SimpleNameWithPub;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 
@@ -13,7 +15,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Simple KVP style cache for name usages in the form of SimpleNameWithPub instances.
  */
-public interface UsageCache {
+public interface UsageCache extends AutoCloseable {
   Logger LOG = LoggerFactory.getLogger(UsageCache.class);
 
 
@@ -28,6 +30,9 @@ public interface UsageCache {
   void clear(int datasetKey);
 
   void clear();
+
+  @Override
+  void close();
 
   default SimpleNameWithPub getOrLoad(DSID<String> key, Function<DSID<String>, SimpleNameWithPub> loader) {
     var sn = get(key);
@@ -88,6 +93,10 @@ public interface UsageCache {
     }
   }
 
+  static UsageCache mapDB(File location, int kryoMaxCapacity) throws IOException {
+    return new UsageCacheMapDB(location, false, kryoMaxCapacity);
+  }
+
   /**
    * A usage cache that does nothing and keeps nothing in memory
    */
@@ -118,6 +127,9 @@ public interface UsageCache {
 
       @Override
       public void clear() { }
+
+      @Override
+      public void close() { }
     };
   }
 
@@ -165,6 +177,9 @@ public interface UsageCache {
       public void clear() {
         data.clear();
       }
+
+      @Override
+      public void close() { }
     };
   }
 }

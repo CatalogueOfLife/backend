@@ -12,6 +12,8 @@
  */
 package life.catalogue.db.type2;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -38,7 +40,6 @@ public class StringCollectionArrayTypeHandler extends AbstractArrayTypeHandler<C
   public Collection<String> toObj(Array pgArray) throws SQLException {
     if (pgArray == null) return new ArrayList<>();
 
-    String[] strings = (String[]) pgArray.getArray();
-    return List.of(strings);
+    return ObjectArrayList.wrap((String[])pgArray.getArray());
   }
 }

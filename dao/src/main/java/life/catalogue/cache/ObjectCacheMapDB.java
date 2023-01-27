@@ -40,12 +40,12 @@ public class ObjectCacheMapDB<T extends HasID<String>> implements ObjectCache<T>
     this.dbFile = location;
     this.pool = kryoPool;
     if (location.exists()) {
-      LOG.info("Delete existing cache at {}", location.getAbsolutePath());
+      LOG.info("Delete existing {} cache at {}", clazz.getSimpleName(), location.getAbsolutePath());
       location.delete();
     } else {
       FileUtils.forceMkdirParent(location);
     }
-    LOG.info("Create persistent usage cache at {}", location.getAbsolutePath());
+    LOG.info("Create persistent {} cache at {}", clazz.getSimpleName(), location.getAbsolutePath());
     db = DBMaker
       .fileDB(location)
       .fileMmapEnableIfSupported()
