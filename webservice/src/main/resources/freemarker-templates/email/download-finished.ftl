@@ -12,6 +12,6 @@ The download exceeds the maximum amount of rows allowed in Excel spreadsheets fo
 These are truncated in this download which is otherwise complete. If you need access to all data please download an archive without the Excel option again.
 </#if>
 
-For help with opening und using downloaded files, please contact support or write to our mailinglist.
+For help with opening and using downloaded files, please contact support or write to our mailinglist.
 
 <#include "footer.ftl">
