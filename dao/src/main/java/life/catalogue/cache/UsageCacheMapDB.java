@@ -36,7 +36,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
  * UsageCache implementation that is backed by a mapdb using kryo serialization.
  * For each dataset key a separate mapdb is used that can be cleared or warmed.
  */
-public class UsageCacheMapDB implements UsageCache, Managed {
+public class UsageCacheMapDB implements UsageCache {
   private static final Logger LOG = LoggerFactory.getLogger(UsageCacheMapDB.class);
 
   private final Int2ObjectMap<Map<String, SimpleNameWithPub>> datasets = new Int2ObjectOpenHashMap<>();

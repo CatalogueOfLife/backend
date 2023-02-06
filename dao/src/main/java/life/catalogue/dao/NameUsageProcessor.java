@@ -138,7 +138,7 @@ public class NameUsageProcessor {
             LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);
           }
         }
-      } catch (IOException e) {
+      } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
@@ -173,7 +173,9 @@ public class NameUsageProcessor {
   private ObjectCache<NameUsageWrapper> buildObjCache() throws IOException {
     return new ObjectCacheMapDB<>(NameUsageWrapper.class, new File(tmpDir, UUID.randomUUID().toString()), new ApiKryoPool(8));
   }
-  private UsageCache buildUsageCache() throws IOException {
-    return UsageCache.mapDB(new File(tmpDir, UUID.randomUUID().toString()), 8);
+  private UsageCache buildUsageCache() throws Exception {
+    var cache = UsageCache.mapDB(new File(tmpDir, UUID.randomUUID().toString()), true, 8);
+    cache.start();
+    return cache;
   }
 }

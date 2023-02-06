@@ -9,13 +9,15 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 
+import life.catalogue.common.Managed;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Simple KVP style cache for name usages in the form of SimpleNameWithPub instances.
  */
-public interface UsageCache extends AutoCloseable {
+public interface UsageCache extends AutoCloseable, Managed {
   Logger LOG = LoggerFactory.getLogger(UsageCache.class);
 
 
@@ -93,8 +95,8 @@ public interface UsageCache extends AutoCloseable {
     }
   }
 
-  static UsageCache mapDB(File location, int kryoMaxCapacity) throws IOException {
-    return new UsageCacheMapDB(location, false, kryoMaxCapacity);
+  static UsageCache mapDB(File location, boolean expireMutable, int kryoMaxCapacity) throws IOException {
+    return new UsageCacheMapDB(location, expireMutable, kryoMaxCapacity);
   }
 
   /**
@@ -102,6 +104,12 @@ public interface UsageCache extends AutoCloseable {
    */
   static UsageCache passThru() {
     return new UsageCache() {
+      @Override
+      public void start() throws Exception {      }
+
+      @Override
+      public void stop() throws Exception {      }
+
       @Override
       public boolean contains(DSID<String> key) {
         return false;
@@ -139,6 +147,12 @@ public interface UsageCache extends AutoCloseable {
    */
   static UsageCache hashMap() {
     return new UsageCache() {
+      @Override
+      public void start() throws Exception {      }
+
+      @Override
+      public void stop() throws Exception {      }
+
       private final Map<DSID<String>, SimpleNameWithPub> data = new HashMap<>();
 
       @Override

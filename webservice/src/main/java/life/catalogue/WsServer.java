@@ -7,7 +7,7 @@ import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.UsageMatcherGlobal;
 import life.catalogue.cache.CacheFlush;
-import life.catalogue.cache.UsageCacheMapDB;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
@@ -306,7 +306,8 @@ public class WsServer extends Application<WsServerConfig> {
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
     // matcher
-    UsageCacheMapDB uCache = new UsageCacheMapDB(cfg.usageCacheFile, true, 64);
+    UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, true, 64);
+
     // we do not start up the usage cache automatically, we need to run 2 apps in parallel during deploys!
     env.lifecycle().manage(ManagedUtils.stopOnly(uCache));
     final var matcher = new UsageMatcherGlobal(ni, uCache, getSqlSessionFactory());
@@ -366,8 +367,10 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(ManagedUtils.stopOnly(idMap));
 
     // resources
-    j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
-      importManager, ddao, gbifSync, uCache, executor, idMap, validator));
+    j.register(new AdminResource(
+      getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
+      importManager, ddao, gbifSync, uCache, executor, idMap, validator)
+    );
     j.register(new DataPackageResource());
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetDiffResource(dDiff));

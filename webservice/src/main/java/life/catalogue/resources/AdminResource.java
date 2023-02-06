@@ -6,6 +6,7 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.cache.UsageCacheMapDB;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
@@ -74,14 +75,14 @@ public class AdminResource {
   private final GbifSyncManager gbifSync;
   private final AssemblyCoordinator assembly;
   private final NameIndex namesIndex;
-  private final UsageCacheMapDB usageCache;
+  private final UsageCache usageCache;
   private final JobExecutor exec;
   private final Validator validator;
   private final DatasetDao ddao;
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       UsageCacheMapDB usageCache, JobExecutor executor, IdMap idMap, Validator validator) {
+                       UsageCache usageCache, JobExecutor executor, IdMap idMap, Validator validator) {
     this.factory = factory;
     this.ddao = ddao;
     this.assembly = assembly;
