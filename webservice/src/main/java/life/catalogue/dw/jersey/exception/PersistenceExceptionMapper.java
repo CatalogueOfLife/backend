@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
+import life.catalogue.db.PgUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.postgresql.util.PSQLException;
@@ -29,7 +31,6 @@ public class PersistenceExceptionMapper extends LoggingExceptionMapper<Persisten
   private static final Pattern RELATION = Pattern.compile("relation \"[a-z_]+_([0-9]+)\" does not exist");
   private static final Pattern UNIQUE = Pattern.compile("unique constraint \"([a-z]+)_");
   private static final Pattern UNIQUE_DETAILS = Pattern.compile("Detail: Key \\(([a-z_-]+)\\)=\\((.*)\\) already exists");
-  public static final String CODE_UNIQUE = "23505";
   public static final String CODE_NOT_FOUND = "42P01";
 
   @Override
@@ -47,7 +48,7 @@ public class PersistenceExceptionMapper extends LoggingExceptionMapper<Persisten
           }
           break;
 
-        case CODE_UNIQUE:
+        case PgUtils.CODE_UNIQUE:
           m = UNIQUE.matcher(e.getCause().getMessage());
           String entity = "Entity";
           if (m.find()) {

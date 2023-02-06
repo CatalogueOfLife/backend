@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.NotUniqueException;
 import life.catalogue.api.model.Entity;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -13,6 +14,9 @@ import java.util.List;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
+import life.catalogue.db.PgUtils;
+
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -115,6 +119,12 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
         session.commit();
       }
       return obj.getKey();
+    } catch (PersistenceException e) {
+      if (PgUtils.isUniqueConstraint(e)) {
+        LOG.warn("Violated unique constraint: {}", e.getMessage());
+        throw new NotUniqueException(e);
+      }
+      throw e;
     }
   }
 

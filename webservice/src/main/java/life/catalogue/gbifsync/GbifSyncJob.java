@@ -1,5 +1,6 @@
 package life.catalogue.gbifsync;
 
+import life.catalogue.api.exception.NotUniqueException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
@@ -10,6 +11,7 @@ import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.jersey.exception.PersistenceExceptionMapper;
 
@@ -160,14 +162,11 @@ public class GbifSyncJob extends GlobalBlockingJob {
         }
       }
     } catch (Exception e) {
-      // treat unique DOI constraints differently as we expect that to happen somtimes
-      var pgCode = PersistenceExceptionMapper.postgresErrorCode(e);
-      if (pgCode.isPresent() && pgCode.get().equalsIgnoreCase(PersistenceExceptionMapper.CODE_UNIQUE)) {
-        LOG.warn("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
-
-      } else {
-        LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
+      if (e instanceof NotUniqueException && gbif.getDataset().getDoi() != null) {
+        // treat unique DOI constraints differently as we expect that to happen somtimes
+        LOG.warn("Failed to sync GBIF dataset {} >{}<. Non unique DOI {}", gbif.getGbifKey(), gbif.getTitle(), gbif.getDataset().getDoi());
       }
+      LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
     }
     return key;
   }

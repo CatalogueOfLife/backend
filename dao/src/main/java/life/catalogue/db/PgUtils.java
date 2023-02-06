@@ -11,6 +11,7 @@ import java.sql.Statement;
 
 public class PgUtils {
   private static final Logger LOG = LoggerFactory.getLogger(PgUtils.class);
+  public static final String CODE_UNIQUE = "23505";
 
   private PgUtils () {
 
@@ -20,7 +21,7 @@ public class PgUtils {
     PSQLException pe = (PSQLException) e.getCause();
     // https://www.postgresql.org/docs/12/errcodes-appendix.html
     // 23505 = unique_violation
-    return pe.getSQLState().equals("23505");
+    return pe.getSQLState().equals(CODE_UNIQUE);
   }
   
   public static void createDatabase(Connection con, String database, String user) throws SQLException {

@@ -1,6 +1,8 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.exception.NotUniqueException;
 import life.catalogue.api.model.CitationTest;
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -111,6 +113,18 @@ public class DatasetDaoTest extends DaoTestBase {
   public void invalid() throws Exception {
     Dataset d = DatasetMapperTest.create();
     d.setOrigin(null);
+    dao.create(d, Users.TESTER);
+  }
+
+  @Test(expected = NotUniqueException.class)
+  public void duplicateDOI() throws Exception {
+    final DOI doi = DOI.col("1234567");
+    Dataset d = DatasetMapperTest.create();
+    d.setDoi(doi);
+    dao.create(d, Users.TESTER);
+
+    d = DatasetMapperTest.create();
+    d.setDoi(doi);
     dao.create(d, Users.TESTER);
   }
 
