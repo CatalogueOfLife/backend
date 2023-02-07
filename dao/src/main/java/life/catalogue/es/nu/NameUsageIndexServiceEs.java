@@ -81,6 +81,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     }
   }
 
+  private void index(Cursor<NameUsageWrapper> cursor, NameUsageIndexer indexer) throws IOException {
+    try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
+      cursor.forEach(handler);
+    } finally {
+      cursor.close();
+    }
+  }
+
   private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
     Stats stats = new Stats();
     boolean setMDC = false;
@@ -99,12 +107,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.usages = indexer.documentsIndexed();
       indexer.reset();
+
       try (SqlSession session = factory.openSession()) {
         LOG.info("Indexing bare names from dataset {}", datasetKey);
         NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-        Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(datasetKey, null);
-        Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
+        index(mapper.processDatasetBareNames(datasetKey, null), indexer);
       }
+
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.names = indexer.documentsIndexed();
 
@@ -151,12 +160,15 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       indexer.reset();
 
       LOG.info("Indexing bare names from sector {}", s.getKey());
-      Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(s.getDatasetKey(), s.getId());
-      Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
+      index(mapper.processDatasetBareNames(s.getDatasetKey(), s.getId()), indexer);
 
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.names = indexer.documentsIndexed();
+
+    } catch (IOException e) {
+      throw new EsException(e);
     }
+
     LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
       sectorKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
     return stats;

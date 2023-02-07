@@ -11,9 +11,7 @@ import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.dw.jersey.exception.PersistenceExceptionMapper;
 
 import java.util.*;
 

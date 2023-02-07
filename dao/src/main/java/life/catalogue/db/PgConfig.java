@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.Objects;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.postgresql.jdbc.PgConnection;
@@ -98,6 +99,16 @@ public class PgConfig extends PgDbConfig {
   @Min(1000)
   public int connectionTimeout = sec(5);
   
+  public PgConfig() {
+  }
+
+  public PgConfig(String host, String database, String user, String password) {
+    this.host = host;
+    this.database = database;
+    this.user = user;
+    this.password = password;
+  }
+
   /**
    * @return converted minutes in milliseconds
    */

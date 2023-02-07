@@ -37,7 +37,7 @@ public class BatchConsumer<T> implements Consumer<T>, AutoCloseable {
     
     @Override
     public void close() {
-      if (batch.size() != 0) {
+      if (!batch.isEmpty()) {
         submit();
       }
     }

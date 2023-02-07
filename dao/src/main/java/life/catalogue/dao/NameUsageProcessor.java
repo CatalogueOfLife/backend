@@ -93,7 +93,8 @@ public class NameUsageProcessor {
       ) {
         int counter = 0;
         // processing first returns all taxa before any synonym is returned - cache these and process them at the end
-        for (var nuw : nuwm.processWithoutClassification(datasetKey, sectorKey)) {
+        var cursor = nuwm.processWithoutClassification(datasetKey, sectorKey);
+        for (var nuw : cursor) {
           // set preloaded infos excluded in sql results as they are very repetitive
           nuw.setPublisherKey(publisher);
           if (nuw.getUsage().getName().getSectorKey() != null) {
@@ -128,6 +129,8 @@ public class NameUsageProcessor {
             }
           }
         }
+        LOG.info("Close cursor for dataset {}", datasetKey);
+        cursor.close();
 
         // now lets do the cached taxa
         LOG.info("Process {} taxa of dataset {}; loaded taxa={}", taxa.size(), datasetKey, loadCounter);
@@ -138,8 +141,14 @@ public class NameUsageProcessor {
             LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);
           }
         }
+        // TODO: remove as not needed, but while debugging memory issues useful
+        taxa.clear();
+        usageCache.clear();
       } catch (Exception e) {
         throw new RuntimeException(e);
+      } finally {
+        // TODO: remove as not needed, but while debugging memory issues useful
+        System.gc();
       }
     }
   }

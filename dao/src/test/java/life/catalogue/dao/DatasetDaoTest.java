@@ -116,7 +116,7 @@ public class DatasetDaoTest extends DaoTestBase {
     dao.create(d, Users.TESTER);
   }
 
-  @Test(expected = NotUniqueException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void duplicateDOI() throws Exception {
     final DOI doi = DOI.col("1234567");
     Dataset d = DatasetMapperTest.create();
