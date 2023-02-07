@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+@Ignore("manual tests to detect the indexing memory leak")
 public class NameUsageProcessorMEM {
 
   @ClassRule
