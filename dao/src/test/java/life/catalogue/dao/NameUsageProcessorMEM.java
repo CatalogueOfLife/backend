@@ -147,7 +147,10 @@ public class NameUsageProcessorMEM {
     NameUsageProcessorMEM.pg.before();
     try {
       NameUsageProcessorMEM proc = new NameUsageProcessorMEM();
-      proc.processDataset();
+      for (int x=1; x < 10; x++) {
+        System.out.printf("\n\n### PROCESS DATASET %s %sth time ###\n", proc.datasetKey, x);
+        proc.processDataset();
+      }
 
     } finally {
       NameUsageProcessorMEM.pg.after();

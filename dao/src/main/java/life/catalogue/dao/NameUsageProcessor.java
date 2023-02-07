@@ -8,11 +8,13 @@ import life.catalogue.cache.ObjectCache;
 import life.catalogue.cache.ObjectCacheMapDB;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.kryo.ApiKryoPool;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -91,10 +93,9 @@ public class NameUsageProcessor {
       try (ObjectCache<NameUsageWrapper> taxa = buildObjCache();
            UsageCache usageCache = buildUsageCache()
       ) {
-        int counter = 0;
+        final AtomicInteger counter = new AtomicInteger(0);
         // processing first returns all taxa before any synonym is returned - cache these and process them at the end
-        var cursor = nuwm.processWithoutClassification(datasetKey, sectorKey);
-        for (var nuw : cursor) {
+        PgUtils.consume(() -> nuwm.processWithoutClassification(datasetKey, sectorKey), nuw -> {
           // set preloaded infos excluded in sql results as they are very repetitive
           nuw.setPublisherKey(publisher);
           if (nuw.getUsage().getName().getSectorKey() != null) {
@@ -104,7 +105,7 @@ public class NameUsageProcessor {
           if (nuw.getUsage().isTaxon()) {
             taxa.put(nuw);
             // dont do anything else here now - we load all taxa first and process them later to build up the classification
-            if (counter++ % LOG_INTERVAL == 0) {
+            if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
               LOG.debug("Cached {} taxa of dataset {}", counter, datasetKey);
             }
 
@@ -116,7 +117,7 @@ public class NameUsageProcessor {
               if (syn.getParentId()==null) {
                 // major data inconsistency - cant work with this one!
                 LOG.warn("Synonym {} without parentID found {}", syn.getId(), syn.getLabel());
-                continue;
+                return;
               }
               // we list all accepted first, so the key must exist
               Taxon acc = (Taxon) Preconditions.checkNotNull(taxa.get(syn.getParentId()), "accepted name for synonym "+ syn +" missing").getUsage();
@@ -124,31 +125,23 @@ public class NameUsageProcessor {
               addClassification(nuw, taxa, usageCache, num);
             }
             consumer.accept(nuw);
-            if (counter++ % LOG_INTERVAL == 0) {
+            if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
               LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);
             }
           }
-        }
-        LOG.info("Close cursor for dataset {}", datasetKey);
-        cursor.close();
+        });
 
         // now lets do the cached taxa
         LOG.info("Process {} taxa of dataset {}; loaded taxa={}", taxa.size(), datasetKey, loadCounter);
         for (var nuw : taxa) {
           addClassification(nuw, taxa, usageCache, num);
           consumer.accept(nuw);
-          if (counter++ % LOG_INTERVAL == 0) {
+          if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
             LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);
           }
         }
-        // TODO: remove as not needed, but while debugging memory issues useful
-        taxa.clear();
-        usageCache.clear();
       } catch (Exception e) {
         throw new RuntimeException(e);
-      } finally {
-        // TODO: remove as not needed, but while debugging memory issues useful
-        System.gc();
       }
     }
   }

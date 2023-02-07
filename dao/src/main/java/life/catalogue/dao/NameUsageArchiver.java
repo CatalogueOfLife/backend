@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.IdReportType;
 import life.catalogue.common.id.IdConverter;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 
 import org.apache.ibatis.session.ExecutorType;
@@ -11,6 +12,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Service that builds the name usage archive for projects based on their existing id_reports.
@@ -69,8 +72,8 @@ public class NameUsageArchiver {
    * @return number of archived usages, i.e. newly archived - resurrected ones
    */
   public int archiveRelease(int projectKey, int releaseKey) {
-    int counter = 0;
-    int delCounter = 0;
+    final AtomicInteger counter = new AtomicInteger(0);
+    final AtomicInteger delCounter = new AtomicInteger(0);
     try (SqlSession session = factory.openSession(true);
          SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)
     ) {
@@ -92,20 +95,20 @@ public class NameUsageArchiver {
 
       LOG.info("Rebuilding names archive from id reports for release {} from project {} with previous release {}", releaseKey, projectKey, previousKey);
       final DSID<String> archiveKey = DSID.root(projectKey);
-      for (IdReportEntry r : idm.processDataset(releaseKey)) {
+      PgUtils.consume(() -> idm.processDataset(releaseKey), r -> {
         if (r.getType() != IdReportType.CREATED) {
           final String id = IdConverter.LATIN29.encode(r.getId());
 
           if (r.getType() == IdReportType.RESURRECTED) {
             anm.delete(archiveKey.id(id));
-            delCounter++;
+            delCounter.incrementAndGet();
 
           } else if (r.getType() == IdReportType.DELETED) {
             var oldKey = DSID.of(previousKey, id);
             var u = num.get(oldKey);
             if (u == null) {
               LOG.warn("Cannot archive missing name usage {}, deleted from dataset {}", oldKey, releaseKey);
-              continue;
+              return;
             }
             // assemble archived usage
             ArchivedNameUsage au = new ArchivedNameUsage(u);
@@ -142,21 +145,21 @@ public class NameUsageArchiver {
 
             } else if (u.isBareName()) {
               LOG.warn("{} stable ID {} is a {}. Skip", r.getType(), id, u.getStatus());
-              continue;
+              return;
             }
 
             anm.create(au);
-            if (counter++ % 5000 == 0) {
+            if (counter.incrementAndGet() % 5000 == 0) {
               batchSession.commit();
             }
           }
         }
-      }
+      });
       batchSession.commit();
       LOG.info("Copied {} name usages into the project archive {} as their stable IDs were deleted in release {}.", counter, projectKey, releaseKey);
       LOG.info("Deleted {} resurrected name usages from the project archive {}.", delCounter, projectKey);
     }
-    return counter - delCounter;
+    return counter.get() - delCounter.get();
   }
 
 }

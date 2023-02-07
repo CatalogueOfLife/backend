@@ -5,6 +5,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.NameMapper;
@@ -62,7 +63,7 @@ public class DatasetMatcher {
       update = nmm.exists(datasetKey);
       final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT;
       LOG.info("{} name matches for {}{}", update ? "Update" : "Create", isProject ? "project " : "", datasetKey);
-      nm.processDataset(datasetKey).forEach(hn);
+      PgUtils.consume(() -> nm.processDataset(datasetKey), hn);
       // also match archived names
       if (isProject) {
         final int totalBeforeArchive = total;

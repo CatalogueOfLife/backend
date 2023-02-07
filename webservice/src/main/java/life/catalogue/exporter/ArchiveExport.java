@@ -11,11 +11,14 @@ import life.catalogue.common.func.ThrowingConsumer;
 import life.catalogue.common.io.TermWriter;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.NameProcessable;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.apache.poi.ss.formula.functions.T;
 
 import org.gbif.dwc.terms.Term;
 
@@ -192,13 +195,13 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      Cursor<NameUsageBase> cursor;
+      final Cursor<NameUsageBase> cursor;
       if (fullDataset) {
         cursor = num.processDataset(datasetKey, null, null);
       } else {
         cursor = num.processTree(datasetKey, null, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms(), true);
       }
-      cursor.forEach(this::consumeUsage);
+      PgUtils.consume(() -> cursor, this::consumeUsage);
 
       // add bare names?
       if (req.isBareNames()) {
@@ -214,7 +217,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
   }
 
   private void catchTruncation(RuntimeException e){
-    if (e.getCause() != null && e.getCause() instanceof ExcelTermWriter.MaxRowsException) {
+    if (e.getCause() instanceof ExcelTermWriter.MaxRowsException) {
       // we truncate the output and keep a warning, but allow to proceed
       LOG.warn(e.getCause().getMessage());
       getExport().addTruncated(writer.getRowType());
@@ -278,7 +281,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       try (SqlSession session = factory.openSession()) {
         ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
         if (fullDataset) {
-          rm.processDataset(datasetKey).forEach(r -> {
+          PgUtils.consume(()->rm.processDataset(datasetKey), r -> {
             try {
               write(r);
               writer.next();
@@ -302,12 +305,12 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private <T extends SectorScopedEntity<Integer> & Referenced> void exportTaxonExtension(EntityType entity, Class<? extends TaxonExtensionMapper<T>> mapperClass, ThrowingBiConsumer<String, T, IOException> consumer) throws IOException {
+  private <T extends SectorScopedEntity<Integer> &Referenced > void exportTaxonExtension(EntityType entity, Class < ? extends TaxonExtensionMapper<T>> mapperClass, ThrowingBiConsumer < String, T, IOException > consumer) throws IOException {
     if (newDataFile(define(entity))) {
       try (SqlSession session = factory.openSession()) {
         TaxonExtensionMapper<T> exm = session.getMapper(mapperClass);
         if (fullDataset) {
-          exm.processDataset(datasetKey).forEach(x -> {
+          PgUtils.consume(()->exm.processDataset(datasetKey), x -> {
             try {
               trackRefId(x.getObj());
               consumer.accept(x.getTaxonID(), x.getObj());
@@ -316,6 +319,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
               throw new RuntimeException(e);
             }
           });
+
         } else {
           for (String id : taxonIDs) {
             for (T x : exm.listByTaxon(entityKey.id(id))) {
@@ -341,7 +345,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         try (SqlSession session = factory.openSession()) {
           M mapper = session.getMapper(mapperClass);
           if (fullDataset) {
-            mapper.processDataset(datasetKey).forEach(x -> {
+            PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
               try {
                 trackRefId(x);
                 consumer.accept(x);
@@ -376,7 +380,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         try (SqlSession session = factory.openSession()) {
           M mapper = session.getMapper(mapperClass);
           if (fullDataset) {
-            mapper.processDataset(datasetKey).forEach(x -> {
+            PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
               try {
                 trackRefId(x);
                 consumer.accept(x);
@@ -406,7 +410,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       try (SqlSession session = factory.openSession()) {
         EstimateMapper mapper = session.getMapper(EstimateMapper.class);
         if (fullDataset) {
-          mapper.processDataset(datasetKey).forEach(x -> {
+          PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
             try {
               trackRefId(x);
               write(x);

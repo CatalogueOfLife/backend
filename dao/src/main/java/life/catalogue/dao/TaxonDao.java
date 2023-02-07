@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.NameProcessable;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -627,7 +628,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       TaxonMapper tm = writeSession.getMapper(TaxonMapper.class);
       tm.resetDatasetSectorCount(datasetKey);
       SectorCountUpdHandler scConsumer = new SectorCountUpdHandler(tm);
-      readSession.getMapper(SectorMapper.class).processDataset(datasetKey).forEach(scConsumer);
+      PgUtils.consume(() -> readSession.getMapper(SectorMapper.class).processDataset(datasetKey), scConsumer);
       writeSession.commit();
       LOG.info("Updated dataset sector counts from {} sectors", scConsumer.counter);
     }

@@ -7,10 +7,12 @@ import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorImportDao;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -226,8 +228,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
       final SectorMapper sm = session.getMapper(SectorMapper.class);
       final SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
 
-      //sm.processDataset(d.getKey()).forEach(s -> {
-      sm.processDataset(d.getKey()).forEach(s -> {
+      PgUtils.consume(()->sm.processDataset(d.getKey()), s -> {
         counter.incrementAndGet();
         if (s.getSyncAttempt() == null) {
           LOG.warn("Ignore sector {} without last sync attempt from {} {}", s.getId(), kind, d.getKey());

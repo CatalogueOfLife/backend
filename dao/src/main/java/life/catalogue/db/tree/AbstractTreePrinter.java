@@ -5,6 +5,7 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.dao.TaxonCounter;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.gbif.nameparser.api.Rank;
@@ -74,7 +75,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName>, AutoC
     counter.clear();
     try {
       session = factory.openSession(true);
-      iterate().forEach(this);
+      PgUtils.consume(this::iterate, this);
       exhausted = true;
       // send final end signals
       while (!parents.isEmpty()) {

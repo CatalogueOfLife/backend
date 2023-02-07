@@ -12,6 +12,7 @@ import org.gbif.nameparser.api.Rank;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,13 +39,13 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
 
     // Modify the classification of the test objects and run the updater
     // Always create wrapper objects afresh b/c they will be pruned upon insert
-    List<NameUsageWrapper> nameUsages = createTestObjects();
+    List<SimpleNameClassification> nameUsages = createTestObjectsAsSimple();
     nameUsages.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " (updated name)")));
     new ClassificationUpdater(indexer, DATASET_KEY).accept(nameUsages);
     EsUtil.refreshIndex(getEsClient(), indexName());
 
     // Always create wrapper objects afresh b/c they will be pruned upon insert
-    List<NameUsageWrapper> expected = createTestObjects();
+    List<SimpleNameClassification> expected = createTestObjectsAsSimple();
     expected.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " (updated name)")));
 
     // Make sure that what ends up in ES equals the modified nam usages
@@ -53,6 +54,11 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     List<NameUsageWrapper> actual = search(query).getResult();
 
     assertEquals(expected, actual);
+  }
+
+
+  private static List<SimpleNameClassification> createTestObjectsAsSimple() {
+    return createTestObjects().stream().map(nu -> (SimpleNameClassification)nu).collect(Collectors.toList());
   }
 
   private static List<NameUsageWrapper> createTestObjects() {

@@ -7,6 +7,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetExportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 
@@ -82,12 +83,10 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
     return true;
   }
 
-  public void deleteByDataset(int datasetKey, int userKey){
+  public void deleteByDataset(final int datasetKey, int userKey){
     try (SqlSession session = factory.openSession()) {
-      DatasetExportMapper mapper = session.getMapper(mapperClass);
-      mapper.processDataset(datasetKey).forEach(exp -> {
-        deleteWithSession(exp.getKey(), userKey, session);
-      });
+      final DatasetExportMapper mapper = session.getMapper(mapperClass);
+      PgUtils.consume(()->mapper.processDataset(datasetKey), exp -> deleteWithSession(exp.getKey(), userKey, session));
     }
   }
 }

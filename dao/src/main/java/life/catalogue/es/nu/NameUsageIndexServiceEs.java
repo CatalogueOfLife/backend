@@ -2,16 +2,15 @@ package life.catalogue.es.nu;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.func.BatchConsumer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.NameUsageProcessor;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
@@ -238,10 +237,12 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public void updateClassification(int datasetKey, String rootTaxonId) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     try (SqlSession session = factory.openSession()) {
-      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-      Cursor<SimpleNameClassification> cursor = mapper.processTree(datasetKey, null, rootTaxonId);
-      ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey);
-      Iterables.partition(cursor, BATCH_SIZE).forEach(updater);
+      final ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey);
+      try (BatchConsumer<SimpleNameClassification> batchUpdater = new BatchConsumer<>(updater, BATCH_SIZE)) {
+        NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+        PgUtils.consume(() -> mapper.processTree(datasetKey, null, rootTaxonId), batchUpdater);
+      }
+
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
     }
     LOG.info("Successfully updated {} name usages", indexer.documentsIndexed());

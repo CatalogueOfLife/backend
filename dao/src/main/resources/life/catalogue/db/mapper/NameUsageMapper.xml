@@ -662,7 +662,7 @@
     SELECT * FROM tree;
   </select>
 
-  <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+  <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, ni.canonical_id, nm.type, np.scientific_name AS parent
     FROM name_usage u
       JOIN name n ON n.dataset_key=#{datasetKey} AND n.id=u.name_id
@@ -674,7 +674,7 @@
     ORDER BY ni.canonical_id, ni.id
   </select>
 
-  <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="2" resultSetType="FORWARD_ONLY">
+  <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT id FROM name_usage WHERE dataset_key=#{datasetKey}
     <if test="!synonyms">
       AND NOT is_synonym

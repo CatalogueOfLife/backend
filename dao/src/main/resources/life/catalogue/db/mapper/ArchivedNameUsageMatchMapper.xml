@@ -16,7 +16,7 @@
     WHERE nm.dataset_key = #{key.datasetKey} AND nm.usage_id = #{key.id}
   </select>
 
-  <select id="processIndexIds" resultType="Integer">
+  <select id="processIndexIds" resultType="Integer" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT DISTINCT index_id
     FROM name_usage_archive_match
     WHERE dataset_key = #{datasetKey}

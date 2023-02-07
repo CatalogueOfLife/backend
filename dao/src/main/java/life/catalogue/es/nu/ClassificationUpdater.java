@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toMap;
 
-public class ClassificationUpdater implements Consumer<List<? extends SimpleNameClassification>> {
+public class ClassificationUpdater implements Consumer<List<SimpleNameClassification>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ClassificationUpdater.class);
 
@@ -29,7 +29,7 @@ public class ClassificationUpdater implements Consumer<List<? extends SimpleName
   }
 
   @Override
-  public void accept(List<? extends SimpleNameClassification> batch) {
+  public void accept(List<SimpleNameClassification> batch) {
     LOG.debug("Received {} records from Postgres", batch.size());
     Map<String, SimpleNameClassification> lookups = batch.stream().collect(toMap(SimpleNameClassification::getId, Function.identity()));
     List<EsNameUsage> documents = loadNameUsages(lookups.keySet());

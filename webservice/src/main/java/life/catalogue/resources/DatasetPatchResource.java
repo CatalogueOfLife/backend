@@ -5,6 +5,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetPatchMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.common.ws.MoreMediaTypes;
@@ -37,7 +38,7 @@ public class DatasetPatchResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public List<Dataset> list(@PathParam("key") int datasetKey, @Context SqlSession session) {
     List<Dataset> patches = new ArrayList<>();
-    session.getMapper(DatasetPatchMapper.class).processDataset(datasetKey).forEach(patches::add);
+    PgUtils.consume(() -> session.getMapper(DatasetPatchMapper.class).processDataset(datasetKey), patches::add);
     return patches;
   }
 

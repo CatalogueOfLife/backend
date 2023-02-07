@@ -182,7 +182,7 @@
     WHERE u.dataset_key=#{datasetKey} AND u.id = #{id}
   </select>
 
-  <select id="processWithoutClassification" parameterType="map" resultMap="usageResultMap">
+  <select id="processWithoutClassification" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT u.id AS uid, NULL AS classification,
       <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT_BASE" />,
       r.citation AS according_to,
