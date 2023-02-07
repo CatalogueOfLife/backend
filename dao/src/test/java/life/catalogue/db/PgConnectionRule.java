@@ -41,7 +41,7 @@ public class PgConnectionRule extends ExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
+  public void before() throws Throwable {
     LOG.info("Creating hikari pool for Postgres server {}/{}", cfg.host, cfg.database);
     HikariConfig hikari = cfg.hikariConfig();
     hikari.setAutoCommit(false);

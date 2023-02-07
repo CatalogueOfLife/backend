@@ -90,7 +90,6 @@ public class NameUsageProcessorMEM {
     return t.getId();
   }
 
-  @Test
   public void processDataset() {
     DRH handler = new DRH();
     NameUsageProcessor proc = new NameUsageProcessor(pg.getSqlSessionFactory(), TempFile.directoryFile());
@@ -142,5 +141,16 @@ public class NameUsageProcessorMEM {
       }
     }
   }
+  }
+
+  public static void main(String[] args) throws Throwable {
+    NameUsageProcessorMEM.pg.before();
+    try {
+      NameUsageProcessorMEM proc = new NameUsageProcessorMEM();
+      proc.processDataset();
+
+    } finally {
+      NameUsageProcessorMEM.pg.after();
+    }
   }
 }
