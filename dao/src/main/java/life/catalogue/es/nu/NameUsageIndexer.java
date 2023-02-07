@@ -46,10 +46,6 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   @Override
   public void accept(List<NameUsageWrapper> batch) {
-    // TODO: use acceptREAL, but while debugging memory issues avoid any ES code
-  }
-
-  public void acceptREAL(List<NameUsageWrapper> batch) {
     if (EXTRA_STATS) {
       indexWithExtraStats(batch);
     } else {
