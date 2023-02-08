@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -45,6 +46,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.checkerframework.checker.units.qual.K;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,6 +183,36 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
       return d.getKey();
     }
+  }
+
+  public Dataset get(UUID gbifKey) {
+    try (SqlSession session = factory.openSession()) {
+      var mapper = session.getMapper(mapperClass);
+      return mapper.getByGBIF(gbifKey);
+    }
+  }
+
+  public DatasetWithSettings getWithSettings(UUID gbifKey) {
+    try (SqlSession session = factory.openSession()) {
+      var mapper = session.getMapper(mapperClass);
+      return addSettings(mapper.getByGBIF(gbifKey), mapper);
+    }
+  }
+
+  public DatasetWithSettings getWithSettings(Integer key) {
+    try (SqlSession session = factory.openSession()) {
+      var mapper = session.getMapper(mapperClass);
+      return addSettings(mapper.get(key), mapper);
+    }
+  }
+
+  private DatasetWithSettings addSettings(Dataset d, DatasetMapper mapper) {
+    DatasetWithSettings ds = null;
+    if (d != null) {
+      DatasetSettings s = mapper.getSettings(d.getKey());
+      ds = new DatasetWithSettings(d, s);
+    }
+    return ds;
   }
 
   /**
@@ -522,9 +554,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   public Integer create(DatasetWithSettings obj, int user) {
     var key = create(obj.getDataset(), user);
-    try (SqlSession session = factory.openSession(true)) {
-      var dm = session.getMapper(mapperClass);
-      dm.updateSettings(key, obj.getSettings(), user);
+    if (obj.getSettings() != null) {
+      try (SqlSession session = factory.openSession(true)) {
+        var dm = session.getMapper(mapperClass);
+        dm.updateSettings(key, obj.getSettings(), user);
+      }
     }
     return key;
   }
@@ -548,6 +582,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     pullLogo(obj, null, user);
     bus.post(DatasetChanged.created(obj));
     return false;
+  }
+
+  public int update(DatasetWithSettings obj, int user) {
+    final int key = super.update(obj.getDataset(), user);
+    putSettings(key, obj.getSettings(), user);
+    return key;
   }
 
   /**
