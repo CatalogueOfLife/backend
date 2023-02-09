@@ -16,7 +16,6 @@ public class RankTest {
    *  - rebuild the ES search index
    */
   @Test
-  @Ignore
   public void warnOnOrdinalChange() {
     assertEquals(105, Rank.values().length);
     assertEquals(5, Rank.KINGDOM.ordinal());
