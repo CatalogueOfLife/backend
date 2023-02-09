@@ -11,7 +11,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2023-01-24 new superdomain
+### 2023-01-24 verbatim index
 change verbatim terms index to support has key queries which we use in mappers.
 The jsonb_ops index is larger and slower for value queries, but it is the only one that supports has key ? queries
 ```
