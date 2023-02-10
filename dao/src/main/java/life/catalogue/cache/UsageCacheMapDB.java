@@ -44,6 +44,7 @@ public class UsageCacheMapDB implements UsageCache {
   private final Pool<Kryo> pool;
   private final File dbFile;
   private final boolean expireMutable;
+  private final boolean deleteOnClose;
   private DB db;
 
   /**
@@ -75,10 +76,12 @@ public class UsageCacheMapDB implements UsageCache {
   /**
    * @param location the db file for storing the values
    * @param expireMutable if true requires mybatis to be setup and the DatasetInfoCache is used to know when mutable datasets should be expired soon (1h?)
+   * @param deleteOnClose if true deletes all persistent data when closed
    */
-  public UsageCacheMapDB(File location, boolean expireMutable, int kryoMaxCapacity) throws IOException {
+  public UsageCacheMapDB(File location, boolean expireMutable, boolean deleteOnClose, int kryoMaxCapacity) throws IOException {
     this.dbFile = location;
     this.expireMutable = expireMutable;
+    this.deleteOnClose = deleteOnClose;
     if (!location.exists()) {
       FileUtils.forceMkdirParent(location);
       LOG.info("Create persistent usage cache at {}", location.getAbsolutePath());
@@ -124,6 +127,10 @@ public class UsageCacheMapDB implements UsageCache {
   @Override
   public void close() {
     stop();
+    if (deleteOnClose) {
+      LOG.info("Removing entire usage cache at {}", dbFile);
+      dbFile.delete();
+    }
   }
 
   private static String dbname(int datasetKey) {
@@ -188,6 +195,9 @@ public class UsageCacheMapDB implements UsageCache {
     return null;
   }
 
+  /**
+   * Removes all cached content for a specific dataset.
+   */
   @Override
   public void clear(int datasetKey) {
     if (datasets.containsKey(datasetKey)) {
@@ -196,6 +206,9 @@ public class UsageCacheMapDB implements UsageCache {
     LOG.info("Cleared all usages for datasetKey {} from the cache", datasetKey);
   }
 
+  /**
+   * Removes all cached content.
+   */
   @Override
   public void clear() {
     stop();

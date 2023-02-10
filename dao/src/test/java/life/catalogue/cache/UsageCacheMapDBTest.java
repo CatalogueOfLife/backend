@@ -29,14 +29,13 @@ public class UsageCacheMapDBTest {
   @Before
   public void init() throws Exception {
     dbf = File.createTempFile("coltest", "mapdb");
-    cache = new UsageCacheMapDB(dbf, false, 8);
+    cache = new UsageCacheMapDB(dbf, false, true, 8);
     cache.start();
   }
 
   @After
   public void destroy() throws Exception {
-    cache.stop();
-    FileUtils.deleteQuietly(dbf);
+    cache.close();
   }
 
   @Test
