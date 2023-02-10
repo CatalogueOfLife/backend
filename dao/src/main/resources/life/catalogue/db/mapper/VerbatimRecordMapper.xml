@@ -48,24 +48,29 @@
         <foreach item="type" index="index" collection="types" open="(" separator="," close=")">#{type, typeHandler=life.catalogue.db.type.TermTypeHandler}
         </foreach>
       </if>
-      <if test="terms != null and !terms.isEmpty()">
+      <if test="termValues != null and !termValues.isEmpty()">
         AND
         <choose>
           <when test="termOp.name() == 'OR'">
-            <foreach item="val" index="term" collection="terms" open="(" separator=" OR " close=")">
+            <foreach item="val" index="term" collection="termValues" open="(" separator=" OR " close=")">
               v.terms @> '{"${term}": "${val}"}'
             </foreach>
           </when>
           <otherwise>
             v.terms @>
-            <foreach item="val" index="term" collection="terms" open="'{" separator="," close="}'">
+            <foreach item="val" index="term" collection="termValues" open="'{" separator="," close="}'">
               "${term}": "${val}"
             </foreach>
           </otherwise>
         </choose>
       </if>
-      <if test="term != null">
-        AND v.terms ?? '${term}'
+      <if test="terms != null and !terms.isEmpty()">
+        <bind name="operator" value="' ' + termOp.name() + ' '" />
+        AND (
+        <foreach item="term" collection="terms" index="idx">
+          <if test="idx > 0"> ${operator} </if>v.terms ?? '${term}'
+        </foreach>
+        )
       </if>
       <if test="issues != null and !issues.isEmpty()">
         AND v.issues @>
@@ -86,7 +91,7 @@
     SELECT coalesce(
     (SELECT
     <choose>
-      <when test="q != null or term != null or (terms != null and !terms.isEmpty()) or (issues != null and !issues.isEmpty()) or (types != null and !types.isEmpty())">
+      <when test="q != null or (terms != null and !terms.isEmpty()) or (termValues != null and !termValues.isEmpty()) or (issues != null and !issues.isEmpty()) or (types != null and !types.isEmpty())">
         count(*)
         FROM
         <include refid="FROM"/>

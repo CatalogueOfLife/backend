@@ -97,7 +97,9 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
         AcefTerm.AcceptedTaxonID, "t2"
     ), OR, null, null, null));
 
-    assertEquals(0, mapper().count(datasetKey, null, null, AND, DcTerm.date, null, null));
+    assertEquals(0, mapper().count(datasetKey, null, null, AND, List.of(DcTerm.date), null, null));
+    assertEquals(0, mapper().count(datasetKey, null, null, AND, List.of(DcTerm.date, AcefTerm.Title), null, null));
+    assertEquals(0, mapper().count(datasetKey, null, null, OR, List.of(DcTerm.date, DcTerm.language), null, null));
   }
   
   private void insertTestData() {

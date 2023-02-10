@@ -30,15 +30,15 @@ public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetPro
    * @param types rowTypes to restrict to
    * @param terms optional list of terms and their values to filter by
    * @param termOp logical operator to combine multiple term filters
-   * @param term optional filter to return only records that have values for the given term
+   * @param terms optional filter to return only records that have values for the given term
    * @param issues optional issues to filter by
    * @param q full text search query on term values
    */
   int count(@Param("datasetKey") int datasetKey,
             @Nullable @Param("types") Collection<Term> types,
-            @Nullable @Param("terms") Map<Term, String> terms,
+            @Nullable @Param("termValues") Map<Term, String> termValues,
             @Param("termOp") LogicalOperator termOp,
-            @Nullable @Param("term") Term term,
+            @Nullable @Param("terms") List<Term> terms,
             @Nullable @Param("issues") Collection<Issue> issues,
             @Nullable @Param("q") String q
   );
@@ -49,7 +49,7 @@ public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetPro
    * @param types rowTypes to restrict to
    * @param terms optional list of terms and their values to filter by
    * @param termOp logical operator to combine multiple term filters
-   * @param term optional filter to return only records that have values for the given term
+   * @param terms optional filter to return only records that have values for the given term
    * @param issues optional issues to filter by
    * @param q full text search query on term values
    * @param page
@@ -57,9 +57,9 @@ public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetPro
    */
   List<VerbatimRecord> list(@Param("datasetKey") int datasetKey,
                             @Nullable @Param("types") Collection<Term> types,
-                            @Nullable @Param("terms") Map<Term, String> terms,
+                            @Nullable @Param("termValues") Map<Term, String> termValues,
                             @Param("termOp") LogicalOperator termOp,
-                            @Nullable @Param("term") Term term,
+                            @Nullable @Param("terms") List<Term> terms,
                             @Nullable @Param("issues") Collection<Issue> issues,
                             @Nullable @Param("q") String q,
                             @Param("page") Page page

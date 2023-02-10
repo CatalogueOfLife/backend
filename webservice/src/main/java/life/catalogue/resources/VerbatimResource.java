@@ -31,11 +31,11 @@ import org.slf4j.LoggerFactory;
 public class VerbatimResource {
   private static final Set<String> KNOWN_PARAMS;
   static {
-    Set<String> paras = new HashSet<>();
-    paras.addAll(Page.PARAMETER_NAMES);
+    Set<String> paras = new HashSet<>(Page.PARAMETER_NAMES);
     paras.add("type");
-    paras.add("issue");
+    paras.add("term");
     paras.add("termOp");
+    paras.add("issue");
     paras.add("q");
     KNOWN_PARAMS = Collections.unmodifiableSet(paras);
   }
@@ -46,18 +46,18 @@ public class VerbatimResource {
   @GET
   public ResultPage<VerbatimRecord> list(@PathParam("key") int datasetKey,
                                          @QueryParam("type") List<Term> types,
-                                         @QueryParam("term") Term term,
+                                         @QueryParam("term") List<Term> terms,
                                          @QueryParam("termOp") @DefaultValue("AND") LogicalOperator termOp,
                                          @QueryParam("issue") List<Issue> issues,
                                          @QueryParam("q") String q,
                                          @Valid @BeanParam Page page,
                                          @Context UriInfo uri,
                                          @Context SqlSession session) {
-    Map<Term, String> terms = termFilter(uri.getQueryParameters());
+    Map<Term, String> termValues = termFilter(uri.getQueryParameters());
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
     return new ResultPage<>(page,
-        mapper.count(datasetKey, types, terms, termOp, term, issues, q),
-        mapper.list(datasetKey, types, terms, termOp, term, issues, q, page)
+        mapper.count(datasetKey, types, termValues, termOp, terms, issues, q),
+        mapper.list(datasetKey, types, termValues, termOp, terms, issues, q, page)
     );
   }
   
