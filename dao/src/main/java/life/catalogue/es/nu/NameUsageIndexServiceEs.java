@@ -93,7 +93,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     boolean setMDC = false;
     try {
       setMDC = LoggingUtils.setDatasetMDC(datasetKey, getClass());
-      LOG.info("Start indexing dataset {}", datasetKey);
       NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
       if (clearIndex) {
         LOG.info("Remove dataset {} from index", datasetKey);
