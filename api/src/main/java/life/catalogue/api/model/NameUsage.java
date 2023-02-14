@@ -60,4 +60,22 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, RankedID, Remar
     return getStatus() == null || getStatus().isBareName();
   }
 
+  /**
+   * factory to create a name usage instance based on the provided status and name.
+    */
+  static NameUsage create(TaxonomicStatus status, Name n) {
+    status = status == null ? TaxonomicStatus.ACCEPTED : status;
+    NameUsage nu;
+    if (status == TaxonomicStatus.BARE_NAME) {
+      nu = new BareName(n);
+    } else {
+      if (status.isSynonym()) {
+        nu = new Synonym(n);
+      } else {
+        nu = new Taxon(n);
+      }
+      nu.setStatus(status);
+    }
+    return nu;
+  }
 }

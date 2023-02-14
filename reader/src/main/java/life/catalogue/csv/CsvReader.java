@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -364,7 +365,7 @@ public class CsvReader {
     return x == null ? 0 : x.length();
   }
 
-  private static AbstractParser<?> newParser(CommonParserSettings<?> cfg) {
+  public static AbstractParser<?> newParser(CommonParserSettings<?> cfg) {
     if (cfg instanceof TsvParserSettings) {
       return new TsvParser((TsvParserSettings)cfg);
     }
@@ -372,6 +373,10 @@ public class CsvReader {
   }
 
   private Schema buildSchema(Path df, @Nullable String termPrefix) {
+    return buildSchema(df, termPrefix, this::detectRowType);
+  }
+
+  private static Schema buildSchema(Path df, @Nullable String termPrefix, BiFunction<Schema, String, Optional<Term>> detectRowTypeFunc) {
     LOG.debug("Detecting schema for file {}", PathUtils.getFilename(df));
     try {
       try (CharsetDetectingStream in = CharsetDetectingStream.create(Files.newInputStream(df))) {
@@ -436,7 +441,7 @@ public class CsvReader {
             set.setNumberOfRowsToSkip(1);
             
             // we create a tmp dummy schema with wrong rowType for convenience to find the real rowType - it will not survive
-            final Optional<Term> rowType = detectRowType(new Schema(List.of(df), DwcTerm.Taxon, charset, set, columns), termPrefix);
+            final Optional<Term> rowType = detectRowTypeFunc.apply(new Schema(List.of(df), DwcTerm.Taxon, charset, set, columns), termPrefix);
             if (rowType.isPresent()) {
               LOG.info("CSV {} schema with {} columns found for {} encoded file {}: {}",
                 rowType.get().prefixedName(), columns.size(), charset, PathUtils.getFilename(df),

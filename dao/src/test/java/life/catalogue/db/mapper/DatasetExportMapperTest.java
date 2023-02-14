@@ -1,9 +1,6 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.DatasetExport;
-import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
@@ -61,9 +58,10 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
 
   @Test
   public void search() throws Exception {
+    final int datasetKey = TestDataRule.APPLE.key;
     var f = new ExportSearchRequest();
     f.setStatus(Set.of(JobStatus.FAILED, JobStatus.CANCELED));
-    f.setDatasetKey(TestDataRule.APPLE.key);
+    f.setDatasetKey(datasetKey);
     f.setExcel(true);
     f.setSynonyms(false);
     f.setTaxonID("abcde");
@@ -71,6 +69,24 @@ public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, D
     var res = mapper().search(f, new Page());
     assertNotNull(res);
     assertTrue(res.isEmpty());
+
+    // create 4 exports
+    for (DataFormat df : List.of(DataFormat.ACEF,DataFormat.DWCA,DataFormat.TEXT_TREE,DataFormat.COLDP)) {
+      var exp = createTestEntity(datasetKey);
+      ExportRequest req = new ExportRequest();
+      req.setDatasetKey(datasetKey);
+      req.setFormat(df);
+      exp.setRequest(req);
+      mapper().create(exp);
+    }
+    Page p = new Page(0, 25);
+    var filter = ExportSearchRequest.fullDataset(TestDataRule.APPLE.key);
+    res = mapper().search(filter, p);
+    assertNotNull(res);
+    assertFalse(res.isEmpty());
+    assertEquals(4, res.size());
+    var resp = new ResultPage<>(p, res, () -> mapper().count(filter));
+    assertEquals(4, resp.getResult().size());
   }
 
   @Test

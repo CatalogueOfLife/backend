@@ -39,10 +39,12 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
     attempt++;
     // did we try several times already so it seems there is a longer running job blocking and the executor is rather idle
     if (attempt>25) {
-      TimeUnit.SECONDS.sleep(60);
+      TimeUnit.MINUTES.sleep(5);
     } else if (attempt>10) {
-      TimeUnit.SECONDS.sleep(10);
+      TimeUnit.MINUTES.sleep(1);
     } else if (attempt>5) {
+      TimeUnit.SECONDS.sleep(10);
+    } else if (attempt>2) {
       TimeUnit.SECONDS.sleep(1);
     } else {
       TimeUnit.MILLISECONDS.sleep(100);

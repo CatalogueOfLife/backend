@@ -15,10 +15,10 @@ import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class MatchingResourceTest extends ResourceTestBase {
+public class NamesIndexResourceTest extends ResourceTestBase {
 
-  public MatchingResourceTest() {
-    super("/name/matching");
+  public NamesIndexResourceTest() {
+    super("/nidx/match");
   }
 
   @Test(expected = ServiceUnavailableException.class)

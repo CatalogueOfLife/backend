@@ -27,8 +27,7 @@ public class Taxon extends NameUsageBase {
   }
 
   public Taxon(Name n) {
-    setName(n);
-    setDatasetKey(n.getDatasetKey());
+    super(n);
   }
 
   public Taxon(NameUsageBase other) {

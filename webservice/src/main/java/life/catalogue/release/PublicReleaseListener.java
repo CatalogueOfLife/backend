@@ -179,7 +179,7 @@ public class PublicReleaseListener {
         LOG.error("Updated COL release {} is missing a release date", datasetKey);
         return;
       }
-      var resp = dao.list(ExportSearchRequest.fullDataset(datasetKey), new Page(0, 20));
+      var resp = dao.list(ExportSearchRequest.fullDataset(datasetKey), new Page(0, 25));
       Set<DataFormat> done = new HashSet<>();
       for (DatasetExport exp : resp.getResult()) {
         if (!done.contains(exp.getRequest().getFormat())) {

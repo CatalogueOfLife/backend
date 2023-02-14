@@ -86,6 +86,7 @@
   </sql>
 
   <resultMap id="datasetExportResultMap" type="DatasetExport" autoMapping="true">
+    <id property="key" column="key"/>
     <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
     <result property="truncated" column="truncated" typeHandler="life.catalogue.db.type2.TermSetTypeHandler"/>
@@ -93,6 +94,7 @@
   </resultMap>
 
   <resultMap id="exportRequestResultMap" type="ExportRequest" autoMapping="true">
+    <id column="key"/>
     <result property="root" column="root" typeHandler="life.catalogue.db.type2.SimpleNameTypeHandler"/>
   </resultMap>
 

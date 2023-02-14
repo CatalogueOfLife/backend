@@ -141,7 +141,7 @@ public class ImporterResource {
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
-    return importManager.upload(datasetKey, archive, false, filenameFromHeaders(headers), null, user);
+    return importManager.upload(datasetKey, archive, false, ResourceUtils.filenameFromHeaders(headers), null, user);
   }
 
   @POST
@@ -151,7 +151,7 @@ public class ImporterResource {
       MoreMediaTypes.TEXT_WILDCARD})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
-    return importManager.upload(datasetKey, archive, true, filenameFromHeaders(headers), contentType2Suffix(headers), user);
+    return importManager.upload(datasetKey, archive, true, ResourceUtils.filenameFromHeaders(headers), contentType2Suffix(headers), user);
   }
 
   @POST
@@ -167,13 +167,6 @@ public class ImporterResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void cancel(@PathParam("key") int datasetKey, @Auth User user) {
     importManager.cancel(datasetKey, user.getKey());
-  }
-
-  private static String filenameFromHeaders(HttpHeaders h) {
-    if (h != null && h.getRequestHeaders() != null) {
-      return h.getRequestHeaders().getFirst(MoreHttpHeaders.FILENAME);
-    }
-    return null;
   }
 
   private static String contentType2Suffix(HttpHeaders h) {

@@ -23,9 +23,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/**
- *
- */
 public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMapper> {
 
   public DatasetMapperTest() {

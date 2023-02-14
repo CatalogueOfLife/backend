@@ -58,12 +58,12 @@ public class UsageMatcherGlobalTest {
       var origNU = num.get(dsid.id("oen3"));
       ((Synonym)origNU).setAccepted(null); // is purposely not populated in matches - parentID is enough
 
-      var match = matcher.match(datasetKey, num.get(dsid), List.of());
+      var match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of());
       var origSN = new SimpleNameWithPub(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameWithPub(match.usage), origSN);
 
       matcher.clear();
-      match = matcher.match(datasetKey, num.get(dsid), List.of());
+      match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of());
       assertEquals(new SimpleNameWithPub(match.usage), origSN);
     }
   }
@@ -125,7 +125,7 @@ public class UsageMatcherGlobalTest {
     var matchedParents = Arrays.stream(parents)
                               .map(this::fromRankedName)
                               .collect(Collectors.toList());
-    return matcher.match(datasetKey, u, matchedParents);
+    return matcher.matchWithParents(datasetKey, u, matchedParents);
   }
 
   ParentStack.MatchedUsage fromRankedName(SimpleName sn) {

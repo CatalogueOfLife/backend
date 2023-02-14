@@ -3,11 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.UsageCache;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.NameIndex;
-
-import org.apache.ibatis.session.SqlSession;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -78,7 +74,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
 
     // find out matching - even if we don't include the name in the merge we want the parents matched
-    var match = matcher.match(targetDatasetKey, nu, parents.classification());
+    var match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
     LOG.debug("{} matches {}", nu.getLabel(), match);
     // avoid the case when an accepted name without author is being matched against synonym names with authors from the same source
     if (match.isMatch()
@@ -142,7 +138,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // we need to commit the batch session to see the recent inserts
     batchSession.commit();
     Taxon t = new Taxon(n);
-    var m = matcher.match(targetDatasetKey, t, parents.classification());
+    var m = matcher.matchWithParents(targetDatasetKey, t, parents.classification());
     return usage(m.usage);
   }
 

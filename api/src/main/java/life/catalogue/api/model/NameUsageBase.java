@@ -53,6 +53,11 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public NameUsageBase() {
   }
 
+  public NameUsageBase(Name n) {
+    setName(n);
+    setDatasetKey(n.getDatasetKey());
+  }
+
   /**
    * Creates a shallow copy of the provided usage instance.
    */
@@ -75,11 +80,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   public NameUsageBase(SimpleName sn) {
     setId(sn.getId());
-    Name n = new Name();
-    n.setScientificName(sn.getName());
-    n.setAuthorship(sn.getAuthorship());
-    n.setRank(sn.getRank());
-    n.setCode(sn.getCode());
+    Name n = new Name(sn);
     setName(n);
     setStatus(sn.getStatus());
     setParentId(sn.getParent());

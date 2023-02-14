@@ -181,7 +181,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   public Name() {
   }
-  
+
+  public Name(SimpleName sn) {
+    setScientificName(sn.getName());
+    setAuthorship(sn.getAuthorship());
+    setRank(sn.getRank());
+    setCode(sn.getCode());
+  }
+
   /**
    * Creates a shallow copy of the provided Name instance.
    *

@@ -23,6 +23,10 @@ public class Synonym extends NameUsageBase implements Comparable<Synonym> {
   public Synonym() {
   }
 
+  public Synonym(Name n) {
+    super(n);
+  }
+
   public Synonym(NameUsageBase other) {
     super(other);
   }

@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.metadata.FmUtil;
 
 import java.io.IOException;
@@ -8,9 +9,7 @@ import java.io.Writer;
 import java.net.URI;
 
 import javax.ws.rs.RedirectionException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.*;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -19,6 +18,13 @@ public class ResourceUtils {
 
   public static RedirectionException redirect(URI location) {
     return new RedirectionException(Response.Status.FOUND, location);
+  }
+
+  public static String filenameFromHeaders(HttpHeaders h) {
+    if (h != null && h.getRequestHeaders() != null) {
+      return h.getRequestHeaders().getFirst(MoreHttpHeaders.FILENAME);
+    }
+    return null;
   }
 
   public static Response streamFreemarker(Object data, String template, MediaType mediaType) {
