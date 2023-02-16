@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import static org.gbif.nameparser.api.NameType.OTU;
+import static org.gbif.nameparser.api.Rank.UNRANKED;
 import static org.junit.Assert.*;
 
 /**
@@ -288,6 +290,25 @@ public class NameParserTest {
   @Test
   public void unparserOTUs() throws Exception {
     assertName("BOLD:AAA3374", "BOLD:AAA3374", NameType.OTU)
+      .nothingElse();
+
+    assertName("SH19186714.17FU", "SH19186714.17FU", NameType.OTU)
+      .nothingElse();
+
+    assertName("sh19186714.17fu", "SH19186714.17FU", NameType.OTU)
+      .nothingElse();
+
+    assertName("0-14-0-10-38-17 sp002774085", "0-14-0-10-38-17 sp002774085", OTU)
+      .species("0-14-0-10-38-17", "sp002774085")
+      .nothingElse();
+
+    assertName("18JY21-1 sp004344915", "18JY21-1 sp004344915", OTU)
+      .species("18JY21-1", "sp004344915")
+      .nothingElse();
+
+    // no OTU names
+    assertName("Boldenaria", "Boldenaria")
+      .monomial("Boldenaria", UNRANKED)
       .nothingElse();
   }
   
