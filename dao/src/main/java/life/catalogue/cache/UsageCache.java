@@ -51,8 +51,8 @@ public interface UsageCache extends AutoCloseable, Managed {
    * @param loader
    * @return
    */
-  default SimpleNameClassified withClassification(int datasetKey, SimpleNameWithPub usage, Function<DSID<String>, SimpleNameWithPub> loader) {
-    SimpleNameClassified sncl = new SimpleNameClassified(usage);
+  default SimpleNameClassified<SimpleNameWithPub> withClassification(int datasetKey, SimpleNameWithPub usage, Function<DSID<String>, SimpleNameWithPub> loader) {
+    SimpleNameClassified<SimpleNameWithPub> sncl = new SimpleNameClassified<>(usage);
     sncl.setClassification(new ArrayList<>());
     if (usage.getParent() != null) {
       addParents(sncl.getClassification(), DSID.of(datasetKey, usage.getParent()), loader);

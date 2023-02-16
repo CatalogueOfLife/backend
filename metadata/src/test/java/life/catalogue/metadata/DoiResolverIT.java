@@ -2,6 +2,7 @@ package life.catalogue.metadata;
 
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 
 import java.io.IOException;

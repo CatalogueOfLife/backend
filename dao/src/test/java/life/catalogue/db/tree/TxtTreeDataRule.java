@@ -108,7 +108,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   }
 
   private void insertNode(int datasetKey, TreeNode parent, TreeNode tn, boolean synonym) throws InterruptedException {
-    ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, IssueContainer.VOID).get();
+    ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, VerbatimRecord.VOID).get();
     Name n = nat.getName();
     n.setDatasetKey(datasetKey);
     n.setId(String.valueOf(tn.id));

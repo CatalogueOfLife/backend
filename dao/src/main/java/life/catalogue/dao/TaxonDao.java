@@ -404,7 +404,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   static void parseName(Name n) {
     if (!n.isParsed()) {
       try {
-        NameParser.PARSER.parse(n, IssueContainer.VOID);
+        NameParser.PARSER.parse(n, VerbatimRecord.VOID);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt(); // reset flag
       }

@@ -1,6 +1,7 @@
 package life.catalogue.parser;
 
 import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 
 import java.util.Optional;
@@ -88,8 +89,8 @@ public class SafeParser<T> {
    *
    * @return the parsed value if present, null if empty or unparsable
    */
-  public T orNull(Issue unparsableIssue, IssueContainer issueCollector) {
-    return orElse(() -> null, unparsableIssue, issueCollector);
+  public T orNull(Issue unparsableIssue, IssueContainer issues) {
+    return orElse(() -> null, unparsableIssue, issues);
   }
 
   /**
@@ -98,20 +99,20 @@ public class SafeParser<T> {
    *
    * @return the parsed value if present, other if empty or unparsable
    */
-  public T orElse(T other, Issue unparsableIssue, IssueContainer issueCollector) {
-    return orElse(()->other, unparsableIssue, issueCollector);
+  public T orElse(T other, Issue unparsableIssue, IssueContainer issues) {
+    return orElse(()->other, unparsableIssue, issues);
   }
 
   /**
    * Same as orElse but using the supplier syntax
    */
-  public T orElse(Supplier<? extends T> other, Issue unparsableIssue, IssueContainer issueCollector) {
+  public T orElse(Supplier<? extends T> other, Issue unparsableIssue, IssueContainer issues) {
     if (isParsable()) {
       if (result.isPresent()) {
         return result.get();
       }
     } else {
-      issueCollector.addIssue(unparsableIssue);
+      issues.addIssue(unparsableIssue);
     }
     return other.get();
   }

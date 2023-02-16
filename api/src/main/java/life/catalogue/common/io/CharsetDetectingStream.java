@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,15 @@ public class CharsetDetectingStream extends InputStream {
     Preconditions.checkNotNull(in);
     Preconditions.checkNotNull(charset);
     return new BufferedReader(new InputStreamReader(new BOMInputStream(in), charset));
+  }
+
+  /**
+   * Creates a buffered reader using the charset detecting stream to identify the charset.
+   */
+  public static BufferedReader createReader(InputStream in) throws IOException {
+    Preconditions.checkNotNull(in);
+    var cs = create(in);
+    return new BufferedReader(new InputStreamReader(cs, cs.charset));
   }
   
   public static CharsetDetectingStream create(InputStream in) throws IOException {
@@ -66,9 +76,78 @@ public class CharsetDetectingStream extends InputStream {
   public Charset getCharset() {
     return charset;
   }
-  
+
+
+  //
+  // DELEGATED INPUT STREAM METHODS
+  //
+
   @Override
   public int read() throws IOException {
     return input.read();
+  }
+
+  public static InputStream nullInputStream() {
+    return InputStream.nullInputStream();
+  }
+
+  @Override
+  public int read(@NotNull byte[] b) throws IOException {
+    return input.read(b);
+  }
+
+  @Override
+  public int read(@NotNull byte[] b, int off, int len) throws IOException {
+    return input.read(b, off, len);
+  }
+
+  @Override
+  public byte[] readAllBytes() throws IOException {
+    return input.readAllBytes();
+  }
+
+  @Override
+  public byte[] readNBytes(int len) throws IOException {
+    return input.readNBytes(len);
+  }
+
+  @Override
+  public int readNBytes(byte[] b, int off, int len) throws IOException {
+    return input.readNBytes(b, off, len);
+  }
+
+  @Override
+  public long skip(long n) throws IOException {
+    return input.skip(n);
+  }
+
+  @Override
+  public int available() throws IOException {
+    return input.available();
+  }
+
+  @Override
+  public void close() throws IOException {
+    input.close();
+  }
+
+  @Override
+  public void mark(int readlimit) {
+    input.mark(readlimit);
+  }
+
+  @Override
+  public void reset() throws IOException {
+    input.reset();
+  }
+
+  @Override
+  public boolean markSupported() {
+    return input.markSupported();
+  }
+
+  @Override
+  public long transferTo(OutputStream out) throws IOException {
+    return input.transferTo(out);
   }
 }

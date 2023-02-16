@@ -1,6 +1,6 @@
 package life.catalogue.matching.authorship;
 
-import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.Name;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.parser.NameParser;
@@ -28,7 +28,7 @@ public class BasionymSorterTest {
 
   private static Name parse(String x) {
     try {
-      return NameParser.PARSER.parse(x, null, null, IssueContainer.VOID).get().getName();
+      return NameParser.PARSER.parse(x, null, null, VerbatimRecord.VOID).get().getName();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new IllegalStateException("parser got interrupted");
@@ -36,7 +36,7 @@ public class BasionymSorterTest {
   }
 
   private static Name parse(String x, Rank rank) throws InterruptedException {
-    return NameParser.PARSER.parse(x, rank, null, IssueContainer.VOID).get().getName();
+    return NameParser.PARSER.parse(x, rank, null, VerbatimRecord.VOID).get().getName();
   }
 
   private List<Name> names(String... names) throws Exception {

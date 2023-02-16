@@ -1,11 +1,27 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.TaxonomicStatus;
+
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
 import java.util.List;
 import java.util.Objects;
 
-public class SimpleNameClassified extends SimpleNameWithPub {
+public class SimpleNameClassified<T extends SimpleName> extends SimpleNameWithPub {
   // classificaiton starting with direct parent
-  private List<SimpleNameWithPub> classification;
+  private List<T> classification;
+
+  public static SimpleNameClassified<SimpleName> snc(String id, Rank rank, NomCode code, TaxonomicStatus status, String name, String authorship) {
+    var sn = new SimpleNameClassified<>();
+    sn.setId(id);
+    sn.setName(name);
+    sn.setAuthorship(authorship);
+    sn.setRank(rank);
+    sn.setCode(code);
+    sn.setStatus(status);
+    return sn;
+  }
 
   public SimpleNameClassified() {
   }
@@ -14,11 +30,11 @@ public class SimpleNameClassified extends SimpleNameWithPub {
     super(other);
   }
 
-  public List<SimpleNameWithPub> getClassification() {
+  public List<T> getClassification() {
     return classification;
   }
 
-  public void setClassification(List<SimpleNameWithPub> classification) {
+  public void setClassification(List<T> classification) {
     this.classification = classification;
   }
 

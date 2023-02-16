@@ -16,7 +16,7 @@ import com.google.common.collect.Maps;
 /**
  *
  */
-abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote<T>> {
+public abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote<T>> {
   private static final Logger LOG = LoggerFactory.getLogger(EnumNoteParser.class);
   private final Map<String, EnumNote<T>> mapping = Maps.newHashMap();
   private final Class<T> enumClass;

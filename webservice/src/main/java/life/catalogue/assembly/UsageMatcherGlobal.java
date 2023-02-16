@@ -23,6 +23,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
 
+import javax.annotation.Nullable;
+
 /**
  * Matches usages against a given dataset. Matching is primarily based on names index matches,
  * but implements some further logic for canonical names and cross code homonyms.
@@ -84,8 +86,8 @@ public class UsageMatcherGlobal {
    * @param nu usage to match. Requires a name instance to exist
    * @param classification of the usage to be matched
    */
-  public UsageMatch match(int datasetKey, NameUsageBase nu, Classification classification) {
-    return match(datasetKey, nu, classification.asSimpleNames());
+  public UsageMatch match(int datasetKey, NameUsageBase nu, @Nullable Classification classification) {
+    return match(datasetKey, nu, classification == null ? Collections.emptyList() : classification.asSimpleNames());
   }
 
   /**
@@ -206,7 +208,7 @@ public class UsageMatcherGlobal {
 
     // first try exact single match with authorship
     if (qualifiedName) {
-      SimpleNameClassified match = null;
+      SimpleNameClassified<SimpleNameWithPub> match = null;
       for (var u : existingWithCl) {
         if (u.getNamesIndexId().equals(nu.getName().getNamesIndexId())) {
           if (match != null) {
@@ -239,7 +241,7 @@ public class UsageMatcherGlobal {
     }
 
     // all synonyms pointing to the same accepted? then it won't matter much for snapping
-    SimpleNameClassified synonym = null;
+    SimpleNameClassified<SimpleNameWithPub> synonym = null;
     String parentID = null;
     for (var u : existingWithCl) {
       if (u.getStatus().isTaxon()) {
@@ -288,7 +290,7 @@ public class UsageMatcherGlobal {
   }
 
   // if authors are missing require the classification to not contradict!
-  private boolean classificationMatches(TaxGroup group, SimpleNameClassified candidate) {
+  private boolean classificationMatches(TaxGroup group, SimpleNameClassified<SimpleNameWithPub> candidate) {
     if (group == null) {
       return true;
     }
@@ -300,7 +302,7 @@ public class UsageMatcherGlobal {
    * The classification comparison below is rather strict
    * require a match to one of the higher rank homonyms (the old code even did not allow for higher rank homonyms at all!)
    */
-  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified> homonyms, List<ParentStack.MatchedUsage> parents) {
+  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified<SimpleNameWithPub>> homonyms, List<ParentStack.MatchedUsage> parents) {
     if (parents == null || parents.isEmpty()) {
       // pick first
       var first = homonyms.get(0);
@@ -312,7 +314,7 @@ public class UsageMatcherGlobal {
                                       .map(p -> p.match == null ? p.usage.getCanonicalId() : p.match.getCanonicalId())
                                       .filter(Objects::nonNull)
                                       .collect(Collectors.toSet());
-    SimpleNameClassified best = homonyms.get(0);
+    SimpleNameClassified<SimpleNameWithPub> best = homonyms.get(0);
     int max = 0;
     for (var hom : homonyms) {
       Set<Integer> cNidx = hom.getClassification().stream()

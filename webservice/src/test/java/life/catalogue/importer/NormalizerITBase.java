@@ -289,7 +289,7 @@ abstract class NormalizerITBase {
   }
 
   public boolean hasIssues(VerbatimEntity ent, Issue... issues) {
-    IssueContainer ic = store.getVerbatim(ent.getVerbatimKey());
+    VerbatimRecord ic = store.getVerbatim(ent.getVerbatimKey());
     for (Issue is : issues) {
       if (!ic.hasIssue(is))
         return false;

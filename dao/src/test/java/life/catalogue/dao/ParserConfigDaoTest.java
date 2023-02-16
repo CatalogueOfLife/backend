@@ -1,6 +1,6 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.Users;
@@ -40,7 +40,7 @@ public class ParserConfigDaoTest {
   }
 
   void assertParsed(String name, String authorship, Rank rank, String year, String... authors) throws InterruptedException {
-    ParsedNameUsage pn = NameParser.PARSER.parse(name, authorship, rank, null, IssueContainer.VOID).get();
+    ParsedNameUsage pn = NameParser.PARSER.parse(name, authorship, rank, null, VerbatimRecord.VOID).get();
     assertEquals(rank, pn.getName().getRank());
     assertEquals(Authorship.yearAuthors(year, authors), pn.getName().getCombinationAuthorship());
   }

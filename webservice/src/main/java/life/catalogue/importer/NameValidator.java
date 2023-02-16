@@ -1,8 +1,8 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.Name;
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.Issue;
 
 import org.gbif.nameparser.api.NameType;
@@ -34,12 +34,12 @@ public class NameValidator {
   static final CharMatcher CLOSE_BRACKETS = CharMatcher.anyOf("])}");
 
   
-  static class LazyVerbatimRecord implements IssueContainer {
-    private VerbatimRecord container;
-    private final Supplier<VerbatimRecord> supplier;
+  static class LazyVerbatimRecord<T extends IssueContainer> implements IssueContainer {
+    private T container;
+    private final Supplier<T> supplier;
     private int startSize;
   
-    LazyVerbatimRecord(Supplier<VerbatimRecord> supplier) {
+    LazyVerbatimRecord(Supplier<T> supplier) {
       this.supplier = supplier;
     }
     
@@ -84,10 +84,10 @@ public class NameValidator {
     }
   }
   
-  public static VerbatimRecord flagIssues(Name n, VerbatimRecord v) {
-    return flagIssues(n, new Supplier<VerbatimRecord>() {
+  public static IssueContainer flagIssues(Name n, IssueContainer v) {
+    return flagIssues(n, new Supplier<IssueContainer>() {
       @Override
-      public VerbatimRecord get() {
+      public IssueContainer get() {
         return v;
       }
     });
@@ -99,8 +99,8 @@ public class NameValidator {
    * populated propLabel and available propLabel make sense together.
    * @return a non null VerbatimRecord if any issue have been added
    */
-  public static VerbatimRecord flagIssues(Name n, Supplier<VerbatimRecord> issueSupplier) {
-    final LazyVerbatimRecord v = new LazyVerbatimRecord(issueSupplier);
+  public static <T extends IssueContainer> T flagIssues(Name n, Supplier<T> issueSupplier) {
+    final LazyVerbatimRecord<T> v = new LazyVerbatimRecord<>(issueSupplier);
     // only check for type scientific which is parsable
     if (n.getType() == NameType.SCIENTIFIC && n.isParsed()) {
       flagParsedIssues(n, v);

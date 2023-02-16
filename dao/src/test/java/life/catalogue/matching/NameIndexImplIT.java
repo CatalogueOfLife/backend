@@ -3,7 +3,7 @@ package life.catalogue.matching;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
-import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
@@ -791,7 +791,7 @@ public class NameIndexImplIT {
   }
 
   static Name name(String name, Rank rank) throws InterruptedException {
-    Name n = TestEntityGenerator.setUserDate(NameParser.PARSER.parse(name, rank, null, IssueContainer.VOID).get().getName());
+    Name n = TestEntityGenerator.setUserDate(NameParser.PARSER.parse(name, rank, null, VerbatimRecord.VOID).get().getName());
     n.setRank(rank);
     return n;
   }

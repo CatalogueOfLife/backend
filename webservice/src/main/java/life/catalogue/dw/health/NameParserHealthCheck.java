@@ -1,7 +1,7 @@
 package life.catalogue.dw.health;
 
 
-import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.parser.NameParser;
@@ -24,7 +24,7 @@ public class NameParserHealthCheck extends HealthCheck {
   
   @Override
   protected Result check() throws Exception {
-    Optional<ParsedNameUsage> result = parser.parse("Abies alba (L.) Mill. sec Döring 1999", Rank.SPECIES, null, IssueContainer.VOID);
+    Optional<ParsedNameUsage> result = parser.parse("Abies alba (L.) Mill. sec Döring 1999", Rank.SPECIES, null, VerbatimRecord.VOID);
     if (result.isPresent()) {
       Name name = result.get().getName();
       if (name.isBinomial() &&

@@ -107,7 +107,7 @@ public class UsageMatcherGlobalTest {
   }
 
   UsageMatch match(Rank rank, String name, String authors, TaxonomicStatus status, NomCode code, SimpleName... parents) throws InterruptedException {
-    var opt = NameParser.PARSER.parse(name, authors, rank, code, IssueContainer.VOID);
+    var opt = NameParser.PARSER.parse(name, authors, rank, code, VerbatimRecord.VOID);
     Name n = opt.get().getName();
     n.setDatasetKey(Datasets.COL);
     n.setRank(ObjectUtils.coalesce(rank, opt.get().getName().getRank(), Rank.UNRANKED));

@@ -34,7 +34,7 @@ public class ReferenceFactoryTest {
   ReferenceStore refStore = ReferenceStore.passThru();
   DoiResolver resolver;
   ReferenceFactory rf;
-  IssueContainer issues;
+  VerbatimRecord issues;
   Citation citation;
 
   @Before
@@ -50,7 +50,7 @@ public class ReferenceFactoryTest {
     citation.setAuthor(List.of(new CslName("Charles")));
     citation.setIssued(FuzzyDate.of(1878));
     citation.setDoi(d);
-    when(resolver.resolve(any(DOI.class), any(IssueContainer.class))).thenReturn(citation);
+    when(resolver.resolve(any(DOI.class), any(VerbatimRecord.class))).thenReturn(citation);
 
     rf = new ReferenceFactory(5, refStore, resolver);
     rf.setResolveDOIs(DoiResolution.NEVER);

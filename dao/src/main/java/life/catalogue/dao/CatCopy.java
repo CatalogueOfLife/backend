@@ -143,10 +143,10 @@ public class CatCopy {
     return e;
   }
   
-  private static void updateVernacularName(VernacularName vn, IssueContainer rec) {
+  private static void updateVernacularName(VernacularName vn, IssueContainer issues) {
     if (StringUtils.isBlank(vn.getLatin())) {
       vn.setLatin(latinName(vn.getName()));
-      rec.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
+      issues.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
     }
   }
   

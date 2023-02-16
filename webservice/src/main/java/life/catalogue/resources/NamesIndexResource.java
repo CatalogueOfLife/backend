@@ -7,6 +7,8 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.importer.InterpreterBase;
+import life.catalogue.importer.NameInterpreter;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexImpl;
 import life.catalogue.matching.NameIndexMapDBStore;
@@ -38,6 +40,7 @@ public class NamesIndexResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexResource.class);
   private final NameIndex ni;
+  private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings());
 
   public NamesIndexResource(NameIndex ni) {
     this.ni = ni;
@@ -58,15 +61,15 @@ public class NamesIndexResource {
   @GET
   @Path("match")
   public NameMatch match(@QueryParam("q") String q,
-                         @QueryParam("scientificName") String scientificName,
+                         @QueryParam("name") String sciname,
                          @QueryParam("authorship") String authorship,
                          @QueryParam("rank") Rank rank,
                          @QueryParam("code") NomCode code,
                          @QueryParam("verbose") boolean verbose) throws InterruptedException {
-    Name n = name(ObjectUtils.coalesce(scientificName, q), authorship, rank, code);
-    NameMatch m = ni.match(n, false, verbose);
-    LOG.debug("Matching {} to {}", n.getLabel(), m);
-    return m;
+    SimpleNameClassified<SimpleName> sn = SimpleNameClassified.snc(null, rank, code, null, ObjectUtils.coalesce(sciname, q), authorship);
+    Name n = interpreter.interpret(sn, IssueContainer.VOID)
+                        .orElseThrow(() -> new IllegalArgumentException("Failed to interpret name")).getName();
+    return ni.match(n, false, verbose);
   }
 
   @GET
@@ -80,24 +83,6 @@ public class NamesIndexResource {
     RegexUtils.validatePattern(regex);
     Page p = page == null ? new Page() : page;
     return session.getMapper(NamesIndexMapper.class).listByRegex(regex, canonical, rank, p);
-  }
-
-  static Name name(String name, String authorship, Rank rank, NomCode code) throws InterruptedException {
-    Optional<ParsedNameUsage> opt = NameParser.PARSER.parse(name, authorship, rank, code, IssueContainer.VOID);
-    if (opt.isPresent()) {
-      Name n = opt.get().getName();
-      // use parser determined code and rank in case nothing was given explicitly
-      if (rank != null) {
-        n.setRank(rank);
-      }
-      if (code != null) {
-        n.setCode(code);
-      }
-      return n;
-      
-    } else {
-      throw new IllegalArgumentException("Unable to parse name: " + name);
-    }
   }
 
   @POST

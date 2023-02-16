@@ -119,7 +119,7 @@ public class ReferenceFactory {
    * @param title       of paper or book
    * @param details     title of periodicals, volume number, and other common bibliographic details
    */
-  public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
+  public Reference fromACEF(String referenceID, String authors, String year, String title, String details, VerbatimRecord issues) {
     return fromDC(true, referenceID, null, authors, year, title, details, issues);
   }
   
@@ -233,7 +233,7 @@ public class ReferenceFactory {
    **/
   public Reference fromDC(String identifier, String bibliographicCitation,
                           String creator, String date, String title, String source,
-                          IssueContainer issues) {
+                          VerbatimRecord issues) {
     return fromDC(false, identifier, bibliographicCitation, creator, date, title, source, issues);
   }
 
@@ -243,7 +243,7 @@ public class ReferenceFactory {
    **/
   private Reference fromDC(boolean forceNew, String identifier, String bibliographicCitation,
                           String creator, String date, String title, String source,
-                          IssueContainer issues) {
+                          VerbatimRecord issues) {
     Reference ref = forceNew ? null : find(identifier, bibliographicCitation);
     if (ref == null) {
       CslData csl = new CslData();
@@ -284,7 +284,7 @@ public class ReferenceFactory {
    * @param issues
    * @return
    */
-  public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear, IssueContainer issues) {
+  public Reference fromDWC(String publishedInID, String publishedIn, String publishedInYear, VerbatimRecord issues) {
     String citation = publishedIn;
     if (publishedIn != null && publishedInYear != null && !publishedIn.contains(publishedInYear)) {
       citation = String.format("%s %s", publishedIn, publishedInYear);
@@ -301,7 +301,7 @@ public class ReferenceFactory {
     return ref;
   }
   
-  public Reference fromCitation(String id, String citation, IssueContainer issues) {
+  public Reference fromCitation(String id, String citation, VerbatimRecord issues) {
     Reference ref = find(id, citation);
     if (ref == null) {
       ref = newReference(datasetKey, id);
@@ -317,7 +317,7 @@ public class ReferenceFactory {
           // see if leftovers are authors
           String leftover = (matcher.group(1) + matcher.group(3)).trim();
           if (!StringUtils.isBlank(leftover)) {
-            IssueContainer authorIssues = new VerbatimRecord();
+            VerbatimRecord authorIssues = new VerbatimRecord();
             CslName[] authors = parseAuthors(StringUtils.removeEnd(leftover, ",").trim(), authorIssues);
             if (!authorIssues.hasIssue(Issue.CITATION_AUTHORS_UNPARSED)) {
               // parsed authors

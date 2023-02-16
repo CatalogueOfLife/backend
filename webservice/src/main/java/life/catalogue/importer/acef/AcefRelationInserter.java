@@ -3,6 +3,7 @@ package life.catalogue.importer.acef;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.importer.NameInterpreter;
 import life.catalogue.importer.RelationInserterBase;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoName;
@@ -24,10 +25,12 @@ public class AcefRelationInserter extends RelationInserterBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcefRelationInserter.class);
 
   private final AcefInterpreter inter;
-  
+  private final NameInterpreter nameInterpreter;
+
   public AcefRelationInserter(NeoDb store, AcefInterpreter inter) {
     super(store, AcefTerm.AcceptedTaxonID, AcefTerm.ParentSpeciesID, null);
     this.inter = inter;
+    this.nameInterpreter = new NameInterpreter(inter.getSettings());
   }
   
   @Override
@@ -40,7 +43,7 @@ public class AcefRelationInserter extends RelationInserterBase {
       if (p != null) {
         NeoName sp = store.nameByUsage(p);
         if (sp.getName().getRank() != Rank.GENUS) {
-          opt = inter.interpretName(true, u.getId(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
+          opt = nameInterpreter.interpret(true, u.getId(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
               null, sp.getName().getGenus(), sp.getName().getInfragenericEpithet(), sp.getName().getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet),
               null, null, v.get(AcefTerm.GSDNameStatus), null, null, null, v);
         }

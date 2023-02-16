@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.gbif.dwc.terms.UnknownTerm;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +46,28 @@ public final class VocabularyUtils {
   public static Term findTerm(String name, boolean isClassTerm) {
     return TF.findTerm(name.replaceAll("[#-]+", ""), isClassTerm);
   }
-  
+
+  public static Optional<Term> findTerm(String termPrefix, String name, boolean isClassTerm) {
+    // TermFactory will through IAE in case there is whitespace in the term name. Avoid that by cleaning up the provided argument first.
+    name = name.replaceAll("\\s","_");
+    String qualName = name;
+    if (termPrefix != null && !name.contains(":")) {
+      qualName = termPrefix + ":" + name;
+    }
+    try {
+      Term t = findTerm(qualName, isClassTerm);
+      if (t instanceof UnknownTerm) {
+        // avoid that the prefix is being used as part of the unknown URI
+        t = UnknownTerm.build(name, isClassTerm);
+        TermFactory.instance().registerTerm(t);
+        return Optional.of(t);
+      }
+      return Optional.of(t);
+    } catch (IllegalArgumentException e) {
+      return Optional.empty();
+    }
+  }
+
   /**
    * Generic method to toEnum an enumeration value for a given string based on the name of the enum member.
    * The toEnum is case insensitive and ignore whitespaces, underscores and dashes.

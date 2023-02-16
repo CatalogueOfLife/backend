@@ -1,10 +1,7 @@
 package life.catalogue.importer;
 
 import com.univocity.parsers.common.CommonParserSettings;
-import com.univocity.parsers.csv.Csv;
 import com.univocity.parsers.csv.CsvFormat;
-import com.univocity.parsers.csv.CsvParserSettings;
-import com.univocity.parsers.tsv.TsvParserSettings;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
@@ -22,14 +19,11 @@ import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.metadata.MetadataFactory;
 
-import lombok.val;
-
 import org.gbif.dwc.terms.Term;
 
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;

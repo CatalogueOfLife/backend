@@ -1,9 +1,6 @@
 package life.catalogue.parser;
 
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.ParsedNameUsage;
-import life.catalogue.api.model.ParserConfig;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 
@@ -474,7 +471,7 @@ public class NameParserTest {
     return assertName(rawName, rank, code, sciname, NameType.SCIENTIFIC);
   }
   
-  static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname, NameType type) throws UnparsableException, InterruptedException {
+  static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname, NameType type) throws InterruptedException {
     var issues = new IssueContainer.Simple();
     ParsedNameUsage n = NameParser.PARSER.parse(rawName, rank, code, issues).get();
     assertEquals(sciname, n.getName().getScientificName());

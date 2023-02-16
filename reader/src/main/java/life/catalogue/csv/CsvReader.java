@@ -274,27 +274,6 @@ public class CsvReader {
     }
   }
   
-  private static Optional<Term> findTerm(String termPrefix, String name, boolean isClassTerm) {
-    // TermFactory will through IAE in case there is whitespace in the term name. Avoid that by cleaning up the provided argument first.
-    name = name.replaceAll("\\s","_");
-    String qualName = name;
-    if (termPrefix != null && !name.contains(":")) {
-      qualName = termPrefix + ":" + name;
-    }
-    try {
-      Term t = VocabularyUtils.findTerm(qualName, isClassTerm);
-      if (t instanceof UnknownTerm) {
-        // avoid that the prefix is being used as part of the unknown URI
-        t = UnknownTerm.build(name, isClassTerm);
-        TermFactory.instance().registerTerm(t);
-        return Optional.of(t);
-      }
-      return Optional.of(t);
-    } catch (IllegalArgumentException e) {
-      return Optional.empty();
-    }
-  }
-  
   public MappingInfos getMappingFlags() {
     return mappingFlags;
   }
@@ -415,7 +394,7 @@ public class CsvReader {
             int unknownCounter = 0;
             for (String col : header) {
               if (StringUtils.isBlank(col)) continue;
-              Optional<Term> termOpt = findTerm(termPrefix, col, false);
+              Optional<Term> termOpt = VocabularyUtils.findTerm(termPrefix, col, false);
               if (termOpt.isPresent()) {
                 Term term = termOpt.get();
                 columns.add(new Schema.Field(term, idx++));
@@ -486,17 +465,17 @@ public class CsvReader {
       LOG.info("Use dwc:Taxon rowType for single text file {}", schema.getFirstFile());
       
     } else {
-      rt = findTerm(termPrefix, fn, true);
+      rt = VocabularyUtils.findTerm(termPrefix, fn, true);
       if (!rt.isPresent() || rt.get() instanceof UnknownTerm) {
         Optional<Term> orig = rt;
         // try without plural s
         if (fn.endsWith("s")) {
-          rt = findTerm(termPrefix, fn.substring(0,fn.length() - 1), true);
+          rt = VocabularyUtils.findTerm(termPrefix, fn.substring(0,fn.length() - 1), true);
         }
         // specials for taxon/taxa
         if (!rt.isPresent() || rt.get() instanceof UnknownTerm) {
           if (fn.equalsIgnoreCase("taxa")) {
-            rt = findTerm(termPrefix, "Taxon", true);
+            rt = VocabularyUtils.findTerm(termPrefix, "Taxon", true);
           }
         }
         // revert to first parsed unknown term

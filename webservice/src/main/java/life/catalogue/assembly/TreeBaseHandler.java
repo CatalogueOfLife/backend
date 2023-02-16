@@ -330,7 +330,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
               final String name = n2.getScientificName() + " " + coalesce(n2.getAuthorship(), "");
               NomCode code = coalesce(n2.getCode(), n.getCode());
               Rank rank = coalesce(n2.getRank(), n.getRank());
-              ParsedNameUsage nat = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).orElseGet(() -> {
+              ParsedNameUsage nat = NameParser.PARSER.parse(name, rank, code, VerbatimRecord.VOID).orElseGet(() -> {
                 LOG.warn("Unparsable decision name {}", name);
                 // add the full, unparsed authorship in this case to not lose it
                 ParsedNameUsage nat2 = new ParsedNameUsage();
