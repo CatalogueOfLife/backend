@@ -27,6 +27,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
@@ -530,81 +532,77 @@ public class NameIndexImplIT {
     setupMemory(true);
     assertEquals(0, ni.size());
 
-    var names = List.of(
+    var names = Stream.of(
       // FLOW placeholder
       Name.newBuilder()
           .scientificName("Aphaena dives var. [unnamed]")
           .authorship("Walker, 1851")
           .rank(Rank.SUBSPECIES)
           .type(NameType.PLACEHOLDER)
-          .code(NomCode.ZOOLOGICAL)
-          .build(),
+          .code(NomCode.ZOOLOGICAL),
       // ICTV virus
       Name.newBuilder()
           .scientificName("Abutilon mosaic Bolivia virus")
           .rank(Rank.SPECIES)
           .type(NameType.VIRUS)
-          .code(NomCode.VIRUS)
-          .build(),
+          .code(NomCode.VIRUS),
       Name.newBuilder()
           .scientificName("Abutilon mosaic Brazil virus")
           .rank(Rank.SPECIES)
           .type(NameType.VIRUS)
-          .code(NomCode.VIRUS)
-          .build(),
+          .code(NomCode.VIRUS),
       // GTDB OTU
       Name.newBuilder()
           .scientificName("AABM5-125-24")
           .rank(Rank.PHYLUM)
-          .type(NameType.OTU)
-          .build(),
+          .type(NameType.OTU),
       Name.newBuilder()
           .scientificName("Aureabacteria_A")
           .rank(Rank.PHYLUM)
           .type(NameType.OTU)
-          .code(NomCode.BACTERIAL)
-          .build(),
+          .code(NomCode.BACTERIAL),
       // GTDB informal
       Name.newBuilder()
           .scientificName("Aalborg-Aaw sp.")
           .genus("Aalborg-Aaw")
           .rank(Rank.SPECIES)
           .type(NameType.INFORMAL)
-          .code(NomCode.BACTERIAL)
-          .build(),
+          .code(NomCode.BACTERIAL),
       Name.newBuilder()
           .scientificName("Actinomarina sp.")
           .genus("Actinomarina")
           .rank(Rank.SPECIES)
           .type(NameType.INFORMAL)
-          .code(NomCode.BACTERIAL)
-          .build(),
+          .code(NomCode.BACTERIAL),
       // GTDB no name
       Name.newBuilder()
           .scientificName("B3-LCP")
           .rank(Rank.CLASS)
-          .type(NameType.NO_NAME)
-          .build(),
+          .type(NameType.NO_NAME),
       // VASCAN hybrid
       Name.newBuilder()
           .scientificName("Agropyron cristatum × Agropyron fragile")
           .rank(Rank.SPECIES)
           .type(NameType.HYBRID_FORMULA)
           .code(NomCode.BOTANICAL)
-          .build()
-    );
+    ).map(Name.Builder::build).collect(Collectors.toList());
 
-    for (int repeat=1; repeat<2; repeat++) {
+    for (int repeat=1; repeat<3; repeat++) {
       for (Name n : names) {
         var m = ni.match(n, true, true);
         if (NameIndexImpl.INDEX_NAME_TYPES.contains(n.getType())) {
           assertTrue(m.hasMatch());
+          assertNotNull(m.getName().getScientificName());
+          assertFalse(m.getName().isParsed());
           final Integer idx = m.getName().getKey();
           final Integer cidx = m.getName().getCanonicalId();
           if (n.isCanonical()) {
             assertEquals(idx, cidx);
           } else {
             assertNotEquals(idx, cidx);
+            var canon = ni.get(cidx);
+            assertEquals(m.getName().getScientificName(), canon.getScientificName());
+            assertNotEquals(m.getName().getRank(), canon.getRank()); // canonicals with OTU can only appear via rank normalisations
           }
         } else {
           assertFalse(m.hasMatch());

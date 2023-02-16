@@ -31,7 +31,7 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
     return v;
   }
 
-  VerbatimRecord getIssues(@Param("key") DSID<String> key);
+  VerbatimSource getIssues(@Param("key") DSID<String> key);
 
   void updateIssues(@Param("key") DSID<String> key, @Param("issues") Set<Issue> issues);
 

@@ -284,6 +284,12 @@ public class NameParserTest {
       .issue(Issue.AUTHORSHIP_REMOVED)
       .nothingElse();
   }
+
+  @Test
+  public void unparserOTUs() throws Exception {
+    assertName("BOLD:AAA3374", "BOLD:AAA3374", NameType.OTU)
+      .nothingElse();
+  }
   
   /**
    * Expect empty results for nothing or whitespace
@@ -509,6 +515,7 @@ public class NameParserTest {
         if (!tested.contains(p)) {
           switch (p) {
             case EPITHETS:
+              assertNull(n.getUninomial());
               assertNull(n.getGenus());
               assertNull(n.getInfragenericEpithet());
               assertNull(n.getSpecificEpithet());
@@ -584,6 +591,7 @@ public class NameParserTest {
     }
     
     NameAssertion infraGeneric(String genus, Rank rank, String infraGeneric) {
+      assertNull(n.getUninomial());
       assertEquals(genus, n.getGenus());
       assertEquals(infraGeneric, n.getInfragenericEpithet());
       assertNull(n.getSpecificEpithet());
@@ -593,6 +601,7 @@ public class NameParserTest {
     }
     
     NameAssertion species(String genus, String epithet) {
+      assertNull(n.getUninomial());
       assertEquals(genus, n.getGenus());
       assertNull(n.getInfragenericEpithet());
       assertEquals(epithet, n.getSpecificEpithet());
@@ -602,6 +611,7 @@ public class NameParserTest {
     }
     
     NameAssertion infraSpecies(String genus, String epithet, Rank rank, String infraEpithet) {
+      assertNull(n.getUninomial());
       assertEquals(genus, n.getGenus());
       assertNull(n.getInfragenericEpithet());
       assertEquals(epithet, n.getSpecificEpithet());
