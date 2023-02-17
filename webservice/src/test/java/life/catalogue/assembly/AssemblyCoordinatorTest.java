@@ -44,13 +44,13 @@ public class AssemblyCoordinatorTest {
     .around(matchingRule)
     .around(syncFactoryRule);
 
-  AssemblyCoordinator coord;
+  SyncManager coord;
 
   @Before
   public void init() {
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, syncFactoryRule.getDiDao());
 
-    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
+    coord = new SyncManager(PgSetupRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
   }
   
   @Test(expected = IllegalArgumentException.class)

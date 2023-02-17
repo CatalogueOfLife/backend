@@ -32,6 +32,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName>, AutoC
   protected final Integer sectorKey;
   protected final String startID;
   protected final boolean synonyms; // whether synonyms should be included or not
+  protected final Boolean extinct; // whether extinct usages should be included, excluded or it does not matter (NULL)
   protected final Set<Rank> ranks;
   protected final Rank lowestRank;
   protected final Rank countRank;
@@ -49,13 +50,14 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName>, AutoC
    * @param sectorKey optional sectorKey to restrict printed tree to
    * @param countRank the rank to be used when counting with the taxonCounter
    */
-  public AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+  public AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Boolean extinct, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
     this.writer = writer;
     this.datasetKey = datasetKey;
     this.startID = startID;
     this.sectorKey = sectorKey;
     this.factory = factory;
     this.synonyms = synonyms;
+    this.extinct = extinct;
     this.ranks = ObjectUtils.coalesce(ranks, Collections.EMPTY_SET);
     this.lowestRank = RankUtils.lowestRank(ranks);
     this.countRank = countRank;
@@ -64,7 +66,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName>, AutoC
 
   Cursor<SimpleName> iterate() {
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    return num.processTreeSimple(datasetKey, sectorKey, startID, null, lowestRank, synonyms);
+    return num.processTreeSimple(datasetKey, sectorKey, startID, null, lowestRank, extinct, synonyms);
   }
 
   /**

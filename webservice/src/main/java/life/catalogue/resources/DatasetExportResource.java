@@ -113,6 +113,7 @@ public class DatasetExportResource {
     @QueryParam("minRank") Rank minRank;
     @QueryParam("maxRank") Rank maxRank;
     @QueryParam("synonyms") boolean synonyms;
+    @QueryParam("extinct") Boolean extinct;
     @QueryParam("countBy") Rank countBy;
 
     void init() throws IllegalArgumentException {

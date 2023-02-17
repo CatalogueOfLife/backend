@@ -125,6 +125,11 @@ public class UsageCacheMapDB implements UsageCache {
   }
 
   @Override
+  public boolean hasStarted() {
+    return db != null;
+  }
+
+  @Override
   public void close() {
     stop();
     if (deleteOnClose) {

@@ -4,8 +4,8 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.assembly.AssemblyCoordinator;
-import life.catalogue.assembly.AssemblyState;
+import life.catalogue.assembly.SyncManager;
+import life.catalogue.assembly.SyncState;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
@@ -41,13 +41,13 @@ import static life.catalogue.api.model.User.userkey;
 public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final DatasetDao dao;
   private final DatasetSourceDao sourceDao;
-  private final AssemblyCoordinator assembly;
+  private final SyncManager assembly;
   private final JobExecutor exec;
   private final ProjectCopyFactory jobFactory;
 
   private final AuthorlistGenerator authGen = new AuthorlistGenerator();
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, AssemblyCoordinator assembly, ProjectCopyFactory jobFactory, JobExecutor exec) {
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, SyncManager assembly, ProjectCopyFactory jobFactory, JobExecutor exec) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.sourceDao = sourceDao;
@@ -152,7 +152,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("{key}/assembly")
-  public AssemblyState assemblyState(@PathParam("key") int key) {
+  public SyncState assemblyState(@PathParam("key") int key) {
     return assembly.getState(key);
   }
 

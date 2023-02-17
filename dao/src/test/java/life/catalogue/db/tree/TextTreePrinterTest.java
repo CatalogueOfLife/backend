@@ -12,6 +12,7 @@ import org.gbif.nameparser.api.Rank;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,13 +49,24 @@ public class TextTreePrinterTest {
         return cnt.getAndIncrement();
       }
     };
-    var p = PrinterFactory.dataset(TextTreePrinter.class, TestDataRule.TREE.key, null, false, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer);
+    var p = PrinterFactory.dataset(TextTreePrinter.class, TestDataRule.TREE.key, null, false, null, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer);
     p.showIDs();
     int count = p.print();
     System.out.println(writer);
     assertEquals(5, count);
     String expected = UTF8IoUtils.readString(Resources.stream("trees/treeWithCounts.tree"));
     assertEquals(expected, writer.toString());
+
+    // test with extinct
+    for (boolean extinct : List.of(true, false)) {
+      writer = new StringWriter();
+      cnt.set(1);
+      p = PrinterFactory.dataset(TextTreePrinter.class, TestDataRule.TREE.key, null, false, extinct, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer);
+      p.showIDs();
+      count = p.print();
+      System.out.println(writer);
+      assertEquals(0, count);
+    }
   }
 
 }

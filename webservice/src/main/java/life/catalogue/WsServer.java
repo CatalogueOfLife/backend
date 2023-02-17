@@ -3,8 +3,8 @@ package life.catalogue;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.SyncFactory;
+import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.UsageMatcherGlobal;
 import life.catalogue.cache.CacheFlush;
 import life.catalogue.cache.UsageCache;
@@ -23,14 +23,15 @@ import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
-import life.catalogue.dw.ManagedUtils;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
-import life.catalogue.dw.es.ManagedEsClient;
 import life.catalogue.dw.health.*;
 import life.catalogue.dw.jersey.ColJerseyBundle;
 import life.catalogue.dw.mail.MailBundle;
+import life.catalogue.dw.managed.Component;
+import life.catalogue.dw.managed.ManagedService;
+import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.GangliaBundle;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.es.EsClientFactory;
@@ -61,7 +62,6 @@ import life.catalogue.swagger.OpenApiFactory;
 
 import org.gbif.dwc.terms.TermFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 
@@ -195,6 +195,9 @@ public class WsServer extends Application<WsServerConfig> {
     }
     clearTmp(cfg);
 
+    // create a managed service that controls our startable/stoppable components in sync with the DW lifecycle
+    final ManagedService managedService = new ManagedService(env.lifecycle());
+
     // update name parser timeout settings
     NameParser.PARSER.setTimeout(cfg.parserTimeout);
 
@@ -250,7 +253,7 @@ public class WsServer extends Application<WsServerConfig> {
       suggestService = NameUsageSuggestionService.passThru();
     } else {
       final RestClient esClient = new EsClientFactory(cfg.es).createClient();
-      env.lifecycle().manage(new ManagedEsClient(esClient));
+      env.lifecycle().manage(ManagedUtils.from(esClient));
       env.healthChecks().register("elastic", new EsHealthCheck(esClient, cfg.es));
       indexService = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("nuproc"), getSqlSessionFactory());
       searchService = new NameUsageSearchServiceEs(cfg.es.nameUsage.name, esClient);
@@ -263,7 +266,7 @@ public class WsServer extends Application<WsServerConfig> {
     // name index
     ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
     // we do not start up the index automatically, we need to run 2 apps in parallel during deploys!
-    env.lifecycle().manage(ManagedUtils.stopOnly(ni));
+    managedService.manage(Component.NamesIndex, ni);
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
@@ -305,11 +308,11 @@ public class WsServer extends Application<WsServerConfig> {
     TreeDao trDao = new TreeDao(getSqlSessionFactory(), searchService);
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
-    // matcher
+    // usage cache
     UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, true, false, 64);
+    managedService.manage(Component.UsageCache, uCache);
 
-    // we do not start up the usage cache automatically, we need to run 2 apps in parallel during deploys!
-    env.lifecycle().manage(ManagedUtils.stopOnly(uCache));
+    // matcher
     final var matcher = new UsageMatcherGlobal(ni, uCache, getSqlSessionFactory());
 
     // DOI
@@ -345,17 +348,19 @@ public class WsServer extends Application<WsServerConfig> {
       executor,
       validator, doiResolver
     );
-    env.lifecycle().manage(ManagedUtils.stopOnly(importManager));
+    managedService.manage(Component.DatasetImporter, importManager);
+
+    // continuous importer
     ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
-    env.lifecycle().manage(ManagedUtils.stopOnly(cImporter));
+    managedService.manage(Component.ImportScheduler, cImporter);
 
     // gbif sync
     GbifSyncManager gbifSync = new GbifSyncManager(cfg.gbif, ddao, getSqlSessionFactory(), jerseyClient);
-    env.lifecycle().manage(ManagedUtils.stopOnly(gbifSync));
+    managedService.manage(Component.GBIFRegistrySync, gbifSync);
 
     // assembly
-    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), ni, syncFactory, env.metrics());
-    env.lifecycle().manage(assembly);
+    SyncManager assembly = new SyncManager(getSqlSessionFactory(), ni, syncFactory, env.metrics());
+    managedService.manage(Component.SectorSynchronizer, assembly);
 
     // link assembly and import manager so they are aware of each other
     importManager.setAssemblyCoordinator(assembly);
@@ -363,12 +368,11 @@ public class WsServer extends Application<WsServerConfig> {
 
     // legacy ID map
     IdMap idMap = IdMap.fromURI(cfg.legacyIdMapFile, cfg.legacyIdMapURI);
-    // we do not start up the map automatically, we need to run 2 apps in parallel during deploys!
-    env.lifecycle().manage(ManagedUtils.stopOnly(idMap));
+    managedService.manage(Component.LegacyIdMap, idMap);
 
     // resources
     j.register(new AdminResource(
-      getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
+      getSqlSessionFactory(), managedService, assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
       importManager, ddao, gbifSync, uCache, executor, idMap, validator)
     );
     j.register(new DataPackageResource());

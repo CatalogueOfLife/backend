@@ -5,7 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.assembly.AssemblyCoordinator;
+import life.catalogue.assembly.SyncManager;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
@@ -48,9 +48,9 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   private final SectorDao dao;
   private final TaxonDao tdao;
   private final FileMetricsSectorDao fmsDao;
-  private final AssemblyCoordinator assembly;
+  private final SyncManager assembly;
 
-  public SectorResource(SectorDao dao, TaxonDao tdao, FileMetricsSectorDao fmsDao, AssemblyCoordinator assembly) {
+  public SectorResource(SectorDao dao, TaxonDao tdao, FileMetricsSectorDao fmsDao, SyncManager assembly) {
     super(Sector.class, dao);
     this.dao = dao;
     this.fmsDao = fmsDao;

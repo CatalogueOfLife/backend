@@ -1,6 +1,7 @@
 package life.catalogue.resources.legacy;
 
 import life.catalogue.api.exception.UnavailableException;
+import life.catalogue.common.Managed;
 import life.catalogue.common.func.ThrowingSupplier;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -14,7 +15,6 @@ import java.net.URL;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import life.catalogue.dw.ManagedExtended;
 
 import org.apache.commons.io.FileUtils;
 import org.mapdb.DB;
@@ -24,7 +24,7 @@ import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IdMap implements ManagedExtended {
+public class IdMap implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(IdMap.class);
   private static final String SERVICE_NAME = "legacy ID redirection";
 

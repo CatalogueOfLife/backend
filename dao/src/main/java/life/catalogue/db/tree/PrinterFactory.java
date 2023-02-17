@@ -23,19 +23,19 @@ import static life.catalogue.api.exception.NotFoundException.throwNotFoundIfNull
 public class PrinterFactory {
 
   public static <T extends AbstractTreePrinter> T dataset(Class<T> clazz, int datasetKey, SqlSessionFactory factory, Writer writer) {
-    return printer(clazz, datasetKey, null, null, true, null, null, null, factory, writer);
+    return printer(clazz, datasetKey, null, null, true, null, null, null, null, factory, writer);
   }
 
-  public static <T extends AbstractTreePrinter> T dataset(Class<T> clazz, int datasetKey, @Nullable String startID, boolean synonyms, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    return printer(clazz, datasetKey, null, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
+  public static <T extends AbstractTreePrinter> T dataset(Class<T> clazz, int datasetKey, @Nullable String startID, boolean synonyms, Boolean extinct, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    return printer(clazz, datasetKey, null, startID, synonyms, extinct, ranks, countRank, taxonCounter, factory, writer);
   }
 
-  public static <T extends AbstractTreePrinter> T dataset(Class<T> clazz, int datasetKey, String startID, boolean synonyms, Rank minRank, SqlSessionFactory factory, Writer writer) {
+  public static <T extends AbstractTreePrinter> T dataset(Class<T> clazz, int datasetKey, String startID, boolean synonyms, Boolean extinct, Rank minRank, SqlSessionFactory factory, Writer writer) {
     Set<Rank> above = null;
     if (minRank != null) {
       above = Arrays.stream(Rank.values()).filter(r -> r.ordinal() <= minRank.ordinal() || r == Rank.UNRANKED).collect(Collectors.toSet());
     }
-    return printer(clazz, datasetKey, null, startID, synonyms, above, null, null, factory, writer);
+    return printer(clazz, datasetKey, null, startID, synonyms, extinct, above, null, null, factory, writer);
   }
 
   /**
@@ -45,14 +45,14 @@ public class PrinterFactory {
     try (SqlSession session = factory.openSession(true)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
       throwNotFoundIfNull(sectorKey,s,Sector.class);
-      return printer(clazz, sectorKey.getDatasetKey(), sectorKey.getId(), s.getTargetID(), true, null, null, null, factory, writer);
+      return printer(clazz, sectorKey.getDatasetKey(), sectorKey.getId(), s.getTargetID(), true, null, null, null, null, factory, writer);
     }
   }
 
-  public static <T extends AbstractTreePrinter> T printer(Class<T> clazz, int datasetKey, @Nullable Integer sectorKey, @Nullable String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+  public static <T extends AbstractTreePrinter> T printer(Class<T> clazz, int datasetKey, @Nullable Integer sectorKey, @Nullable String startID, boolean synonyms, Boolean extinct, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
     try {
-      return clazz.getConstructor(int.class, Integer.class, String.class, boolean.class, Set.class, Rank.class, TaxonCounter.class, SqlSessionFactory.class, Writer.class)
-                  .newInstance(datasetKey, sectorKey, startID, synonyms, ranks, countRank, taxonCounter, factory, writer);
+      return clazz.getConstructor(int.class, Integer.class, String.class, boolean.class, Boolean.class, Set.class, Rank.class, TaxonCounter.class, SqlSessionFactory.class, Writer.class)
+                  .newInstance(datasetKey, sectorKey, startID, synonyms, extinct, ranks, countRank, taxonCounter, factory, writer);
     } catch (Exception e) {
       throw new IllegalArgumentException("Failed to construct "+ clazz.getSimpleName(), e);
     }

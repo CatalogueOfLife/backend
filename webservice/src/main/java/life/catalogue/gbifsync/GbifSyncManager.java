@@ -1,10 +1,10 @@
 package life.catalogue.gbifsync;
 
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dw.ManagedExtended;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;
 
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Syncs datasets from the GBIF registry
  */
-public class GbifSyncManager implements ManagedExtended {
+public class GbifSyncManager implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(GbifSyncManager.class);
   private static final String THREAD_NAME = "gbif-sync";
 

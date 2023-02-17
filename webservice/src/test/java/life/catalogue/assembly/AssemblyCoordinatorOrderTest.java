@@ -31,7 +31,7 @@ public class AssemblyCoordinatorOrderTest {
     secs.add(sec(Mode.ATTACH, sn(Rank.GENUS, "Pomela", "Karl")));
     secs.add(sec(Mode.ATTACH, sn(null, "Pomela", null)));
     
-    secs.sort(AssemblyCoordinator.SECTOR_ORDER);
+    secs.sort(SyncManager.SECTOR_ORDER);
     
     for (Sector sn : secs) {
       System.out.println(sn);

@@ -107,7 +107,7 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
   }
 
   private void appendRoot(Writer w, int key, String root, Rank lowestRank, boolean inclAuthorship, boolean inclSynonyms, boolean showParent, Rank parentRank) throws IOException {
-    NameParentPrinter printer = PrinterFactory.dataset(NameParentPrinter.class, key, root, inclSynonyms, lowestRank, factory, w);
+    NameParentPrinter printer = PrinterFactory.dataset(NameParentPrinter.class, key, root, inclSynonyms, null, lowestRank, factory, w);
     try {
       printer.setPrintAuthorship(inclAuthorship);
       if (showParent) {

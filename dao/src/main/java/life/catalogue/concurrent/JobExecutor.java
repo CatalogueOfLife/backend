@@ -12,6 +12,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import life.catalogue.common.Idle;
+
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
@@ -22,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * The background job executor using a priority ordered queue.
  * It supports notification of errors via email and blocking jobs that depend on a locked access to a single dataset.
  */
-public class JobExecutor implements AutoCloseable {
+public class JobExecutor implements AutoCloseable, Idle {
   private static final Logger LOG = LoggerFactory.getLogger(JobExecutor.class);
 
   private final ColExecutor exec;
@@ -134,6 +136,7 @@ public class JobExecutor implements AutoCloseable {
   /**
    * @return true if the executor has no actively running threads and the queue is empty
    */
+  @Override
   public boolean isIdle() {
     return hasEmptyQueue() && exec.getActiveCount() == 0;
   }

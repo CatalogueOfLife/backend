@@ -566,6 +566,12 @@
       </otherwise>
     </choose>
     AND NOT u.is_synonym
+    <if test="extinct != null and extinct">
+      AND u.extinct
+    </if>
+    <if test="extinct != null and !extinct">
+      AND NOT u.extinct
+    </if>
     <if test="lowestRank">
       AND (n.rank &lt;= #{lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
     </if>
@@ -574,6 +580,12 @@
   <sql id="WHERE_UNION">
     <if test="!includeSynonyms">
       AND NOT u.is_synonym
+    </if>
+    <if test="extinct != null and extinct">
+      AND u.extinct
+    </if>
+    <if test="extinct != null and !extinct">
+      AND NOT u.extinct
     </if>
     <if test="exclusions != null and !exclusions.isEmpty()">
       AND u.id NOT IN

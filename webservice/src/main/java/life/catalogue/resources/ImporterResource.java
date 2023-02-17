@@ -104,14 +104,6 @@ public class ImporterResource {
     return counter;
   }
 
-  @POST
-  @RolesAllowed({Roles.ADMIN})
-  @Path("/restart")
-  public boolean restart(@Auth User user) {
-    LOG.warn("Restarting importer by {}", user);
-    return importManager.restart();
-  }
-
   @GET
   @Path("{key}")
   public DatasetImport get(@PathParam("key") int datasetKey){

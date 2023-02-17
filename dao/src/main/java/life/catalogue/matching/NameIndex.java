@@ -71,11 +71,6 @@ public interface NameIndex extends Managed, AutoCloseable {
   void reset();
 
   /**
-   * @return true if started and ready to be queried
-   */
-  boolean hasStarted();
-
-  /**
    * Makes sure the names index has started and throws an NamesIndexOfflineException otherwise
    */
   default NameIndex assertOnline() {

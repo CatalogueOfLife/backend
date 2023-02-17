@@ -111,6 +111,11 @@ public interface UsageCache extends AutoCloseable, Managed {
       public void stop() throws Exception {      }
 
       @Override
+      public boolean hasStarted() {
+        return true;
+      }
+
+      @Override
       public boolean contains(DSID<String> key) {
         return false;
       }
@@ -194,6 +199,11 @@ public interface UsageCache extends AutoCloseable, Managed {
 
       @Override
       public void close() { }
+
+      @Override
+      public boolean hasStarted() {
+        return true;
+      }
     };
   }
 }

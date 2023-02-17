@@ -15,7 +15,7 @@ public class PrinterFactoryTest {
     var p = PrinterFactory.dataset(TextTreePrinter.class, 3, null, new StringWriter());
     assertNotNull(p);
 
-    var p2 = PrinterFactory.dataset(JsonFlatPrinter.class, 3, "x", true, Rank.GENUS, null, new StringWriter());
+    var p2 = PrinterFactory.dataset(JsonFlatPrinter.class, 3, "x", true, null, Rank.GENUS, null, new StringWriter());
     assertNotNull(p2);
   }
 }

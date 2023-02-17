@@ -1,4 +1,4 @@
-package life.catalogue.dw;
+package life.catalogue.dw.managed;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ public class ManagedUtils {
     };
   }
 
-  public static Managed from(final life.catalogue.common.Managed obj) {
+  static Managed from(final life.catalogue.common.Managed obj) {
     return new Managed() {
       @Override
       public void start() throws Exception {
@@ -40,7 +40,7 @@ public class ManagedUtils {
   /**
    * Wrapper for a managed instance that hides the start method so the managed instance is only stopped automatically by dropwizard.
    */
-  public static Managed stopOnly(final Managed obj) {
+  static Managed stopOnly(final Managed obj) {
     return new Managed() {
       @Override
       public void start() throws Exception { }
@@ -55,7 +55,7 @@ public class ManagedUtils {
   /**
    * Wrapper for a managed instance that hides the start method so the managed instance is only stopped automatically by dropwizard.
    */
-  public static Managed stopOnly(final life.catalogue.common.Managed obj) {
+  static Managed stopOnly(final life.catalogue.common.Managed obj) {
     return new Managed() {
       @Override
       public void start() throws Exception { }

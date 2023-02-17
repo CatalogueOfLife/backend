@@ -289,6 +289,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                    @Param("startID") @Nullable String startID,
                    @Param("exclusions") @Nullable Set<String> exclusions,
                    @Param("lowestRank") @Nullable Rank lowestRank,
+                   @Param("extinct") @Nullable Boolean extinct,
                    @Param("includeSynonyms") boolean includeSynonyms);
 
   /**

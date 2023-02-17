@@ -4,10 +4,9 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
-import life.catalogue.assembly.AssemblyCoordinator;
-import life.catalogue.assembly.AssemblyState;
+import life.catalogue.assembly.SyncManager;
+import life.catalogue.assembly.SyncState;
 import life.catalogue.cache.UsageCache;
-import life.catalogue.cache.UsageCacheMapDB;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
@@ -17,8 +16,9 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dw.ManagedExtended;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.managed.Component;
+import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.gbifsync.GbifSyncJob;
 import life.catalogue.gbifsync.GbifSyncManager;
@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -68,22 +69,24 @@ public class AdminResource {
   private final ImageService imgService;
   private final NameUsageIndexService indexService;
   private final ServerSettings settings = new ServerSettings();
+  private final Validator validator;
+  private final DatasetDao ddao;
   // managed background processes
   private final IdMap idMap;
   private final ImportManager importManager;
   private final ContinuousImporter continuousImporter;
   private final GbifSyncManager gbifSync;
-  private final AssemblyCoordinator assembly;
+  private final SyncManager assembly;
   private final NameIndex namesIndex;
   private final UsageCache usageCache;
   private final JobExecutor exec;
-  private final Validator validator;
-  private final DatasetDao ddao;
+  private final ManagedService componedService;
 
-  public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
+  public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
                        UsageCache usageCache, JobExecutor executor, IdMap idMap, Validator validator) {
     this.factory = factory;
+    this.componedService = managedService;
     this.ddao = ddao;
     this.assembly = assembly;
     this.imgService = imgService;
@@ -134,7 +137,7 @@ public class AdminResource {
 
   @GET
   @Path("/assembly")
-  public AssemblyState globalState() {
+  public SyncState globalState() {
     return assembly.getState();
   }
 
@@ -144,6 +147,43 @@ public class AdminResource {
     assembly.stop();
     assembly.start();
   }
+
+  @GET
+  @Path("/components")
+  @PermitAll
+  public Map<String, Boolean> componentState() {
+    return componedService.state();
+    settings.scheduler = continuousImporter.hasStarted();
+    settings.importer = importManager.hasStarted();
+    settings.gbifSync = gbifSync.hasStarted();
+    return settings;
+  }
+
+  @POST
+  @Path("/component/{comp}/start")
+  public boolean start(@PathParam("comp") Component component, @Auth User user) throws Exception {
+    componedService.start(component);
+    return true;
+  }
+
+  @POST
+  @Path("/component/{comp}/stop")
+  public boolean stop(@PathParam("comp") Component component, @Auth User user) throws Exception {
+    componedService.stop(component);
+    return true;
+  }
+
+  @POST
+  @Path("/component/{comp}/restart")
+  public boolean restart(@PathParam("comp") Component component, @Auth User user) throws Exception {
+    LOG.warn("Restarting {} by {}", component, user);
+    componedService.stop(component);
+    componedService.start(component);
+    return true;
+  }
+
+
+
 
   @GET
   @Path("/settings")

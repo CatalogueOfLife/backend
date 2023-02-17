@@ -10,17 +10,17 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AssemblyState {
-  private static final Logger LOG = LoggerFactory.getLogger(AssemblyState.class);
+public class SyncState {
+  private static final Logger LOG = LoggerFactory.getLogger(SyncState.class);
   
   public final SectorImport running;
   public final List<SectorImport> queued = new ArrayList<>();
   public final int failed;
   public final int completed;
   
-  AssemblyState(Collection<AssemblyCoordinator.SectorFuture> syncs, int syncsFailed, int syncsCompleted) {
+  SyncState(Collection<SyncManager.SectorFuture> syncs, int syncsFailed, int syncsCompleted) {
     SectorImport run = null;
-    for (AssemblyCoordinator.SectorFuture sync : syncs) {
+    for (SyncManager.SectorFuture sync : syncs) {
       if (sync.state.getState() == ImportState.WAITING) {
         queued.add(sync.state);
       } else if(sync.state.getState().isRunning()) {

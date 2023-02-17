@@ -2,14 +2,12 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
-import life.catalogue.dao.EstimateDao;
-import life.catalogue.dao.SectorDao;
-import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.common.Idle;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.NameIndex;
 
@@ -35,11 +33,9 @@ import org.slf4j.LoggerFactory;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
-import io.dropwizard.lifecycle.Managed;
-
-public class AssemblyCoordinator implements Managed {
+public class SyncManager implements Managed, Idle {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
-  private static final Logger LOG = LoggerFactory.getLogger(AssemblyCoordinator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SyncManager.class);
   private static final String THREAD_NAME = "assembly-sync";
   
   private ExecutorService exec;
@@ -66,7 +62,7 @@ public class AssemblyCoordinator implements Managed {
     }
   }
   
-  public AssemblyCoordinator(SqlSessionFactory factory, NameIndex nameIndex, SyncFactory syncFactory, MetricRegistry registry) {
+  public SyncManager(SqlSessionFactory factory, NameIndex nameIndex, SyncFactory syncFactory, MetricRegistry registry) {
     this.factory = factory;
     this.syncFactory = syncFactory;
     this.nameIndex = nameIndex;
@@ -105,25 +101,31 @@ public class AssemblyCoordinator implements Managed {
     }
     // fully shutdown threadpool within given time
     ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+    exec = null;
   }
-  
+
+  @Override
+  public boolean hasStarted() {
+    return exec != null;
+  }
+
   public void setImportManager(ImportManager importManager) {
     this.importManager = importManager;
   }
   
-  public AssemblyState getState() {
-    return new AssemblyState(syncs.values(), total(failed), total(counter));
+  public SyncState getState() {
+    return new SyncState(syncs.values(), total(failed), total(counter));
   }
 
   private static int total(Map<Integer, AtomicInteger> cnt) {
     return cnt.values().stream().mapToInt(AtomicInteger::get).sum();
   }
 
-  public AssemblyState getState(int datasetKey) {
+  public SyncState getState(int datasetKey) {
     List<SectorFuture> vals = syncs.values().stream()
         .filter(sf -> sf.sectorKey.getDatasetKey() == datasetKey)
         .collect(Collectors.toList());
-    return new AssemblyState(vals, valOrZero(failed, datasetKey), valOrZero(counter, datasetKey));
+    return new SyncState(vals, valOrZero(failed, datasetKey), valOrZero(counter, datasetKey));
   }
 
   private static int valOrZero(Map<Integer, AtomicInteger> map, Integer key){

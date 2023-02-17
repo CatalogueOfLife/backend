@@ -2,12 +2,12 @@ package life.catalogue.importer;
 
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.Managed;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.ContinuousImportConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.dw.ManagedExtended;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +30,7 @@ import org.slf4j.MDC;
  *
  * If imports have failed previously, there will be an embargo for 1 week.
  */
-public class ContinuousImporter implements ManagedExtended {
+public class ContinuousImporter implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(ContinuousImporter.class);
   private static final String THREAD_NAME = "continuous-importer";
   private static final int WAIT_TIME_IN_HOURS = 1;

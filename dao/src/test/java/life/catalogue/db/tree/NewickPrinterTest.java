@@ -36,14 +36,14 @@ public class NewickPrinterTest {
         return 999;
       }
     };
-    int count = PrinterFactory.dataset(NewickPrinter.class, TestDataRule.TREE.key, null, false, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(NewickPrinter.class, TestDataRule.TREE.key, null, false, null, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
     assertEquals(20, count);
     System.out.println(writer);
     String expected = UTF8IoUtils.readString(Resources.stream("trees/tree.newick"));
     assertEquals(expected, writer.toString());
 
     writer = new StringWriter();
-    var printer = PrinterFactory.dataset(NewickPrinter.class, TestDataRule.TREE.key, null, false, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer);
+    var printer = PrinterFactory.dataset(NewickPrinter.class, TestDataRule.TREE.key, null, false, null, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer);
     printer.useExtendedFormat();
     count = printer.print();
     assertEquals(20, count);

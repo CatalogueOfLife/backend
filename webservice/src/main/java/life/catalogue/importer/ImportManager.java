@@ -9,7 +9,8 @@ import life.catalogue.api.util.PagingUtil;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.assembly.AssemblyCoordinator;
+import life.catalogue.assembly.SyncManager;
+import life.catalogue.common.Managed;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
@@ -18,7 +19,7 @@ import life.catalogue.concurrent.PBQThreadPoolExecutor;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.dw.ManagedExtended;
+import life.catalogue.common.Idle;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
@@ -60,13 +61,13 @@ import com.google.common.base.Strings;
 /**
  * Manages import task scheduling, removing and listing
  */
-public class ImportManager implements ManagedExtended {
+public class ImportManager implements Managed, Idle {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
   public static final String THREAD_NAME = "dataset-importer";
   static final Comparator<DatasetImport> DI_STARTED_COMPARATOR = Comparator.comparing(DatasetImport::getStarted);
 
   private PBQThreadPoolExecutor<ImportJob> exec;
-  private AssemblyCoordinator assemblyCoordinator;
+  private SyncManager assemblyCoordinator;
   private final Map<Integer, PBQThreadPoolExecutor.ComparableFutureTask> futures = new ConcurrentHashMap<>();
   private final WsServerConfig cfg;
   private final DownloadUtil downloader;
@@ -107,7 +108,7 @@ public class ImportManager implements ManagedExtended {
     failed = registry.counter("life.catalogue.import.failed");
   }
 
-  public void setAssemblyCoordinator(AssemblyCoordinator assemblyCoordinator) {
+  public void setAssemblyCoordinator(SyncManager assemblyCoordinator) {
     this.assemblyCoordinator = assemblyCoordinator;
   }
 
@@ -495,16 +496,8 @@ public class ImportManager implements ManagedExtended {
     return exec != null;
   }
 
-  public boolean restart() {
-    LOG.info("Restarting dataset importer");
-    try {
-      stop();
-      start();
-      return true;
-
-    } catch (Exception e) {
-      LOG.error("Failed to restart importer", e);
-      return false;
-    }
+  @Override
+  public boolean isIdle() {
+    return false;
   }
 }

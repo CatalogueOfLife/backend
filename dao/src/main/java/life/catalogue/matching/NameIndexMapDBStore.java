@@ -132,6 +132,11 @@ public class NameIndexMapDBStore implements NameIndexStore {
   }
 
   @Override
+  public boolean hasStarted() {
+    return db != null;
+  }
+
+  @Override
   public IndexName get(Integer key) {
     avail();
     return keys.get(key);

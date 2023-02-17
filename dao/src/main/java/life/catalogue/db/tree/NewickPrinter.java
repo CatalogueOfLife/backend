@@ -34,8 +34,8 @@ public class NewickPrinter extends AbstractTreePrinter {
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  public NewickPrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, false, ranks, countRank, taxonCounter, factory, writer);
+  public NewickPrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Boolean extinct, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(datasetKey, sectorKey, startID, false, extinct, ranks, countRank, taxonCounter, factory, writer);
   }
 
   /**
