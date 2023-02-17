@@ -31,7 +31,7 @@ public class NewickExport extends DatasetExportJob {
     // do we have a full dataset export request?
     File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".nhx");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
-      NewickPrinter printer = PrinterFactory.dataset(NewickPrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getMinRank(), factory, writer);
+      NewickPrinter printer = PrinterFactory.dataset(NewickPrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getExtinct(), req.getMinRank(), factory, writer);
       printer.useExtendedFormat();
       int cnt = printer.print();
       LOG.info("Written {} usages to Newick tree for dataset {}", cnt, req.getDatasetKey());

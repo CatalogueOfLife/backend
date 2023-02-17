@@ -109,6 +109,11 @@ public class SyncManager implements Managed, Idle {
     return exec != null;
   }
 
+  @Override
+  public boolean isIdle() {
+    return getState().isIdle();
+  }
+
   public void setImportManager(ImportManager importManager) {
     this.importManager = importManager;
   }

@@ -102,7 +102,7 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
       if (s.getMode() == Sector.Mode.ATTACH) {
         // the parentID to be used by the copied root usage
         parentID = s.getTarget().getId();
-        um.processTree(s.getSubjectDatasetKey(), null, s.getSubject().getId(), null, null, true,false)
+        um.processTree(s.getSubjectDatasetKey(), null, s.getSubject().getId(), null, null, null, true,false)
           .forEach(this::copy);
 
       } else if (s.getMode() == Sector.Mode.UNION) {
@@ -116,7 +116,7 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
             copy(child);
           } else {
             LOG.info("Traverse child {}", child);
-            um.processTree(s.getSubjectDatasetKey(), null, child.getId(), null, null, true,false)
+            um.processTree(s.getSubjectDatasetKey(), null, child.getId(), null, null, null, true,false)
               .forEach(this::copy);
           }
         }

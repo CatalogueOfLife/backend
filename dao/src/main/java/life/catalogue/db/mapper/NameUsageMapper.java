@@ -240,6 +240,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa
    * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
    * @param lowestRank optional rank cutoff filter to only include children with a rank above or equal to the one given
+   * @param extinct optional filter for explicitly only extinct or only extant records. Null includes all.
    * @param includeSynonyms if true includes synonyms, otherwise only taxa
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
    */
@@ -248,6 +249,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                      @Param("startID") @Nullable String startID,
                      @Param("exclusions") @Nullable Set<String> exclusions,
                      @Param("lowestRank") @Nullable Rank lowestRank,
+                     @Param("extinct") @Nullable Boolean extinct,
                      @Param("includeSynonyms") boolean includeSynonyms,
                      @Param("depthFirst") boolean depthFirst);
 
@@ -282,6 +284,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa
    * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
    * @param lowestRank optional rank cutoff filter to only include children with a rank above or equal to the one given
+   * @param extinct optional filter for explicitly only extinct or only extant records. Null includes all.
    * @param includeSynonyms if true includes synonyms, otherwise only taxa
    */
   Cursor<SimpleName> processTreeSimple(@Param("datasetKey") int datasetKey,

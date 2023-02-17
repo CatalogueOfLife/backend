@@ -7,5 +7,5 @@ public enum Component {
   GBIFRegistrySync,
   SectorSynchronizer,
   LegacyIdMap,
-  NamesIndex
+  JobExecutor, NamesIndex
 }

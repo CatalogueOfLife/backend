@@ -30,7 +30,7 @@ public class DotExport extends DatasetExportJob {
     // do we have a full dataset export request?
     f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".gv");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
-      DotPrinter printer = PrinterFactory.dataset(DotPrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getMinRank(), factory, writer);
+      DotPrinter printer = PrinterFactory.dataset(DotPrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getExtinct(), req.getMinRank(), factory, writer);
       int cnt = printer.print();
       LOG.info("Written {} usages to DOT tree for dataset {}", cnt, req.getDatasetKey());
       counter.set(printer.getCounter());

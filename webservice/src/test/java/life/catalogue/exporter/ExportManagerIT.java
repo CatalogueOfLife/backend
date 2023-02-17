@@ -83,7 +83,9 @@ public class ExportManagerIT {
     cfg.downloadURI = URI.create("http://gbif.org");
     cfg.exportDir = new File("/tmp/col");
     cfg.job.threads = 3;
-    try (JobExecutor executor = new JobExecutor(cfg.job)) {
+    JobExecutor executor = null;
+    try {
+      executor = new JobExecutor(cfg.job);
       DatasetExportDao exDao = mock(DatasetExportDao.class);
       ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), null, exDao, mock(DatasetImportDao.class), new MetricRegistry());
 
@@ -96,6 +98,8 @@ public class ExportManagerIT {
       }
       TimeUnit.SECONDS.sleep(10);
       System.out.println("Export test finished");
+    } finally {
+      executor.stop();
     }
   }
 }

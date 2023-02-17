@@ -167,7 +167,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       // give datacite API some time
       TimeUnit.SECONDS.sleep(60);
       System.out.println("Shutting down executor");
-      exec.close();
+      exec.stop();
     }
 
     if (d.getKey() == Datasets.COL || Objects.equals(Datasets.COL, d.getSourceKey())) {

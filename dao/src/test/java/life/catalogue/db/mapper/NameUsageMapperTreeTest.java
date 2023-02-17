@@ -33,17 +33,17 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void processTree() throws Exception {
     countHandler = new CountHandler<>();
-    mapper().processTree(DATASET11.getKey(), null, "t2", Sets.newHashSet("skipID"), null, true, false)
+    mapper().processTree(DATASET11.getKey(), null, "t2", Sets.newHashSet("skipID"), null, null, true, false)
             .forEach(countHandler);
     Assert.assertEquals(23, countHandler.counter.get());
   
     countHandler.reset();
-    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6"), null, true, false)
+    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6"), null, null, true, false)
             .forEach(countHandler);
     Assert.assertEquals(15, countHandler.counter.get());
   
     countHandler.reset();
-    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6", "t30"), null, true, false)
+    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6", "t30"), null, null, true, false)
             .forEach(countHandler);
     Assert.assertEquals(10, countHandler.counter.get());
   }
@@ -51,7 +51,7 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void processTreeOrder() throws Exception {
     CollectIdHandler<NameUsageBase> h = new CollectIdHandler<>();
-    mapper().processTree(DATASET11.getKey(), null,null, null, null, true,false)
+    mapper().processTree(DATASET11.getKey(), null,null, null, null, null, true,false)
             .forEach(h);
     List<String> bfs = ImmutableList.of("t1","t2","t3","t4",
       "t5","t6","t30",
@@ -62,7 +62,7 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
     assertEquals(bfs, h.list);
   
     h = new CollectIdHandler<>();
-    mapper().processTree(DATASET11.getKey(), null,null, null, null, true, true)
+    mapper().processTree(DATASET11.getKey(), null,null, null, null, null, true, true)
             .forEach(h);
     List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5",
         "t20","s21","s22","t23","t24","t25",

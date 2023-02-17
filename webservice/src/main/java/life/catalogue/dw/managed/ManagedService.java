@@ -49,12 +49,6 @@ public class ManagedService {
     }
     // idle summary
     state.put("idle", idle.stream().allMatch(Idle::isIdle));
-
-
-      !importManager.hasRunning() // imports
-                    && exec.isIdle() // background jobs
-                    && assembly.getState().isIdle(); // syncs
-
     return state;
   }
 

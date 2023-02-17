@@ -230,7 +230,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // job executor
     JobExecutor executor = new JobExecutor(cfg.job, mail.getMailer());
-    env.lifecycle().manage(ManagedUtils.from(executor));
+    managedService.manage(Component.JobExecutor, executor);
 
     // name parser
     ParserConfigDao dao = new ParserConfigDao(getSqlSessionFactory());

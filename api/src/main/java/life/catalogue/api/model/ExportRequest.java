@@ -14,6 +14,7 @@ public class ExportRequest {
   private boolean excel;
   private SimpleName root;
   private boolean synonyms = true;
+  private Boolean extinct = null;
   private boolean bareNames = false;
   private Rank minRank;
   private boolean force; // this makes sure we run a new export
@@ -71,6 +72,14 @@ public class ExportRequest {
     this.synonyms = synonyms;
   }
 
+  public Boolean getExtinct() {
+    return extinct;
+  }
+
+  public void setExtinct(Boolean extinct) {
+    this.extinct = extinct;
+  }
+
   public boolean isBareNames() {
     return bareNames;
   }
@@ -99,7 +108,7 @@ public class ExportRequest {
    * @return true if any filter has been used apart from the mandatory datasetKey & format
    */
   public boolean hasFilter() {
-    return !synonyms || bareNames || root!=null || minRank!=null;
+    return !synonyms || extinct!=null || bareNames || root!=null || minRank!=null;
   }
 
   @Override
@@ -110,12 +119,17 @@ public class ExportRequest {
     return excel == that.excel
            && synonyms == that.synonyms
            && bareNames == that.bareNames
-           && force == that.force && Objects.equals(datasetKey, that.datasetKey) && format == that.format && Objects.equals(root, that.root) && minRank == that.minRank;
+           && force == that.force
+           && Objects.equals(datasetKey, that.datasetKey)
+           && format == that.format
+           && Objects.equals(root, that.root)
+           && Objects.equals(extinct, that.extinct)
+           && minRank == that.minRank;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, format, excel, root, synonyms, minRank, force);
+    return Objects.hash(datasetKey, format, excel, root, synonyms, extinct, bareNames, minRank, force);
   }
 
   @Override
@@ -123,6 +137,7 @@ public class ExportRequest {
     StringBuilder sb = new StringBuilder(format + " export of " + datasetKey);
     sb.append(" [excel=").append(excel)
       .append(", synonyms=").append(synonyms)
+      .append(", extinct=").append(extinct)
       .append(", bareNames=").append(bareNames);
     if (minRank != null) {
       sb.append(", minRank=").append(minRank);

@@ -137,7 +137,7 @@ public class DatasetExportResource {
     params.init();
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
+      TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, key, params.taxonID, params.synonyms, params.extinct, params.ranks, params.countBy, searchService, factory, writer);
       if (showID) printer.showIDs();
       printer.print();
       writer.flush();
@@ -157,9 +157,9 @@ public class DatasetExportResource {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
       AbstractTreePrinter printer;
       if (flat) {
-        printer = PrinterFactory.dataset(JsonFlatPrinter.class, key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
+        printer = PrinterFactory.dataset(JsonFlatPrinter.class, key, params.taxonID, params.synonyms, params.extinct, params.ranks, params.countBy, searchService, factory, writer);
       } else {
-        printer = PrinterFactory.dataset(JsonTreePrinter.class, key, params.taxonID, params.synonyms, params.ranks, params.countBy, searchService, factory, writer);
+        printer = PrinterFactory.dataset(JsonTreePrinter.class, key, params.taxonID, params.synonyms, params.extinct, params.ranks, params.countBy, searchService, factory, writer);
       }
       printer.print();
       writer.flush();
@@ -193,7 +193,7 @@ public class DatasetExportResource {
     params.init();
     return Stream.concat(
       Stream.of(EXPORT_HEADERS),
-      Streams.stream(num.processTreeSimple(datasetKey, null, params.taxonID, null, RankUtils.lowestRank(params.ranks), params.synonyms))
+      Streams.stream(num.processTreeSimple(datasetKey, null, params.taxonID, null, RankUtils.lowestRank(params.ranks), params.extinct, params.synonyms))
              .map(this::map)
     );
   }

@@ -256,7 +256,7 @@ public class SectorSync extends SectorRunnable {
 
       if (sector.getMode() == Sector.Mode.ATTACH || sector.getMode() == Sector.Mode.MERGE) {
         String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
-        um.processTree(subjectDatasetKey, null, rootID, blockedIds, null, true,sector.getMode() == Sector.Mode.MERGE)
+        um.processTree(subjectDatasetKey, null, rootID, blockedIds, null, null, true,sector.getMode() == Sector.Mode.MERGE)
             .forEach(treeHandler);
 
       } else if (sector.getMode() == Sector.Mode.UNION) {
@@ -274,7 +274,7 @@ public class SectorSync extends SectorRunnable {
             treeHandler.accept(child);
           } else {
             LOG.info("Traverse child {}", child);
-            um.processTree(subjectDatasetKey, null, child.getId(), blockedIds, null, true,false)
+            um.processTree(subjectDatasetKey, null, child.getId(), blockedIds, null, null, true,false)
                 .forEach(treeHandler);
           }
           treeHandler.reset();

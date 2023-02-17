@@ -14,6 +14,8 @@ import javax.annotation.Nullable;
 
 import life.catalogue.common.Idle;
 
+import life.catalogue.common.Managed;
+
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
@@ -24,15 +26,37 @@ import org.slf4j.LoggerFactory;
  * The background job executor using a priority ordered queue.
  * It supports notification of errors via email and blocking jobs that depend on a locked access to a single dataset.
  */
-public class JobExecutor implements AutoCloseable, Idle {
+public class JobExecutor implements Managed, Idle {
   private static final Logger LOG = LoggerFactory.getLogger(JobExecutor.class);
 
-  private final ColExecutor exec;
+  private final JobConfig cfg;
   private final PriorityBlockingQueue<Runnable> queue;
   private final ConcurrentMap<UUID, ComparableFutureTask> futures = new ConcurrentHashMap<>();
   private final Mailer mailer;
   private final String onErrorTo;
   private final String onErrorFrom;
+  private ColExecutor exec;
+
+  @Override
+  public void start() throws Exception {
+    if (exec == null) {
+      exec = new ColExecutor(cfg, queue);
+      exec.allowCoreThreadTimeOut(true);
+    }
+  }
+
+  @Override
+  public void stop() throws Exception {
+    if (exec != null) {
+      ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+      exec = null;
+    }
+  }
+
+  @Override
+  public boolean hasStarted() {
+    return exec != null;
+  }
 
   static class ComparableFutureTask extends FutureTask<Void> implements Runnable, Comparable<ComparableFutureTask> {
 
@@ -53,18 +77,18 @@ public class JobExecutor implements AutoCloseable, Idle {
     }
   }
 
-  public JobExecutor(JobConfig cfg) {
+  public JobExecutor(JobConfig cfg) throws Exception {
     this(cfg, null);
   }
 
-  public JobExecutor(JobConfig cfg, @Nullable Mailer mailer) {
+  public JobExecutor(JobConfig cfg, @Nullable Mailer mailer) throws Exception {
     LOG.info("Created new job executor with {} workers and a queue size of {}", cfg.threads, cfg.queue);
+    this.cfg = cfg;
     queue = new PriorityBlockingQueue<>(cfg.queue);
-    exec = new ColExecutor(cfg, queue);
-    exec.allowCoreThreadTimeOut(true);
     this.mailer = mailer;
     this.onErrorTo = cfg.onErrorTo;
     this.onErrorFrom = cfg.onErrorFrom;
+    start();
   }
 
   class ColExecutor extends ThreadPoolExecutor {
@@ -215,10 +239,6 @@ public class JobExecutor implements AutoCloseable, Idle {
     var ftask = new ComparableFutureTask(job);
     futures.put(job.getKey(), ftask);
     exec.execute(ftask);
-  }
-
-  public void close() {
-    ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
   }
   
 }

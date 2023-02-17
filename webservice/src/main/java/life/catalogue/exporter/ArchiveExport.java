@@ -199,7 +199,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       if (fullDataset) {
         cursor = num.processDataset(datasetKey, null, null);
       } else {
-        cursor = num.processTree(datasetKey, null, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms(), true);
+        cursor = num.processTree(datasetKey, null, req.getTaxonID(), null, req.getMinRank(), req.getExtinct(), req.isSynonyms(), true);
       }
       PgUtils.consume(() -> cursor, this::consumeUsage);
 

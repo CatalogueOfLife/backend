@@ -33,15 +33,15 @@ public class JobExecutorTest {
   }
 
   @Before
-  public void init() {
+  public void init() throws Exception {
     exec = new JobExecutor(JobConfig.withThreads(2));
     finished = new ConcurrentLinkedQueue<>();
     status = new ConcurrentHashMap<>();
   }
 
   @After
-  public void down() {
-    exec.close();
+  public void down() throws Exception {
+    exec.stop();
     System.out.println("\nJobs run:");
     finished.forEach(System.out::println);
     System.out.println("\n");
@@ -144,7 +144,7 @@ public class JobExecutorTest {
     while (!exec.isIdle()) {
       TimeUnit.MILLISECONDS.sleep(5);
     }
-    exec.close();
+    exec.stop();
     assertEquals(6, finished.size());
   }
 }

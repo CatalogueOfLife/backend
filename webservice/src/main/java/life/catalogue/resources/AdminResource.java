@@ -68,7 +68,7 @@ public class AdminResource {
   private final WsServerConfig cfg;
   private final ImageService imgService;
   private final NameUsageIndexService indexService;
-  private final ServerSettings settings = new ServerSettings();
+  private boolean maintenance = false;
   private final Validator validator;
   private final DatasetDao ddao;
   // managed background processes
@@ -101,18 +101,6 @@ public class AdminResource {
     this.exec = executor;
     this.idMap = idMap;
     this.validator = validator;
-  }
-  
-  public static class ServerSettings {
-    public Boolean maintenance = false;
-    public Boolean gbifSync;
-    public Boolean scheduler;
-    public Boolean importer; // import manager, names index, idMap & usage cache
-
-    @Nullable
-    @Min(1)
-    public Integer importerThreads;
-    public boolean idle; // readonly summary of all background processes
   }
 
   @GET
@@ -148,15 +136,24 @@ public class AdminResource {
     assembly.start();
   }
 
+  @POST
+  @Path("/maintenance")
+  public boolean toggleMaintenance() throws IOException {
+    maintenance = !maintenance;
+    try (Writer w = UTF8IoUtils.writerFromFile(cfg.statusFile)) {
+      w.write(String.format("{\"maintenance\": %s}\n", maintenance));
+    }
+    LOG.info("Set maintenance mode={}", maintenance);
+    return maintenance;
+  }
+
   @GET
   @Path("/components")
   @PermitAll
   public Map<String, Boolean> componentState() {
-    return componedService.state();
-    settings.scheduler = continuousImporter.hasStarted();
-    settings.importer = importManager.hasStarted();
-    settings.gbifSync = gbifSync.hasStarted();
-    return settings;
+    var state = componedService.state();
+    state.put("maintenance", maintenance);
+    return state;
   }
 
   @POST
@@ -182,117 +179,18 @@ public class AdminResource {
     return true;
   }
 
-
-
-
-  @GET
-  @Path("/settings")
-  @PermitAll
-  public ServerSettings getSettings() {
-    settings.scheduler = continuousImporter.hasStarted();
-    settings.importer = importManager.hasStarted();
-    settings.gbifSync = gbifSync.hasStarted();
-    settings.idle = !importManager.hasRunning() // imports
-      && exec.isIdle() // background jobs
-      && assembly.getState().isIdle(); // syncs
-    return settings;
+  @POST
+  @Path("/component/start-all")
+  public boolean startAll() throws Exception {
+    componedService.startAll();
+    return true;
   }
 
-  private void updateStatus(boolean maintenance) throws IOException {
-    try (Writer w = UTF8IoUtils.writerFromFile(cfg.statusFile)) {
-      w.write(String.format("{\"maintenance\": %s}\n", maintenance));
-    }
-  }
-
-  @PUT
-  @Path("/settings")
-  public synchronized void setSettings(ServerSettings s) throws Exception {
-    ServerSettings curr = getSettings();
-
-    if (s.maintenance != null && curr.maintenance != s.maintenance) {
-      LOG.info("Set maintenance mode={}", s.maintenance);
-      curr.maintenance = s.maintenance;
-      updateStatus(curr.maintenance);
-    }
-
-    if (s.gbifSync != null && curr.gbifSync != s.gbifSync) {
-      if (cfg.gbif.syncFrequency < 1) {
-        // we configured the server with no syncing, give it a reasonable default in hours
-        cfg.gbif.syncFrequency = 6;
-      }
-      LOG.info("Set GBIF Sync to active={}", s.gbifSync);
-      startStopManaged(gbifSync, s.gbifSync);
-    }
-    
-    if (s.scheduler != null && curr.scheduler != s.scheduler) {
-      if (cfg.importer.continuous.polling < 1) {
-        // we configured the server with no polling, give it a reasonable default
-        cfg.importer.continuous.polling = 10;
-      }
-      LOG.info("Set continuous importer to active={}", s.scheduler);
-      startStopManaged(continuousImporter, s.scheduler);
-    }
-
-    if (s.importer != null && curr.importer != s.importer) {
-      if (s.importerThreads != null && s.importerThreads > 0) {
-        cfg.importer.threads = s.importerThreads;
-      }
-      LOG.info("Set import manager with {} threads & names index to active={}", cfg.importer.threads, s.importer);
-      // order is important
-      if (s.importer) {
-        startImporter();
-      } else {
-        stopImporter();
-      }
-    }
-  }
-
-  private void startImporter() throws Exception {
-    if (!importManager.hasStarted()) {
-      namesIndex.start();
-      importManager.start();
-      idMap.start();
-      usageCache.start();
-    }
-  }
-
-  private void stopImporter() throws Exception {
-    namesIndex.stop();
-    importManager.stop();
-    idMap.stop();
-    usageCache.stop();
-  }
-
-  /**
-   * Start all managed objects as configured
-   */
-  @PUT
-  @Path("/settings/start")
-  public synchronized void startAllServices() throws Exception {
-    startStopManaged(gbifSync, true);
-    startStopManaged(continuousImporter, true);
-    startImporter();
-  }
-
-  /**
-   * Stop all services
-   */
-  @PUT
-  @Path("/settings/stop")
-  public synchronized void stopAllServices() throws Exception {
-    startStopManaged(gbifSync, false);
-    startStopManaged(continuousImporter, false);
-    stopImporter();
-  }
-
-  private static void startStopManaged(ManagedExtended m, boolean start) throws Exception {
-    if (start) {
-      if (!m.hasStarted()) {
-        m.start();
-      }
-    } else {
-      m.stop();
-    }
+  @POST
+  @Path("/component/stop-all")
+  public boolean stopAll() throws Exception {
+    componedService.stopAll();
+    return true;
   }
 
   @POST
