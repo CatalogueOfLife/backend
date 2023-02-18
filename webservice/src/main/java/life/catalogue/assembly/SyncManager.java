@@ -113,7 +113,7 @@ public class SyncManager implements Managed, Idle {
 
   @Override
   public boolean isIdle() {
-    return getState().isIdle();
+    return !hasStarted() || getState().isIdle();
   }
 
   public void setImportManager(ImportManager importManager) {

@@ -437,21 +437,6 @@ public class ImportManager implements Managed, Idle {
     }
   }
 
-  @Override
-  public void start() {
-    LOG.info("Starting import manager with {} import threads and a queue of {} max.",
-        cfg.importer.threads,
-        cfg.importer.maxQueue);
-
-    exec = new PBQThreadPoolExecutor<>(cfg.importer.threads,
-        60L,
-        TimeUnit.SECONDS,
-        new PriorityBlockingQueue<>(cfg.importer.maxQueue),
-        new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
-        new ThreadPoolExecutor.AbortPolicy());
-    cancelAndReschedule();
-  }
-
   /**
    * Read hanging imports in db, truncate if half inserted and add as new requests to the queue
    */
@@ -479,6 +464,21 @@ public class ImportManager implements Managed, Idle {
   }
 
   @Override
+  public void start() {
+    LOG.info("Starting import manager with {} import threads and a queue of {} max.",
+        cfg.importer.threads,
+        cfg.importer.maxQueue);
+
+    exec = new PBQThreadPoolExecutor<>(cfg.importer.threads,
+        60L,
+        TimeUnit.SECONDS,
+        new PriorityBlockingQueue<>(cfg.importer.maxQueue),
+        new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
+        new ThreadPoolExecutor.AbortPolicy());
+    cancelAndReschedule();
+  }
+
+  @Override
   public void stop() {
     // orderly shutdown running imports
     for (Future f : futures.values()) {
@@ -498,6 +498,6 @@ public class ImportManager implements Managed, Idle {
 
   @Override
   public boolean isIdle() {
-    return false;
+    return !hasStarted() || hasEmptyQueue() && !hasRunning();
   }
 }

@@ -162,7 +162,7 @@ public class JobExecutor implements Managed, Idle {
    */
   @Override
   public boolean isIdle() {
-    return hasEmptyQueue() && exec.getActiveCount() == 0;
+    return !hasStarted() || hasEmptyQueue() && exec.getActiveCount() == 0;
   }
 
   public BackgroundJob cancel (UUID key, int user) {
