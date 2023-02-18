@@ -38,11 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Validator;
-import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -71,20 +69,17 @@ public class AdminResource {
   private boolean maintenance = false;
   private final Validator validator;
   private final DatasetDao ddao;
-  // managed background processes
+  private final SyncManager assembly;
   private final IdMap idMap;
   private final ImportManager importManager;
-  private final ContinuousImporter continuousImporter;
   private final GbifSyncManager gbifSync;
-  private final SyncManager assembly;
   private final NameIndex namesIndex;
-  private final UsageCache usageCache;
   private final JobExecutor exec;
   private final ManagedService componedService;
 
   public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
-                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       UsageCache usageCache, JobExecutor executor, IdMap idMap, Validator validator) {
+                       NameUsageIndexService indexService, ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
+                       JobExecutor executor, IdMap idMap, Validator validator) {
     this.factory = factory;
     this.componedService = managedService;
     this.ddao = ddao;
@@ -95,9 +90,7 @@ public class AdminResource {
     this.downloader = downloader;
     this.indexService = indexService;
     this.gbifSync = gbifSync;
-    this.continuousImporter = continuousImporter;
     this.importManager = importManager;
-    this.usageCache = usageCache;
     this.exec = executor;
     this.idMap = idMap;
     this.validator = validator;
@@ -129,13 +122,6 @@ public class AdminResource {
     return assembly.getState();
   }
 
-  @DELETE
-  @Path("/assembly")
-  public void restartAssembly() throws Exception {
-    assembly.stop();
-    assembly.start();
-  }
-
   @POST
   @Path("/maintenance")
   public boolean toggleMaintenance() throws IOException {
@@ -148,7 +134,7 @@ public class AdminResource {
   }
 
   @GET
-  @Path("/components")
+  @Path("/component")
   @PermitAll
   public Map<String, Boolean> componentState() {
     var state = componedService.state();
@@ -190,6 +176,14 @@ public class AdminResource {
   @Path("/component/stop-all")
   public boolean stopAll() throws Exception {
     componedService.stopAll();
+    return true;
+  }
+
+  @POST
+  @Path("/component/restart-all")
+  public boolean restartAll() throws Exception {
+    componedService.stopAll();
+    componedService.startAll();
     return true;
   }
 

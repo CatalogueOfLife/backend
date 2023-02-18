@@ -94,14 +94,16 @@ public class SyncManager implements Managed, Idle {
 
   @Override
   public void stop() throws Exception {
-    LOG.info("Stop assembly coordinator");
-    // orderly shutdown running syncs
-    for (SectorFuture df : syncs.values()) {
-      df.future.cancel(true);
+    if (exec != null) {
+      LOG.info("Stop assembly coordinator");
+      // orderly shutdown running syncs
+      for (SectorFuture df : syncs.values()) {
+        df.future.cancel(true);
+      }
+      // fully shutdown threadpool within given time
+      ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+      exec = null;
     }
-    // fully shutdown threadpool within given time
-    ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
-    exec = null;
   }
 
   @Override
