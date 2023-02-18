@@ -10,6 +10,7 @@ import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,17 +54,21 @@ public class ManagedService {
   }
 
   public void startAll() throws Exception {
-    for (var c : components.keySet()) {
+    for (var c : Component.values()) {
       start(c);
     }
   }
 
   public void stopAll() {
-    for (var c : components.keySet()) {
-      try {
-        stop(c);
-      } catch (Exception e) {
-        LOG.error("Failed to stop component {}", c, e);
+    var comps = Component.values();
+    ArrayUtils.reverse(comps);
+    for (var c : comps) {
+      if (components.containsKey(c)) {
+        try {
+          stop(c);
+        } catch (Exception e) {
+          LOG.error("Failed to stop component {}", c, e);
+        }
       }
     }
   }

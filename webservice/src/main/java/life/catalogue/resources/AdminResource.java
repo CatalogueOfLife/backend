@@ -137,9 +137,7 @@ public class AdminResource {
   @Path("/component")
   @PermitAll
   public Map<String, Boolean> componentState() {
-    var state = componedService.state();
-    state.put("maintenance", maintenance);
-    return state;
+    return componedService.state();
   }
 
   @POST

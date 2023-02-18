@@ -1,11 +1,15 @@
 package life.catalogue.dw.managed;
 
+/**
+ * Start/stoppable components in the order they should be started.
+ */
 public enum Component {
+  NamesIndex,
   UsageCache,
-  DatasetImporter,
-  ImportScheduler,
-  GBIFRegistrySync,
-  SectorSynchronizer,
   LegacyIdMap,
-  JobExecutor, NamesIndex
+  JobExecutor,
+  DatasetImporter,
+  SectorSynchronizer,
+  ImportScheduler,
+  GBIFRegistrySync
 }
