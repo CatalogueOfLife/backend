@@ -1,5 +1,8 @@
 package life.catalogue.cache;
 
+import com.google.common.eventbus.Subscribe;
+
+import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.model.SimpleNameWithPub;
@@ -9,6 +12,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.Managed;
 
 import org.slf4j.Logger;
@@ -35,6 +39,13 @@ public interface UsageCache extends AutoCloseable, Managed {
 
   @Override
   void close();
+
+  @Subscribe
+  default void datasetChanged(DatasetChanged event){
+    if (event.isDeletion()) {
+      clear(event.key);
+    }
+  }
 
   default SimpleNameWithPub getOrLoad(DSID<String> key, Function<DSID<String>, SimpleNameWithPub> loader) {
     var sn = get(key);

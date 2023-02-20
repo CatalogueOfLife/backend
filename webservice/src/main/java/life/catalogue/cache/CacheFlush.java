@@ -13,7 +13,7 @@ import com.google.common.eventbus.Subscribe;
 
 
 /**
- * Class to listen to dataset changes and invalidate the cache if needed
+ * Class to listen to dataset changes and invalidate the varnish cache if needed
  */
 public class CacheFlush {
   private final UriBuilder projectUrlBuilder;

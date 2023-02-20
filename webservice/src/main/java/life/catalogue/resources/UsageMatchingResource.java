@@ -223,6 +223,9 @@ public class UsageMatchingResource {
     final Object2IntMap<Term> header;
 
     public RowMapper(String[] header) {
+      if (header == null) {
+        throw new IllegalArgumentException("Header columns required. Failed to read matching input");
+      }
       this.header = new Object2IntOpenHashMap<>();
       int idx = 0;
       for (String h : header) {
