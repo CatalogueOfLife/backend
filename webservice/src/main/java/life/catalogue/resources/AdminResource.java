@@ -11,6 +11,7 @@ import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
@@ -33,10 +34,7 @@ import life.catalogue.resources.legacy.IdMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -141,25 +139,31 @@ public class AdminResource {
   }
 
   @POST
-  @Path("/component/{comp}/start")
-  public boolean start(@PathParam("comp") Component component, @Auth User user) throws Exception {
-    componedService.start(component);
+  @Path("/component/start")
+  public boolean start(@QueryParam("comp") List<Component> components, @Auth User user) throws Exception {
+    for (var comp : components) {
+      componedService.start(comp);
+    }
     return true;
   }
 
   @POST
-  @Path("/component/{comp}/stop")
-  public boolean stop(@PathParam("comp") Component component, @Auth User user) throws Exception {
-    componedService.stop(component);
+  @Path("/component/stop")
+  public boolean stop(@QueryParam("comp") List<Component> components, @Auth User user) throws Exception {
+    for (var comp : components) {
+      componedService.stop(comp);
+    }
     return true;
   }
 
   @POST
-  @Path("/component/{comp}/restart")
-  public boolean restart(@PathParam("comp") Component component, @Auth User user) throws Exception {
-    LOG.warn("Restarting {} by {}", component, user);
-    componedService.stop(component);
-    componedService.start(component);
+  @Path("/component/restart")
+  public boolean restart(@QueryParam("comp") List<Component> components, @Auth User user) throws Exception {
+    LOG.warn("Restarting components {} by {}", StringUtils.concat(", ", components), user);
+    for (var comp : components) {
+      componedService.stop(comp);
+      componedService.start(comp);
+    }
     return true;
   }
 

@@ -4,10 +4,13 @@ import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.text.WordUtils;
 
@@ -82,6 +85,22 @@ public class StringUtils {
     StringBuilder sb = new StringBuilder();
     append(sb, delimiter, false, parts);
     return sb.toString();
+  }
+
+  /**
+   * Concatenates the given parts with a given delimiter, skipping any null or empty strings
+   */
+  public static String concat(String delimiter, Collection<? extends Object> values) {
+    if (values == null) return null;
+    return concat(delimiter, values.stream().map(Object::toString));
+  }
+
+  /**
+   * Concatenates the given parts with a given delimiter, skipping any null or empty strings
+   */
+  public static String concat(String delimiter, Stream<String> values) {
+    if (values == null) return null;
+    return org.apache.commons.lang3.StringUtils.trimToNull(values.collect(Collectors.joining(delimiter)));
   }
 
   public static void append(StringBuilder sb, String delimiter, boolean delimiterBeforeFirstPart, String... parts) {

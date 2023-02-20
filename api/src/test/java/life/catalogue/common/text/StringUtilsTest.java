@@ -2,7 +2,11 @@ package life.catalogue.common.text;
 
 import life.catalogue.api.search.NameUsageSearchParameter;
 
+import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -106,5 +110,14 @@ public class StringUtilsTest {
     assertEquals("datasetKey", StringUtils.lowerCamelCase(NameUsageSearchParameter.DATASET_KEY));
     assertEquals("extinct", StringUtils.lowerCamelCase(NameUsageSearchParameter.EXTINCT));
     assertEquals("publishedInId", StringUtils.lowerCamelCase(NameUsageSearchParameter.PUBLISHED_IN_ID));
+  }
+
+  @Test
+  public void concat() {
+    assertNull(StringUtils.concat(", ", List.of()));
+    assertEquals("A", StringUtils.concat(", ", List.of("A")));
+    assertEquals("a, b, c", StringUtils.concat(", ", List.of("a", "b", "c")));
+    assertEquals("1, 2, 3", StringUtils.concat(", ", List.of(1,2,3)));
+    assertEquals("SPECIES, GENUS", StringUtils.concat(", ", List.of(Rank.SPECIES, Rank.GENUS)));
   }
 }
