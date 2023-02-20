@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
@@ -81,7 +82,7 @@ public class ImportJob implements Runnable {
   private final Validator validator;
   private final DoiResolver resolver;
   private final DistributedArchiveService distributedArchiveService;
-  
+  private final UsageCache usageCache;
   private final StartNotifier notifier;
   private final Consumer<ImportRequest> successCallback;
   private final BiConsumer<ImportRequest, Exception> errorCallback;
@@ -89,7 +90,7 @@ public class ImportJob implements Runnable {
   ImportJob(ImportRequest req, DatasetWithSettings d,
             WsServerConfig cfg,
             DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, Validator validator, DoiResolver resolver,
-            NameUsageIndexService indexService, ImageService imgService, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
+            NameUsageIndexService indexService, ImageService imgService, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, UsageCache usageCache,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
             BiConsumer<ImportRequest, Exception> errorCallback
@@ -110,7 +111,8 @@ public class ImportJob implements Runnable {
     this.decisionDao = decisionDao;
     dao = new DatasetImportDao(factory, cfg.metricsRepo);
     this.imgService = imgService;
-    
+    this.usageCache = usageCache;
+
     this.notifier = notifier;
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
@@ -309,6 +311,9 @@ public class ImportJob implements Runnable {
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
         new PgImport(di.getAttempt(), dataset, req.createdBy, store, factory, cfg.importer, dDao, indexService).call();
+
+        LOG.info("Clear name usage cache for dataset {}", datasetKey);
+        usageCache.clear(datasetKey);
 
         LOG.info("Build import metrics for dataset {}", datasetKey);
         updateState(ImportState.ANALYZING);

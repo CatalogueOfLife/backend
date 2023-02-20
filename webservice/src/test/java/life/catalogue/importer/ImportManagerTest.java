@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
@@ -111,7 +112,7 @@ public class ImportManagerTest {
     final WsServerConfig cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
-      datasetDao, sDao, dDao, indexService, imgService, jobExecutor, validator, null);
+      datasetDao, sDao, dDao, UsageCache.passThru(), indexService, imgService, jobExecutor, validator, null);
     manager.start();
   }
 

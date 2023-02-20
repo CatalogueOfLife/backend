@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.SyncManager;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.common.Managed;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
@@ -83,13 +84,13 @@ public class ImportManager implements Managed, Idle {
   private final DatasetImportDao dao;
   private final DecisionDao decisionDao;
   private final ImageService imgService;
+  private final UsageCache usageCache;
   private final Validator validator;
   private final Timer importTimer;
   private final Counter failed;
   private int abortedAttempt;
-
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-      SqlSessionFactory factory, NameIndex index, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
+      SqlSessionFactory factory, NameIndex index, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, UsageCache usageCache,
       NameUsageIndexService indexService, ImageService imgService, JobExecutor jobExecutor, Validator validator, DoiResolver resolver) {
     this.cfg = cfg;
     this.factory = factory;
@@ -99,6 +100,7 @@ public class ImportManager implements Managed, Idle {
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken, cfg.importer.githubTokenGeoff);
     this.index = index;
     this.imgService = imgService;
+    this.usageCache = usageCache;
     this.indexService = indexService;
     this.dDao = dDao;
     this.sDao = sDao;
@@ -430,7 +432,7 @@ public class ImportManager implements Managed, Idle {
         ds.remove(Setting.DATA_ACCESS);
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
-      return new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, resolver, indexService, imgService, dDao, sDao, decisionDao,
+      return new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, resolver, indexService, imgService, dDao, sDao, decisionDao, usageCache,
         () -> req.start(),
           this::successCallBack,
           this::errorCallBack);

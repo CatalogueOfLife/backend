@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
@@ -92,7 +93,7 @@ public class ImportManagerDebugging {
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
         NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started(),
-      datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
+      datasetDao, sDao, dDao, UsageCache.passThru(), indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
     importManager.start();
   }
   

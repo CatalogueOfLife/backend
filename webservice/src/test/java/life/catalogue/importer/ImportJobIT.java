@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.*;
@@ -135,7 +136,7 @@ public class ImportJobIT {
 
     ImportRequest req = ImportRequest.external(d.getKey(), Users.TESTER);
     job = new ImportJob(req, d, cfg, new DownloadUtil(hc), PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator, null,
-      indexService, new ImageServiceFS(cfg.img), datasetDao, sDao, dDao, this::start, this::success, this::error);
+      indexService, new ImageServiceFS(cfg.img), datasetDao, sDao, dDao, UsageCache.passThru(), this::start, this::success, this::error);
 
   }
 

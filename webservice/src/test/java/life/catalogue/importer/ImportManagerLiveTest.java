@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.vocab.*;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
@@ -99,7 +100,7 @@ public class ImportManagerLiveTest {
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.passThru(), datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
+        NameIndexFactory.passThru(), datasetDao, sDao, dDao, UsageCache.passThru(), indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
     importManager.start();
 
     LOG.warn("Test initialized");
