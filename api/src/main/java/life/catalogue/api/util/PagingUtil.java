@@ -11,18 +11,27 @@ public class PagingUtil {
   public static <T> Iterator<T> pageAll(Function<Page, ResultPage<T>> func) {
     return new ResultPageIterator<T>(func);
   }
-  
+
+  public static <T> Iterator<T> pageAll(Function<Page, ResultPage<T>> func, int pageSize) {
+    return new ResultPageIterator<T>(func, pageSize);
+  }
+
   static class ResultPageIterator<T> implements Iterator<T> {
-    private final Page page = new Page();
+    private final Page page;
     private final Function<Page, ResultPage<T>> func;
     private ResultPage<T> result = null;
     private Iterator<T> curr = null;
     
     ResultPageIterator(Function<Page, ResultPage<T>> func) {
+      this(func, Page.DEFAULT_LIMIT);
+    }
+
+    ResultPageIterator(Function<Page, ResultPage<T>> func, int pageSize) {
       this.func = func;
+      this.page = new Page(pageSize);
       nextPage();
     }
-    
+
     private void nextPage() {
       if (result == null || !result.isLast()) {
         result = func.apply(page);

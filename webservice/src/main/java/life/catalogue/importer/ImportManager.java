@@ -442,7 +442,7 @@ public class ImportManager implements Managed, Idle {
    */
   private void cancelAndReschedule() {
     List<ImportRequest> requests = new ArrayList<>();
-    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, ImportState.runningAndWaitingStates(), p));
+    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, ImportState.runningAndWaitingStates(), p), 100);
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
       // only reschedule import jobs, no releases
@@ -475,7 +475,12 @@ public class ImportManager implements Managed, Idle {
         new PriorityBlockingQueue<>(cfg.importer.maxQueue),
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
         new ThreadPoolExecutor.AbortPolicy());
-    cancelAndReschedule();
+    try {
+      cancelAndReschedule();
+    } catch (RuntimeException e) {
+      // log n swallow
+      LOG.error("Error trying to reschedule older imports", e);
+    }
   }
 
   @Override
