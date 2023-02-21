@@ -96,6 +96,7 @@ public class UsageMatchingResource {
 
   @GET
   public UsageMatchWithOriginal match(@PathParam("key") int datasetKey,
+                                      @QueryParam("id") String id,
                                       @QueryParam("q") String q,
                                       @QueryParam("name") String sciname,
                                       @QueryParam("authorship") String authorship,
@@ -107,7 +108,7 @@ public class UsageMatchingResource {
     if (status == TaxonomicStatus.BARE_NAME) {
       throw new IllegalArgumentException("Cannot match a bare name to a name usage");
     }
-    SimpleNameClassified<SimpleName> orig = SimpleNameClassified.snc(null, rank, code, status, ObjectUtils.coalesce(sciname, q), authorship);
+    SimpleNameClassified<SimpleName> orig = SimpleNameClassified.snc(id, rank, code, status, ObjectUtils.coalesce(sciname, q), authorship);
     if (classification != null) {
       orig.setClassification(classification.asSimpleNames());
     }
