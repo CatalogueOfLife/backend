@@ -8,10 +8,13 @@ import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
 
 @SuppressWarnings("static-method")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class AbstractDatasetUserResource {
   private final AuthorizationDao dao;
   private final User.Role role;
