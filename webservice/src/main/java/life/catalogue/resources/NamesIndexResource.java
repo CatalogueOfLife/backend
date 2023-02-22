@@ -61,12 +61,13 @@ public class NamesIndexResource {
   @GET
   @Path("match")
   public NameMatch match(@QueryParam("q") String q,
-                         @QueryParam("name") String sciname,
+                         @QueryParam("name") String name,
+                         @QueryParam("scientificName") String sciname,
                          @QueryParam("authorship") String authorship,
                          @QueryParam("rank") Rank rank,
                          @QueryParam("code") NomCode code,
                          @QueryParam("verbose") boolean verbose) throws InterruptedException {
-    SimpleNameClassified<SimpleName> sn = SimpleNameClassified.snc(null, rank, code, null, ObjectUtils.coalesce(sciname, q), authorship);
+    SimpleNameClassified<SimpleName> sn = SimpleNameClassified.snc(null, rank, code, null, ObjectUtils.coalesce(sciname, name, q), authorship);
     Name n = interpreter.interpret(sn, IssueContainer.VOID)
                         .orElseThrow(() -> new IllegalArgumentException("Failed to interpret name")).getName();
     return ni.match(n, false, verbose);

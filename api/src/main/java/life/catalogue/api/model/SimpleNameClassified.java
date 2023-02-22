@@ -26,6 +26,10 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameWithPu
   public SimpleNameClassified() {
   }
 
+  public SimpleNameClassified(SimpleName other) {
+    super(other);
+  }
+
   public SimpleNameClassified(SimpleNameWithPub other) {
     super(other);
   }

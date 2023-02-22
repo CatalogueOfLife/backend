@@ -1,17 +1,5 @@
 package life.catalogue.resources;
 
-import com.google.common.base.Charsets;
-import com.univocity.parsers.common.AbstractParser;
-
-import com.univocity.parsers.common.ParsingContext;
-
-import com.univocity.parsers.common.ResultIterator;
-
-import it.unimi.dsi.fastutil.Function;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
@@ -20,37 +8,42 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.assembly.UsageMatch;
 import life.catalogue.assembly.UsageMatcherGlobal;
-
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.csv.CsvReader;
-
+import life.catalogue.dao.TreeStreams;
+import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.importer.NameInterpreter;
-
 import life.catalogue.parser.*;
 
-import org.apache.commons.io.input.BOMInputStream;
+import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.tree.RowMapper;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import com.univocity.parsers.common.AbstractParser;
+import com.univocity.parsers.common.ParsingContext;
+import com.univocity.parsers.common.ResultIterator;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 @Path("/dataset/{key}/nameusage/match")
 @Produces(MediaType.APPLICATION_JSON)
@@ -76,12 +69,12 @@ public class UsageMatchingResource {
     }
   }
 
-  private UsageMatchWithOriginal interpret(int datasetKey, SimpleNameClassified<SimpleName> sn) {
+  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn) {
     IssueContainer issues = new IssueContainer.Simple();
-    return interpret(datasetKey, sn, issues);
+    return match(datasetKey, sn, issues);
   }
 
-  private UsageMatchWithOriginal interpret(int datasetKey, SimpleNameClassified<SimpleName> sn, IssueContainer issues) {
+  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, IssueContainer issues) {
     UsageMatch match;
     var opt = interpreter.interpret(sn, issues);
     if (opt.isPresent()) {
@@ -94,11 +87,13 @@ public class UsageMatchingResource {
     return new UsageMatchWithOriginal(match, issues, sn);
   }
 
+
   @GET
   public UsageMatchWithOriginal match(@PathParam("key") int datasetKey,
                                       @QueryParam("id") String id,
                                       @QueryParam("q") String q,
-                                      @QueryParam("name") String sciname,
+                                      @QueryParam("name") String name,
+                                      @QueryParam("scientificName") String sciname,
                                       @QueryParam("authorship") String authorship,
                                       @QueryParam("code") NomCode code,
                                       @QueryParam("rank") Rank rank,
@@ -108,24 +103,42 @@ public class UsageMatchingResource {
     if (status == TaxonomicStatus.BARE_NAME) {
       throw new IllegalArgumentException("Cannot match a bare name to a name usage");
     }
-    SimpleNameClassified<SimpleName> orig = SimpleNameClassified.snc(id, rank, code, status, ObjectUtils.coalesce(sciname, q), authorship);
+    SimpleNameClassified<SimpleName> orig = SimpleNameClassified.snc(id, rank, code, status, ObjectUtils.coalesce(sciname, name, q), authorship);
     if (classification != null) {
       orig.setClassification(classification.asSimpleNames());
     }
-    return interpret(datasetKey, orig);
+    return match(datasetKey, orig);
   }
 
   @POST
+  @Path("source/{key2}")
+  @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
+  public Stream<Object[]> matchSourceDataset(@PathParam("key") int key1,
+                                             @PathParam("key2") int key2,
+                                             // source key2 parameters
+                                             @QueryParam("taxonID") String taxonID,
+                                             @QueryParam("rank") Rank rank,
+                                             @QueryParam("synonyms") boolean synonyms,
+                                             @QueryParam("extinct") Boolean extinct,
+                                             @Context SqlSession session
+  ) throws IOException {
+    var stream = TreeStreams.dataset(session, key2, synonyms, extinct, taxonID, rank);
+    return match2Rows(stream.map(snc -> match(key1, snc)));
+  }
+
+  @POST
+  @VaryAccept
   @Consumes(MediaType.APPLICATION_JSON)
   public List<UsageMatchWithOriginal> matchList(@PathParam("key") int datasetKey, List<SimpleNameClassified<SimpleName>> names) {
     List<UsageMatchWithOriginal> usages = new ArrayList<>(names.size());
     for (SimpleNameClassified<SimpleName> sn : names) {
-      usages.add(interpret(datasetKey, sn));
+      usages.add(match(datasetKey, sn));
     }
     return usages;
   }
 
   @POST
+  @VaryAccept
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes({MoreMediaTypes.TEXT_CSV})
   public Stream<UsageMatchWithOriginal> matchCSV2JSON(@PathParam("key") int datasetKey, InputStream data) throws IOException {
@@ -133,6 +146,7 @@ public class UsageMatchingResource {
   }
 
   @POST
+  @VaryAccept
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_TSV})
   public Stream<UsageMatchWithOriginal> matchTSV2JSON(@PathParam("key") int datasetKey, InputStream data) throws IOException {
@@ -140,20 +154,22 @@ public class UsageMatchingResource {
   }
 
   @POST
+  @VaryAccept
   @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
   @Consumes({MoreMediaTypes.TEXT_CSV})
   public Stream<Object[]> matchCSV(@PathParam("key") int datasetKey, InputStream data) throws IOException {
-    return matchData2Rows(datasetKey, data, CsvReader.newParser(CsvReader.csvSetting()));
+    return match2Rows(matchData(datasetKey, data, CsvReader.newParser(CsvReader.csvSetting())));
   }
 
   @POST
+  @VaryAccept
   @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
   @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_TSV})
   public Stream<Object[]> matchTSV(@PathParam("key") int datasetKey, InputStream data) throws IOException {
-    return matchData2Rows(datasetKey, data, CsvReader.newParser(CsvReader.tsvSetting()));
+    return match2Rows(matchData(datasetKey, data, CsvReader.newParser(CsvReader.tsvSetting())));
   }
 
-  private Stream<Object[]> matchData2Rows(int datasetKey, InputStream data, AbstractParser<?> parser) throws IOException {
+  private Stream<Object[]> match2Rows(Stream<UsageMatchWithOriginal> data) throws IOException {
     return Stream.concat(
       Stream.ofNullable(new Object[]{
         "inputID",
@@ -164,13 +180,13 @@ public class UsageMatchingResource {
         "ID",
         "rank",
         "label",
-        "name",
+        "scientificName",
         "authorship",
         "status",
         "parent",
         "classification"
       }),
-      matchData(datasetKey, data, parser).map(m -> {
+      data.map(m -> {
         Object[] row = new Object[12];
         row[0] = m.original.getId();
         row[1] = str(m.original.getRank());
@@ -199,7 +215,7 @@ public class UsageMatchingResource {
     Stream<String[]> rowStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iter, Spliterator.ORDERED), false);
     return rowStream.map(row -> {
       final IssueContainer issues = new IssueContainer.Simple();
-      return interpret(datasetKey, mapper.build(row, issues), issues);
+      return match(datasetKey, mapper.build(row, issues), issues);
     });
   }
 

@@ -426,7 +426,9 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(auth);
     bus.register(coljersey);
     bus.register(DatasetInfoCache.CACHE);
-    bus.register(new CacheFlush(httpClient, cfg.apiURI));
+    if (cfg.apiURI != null) {
+      bus.register(new CacheFlush(httpClient, cfg.apiURI));
+    }
     bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService, converter));
     bus.register(doiUpdater);
     bus.register(uCache);

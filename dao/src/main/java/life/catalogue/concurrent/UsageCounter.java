@@ -104,4 +104,12 @@ public class UsageCounter {
     }
     return map;
   }
+
+  @Override
+  public String toString() {
+    return "taxa=" + taxCounter +
+           ", synonyms=" + synCounter +
+           ", bare names=" + bareCounter +
+           ", distinct ranks=" + rankCounter.size();
+  }
 }

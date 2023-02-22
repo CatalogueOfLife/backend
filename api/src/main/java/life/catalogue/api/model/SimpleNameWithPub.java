@@ -8,6 +8,10 @@ public class SimpleNameWithPub extends SimpleNameWithNidx {
   public SimpleNameWithPub() {
   }
 
+  public SimpleNameWithPub(SimpleName other) {
+    super(other);
+  }
+
   public SimpleNameWithPub(SimpleNameWithPub other) {
     super(other);
     this.publishedInID = other.publishedInID;
