@@ -15,6 +15,7 @@ import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.eml.EmlParser;
 
+import org.gbif.dwc.terms.AcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 
@@ -82,9 +83,14 @@ public class DwcaInserter extends NeoCsvInserter {
     );
 
     insertTaxonEntities(reader, GbifTerm.Multimedia,
-        inter::interpretMedia,
+        inter::interpretGbifMedia,
         inter::taxonID,
         (t, d) -> t.media.add(d)
+    );
+    insertTaxonEntities(reader, AcTerm.Multimedia,
+      inter::interpretAcMedia,
+      inter::taxonID,
+      (t, d) -> t.media.add(d)
     );
 
     insertTaxonEntities(reader, GbifTerm.Reference,

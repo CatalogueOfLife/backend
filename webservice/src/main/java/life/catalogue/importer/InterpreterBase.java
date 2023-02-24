@@ -290,6 +290,21 @@ public class InterpreterBase {
     return d;
   }
 
+  protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
+                                       Set<Term> type, Set<Term> url, Set<Term> link, Set<Term> license, Set<Term> creator, Set<Term> created, Set<Term> title, Set<Term> format) {
+    return interpretMedia(rec, addReference, selectFirst(type, rec), selectFirst(url, rec), selectFirst(link, rec), selectFirst(license, rec), selectFirst(creator, rec), selectFirst(created, rec), selectFirst(title, rec), selectFirst(format, rec));
+  }
+
+  private static Term selectFirst(Set<Term> terms, VerbatimRecord rec) {
+    Term first = null;
+    for (Term t : terms) {
+      if (first == null) {
+        first = t;
+      }
+      if (rec.hasTerm(t)) return t;
+    }
+    return first;
+  }
 
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
                  Term type, Term url, Term link, Term license, Term creator, Term created, Term title, Term format) {

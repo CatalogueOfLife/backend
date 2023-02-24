@@ -167,7 +167,7 @@ public class DwcInterpreter extends InterpreterBase {
     return vns;
   }
 
-  List<Media> interpretMedia(VerbatimRecord rec) {
+  List<Media> interpretGbifMedia(VerbatimRecord rec) {
     return interpretMedia(rec, this::setReference,
         DcTerm.type,
         DcTerm.identifier,
@@ -178,7 +178,20 @@ public class DwcInterpreter extends InterpreterBase {
         DcTerm.title,
         DcTerm.format);
   }
-  
+
+  List<Media> interpretAcMedia(VerbatimRecord rec) {
+    return interpretMedia(rec, this::setReference,
+      Set.of(DcTerm.type, DcElement.type),
+      Set.of(AcTerm.accessURI),
+      Set.of(AcTerm.furtherInformationURL, DcTerm.references),
+      Set.of(DcTerm.license, DcTerm.rights),
+      Set.of(DcTerm.creator, DcElement.creator),
+      Set.of(XmpTerm.CreateDate, DcTerm.created),
+      Set.of(DcTerm.title, DcElement.title),
+      Set.of(DcTerm.format)
+    );
+  }
+
   /**
    * Reads the dc:source citation string and looks up or creates a new reference.
    * Sets the reference id of the referenced object.
