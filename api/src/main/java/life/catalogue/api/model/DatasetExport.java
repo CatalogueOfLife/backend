@@ -12,7 +12,12 @@ import java.util.*;
 
 import com.google.common.collect.Maps;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DatasetExport extends DataEntity<UUID> {
+  private static final Logger LOG = LoggerFactory.getLogger(DatasetExport.class);
+  private static URI DOWNLOAD_BASE_URI = URI.create("https://download.checklistbank.org/jobs/");
 
   private UUID key;
   private ExportRequest request;
@@ -42,6 +47,25 @@ public class DatasetExport extends DataEntity<UUID> {
     return exp;
   }
 
+  /**
+   * @return the relative path to the download base URI that holds the download archive file.
+   * @param key job key
+   */
+  public static String downloadFilePath(UUID key) {
+    return key.toString().substring(0,2) + "/" + key + ".zip";
+  }
+
+  /**
+   * WARNING: Only set this when you know what you're doing!
+   */
+  public static void setDownloadBaseURI(URI downloadBaseURI) {
+    if (!downloadBaseURI.getPath().endsWith("/")) {
+      downloadBaseURI = URI.create(downloadBaseURI + "/");
+    }
+    LOG.warn("DownloadBaseURI changed from {} to {}", DatasetExport.DOWNLOAD_BASE_URI, downloadBaseURI);
+    DatasetExport.DOWNLOAD_BASE_URI = downloadBaseURI;
+  }
+
   @Override
   public UUID getKey() {
     return key;
@@ -58,6 +82,10 @@ public class DatasetExport extends DataEntity<UUID> {
 
   public void setAttempt(Integer attempt) {
     this.attempt = attempt;
+  }
+
+  public URI getDownload() {
+    return DOWNLOAD_BASE_URI.resolve(downloadFilePath(key));
   }
 
   public List<SimpleName> getClassification() {
