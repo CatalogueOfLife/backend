@@ -26,6 +26,14 @@ public class TempFile implements AutoCloseable {
     return tf;
   }
 
+  private static File createTempFile(String prefix, String suffix) {
+    try {
+      return File.createTempFile(prefix, suffix);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public TempFile() throws IOException {
     this("col-", "");
   }
@@ -34,12 +42,8 @@ public class TempFile implements AutoCloseable {
     this(createTempFile(prefix, suffix));
   }
 
-  private static File createTempFile(String prefix, String suffix) {
-    try {
-      return File.createTempFile(prefix, suffix);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public TempFile(File dir, String filename) {
+    this(new File(dir, filename));
   }
 
   public TempFile(File file) {

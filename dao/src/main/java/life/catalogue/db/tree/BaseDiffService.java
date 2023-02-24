@@ -129,9 +129,13 @@ public abstract class BaseDiffService<K> {
     }
   }
 
+  /**
+   * Retrieves the version of the unix diff util being used.
+   * OSX and CentOS use different implementations.
+   */
   public String diffBinaryVersion() throws IOException {
     Runtime rt = Runtime.getRuntime();
-    Process ps = rt.exec("diff -v");
+    Process ps = rt.exec("diff --version");
     return InputStreamUtils.readEntireStream(ps.getInputStream());
   }
 

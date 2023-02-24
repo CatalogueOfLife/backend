@@ -1,9 +1,8 @@
-package life.catalogue.assembly;
+package life.catalogue.matching;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.model.SimpleNameWithPub;
 import life.catalogue.api.vocab.MatchType;

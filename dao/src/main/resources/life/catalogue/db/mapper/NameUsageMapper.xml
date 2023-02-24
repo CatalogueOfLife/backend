@@ -558,44 +558,44 @@
 
   <sql id="WHERE_START">
     <choose>
-      <when test="startID != null">
-        u.id = #{startID}
+      <when test="param.taxonID != null">
+        u.id = #{param.taxonID}
       </when>
       <otherwise>
         u.parent_id IS NULL
       </otherwise>
     </choose>
     AND NOT u.is_synonym
-    <if test="extinct != null and extinct">
+    <if test="param.extinct != null and param.extinct">
       AND u.extinct
     </if>
-    <if test="extinct != null and !extinct">
+    <if test="param.extinct != null and !param.extinct">
       AND NOT u.extinct
     </if>
-    <if test="lowestRank">
-      AND (n.rank &lt;= #{lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
+    <if test="param.lowestRank">
+      AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
     </if>
   </sql>
 
   <sql id="WHERE_UNION">
-    <if test="!includeSynonyms">
+    <if test="!param.synonyms">
       AND NOT u.is_synonym
     </if>
-    <if test="extinct != null and extinct">
+    <if test="param.extinct != null and param.extinct">
       AND u.extinct
     </if>
-    <if test="extinct != null and !extinct">
+    <if test="param.extinct != null and !param.extinct">
       AND NOT u.extinct
     </if>
-    <if test="exclusions != null and !exclusions.isEmpty()">
+    <if test="param.exclusion != null and !param.exclusion.isEmpty()">
       AND u.id NOT IN
-      <foreach item="id" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
+      <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
     </if>
-    <if test="sectorKey != null">
-      AND u.sector_key = #{sectorKey}
+    <if test="param.sectorKey != null">
+      AND u.sector_key = #{param.sectorKey}
     </if>
-    <if test="lowestRank">
-      AND (n.rank &lt;= #{lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
+    <if test="param.lowestRank">
+      AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
     </if>
   </sql>
 
@@ -606,7 +606,7 @@
       ,concat_ws('|', n.scientific_name, u.id) AS path
     </if>
     FROM <include refid="FROM_BASE"/>
-    WHERE u.dataset_key=#{datasetKey} AND
+    WHERE u.dataset_key=#{param.datasetKey} AND
     <include refid="WHERE_START"/>
 
     UNION
@@ -618,7 +618,7 @@
     FROM <include refid="FROM_BASE"/>
     JOIN x ON x.id = u.parent_id
     <where>
-      u.dataset_key=#{datasetKey}
+      u.dataset_key=#{param.datasetKey}
       <include refid="WHERE_UNION"/>
     </where>
     )
@@ -648,13 +648,13 @@
     WITH RECURSIVE x AS(
       SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', n.scientific_name, u.id) AS path
       FROM <include refid="FROM_SIMPLE"/>
-      WHERE u.dataset_key=#{datasetKey} AND <include refid="WHERE_START"/>
+      WHERE u.dataset_key=#{param.datasetKey} AND <include refid="WHERE_START"/>
     UNION
       SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)
       FROM <include refid="FROM_SIMPLE"/>
         JOIN x ON x.id = u.parent_id
       <where>
-        u.dataset_key=#{datasetKey}
+        u.dataset_key=#{param.datasetKey}
         <include refid="WHERE_UNION"/>
       </where>
     )

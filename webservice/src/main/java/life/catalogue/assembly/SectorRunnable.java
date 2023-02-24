@@ -14,6 +14,8 @@ import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 
+import life.catalogue.matching.UsageMatcherGlobal;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;

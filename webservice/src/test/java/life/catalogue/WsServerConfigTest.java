@@ -52,9 +52,9 @@ public class WsServerConfigTest {
   @Test
   public void downloadFile() {
     WsServerConfig cfg = new WsServerConfig();
-    cfg.exportDir = new File("/tmp/col");
+    cfg.job.downloadDir = new File("/tmp/col");
     UUID key = UUID.fromString("7ca06f44-2c0c-4fa9-a410-ac072c378378");
-    assertEquals(new File("/tmp/col/7c/7ca06f44-2c0c-4fa9-a410-ac072c378378.zip"), cfg.downloadFile(key));
+    assertEquals(new File("/tmp/col/7c/7ca06f44-2c0c-4fa9-a410-ac072c378378.zip"), cfg.job.downloadFile(key));
   }
 
 }

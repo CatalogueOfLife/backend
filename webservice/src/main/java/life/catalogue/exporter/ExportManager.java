@@ -2,9 +2,11 @@ package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.concurrent.DatasetBlockingJob;
+import life.catalogue.concurrent.EmailNotification;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
@@ -30,30 +32,25 @@ public class ExportManager {
   private final SqlSessionFactory factory;
   private final ImageService imageService;
   private final JobExecutor executor;
-  private final EmailNotification emailer;
   private final DatasetExportDao dao;
   private final DatasetImportDao diDao;
-  private final Timer timer;
 
   public ExportManager(WsServerConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService,
-                       Mailer mailer, DatasetExportDao exportDao, DatasetImportDao diDao, MetricRegistry registry) {
+                       DatasetExportDao exportDao, DatasetImportDao diDao) {
     this.cfg = cfg;
     this.factory = factory;
     this.executor = executor;
     this.imageService = imageService;
-    // mailer
-    this.emailer = new EmailNotification(mailer, factory, cfg);
     dao = exportDao;
     this.diDao = diDao;
-    this.timer = registry.timer("life.catalogue.exports");
   }
 
   /**
    * Checks whether an export for the given request already exists and returns the key of the latest export
    * or null if there is no exiting export.
    */
-  public life.catalogue.api.model.DatasetExport exists(ExportRequest req) {
-    life.catalogue.api.model.DatasetExport prev = dao.current(req);
+  public DatasetExport exists(ExportRequest req) {
+    DatasetExport prev = dao.current(req);
     if (prev != null) {
       LOG.info("Existing {} export {} found for request {}", prev.getRequest().getFormat(), prev.getKey(), req);
       return prev;
@@ -62,7 +59,7 @@ public class ExportManager {
   }
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
-    life.catalogue.api.model.DatasetExport prev = exists(req);
+    DatasetExport prev = exists(req);
     if (prev != null && !req.isForce()) {
       return prev.getKey();
     }
@@ -70,28 +67,27 @@ public class ExportManager {
     DatasetExportJob job;
     switch (req.getFormat()) {
       case COLDP:
-        job = new ColdpExport(req, userKey, factory, cfg, imageService, timer);
+        job = new ColdpExport(req, userKey, factory, cfg, imageService);
         break;
       case DWCA:
-        job = new DwcaExport(req, userKey, factory, cfg, imageService, timer);
+        job = new DwcaExport(req, userKey, factory, cfg, imageService);
         break;
       case ACEF:
-        job = new AcefExport(req, userKey, factory, cfg, imageService, timer);
+        job = new AcefExport(req, userKey, factory, cfg, imageService);
         break;
       case TEXT_TREE:
-        job = new TextTreeExport(req, userKey, factory, cfg, imageService, timer);
+        job = new TextTreeExport(req, userKey, factory, cfg, imageService);
         break;
       case NEWICK:
-        job = new NewickExport(req, userKey, factory, cfg, imageService, timer);
+        job = new NewickExport(req, userKey, factory, cfg, imageService);
         break;
       case DOT:
-        job = new DotExport(req, userKey, factory, cfg, imageService, timer);
+        job = new DotExport(req, userKey, factory, cfg, imageService);
         break;
 
       default:
         throw new IllegalArgumentException("Export format "+req.getFormat() + " is not supported yet");
     }
-    job.setEmailer(emailer);
     return submit(job);
   }
 

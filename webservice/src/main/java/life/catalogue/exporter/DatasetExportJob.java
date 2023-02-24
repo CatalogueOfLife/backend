@@ -40,19 +40,16 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
   private static final String METADATA_FILENAME = "metadata.yaml";
   protected final SqlSessionFactory factory;
   protected final ExportRequest req;
-  protected final Dataset dataset;
   protected File archive;
   protected File tmpDir;
   protected final WsServerConfig cfg;
   protected final ImageService imageService;
   protected final UsageCounter counter = new UsageCounter();
-  private final life.catalogue.api.model.DatasetExport export;
-  private EmailNotification emailer;
-  private final Timer timer;
+  private final DatasetExport export;
 
   @VisibleForTesting
-  DatasetExportJob(ExportRequest req, int userKey, DataFormat requiredFormat, Dataset d, List<SimpleName> classification, SqlSessionFactory factory,
-                   WsServerConfig cfg, ImageService imageService, Timer timer) {
+  DatasetExportJob(ExportRequest req, int userKey, DataFormat requiredFormat, List<SimpleName> classification, SqlSessionFactory factory,
+                   WsServerConfig cfg, ImageService imageService) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
     if (req.getFormat() == null) {
       req.setFormat(requiredFormat);
@@ -63,14 +60,10 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
     this.imageService = imageService;
     this.req = Preconditions.checkNotNull(req);
     this.factory = factory;
-    this.archive = cfg.downloadFile(getKey());
+    this.archive = cfg.job.downloadFile(getKey());
     this.tmpDir = new File(cfg.normalizer.scratchDir, "export/" + getKey().toString());
-    this.dataset = d;
-    if (dataset == null || dataset.getDeleted() != null) {
-      throw new NotFoundException("Dataset "+datasetKey+" does not exist");
-    }
-    this.timer = timer;
-    export = life.catalogue.api.model.DatasetExport.createWaiting(getKey(), userKey, req, dataset);
+    this.dataset = loadDataset(factory, req.getDatasetKey());
+    export = DatasetExport.createWaiting(getKey(), userKey, req, dataset);
     export.setClassification(classification);
     // create waiting export in db
     try (SqlSession session = factory.openSession(true)) {
@@ -80,23 +73,10 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
   }
 
   DatasetExportJob(ExportRequest req, int userKey, DataFormat requiredFormat, boolean allowExcel, SqlSessionFactory factory,
-                   WsServerConfig cfg, ImageService imageService, Timer timer) {
-    this(req, userKey, requiredFormat, loadDataset(factory, req.getDatasetKey()), loadClassification(factory, req), factory, cfg, imageService, timer);
+                   WsServerConfig cfg, ImageService imageService) {
+    this(req, userKey, requiredFormat, loadClassification(factory, req), factory, cfg, imageService);
     if (req.isExcel() && !allowExcel) {
       throw new IllegalArgumentException(requiredFormat.getName() + " cannot be exported in Excel");
-    }
-  }
-
-  private static Dataset loadDataset(SqlSessionFactory factory, int datasetKey){
-    try (SqlSession session = factory.openSession(false)) {
-      Dataset dataset = session.getMapper(DatasetMapper.class).get(datasetKey);
-      if (dataset == null || dataset.getDeleted() != null) {
-        throw new NotFoundException("Dataset "+datasetKey+" does not exist");
-      }
-      if (!session.getMapper(DatasetPartitionMapper.class).exists(datasetKey, dataset.getOrigin())) {
-        throw new IllegalArgumentException("Dataset "+datasetKey+" does not have any data");
-      }
-      return dataset;
     }
   }
 
@@ -122,10 +102,6 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
     }
   }
 
-  void setEmailer(EmailNotification emailer) {
-    this.emailer = emailer;
-  }
-
   public life.catalogue.api.model.DatasetExport getExport() {
     return export;
   }
@@ -137,7 +113,6 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
   @Override
   public final void runWithLock() throws Exception {
     FileUtils.forceMkdir(tmpDir);
-    final Timer.Context ctxt = timer.time();
     try {
       export.setStarted(LocalDateTime.now());
       updateExport(JobStatus.RUNNING);
@@ -147,7 +122,6 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
       bundle();
       LOG.info("Export {} of dataset {} completed", getKey(), datasetKey);
     } finally {
-      ctxt.stop();
       LOG.info("Remove temporary export directory {}", tmpDir.getAbsolutePath());
       try {
         FileUtils.deleteDirectory(tmpDir);
@@ -178,11 +152,6 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
       LOG.error("Failed to read generated archive file stats for {}", archive, e);
     }
     updateExport(getStatus());
-
-    // email notification
-    if (emailer != null) {
-      emailer.email(this);
-    }
   }
 
   protected void bundle() throws IOException {

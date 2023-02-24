@@ -2,6 +2,7 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.dao.TaxonCounter;
@@ -13,10 +14,12 @@ import org.gbif.nameparser.util.RankUtils;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
@@ -28,13 +31,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 public abstract class AbstractTreePrinter implements Consumer<SimpleName>, AutoCloseable {
   private final UsageCounter counter = new UsageCounter();
   protected final Writer writer;
-  protected final int datasetKey;
-  protected final Integer sectorKey;
-  protected final String startID;
-  protected final boolean synonyms; // whether synonyms should be included or not
-  protected final Boolean extinct; // whether extinct usages should be included, excluded or it does not matter (NULL)
+  protected final TreeTraversalParameter params;
   protected final Set<Rank> ranks;
-  protected final Rank lowestRank;
   protected final Rank countRank;
   protected final TaxonCounter taxonCounter;
   protected final SqlSessionFactory factory;
@@ -47,26 +45,29 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName>, AutoC
   protected enum EVENT {START, END}
 
   /**
-   * @param sectorKey optional sectorKey to restrict printed tree to
+   * @param params main traversal parameter defining what to print
+   * @param ranks set of ranks to include. Can be null or empty to include all
    * @param countRank the rank to be used when counting with the taxonCounter
    */
-  public AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Boolean extinct, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+  public AbstractTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
     this.writer = writer;
-    this.datasetKey = datasetKey;
-    this.startID = startID;
-    this.sectorKey = sectorKey;
     this.factory = factory;
-    this.synonyms = synonyms;
-    this.extinct = extinct;
-    this.ranks = ObjectUtils.coalesce(ranks, Collections.EMPTY_SET);
-    this.lowestRank = RankUtils.lowestRank(ranks);
+    this.params = params;
+    if (ranks != null) {
+      this.ranks = ranks;
+      this.params.setLowestRank(RankUtils.lowestRank(ranks));
+    } else if (params.getLowestRank() != null){
+      this.ranks = Arrays.stream(Rank.values()).filter(r -> r.ordinal() <= params.getLowestRank().ordinal() || r == Rank.UNRANKED).collect(Collectors.toSet());
+    } else {
+      this.ranks = Collections.EMPTY_SET;
+    }
     this.countRank = countRank;
     this.taxonCounter = taxonCounter;
   }
 
   Cursor<SimpleName> iterate() {
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    return num.processTreeSimple(datasetKey, sectorKey, startID, null, lowestRank, extinct, synonyms);
+    return num.processTreeSimple(params);
   }
 
   /**
@@ -115,7 +116,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName>, AutoC
       if (ranks.isEmpty() || ranks.contains(u.getRank())) {
         counter.inc(u);
         if (countRank != null) {
-          taxonCount = taxonCounter.count(DSID.of(datasetKey, u.getId()), countRank);
+          taxonCount = taxonCounter.count(DSID.of(params.getDatasetKey(), u.getId()), countRank);
         }
         start(u);
         level++;

@@ -6,7 +6,6 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
@@ -25,7 +24,6 @@ import life.catalogue.gbifsync.GbifSyncJob;
 import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
-import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.RematchJob;
@@ -34,7 +32,10 @@ import life.catalogue.resources.legacy.IdMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -92,26 +93,6 @@ public class AdminResource {
     this.exec = executor;
     this.idMap = idMap;
     this.validator = validator;
-  }
-
-  @GET
-  @Path("/job")
-  @PermitAll
-  public List<? extends BackgroundJob> jobQueue(@QueryParam("datasetKey") Integer datasetKey) {
-    return datasetKey == null ? exec.getQueue() : exec.getQueueByDataset(datasetKey);
-  }
-
-  @GET
-  @Path("/job/{key}")
-  @PermitAll
-  public BackgroundJob job(@PathParam("key") UUID key) {
-    return exec.getJob(key);
-  }
-
-  @DELETE
-  @Path("/job/{key}")
-  public BackgroundJob cancel(@PathParam("key") UUID key, @Auth User user) {
-    return exec.cancel(key, user.getKey());
   }
 
   @GET

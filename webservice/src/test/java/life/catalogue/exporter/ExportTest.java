@@ -17,7 +17,6 @@ import com.codahale.metrics.Timer;
 public class ExportTest {
 
   WsServerConfig cfg;
-  Timer timer;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -37,13 +36,11 @@ public class ExportTest {
   public void initCfg()  {
     cfg = new WsServerConfig();
     cfg.apiURI= ApiUtils.API;
-    MetricRegistry registry = new MetricRegistry();
-    timer = registry.timer("test.timer");
   }
 
   @After
   public void cleanup()  {
-    FileUtils.deleteQuietly(cfg.exportDir);
+    FileUtils.deleteQuietly(cfg.job.downloadDir);
   }
 
 }

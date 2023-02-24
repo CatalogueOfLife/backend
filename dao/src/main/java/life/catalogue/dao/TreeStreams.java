@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.db.mapper.NameUsageMapper;
 
@@ -30,11 +31,11 @@ public class TreeStreams {
   /**
    * Make sure to close the iterator at the end to release the underlying database cursor !!!
    */
-  public static Stream<SimpleNameClassified<SimpleName>> dataset(SqlSession session, int datasetKey, boolean includeSynonyms, Boolean extinct, @Nullable String startID, @Nullable Rank lowestRank) {
-    LOG.debug("Streaming simple tree for dataset {}", datasetKey);
+  public static Stream<SimpleNameClassified<SimpleName>> dataset(SqlSession session, TreeTraversalParameter params) {
+    LOG.debug("Streaming simple tree for dataset {}: {}", params.getDatasetKey(), params);
     var num = session.getMapper(NameUsageMapper.class);
-    var c = num.processTreeSimple(datasetKey, null, startID, null, lowestRank, extinct, includeSynonyms);
-    return streamCursor(datasetKey, c);
+    var c = num.processTreeSimple(params);
+    return streamCursor(params.getDatasetKey(), c);
   }
 
   private static Stream<SimpleNameClassified<SimpleName>> streamCursor(int datasetKey, final Cursor<SimpleName> c) {

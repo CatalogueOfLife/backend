@@ -1,6 +1,9 @@
 package life.catalogue.dw.mail;
 
 
+import life.catalogue.concurrent.EmailNotification;
+import life.catalogue.config.MailConfig;
+
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.mailer.MailerBuilder;
 import org.slf4j.Logger;
@@ -19,6 +22,7 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
   
   private static final Logger LOG = LoggerFactory.getLogger(MailBundle.class);
   private Mailer mailer;
+  private EmailNotification emailNotification;
 
   @Override
   public void run(MailBundleConfig config, Environment env) throws Exception {
@@ -35,6 +39,7 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
         .withDebugLogging(cfg.block)
         .withThreadPoolSize(cfg.threads)
         .buildMailer();
+      emailNotification = new EmailNotification(mailer, cfg);
       // health tests
       if (env != null) {
         env.healthChecks().register("mail-connection", new MailServerConnectionCheck(mailer));
@@ -64,6 +69,10 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
 
   public Mailer getMailer() {
     return mailer;
+  }
+
+  public EmailNotification getEmailNotification() {
+    return emailNotification;
   }
 
   @Override

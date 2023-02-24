@@ -20,15 +20,15 @@ import com.codahale.metrics.Timer;
 public class TextTreeExport extends DatasetExportJob {
   private static final Logger LOG = LoggerFactory.getLogger(TextTreeExport.class);
 
-  public TextTreeExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
-    super(req, userKey, DataFormat.TEXT_TREE, false, factory, cfg, imageService, timer);
+  public TextTreeExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(req, userKey, DataFormat.TEXT_TREE, false, factory, cfg, imageService);
   }
 
   @Override
   public void export() throws Exception {
     File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".txt");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
-      TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, req.getDatasetKey(), req.getTaxonID(), req.isSynonyms(), req.getExtinct(), req.getMinRank(), factory, writer);
+      TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, req.toTreeTraversalParameter(), factory, writer);
       int cnt = printer.print();
       LOG.info("Written {} taxa to text tree for dataset {}", cnt, req.getDatasetKey());
       counter.set(printer.getCounter());

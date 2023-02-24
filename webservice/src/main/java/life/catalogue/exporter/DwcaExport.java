@@ -39,8 +39,8 @@ public class DwcaExport extends ArchiveExport {
   private final Archive arch = new Archive();
   private final AtomicInteger bareNameID = new AtomicInteger(1);
 
-  public DwcaExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
-    super(DataFormat.DWCA, userKey, req, factory, cfg, imageService, timer);
+  public DwcaExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(DataFormat.DWCA, userKey, req, factory, cfg, imageService);
   }
 
   @Override

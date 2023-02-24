@@ -11,7 +11,6 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -236,22 +235,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * An optional exclusion filter can be used to prevent traversal of subtrees.
    * Synonyms are also traversed if includeSynonyms is true.
    *
-   * @param sectorKey optional sector key to limit the traversal to
-   * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa
-   * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
-   * @param lowestRank optional rank cutoff filter to only include children with a rank above or equal to the one given
-   * @param extinct optional filter for explicitly only extinct or only extant records. Null includes all.
-   * @param includeSynonyms if true includes synonyms, otherwise only taxa
+   * @param params various tree traveersal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
    */
-  Cursor<NameUsageBase> processTree(@Param("datasetKey") int datasetKey,
-                     @Param("sectorKey") Integer sectorKey,
-                     @Param("startID") @Nullable String startID,
-                     @Param("exclusions") @Nullable Set<String> exclusions,
-                     @Param("lowestRank") @Nullable Rank lowestRank,
-                     @Param("extinct") @Nullable Boolean extinct,
-                     @Param("includeSynonyms") boolean includeSynonyms,
-                     @Param("depthFirst") boolean depthFirst);
+  Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params,
+                                    @Param("depthFirst") boolean depthFirst);
 
   /**
    * List all usages from a sector different to the one given including nulls,
@@ -280,20 +268,9 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    *
    * Processed SimpleName instances have the parentID as their parent property, not a scientificName!
    *
-   * @param sectorKey optional sector key to limit the traversal to
-   * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa
-   * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
-   * @param lowestRank optional rank cutoff filter to only include children with a rank above or equal to the one given
-   * @param extinct optional filter for explicitly only extinct or only extant records. Null includes all.
-   * @param includeSynonyms if true includes synonyms, otherwise only taxa
+   * @param params various tree traveersal request parameters:
    */
-  Cursor<SimpleName> processTreeSimple(@Param("datasetKey") int datasetKey,
-                   @Param("sectorKey") @Nullable Integer sectorKey,
-                   @Param("startID") @Nullable String startID,
-                   @Param("exclusions") @Nullable Set<String> exclusions,
-                   @Param("lowestRank") @Nullable Rank lowestRank,
-                   @Param("extinct") @Nullable Boolean extinct,
-                   @Param("includeSynonyms") boolean includeSynonyms);
+  Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params);
 
   /**
    * Very lightweight (sub)tree traversal that only returns the usage and name id of the start usage and any descendant of the start usage.

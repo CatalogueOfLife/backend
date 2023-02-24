@@ -102,7 +102,7 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
       if (s.getMode() == Sector.Mode.ATTACH) {
         // the parentID to be used by the copied root usage
         parentID = s.getTarget().getId();
-        um.processTree(s.getSubjectDatasetKey(), null, s.getSubject().getId(), null, null, null, true,false)
+        um.processTree(TreeTraversalParameter.sectorSubject(s), false)
           .forEach(this::copy);
 
       } else if (s.getMode() == Sector.Mode.UNION) {
@@ -110,13 +110,15 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
         // in UNION mode do not attach the subject itself, just its children
         // if we have a placeholder rank configured ignore children of that rank or higher
         // see https://github.com/CatalogueOfLife/clearinghouse-ui/issues/518
+        final var params = TreeTraversalParameter.dataset(s.getSubjectDatasetKey());
         for (NameUsageBase child : um.children(DSID.of(s.getSubjectDatasetKey(), s.getSubject().getId()), s.getPlaceholderRank())){
           parentID = s.getTarget().getId();
           if (child.isSynonym()) {
             copy(child);
           } else {
             LOG.info("Traverse child {}", child);
-            um.processTree(s.getSubjectDatasetKey(), null, child.getId(), null, null, null, true,false)
+            params.setTaxonID(child.getId());
+            um.processTree(params,false)
               .forEach(this::copy);
           }
         }

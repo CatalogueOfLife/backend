@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import javax.validation.constraints.Min;
@@ -23,6 +24,7 @@ public class NormalizerConfig {
   private static final Logger LOG = LoggerFactory.getLogger(NormalizerConfig.class);
   public static final String ARCHIVE_SUFFIX = "archive";
   private static final Pattern ARCHIVE_FN_PATTERN = Pattern.compile("^0*(\\d+)\\." + ARCHIVE_SUFFIX + "$");
+  private static final String UPLOAD = "upload";
 
   /**
    * Archive directory to store larger amount of data
@@ -120,12 +122,24 @@ public class NormalizerConfig {
   }
 
   /**
+   * Creates a new random & unique scratch file that can e.g. be used for uploads.
+   */
+  public File uploadFile() {
+    return uploadFile("", "");
+  }
+  public File uploadFile(String suffix) {
+    return uploadFile("", suffix);
+  }
+  public File uploadFile(String prefix, String suffix) {
+    return new File(scratchDir, "upload/" + prefix + UUID.randomUUID() + suffix);
+  }
+
+  /**
    * Makes sure all configured directories do actually exist and create them if missing
    * @return true if at least one dir was newly created
    */
   public boolean mkdirs() {
-    boolean created = archiveDir.mkdirs();
-    return scratchDir.mkdirs() || created;
+    return archiveDir.mkdirs() || scratchDir.mkdirs();
   }
 }
 

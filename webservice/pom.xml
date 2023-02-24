@@ -79,6 +79,12 @@
       <artifactId>gmetric4j</artifactId>
     </dependency>
 
+    <!-- WebSockets -->
+    <dependency>
+      <groupId>be.tomcools</groupId>
+      <artifactId>dropwizard-websocket-jsr356-bundle</artifactId>
+    </dependency>
+
     <!-- Swagger OpenAPI Docs -->
     <dependency>
       <groupId>io.swagger.core.v3</groupId>

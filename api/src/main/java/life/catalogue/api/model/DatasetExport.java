@@ -10,14 +10,9 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Maps;
 
 public class DatasetExport extends DataEntity<UUID> {
-  private static final Logger LOG = LoggerFactory.getLogger(DatasetExport.class);
-  private static URI DOWNLOAD_BASE_URI = URI.create("https://download.catalogueoflife.org/exports/");
 
   private UUID key;
   private ExportRequest request;
@@ -45,31 +40,6 @@ public class DatasetExport extends DataEntity<UUID> {
     exp.setCreated(LocalDateTime.now());
     exp.attempt = dataset.getAttempt();
     return exp;
-  }
-
-  /**
-   * @return the relative path to the download base URI that holds the download archive file.
-   */
-  public static String downloadFilePath(UUID key) {
-    return key.toString().substring(0,2) + "/" + key.toString() + ".zip";
-  }
-
-  /**
-   * @return the final URI that holds the download archive file.
-   */
-  public static URI downloadURI(UUID key) {
-    return DOWNLOAD_BASE_URI.resolve(downloadFilePath(key));
-  }
-
-  /**
-   * WARNING: Only set this when you know what you're doing!
-   */
-  public static void setDownloadBaseURI(URI downloadBaseURI) {
-    if (!downloadBaseURI.getPath().endsWith("/")) {
-      downloadBaseURI = URI.create(downloadBaseURI + "/");
-    }
-    LOG.warn("DownloadBaseURI changed from {} to {}", DatasetExport.DOWNLOAD_BASE_URI, downloadBaseURI);
-    DatasetExport.DOWNLOAD_BASE_URI = downloadBaseURI;
   }
 
   @Override
@@ -143,10 +113,6 @@ public class DatasetExport extends DataEntity<UUID> {
       truncated = new HashSet<>();
     }
     truncated.add(rowType);
-  }
-
-  public URI getDownload() {
-    return downloadURI(key);
   }
 
   public String getMd5() {

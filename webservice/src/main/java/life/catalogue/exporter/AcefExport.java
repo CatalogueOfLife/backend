@@ -48,8 +48,8 @@ public class AcefExport extends DatasetExportJob {
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
 
-  public AcefExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
-    super(req, userKey, DataFormat.ACEF, false, factory, cfg, imageService, timer);
+  public AcefExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(req, userKey, DataFormat.ACEF, false, factory, cfg, imageService);
     if (req.hasFilter()) {
       throw new IllegalArgumentException("ACEF exports cannot have any filters");
     }

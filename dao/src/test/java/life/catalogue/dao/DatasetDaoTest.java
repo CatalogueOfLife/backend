@@ -1,6 +1,5 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.exception.NotUniqueException;
 import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
@@ -8,6 +7,7 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.PgSetupRule;
@@ -36,7 +36,8 @@ public class DatasetDaoTest extends DaoTestBase {
   @Before
   public void init() {
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    DatasetExportDao exDao = new DatasetExportDao(new File("/tmp/exports"), PgSetupRule.getSqlSessionFactory(), new EventBus(), validator);
+    JobConfig cfg = new JobConfig();
+    DatasetExportDao exDao = new DatasetExportDao(cfg, PgSetupRule.getSqlSessionFactory(), new EventBus(), validator);
     dao = new DatasetDao(testDataRule.keyGenerator.minExternalDatasetKey, factory(),
       new NormalizerConfig(), new ReleaseConfig(),
       null,

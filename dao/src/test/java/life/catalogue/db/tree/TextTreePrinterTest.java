@@ -1,6 +1,7 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.TaxonCounter;
@@ -49,7 +50,7 @@ public class TextTreePrinterTest {
         return cnt.getAndIncrement();
       }
     };
-    var p = PrinterFactory.dataset(TextTreePrinter.class, TestDataRule.TREE.key, null, false, null, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer);
+    var p = PrinterFactory.dataset(TextTreePrinter.class, TreeTraversalParameter.datasetNoSynonyms(TestDataRule.TREE.key), Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer);
     p.showIDs();
     int count = p.print();
     System.out.println(writer);
@@ -61,7 +62,10 @@ public class TextTreePrinterTest {
     for (boolean extinct : List.of(true, false)) {
       writer = new StringWriter();
       cnt.set(1);
-      p = PrinterFactory.dataset(TextTreePrinter.class, TestDataRule.TREE.key, null, false, extinct, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer);
+      var ttp = TreeTraversalParameter.dataset(TestDataRule.TREE.key);
+      ttp.setSynonyms(false);
+      ttp.setExtinct(extinct);
+      p = PrinterFactory.dataset(TextTreePrinter.class, ttp, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer);
       p.showIDs();
       count = p.print();
       System.out.println(writer);

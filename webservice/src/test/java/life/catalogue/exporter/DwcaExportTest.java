@@ -15,7 +15,7 @@ public class DwcaExportTest extends ExportTest {
 
   @Test
   public void dataset() {
-    DwcaExport exp = new DwcaExport(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
+    DwcaExport exp = new DwcaExport(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertTrue(exp.getArchive().exists());
@@ -25,7 +25,7 @@ public class DwcaExportTest extends ExportTest {
   public void withBareNames() {
     var req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA);
     req.setBareNames(true);
-    DwcaExport exp = new DwcaExport(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
+    DwcaExport exp = new DwcaExport(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertTrue(exp.getArchive().exists());

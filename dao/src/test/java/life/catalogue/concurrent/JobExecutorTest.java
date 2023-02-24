@@ -1,5 +1,8 @@
 package life.catalogue.concurrent;
 
+import com.codahale.metrics.MetricRegistry;
+
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
 
 import java.util.*;
@@ -7,22 +10,31 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
+import life.catalogue.dao.DatasetExportDao;
+
+import life.catalogue.dao.UserDao;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 public class JobExecutorTest {
   JobExecutor exec;
   ConcurrentLinkedQueue<UUID> finished;
   Map<UUID, JobStatus> status;
+  final static User user = new User();
 
   static class Runme extends BackgroundJob {
     final int num;
 
     Runme(int num, JobPriority priority) {
-      super(priority, 1);
+      super(priority, JobExecutorTest.user.getKey());
       this.num = num;
     }
 
@@ -34,7 +46,13 @@ public class JobExecutorTest {
 
   @Before
   public void init() throws Exception {
-    exec = new JobExecutor(JobConfig.withThreads(2));
+    user.setKey(1);
+    user.setUsername("foo");
+    user.setLastname("Bar");
+    UserDao dao = mock(UserDao.class);
+    doReturn(user).when(dao).get(any());
+
+    exec = new JobExecutor(JobConfig.withThreads(2), new MetricRegistry(), null, dao);
     finished = new ConcurrentLinkedQueue<>();
     status = new ConcurrentHashMap<>();
   }

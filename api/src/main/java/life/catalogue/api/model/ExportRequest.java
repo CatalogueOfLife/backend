@@ -148,4 +148,13 @@ public class ExportRequest {
     sb.append("]");
     return sb.toString();
   }
+
+  public TreeTraversalParameter toTreeTraversalParameter() {
+    TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey);
+    ttp.setTaxonID(getTaxonID());
+    ttp.setSynonyms(isSynonyms());
+    ttp.setExtinct(getExtinct());
+    ttp.setLowestRank(getMinRank());
+    return ttp;
+  }
 }

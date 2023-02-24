@@ -1,4 +1,4 @@
-package life.catalogue.dw.mail;
+package life.catalogue.config;
 
 
 import java.util.ArrayList;

@@ -59,7 +59,7 @@ public class ExportResource {
   })
   public Response redirectToExportFile(@PathParam("id") UUID key) {
     return Response.status(Response.Status.FOUND)
-                   .location(DatasetExport.downloadURI(key))
+                   .location(cfg.job.downloadURI(key))
                    .header(MoreHttpHeaders.CONTENT_DISPOSITION, ResourceUtils.fileAttachment("export-"+key+".zip"))
                    .build();
   }

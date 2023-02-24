@@ -7,6 +7,8 @@ import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndex;
 
+import life.catalogue.matching.UsageMatcherGlobal;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

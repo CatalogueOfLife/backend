@@ -1,6 +1,7 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.TaxonCounter;
@@ -17,6 +18,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
 
 public class JsonTreePrinterTest {
@@ -36,7 +38,7 @@ public class JsonTreePrinterTest {
         return 999;
       }
     };
-    int count = PrinterFactory.dataset(JsonTreePrinter.class, TestDataRule.TREE.key, null, true, null, null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(JsonTreePrinter.class, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
     assertEquals(24, count);
     System.out.println(writer);
     String expected = UTF8IoUtils.readString(Resources.stream("trees/tree.json"));

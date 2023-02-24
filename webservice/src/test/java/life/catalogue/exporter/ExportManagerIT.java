@@ -2,12 +2,14 @@ package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.UserDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.img.ImageService;
@@ -17,14 +19,14 @@ import java.io.File;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import com.codahale.metrics.MetricRegistry;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 public class ExportManagerIT {
@@ -35,15 +37,33 @@ public class ExportManagerIT {
   @Rule
   public TestDataRule testDataRule = TestDataRule.apple();
 
+  WsServerConfig cfg = new WsServerConfig();
+  JobExecutor executor;
+  DatasetExportDao exDao;
+  User user = new User();
+
+  @Before
+  public void init() throws Exception {
+    user.setKey(1);
+    user.setUsername("foo");
+    user.setLastname("Bar");
+    UserDao uDao = mock(UserDao.class);
+    doReturn(user).when(uDao).get(any());
+    exDao = mock(DatasetExportDao.class);
+    executor = new JobExecutor(cfg.job, new MetricRegistry(), null, uDao);
+  }
+
+  @After
+  public void stop() throws Exception {
+    executor.stop();
+  }
+
   @Test
   public void rescheduleBlockedDatasets() throws Exception {
-    WsServerConfig cfg = new WsServerConfig();
-    cfg.downloadURI = URI.create("http://gbif.org");
-    cfg.exportDir = new File("/tmp/col");
+    cfg.job.downloadURI = URI.create("http://gbif.org/");
+    cfg.job.downloadDir = new File("/tmp/col");
     cfg.job.threads = 3;
-    JobExecutor executor = new JobExecutor(cfg.job);
-    DatasetExportDao exDao = mock(DatasetExportDao.class);
-    ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), null, exDao, mock(DatasetImportDao.class), new MetricRegistry());
+    ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class));
 
     PrintBlockJob job = new PrintBlockJob(TestDataRule.APPLE.key);
     PrintBlockJob job2 = new PrintBlockJob(TestDataRule.APPLE.key);
@@ -78,28 +98,20 @@ public class ExportManagerIT {
     final int datasetKey = TestDataRule.APPLE.key;
     final int userKey = TestDataRule.TEST_USER.getKey();
 
-
-    WsServerConfig cfg = new WsServerConfig();
-    cfg.downloadURI = URI.create("http://gbif.org");
-    cfg.exportDir = new File("/tmp/col");
+    cfg.job.downloadURI = URI.create("http://gbif.org/");
+    cfg.job.downloadDir = new File("/tmp/col");
     cfg.job.threads = 3;
-    JobExecutor executor = null;
-    try {
-      executor = new JobExecutor(cfg.job);
-      DatasetExportDao exDao = mock(DatasetExportDao.class);
-      ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), null, exDao, mock(DatasetImportDao.class), new MetricRegistry());
 
-      // first schedule a block job that runs forever
-      for (DataFormat df : ProjectRelease.EXPORT_FORMATS) {
-        ExportRequest req = new ExportRequest();
-        req.setDatasetKey(datasetKey);
-        req.setFormat(df);
-        manager.submit(req, userKey);
-      }
-      TimeUnit.SECONDS.sleep(10);
-      System.out.println("Export test finished");
-    } finally {
-      executor.stop();
+    ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class));
+
+    // first schedule a block job that runs forever
+    for (DataFormat df : ProjectRelease.EXPORT_FORMATS) {
+      ExportRequest req = new ExportRequest();
+      req.setDatasetKey(datasetKey);
+      req.setFormat(df);
+      manager.submit(req, userKey);
     }
+    TimeUnit.SECONDS.sleep(10);
+    System.out.println("Export test finished");
   }
 }

@@ -1,9 +1,12 @@
 package life.catalogue.concurrent;
 
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.common.Idle;
+import life.catalogue.common.Managed;
+import life.catalogue.dao.UserDao;
+import life.catalogue.db.mapper.UserMapper;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -12,15 +15,13 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.common.Idle;
-
-import life.catalogue.common.Managed;
-
-import org.simplejavamail.api.email.Email;
-import org.simplejavamail.api.mailer.Mailer;
-import org.simplejavamail.email.EmailBuilder;
+import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 
 /**
  * The background job executor using a priority ordered queue.
@@ -28,14 +29,15 @@ import org.slf4j.LoggerFactory;
  */
 public class JobExecutor implements Managed, Idle {
   private static final Logger LOG = LoggerFactory.getLogger(JobExecutor.class);
+  private static final String METRIC_GROUP_NAME = "jobs";
 
   private final JobConfig cfg;
   private final PriorityBlockingQueue<Runnable> queue;
   private final ConcurrentMap<UUID, ComparableFutureTask> futures = new ConcurrentHashMap<>();
-  private final Mailer mailer;
-  private final String onErrorTo;
-  private final String onErrorFrom;
+  private final UserDao udao;
+  private final @Nullable EmailNotification emailer;
   private ColExecutor exec;
+  private final Timer timer;
 
   @Override
   public void start() throws Exception {
@@ -77,22 +79,21 @@ public class JobExecutor implements Managed, Idle {
     }
   }
 
-  public JobExecutor(JobConfig cfg) throws Exception {
-    this(cfg, null);
-  }
-
-  public JobExecutor(JobConfig cfg, @Nullable Mailer mailer) throws Exception {
+  public JobExecutor(JobConfig cfg, MetricRegistry registry, @Nullable EmailNotification emailer, UserDao uDao) throws Exception {
     LOG.info("Created new job executor with {} workers and a queue size of {}", cfg.threads, cfg.queue);
     this.cfg = cfg;
+    this.udao = uDao;
     queue = new PriorityBlockingQueue<>(cfg.queue);
-    this.mailer = mailer;
-    this.onErrorTo = cfg.onErrorTo;
-    this.onErrorFrom = cfg.onErrorFrom;
+    this.emailer = emailer;
+    // track metrics e.g. queue size
+    registry.register(MetricRegistry.name(JobExecutor.class, METRIC_GROUP_NAME, "queue"), (Gauge<Integer>) queue::size);
+    timer = registry.register(MetricRegistry.name(JobExecutor.class, METRIC_GROUP_NAME, "duration"), new Timer());
+    // start up
     start();
   }
 
   class ColExecutor extends ThreadPoolExecutor {
-    public ColExecutor(JobConfig cfg, PriorityBlockingQueue queue) {
+    public ColExecutor(JobConfig cfg, PriorityBlockingQueue<Runnable> queue) {
       super(cfg.threads, cfg.threads, 60L, TimeUnit.SECONDS, queue,
         new NamedThreadFactory("background-worker"),
         new ThreadPoolExecutor.AbortPolicy());
@@ -118,31 +119,8 @@ public class JobExecutor implements Managed, Idle {
       }
       // mail on error if configured
       if (job.getStatus() == JobStatus.FAILED) {
-        sendErrorMail(job);
+        emailer.sendErrorMail(job);
       }
-    }
-  }
-
-  private void sendErrorMail(BackgroundJob job){
-    if (mailer != null && onErrorTo != null && onErrorFrom != null) {
-      StringWriter sw = new StringWriter();
-      sw.write(job.getClass().getSimpleName() + " job "+job.getKey());
-      sw.write(" has failed with an exception");
-      if (job.getError() != null) {
-        sw.write(" " + job.getError().getClass().getSimpleName()+":\n\n");
-        PrintWriter pw = new PrintWriter(sw);
-        job.getError().printStackTrace(pw);
-      } else {
-        sw.write(".\n");
-      }
-
-      Email mail = EmailBuilder.startingBlank()
-        .to(onErrorTo)
-        .from(onErrorFrom)
-        .withSubject(String.format("COL job %s %s failed", job.getClass().getSimpleName(), job.getKey()))
-        .withPlainText(sw.toString())
-        .buildEmail();
-      mailer.sendMail(mail, true);
     }
   }
 
@@ -235,7 +213,14 @@ public class JobExecutor implements Managed, Idle {
         throw new IllegalArgumentException("An identical job is queued already");
       }
     }
+    User user = udao.get(job.getUserKey());
+    if (user == null) {
+      throw new IllegalArgumentException("No user "+job.getUserKey()+" existing");
+    }
+    job.setUser(user);
     LOG.info("Scheduling new {} job {} by user {}", job.getJobName(), job.getKey(), job.getUserKey());
+    job.setEmailer(emailer);
+    job.setTimer(timer);
     var ftask = new ComparableFutureTask(job);
     futures.put(job.getKey(), ftask);
     exec.execute(ftask);

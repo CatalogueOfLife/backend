@@ -8,6 +8,7 @@ import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.UsageMatch;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.*;

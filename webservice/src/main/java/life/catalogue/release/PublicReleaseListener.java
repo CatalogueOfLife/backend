@@ -203,7 +203,7 @@ public class PublicReleaseListener {
 
   public void copyExportToColDownload(Dataset dataset, DataFormat df, UUID exportKey, boolean symLinkLatest) {
     File target = colDownloadFile(cfg.release.colDownloadDir, dataset, df);
-    File source = cfg.downloadFile(exportKey);
+    File source = cfg.job.downloadFile(exportKey);
     if (source.exists()) {
       try {
         LOG.info("Copy COL {} export {} to {}", df, exportKey, target);

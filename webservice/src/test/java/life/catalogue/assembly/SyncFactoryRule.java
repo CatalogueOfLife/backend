@@ -10,6 +10,7 @@ import life.catalogue.matching.NameIndexFactory;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
+import life.catalogue.matching.UsageMatcherGlobal;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;

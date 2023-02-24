@@ -1,4 +1,4 @@
-package life.catalogue.assembly;
+package life.catalogue.matching;
 
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.SimpleNameWithNidx;
@@ -23,8 +23,8 @@ public class ParentStack {
   }
 
   public static class MatchedUsage {
-    final SimpleNameWithNidx usage;
-    SimpleNameWithNidx match;
+    public final SimpleNameWithNidx usage;
+    public SimpleNameWithNidx match;
 
     public MatchedUsage(SimpleNameWithNidx usage) {
       this.usage = usage;

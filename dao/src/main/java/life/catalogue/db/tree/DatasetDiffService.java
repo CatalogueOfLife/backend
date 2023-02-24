@@ -3,6 +3,7 @@ package life.catalogue.db.tree;
 import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.io.UnixCmdUtils;
@@ -107,7 +108,11 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
   }
 
   private void appendRoot(Writer w, int key, String root, Rank lowestRank, boolean inclAuthorship, boolean inclSynonyms, boolean showParent, Rank parentRank) throws IOException {
-    NameParentPrinter printer = PrinterFactory.dataset(NameParentPrinter.class, key, root, inclSynonyms, null, lowestRank, factory, w);
+    TreeTraversalParameter params = TreeTraversalParameter.dataset(key);
+    params.setTaxonID(root);
+    params.setLowestRank(lowestRank);
+    params.setSynonyms(inclSynonyms);
+    NameParentPrinter printer = PrinterFactory.dataset(NameParentPrinter.class, params, factory, w);
     try {
       printer.setPrintAuthorship(inclAuthorship);
       if (showParent) {

@@ -1,10 +1,17 @@
 package life.catalogue.concurrent;
 
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.common.util.LoggingUtils;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +23,7 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetBlockingJob.class);
 
   protected final int datasetKey;
+  protected Dataset dataset;
   private int attempt = 0;
 
   public DatasetBlockingJob(int datasetKey, int userKey, @Nullable JobPriority priority) {
@@ -32,6 +40,22 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   }
 
   protected abstract void runWithLock() throws Exception;
+
+  /**
+   * Loads the dataset and throws an IAE if it does not exist, is deleted or does not contain and data yet.
+   */
+  protected Dataset loadDataset(SqlSessionFactory factory, int datasetKey){
+    try (SqlSession session = factory.openSession(false)) {
+      Dataset dataset = session.getMapper(DatasetMapper.class).get(datasetKey);
+      if (dataset == null || dataset.getDeleted() != null) {
+        throw new NotFoundException("Dataset " + datasetKey + " does not exist");
+      }
+      if (!session.getMapper(DatasetPartitionMapper.class).exists(datasetKey, dataset.getOrigin())) {
+        throw new IllegalArgumentException("Dataset "+datasetKey+" does not have any data");
+      }
+      return dataset;
+    }
+  }
 
   @Override
   public final void execute() throws Exception {

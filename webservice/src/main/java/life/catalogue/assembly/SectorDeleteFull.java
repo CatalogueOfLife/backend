@@ -16,6 +16,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import life.catalogue.matching.UsageMatcherGlobal;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -29,8 +30,8 @@ public class SectorDeleteFull extends SectorRunnable {
   private final Set<Integer> visitedSectors = new HashSet<>();
   
   SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService,
-                          SectorDao dao, SectorImportDao sid, Consumer<SectorRunnable> successCallback,
-                          BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+                   SectorDao dao, SectorImportDao sid, Consumer<SectorRunnable> successCallback,
+                   BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, false, false, true, factory, matcher, indexService, dao, sid, successCallback, errorCallback, user);
   }
 

@@ -1,6 +1,7 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.dao.TaxonCounter;
 
@@ -43,19 +44,8 @@ public class TextTreePrinter extends AbstractTreePrinter {
   private static final int indentation = 2;
   private boolean showIDs;
 
-  /**
-   * @param datasetKey
-   * @param sectorKey    optional sectorKey to restrict printed tree to
-   * @param startID
-   * @param synonyms
-   * @param ranks
-   * @param countRank    the rank to be used when counting with the taxonCounter
-   * @param taxonCounter
-   * @param factory
-   * @param writer
-   */
-  public TextTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Boolean extinct, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, synonyms, extinct, ranks, countRank, taxonCounter, factory, writer);
+  public TextTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(params, ranks, countRank, taxonCounter, factory, writer);
   }
 
 

@@ -42,14 +42,14 @@ public class AcefExportTest extends ExportTest {
   public void initCfg()  {
     super.initCfg();
     cfg.db = PgSetupRule.getCfg();
-    cfg.exportDir = Files.createTempDir();
+    cfg.job.downloadDir = Files.createTempDir();
     cfg.normalizer.scratchDir  = Files.createTempDir();
     cfg.img.repo = cfg.normalizer.scratchDir.toPath();
   }
   
   @After
   public void cleanup()  {
-    FileUtils.deleteQuietly(cfg.exportDir);
+    FileUtils.deleteQuietly(cfg.job.downloadDir);
     FileUtils.deleteQuietly(cfg.normalizer.scratchDir);
     if (arch != null) {
       System.out.println(arch.getAbsolutePath());
@@ -59,7 +59,7 @@ public class AcefExportTest extends ExportTest {
   
   @Test
   public void export() throws Exception {
-    AcefExport exp = new AcefExport(new ExportRequest(Datasets.COL, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
+    AcefExport exp = new AcefExport(new ExportRequest(Datasets.COL, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
 
@@ -110,7 +110,7 @@ public class AcefExportTest extends ExportTest {
       dm.update(d);
     }
 
-    AcefExport exp = new AcefExport(new ExportRequest(key, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru(), timer);
+    AcefExport exp = new AcefExport(new ExportRequest(key, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
     arch = exp.getArchive();
     System.out.println("LOGS:\n");

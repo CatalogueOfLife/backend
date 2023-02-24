@@ -2,6 +2,7 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.dao.TaxonCounter;
 
 import org.gbif.nameparser.api.Rank;
@@ -21,11 +22,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 public class JsonTreePrinter extends AbstractTreePrinter {
   private static final int indentation = 2;
 
-  /**
-   * @param sectorKey optional sectorKey to restrict printed tree to
-   */
-  public JsonTreePrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Boolean extinct, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, synonyms, extinct, ranks, countRank, taxonCounter, factory, writer);
+  public JsonTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(params, ranks, countRank, taxonCounter, factory, writer);
   }
 
   @Override

@@ -1,6 +1,7 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.dao.TaxonCounter;
 
 import org.gbif.nameparser.api.Rank;
@@ -25,11 +26,8 @@ public class NameParentPrinter extends AbstractTreePrinter {
   private boolean printParent = false;
   private Rank parentName;
 
-  /**
-   * @param sectorKey optional sectorKey to restrict printed tree to
-   */
-  public NameParentPrinter(int datasetKey, Integer sectorKey, String startID, boolean synonyms, Boolean extinct, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, synonyms, extinct, ranks, countRank, taxonCounter, factory, writer);
+  public NameParentPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(params, ranks, countRank, taxonCounter, factory, writer);
   }
 
   public void setParentName(@Nullable Rank parentName) {

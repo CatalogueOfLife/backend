@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.NameUsageBase;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.db.TestDataRule;
 
 import java.util.ArrayList;
@@ -33,17 +34,23 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void processTree() throws Exception {
     countHandler = new CountHandler<>();
-    mapper().processTree(DATASET11.getKey(), null, "t2", Sets.newHashSet("skipID"), null, null, true, false)
+    var ttp = TreeTraversalParameter.dataset(DATASET11.getKey());
+    ttp.setTaxonID("t2");
+    ttp.setExclusion(Sets.newHashSet("skipID"));
+    ttp.setSynonyms(true);
+    mapper().processTree(ttp, false)
             .forEach(countHandler);
     Assert.assertEquals(23, countHandler.counter.get());
   
     countHandler.reset();
-    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6"), null, null, true, false)
+    ttp.setExclusion(Sets.newHashSet("t6"));
+    mapper().processTree(ttp, false)
             .forEach(countHandler);
     Assert.assertEquals(15, countHandler.counter.get());
   
     countHandler.reset();
-    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6", "t30"), null, null, true, false)
+    ttp.setExclusion(Sets.newHashSet("t6", "t30"));
+    mapper().processTree(ttp, false)
             .forEach(countHandler);
     Assert.assertEquals(10, countHandler.counter.get());
   }
@@ -51,7 +58,7 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void processTreeOrder() throws Exception {
     CollectIdHandler<NameUsageBase> h = new CollectIdHandler<>();
-    mapper().processTree(DATASET11.getKey(), null,null, null, null, null, true,false)
+    mapper().processTree(TreeTraversalParameter.dataset(DATASET11.getKey()),false)
             .forEach(h);
     List<String> bfs = ImmutableList.of("t1","t2","t3","t4",
       "t5","t6","t30",
@@ -62,7 +69,7 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
     assertEquals(bfs, h.list);
   
     h = new CollectIdHandler<>();
-    mapper().processTree(DATASET11.getKey(), null,null, null, null, null, true, true)
+    mapper().processTree(TreeTraversalParameter.dataset(DATASET11.getKey()), true)
             .forEach(h);
     List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5",
         "t20","s21","s22","t23","t24","t25",

@@ -56,7 +56,7 @@
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.19</commons-compress.version>
     <commons-io.version>2.11.0</commons-io.version>
-    <dropwizard.version>2.1.4</dropwizard.version>
+    <dropwizard.version>2.1.5</dropwizard.version>
     <dwc-api.version>1.44</dwc-api.version>
     <dwca-io.version>2.13</dwca-io.version>
     <elasticsearch.version>8.1.1</elasticsearch.version>
@@ -356,6 +356,13 @@
         <version>${dropwizard.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+
+      <!-- Jetty WebSockets -->
+      <dependency>
+        <groupId>be.tomcools</groupId>
+        <artifactId>dropwizard-websocket-jsr356-bundle</artifactId>
+        <version>4.0.0-beta.1</version>
       </dependency>
 
       <!-- jackson additions to DW BOM -->

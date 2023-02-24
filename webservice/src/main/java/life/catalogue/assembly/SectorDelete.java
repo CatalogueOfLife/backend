@@ -9,6 +9,8 @@ import life.catalogue.db.TempNameUsageRelated;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 
+import life.catalogue.matching.UsageMatcherGlobal;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Arrays;
@@ -33,8 +35,8 @@ public class SectorDelete extends SectorRunnable {
   private Rank cutoffRank = Rank.SPECIES;
 
   SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
-                      Consumer<SectorRunnable> successCallback,
-                      BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+               Consumer<SectorRunnable> successCallback,
+               BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, false, false, true, factory, matcher, indexService, dao, sid, successCallback, errorCallback, user);
   }
 
@@ -132,7 +134,11 @@ public class SectorDelete extends SectorRunnable {
       for (String nid : nids) {
         usageLoop:
         for (NameUsageBase u : um.listByNameID(sector.getDatasetKey(), nid, new Page(0, 1000))){
-          for (SimpleName sn : um.processTreeSimple(sector.getDatasetKey(), sector.getId(), u.getId(), null, Rank.INFRAGENERIC_NAME, null, false)) {
+          TreeTraversalParameter ttp = TreeTraversalParameter.sectorTarget(sector);
+          ttp.setTaxonID(u.getId());
+          ttp.setLowestRank(Rank.INFRAGENERIC_NAME);
+          ttp.setSynonyms(false);
+          for (SimpleName sn : um.processTreeSimple(ttp)) {
             if (sn.getRank().higherThan(maxAmbiguousRank)) {
               um.removeFromTemp(nid);
               counter++;

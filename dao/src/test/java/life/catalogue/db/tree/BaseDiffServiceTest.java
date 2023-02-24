@@ -29,7 +29,7 @@ public abstract class BaseDiffServiceTest<K> extends DaoTestBase {
   public void diffBinaryVersion() throws IOException {
     String v = diff.diffBinaryVersion();
     System.out.println(v);
-    assertTrue(v.startsWith("diff"));
+    assertTrue(v.startsWith("diff") || v.startsWith("Apple diff"));
     assertTrue(v.length() > 10);
   }
 

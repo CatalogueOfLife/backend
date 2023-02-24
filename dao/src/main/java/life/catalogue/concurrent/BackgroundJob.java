@@ -1,5 +1,8 @@
 package life.catalogue.concurrent;
 
+import com.codahale.metrics.Timer;
+
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
 
@@ -8,6 +11,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
+
+import life.catalogue.config.MailConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +30,17 @@ public abstract class BackgroundJob implements Runnable {
   private LocalDateTime started;
   private LocalDateTime finished;
   private Exception error;
+  // the following are added by the JobExecutor before a job is submitted
+  private @Nullable EmailNotification emailer;
+  // you can expect the following to exist and never be null!
+  private User user;
+  private Timer timer;
 
-  public BackgroundJob(int userKey) {
+  protected BackgroundJob(int userKey) {
     this(JobPriority.MEDIUM, userKey);
   }
 
-  public BackgroundJob(@Nullable JobPriority priority, int userKey) {
+  protected BackgroundJob(@Nullable JobPriority priority, int userKey) {
     this.userKey = userKey;
     this.priority = priority == null ? JobPriority.MEDIUM : priority;
     this.status = JobStatus.WAITING;
@@ -38,6 +48,22 @@ public abstract class BackgroundJob implements Runnable {
   }
 
   public abstract void execute() throws Exception;
+
+  void setEmailer(EmailNotification emailer) {
+    this.emailer = emailer;
+  }
+
+  void setTimer(Timer timer) {
+    this.timer = timer;
+  }
+
+  void setUser(User user) {
+    this.user = user;
+  }
+
+  public User getUser() {
+    return user;
+  }
 
   /**
    * Final handler that can be implemented to e.g. persist jobs, or run notifications.
@@ -61,10 +87,11 @@ public abstract class BackgroundJob implements Runnable {
 
   @Override
   public final void run() {
+    final Timer.Context ctxt = timer==null ? null : timer.time();
     try {
       LoggingUtils.setJobMDC(key, getClass());
-      started = LocalDateTime.now();
       status = JobStatus.RUNNING;
+      started = LocalDateTime.now();
       LOG.info("Started {} job {}", getClass().getSimpleName(), key);
       execute();
       status = JobStatus.FINISHED;
@@ -93,9 +120,16 @@ public abstract class BackgroundJob implements Runnable {
         } catch (Exception e) {
           LOG.error("Failed to finish {} job {}", getClass().getSimpleName(), key, e);
         }
+        // email notification
+        if (emailer != null) {
+          emailer.sendFinalEmail(this);
+        }
+        if (ctxt != null) {
+          ctxt.stop(); // we dont want to measure blocked runs
+        }
       }
       // will cause the dataset sifting appender reach end-of-life. It will linger for a few seconds.
-      LOG.info(LoggingUtils.FINALIZE_SESSION_MARKER, "About to end job " + key);
+      LOG.info(LoggingUtils.FINALIZE_SESSION_MARKER, "About to end {} {}", getJobName(), key);
       LoggingUtils.removeJobMDC();
     }
   }
@@ -161,6 +195,27 @@ public abstract class BackgroundJob implements Runnable {
       throw new InterruptedException(getClass().getSimpleName() + " job " + key + " was cancelled while " + status);
     }
   }
+
+  /**
+   * Return the fixed prefix to be used for email notification freemarker templates.
+   * If null is returned no notification will be done. The prefix will be appended with the final status of the job to find the appropriate template.
+   *
+   * See also getEmailData() whcih supplies the data model to render the freemarker template.
+   */
+  public String getEmailTemplatePrefix() {
+    return null;
+  }
+
+  /**
+   * Override this method to supply richer data if thats needed for the email templates
+   * @param user
+   * @param cfg
+   * @return
+   */
+  public EmailNotification.EmailData getEmailData(User user, MailConfig cfg) {
+    return new EmailNotification.EmailData(this, user, cfg);
+  }
+
 
   @Override
   public boolean equals(Object o) {

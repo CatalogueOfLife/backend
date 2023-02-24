@@ -7,6 +7,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.concurrent.JobConfig;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetExportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -28,16 +29,12 @@ import com.google.common.eventbus.EventBus;
 public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExportMapper> {
   Set<JobStatus> GOOD = Set.of(JobStatus.FINISHED, JobStatus.WAITING, JobStatus.BLOCKED, JobStatus.RUNNING);
   private final EventBus bus;
-  private final File exportDir;
+  private final JobConfig cfg;
 
-  public DatasetExportDao(File exportDir, SqlSessionFactory factory, EventBus bus, Validator validator) {
+  public DatasetExportDao(JobConfig cfg, SqlSessionFactory factory, EventBus bus, Validator validator) {
     super(false, true, factory, DatasetExport.class, DatasetExportMapper.class, validator);
     this.bus = bus;
-    this.exportDir = exportDir;
-  }
-
-  public File downloadFile(UUID key) {
-    return new File(exportDir, DatasetExport.downloadFilePath(key));
+    this.cfg = cfg;
   }
 
   public ResultPage<DatasetExport> list(ExportSearchRequest filter, Page page) {
@@ -74,7 +71,7 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
   @Override
   protected boolean deleteAfter(UUID key, DatasetExport old, int user, DatasetExportMapper mapper, SqlSession session) {
     // remove exported file
-    File zip = downloadFile(key);
+    File zip = cfg.downloadFile(key);
     if (zip.exists()) {
       FileUtils.deleteQuietly(zip);
     }

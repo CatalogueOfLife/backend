@@ -35,8 +35,8 @@ public class ColdpExport extends ArchiveExport {
   private boolean cslFirst = true;
   private NameUsageKeyMap nameUsageKeyMap;
 
-  public ColdpExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
-    super(DataFormat.COLDP, userKey, req, factory, cfg, imageService, timer);
+  public ColdpExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(DataFormat.COLDP, userKey, req, factory, cfg, imageService);
   }
 
   @Override

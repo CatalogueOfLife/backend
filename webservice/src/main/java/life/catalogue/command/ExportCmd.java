@@ -113,12 +113,12 @@ public class ExportCmd extends AbstractMybatisCmd {
 
     EventBus bus = new EventBus();
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    mail.run(cfg, null);
-    exec = new JobExecutor(cfg.job, mail.getMailer());
-    final ImageService imageService = new ImageServiceFS(cfg.img);
-    final DatasetExportDao exportDao = new DatasetExportDao(cfg.exportDir, factory, bus, validator);
-    manager = new ExportManager(cfg, factory, exec, imageService, mail.getMailer(), exportDao, new DatasetImportDao(factory, cfg.metricsRepo), metrics);
     UserDao udao = new UserDao(factory, bus, validator);
+    mail.run(cfg, null);
+    exec = new JobExecutor(cfg.job, metrics, mail.getEmailNotification(), udao);
+    final ImageService imageService = new ImageServiceFS(cfg.img);
+    final DatasetExportDao exportDao = new DatasetExportDao(cfg.job, factory, bus, validator);
+    manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
     DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
     copy = new PublicReleaseListener(cfg, factory, exportDao, doiService, converter);

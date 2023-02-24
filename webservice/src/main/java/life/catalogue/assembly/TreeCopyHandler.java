@@ -8,6 +8,7 @@ import life.catalogue.matching.NameIndex;
 
 import java.util.*;
 
+import life.catalogue.matching.UsageMatch;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

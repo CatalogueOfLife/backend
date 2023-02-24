@@ -5,6 +5,10 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.matching.NameIndex;
 
+import life.catalogue.matching.ParentStack;
+import life.catalogue.matching.UsageMatch;
+import life.catalogue.matching.UsageMatcherGlobal;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;

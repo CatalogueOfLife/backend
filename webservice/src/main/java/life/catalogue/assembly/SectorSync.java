@@ -10,6 +10,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.MatchingDao;
 import life.catalogue.matching.decision.RematchRequest;
@@ -256,7 +257,8 @@ public class SectorSync extends SectorRunnable {
 
       if (sector.getMode() == Sector.Mode.ATTACH || sector.getMode() == Sector.Mode.MERGE) {
         String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
-        um.processTree(subjectDatasetKey, null, rootID, blockedIds, null, null, true,sector.getMode() == Sector.Mode.MERGE)
+        TreeTraversalParameter ttp = TreeTraversalParameter.dataset(subjectDatasetKey, rootID, blockedIds);
+        um.processTree(ttp, sector.getMode() == Sector.Mode.MERGE)
             .forEach(treeHandler);
 
       } else if (sector.getMode() == Sector.Mode.UNION) {
@@ -274,7 +276,8 @@ public class SectorSync extends SectorRunnable {
             treeHandler.accept(child);
           } else {
             LOG.info("Traverse child {}", child);
-            um.processTree(subjectDatasetKey, null, child.getId(), blockedIds, null, null, true,false)
+            TreeTraversalParameter ttp = TreeTraversalParameter.dataset(subjectDatasetKey, child.getId(), blockedIds);
+            um.processTree(ttp, false)
                 .forEach(treeHandler);
           }
           treeHandler.reset();

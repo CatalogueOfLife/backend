@@ -64,8 +64,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
   protected final DSID<String> entityKey = DSID.of(datasetKey, "");
   private final SXSSFWorkbook wb;
 
-  ArchiveExport(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService, Timer timer) {
-    super(req, userKey, requiredFormat, true, factory, cfg, imageService, timer);
+  ArchiveExport(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(req, userKey, requiredFormat, true, factory, cfg, imageService);
     logoUriBuilder = cfg.apiURI == null ? null : UriBuilder.fromUri(cfg.apiURI).path("/dataset/{key}/logo?size=ORIGINAL");
     refCache = Caffeine.newBuilder()
                        .maximumSize(10000)
@@ -199,7 +199,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
       if (fullDataset) {
         cursor = num.processDataset(datasetKey, null, null);
       } else {
-        cursor = num.processTree(datasetKey, null, req.getTaxonID(), null, req.getMinRank(), req.getExtinct(), req.isSynonyms(), true);
+        var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.getExtinct(), req.isSynonyms());
+        cursor = num.processTree(ttp, true);
       }
       PgUtils.consume(() -> cursor, this::consumeUsage);
 

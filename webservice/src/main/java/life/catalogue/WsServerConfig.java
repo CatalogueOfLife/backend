@@ -3,10 +3,7 @@ package life.catalogue;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.JobConfig;
-import life.catalogue.config.GbifConfig;
-import life.catalogue.config.ImporterConfig;
-import life.catalogue.config.NormalizerConfig;
-import life.catalogue.config.ReleaseConfig;
+import life.catalogue.config.*;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgDbConfig;
 import life.catalogue.doi.service.DoiConfig;
@@ -14,7 +11,6 @@ import life.catalogue.dw.auth.AuthenticationProviderFactory;
 import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
 import life.catalogue.dw.mail.MailBundleConfig;
-import life.catalogue.dw.mail.MailConfig;
 import life.catalogue.dw.metrics.GangliaBundleConfiguration;
 import life.catalogue.dw.metrics.GangliaConfiguration;
 import life.catalogue.es.EsConfig;
@@ -143,11 +139,11 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public File metricsRepo = new File("/tmp/metrics");
 
-  /**
-   * Directory to store export archives
-   */
   @NotNull
-  public File exportDir = new File("/tmp/exports");
+  public URI clbURI = URI.create("https://www.checklistbank.org");
+
+  @NotNull
+  public URI portalURI = URI.create("https://www.catalogueoflife.org");
 
   public URI apiURI;
 
@@ -157,15 +153,6 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    */
   @NotNull
   public File statusFile = new File("/tmp/.status.json");
-
-  @NotNull
-  public URI downloadURI = URI.create("https://download.checklistbank.org");
-
-  @NotNull
-  public URI clbURI = URI.create("https://www.checklistbank.org");
-
-  @NotNull
-  public URI portalURI = URI.create("https://www.catalogueoflife.org");
 
   /**
    * The directory where the templates for the dynamic data pages of the life.catalogue.portal are stored.
@@ -233,7 +220,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    * @return true if at least one dir was newly created
    */
   public boolean mkdirs() {
-    boolean created = exportDir.mkdirs();
+    boolean created = job.mkdirs();
     created = metricsRepo.mkdirs() || created;
     created = normalizer.mkdirs() || created;
     created = importer.mkdirs() || created;
@@ -245,7 +232,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
     LOG.info("Use archive directory {}", normalizer.archiveDir);
     LOG.info("Use scratch directory {}", normalizer.scratchDir);
     LOG.info("Use metrics directory {}", metricsRepo);
-    LOG.info("Use export directory {}", exportDir);
+    LOG.info("Use download directory {}", job.downloadDir);
     LOG.info("Use release reports directory {}", release.reportDir);
     LOG.info("Use release downloads directory {}", release.colDownloadDir);
   }
@@ -257,10 +244,5 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
     }
     return null;
   }
-
-  public File downloadFile(UUID key) {
-    return new File(exportDir, DatasetExport.downloadFilePath(key));
-  }
-
 
 }

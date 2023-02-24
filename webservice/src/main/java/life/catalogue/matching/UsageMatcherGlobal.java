@@ -1,12 +1,12 @@
-package life.catalogue.assembly;
+package life.catalogue.matching;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.assembly.TaxGroupAnalyzer;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.matching.NameIndex;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -67,7 +67,7 @@ public class UsageMatcherGlobal {
     this.groupAnalyzer = new TaxGroupAnalyzer();
   }
 
-  UsageCache getUCache() {
+  public UsageCache getUCache() {
     return uCache;
   }
 
@@ -137,7 +137,7 @@ public class UsageMatcherGlobal {
     return UsageMatch.empty(datasetKey);
   }
 
-  SimpleNameWithNidx toSimpleName(NameUsageBase nu) {
+  public SimpleNameWithNidx toSimpleName(NameUsageBase nu) {
     if (nu != null) {
       var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu);
       return new SimpleNameWithNidx(nu, canonNidx == null ? null : canonNidx.getId());

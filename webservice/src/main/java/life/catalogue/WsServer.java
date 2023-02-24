@@ -1,11 +1,10 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.SyncManager;
-import life.catalogue.assembly.UsageMatcherGlobal;
+import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.cache.CacheFlush;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.coldp.ColdpTerm;
@@ -201,9 +200,6 @@ public class WsServer extends Application<WsServerConfig> {
     // update name parser timeout settings
     NameParser.PARSER.setTimeout(cfg.parserTimeout);
 
-    // configure static download base URI
-    DatasetExport.setDownloadBaseURI(cfg.downloadURI);
-
     // http client pool is managed via DW lifecycle already
     // use a custom metrics naming strategy that does not involve the user agent name with a version
     httpClient = new HttpClientBuilder(env)
@@ -228,8 +224,12 @@ public class WsServer extends Application<WsServerConfig> {
 
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
+    // validation
+    Validator validator = env.getValidator();
+
     // job executor
-    JobExecutor executor = new JobExecutor(cfg.job, mail.getMailer());
+    UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
+    JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao);
     managedService.manage(Component.JobExecutor, executor);
 
     // name parser
@@ -285,15 +285,12 @@ public class WsServer extends Application<WsServerConfig> {
       LookupTables.recreateTables(c);
     }
 
-    // validation
-    Validator validator = env.getValidator();
-
     // DOI resolver
     DoiResolver doiResolver = new DoiResolver(httpClient);
 
     // daos
     AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), bus);
-    DatasetExportDao exdao = new DatasetExportDao(cfg.exportDir, getSqlSessionFactory(), bus, validator);
+    DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), bus, validator);
     DatasetDao ddao = new DatasetDao(cfg.db.minExternalDatasetKey, getSqlSessionFactory(), cfg.normalizer, cfg.release, new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
@@ -306,7 +303,6 @@ public class WsServer extends Application<WsServerConfig> {
     tdao.setSectorDao(secdao);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory(), searchService);
-    UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
 
     // usage cache
     UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, true, false, 64);
@@ -330,7 +326,7 @@ public class WsServer extends Application<WsServerConfig> {
     PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
 
     // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, mail.getMailer(), exdao, diDao, env.metrics());
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
 
     // syncs and releases
     final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, secdao, siDao, edao, indexService);
@@ -393,6 +389,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new ImageResource(imgService));
     j.register(new ImageResourceLegacy(imgService));
     j.register(new ImporterResource(cfg, importManager, diDao, ddao));
+    j.register(new JobResource(cfg.job, executor));
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new NameMatchingResource());
     j.register(new NamesIndexResource(ni));
@@ -407,7 +404,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new TaxonResource(tdao));
     j.register(new TreeResource(tdao, trDao));
     j.register(new UserResource(auth.getJwtCodec(), udao));
-    j.register(new UsageMatchingResource(matcher));
+    j.register(new UsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcher));
     j.register(new VerbatimResource());
     j.register(new VernacularGlobalResource());
     j.register(new VernacularResource());

@@ -11,6 +11,9 @@ import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.matching.ParentStack;
+import life.catalogue.matching.UsageMatch;
+import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NomCode;
