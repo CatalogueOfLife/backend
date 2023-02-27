@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Reference;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Issue;
@@ -11,6 +12,7 @@ import life.catalogue.api.vocab.Issue;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -149,6 +151,12 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
   
   @Test
   public void search() throws Exception {
+    VerbatimRecordMapper vm = mapper(VerbatimRecordMapper.class);
+    VerbatimRecord v = new VerbatimRecord();
+    v.setDatasetKey(Datasets.COL);
+    v.setIssues(Set.of(Issue.INCONSISTENT_NAME, Issue.UNMATCHED_REFERENCE_BRACKETS));
+    vm.create(v);
+
     List<Reference> in = new ArrayList<>();
     in.add(newReference("My diverse backyard baby", "Markus","Döring"));
     in.add(newReference("On the road", "Jack","Kerouac"));
@@ -156,6 +164,7 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
     for (Reference r : in) {
       r.setDatasetKey(Datasets.COL);
       r.setSectorKey(null);
+      r.setVerbatimKey(v.getId());
       mapper().create(r);
     }
     commit();
@@ -172,10 +181,18 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
     out = mapper().search(Datasets.COL, req, new Page());
     assertEquals(1, out.size());
     assertEquals(r2, out.get(0).getId());
-    
-    req.setIssues(List.of(Issue.REFTYPE_INVALID, Issue.UNMATCHED_REFERENCE_BRACKETS));
+
+    req.setIssues(List.of(Issue.REFTYPE_INVALID, Issue.DUPLICATE_NAME));
     out = mapper().search(Datasets.COL, req, new Page());
     assertEquals(0, out.size());
+
+    req.setIssues(List.of(Issue.UNMATCHED_REFERENCE_BRACKETS));
+    out = mapper().search(Datasets.COL, req, new Page());
+    assertEquals(1, out.size());
+
+    req.setQ(null);
+    out = mapper().search(Datasets.COL, req, new Page());
+    assertEquals(3, out.size());
   }
 
   @Test

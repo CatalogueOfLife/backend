@@ -86,9 +86,9 @@ public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMap
     return orig;
   }
   
-  public ResultPage<Reference> search(int datasetKey, ReferenceSearchRequest nullableReq, Page page) {
+  public ResultPage<Reference> search(int datasetKey, @Nullable ReferenceSearchRequest request, Page page) {
     page = page == null ? new Page() : page;
-    final ReferenceSearchRequest req = nullableReq == null || nullableReq.isEmpty() ? new ReferenceSearchRequest() : nullableReq;
+    final ReferenceSearchRequest req = request == null || request.isEmpty() ? new ReferenceSearchRequest() : request;
     if (req.getSortBy() == null) {
       if (!StringUtils.isBlank(req.getQ())) {
         req.setSortBy(ReferenceSearchRequest.SortBy.RELEVANCE);

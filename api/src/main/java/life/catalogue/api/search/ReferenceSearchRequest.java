@@ -50,8 +50,10 @@ public class ReferenceSearchRequest {
   
   public boolean isEmpty() {
     return StringUtils.isBlank(q)
-        && year == null
         && StringUtils.isBlank(sectorKey)
+        && (issues == null || issues.isEmpty())
+        && sectorDatasetKey == null
+        && year == null
         && sortBy == null;
   }
   
