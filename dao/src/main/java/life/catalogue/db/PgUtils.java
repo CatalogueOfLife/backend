@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLTransientConnectionException;
 import java.sql.Statement;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -22,10 +23,13 @@ public class PgUtils {
   }
 
   public static boolean isUniqueConstraint(PersistenceException e) {
-    PSQLException pe = (PSQLException) e.getCause();
-    // https://www.postgresql.org/docs/12/errcodes-appendix.html
-    // 23505 = unique_violation
-    return pe.getSQLState().equals(CODE_UNIQUE);
+    if (e.getCause() instanceof PSQLException) {
+      PSQLException pe = (PSQLException) e.getCause();
+      // https://www.postgresql.org/docs/12/errcodes-appendix.html
+      // 23505 = unique_violation
+      return pe.getSQLState().equals(CODE_UNIQUE);
+    }
+    return false;
   }
   
   public static void createDatabase(Connection con, String database, String user) throws SQLException {
