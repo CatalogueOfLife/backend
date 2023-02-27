@@ -15,16 +15,15 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.TemporalField;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.mapdb.DB;
-import org.mapdb.DBException;
-import org.mapdb.DBMaker;
-import org.mapdb.Serializer;
+import org.mapdb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +41,8 @@ public class NameIndexMapDBStore implements NameIndexStore {
   private final DBMaker.Maker dbMaker;
   private final Pool<Kryo> pool;
   private DB db;
+  private Atomic.Long created; //datetime
+  // main nidx instances by their key
   private Map<Integer, IndexName> keys; // main nidx instances by their key
   private Map<String, int[]> names; // group of same names by their canonical name key
   private Map<Integer, int[]> canonical; // canonical group of names by canonicalID
@@ -99,6 +100,14 @@ public class NameIndexMapDBStore implements NameIndexStore {
       } else {
         throw e;
       }
+    }
+
+    final String dateName = "created";
+    if (db.exists(dateName)) {
+      created = db.atomicLong(dateName).open();
+    } else {
+      created = db.atomicLong(dateName).create();
+      setCreatedToNow();
     }
 
     keys = db.hashMap("keys")
@@ -174,6 +183,10 @@ public class NameIndexMapDBStore implements NameIndexStore {
     names.clear();
   }
 
+  private void setCreatedToNow() {
+    created.set(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
+  }
+
   @Override
   public List<IndexName> get(String key) {
     avail();
@@ -238,6 +251,11 @@ public class NameIndexMapDBStore implements NameIndexStore {
       IntSet set = new IntOpenHashSet(entry.getValue());
       canonical.put(entry.getKey(), set.toIntArray());
     }
+  }
+
+  @Override
+  public LocalDateTime created() {
+    return LocalDateTime.ofEpochSecond(created.get(), 0, ZoneOffset.UTC);
   }
 
   void check(IndexName n){

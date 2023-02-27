@@ -78,6 +78,11 @@ public class NameIndexImpl implements NameIndex {
   }
 
   @Override
+  public LocalDateTime created() {
+    return store.created();
+  }
+
+  @Override
   public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
     NameMatch m;
 

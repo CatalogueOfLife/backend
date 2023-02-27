@@ -3,6 +3,7 @@ package life.catalogue.matching;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.Managed;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,4 +43,8 @@ public interface NameIndexStore extends Managed {
    */
   void compact();
 
+  /**
+   * DateTime the store was first created or entirely cleared.
+   */
+  LocalDateTime created();
 }

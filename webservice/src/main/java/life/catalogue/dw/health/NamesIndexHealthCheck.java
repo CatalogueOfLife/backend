@@ -34,7 +34,7 @@ public class NamesIndexHealthCheck extends HealthCheck {
     if (nidx.hasStarted()) {
       NameMatch res = nidx.match(name, false, false);
       if (res.hasMatch()) {
-        return Result.healthy("%s names", nidx.size());
+        return Result.healthy("%s names, created %s", nidx.size(), nidx.created());
       }
       return Result.unhealthy("Cannot match %s", name.getScientificName());
     }

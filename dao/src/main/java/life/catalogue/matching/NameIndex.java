@@ -6,6 +6,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.common.Managed;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 
 import org.slf4j.Logger;
@@ -17,7 +18,9 @@ import org.slf4j.LoggerFactory;
 public interface NameIndex extends Managed, AutoCloseable {
   
   Logger LOG = LoggerFactory.getLogger(NameIndex.class);
-  
+
+  LocalDateTime created();
+
   /**
    * Tries to match a parsed name against the names index.
    *

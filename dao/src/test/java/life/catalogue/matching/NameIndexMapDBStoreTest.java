@@ -4,6 +4,8 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.IndexName;
 
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
@@ -37,36 +39,39 @@ public class NameIndexMapDBStoreTest {
   }
 
   @Test
+  public void created() throws Exception {
+    System.out.println(db.created());
+    assertTrue(LocalDateTime.now().isAfter(db.created()));
+    assertTrue(LocalDateTime.now().minus(1, ChronoUnit.MINUTES).isBefore(db.created()));
+  }
+
+  @Test
   public void size() throws Exception {
-    try {
-      assertEquals(0, db.count());
+    assertEquals(0, db.count());
 
-      addNameList("a", 1);
-      assertEquals(1, db.count());
+    addNameList("a", 1);
+    assertEquals(1, db.count());
 
-      addNameList("b", 2); // 2,3
-      assertEquals(3, db.count());
+    addNameList("b", 2); // 2,3
+    assertEquals(3, db.count());
 
-      addNameList("c", 3); // 4,5,6
-      assertEquals(6, db.count());
-  
-      addNameList("a", 3); // 7,8,9
-      assertEquals(9, db.count());
+    addNameList("c", 3); // 4,5,6
+    assertEquals(6, db.count());
 
-      // add the same id, this should not increase the size
-      addName("a", 1);
-      assertEquals(9, db.count());
+    addNameList("a", 3); // 7,8,9
+    assertEquals(9, db.count());
 
-      // now shutdown and reopen
-      db.stop();
-      db = new NameIndexMapDBStore(maker, dbf);
-      db.start();
+    // add the same id, this should not increase the size
+    addName("a", 1);
+    assertEquals(9, db.count());
 
-      assertEquals(9, db.count());
+    // now shutdown and reopen
+    db.stop();
+    db = new NameIndexMapDBStore(maker, dbf);
+    db.start();
 
-    } finally {
-      dbf.delete();
-    }
+    assertEquals(9, db.count());
+
   }
 
   @Test

@@ -9,6 +9,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +37,11 @@ public class NameIndexFactory {
 
       @Override
       public void stop() throws Exception {
+      }
+
+      @Override
+      public LocalDateTime created() {
+        return LocalDateTime.now();
       }
 
       @Override
@@ -89,6 +95,11 @@ public class NameIndexFactory {
 
       @Override
       public void stop() throws Exception { }
+
+      @Override
+      public LocalDateTime created() {
+        return LocalDateTime.now();
+      }
 
       @Override
       public NameMatch match(Name query, boolean allowInserts, boolean verbose) {
