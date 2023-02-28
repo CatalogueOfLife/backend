@@ -7,19 +7,17 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.NameInterpreter;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexImpl;
 import life.catalogue.matching.NameIndexMapDBStore;
-import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -44,6 +42,22 @@ public class NamesIndexResource {
 
   public NamesIndexResource(NameIndex ni) {
     this.ni = ni;
+  }
+
+  @GET
+  @Path("metadata")
+  public NidxMetadata getCreated() {
+    return new NidxMetadata(ni.created(), ni.size());
+  }
+
+  public static class NidxMetadata {
+    public final LocalDateTime created;
+    public final int size;
+
+    public NidxMetadata(LocalDateTime created, int size) {
+      this.created = created;
+      this.size = size;
+    }
   }
 
   @GET
