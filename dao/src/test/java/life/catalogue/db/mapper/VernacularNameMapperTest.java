@@ -47,6 +47,10 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
 	  List<VernacularNameUsage> resp = mapper().search(tax.getDatasetKey(), req, new Page());
 	  assertEquals(2, resp.size());
     assertEquals(2, mapper().count(tax.getDatasetKey(), req));
+    // works with space, see https://github.com/CatalogueOfLife/backend/issues/1205
+    req = VernacularSearchRequest.byQuery("berg adler");
+    resp = mapper().search(tax.getDatasetKey(), req, new Page());
+    assertEquals(2, resp.size());
   }
 
   @Test

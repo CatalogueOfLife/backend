@@ -68,7 +68,8 @@
       <where>
         vn.dataset_key = #{datasetKey}
         <if test="req.q != null">
-          AND vn.doc @@ to_tsquery('${req.q}')
+          <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
+          AND vn.doc @@ plainto_tsquery('simple2', $Grtz5$%${req.q}%$Grtz5$)
         </if>
         <if test="req.language != null">
           AND vn.language = #{req.language}
