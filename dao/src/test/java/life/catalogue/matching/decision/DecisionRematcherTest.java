@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -57,12 +58,12 @@ public class DecisionRematcherTest {
       SimpleNameLink.of("null", "Larus", Rank.GENUS)
     );
 
-    DecisionDao dao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
+    DecisionDao dao = new DecisionDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
     DecisionRematchRequest req = new DecisionRematchRequest(Datasets.COL, false);
     req.setSubjectDatasetKey(datasetKey);
     DecisionRematcher.match(dao, req, Users.TESTER);
 
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
 
       // we order decisions in reverse order when searching in pg, so last one gets matched not d1
@@ -80,7 +81,7 @@ public class DecisionRematcherTest {
     req.setSubjectDatasetKey(null);
     DecisionRematcher.match(dao, req, Users.TESTER);
 
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
 
       // we order decisions in reverse order when searching, so last one gets matched
@@ -96,7 +97,7 @@ public class DecisionRematcherTest {
   }
 
   static DSID<Integer> createDecision(int datasetKey, SimpleNameLink src) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision d = new EditorialDecision();
       d.setMode(EditorialDecision.Mode.BLOCK);
       d.setDatasetKey(Datasets.COL);

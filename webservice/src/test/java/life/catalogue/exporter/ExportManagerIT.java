@@ -11,6 +11,7 @@ import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.img.ImageService;
 import life.catalogue.release.ProjectRelease;
@@ -63,7 +64,7 @@ public class ExportManagerIT {
     cfg.job.downloadURI = URI.create("http://gbif.org/");
     cfg.job.downloadDir = new File("/tmp/col");
     cfg.job.threads = 3;
-    ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class));
+    ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class));
 
     PrintBlockJob job = new PrintBlockJob(TestDataRule.APPLE.key);
     PrintBlockJob job2 = new PrintBlockJob(TestDataRule.APPLE.key);
@@ -102,7 +103,7 @@ public class ExportManagerIT {
     cfg.job.downloadDir = new File("/tmp/col");
     cfg.job.threads = 3;
 
-    ExportManager manager = new ExportManager(cfg, PgSetupRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class));
+    ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class));
 
     // first schedule a block job that runs forever
     for (DataFormat df : ProjectRelease.EXPORT_FORMATS) {

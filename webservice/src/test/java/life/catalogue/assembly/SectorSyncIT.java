@@ -4,10 +4,9 @@ import life.catalogue.TestDataGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.dao.*;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.dao.TaxonDao;
+import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.db.*;
 import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
@@ -60,7 +59,7 @@ import static org.junit.Assert.*;
  */
 public class SectorSyncIT {
   
-  final static PgSetupRule pg = new PgSetupRule();
+  final static SqlSessionFactoryRule pg = new PgSetupRule(); //new PgConnectionRule("col", "postgres", "postgres");
   final static TestDataRule dataRule = TestDataGenerator.syncs();
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   final static NameMatchingRule matchingRule = new NameMatchingRule();
@@ -96,7 +95,7 @@ public class SectorSyncIT {
   }
 
   public static NameUsageBase getByName(int datasetKey, Rank rank, String name) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       List<NameUsageBase> taxa = session.getMapper(NameUsageMapper.class).listByName(datasetKey, name, rank, new Page(0,100));
       if (taxa.size() > 1) throw new IllegalStateException("Multiple taxa found for name="+name);
       return taxa.get(0);
@@ -104,7 +103,7 @@ public class SectorSyncIT {
   }
 
   public static VerbatimSource getSource(DSID<String> key) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
       return session.getMapper(VerbatimSourceMapper.class).get(key);
     }
   }
@@ -114,14 +113,14 @@ public class SectorSyncIT {
   }
   
   NameUsageBase getByID(int datasetKey, String id) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       return session.getMapper(TaxonMapper.class).get(DSID.of(datasetKey, id));
     }
   }
 
   Taxon getDraftTaxonBySourceID(int sourceDatasetKey, String id) {
     Taxon src;
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       src = tm.get(DSID.of(sourceDatasetKey, id));
     }
@@ -145,7 +144,7 @@ public class SectorSyncIT {
   }
 
   public static DSID<Integer> createSector(Sector.Mode mode, Integer priority, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
       sector.setPriority(priority);
@@ -153,7 +152,7 @@ public class SectorSyncIT {
       sector.setSubjectDatasetKey(datasetKey);
       sector.setSubject(src);
       sector.setTarget(target);
-      sector.setEntities(Set.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION, EntityType.REFERENCE));
+      sector.setEntities(Set.of(EntityType.values()));
       sector.applyUser(TestDataRule.TEST_USER);
       session.getMapper(SectorMapper.class).create(sector);
       return sector;
@@ -161,7 +160,7 @@ public class SectorSyncIT {
   }
 
   public static EditorialDecision createDecision(int datasetKey, SimpleNameLink src, EditorialDecision.Mode mode, Name name) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision ed = new EditorialDecision();
       ed.setMode(mode);
       ed.setDatasetKey(Datasets.COL);
@@ -183,7 +182,7 @@ public class SectorSyncIT {
   }
 
   public static void syncAll(@Nullable Predicate<Sector> filter) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
         if (filter == null || filter.test(s)) {
           sync(s);
@@ -222,7 +221,7 @@ public class SectorSyncIT {
   void print(int datasetKey) throws Exception {
     StringWriter writer = new StringWriter();
     writer.append("\nDATASET "+datasetKey+"\n");
-    PrinterFactory.dataset(TextTreePrinter.class, datasetKey, PgSetupRule.getSqlSessionFactory(), writer).print();
+    PrinterFactory.dataset(TextTreePrinter.class, datasetKey, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     System.out.println(writer.toString());
   }
 
@@ -246,7 +245,7 @@ public class SectorSyncIT {
     String expected = UTF8IoUtils.readString(expectedTree).trim();
     
     Writer writer = new StringWriter();
-    PrinterFactory.dataset(TextTreePrinter.class, datasetKey, PgSetupRule.getSqlSessionFactory(), writer).print();
+    PrinterFactory.dataset(TextTreePrinter.class, datasetKey, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     String tree = writer.toString().trim();
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
     
@@ -419,7 +418,7 @@ public class SectorSyncIT {
       SimpleNameLink.of("Theridiidae", Rank.FAMILY)
     ));
   
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       Sector s = sm.get(s1);
       sync(s);
@@ -469,7 +468,7 @@ public class SectorSyncIT {
       SimpleNameLink.of("Theridiidae", Rank.FAMILY)
     );
     
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       sync(sm.get(s5));
       sync(sm.get(s6));
@@ -517,7 +516,7 @@ public class SectorSyncIT {
       SimpleNameLink.of("Theridiidae", Rank.FAMILY)
     );
 
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       sync(sm.get(s5));
       sync(sm.get(s6));
@@ -560,7 +559,7 @@ public class SectorSyncIT {
   }
   
   @Test
-  public void testKingdomSector() throws Exception {
+  public void testKingdomSectorAndTypeMaterial() throws Exception {
     print(Datasets.COL);
     print(102);
     
@@ -579,6 +578,17 @@ public class SectorSyncIT {
     // make sure the kingdom is not part of the sector, we merged!
     assertNull(plant.getSectorKey());
     assertEquals(plantID, plant.getId());
+
+    var crepisbakeri = getByName(Datasets.COL, Rank.SPECIES, "Crepis bakeri");
+    // make sure the kingdom is not part of the sector, we merged!
+    assertNotNull(crepisbakeri.getSectorKey());
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var typeMapper = session.getMapper(TypeMaterialMapper.class);
+      var types = typeMapper.listByName(crepisbakeri.getName());
+      assertEquals(1, types.size());
+    }
+
   }
   
   /**
@@ -669,7 +679,7 @@ public class SectorSyncIT {
     assertEquals("Caretta caretta", caretta.getName().getScientificName());
     assertEquals("Linnaeus, 1758", caretta.getName().getAuthorship());
 
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var vs = session.getMapper(VerbatimSourceMapper.class).getWithSources(caretta);
       assertEquals(srcDatasetKey, (int) vs.getSourceDatasetKey());
       assertEquals("10", vs.getSourceId());

@@ -1,9 +1,5 @@
 package life.catalogue.importer;
 
-import it.unimi.dsi.fastutil.Pair;
-
-import it.unimi.dsi.fastutil.objects.ObjectIntImmutablePair;
-
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
@@ -14,7 +10,7 @@ import life.catalogue.common.io.TempFile;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
@@ -26,7 +22,6 @@ import org.gbif.nameparser.api.NomCode;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -42,6 +37,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
+
+import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.objects.ObjectIntImmutablePair;
 
 /**
  * Imports the given datasets from the test resources
@@ -143,7 +141,7 @@ public class PgImportRule extends ExternalResource {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(UserMapper.class).create(IMPORT_USER);
     }
   
@@ -195,7 +193,7 @@ public class PgImportRule extends ExternalResource {
     dataset.setTitle("Test Dataset " + source.toString());
 
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    DatasetDao ddao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, null, validator);
+    DatasetDao ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, validator);
     // insert trusted dataset
     // this creates a new key, usually above 1000!
     ddao.create(dataset, IMPORT_USER.getKey());
@@ -207,7 +205,7 @@ public class PgImportRule extends ExternalResource {
 
     // import into postgres
     store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-    PgImport importer = new PgImport(1, dataset, IMPORT_USER.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru());
+    PgImport importer = new PgImport(1, dataset, IMPORT_USER.getKey(), store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru());
     importer.call();
   }
   

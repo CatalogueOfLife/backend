@@ -6,9 +6,8 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -17,7 +16,6 @@ import java.io.File;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Rule;
@@ -44,7 +42,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
   @Test
   public void releaseMetadata() throws Exception {
-    try(SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(false)) {
+    try(SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(false)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
 
       DatasetSettings ds = dm.getSettings(projectKey);
@@ -86,7 +84,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     assertEquals(ImportState.FINISHED, release.getMetrics().getState());
 
     DSID<String> key = DSID.of(release.newDatasetKey, "");
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       // canonical match
       NameUsageBase u = num.get(key.id("R"));

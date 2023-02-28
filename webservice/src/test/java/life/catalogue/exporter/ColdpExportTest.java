@@ -6,7 +6,7 @@ import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.img.ImageService;
@@ -24,7 +24,7 @@ public class ColdpExportTest extends ExportTest {
   public void initReq()  {
     req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
     // add CSL data to refs to test CSL export
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
       rm.processDataset(TestDataRule.APPLE.key).forEach(r -> {
         var csl = r.getCsl();
@@ -42,7 +42,7 @@ public class ColdpExportTest extends ExportTest {
 
   @Test
   public void dataset() {
-    ColdpExport exp = new ColdpExport(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExport exp = new ColdpExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertTrue(exp.getArchive().exists());
@@ -51,7 +51,7 @@ public class ColdpExportTest extends ExportTest {
   @Test
   public void bareName() {
     req.setBareNames(true);
-    ColdpExport exp = new ColdpExport(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExport exp = new ColdpExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertTrue(exp.getArchive().exists());
@@ -60,7 +60,7 @@ public class ColdpExportTest extends ExportTest {
   @Test
   public void excel() {
     req.setExcel(true);
-    ColdpExport exp = new ColdpExport(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExport exp = new ColdpExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertTrue(exp.getArchive().exists());

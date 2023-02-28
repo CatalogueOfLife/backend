@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.CRUD;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
 import org.gbif.nameparser.api.NameType;
@@ -68,11 +68,11 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     commit();
 
     // run continuous ref and name imports
-    ContinuousInserter<Reference> refIns = new ContinuousInserter<Reference>(PgSetupRule.getSqlSessionFactory(),
+    ContinuousInserter<Reference> refIns = new ContinuousInserter<Reference>(SqlSessionFactoryRule.getSqlSessionFactory(),
         Reference.class, ReferenceMapper.class, this::genRef);
     Thread tr = new Thread(refIns);
 
-    ContinuousInserter<Name> nameIns = new ContinuousInserter<Name>(PgSetupRule.getSqlSessionFactory(),
+    ContinuousInserter<Name> nameIns = new ContinuousInserter<Name>(SqlSessionFactoryRule.getSqlSessionFactory(),
         Name.class, NameMapper.class, this::genName);
     Thread tn = new Thread(nameIns);
     

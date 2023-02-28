@@ -3,8 +3,8 @@ package life.catalogue.cache;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameWithPub;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
-
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.apache.ibatis.session.SqlSession;
@@ -35,7 +35,7 @@ public class UsageCacheTest {
   }
 
   private SimpleNameWithPub load(DSID<String> key) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       return session.getMapper(NameUsageMapper.class).getSimplePub(key);
     }
   }

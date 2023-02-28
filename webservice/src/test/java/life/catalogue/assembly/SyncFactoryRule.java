@@ -3,14 +3,14 @@ package life.catalogue.assembly;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.dao.*;
 import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.UsageMatcherGlobal;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-import life.catalogue.matching.UsageMatcherGlobal;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
@@ -36,16 +36,16 @@ public class SyncFactoryRule extends ExternalResource {
   protected void before() throws Throwable {
     LOG.info("Setup sync factory");
     final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    final SqlSessionFactory factory = PgSetupRule.getSqlSessionFactory();
+    final SqlSessionFactory factory = SqlSessionFactoryRule.getSqlSessionFactory();
     diDao = new DatasetImportDao(factory, TreeRepoRule.getRepo());
     siDao = new SectorImportDao(factory, TreeRepoRule.getRepo());
     eDao = new EstimateDao(factory, validator);
-    nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
-    sdao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
+    nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
-    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), PgSetupRule.getSqlSessionFactory());
-    syncFactory = new SyncFactory(PgSetupRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru());
+    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());
+    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru());
   }
 
   public static SyncFactory getFactory() {

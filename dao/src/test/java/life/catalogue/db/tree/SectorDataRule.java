@@ -3,7 +3,7 @@ package life.catalogue.db.tree;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.SectorDao;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
 
 import java.util.List;
@@ -44,7 +44,7 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
    */
   public SectorDataRule(List<Sector> sectors) {
     this.sectors = sectors;
-    sqlSessionFactorySupplier = PgSetupRule::getSqlSessionFactory;
+    sqlSessionFactorySupplier = SqlSessionFactoryRule::getSqlSessionFactory;
   }
 
   public static Sector create(Sector.Mode mode, DSID<String> subject, DSID<String> target){

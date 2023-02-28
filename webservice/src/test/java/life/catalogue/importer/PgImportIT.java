@@ -4,11 +4,9 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.importer.neo.model.RankedName;
-
-import org.apache.commons.io.FileUtils;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
@@ -20,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -115,7 +114,7 @@ public class PgImportIT extends PgImportITBase {
   public void chainedBasionyms() throws Exception {
     normalizeAndImport(DWCA, 28);
     // verify results
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       vMapper = session.getMapper(VerbatimRecordMapper.class);
       
       // check species name
@@ -142,7 +141,7 @@ public class PgImportIT extends PgImportITBase {
     normalizeAndImport(DWCA, 24);
     
     // verify results
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       // check species name
       Taxon tax = tdao.get(key(dataset.getKey(), "1000"));
       assertEquals("Crepis pulchra", tax.getName().getScientificName());
@@ -190,7 +189,7 @@ public class PgImportIT extends PgImportITBase {
   public void testAcef0() throws Exception {
     normalizeAndImport(ACEF, 0);
     
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       NameUsageMapper uMapper = session.getMapper(NameUsageMapper.class);
       vMapper = session.getMapper(VerbatimRecordMapper.class);
       
@@ -238,7 +237,7 @@ public class PgImportIT extends PgImportITBase {
   public void testAcef1() throws Exception {
     normalizeAndImport(ACEF, 1);
     
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Taxon t = tdao.get(key(dataset.getKey(), "14649"));
       assertEquals("Zapoteca formosa", t.getName().getScientificName());
       assertEquals("(Kunth) H.M.Hern.", t.getName().getAuthorship());
@@ -268,7 +267,7 @@ public class PgImportIT extends PgImportITBase {
   public void testAcef69() throws Exception {
     normalizeAndImport(ACEF, 69);
     
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       TaxonMapper taxMapper = session.getMapper(TaxonMapper.class);
       SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
       
@@ -315,7 +314,7 @@ public class PgImportIT extends PgImportITBase {
   public void testAcef6Misapplied() throws Exception {
     normalizeAndImport(ACEF, 6);
     
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       SynonymMapper sm = session.getMapper(SynonymMapper.class);
   
       Taxon t = tdao.get(key(dataset.getKey(), "MD2"));
@@ -360,7 +359,7 @@ public class PgImportIT extends PgImportITBase {
   public void testDwca29() throws Exception {
     normalizeAndImport(DWCA, 29);
     
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Taxon annua = tdao.get(key(dataset.getKey(), "4"));
       assertEquals("Poa annua L.", annua.getName().getLabel());
       
@@ -396,7 +395,7 @@ public class PgImportIT extends PgImportITBase {
   @Test
   public void testSwampsSciNameIDs() throws Exception {
     normalizeAndImport(DWCA, 33);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Name n = ndao.get(key(dataset.getKey(), "30405"));
       assertEquals("Haematomma ochroleucum var. porphyrium", n.getScientificName());
       assertEquals("30405", n.getId());
@@ -409,7 +408,7 @@ public class PgImportIT extends PgImportITBase {
   @Test
   public void testVascanProparte() throws Exception {
     normalizeAndImport(DWCA, 36);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       Name n = ndao.get(key(dataset.getKey(), "9946"));
   
@@ -428,7 +427,7 @@ public class PgImportIT extends PgImportITBase {
   public void testColdpSpecs() throws Exception {
     normalizeAndImport(COLDP, 0);
     testColdpSpecsMetrics(metrics());
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Name n = ndao.get(key(dataset.getKey(), "1000"));
       assertEquals("Platycarpha glomerata", n.getScientificName());
       assertEquals("(Thunberg) A. P. de Candolle", n.getAuthorship());
@@ -525,7 +524,7 @@ public class PgImportIT extends PgImportITBase {
   @Test
   public void acefSynonymRefs() throws Exception {
     normalizeAndImport(ACEF, 18);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Taxon t  = tdao.get(key(dataset.getKey(), "48827"));
       assertEquals(2, t.getReferenceIds().size());
   
@@ -558,7 +557,7 @@ public class PgImportIT extends PgImportITBase {
   @Test
   public void coldpMissingName() throws Exception {
     normalizeAndImport(COLDP, 17);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Name n = ndao.get(key(dataset.getKey(), "1"));
       assertEquals("Platycarpha glomerata", n.getScientificName());
       assertEquals("(Thunberg) A. P. de Candolle", n.getAuthorship());

@@ -1,6 +1,7 @@
 package life.catalogue.exporter;
 
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
 import org.apache.ibatis.session.SqlSession;
@@ -20,7 +21,7 @@ public class NameUsageKeyMapTest {
 
   @Test
   public void add() {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       NameUsageKeyMap map = new NameUsageKeyMap(11, session);
 
       assertFalse(map.containsNameID("qwwert"));

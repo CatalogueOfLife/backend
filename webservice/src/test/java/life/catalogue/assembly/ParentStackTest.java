@@ -1,8 +1,8 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
-
 import life.catalogue.matching.ParentStack;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;

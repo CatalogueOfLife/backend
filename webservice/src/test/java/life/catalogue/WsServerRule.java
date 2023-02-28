@@ -1,29 +1,25 @@
  package life.catalogue;
 
  import life.catalogue.common.io.PortUtils;
- import life.catalogue.common.util.YamlUtils;
  import life.catalogue.db.PgConfig;
  import life.catalogue.db.PgSetupRule;
  import life.catalogue.dw.auth.BasicAuthClientFilter;
 
- import java.io.File;
  import java.io.IOException;
  import java.util.List;
  import java.util.logging.Level;
 
  import org.apache.ibatis.session.SqlSessionFactory;
- import org.checkerframework.checker.units.qual.C;
  import org.glassfish.jersey.client.JerseyClientBuilder;
  import org.glassfish.jersey.logging.LoggingFeature;
  import org.slf4j.Logger;
  import org.slf4j.LoggerFactory;
+ import org.testcontainers.containers.PostgreSQLContainer;
 
  import com.google.common.collect.Lists;
 
  import io.dropwizard.testing.ConfigOverride;
  import io.dropwizard.testing.junit.DropwizardAppRule;
-
- import org.testcontainers.containers.PostgreSQLContainer;
 
  /**
  * An adaptation of the generic DropwizardAppRule that can be used as a junit class rule

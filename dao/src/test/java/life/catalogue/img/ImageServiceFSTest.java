@@ -3,12 +3,9 @@ package life.catalogue.img;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.common.io.Resources;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
-import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;

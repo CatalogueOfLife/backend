@@ -11,6 +11,7 @@ import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -90,13 +91,13 @@ public class ImportJobIT {
     MetricRegistry metrics = new MetricRegistry();
     cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     indexService = NameUsageIndexService.passThru();
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
-    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService, validator);
-    sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao, validator);
-    dDao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
-    datasetDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null,diDao, validator);
+    NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
+    TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, indexService, validator);
+    sDao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, tDao, validator);
+    dDao = new DecisionDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
+    datasetDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,diDao, validator);
     LOG.warn("Test initialized");
   }
 
@@ -129,13 +130,13 @@ public class ImportJobIT {
     d.setTitle("Test import");
     d.setDataFormat(format);
     d.setDataAccess(archive);
-    try(SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
+    try(SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()){
       session.getMapper(DatasetMapper.class).createAll(d);
       session.commit();
     }
 
     ImportRequest req = ImportRequest.external(d.getKey(), Users.TESTER);
-    job = new ImportJob(req, d, cfg, new DownloadUtil(hc), PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator, null,
+    job = new ImportJob(req, d, cfg, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator, null,
       indexService, new ImageServiceFS(cfg.img), datasetDao, sDao, dDao, UsageCache.passThru(), this::start, this::success, this::error);
 
   }

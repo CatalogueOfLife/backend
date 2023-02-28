@@ -1,7 +1,6 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.model.TreeTraversalParameter;
-import life.catalogue.db.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
 

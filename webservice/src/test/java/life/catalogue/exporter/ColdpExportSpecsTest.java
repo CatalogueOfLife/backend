@@ -6,6 +6,7 @@ import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.PgImportRule;
@@ -48,7 +49,7 @@ public class ColdpExportSpecsTest {
   public void coldpSpecsExport() {
     MetricRegistry registry = new MetricRegistry();
     ExportRequest req = new ExportRequest(importRule.datasetKey(0, DataFormat.COLDP), DataFormat.COLDP);
-    ColdpExport exp = new ColdpExport(req, Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExport exp = new ColdpExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
     System.out.println(exp.getArchive());
     assertTrue(exp.getArchive().exists());

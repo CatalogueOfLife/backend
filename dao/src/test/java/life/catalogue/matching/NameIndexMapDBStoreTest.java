@@ -9,13 +9,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mapdb.DBMaker;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 public class NameIndexMapDBStoreTest {
   AtomicInteger keyGen = new AtomicInteger();

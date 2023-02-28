@@ -1,11 +1,10 @@
 package life.catalogue.release;
 
 import life.catalogue.TestDataGenerator;
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.SimpleName;
-import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
@@ -16,8 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import static org.junit.Assert.*;
 
 public class HomotypicConsolidatorTest {
 
@@ -35,7 +32,7 @@ public class HomotypicConsolidatorTest {
 
   @Before
   public void init() {
-    consolidator = new HomotypicConsolidator(PgSetupRule.getSqlSessionFactory(), dataRule.testData.key, null);
+    consolidator = new HomotypicConsolidator(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key, null);
   }
 
   @Test

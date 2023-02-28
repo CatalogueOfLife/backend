@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetMapperTest;
@@ -23,11 +24,10 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-
-import com.codahale.metrics.MetricRegistry;
-
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+
+import com.codahale.metrics.MetricRegistry;
 
 public class AssemblyCoordinatorTest {
   @ClassRule
@@ -50,7 +50,7 @@ public class AssemblyCoordinatorTest {
   public void init() {
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, syncFactoryRule.getDiDao());
 
-    coord = new SyncManager(PgSetupRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
+    coord = new SyncManager(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
   }
   
   @Test(expected = IllegalArgumentException.class)
@@ -62,7 +62,7 @@ public class AssemblyCoordinatorTest {
     sector.setTarget(SimpleNameLink.of("123", "Arthropoda", Rank.PHYLUM));
     sector.applyUser(TestEntityGenerator.USER_EDITOR);
 
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       final DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = DatasetMapperTest.create();
       testDataRule.getKeyGenerator().setKey(d);
@@ -86,7 +86,7 @@ public class AssemblyCoordinatorTest {
     sector.setTarget(SimpleNameLink.of("123", "Arthropoda", Rank.PHYLUM));
     sector.applyUser(TestEntityGenerator.USER_EDITOR);
     
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       final DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = DatasetMapperTest.create();
       dm.create(d);

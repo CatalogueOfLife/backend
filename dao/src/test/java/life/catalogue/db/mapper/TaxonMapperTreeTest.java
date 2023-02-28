@@ -2,7 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
-import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TaxonSectorCountMap;
 import life.catalogue.db.TestDataRule;
 

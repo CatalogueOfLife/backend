@@ -2,12 +2,11 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.vocab.TaxGroup;
 
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
 import java.util.List;
 import java.util.Optional;
-
-import org.gbif.nameparser.api.NomCode;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.junit.Test;
 

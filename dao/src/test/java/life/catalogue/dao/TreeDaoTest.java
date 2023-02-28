@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.tree.SectorDataRule;
 import life.catalogue.db.tree.TxtTreeDataRule;
 import life.catalogue.es.NameUsageSearchService;
@@ -47,7 +48,7 @@ public class TreeDaoTest {
         )))
       .around(sectorRule);
 
-  TreeDao dao = new TreeDao(PgSetupRule.getSqlSessionFactory(), NameUsageSearchService.passThru());
+  TreeDao dao = new TreeDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageSearchService.passThru());
 
 
   @Test

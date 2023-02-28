@@ -4,6 +4,7 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
@@ -32,7 +33,7 @@ public class NormalizerFullIT extends NormalizerITBase {
   }
   
   static NameIndex newIndex() {
-    return NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started();
+    return NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started();
   }
   
   @Test

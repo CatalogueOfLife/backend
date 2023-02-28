@@ -6,10 +6,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.MybatisTestUtils;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.*;
 import life.catalogue.db.mapper.*;
 
 import org.gbif.nameparser.api.NameType;
@@ -56,7 +53,7 @@ public class SectorSyncTest {
 
   @Before
   public void init() {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       // draft partition
       MybatisTestUtils.partition(session, Datasets.COL);
 
@@ -100,7 +97,7 @@ public class SectorSyncTest {
 
   @Test
   public void sync() throws Exception {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       final NameMapper nm = session.getMapper(NameMapper.class);
       assertEquals(1, nm.count(Datasets.COL));
     }
@@ -110,7 +107,7 @@ public class SectorSyncTest {
 
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
 
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       final NameMapper nm = session.getMapper(NameMapper.class);
       assertEquals(24, nm.count(Datasets.COL));
   
@@ -139,7 +136,7 @@ public class SectorSyncTest {
     }
 
     // try now with a "virtual" sector source
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       final SectorMapper sm = session.getMapper(SectorMapper.class);
       // sync unassigned genera (unassigned family) in order Carnivora
       sector.setPlaceholderRank(Rank.FAMILY);

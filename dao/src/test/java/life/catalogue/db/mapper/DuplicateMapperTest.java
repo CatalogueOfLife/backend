@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
@@ -51,7 +52,7 @@ public class DuplicateMapperTest {
 
   @Before
   public void init() {
-    session = PgSetupRule.getSqlSessionFactory().openSession(true);
+    session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
     mapper = session.getMapper(DuplicateMapper.class);
   }
   
@@ -104,7 +105,7 @@ public class DuplicateMapperTest {
   @Test
   public void usagesByIds() {
     List<String> ids = Lists.immutableListOf("55", "46");
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var dm = session.getMapper(DuplicateMapper.class);
       List<Duplicate.UsageDecision> res = dm.usagesByIds(datasetKey, Datasets.COL, ids);
       assertEquals(2, res.size());

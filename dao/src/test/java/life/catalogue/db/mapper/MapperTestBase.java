@@ -9,6 +9,7 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
 import java.time.LocalDateTime;
@@ -99,7 +100,7 @@ public abstract class MapperTestBase<M> {
   }
 
   public DatasetImport createSuccess(int datasetKey, int user) {
-    DatasetImportDao did = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    DatasetImportDao did = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     return createSuccess(datasetKey, user, did);
   }
 
@@ -115,7 +116,7 @@ public abstract class MapperTestBase<M> {
     di.setStarted(LocalDateTime.now());
     di.setDownload(LocalDateTime.now());
     di.setFinished(LocalDateTime.now());
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetImportMapper dim = session.getMapper(DatasetImportMapper.class);
 

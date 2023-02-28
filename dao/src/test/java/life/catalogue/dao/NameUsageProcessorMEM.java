@@ -7,22 +7,17 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.db.PgConnectionRule;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.TaxonMapper;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import life.catalogue.db.mapper.DatasetMapper;
-
-import life.catalogue.db.mapper.NameMapper;
-
-import life.catalogue.db.mapper.TaxonMapper;
-
 import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.nameparser.api.Rank;
-
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;

@@ -8,7 +8,7 @@ import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 public class NameDaoTest extends DaoTestBase {
 
   static final IndexName match = new IndexName(TestEntityGenerator.NAME4, 1);
-  NameDao dao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.fixed(match), validator);
+  NameDao dao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.fixed(match), validator);
   
   @Test
   public void authorshipNormalization() throws Exception {

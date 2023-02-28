@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.IssueContainer;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.ReferenceMapStore;

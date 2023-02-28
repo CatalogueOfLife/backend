@@ -11,7 +11,7 @@ import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.DatasetProcessable;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
     d.applyUser(Users.TESTER);
     testDataRule.getKeyGenerator().setKey(d);
     mapper(DatasetMapper.class).create(d);
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), d.getKey(), d.getOrigin());
+    Partitioner.partition(SqlSessionFactoryRule.getSqlSessionFactory(), d.getKey(), d.getOrigin());
     return d.getKey();
   }
 

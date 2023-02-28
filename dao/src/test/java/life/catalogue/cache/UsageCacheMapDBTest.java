@@ -1,24 +1,19 @@
 package life.catalogue.cache;
 
 import life.catalogue.api.model.DSID;
-
 import life.catalogue.api.model.SimpleNameWithPub;
 import life.catalogue.api.vocab.Datasets;
-
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-
-import org.apache.commons.io.FileUtils;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.File;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
 
 import static org.junit.Assert.*;
 

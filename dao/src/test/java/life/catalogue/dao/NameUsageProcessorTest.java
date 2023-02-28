@@ -6,7 +6,7 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.db.MybatisTestUtils;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
 
@@ -31,7 +31,7 @@ public class NameUsageProcessorTest extends DaoTestBase {
   @Test
   public void processDataset() {
     DRH handler = new DRH();
-    NameUsageProcessor proc = new NameUsageProcessor(PgSetupRule.getSqlSessionFactory(), TempFile.directoryFile());
+    NameUsageProcessor proc = new NameUsageProcessor(SqlSessionFactoryRule.getSqlSessionFactory(), TempFile.directoryFile());
     proc.processDataset(NAME4.getDatasetKey(), handler);
     Assert.assertEquals(24, handler.counter.get());
     Assert.assertEquals(4, handler.synCounter.get());
@@ -90,14 +90,14 @@ public class NameUsageProcessorTest extends DaoTestBase {
     commit();
 
     // we update the sector key of a few usages so we mock a sync
-    try (Connection con = PgSetupRule.getSqlSessionFactory().openSession().getConnection();
-        Statement st = con.createStatement();
+    try (Connection con = SqlSessionFactoryRule.getSqlSessionFactory().openSession().getConnection();
+         Statement st = con.createStatement();
     ) {
       st.execute("UPDATE name_usage_" + COL + " SET sector_key="+s.getId()+" WHERE id NOT IN ('t1', 't2') ");
       con.commit();
     }
     
-    NameUsageProcessor proc = new NameUsageProcessor(PgSetupRule.getSqlSessionFactory(), TempFile.directoryFile());
+    NameUsageProcessor proc = new NameUsageProcessor(SqlSessionFactoryRule.getSqlSessionFactory(), TempFile.directoryFile());
     proc.processSector(s, new Consumer<NameUsageWrapper>() {
       public void accept(NameUsageWrapper obj) {
         counter.incrementAndGet();

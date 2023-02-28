@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.ParentStack;
@@ -51,12 +52,12 @@ public class UsageMatcherGlobalTest {
 
   @Before
   public void before() {
-    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), PgSetupRule.getSqlSessionFactory());
+    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());
   }
 
   @Test
   public void match() {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
       var origNU = num.get(dsid.id("oen3"));
       ((Synonym)origNU).setAccepted(null); // is purposely not populated in matches - parentID is enough
@@ -73,7 +74,7 @@ public class UsageMatcherGlobalTest {
 
   @Test
   public void matchCl() {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
       var origNU = num.get(dsid.id("oen5"));
 

@@ -6,6 +6,7 @@ import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
 
@@ -47,9 +48,9 @@ public class IdProviderIT {
   @Before
   public void init() throws IOException {
     cfg = new ReleaseConfig();
-    provider = new IdProvider(projectKey, 1, -1, cfg, PgSetupRule.getSqlSessionFactory());
+    provider = new IdProvider(projectKey, 1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
       DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.createIdMapTable(t, projectKey));
     }
@@ -58,7 +59,7 @@ public class IdProviderIT {
   @After
   public void destroy() {
     System.out.println("Remove id mapping tables for project " + projectKey);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
       DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, projectKey));
     }
@@ -68,12 +69,12 @@ public class IdProviderIT {
   @Test
   public void run() throws Exception {
     // verify archived names got loaded
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       assertNotNull( session.getMapper(ArchivedNameUsageMapper.class).get(DSID.of(projectKey, "M")));
     }
 
     provider.run();
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);

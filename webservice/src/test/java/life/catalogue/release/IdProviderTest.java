@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 
@@ -40,7 +41,7 @@ public class IdProviderTest {
   public void init() throws IOException {
     cfg = new ReleaseConfig();
     System.out.println("Create id mapping tables for project " + projectKey);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
       DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.createIdMapTable(t, projectKey));
     }
@@ -49,7 +50,7 @@ public class IdProviderTest {
   @After
   public void destroy() {
     System.out.println("Remove id mapping tables for project " + projectKey);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
       DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, projectKey));
     }
@@ -59,7 +60,7 @@ public class IdProviderTest {
   class IdTestProvider extends IdProvider {
 
     public IdTestProvider() {
-      super(projectKey, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1, cfg, PgSetupRule.getSqlSessionFactory());
+      super(projectKey, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
     }
 
     @Override

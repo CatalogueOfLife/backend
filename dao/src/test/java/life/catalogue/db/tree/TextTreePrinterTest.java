@@ -6,6 +6,7 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
@@ -34,7 +35,7 @@ public class TextTreePrinterTest {
   @Test
   public void print() throws IOException {
     Writer writer = new StringWriter();
-    int count = PrinterFactory.dataset(TextTreePrinter.class, TestDataRule.TREE.key, PgSetupRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(TextTreePrinter.class, TestDataRule.TREE.key, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     assertEquals(25, count);
     String expected = UTF8IoUtils.readString(Resources.stream("trees/tree2.tree"));
     assertEquals(expected, writer.toString());
@@ -50,7 +51,7 @@ public class TextTreePrinterTest {
         return cnt.getAndIncrement();
       }
     };
-    var p = PrinterFactory.dataset(TextTreePrinter.class, TreeTraversalParameter.datasetNoSynonyms(TestDataRule.TREE.key), Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer);
+    var p = PrinterFactory.dataset(TextTreePrinter.class, TreeTraversalParameter.datasetNoSynonyms(TestDataRule.TREE.key), Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
     p.showIDs();
     int count = p.print();
     System.out.println(writer);
@@ -65,7 +66,7 @@ public class TextTreePrinterTest {
       var ttp = TreeTraversalParameter.dataset(TestDataRule.TREE.key);
       ttp.setSynonyms(false);
       ttp.setExtinct(extinct);
-      p = PrinterFactory.dataset(TextTreePrinter.class, ttp, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, PgSetupRule.getSqlSessionFactory(), writer);
+      p = PrinterFactory.dataset(TextTreePrinter.class, ttp, Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, counter, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
       p.showIDs();
       count = p.print();
       System.out.println(writer);

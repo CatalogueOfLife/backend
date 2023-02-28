@@ -23,7 +23,7 @@ public class NameMatchingRule extends ExternalResource {
   private final Supplier<SqlSessionFactory> factorySupplier;
 
   public NameMatchingRule() {
-    this(PgSetupRule::getSqlSessionFactory);
+    this(SqlSessionFactoryRule::getSqlSessionFactory);
   }
 
   public NameMatchingRule(Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {

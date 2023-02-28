@@ -1,23 +1,19 @@
 package life.catalogue.concurrent;
 
-import com.codahale.metrics.MetricRegistry;
-
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.dao.UserDao;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
-import life.catalogue.dao.DatasetExportDao;
-
-import life.catalogue.dao.UserDao;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
+
+import com.codahale.metrics.MetricRegistry;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;

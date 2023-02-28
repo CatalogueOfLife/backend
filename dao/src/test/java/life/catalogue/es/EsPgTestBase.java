@@ -5,6 +5,7 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
@@ -57,7 +58,7 @@ public abstract class EsPgTestBase {
         esSetupRule.getClient(),
         esSetupRule.getEsConfig(),
         TempFile.directoryFile(),
-        PgSetupRule.getSqlSessionFactory());
+        SqlSessionFactoryRule.getSqlSessionFactory());
   }
 
   protected NameUsageSearchServiceEs createSearchService() {

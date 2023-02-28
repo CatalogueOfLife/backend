@@ -9,7 +9,6 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 

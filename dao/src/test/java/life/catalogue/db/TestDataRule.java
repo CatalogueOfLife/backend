@@ -219,7 +219,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   public TestDataRule(TestData testData) {
-    this(testData, PgSetupRule::getSqlSessionFactory);
+    this(testData, SqlSessionFactoryRule::getSqlSessionFactory);
   }
 
   public <T> T getMapper(Class<T> mapperClazz) {
@@ -433,6 +433,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       )
     );
     copyPartitionedTable(pgc, "name_rel", key, datasetEntityDefaults(key));
+    copyPartitionedTable(pgc, "type_material", key, datasetEntityDefaults(key));
     copyPartitionedTable(pgc, "name_usage", key,
       datasetEntityDefaults(key, ImmutableMap.<String, Object>of("origin", Origin.SOURCE)),
       ImmutableMap.<String, Function<String[], String>>of(

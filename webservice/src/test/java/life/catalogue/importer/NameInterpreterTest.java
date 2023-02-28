@@ -1,32 +1,21 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
-import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.dao.ReferenceFactory;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.ReferenceMapStore;
-import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.api.vocab.Setting;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.regex.Matcher;
-
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NameInterpreterTest {

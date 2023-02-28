@@ -46,7 +46,8 @@ public class CatCopy {
                                                                  Set<EntityType> include,
                                                                  Function<Reference, String> lookupReference,
                                                                  Function<String, String> lookupByIdReference) {
-    final DSID<String> orig = new DSIDValue<>(t);
+    final DSID<String> origT = new DSIDValue<>(t);
+    final DSID<String> origN = new DSIDValue<>(t.getName());
     copyName(batchSession, t, targetParent.getDatasetKey(), user, lookupReference);
     
     setKeys(t, targetParent.getDatasetKey());
@@ -72,7 +73,7 @@ public class CatCopy {
     for (EntityType type : include) {
       if (t.isTaxon() && extMapper.containsKey(type)) {
         final TaxonExtensionMapper<SectorScopedEntity<Integer>> mapper = (TaxonExtensionMapper<SectorScopedEntity<Integer>>) batchSession.getMapper(extMapper.get(type));
-        mapper.listByTaxon(orig).forEach(e -> {
+        mapper.listByTaxon(origT).forEach(e -> {
           e.setId(null);
           e.setSectorKey(t.getSectorKey());
           e.setDatasetKey(targetParent.getDatasetKey());
@@ -94,12 +95,22 @@ public class CatCopy {
         });
 
       } else if (EntityType.TREATMENT == type) {
-        // TODO copy
+        // TODO copy treatments
       } else if (EntityType.TYPE_MATERIAL == type) {
-        // TODO copy
+        final var mapper = batchSession.getMapper(TypeMaterialMapper.class);
+        mapper.listByName(origN).forEach(tm -> {
+          newKey(tm); // id=UUID & verbatimKey=null
+          tm.setNameId(t.getName().getId());
+          tm.setSectorKey(t.getSectorKey());
+          tm.setDatasetKey(targetParent.getDatasetKey());
+          tm.applyUser(user);
+          String ridCopy = lookupByIdReference.apply(tm.getReferenceId());
+          tm.setReferenceId(ridCopy);
+          mapper.create(tm);
+        });
       }
     }
-    return orig;
+    return origT;
   }
   
   /**
@@ -137,7 +148,7 @@ public class CatCopy {
     return newKey(r);
   }
   
-  private static <T extends VerbatimEntity & DSID> T newKey(T e) {
+  private static <T extends VerbatimEntity & DSID<String>> T newKey(T e) {
     e.setVerbatimKey(null);
     e.setId(UUID.randomUUID().toString());
     return e;

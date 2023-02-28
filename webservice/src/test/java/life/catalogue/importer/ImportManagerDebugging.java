@@ -12,6 +12,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -83,16 +84,16 @@ public class ImportManagerDebugging {
     //new InitDbCmd().execute(cfg);
 
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
-    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService, validator);
-    SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao, validator);
-    DecisionDao dDao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
-    var diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    DatasetDao datasetDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, diDao, validator);
+    NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
+    TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, indexService, validator);
+    SectorDao sDao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, tDao, validator);
+    DecisionDao dDao = new DecisionDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
+    var diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    DatasetDao datasetDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, diDao, validator);
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started(),
+    importManager = new ImportManager(cfg, metrics, hc, SqlSessionFactoryRule.getSqlSessionFactory(),
+        NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started(),
       datasetDao, sDao, dDao, UsageCache.passThru(), indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
     importManager.start();
   }
@@ -165,7 +166,7 @@ public class ImportManagerDebugging {
     }
     TestEntityGenerator.setUser(d.getDataset());
     
-    try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
       s.getMapper(DatasetMapper.class).createAll(d);
       s.commit();
     }

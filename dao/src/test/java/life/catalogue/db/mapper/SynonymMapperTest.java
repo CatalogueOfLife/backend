@@ -8,7 +8,7 @@ import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.NameDao;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 
@@ -37,7 +37,7 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
   
   @Before
   public void initMappers() {
-    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    nameDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
     synonymMapper = testDataRule.getMapper(SynonymMapper.class);
     taxonMapper = testDataRule.getMapper(TaxonMapper.class);
     // prepare taxon to hook extensions to

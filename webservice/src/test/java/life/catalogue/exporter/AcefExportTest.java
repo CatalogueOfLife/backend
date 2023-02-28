@@ -8,10 +8,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.CompressionUtil;
-import life.catalogue.db.LookupTables;
-import life.catalogue.db.MybatisTestUtils;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImageService;
 
@@ -59,9 +56,9 @@ public class AcefExportTest extends ExportTest {
   
   @Test
   public void export() throws Exception {
-    AcefExport exp = new AcefExport(new ExportRequest(Datasets.COL, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    AcefExport exp = new AcefExport(new ExportRequest(Datasets.COL, DataFormat.ACEF), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     // prepare metadata
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
 
       LookupTables.recreateTables(session.getConnection());
 
@@ -100,7 +97,7 @@ public class AcefExportTest extends ExportTest {
     final int key = TestDataRule.APPLE.key;
 
     // prepare metadata
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(key);
       d.setEditor(Agent.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
@@ -110,7 +107,7 @@ public class AcefExportTest extends ExportTest {
       dm.update(d);
     }
 
-    AcefExport exp = new AcefExport(new ExportRequest(key, DataFormat.ACEF), Users.TESTER, PgSetupRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    AcefExport exp = new AcefExport(new ExportRequest(key, DataFormat.ACEF), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
     arch = exp.getArchive();
     System.out.println("LOGS:\n");

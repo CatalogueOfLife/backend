@@ -5,6 +5,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 
@@ -48,7 +49,7 @@ public class DatasetInfoCacheTest {
     assertFalse(info.deleted);
 
     Dataset d;
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
       d = session.getMapper(DatasetMapper.class).get(3);
     }
 

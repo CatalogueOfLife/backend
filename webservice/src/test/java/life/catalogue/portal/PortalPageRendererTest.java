@@ -7,6 +7,7 @@ import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
 import java.io.IOException;
@@ -67,10 +68,10 @@ public class PortalPageRendererTest {
 
   @Before
   public void init() throws IOException {
-    var dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, null, null);
-    var srcDao = new DatasetSourceDao(PgSetupRule.getSqlSessionFactory());
-    var nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), null, null, null);
-    var tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, null, null);
+    var dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null);
+    var srcDao = new DatasetSourceDao(SqlSessionFactoryRule.getSqlSessionFactory());
+    var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null);
+    var tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, null);
     var p = Path.of("/tmp/col/templates");
     PathUtils.deleteRecursively(p);
     renderer = new PortalPageRenderer(dDao, srcDao, tDao, cache, p);

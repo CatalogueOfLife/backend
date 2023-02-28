@@ -3,6 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
 import javax.validation.Validation;
@@ -50,7 +51,7 @@ public abstract class DaoTestBase {
   }
 
   protected static SqlSessionFactory factory() {
-    return PgSetupRule.getSqlSessionFactory();
+    return SqlSessionFactoryRule.getSqlSessionFactory();
   }
   
   protected SqlSession session() {

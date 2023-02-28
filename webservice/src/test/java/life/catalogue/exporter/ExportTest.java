@@ -11,9 +11,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-
 public class ExportTest {
 
   WsServerConfig cfg;

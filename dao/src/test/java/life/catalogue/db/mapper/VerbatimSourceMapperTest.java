@@ -5,11 +5,10 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 
-import org.junit.Test;
-
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

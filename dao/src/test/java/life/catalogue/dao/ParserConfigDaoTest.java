@@ -1,10 +1,11 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
@@ -22,7 +23,7 @@ public class ParserConfigDaoTest {
 
   @Test
   public void addToParser() throws InterruptedException {
-    ParserConfigDao dao = new ParserConfigDao(PgSetupRule.getSqlSessionFactory());
+    ParserConfigDao dao = new ParserConfigDao(SqlSessionFactoryRule.getSqlSessionFactory());
     ParserConfig cfg = new ParserConfig();
     cfg.setScientificName("Jezzinothrips cretacicus");
     cfg.setAuthorship("zur Strassen, 1973");

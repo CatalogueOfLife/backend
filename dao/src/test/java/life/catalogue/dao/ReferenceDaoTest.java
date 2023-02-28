@@ -1,7 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.Page;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
@@ -14,7 +14,7 @@ public class ReferenceDaoTest extends DaoTestBase {
   @Test
   public void list() {
     try (SqlSession session = session()) {
-      ReferenceDao dao = new ReferenceDao(PgSetupRule.getSqlSessionFactory(), null, validator);
+      ReferenceDao dao = new ReferenceDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, validator);
       dao.list(11, new Page());
     }
   }

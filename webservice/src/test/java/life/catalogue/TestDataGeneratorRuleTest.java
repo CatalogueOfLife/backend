@@ -5,10 +5,11 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
-
-import life.catalogue.release.XReleaseIT;
-
 import life.catalogue.release.IdProviderIT;
+import life.catalogue.release.XReleaseBasicIT;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -16,10 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(Parameterized.class)
 public class TestDataGeneratorRuleTest {
@@ -30,7 +28,7 @@ public class TestDataGeneratorRuleTest {
   @Parameterized.Parameters(name= "{index}: {0}")
   public static Iterable<Object[]> data() {
     List<TestDataRule.TestData> list = List.of(
-      XReleaseIT.XRELEASE_DATA,
+      XReleaseBasicIT.XRELEASE_DATA,
       TestDataGenerator.MATCHING,
       TestDataGenerator.SYNCS,
       TestDataGenerator.XCOL,

@@ -1,7 +1,7 @@
 package life.catalogue.matching.authorship;
 
-import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.parser.NameParser;
 

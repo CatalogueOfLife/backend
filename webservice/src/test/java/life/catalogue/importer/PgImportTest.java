@@ -11,6 +11,7 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 
@@ -52,10 +53,10 @@ public class PgImportTest {
     public Boolean call() throws Exception {
       System.out.println("START " + datasetKey);
       System.out.println("PARTITION " + datasetKey);
-      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.PROJECT);
+      Partitioner.partition(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.PROJECT);
 
       System.out.println("INDEX & ATTACH " + datasetKey);
-      Partitioner.attach(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.PROJECT);
+      Partitioner.attach(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.PROJECT);
       System.out.println("FINISHED " + datasetKey);
       return true;
     }
@@ -84,7 +85,7 @@ public class PgImportTest {
     Dataset d2 = TestEntityGenerator.setUser(TestEntityGenerator.newDataset("second"));
     d2.setAlias("second");
     testDataRule.getKeyGenerator().setKey(d2);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.create(d);
       dm.create(d2);
@@ -93,7 +94,7 @@ public class PgImportTest {
     DatasetWithSettings ds = new DatasetWithSettings(d2, new DatasetSettings());
     d2.setAlias(d.getAlias());
     PgImport imp = new PgImport(1, ds, Users.TESTER, null,
-      PgSetupRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null);
+      SqlSessionFactoryRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null);
     imp.updateMetadata();
   }
 

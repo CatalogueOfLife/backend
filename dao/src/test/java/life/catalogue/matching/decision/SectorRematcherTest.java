@@ -10,6 +10,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -45,9 +46,9 @@ public class SectorRematcherTest {
 
   @Before
   public void init(){
-    nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
-    dao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tDao, validator);
+    nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    dao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tDao, validator);
   }
 
   @Test
@@ -77,7 +78,7 @@ public class SectorRematcherTest {
 
     Sector s1b;
     Sector s2b;
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
 
       s1b = sm.get(s1);
@@ -93,7 +94,7 @@ public class SectorRematcherTest {
     req.setTarget(true);
     SectorRematcher.match(dao, req, Users.TESTER);
 
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
 
       Sector s1c = sm.get(s1);
@@ -107,7 +108,7 @@ public class SectorRematcherTest {
   }
 
   static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
       sector.setDatasetKey(Datasets.COL);

@@ -1,7 +1,5 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.vocab.Users;
-
 import java.util.List;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;

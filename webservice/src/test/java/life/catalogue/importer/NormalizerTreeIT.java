@@ -1,14 +1,7 @@
 package life.catalogue.importer;
 
-import com.univocity.parsers.common.IterableResult;
-import com.univocity.parsers.common.ParsingContext;
-import com.univocity.parsers.tsv.TsvParser;
-import com.univocity.parsers.tsv.TsvParserSettings;
-
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.common.io.CharsetDetectingStream;
-import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.img.ImageService;
@@ -19,7 +12,10 @@ import life.catalogue.importer.neo.model.RankedName;
 import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.matching.NameIndexFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;

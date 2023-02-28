@@ -13,7 +13,8 @@ import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /*
  * Tests sector indexing, especially merge ones, using a pre-generated data rule, see TestDataGenerator

@@ -1,6 +1,7 @@
 package life.catalogue.importer.acef;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterTestAbstractBase;

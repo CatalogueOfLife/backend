@@ -9,6 +9,7 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
@@ -18,6 +19,7 @@ import life.catalogue.importer.PgImportRule;
 import life.catalogue.postgres.PgCopyUtils;
 
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,19 +29,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.postgresql.jdbc.PgConnection;
-
-import javax.annotation.Nullable;
 
 /**
  * Manual tool to generate test data CSV files for the TestDataRule from regular CoLDP or DwC archives.
@@ -194,7 +193,7 @@ public class TestDataGenerator {
     var sectors = sectorSupplier.apply(importRule);
     if (!sectors.isEmpty()) {
       System.out.printf("Create COL project root taxon");
-      try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
         session.getMapper(NameMapper.class).create(COL_ROOT.getName());
         session.getMapper(TaxonMapper.class).create(COL_ROOT);
         session.commit();
@@ -202,7 +201,7 @@ public class TestDataGenerator {
 
       System.out.printf("Create and sync %s sectors%n", sectors.size());
       for (var s : sectors) {
-        try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+        try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
           session.getMapper(SectorMapper.class).create(s);
         }
         SectorSyncIT.sync(s);
@@ -210,7 +209,7 @@ public class TestDataGenerator {
     }
 
     List<Dataset> datasets;
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       datasets = dm.list(new Page(0,1000));
     }

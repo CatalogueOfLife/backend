@@ -6,6 +6,7 @@ import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 
 import java.util.Set;
 import java.util.UUID;
@@ -58,18 +59,18 @@ public class GbifSyncTest {
 
   @Before
   public void initTest() {
-    ddao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, diDao, validator);
+    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, diDao, validator);
   }
 
   @Test
   public void syncNow() {
-    GbifSyncManager gbif = new GbifSyncManager(cfg, ddao, PgSetupRule.getSqlSessionFactory(), client);
+    GbifSyncManager gbif = new GbifSyncManager(cfg, ddao, SqlSessionFactoryRule.getSqlSessionFactory(), client);
     gbif.syncNow();
   }
 
   @Test
   public void syncSingle() {
-    GbifSyncJob job = new GbifSyncJob(cfg, client, ddao, PgSetupRule.getSqlSessionFactory(), Users.GBIF_SYNC, Set.of(UUID.fromString("30f55c63-a829-4cb2-9676-3b1b6f981567")));
+    GbifSyncJob job = new GbifSyncJob(cfg, client, ddao, SqlSessionFactoryRule.getSqlSessionFactory(), Users.GBIF_SYNC, Set.of(UUID.fromString("30f55c63-a829-4cb2-9676-3b1b6f981567")));
     job.run();
     Assert.assertEquals(JobStatus.FINISHED, job.getStatus());
   }

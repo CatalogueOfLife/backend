@@ -5,7 +5,7 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.TempFile;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.es.EsSetupRule;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
@@ -42,7 +42,7 @@ public class PgImportESIT extends PgImportITBase {
       esSetupRule.getClient(),
       esSetupRule.getEsConfig(),
       TempFile.directoryFile(),
-      PgSetupRule.getSqlSessionFactory());
+      SqlSessionFactoryRule.getSqlSessionFactory());
     searchService = new NameUsageSearchServiceEs(esSetupRule.getEsConfig().nameUsage.name, esSetupRule.getClient());
   }
 

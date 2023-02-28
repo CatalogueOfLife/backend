@@ -6,7 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
@@ -165,7 +165,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void list() throws Exception {
-    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    NameDao nameDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
   
     List<Taxon> taxa = new ArrayList<>();
     taxa.add(TestEntityGenerator.newTaxon("t1"));

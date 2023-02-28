@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.MybatisTestUtils;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 
@@ -200,7 +200,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     Taxon parent = TestEntityGenerator.newTaxon("parent-1");
     mapper().create(parent);
   
-    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    NameDao nameDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
     
     Name n1 = TestEntityGenerator.newName("XXX");
     n1.setScientificName("XXX");

@@ -9,8 +9,6 @@ import life.catalogue.db.PgDbConfig;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Optional;

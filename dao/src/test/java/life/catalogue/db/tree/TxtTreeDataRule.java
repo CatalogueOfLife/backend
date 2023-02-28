@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
 
@@ -57,7 +58,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
 
   public TxtTreeDataRule(Map<Integer, TreeData> treeData) {
     this.datasets = treeData;
-    sqlSessionFactorySupplier = PgSetupRule::getSqlSessionFactory;
+    sqlSessionFactorySupplier = SqlSessionFactoryRule::getSqlSessionFactory;
   }
 
   @Override

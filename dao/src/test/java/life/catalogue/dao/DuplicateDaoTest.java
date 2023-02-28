@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DecisionMapper;
 
@@ -16,7 +17,10 @@ import java.util.Set;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
@@ -39,7 +43,7 @@ public class DuplicateDaoTest {
 
   @BeforeClass
   public static void setup() throws Exception {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       final DecisionMapper dm = session.getMapper(DecisionMapper.class);
       create(dm, "15", Rank.SPECIES);
       create(dm, "28", Rank.SUBSPECIES);
@@ -59,7 +63,7 @@ public class DuplicateDaoTest {
 
   @Before
   public void init() {
-    dao = new DuplicateDao(PgSetupRule.getSqlSessionFactory());
+    dao = new DuplicateDao(SqlSessionFactoryRule.getSqlSessionFactory());
     watch.reset();
   }
 

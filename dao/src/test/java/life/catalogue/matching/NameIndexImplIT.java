@@ -3,15 +3,16 @@ package life.catalogue.matching;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
-import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.parser.NameParser;
@@ -113,11 +114,11 @@ public class NameIndexImplIT {
 
   void setupMemory(boolean erase) throws Exception {
     if (erase) {
-      try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
         session.getMapper(NamesIndexMapper.class).truncate();
       }
     }
-    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
+    ni = NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
     if (erase) {
       assertEquals(0, ni.size());
     } else {
@@ -126,7 +127,7 @@ public class NameIndexImplIT {
   }
 
   void setupPersistent(File location) throws Exception {
-    ni = NameIndexFactory.persistent(location, PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
+    ni = NameIndexFactory.persistent(location, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
   }
 
   @Test
@@ -473,7 +474,7 @@ public class NameIndexImplIT {
     //System.out.println("Names Index from memory:");
     //ni.all().forEach(System.out::println);
     System.out.println("\nNames Index from postgres:");
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(NamesIndexMapper.class).processAll().forEach(System.out::println);
     }
   }

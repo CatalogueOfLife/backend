@@ -1,7 +1,5 @@
 package life.catalogue.release;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
@@ -12,20 +10,13 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
-import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Map;
-import java.util.Set;
-
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
@@ -33,20 +24,25 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 
-import life.catalogue.matching.NameIndexFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Map;
+
+import javax.validation.Validation;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import javax.validation.Validation;
+import com.google.common.eventbus.EventBus;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-public class XReleaseIT  {
+public class XReleaseBasicIT {
 
   public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13, 1, 2,
     Map.of(
@@ -77,7 +73,7 @@ public class XReleaseIT  {
     cfg.apiURI = null;
     cfg.clbURI = URI.create("https://www.dev.checklistbank.org");
 
-    var factory = PgSetupRule.getSqlSessionFactory();
+    var factory = SqlSessionFactoryRule.getSqlSessionFactory();
     provider = new IdProvider(projectKey, 1, -1, cfg.release, factory);
 
     EventBus bus = mock(EventBus.class);
@@ -118,7 +114,7 @@ public class XReleaseIT  {
     SectorSyncIT.assertTree(xrel.newDatasetKey, tree);
 
     // verify secondary sources
-    try(SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
+    try(SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
       VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
 
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);

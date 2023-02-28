@@ -8,6 +8,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.*;
 import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
@@ -83,13 +84,13 @@ public class PgImportITBase {
     dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 
     if (fullInit) {
-      InitDbUtils.createNonDefaultPartitions(PgSetupRule.getSqlSessionFactory());
+      InitDbUtils.createNonDefaultPartitions(SqlSessionFactoryRule.getSqlSessionFactory());
     }
-    sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory(), validator);
-    ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), ndao, indexService, validator);
-    rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory(), null, validator);
-    ddao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null,null, validator);
+    sdao = new SynonymDao(SqlSessionFactoryRule.getSqlSessionFactory(), validator);
+    ndao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
+    tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, indexService, validator);
+    rdao = new ReferenceDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, validator);
+    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,null, validator);
   }
   
   @After
@@ -128,13 +129,13 @@ public class PgImportITBase {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       Normalizer norm = new Normalizer(dataset, store, source,
-        NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
+        NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
         ImageService.passThru(), validator, null);
       norm.call();
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(1, dataset, Users.IMPORTER, store, PgSetupRule.getSqlSessionFactory(), icfg, ddao, indexService);
+      PgImport importer = new PgImport(1, dataset, Users.IMPORTER, store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, indexService);
       importer.call();
       
     } catch (Exception e) {
@@ -161,7 +162,7 @@ public class PgImportITBase {
   }
 
   void verifyNamesIndexIds(int datasetKey){
-    try(SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
+    try(SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()){
       NameMapper nm = session.getMapper(NameMapper.class);
       for (Name n : nm.processDataset(datasetKey)) {
         assertNotNull(n.getNamesIndexId());
@@ -171,7 +172,7 @@ public class PgImportITBase {
   }
 
   DatasetImport metrics() {
-    return new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo())
+    return new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo())
         .generateMetrics(dataset.getKey(), Users.TESTER);
   }
   

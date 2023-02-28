@@ -1,7 +1,7 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.common.io.TempFile;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.es.EsConfig;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsReadWriteTestBase;
@@ -19,7 +19,7 @@ public class IndexDatasetTest extends EsReadWriteTestBase {
   public void indexDataset() throws IOException, EsException {
     try (RestClient client = EsReadWriteTestBase.esSetupRule.getClient()) {
       EsConfig config = EsReadWriteTestBase.esSetupRule.getEsConfig();
-      NameUsageIndexServiceEs svc = new NameUsageIndexServiceEs(client, config, TempFile.directoryFile(), PgSetupRule.getSqlSessionFactory());
+      NameUsageIndexServiceEs svc = new NameUsageIndexServiceEs(client, config, TempFile.directoryFile(), SqlSessionFactoryRule.getSqlSessionFactory());
       svc.indexDataset(1000);
     }
   }

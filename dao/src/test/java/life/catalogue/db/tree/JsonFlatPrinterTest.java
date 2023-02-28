@@ -6,6 +6,7 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
@@ -37,7 +38,7 @@ public class JsonFlatPrinterTest {
         return 999;
       }
     };
-    int count = PrinterFactory.dataset(JsonFlatPrinter.class, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, Rank.SPECIES, taxonCounter, PgSetupRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(JsonFlatPrinter.class, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     assertEquals(24, count);
     System.out.println(writer);
     String expected = UTF8IoUtils.readString(Resources.stream("trees/flat.json"));

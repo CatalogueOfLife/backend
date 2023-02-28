@@ -36,7 +36,7 @@ public class SqlSessionFactoryWithPathTest {
       st.execute(String.format("INSERT INTO %s.woman (name) SELECT 'Woman ' || x FROM generate_series(1, 12) x", pub));
     }
 
-    SqlSessionFactory factory = new SqlSessionFactoryWithPath(PgSetupRule.getSqlSessionFactory(), schema);
+    SqlSessionFactory factory = new SqlSessionFactoryWithPath(SqlSessionFactoryRule.getSqlSessionFactory(), schema);
     factory.getConfiguration().addMapper(ManMapper.class);
 
     try (SqlSession session = factory.openSession()) {

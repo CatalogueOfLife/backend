@@ -9,11 +9,10 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.metadata.DoiResolver;
 
-import java.util.List;
-
 import org.gbif.dwc.terms.DcTerm;
-
 import org.gbif.dwc.terms.DwcTerm;
+
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;

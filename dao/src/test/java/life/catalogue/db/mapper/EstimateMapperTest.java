@@ -6,7 +6,7 @@ import life.catalogue.api.model.SpeciesEstimate;
 import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EstimateType;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
@@ -25,7 +25,7 @@ public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, 
   public void init() {
     ref = TestEntityGenerator.newReference("Bam bam");
     ref.setDatasetKey(Datasets.COL);
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(ReferenceMapper.class).create(ref);
     }
   }

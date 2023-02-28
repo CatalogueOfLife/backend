@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.TaxonMapper;
@@ -30,8 +30,8 @@ public class SectorDaoTest extends DaoTestBase {
 
   @Before
   public void init(){
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
     dao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao, validator);
   }
 

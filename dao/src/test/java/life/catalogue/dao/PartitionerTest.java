@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
 import java.sql.Connection;
@@ -52,7 +53,7 @@ public class PartitionerTest {
 
   @Test
   public void delete() throws Exception {
-    final var factory = PgSetupRule.getSqlSessionFactory();
+    final var factory = SqlSessionFactoryRule.getSqlSessionFactory();
     Partitioner.delete(factory, 3, DatasetOrigin.PROJECT);
     Partitioner.delete(factory, 11, DatasetOrigin.EXTERNAL);
     Partitioner.delete(factory, 3567, DatasetOrigin.EXTERNAL);

@@ -10,12 +10,11 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 
-import java.io.File;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
@@ -35,9 +34,9 @@ public class DatasetDaoTest extends DaoTestBase {
 
   @Before
   public void init() {
-    DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    DatasetImportDao diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     JobConfig cfg = new JobConfig();
-    DatasetExportDao exDao = new DatasetExportDao(cfg, PgSetupRule.getSqlSessionFactory(), new EventBus(), validator);
+    DatasetExportDao exDao = new DatasetExportDao(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), new EventBus(), validator);
     dao = new DatasetDao(testDataRule.keyGenerator.minExternalDatasetKey, factory(),
       new NormalizerConfig(), new ReleaseConfig(),
       null,
