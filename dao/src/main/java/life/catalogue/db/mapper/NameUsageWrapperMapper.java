@@ -45,6 +45,10 @@ public interface NameUsageWrapperMapper {
    * This gets close to a tree traversal, but is more performant. Badly arranged trees and unranked or uncomparable taxa can cause unexpected problems
    * that should be catered for by the consumer.
    *
+   * WARNING!
+   * This method requires a temporary session bound table "tmp_usage_issues" to exist.
+   * Create it before using the VerbatimRecordMapper.createTmpIssuesTable method.
+   *
    * @param datasetKey the dataset, e.g. catalogue, to process
    * @param sectorKey the optional sector to restrict the processed usages to
    */

@@ -1,5 +1,7 @@
 package life.catalogue;
 
+import it.unimi.dsi.fastutil.Pair;
+
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -41,8 +44,9 @@ import org.junit.rules.TestRule;
 import org.postgresql.jdbc.PgConnection;
 
 /**
- * Manual tool to generate test data CSV files for the TestDataRule from regular CoLDP or DwC archives.
+ * Manual tool to generate test data CSV files for the TestDataRule from regular CoLDP or DwC archives which are simpler to craft than sql dumps.
  * Can then be copied to the test data resources and used for quicker integration tests.
+ * Run the respective "test" whenever you want the test resource to be changed based on newer archive imports.
  */
 
 @Ignore("for manual use only")
@@ -54,8 +58,27 @@ public class TestDataGenerator {
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
 
   final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, 1, 3, Set.of(101));
-  final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, 1, 3, null);
-  final static TestDataRule.TestData XCOL = new TestDataRule.TestData("xcol", 3, 1, 3, null);
+
+   final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, 2, 4, null, Map.ofEntries(
+    Map.entry(Pair.of(DataFormat.COLDP, 0),100),
+    Map.entry(Pair.of(DataFormat.COLDP, 2),109),
+    Map.entry(Pair.of(DataFormat.COLDP, 4),110),
+    Map.entry(Pair.of(DataFormat.COLDP, 14),111),
+    Map.entry(Pair.of(DataFormat.COLDP, 22),102),
+    Map.entry(Pair.of(DataFormat.COLDP, 24),112),
+    Map.entry(Pair.of(DataFormat.COLDP, 25),103),
+    Map.entry(Pair.of(DataFormat.COLDP, 26),113),
+    Map.entry(Pair.of(DataFormat.COLDP, 27),114),
+    Map.entry(Pair.of(DataFormat.ACEF,1),101),
+    Map.entry(Pair.of(DataFormat.ACEF,5),106),
+    Map.entry(Pair.of(DataFormat.ACEF,6),107),
+    Map.entry(Pair.of(DataFormat.ACEF,11),108),
+    Map.entry(Pair.of(DataFormat.ACEF,14),116),
+    Map.entry(Pair.of(DataFormat.DWCA,1),104),
+    Map.entry(Pair.of(DataFormat.DWCA,2),105),
+    Map.entry(Pair.of(DataFormat.DWCA,45),115)
+  ));
+  final static TestDataRule.TestData XCOL = new TestDataRule.TestData("xcol", 3, 2, 4, null);
   final static TestDataRule.TestData GROUPING = new TestDataRule.TestData("homgroup", 101, 1, 3, null);
 
   public static TestDataRule homotypigGrouping() {
@@ -102,6 +125,7 @@ public class TestDataGenerator {
           NomCode.ZOOLOGICAL,
             DataFormat.ACEF,  5, 6, 11,
             DataFormat.COLDP, 2, 4, 14, 24, 26, 27,
+            DataFormat.DWCA, 45,
           NomCode.VIRUS,
             DataFormat.ACEF,  14
       )
@@ -187,6 +211,9 @@ public class TestDataGenerator {
     System.out.println("KEY MAP:");
     for (var ent : importRule.getDatasetKeyMap().entrySet()) {
       System.out.printf(" %s %s -> %s%n", ent.getKey().first(), ent.getKey().second(), ent.getValue());
+    }
+    for (var ent : importRule.getDatasetKeyMap().entrySet()) {
+      System.out.printf(" Pair.of(DataFormat.%s, %s), %s,%n", ent.getKey().first(), ent.getKey().second(), ent.getValue());
     }
 
     // once we have datasets imported and a key map supply the sectors with proper subject keys

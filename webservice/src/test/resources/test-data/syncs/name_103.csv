@@ -1,7 +1,5 @@
-id,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
-1,Acorus calamus,L.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Acorus,,calamus,,,{},{},,{L.},{},,,,,,,,,
-g,Acorus,L.,GENUS,BOTANICAL,,SCIENTIFIC,f,,Acorus,,,,,,{},{},,{L.},{},,,,,,,,,
-4,Acorus calamus var. angustatus,Besser,VARIETY,BOTANICAL,,SCIENTIFIC,f,,,Acorus,,calamus,angustatus,,{},{},,{Besser},{},,,,,,,,,
-2,Acorus gramineus,Aiton,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Acorus,,gramineus,,,{},{},,{Aiton},{},,,,,,,,,
-f,Acoraceae,,FAMILY,BOTANICAL,,SCIENTIFIC,f,,Acoraceae,,,,,,{},{},,{},{},,,,,,,,,
-3,Acorus calamus var. americanus,Raf.,VARIETY,BOTANICAL,,SCIENTIFIC,f,,,Acorus,,calamus,americanus,,{},{},,{Raf.},{},,,,,,,,,
+id,sector_key,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
+13,,Aster grandis,L.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Aster,,grandis,,,{},{},,{L.},{},,,,,,,,,
+10,,Asteraceae,,FAMILY,BOTANICAL,,SCIENTIFIC,f,,Asteraceae,,,,,,{},{},,{},{},,,,,,,,,
+12,,Crepis muelleri,Müller,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,muelleri,,,{},{},,{Müller},{},,,,,,,,,
+11,,Crepis museliana,Greene,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,museliana,,,{},{},,{Greene},{},,,,,,,,,

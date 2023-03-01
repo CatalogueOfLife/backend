@@ -11,6 +11,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-03-01 decision indices
+```
+CREATE INDEX ON decision (subject_dataset_key);
+CREATE INDEX ON decision (subject_dataset_key, subject_id);
+```
+
 ### 2023-02-20 PROLES FIX
 ```
 ALTER TYPE RANK RENAME VALUE 'PROLE' TO 'PROLES';

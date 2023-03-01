@@ -1,7 +1,10 @@
 package life.catalogue.db;
 
+import it.unimi.dsi.fastutil.Pair;
+
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -71,18 +74,18 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   /**
    * NONE does wipe all data so every test starts with an empty db.
    */
-  public final static TestData EMPTY = new TestData("empty", null, null, null, true, null, Collections.emptyMap(),Set.of(3));
+  public final static TestData EMPTY = new TestData("empty", null, null, null, true, null, Collections.emptyMap(),Set.of(3), null);
   /**
    * KEEP keeps existing data and does not wipe or create anything new. Can be used with class based data loading rules, e.g. TxtTreeDataRule
    */
-  public final static TestData KEEP = new TestData("keep", null, null, null, true, null, Collections.emptyMap(),Set.of(3));
+  public final static TestData KEEP = new TestData("keep", null, null, null, true, null, Collections.emptyMap(),Set.of(3), null);
   /**
    * Inits the datasets table with real col data from colplus-repo
    * The dataset.csv file was generated as a dump from production with psql:
    *
    * \copy (SELECT key,type,gbif_key,gbif_publisher_key,license,issued,confidence,completeness,origin,title,alias,description,version,geographic_scope,taxonomic_scope,url,logo,notes,settings,source_key,contact,creator,editor,publisher,contributor FROM dataset WHERE not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
    */
-  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, null, Collections.emptyMap(), Set.of());
+  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, null, Collections.emptyMap(), Set.of(), null);
   public final static TestData APPLE = new TestData("apple", 11, 2, 2, Set.of(3, 11, 12));
   public final static TestData FISH = new TestData("fish", 100, 2, 4, Set.of(3, 100, 101, 102));
   public final static TestData TREE = new TestData("tree", 11, 1, 2, Set.of(3, 11, 12));
@@ -102,20 +105,25 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     final Function<String[], String> authorshipNormalizer;
     final Map<String, Map<String, Object>> defaultValues;
     private final boolean none;
+    public final Map<Pair<DataFormat, Integer>, Integer> keyMap;
 
     public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Set<Integer> datasetKeys) {
       this(name, key, sciNameColumn, taxStatusColumn, Collections.emptyMap(), datasetKeys);
     }
 
+    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Set<Integer> datasetKeys, Map<Pair<DataFormat, Integer>, Integer> keyMap) {
+      this(name, key, sciNameColumn, taxStatusColumn, false, null, Collections.emptyMap(), datasetKeys, keyMap);
+    }
+
     public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Function<String[], String> authorshipNormalizer, Set<Integer> datasetKeys) {
-      this(name, key, sciNameColumn, taxStatusColumn, false, authorshipNormalizer, Collections.emptyMap(), datasetKeys);
+      this(name, key, sciNameColumn, taxStatusColumn, false, authorshipNormalizer, Collections.emptyMap(), datasetKeys, null);
     }
 
     public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys) {
-      this(name, key, sciNameColumn, taxStatusColumn, false, null, defaultValues, datasetKeys);
+      this(name, key, sciNameColumn, taxStatusColumn, false, null, defaultValues, datasetKeys, null);
     }
 
-    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, Function<String[], String> authorshipNormalizer, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys) {
+    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, Function<String[], String> authorshipNormalizer, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys, Map<Pair<DataFormat, Integer>, Integer> keyMap) {
       this.name = name;
       this.key = key;
       this.sciNameColumn = sciNameColumn;
@@ -132,6 +140,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       } else {
         this.datasetKeys = ImmutableSet.copyOf(datasetKeys);
       }
+      this.keyMap=keyMap == null ? null : Map.copyOf(keyMap);
     }
 
     private static Set<Integer> readDatasetKeys(String testDataName) {
@@ -236,6 +245,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public DatasetDao.KeyGenerator getKeyGenerator() {
     return keyGenerator;
+  }
+
+  public int mapKey(DataFormat format, int sourceKey) {
+    return testData.keyMap.get(Pair.of(format, sourceKey));
   }
 
   @Override

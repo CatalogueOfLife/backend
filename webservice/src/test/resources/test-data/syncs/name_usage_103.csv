@@ -1,7 +1,5 @@
-id,name_id,parent_id,status,name_phrase,according_to_id,reference_ids,extinct,environments,link
-f,f,,ACCEPTED,,,{},f,{},
-g,g,f,ACCEPTED,,,{},f,{},
-4,4,g,ACCEPTED,,,{},f,{},
-3,3,g,ACCEPTED,,,{},f,{},
-2,2,g,ACCEPTED,,,{},f,{},
-1,1,g,ACCEPTED,,,{},f,{},
+id,sector_key,name_id,parent_id,status,name_phrase,according_to_id,reference_ids,extinct,environments,link
+10,,10,,ACCEPTED,,,{},f,{},
+13,,13,10,ACCEPTED,,,{},f,{},
+11,,11,10,ACCEPTED,,,{},f,{},
+12,,12,11,SYNONYM,,,{},,{},

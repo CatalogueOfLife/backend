@@ -269,23 +269,11 @@ public class SectorSyncIT {
    */
   @Test
   public void culex() throws Exception {
+    final int srcKey = dataRule.mapKey(DataFormat.COLDP, 14);
     print(Datasets.COL);
-    print(112);
+    print(srcKey);
 
-    NameUsageBase src = getByName(112, Rank.ORDER, "Diptera");
-    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
-    createSector(Sector.Mode.ATTACH, src, trg);
-
-    syncAll();
-    assertTree("cat14b.txt");
-  }
-
-  @Test
-  public void culexTarget() throws Exception {
-    print(Datasets.COL);
-    print(112);
-
-    NameUsageBase src = getByName(112, Rank.ORDER, "Diptera");
+    NameUsageBase src = getByName(srcKey, Rank.ORDER, "Diptera");
     NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, src, trg);
 
@@ -298,10 +286,11 @@ public class SectorSyncIT {
    */
   @Test
   public void wcvpInfraspecies() throws Exception {
+    final int srcKey = dataRule.mapKey(DataFormat.COLDP, 22);
     print(Datasets.COL);
-    print(103);
+    print(srcKey);
 
-    NameUsageBase src = getByName(103, Rank.FAMILY, "Acoraceae");
+    NameUsageBase src = getByName(srcKey, Rank.FAMILY, "Acoraceae");
     NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, src, trg);
 
@@ -311,20 +300,23 @@ public class SectorSyncIT {
 
   @Test
   public void test1_5_6() throws Exception {
+    final int srcKey1 = dataRule.mapKey(DataFormat.ACEF, 1);
+    final int srcKey2 = dataRule.mapKey(DataFormat.ACEF, 5);
+    final int srcKey3 = dataRule.mapKey(DataFormat.ACEF, 6);
     print(Datasets.COL);
-    print(101);
-    print(107);
-    print(108);
+    print(srcKey1);
+    print(srcKey2);
+    print(srcKey3);
   
-    NameUsageBase src = getByName(101, Rank.ORDER, "Fabales");
+    NameUsageBase src = getByName(srcKey1, Rank.ORDER, "Fabales");
     NameUsageBase trg = getByName(Datasets.COL, Rank.PHYLUM, "Tracheophyta");
     DSID<Integer> s1 = DSID.copy(createSector(Sector.Mode.ATTACH, src, trg));
   
-    src = getByName(107, Rank.CLASS, "Insecta");
+    src = getByName(srcKey2, Rank.CLASS, "Insecta");
     trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.UNION, src, trg);
   
-    src = getByName(108, Rank.FAMILY, "Theridiidae");
+    src = getByName(srcKey3, Rank.FAMILY, "Theridiidae");
     trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, src, trg);
 
@@ -347,8 +339,7 @@ public class SectorSyncIT {
     assertEquals("Greuter,W. et al. (1989). Med-Checklist Vol.4 (Published).", r.getCitation());
     assertEquals(2, ti.getReferences().size());
 
-    final int s1dk = 101;
-    Taxon t = getDraftTaxonBySourceID(s1dk, "13287");
+    Taxon t = getDraftTaxonBySourceID(srcKey1, "13287");
     assertEquals(Datasets.COL, (int) t.getDatasetKey());
     // 19 vernaculars, 5 distinct refs
     ti = tdao.getTaxonInfo(t);
@@ -373,10 +364,10 @@ public class SectorSyncIT {
    */
   @Test
   public void testDecisions() throws Exception {
+    final int d4key = dataRule.mapKey(DataFormat.COLDP, 4);
     print(Datasets.COL);
-    print(111);
-    final int d4key = 111;
-  
+    print(d4key);
+
     NameUsageBase coleoptera = getByName(d4key, Rank.ORDER, "Coleoptera");
     NameUsageBase insecta = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, coleoptera, insecta);
@@ -404,15 +395,17 @@ public class SectorSyncIT {
    */
   @Test
   public void test6_11() throws Exception {
+    final int d1key = dataRule.mapKey(DataFormat.ACEF, 6);
+    final int d2key = dataRule.mapKey(DataFormat.ACEF, 11);
     print(Datasets.COL);
-    print(108);
-    print(109);
+    print(d1key);
+    print(d2key);
     
-    NameUsageBase src = getByName(108, Rank.FAMILY, "Theridiidae");
+    NameUsageBase src = getByName(d1key, Rank.FAMILY, "Theridiidae");
     NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     final DSID<Integer> s1 = createSector(Sector.Mode.ATTACH, src, trg);
     
-    src = getByName(109, Rank.GENUS, "Dectus");
+    src = getByName(d2key, Rank.GENUS, "Dectus");
     // target without id so far
     final DSID<Integer> s2 = DSID.copy(createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
       SimpleNameLink.of("Theridiidae", Rank.FAMILY)
@@ -449,20 +442,23 @@ public class SectorSyncIT {
    */
   @Test
   public void testDeletionFull() throws Exception {
+    final int d1key = dataRule.mapKey(DataFormat.ACEF, 5);
+    final int d2key = dataRule.mapKey(DataFormat.ACEF, 6);
+    final int d3key = dataRule.mapKey(DataFormat.ACEF, 11);
     print(Datasets.COL);
-    print(107);
-    print(108);
-    print(109);
+    print(d1key);
+    print(d2key);
+    print(d3key);
   
-    NameUsageBase src = getByName(107, Rank.CLASS, "Insecta");
+    NameUsageBase src = getByName(d1key, Rank.CLASS, "Insecta");
     NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     final DSID<Integer> s5 = createSector(Sector.Mode.UNION, src, trg);
 
-    src = getByName(108, Rank.FAMILY, "Theridiidae");
+    src = getByName(d2key, Rank.FAMILY, "Theridiidae");
     trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     final DSID<Integer> s6 = createSector(Sector.Mode.ATTACH, src, trg);
     
-    src = getByName(109, Rank.GENUS, "Dectus");
+    src = getByName(d3key, Rank.GENUS, "Dectus");
     // target without id so far
     final DSID<Integer> s11 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
       SimpleNameLink.of("Theridiidae", Rank.FAMILY)
@@ -497,20 +493,23 @@ public class SectorSyncIT {
    */
   @Test
   public void testDeletion() throws Exception {
+    final int d1key = dataRule.mapKey(DataFormat.ACEF, 5);
+    final int d2key = dataRule.mapKey(DataFormat.ACEF, 6);
+    final int d3key = dataRule.mapKey(DataFormat.ACEF, 11);
     print(Datasets.COL);
-    print(107);
-    print(108);
-    print(109);
+    print(d1key);
+    print(d2key);
+    print(d3key);
 
-    NameUsageBase src = getByName(107, Rank.CLASS, "Insecta");
+    NameUsageBase src = getByName(d1key, Rank.CLASS, "Insecta");
     NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     final DSID<Integer> s5 = createSector(Sector.Mode.UNION, src, trg);
 
-    src = getByName(108, Rank.FAMILY, "Theridiidae");
+    src = getByName(d2key, Rank.FAMILY, "Theridiidae");
     trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     final DSID<Integer> s6 = createSector(Sector.Mode.ATTACH, src, trg);
 
-    src = getByName(109, Rank.GENUS, "Dectus");
+    src = getByName(d3key, Rank.GENUS, "Dectus");
     // target without id so far
     final DSID<Integer> s11 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
       SimpleNameLink.of("Theridiidae", Rank.FAMILY)
@@ -542,15 +541,17 @@ public class SectorSyncIT {
 
   @Test
   public void testImplicitGenus() throws Exception {
+    final int d1key = dataRule.mapKey(DataFormat.COLDP, 0);
+    final int d2key = dataRule.mapKey(DataFormat.COLDP, 2);
     print(Datasets.COL);
-    print(102);
-    print(110);
+    print(d1key);
+    print(d2key);
     
-    NameUsageBase asteraceae   = getByName(102, Rank.FAMILY, "Asteraceae");
+    NameUsageBase asteraceae   = getByName(d1key, Rank.FAMILY, "Asteraceae");
     NameUsageBase tracheophyta = getByName(Datasets.COL, Rank.PHYLUM, "Tracheophyta");
     createSector(Sector.Mode.ATTACH, asteraceae, tracheophyta);
   
-    NameUsageBase coleoptera = getByName(110, Rank.ORDER, "Coleoptera");
+    NameUsageBase coleoptera = getByName(d2key, Rank.ORDER, "Coleoptera");
     NameUsageBase insecta = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, coleoptera, insecta);
     
@@ -560,10 +561,11 @@ public class SectorSyncIT {
   
   @Test
   public void testKingdomSectorAndTypeMaterial() throws Exception {
+    final int d1key = dataRule.mapKey(DataFormat.COLDP, 0);
     print(Datasets.COL);
-    print(102);
+    print(d1key);
     
-    NameUsageBase src = getByName(102, Rank.KINGDOM, "Plantae");
+    NameUsageBase src = getByName(d1key, Rank.KINGDOM, "Plantae");
     NameUsageBase plant = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
     createSector(Sector.Mode.UNION, src, plant);
   
@@ -596,9 +598,10 @@ public class SectorSyncIT {
    */
   @Test
   public void testVirus() throws Exception {
-    print(116);
+    final int d1key = dataRule.mapKey(DataFormat.ACEF, 14);
+    print(d1key);
     
-    NameUsageBase src = getByName(116, Rank.KINGDOM, "Viruses");
+    NameUsageBase src = getByName(d1key, Rank.KINGDOM, "Viruses");
     NameUsageBase trg = getByName(Datasets.COL, Rank.KINGDOM, "Viruses");
     createSector(Sector.Mode.UNION, src, trg);
     
@@ -612,9 +615,10 @@ public class SectorSyncIT {
    */
   @Test
   public void testDipteraUncertainGenus() throws Exception {
-    print(113);
+    final int d1key = dataRule.mapKey(DataFormat.COLDP, 24);
+    print(d1key);
 
-    NameUsageBase diptera = getByName(113, Rank.ORDER, "Diptera");
+    NameUsageBase diptera = getByName(d1key, Rank.ORDER, "Diptera");
     NameUsageBase insecta = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, diptera, insecta);
 
@@ -626,23 +630,26 @@ public class SectorSyncIT {
   @Test
   @Ignore("Work in progress")
   public void testMerge() throws Exception {
+    final int d1key = dataRule.mapKey(DataFormat.COLDP, 0);
+    final int d2key = dataRule.mapKey(DataFormat.DWCA, 1);
+    final int d3key = dataRule.mapKey(DataFormat.DWCA, 2);
+    final int d4key = dataRule.mapKey(DataFormat.COLDP, 25);
     print("cat0.txt");
-    //print(datasetKey(0, DataFormat.COLDP));
 
-    NameUsageBase src = getByName(102, Rank.KINGDOM, "Plantae");
+    NameUsageBase src = getByName(d1key, Rank.KINGDOM, "Plantae");
     final NameUsageBase plant = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
     createSector(Sector.Mode.UNION, src, plant);
 
     syncAll();
 
-    src = getByName(105, Rank.KINGDOM, "Plantae");
+    src = getByName(d2key, Rank.KINGDOM, "Plantae");
     createSector(Sector.Mode.MERGE, src, plant);
 
-    src = getByName(106, Rank.PHYLUM, "Basidiomycota");
+    src = getByName(d3key, Rank.PHYLUM, "Basidiomycota");
     final NameUsageBase basi = getByName(Datasets.COL, Rank.PHYLUM, "Basidiomycota");
     createSector(Sector.Mode.MERGE, src, basi);
 
-    src = getByName(104, Rank.FAMILY, "Asteraceae");
+    src = getByName(d4key, Rank.FAMILY, "Asteraceae");
     final NameUsageBase asteraceae = getByName(Datasets.COL, Rank.FAMILY, "Asteraceae");
     createSector(Sector.Mode.MERGE, src, asteraceae);
 
@@ -654,9 +661,9 @@ public class SectorSyncIT {
 
   @Test
   public void mergeCarettas() throws Exception {
-    final int srcDatasetKey = 114;
+    final int srcDatasetKey = dataRule.mapKey(DataFormat.COLDP, 26);
     final NameUsageBase animalia = getByName(Datasets.COL, Rank.KINGDOM, "Animalia");
-    var src = getByName(114, Rank.FAMILY, "Cheloniidae");
+    var src = getByName(srcDatasetKey, Rank.FAMILY, "Cheloniidae");
     createSector(Sector.Mode.ATTACH, src, animalia);
 
     syncAll();
@@ -689,13 +696,27 @@ public class SectorSyncIT {
     }
   }
 
+  /**
+   * Skip synonyms with a bad accepted name in merge syncs
+   */
+  @Test
+  public void mergeBadSynonym() throws Exception {
+    final int srcDatasetKey = dataRule.mapKey(DataFormat.DWCA, 45);
+    final NameUsageBase animalia = getByName(Datasets.COL, Rank.KINGDOM, "Animalia");
+    createSector(Sector.Mode.MERGE, srcDatasetKey, null, animalia);
+
+    syncAll();
+    print(Datasets.COL);
+
+    // synonym with a bad accepted name should be skipped
+    var reticulatus = getByName(Datasets.COL, Rank.SPECIES, "Tenebrio reticulatus");
+    assertNull(reticulatus);
+  }
 
   @Test
   public void mergeOutsideTarget() throws Exception {
-    final int srcDatasetKey = 115;
+    final int srcDatasetKey = dataRule.mapKey(DataFormat.COLDP, 27);
     final NameUsageBase animalia = getByName(Datasets.COL, Rank.KINGDOM, "Animalia");
-    final NameUsageBase plants = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
-
     createSector(Sector.Mode.MERGE, srcDatasetKey, null, animalia);
 
     syncAll();

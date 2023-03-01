@@ -1109,6 +1109,8 @@ CREATE TABLE decision (
 );
 
 CREATE INDEX ON decision (dataset_key);
+CREATE INDEX ON decision (subject_dataset_key);
+CREATE INDEX ON decision (subject_dataset_key, subject_id);
 
 CREATE TABLE estimate (
   id INTEGER NOT NULL,

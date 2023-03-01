@@ -1,29 +1,7 @@
-id,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
-2,Viridae,,KINGDOM,BOTANICAL,,SCIENTIFIC,f,,Viridae,,,,,,{},{},,{},{},,,,,,,,,
-1011,Gundelia tournefortii,L.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Gundelia,,tournefortii,,,{},{},,{L.},{},,,,,,,,,
-1001,Crepis bakeri,Greene,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,bakeri,,,{},{},,{Greene},{},,,greene1895,73,,,,,https://beta.ipni.org/n/69325-2
-100,Platycarpha,,GENUS,BOTANICAL,,SCIENTIFIC,f,,Platycarpha,,,,,,{},{},,{},{},,,,,,,,,
-hybrid,Quercus robur x Q. macrocarpa,,SPECIES,BOTANICAL,ACCEPTABLE,HYBRID_FORMULA,f,,,,,,,,{},{},,{},{},,,,,,,,commercial seeds,http://www.heritageseedlings.com/page_608_40/quercus-heritage-q.-robur-x-q.-macrocarpa-clemons
-20,Cichorioideae,,SUBFAMILY,BOTANICAL,,SCIENTIFIC,f,,Cichorioideae,,,,,,{},{},,{},{},,,,,,,,,
-1006,Leontodon taraxacoides,(Vill.) Mérat,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,taraxacoides,,,{Vill.},{},,{Mérat},{},,,,,,,,,
-1006-s2,Leontodon saxatilis,,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,saxatilis,,,{},{},,{},{},,,,,,,,,
-10,Asteraceae,,FAMILY,BOTANICAL,,SCIENTIFIC,f,,Asteraceae,,,,,,{},{},,{},{},,,,,,,,,
-1001c,Crepis bakeri subsp. idahoensis,Babc. & Stebbins,SUBSPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,bakeri,idahoensis,,{},{},,"{Babc.,Stebbins}",{},,,,,,,,,
-102,Leontodon,,GENUS,BOTANICAL,,SCIENTIFIC,f,,Leontodon,,,,,,{},{},,{},{},,,,,,,,,
-110,Gundelia,L.,GENUS,BOTANICAL,,SCIENTIFIC,f,,Gundelia,,,,,,{},{},,{L.},{},,,,,,,,,
-1001b,Crepis bakeri subsp. cusickii,(Eastw.) Babc. & Stebbins,SUBSPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,bakeri,cusickii,,{Eastw.},{},,"{Babc.,Stebbins}",{},,,,,,,,,
-1006-s3,Leonida taraxacoida,Vill.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leonida,,taraxacoida,,,{},{},,{Vill.},{},,,,,,,,,
-1005,Leontodon anomalus,,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,anomalus,,,{},{},,{},{},,,,,,,,,
-30,Cichorieae,,TRIBE,BOTANICAL,,SCIENTIFIC,f,,Cichorieae,,,,,,{},{},,{},{},,,,,,,,,
-cult,Clematis 'Sapphire Indigo',,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Clematis,,,,Sapphire Indigo,{},{},,{},{},,,,,,,,,http://plants.thegrowingplace.com/12120014/Plant/6164/Sapphire_Indigo_Clematis/
-virus,Acanthocystis turfacea chlorella virus 1,,UNRANKED,VIRUS,,VIRUS,f,,,,,,,,{},{},,{},{},,,,,,,,,
-31,Gundelieae,,TRIBE,BOTANICAL,,SCIENTIFIC,f,,Gundelieae,,,,,,{},{},,{},{},,,,,,,,,
-1002,Crepis occidentalis,Nutt.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,occidentalis,,,{},{},,{Nutt.},{},,,,,,,,,
-1010,Gundelia rosea,L.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Gundelia,,rosea,,,{},{},,{L.},{},,,,,,,,,
-1,Plantae,,KINGDOM,BOTANICAL,,SCIENTIFIC,f,,Plantae,,,,,,{},{},,{},{},,,,,,,,,
-1001a,Crepis bakeri subsp. bakeri,,SUBSPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,bakeri,bakeri,,{},{},,{},{},,,,,,,,,
-1000,Platycarpha glomerata,(Thunberg) A. P. de Candolle,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Platycarpha,,glomerata,,,{Thunberg},{},,"{""A.P.de Candolle""}",{},,,,,,,,,
-101,Crepis,L.,GENUS,BOTANICAL,,SCIENTIFIC,f,,Crepis,,,,,,{},{},,{L.},{},,,,,,,,,
-fake,Paulownia × tomentosa f. pasta,(Carl & Ruth) Frankenstein ex Semmelrogge,FORM,BOTANICAL,CONSERVED,SCIENTIFIC,f,SPECIFIC,,Paulownia,,tomentosa,pasta,,"{Carl,Ruth}",{},,{Semmelrogge},{Frankenstein},,,frank,87,,,,Unclear name origin,https://herbaria.plants.ox.ac.uk/bol/plants400/profiles/OP/Paulownia
-11,Compositae,,FAMILY,BOTANICAL,,SCIENTIFIC,f,,Compositae,,,,,,{},{},,{},{},,,,,,,,,
-1006-s1,Leontodon leysseri,,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,leysseri,,,{},{},,{},{},,,,,,,,,
+id,sector_key,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
+1,,Acorus calamus,L.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Acorus,,calamus,,,{},{},,{L.},{},,,,,,,,,
+g,,Acorus,L.,GENUS,BOTANICAL,,SCIENTIFIC,f,,Acorus,,,,,,{},{},,{L.},{},,,,,,,,,
+4,,Acorus calamus var. angustatus,Besser,VARIETY,BOTANICAL,,SCIENTIFIC,f,,,Acorus,,calamus,angustatus,,{},{},,{Besser},{},,,,,,,,,
+2,,Acorus gramineus,Aiton,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Acorus,,gramineus,,,{},{},,{Aiton},{},,,,,,,,,
+f,,Acoraceae,,FAMILY,BOTANICAL,,SCIENTIFIC,f,,Acoraceae,,,,,,{},{},,{},{},,,,,,,,,
+3,,Acorus calamus var. americanus,Raf.,VARIETY,BOTANICAL,,SCIENTIFIC,f,,,Acorus,,calamus,americanus,,{},{},,{Raf.},{},,,,,,,,,

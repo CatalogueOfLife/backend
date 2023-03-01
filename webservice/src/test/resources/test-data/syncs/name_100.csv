@@ -1,0 +1,29 @@
+id,sector_key,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
+virus,,Acanthocystis turfacea chlorella virus 1,,UNRANKED,VIRUS,,VIRUS,f,,,,,,,,{},{},,{},{},,,,,,,,,
+10,,Asteraceae,,FAMILY,BOTANICAL,,SCIENTIFIC,f,,Asteraceae,,,,,,{},{},,{},{},,,,,,,,,
+30,,Cichorieae,,TRIBE,BOTANICAL,,SCIENTIFIC,f,,Cichorieae,,,,,,{},{},,{},{},,,,,,,,,
+20,,Cichorioideae,,SUBFAMILY,BOTANICAL,,SCIENTIFIC,f,,Cichorioideae,,,,,,{},{},,{},{},,,,,,,,,
+cult,,Clematis 'Sapphire Indigo',,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Clematis,,,,Sapphire Indigo,{},{},,{},{},,,,,,,,,http://plants.thegrowingplace.com/12120014/Plant/6164/Sapphire_Indigo_Clematis/
+11,,Compositae,,FAMILY,BOTANICAL,,SCIENTIFIC,f,,Compositae,,,,,,{},{},,{},{},,,,,,,,,
+101,,Crepis,L.,GENUS,BOTANICAL,,SCIENTIFIC,f,,Crepis,,,,,,{},{},,{L.},{},,,,,,,,,
+1001,,Crepis bakeri,Greene,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,bakeri,,,{},{},,{Greene},{},,,greene1895,73,,,,,https://beta.ipni.org/n/69325-2
+1001a,,Crepis bakeri subsp. bakeri,,SUBSPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,bakeri,bakeri,,{},{},,{},{},,,,,,,,,
+1001b,,Crepis bakeri subsp. cusickii,(Eastw.) Babc. & Stebbins,SUBSPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,bakeri,cusickii,,{Eastw.},{},,"{Babc.,Stebbins}",{},,,,,,,,,
+1001c,,Crepis bakeri subsp. idahoensis,Babc. & Stebbins,SUBSPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,bakeri,idahoensis,,{},{},,"{Babc.,Stebbins}",{},,,,,,,,,
+1002,,Crepis occidentalis,Nutt.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,occidentalis,,,{},{},,{Nutt.},{},,,,,,,,,
+110,,Gundelia,L.,GENUS,BOTANICAL,,SCIENTIFIC,f,,Gundelia,,,,,,{},{},,{L.},{},,,,,,,,,
+1010,,Gundelia rosea,L.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Gundelia,,rosea,,,{},{},,{L.},{},,,,,,,,,
+1011,,Gundelia tournefortii,L.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Gundelia,,tournefortii,,,{},{},,{L.},{},,,,,,,,,
+31,,Gundelieae,,TRIBE,BOTANICAL,,SCIENTIFIC,f,,Gundelieae,,,,,,{},{},,{},{},,,,,,,,,
+1006-s3,,Leonida taraxacoida,Vill.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leonida,,taraxacoida,,,{},{},,{Vill.},{},,,,,,,,,
+102,,Leontodon,,GENUS,BOTANICAL,,SCIENTIFIC,f,,Leontodon,,,,,,{},{},,{},{},,,,,,,,,
+1005,,Leontodon anomalus,,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,anomalus,,,{},{},,{},{},,,,,,,,,
+1006-s1,,Leontodon leysseri,,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,leysseri,,,{},{},,{},{},,,,,,,,,
+1006-s2,,Leontodon saxatilis,,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,saxatilis,,,{},{},,{},{},,,,,,,,,
+1006,,Leontodon taraxacoides,(Vill.) Mérat,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,taraxacoides,,,{Vill.},{},,{Mérat},{},,,,,,,,,
+fake,,Paulownia × tomentosa f. pasta,(Carl & Ruth) Frankenstein ex Semmelrogge,FORM,BOTANICAL,CONSERVED,SCIENTIFIC,f,SPECIFIC,,Paulownia,,tomentosa,pasta,,"{Carl,Ruth}",{},,{Semmelrogge},{Frankenstein},,,frank,87,,,,Unclear name origin,https://herbaria.plants.ox.ac.uk/bol/plants400/profiles/OP/Paulownia
+1,,Plantae,,KINGDOM,BOTANICAL,,SCIENTIFIC,f,,Plantae,,,,,,{},{},,{},{},,,,,,,,,
+100,,Platycarpha,,GENUS,BOTANICAL,,SCIENTIFIC,f,,Platycarpha,,,,,,{},{},,{},{},,,,,,,,,
+1000,,Platycarpha glomerata,(Thunberg) A. P. de Candolle,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Platycarpha,,glomerata,,,{Thunberg},{},,"{""A.P.de Candolle""}",{},,,,,,,,,
+hybrid,,Quercus robur x Q. macrocarpa,,SPECIES,BOTANICAL,ACCEPTABLE,HYBRID_FORMULA,f,,,,,,,,{},{},,{},{},,,,,,,,commercial seeds; LEGITIMATE,http://www.heritageseedlings.com/page_608_40/quercus-heritage-q.-robur-x-q.-macrocarpa-clemons
+2,,Viridae,,KINGDOM,BOTANICAL,,SCIENTIFIC,f,,Viridae,,,,,,{},{},,{},{},,,,,,,,,
