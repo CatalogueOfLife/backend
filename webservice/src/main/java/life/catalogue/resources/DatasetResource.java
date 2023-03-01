@@ -73,6 +73,12 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
+  @Path("keys")
+  public List<Integer> listAllKeys(@BeanParam DatasetSearchRequest req) {
+    return dao.searchKeys(req);
+  }
+
+  @GET
   @Path("{key}")
   @Override
   @VaryAccept
