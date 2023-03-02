@@ -155,34 +155,4 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
       Assert.assertEquals(24, counter.get());
     }
   }
-
-  @Test
-  public void processDev() throws Exception {
-    final int datasetKey = 1049;
-
-    // build temporary table collecting issues from all usage related tables
-    // we do this in a separate step to not overload postgres with gigantic joins later on
-    mapper(VerbatimRecordMapper.class).createTmpIssuesTable(datasetKey, null);
-
-    final Set<String> ids = new HashSet<>();
-    AtomicInteger synCounter = new AtomicInteger(0);
-    try (var c = mapper().processWithoutClassification(datasetKey, null)) {
-      c.forEach(obj -> {
-        System.out.println(obj);
-        counter.incrementAndGet();
-        if (obj.getUsage().isSynonym()) {
-          synCounter.incrementAndGet();
-        }
-        assertFalse(ids.contains(obj.getId()));
-        ids.add(obj.getId());
-        switch (obj.getId()) {
-          case "120083805":
-          case "120082457":
-            System.out.println("WATCH OUT FOR DUPE!");
-            break;
-        }
-      });
-      System.out.println("Finished. Total="+counter.get() + ", synonyms="+synCounter.get());
-    }
-  }
 }
