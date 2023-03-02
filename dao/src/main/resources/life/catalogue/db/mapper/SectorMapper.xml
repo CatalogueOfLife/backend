@@ -31,6 +31,8 @@
     s.placeholder_rank,
     s.ranks,
     s.entities,
+    s.name_types,
+    s.name_status_exclusion,
     s.note,
     s.modified,
     s.modified_by,
@@ -66,6 +68,8 @@
     placeholder_rank,
     ranks,
     entities,
+    name_types,
+    name_status_exclusion,
     note,
     modified,
     modified_by
@@ -92,6 +96,8 @@
     #{placeholderRank}::RANK,
     #{ranks, typeHandler=life.catalogue.db.type2.RankSetTypeHandler},
     #{entities, typeHandler=life.catalogue.db.type2.EntitySetTypeHandler},
+    #{nameTypes, typeHandler=life.catalogue.db.type2.NameTypeSetTypeHandler},
+    #{nameStatusExclusion, typeHandler=life.catalogue.db.type2.NomStatusSetTypeHandler},
     #{note},
     now(),
     #{modifiedBy}
@@ -152,6 +158,8 @@
     <id property="id" column="id"/>
     <result property="ranks" column="ranks" typeHandler="life.catalogue.db.type2.RankSetTypeHandler"/>
     <result property="entities" column="entities" typeHandler="life.catalogue.db.type2.EntitySetTypeHandler"/>
+    <result property="nameTypes" column="name_types" typeHandler="life.catalogue.db.type2.NameTypeSetTypeHandler"/>
+    <result property="nameStatusExclusion" column="name_status_exclusion" typeHandler="life.catalogue.db.type2.NomStatusSetTypeHandler"/>
     <association property="subject" javaType="SimpleNameLink" autoMapping="true" columnPrefix="subject_"/>
     <association property="target" javaType="SimpleNameLink" autoMapping="true" columnPrefix="target_"/>
   </resultMap>

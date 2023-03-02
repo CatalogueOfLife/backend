@@ -93,7 +93,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     if (ignoreUsage(nu, decisions.get(nu.getId()), match)) {
       // skip this taxon, but include children
-      LOG.debug("Ignore {} {} [{}] type={}; status={}", nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), nu.getName().getType(), nu.getName().getNomStatus());
       return;
     }
 

@@ -272,45 +272,38 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, UsageMatch match) {
     if (decision != null && decision.getMode() == EditorialDecision.Mode.IGNORE) {
+      LOG.info("Ignore {} {} [{}] because editorial ignore decision", u.getName().getRank(), u.getName().getLabel(), u.getId());
       return true;
     }
     if (match.ignore) {
+      LOG.info("Ignore {} {} [{}] because match ignore result", u.getName().getRank(), u.getName().getLabel(), u.getId());
       return true;
     }
 
     Name n = u.getName();
-    //TODO: make this configurable, allow in merge handler
     if (u.isTaxon()) {
       // apply rank filter only for accepted names, always allow any synonyms
       if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
-        incIgnored(IgnoreReason.RANK);
-        return true;
+        return incIgnored(IgnoreReason.RANK, u);
       }
     } else if (ignoredTaxa.contains(u.getParentId())) {
       // we ignore synonyms for taxa which have been skipped
       // https://github.com/CatalogueOfLife/backend/issues/1150
-      incIgnored(IgnoreReason.IGNORED_PARENT);
-      return true;
+      return incIgnored(IgnoreReason.IGNORED_PARENT, u);
     }
-    switch (n.getType()) {
-      case PLACEHOLDER:
-      case NO_NAME:
-      case HYBRID_FORMULA:
-      case INFORMAL:
-        incIgnored(IgnoreReason.reasonByNameType(n.getType()));
-        return true;
+
+    // apply name type filter if exists
+    if (sector.getNameTypes() != null && !sector.getNameTypes().isEmpty() && !sector.getNameTypes().contains(n.getType())) {
+      return incIgnored(IgnoreReason.reasonByNameType(n.getType()), u);
     }
-    if (n.getNomStatus() != null && n.getNomStatus() == NomStatus.CHRESONYM) {
-      incIgnored(IgnoreReason.CHRESONYM);
-      return true;
+    if (n.getNomStatus() != null && sector.getNameStatusExclusion() != null && sector.getNameStatusExclusion().contains(n.getNomStatus())) {
+      return incIgnored(IgnoreReason.NOMENCLATURAL_STATUS, u);
     }
     if (n.getCultivarEpithet() != null || n.getCode() == NomCode.CULTIVARS || n.getRank().isCultivarRank()) {
-      incIgnored(IgnoreReason.INCONSISTENT_NAME);
-      return true;
+      return incIgnored(IgnoreReason.INCONSISTENT_NAME, u);
     }
     if (n.getType().isParsable() && n.isIndetermined()) {
-      incIgnored(IgnoreReason.INDETERMINED);
-      return true;
+      return incIgnored(IgnoreReason.INDETERMINED, u);
     }
     return false;
   }
@@ -415,8 +408,17 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
   }
 
-  protected void incIgnored(IgnoreReason reason) {
+  protected boolean incIgnored(IgnoreReason reason, NameUsageBase u) {
+    Object value = null;
+    if (reason.getValueExtractor() != null) {
+      value = reason.getValueExtractor().apply(u);
+    }
+    LOG.info("Ignore {} {} [{}] because {}{}", u.getName().getRank(), u.getName().getLabel(), u.getId(), reason, value == null ? "" : ": " + value);
     ignoredCounter.compute(reason, (k, v) -> v == null ? 1 : v+1);
+    if (u.isTaxon()) {
+      ignoredTaxa.add(u.getId());
+    }
+    return true;
   }
 
   protected String lookupReference(String refID) {

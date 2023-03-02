@@ -1,5 +1,6 @@
 package life.catalogue.api.vocab;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -143,6 +144,16 @@ public enum Setting {
   SECTOR_RANKS(Rank.class, true, PROJECT),
 
   /**
+   * Project defaults to be used for the sector.nameTypes property
+   */
+  SECTOR_NAME_TYPES(NameType.class, true, PROJECT),
+
+  /**
+   * Project defaults to be used for the sector.nameStatusExclusion property
+   */
+  SECTOR_NAME_STATUS_EXCLUSION(NomStatus.class, true, PROJECT),
+
+  /**
    * If set to true the dataset metadata is locked and the gbif registry sync will not be applied to the dataset.
    */
   GBIF_SYNC_LOCK(Boolean.class, false, EXTERNAL),
@@ -182,16 +193,7 @@ public enum Setting {
   }
 
   /**
-<<<<<<< HEAD
-   * Use String, Character, Integer, Boolean, LocalDate, URI or a custom col enumeration class
-||||||| d66ea45f2
-   * Use String, Integer, Boolean, LocalDate, URI or a custom col enumeration class
-=======
-   * Use String, Integer, Boolean, LocalDate, URI, UUID or a custom col enumeration class
->>>>>>> xcol
-   *
-   * @param type
-   * @param origin
+   * Use String, Character, Integer, Boolean, LocalDate, UUID, URI or a custom col enumeration class
    */
   Setting(Class type, boolean multiple, DatasetOrigin... origin) {
     this.multiple = multiple;

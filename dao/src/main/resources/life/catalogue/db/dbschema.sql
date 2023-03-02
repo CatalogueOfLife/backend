@@ -1023,6 +1023,8 @@ CREATE TABLE sector (
   placeholder_rank RANK,
   ranks RANK[] DEFAULT '{}',
   entities ENTITYTYPE[] DEFAULT NULL,
+  name_types NAMETYPE[] DEFAULT NULL,
+  name_status_exclusion NOMSTATUS[] DEFAULT NULL,
   note TEXT,
   UNIQUE (dataset_key, subject_dataset_key, subject_id),
   PRIMARY KEY (dataset_key, id)

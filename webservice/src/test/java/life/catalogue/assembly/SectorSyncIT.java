@@ -19,9 +19,11 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -38,24 +40,6 @@ import static org.junit.Assert.*;
  * The test takes some time and prepares various sources for all tests, hence we test deletions here too avoiding duplication of the time consuming overhead.
  *
  * Before we start any test we prepare the db with imports that can be reused across tests later on.
- *
- * DATASET KEY MAP:
- *  ACEF 1 -> 101
- *  ACEF 5 -> 107
- *  ACEF 6 -> 108
- *  ACEF 11 -> 109
- *  ACEF 14 -> 116
- *  COLDP 0 -> 102
- *  COLDP 2 -> 110
- *  COLDP 4 -> 111
- *  COLDP 14 -> 112
- *  COLDP 22 -> 103
- *  COLDP 24 -> 113
- *  COLDP 25 -> 104
- *  COLDP 26 -> 114
- *  COLDP 27 -> 115
- *  DWCA 1 -> 105
- *  DWCA 2 -> 106
  */
 public class SectorSyncIT {
   
@@ -97,6 +81,7 @@ public class SectorSyncIT {
   public static NameUsageBase getByName(int datasetKey, Rank rank, String name) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       List<NameUsageBase> taxa = session.getMapper(NameUsageMapper.class).listByName(datasetKey, name, rank, new Page(0,100));
+      if (taxa.isEmpty()) return null;
       if (taxa.size() > 1) throw new IllegalStateException("Multiple taxa found for name="+name);
       return taxa.get(0);
     }
@@ -130,20 +115,27 @@ public class SectorSyncIT {
   private static SimpleNameLink simple(NameUsageBase nu) {
     return nu == null ? null : nu.toSimpleNameLink();
   }
-  
+
   public static DSID<Integer> createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
     return createSector(mode, src.getDatasetKey(), simple(src), simple(target));
+  }
+
+  public static DSID<Integer> createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target, Consumer<Sector> modifier) {
+    return createSector(mode, null, src.getDatasetKey(), simple(src), simple(target), modifier);
   }
 
   public static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, NameUsageBase src, NameUsageBase target) {
     return createSector(mode, datasetKey, simple(src), simple(target));
   }
-
-  public static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
-    return createSector(mode, null, datasetKey, src, target);
+  public static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, NameUsageBase src, NameUsageBase target, Consumer<Sector> modifier) {
+    return createSector(mode, null, datasetKey, simple(src), simple(target), modifier);
   }
 
-  public static DSID<Integer> createSector(Sector.Mode mode, Integer priority, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
+  public static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
+    return createSector(mode, null, datasetKey, src, target, null);
+  }
+
+  public static DSID<Integer> createSector(Sector.Mode mode, Integer priority, int datasetKey, SimpleNameLink src, SimpleNameLink target, Consumer<Sector> modifier) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
@@ -153,7 +145,11 @@ public class SectorSyncIT {
       sector.setSubject(src);
       sector.setTarget(target);
       sector.setEntities(Set.of(EntityType.values()));
+      sector.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.VIRUS, NameType.HYBRID_FORMULA));
       sector.applyUser(TestDataRule.TEST_USER);
+      if (modifier != null) {
+        modifier.accept(sector);
+      }
       session.getMapper(SectorMapper.class).create(sector);
       return sector;
     }
@@ -181,30 +177,33 @@ public class SectorSyncIT {
     syncAll(s -> s.getMode() == Sector.Mode.MERGE);
   }
 
-  public static void syncAll(@Nullable Predicate<Sector> filter) {
+  public static List<SectorImport> syncAll(@Nullable Predicate<Sector> filter) {
+    List<SectorImport> imports = new ArrayList<>();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
         if (filter == null || filter.test(s)) {
-          sync(s);
+          imports.add(sync(s));
         }
       }
     }
+    return imports;
   }
 
   /**
    * Syncs into the project
    */
-  public static void sync(Sector s) {
+  public static SectorImport sync(Sector s) {
     SectorSync ss = SyncFactoryRule.getFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
-    runSync(ss);
+    return runSync(ss);
   }
 
-  private static void runSync(SectorSync ss) {
+  private static SectorImport runSync(SectorSync ss) {
     System.out.println("\n*** SECTOR " + ss.sector.getMode() + " SYNC " + ss.sectorKey + " ***");
     ss.run();
     if (ss.getState().getState() != ImportState.FINISHED){
       throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
     }
+    return ss.getState();
   }
   private void deleteFull(Sector s) {
     SectorDeleteFull sd = SyncFactoryRule.getFactory().deleteFull(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
@@ -703,13 +702,37 @@ public class SectorSyncIT {
   public void mergeBadSynonym() throws Exception {
     final int srcDatasetKey = dataRule.mapKey(DataFormat.DWCA, 45);
     final NameUsageBase animalia = getByName(Datasets.COL, Rank.KINGDOM, "Animalia");
-    createSector(Sector.Mode.MERGE, srcDatasetKey, null, animalia);
+    final var secID = createSector(Sector.Mode.MERGE, srcDatasetKey, null, animalia, s -> {
+      s.setNameTypes(null);
+    });
+    Sector s = sector(secID);
 
-    syncAll();
+    var stats = sync(s);
     print(Datasets.COL);
 
-    // synonym with a bad accepted name should be skipped
+    // by default we include all names
+    assertFalse(stats.getIgnoredByReasonCount().containsKey(IgnoreReason.NAME_NO_NAME));
+    var parent = getByName(Datasets.COL, Rank.UNRANKED, "3372");
     var reticulatus = getByName(Datasets.COL, Rank.SPECIES, "Tenebrio reticulatus");
+    assertNotNull(parent);
+    assertNotNull(reticulatus);
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var sm = session.getMapper(SectorMapper.class);
+      s = sm.get(secID);
+      s.setNameTypes(Set.of(NameType.SCIENTIFIC)); // only sync proper scientific names
+      sm.update(s);
+    }
+
+    stats = sync(s);
+    print(Datasets.COL);
+
+    // synonym with a bad accepted name should be included if we allow no name types
+    assertTrue(stats.getIgnoredByReasonCount().containsKey(IgnoreReason.IGNORED_PARENT));
+    assertTrue(stats.getIgnoredByReasonCount().containsKey(IgnoreReason.NAME_OTU)); // 3372 gets declared OTU apparently :(
+    parent = getByName(Datasets.COL, Rank.UNRANKED, "3372");
+    reticulatus = getByName(Datasets.COL, Rank.SPECIES, "Tenebrio reticulatus");
+    assertNull(parent);
     assertNull(reticulatus);
   }
 
@@ -723,6 +746,12 @@ public class SectorSyncIT {
     print(Datasets.COL);
 
     // TODO: we have one plant that falls outside the target sector...
+  }
+
+  Sector sector(DSID<Integer> key) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      return session.getMapper(SectorMapper.class).get(key);
+    }
   }
 
   void mergeAndTest(NameUsageBase plant) throws IOException {

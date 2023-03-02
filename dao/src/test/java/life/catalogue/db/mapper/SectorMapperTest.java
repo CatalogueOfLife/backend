@@ -7,12 +7,10 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.*;
 import life.catalogue.db.MybatisTestUtils;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -188,6 +186,8 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     d.setPlaceholderRank(Rank.FAMILY);
     d.setRanks(Set.copyOf(Rank.LINNEAN_RANKS));
     d.setEntities(Set.of(EntityType.NAME, EntityType.NAME_USAGE, EntityType.NAME_RELATION));
+    d.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.OTU));
+    d.setNameStatusExclusion(Set.of(NomStatus.CHRESONYM));
     d.setNote(RandomUtils.randomUnicodeString(1024));
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());

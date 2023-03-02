@@ -2,6 +2,9 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.EntityType;
 
+import life.catalogue.api.vocab.NomStatus;
+
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -28,14 +31,19 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
   private SimpleNameLink subject;
   private String originalSubjectId;
+  private Rank placeholderRank; // optional placeholder rank for the subject, i.e. children of higher ranks than this will be ignored
   private Mode mode = Sector.Mode.ATTACH;
   private Integer priority; // the lower the higher prio. NULL sorts last
   private Integer syncAttempt;
   private Integer datasetAttempt;
+  // defaults to apply to usages during a sync
   private NomCode code;
-  private Rank placeholderRank;
+  // settings what to sync. Inclusive set unless called "exclusion"
   private Set<Rank> ranks;
   private Set<EntityType> entities;
+  private Set<NameType> nameTypes;
+  private Set<NomStatus> nameStatusExclusion;
+  // other
   private String note;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Integer size;
@@ -79,6 +87,8 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.placeholderRank = other.placeholderRank;
     this.ranks = other.ranks == null ? null : EnumSet.copyOf(other.ranks);
     this.entities = other.entities == null ? null : EnumSet.copyOf(other.entities);
+    this.nameTypes = other.nameTypes == null ? null : EnumSet.copyOf(other.nameTypes);
+    this.nameStatusExclusion = other.nameStatusExclusion == null ? null : EnumSet.copyOf(other.nameStatusExclusion);
     this.note = other.note;
     this.size = other.size;
   }
@@ -219,6 +229,22 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.entities = entities;
   }
 
+  public Set<NameType> getNameTypes() {
+    return nameTypes;
+  }
+
+  public void setNameTypes(Set<NameType> nameTypes) {
+    this.nameTypes = nameTypes;
+  }
+
+  public Set<NomStatus> getNameStatusExclusion() {
+    return nameStatusExclusion;
+  }
+
+  public void setNameStatusExclusion(Set<NomStatus> nameStatusExclusion) {
+    this.nameStatusExclusion = nameStatusExclusion;
+  }
+
   public Integer getSize() {
     return size;
   }
@@ -233,20 +259,22 @@ public class Sector extends DatasetScopedEntity<Integer> {
            && Objects.equals(subjectDatasetKey, sector.subjectDatasetKey)
            && Objects.equals(subject, sector.subject)
            && Objects.equals(originalSubjectId, sector.originalSubjectId)
+           && placeholderRank == sector.placeholderRank
            && mode == sector.mode
            && Objects.equals(priority, sector.priority)
            && Objects.equals(syncAttempt, sector.syncAttempt)
            && Objects.equals(datasetAttempt, sector.datasetAttempt)
            && code == sector.code
-           && placeholderRank == sector.placeholderRank
            && Objects.equals(ranks, sector.ranks)
            && Objects.equals(entities, sector.entities)
+           && Objects.equals(nameTypes, sector.nameTypes)
+           && Objects.equals(nameStatusExclusion, sector.nameStatusExclusion)
            && Objects.equals(note, sector.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, mode, priority, syncAttempt, datasetAttempt, code, placeholderRank, ranks, entities, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, priority, syncAttempt, datasetAttempt, code, ranks, entities, nameTypes, nameStatusExclusion, note);
   }
 
   @Override
