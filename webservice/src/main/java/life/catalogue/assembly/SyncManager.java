@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.Managed;
@@ -228,9 +229,11 @@ public class SyncManager implements Managed, Idle {
   /**
    * @return true if it was actually queued
    * @throws IllegalArgumentException
+   * @throws UnavailableException if sync manager or names index are not started
    */
   private synchronized boolean queueJob(SectorRunnable job) throws IllegalArgumentException {
     nameIndex.assertOnline();
+    this.assertOnline();
     // is this sector already syncing?
     if (syncs.containsKey(job.sectorKey)) {
       LOG.info("{} already queued or running", job.sector);

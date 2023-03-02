@@ -207,6 +207,7 @@ public class JobExecutor implements Managed, Idle {
     if (job == null) {
       throw new NullPointerException();
     }
+    assertOnline();
     // look for duplicates in the queue
     for (BackgroundJob qj : getQueue()) {
       if (job.isDuplicate(qj)) {

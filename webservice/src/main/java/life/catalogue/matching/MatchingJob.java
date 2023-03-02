@@ -97,7 +97,7 @@ public class MatchingJob extends DatasetBlockingJob {
 
   @Override
   public final void runWithLock() throws Exception {
-    try (TempFile tmp = new TempFile(cfg.normalizer.scratchDir, "export/" + getKey().toString());
+    try (TempFile tmp = new TempFile(cfg.normalizer.scratchDir, "job/" + getKey().toString());
          Writer fw = UTF8IoUtils.writerFromGzipFile(tmp.file)
     ) {
       AbstractWriter<?> writer = req.getFormat() == TabularFormat.CSV ?
@@ -106,6 +106,8 @@ public class MatchingJob extends DatasetBlockingJob {
       // match
       if (req.getUpload() != null) {
         writeMatches(writer, streamUpload());
+        // delete file upload
+        FileUtils.deleteQuietly(req.getUpload());
 
       } else if (req.getSourceDatasetKey() != null) {
         try (SqlSession session = factory.openSession()) {
@@ -122,6 +124,7 @@ public class MatchingJob extends DatasetBlockingJob {
       } else {
         throw new IllegalArgumentException("Upload or sourceDatasetKey required");
       }
+      writer.close();
 
       // move to final result file
       FileUtils.copyFile(tmp.file, result);
@@ -153,7 +156,7 @@ public class MatchingJob extends DatasetBlockingJob {
       "scientificName",
       "authorship",
       "status",
-      "parent",
+      "acceptedName",
       "classification",
       "issues"
     );
@@ -172,7 +175,11 @@ public class MatchingJob extends DatasetBlockingJob {
         row[7] = m.usage.getName();
         row[8] = m.usage.getAuthorship();
         row[9] = str(m.usage.getStatus());
-        row[10] = m.usage.getParent();
+        if (m.usage.getStatus().isSynonym() && !m.usage.getClassification().isEmpty()) {
+          row[10] = m.usage.getClassification().get(0).getLabel();
+        } else {
+          row[10] = null;
+        }
         row[11] = str(m.usage.getClassification());
         row[12] = concat(m.issues);
       }

@@ -74,8 +74,9 @@ public interface NameIndex extends Managed, AutoCloseable {
   void reset();
 
   /**
-   * Makes sure the names index has started and throws an NamesIndexOfflineException otherwise
+   * Makes sure the names index has started and throws an UnavailableException otherwise
    */
+  @Override
   default NameIndex assertOnline() {
     if (!hasStarted()) {
       throw UnavailableException.unavailable("Names Index");

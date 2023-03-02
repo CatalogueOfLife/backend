@@ -11,11 +11,12 @@ import java.util.Objects;
 
 public class MatchingRequest extends TreeTraversalParameter {
 
+  @NotNull
+  @QueryParam("format")
+  private TabularFormat format = TabularFormat.CSV;
   @QueryParam("sourceDatasetKey")
   private Integer sourceDatasetKey;
   private File upload;
-  @NotNull
-  private TabularFormat format = TabularFormat.CSV;
 
   public Integer getSourceDatasetKey() {
     return sourceDatasetKey;

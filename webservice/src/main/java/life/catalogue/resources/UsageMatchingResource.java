@@ -1,21 +1,15 @@
 package life.catalogue.resources;
 
-import com.univocity.parsers.common.AbstractParser;
-
-import io.dropwizard.auth.Auth;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.matching.*;
 import life.catalogue.common.ws.MoreMediaTypes;
-import life.catalogue.csv.CsvReader;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.importer.NameInterpreter;
-
-import org.apache.ibatis.session.SqlSessionFactory;
+import life.catalogue.matching.*;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -25,14 +19,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
 
 @Path("/dataset/{key}/nameusage/match")
 @Produces(MediaType.APPLICATION_JSON)
@@ -103,15 +98,19 @@ public class UsageMatchingResource {
 
   private File upload(InputStream data, User user, String format) throws IOException {
     File local = cfg.normalizer.uploadFile(user.getUsername().replaceAll("\\s+", "_"), "." + format);
+    if (!local.getParentFile().exists()) {
+      local.getParentFile().mkdirs();
+    }
     Files.copy(data, local.toPath(), StandardCopyOption.REPLACE_EXISTING);
     return local;
   }
 
   @POST
   @Path("job")
-  public MatchingJob matchSourceJob(@PathParam("key") int targetDatasetKey,
+  public MatchingJob matchSourceJob(@PathParam("key") int datasetKey,
                                     @BeanParam MatchingRequest req,
                                     @Auth User user) {
+    req.setDatasetKey(datasetKey);
     if (req.getSourceDatasetKey() == null) {
       throw new IllegalArgumentException("sourceDatasetKey parameter or CSV/TSV data upload required");
     }
@@ -122,9 +121,9 @@ public class UsageMatchingResource {
   @Path("job")
   @Consumes({MoreMediaTypes.TEXT_CSV})
   public MatchingJob matchCsvJob(@PathParam("key") int datasetKey,
+                                 @BeanParam MatchingRequest req,
                                  InputStream data,
                                  @Auth User user) throws IOException {
-    var req = new MatchingRequest();
     req.setDatasetKey(datasetKey);
     req.setUpload(upload(data, user, "csv"));
     return submit(req, user);
@@ -134,9 +133,9 @@ public class UsageMatchingResource {
   @Path("job")
   @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_TSV})
   public MatchingJob matchTsvJob(@PathParam("key") int datasetKey,
-                                      InputStream data,
-                                      @Auth User user) throws IOException {
-    var req = new MatchingRequest();
+                                 @BeanParam MatchingRequest req,
+                                  InputStream data,
+                                  @Auth User user) throws IOException {
     req.setDatasetKey(datasetKey);
     req.setUpload(upload(data, user, "tsv"));
     return submit(req, user);

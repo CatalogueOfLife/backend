@@ -11,6 +11,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-03-02 more sector configs
+```
+ALTER TABLE sector ADD COLUMN name_types NAMETYPE[] DEFAULT NULL;
+ALTER TABLE sector ADD COLUMN name_status_exclusion NOMSTATUS[] DEFAULT NULL;
+```
+
 ### 2023-03-01 decision indices
 ```
 CREATE INDEX ON decision (subject_dataset_key);
