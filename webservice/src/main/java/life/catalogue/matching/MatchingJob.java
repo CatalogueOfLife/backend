@@ -19,6 +19,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
@@ -97,6 +98,11 @@ public class MatchingJob extends DatasetBlockingJob {
 
   private File matchResultFile() {
     return new File(cfg.normalizer.scratchDir, "job/" + getKey().toString() + "." + req.getFormat().name().toLowerCase());
+  }
+
+  @Override
+  public void assertComponentsOnline() throws UnavailableException {
+    matcher.assertComponentsOnline();
   }
 
   @Override

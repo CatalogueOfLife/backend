@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -108,7 +109,7 @@ public class UsageMatchingResource {
   @POST
   @Path("job")
   public MatchingJob matchSourceJob(@PathParam("key") int datasetKey,
-                                    @BeanParam MatchingRequest req,
+                                    @BeanParam @Valid MatchingRequest req,
                                     @Auth User user) {
     req.setDatasetKey(datasetKey);
     if (req.getSourceDatasetKey() == null) {
@@ -121,7 +122,7 @@ public class UsageMatchingResource {
   @Path("job")
   @Consumes({MoreMediaTypes.TEXT_CSV})
   public MatchingJob matchCsvJob(@PathParam("key") int datasetKey,
-                                 @BeanParam MatchingRequest req,
+                                 @BeanParam @Valid MatchingRequest req,
                                  InputStream data,
                                  @Auth User user) throws IOException {
     req.setDatasetKey(datasetKey);
@@ -133,7 +134,7 @@ public class UsageMatchingResource {
   @Path("job")
   @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_TSV})
   public MatchingJob matchTsvJob(@PathParam("key") int datasetKey,
-                                 @BeanParam MatchingRequest req,
+                                 @BeanParam @Valid MatchingRequest req,
                                   InputStream data,
                                   @Auth User user) throws IOException {
     req.setDatasetKey(datasetKey);

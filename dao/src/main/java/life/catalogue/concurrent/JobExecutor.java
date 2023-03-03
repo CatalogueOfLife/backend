@@ -5,7 +5,6 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.dao.UserDao;
-import life.catalogue.db.mapper.UserMapper;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +14,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -217,6 +215,9 @@ public class JobExecutor implements Managed, Idle {
         throw new IllegalArgumentException("An identical job is queued already");
       }
     }
+    // make sure all components needed for the job have started before we even submit the job
+    job.assertComponentsOnline();
+    // check user
     User user = udao.get(job.getUserKey());
     if (user == null) {
       throw new IllegalArgumentException("No user "+job.getUserKey()+" existing");

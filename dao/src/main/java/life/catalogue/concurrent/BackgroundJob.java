@@ -2,6 +2,7 @@ package life.catalogue.concurrent;
 
 import com.codahale.metrics.Timer;
 
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
@@ -83,6 +84,14 @@ public abstract class BackgroundJob implements Runnable {
    */
   public boolean isDuplicate(BackgroundJob other) {
     return this.key.equals(other.key);
+  }
+
+  /**
+   * Determine if all components needed to run this job are currently online.
+   *
+   * @throws UnavailableException if some component has not yet started
+   **/
+  public void assertComponentsOnline() throws UnavailableException {
   }
 
   @Override

@@ -46,8 +46,8 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_PREFIX + "(20\\d\\d)", Pattern.CASE_INSENSITIVE);
   private static final Pattern COL_PATTERN = Pattern.compile("^" + COL_PREFIX + "(20\\d\\d)$");
   // all parameters that contain dataset keys and which we check if they need to be rewritten
-  private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey", "hassourcedataset", "releasedfrom");
-  private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
+  private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey", "sourcedatasetkey", "hassourcedataset", "releasedfrom");
+  private static final Set<String> METHODS  = Set.of(HttpMethod.POST, HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
   public static final String ORIGINAL_URI_PROPERTY = "originalRequestURI";
   public static final String ORIGINAL_DATASET_KEY_PROPERTY = "originalDatasetKey";
 
@@ -63,7 +63,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext req) throws IOException {
-    // apply only to simple read operations, not POST, PUT or DELETE
+    // apply only to simple read operations and POST which is used to trigger jobs. But not to PUT or DELETE
     if (!METHODS.contains(req.getMethod())) {
       return;
     }

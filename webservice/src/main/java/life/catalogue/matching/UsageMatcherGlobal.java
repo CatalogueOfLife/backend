@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
@@ -65,6 +66,16 @@ public class UsageMatcherGlobal {
     this.factory = Preconditions.checkNotNull(factory);
     this.uCache = uCache;
     this.groupAnalyzer = new TaxGroupAnalyzer();
+  }
+
+  /**
+   * Determine if all components needed for the matcher are currently online.
+   *
+   * @throws UnavailableException if some component has not yet started
+   **/
+  public void assertComponentsOnline() throws UnavailableException {
+    nameIndex.assertOnline();
+    uCache.assertOnline();
   }
 
   public UsageCache getUCache() {

@@ -4,6 +4,7 @@ import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.TabularFormat;
 
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
 
 import java.io.File;
@@ -12,8 +13,9 @@ import java.util.Objects;
 public class MatchingRequest extends TreeTraversalParameter {
 
   @NotNull
+  @DefaultValue("CSV")
   @QueryParam("format")
-  private TabularFormat format = TabularFormat.CSV;
+  private TabularFormat format;
   @QueryParam("sourceDatasetKey")
   private Integer sourceDatasetKey;
   private File upload;
