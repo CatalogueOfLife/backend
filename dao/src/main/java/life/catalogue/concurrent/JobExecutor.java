@@ -84,6 +84,9 @@ public class JobExecutor implements Managed, Idle {
     this.cfg = cfg;
     this.udao = uDao;
     queue = new PriorityBlockingQueue<>(cfg.queue);
+    if (emailer == null) {
+      LOG.warn("No emailer configured!");
+    }
     this.emailer = emailer;
     // track metrics e.g. queue size
     registry.register(MetricRegistry.name(JobExecutor.class, METRIC_GROUP_NAME, "queue"), (Gauge<Integer>) queue::size);
@@ -218,8 +221,8 @@ public class JobExecutor implements Managed, Idle {
     if (user == null) {
       throw new IllegalArgumentException("No user "+job.getUserKey()+" existing");
     }
+    LOG.info("Scheduling new {} job {} by user {}: {}<{}>", job.getJobName(), job.getKey(), job.getUserKey(), user.getName(), user.getEmail());
     job.setUser(user);
-    LOG.info("Scheduling new {} job {} by user {}", job.getJobName(), job.getKey(), job.getUserKey());
     job.setEmailer(emailer);
     job.setTimer(timer);
     var ftask = new ComparableFutureTask(job);

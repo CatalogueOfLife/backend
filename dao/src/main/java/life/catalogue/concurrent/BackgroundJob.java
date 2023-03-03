@@ -123,6 +123,8 @@ public abstract class BackgroundJob implements Runnable {
         // email notification
         if (emailer != null) {
           emailer.sendFinalEmail(this);
+        } else {
+          LOG.info("No emailer configured. Do not notify users about {} {} {}", getStatus(), getJobName(), getKey());
         }
         if (ctxt != null) {
           ctxt.stop(); // we dont want to measure blocked runs
