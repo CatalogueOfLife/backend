@@ -98,7 +98,7 @@ public class EmailNotification {
 
   @VisibleForTesting
   String buildEmailText(BackgroundJob job) throws TemplateException, IOException {
-    final EmailData<?> data = job.getEmailData(job.getUser(), cfg);
+    final EmailData data = job.getEmailData(cfg);
     final String template = "email/" + job.getEmailTemplatePrefix() + "-" + job.getStatus().name().toLowerCase() + ".ftl";
     return FmUtil.render(data, template);
   }
@@ -128,17 +128,16 @@ public class EmailNotification {
 
   /**
    * Basic data for generating email bodies with freemarker templates.
-   * @param <T> the exact job class
    */
-  public static class EmailData<T extends BackgroundJob> {
+  public static class EmailData {
     private final UUID key;
-    private final T job;
+    private final BackgroundJob job;
     private final User user;
     private final String from;
     private final String fromName;
     private final String replyTo;
 
-    public EmailData(T job, User user, MailConfig cfg) {
+    public EmailData(BackgroundJob job, User user, MailConfig cfg) {
       this.job = job;
       this.key = job.getKey();
       this.user = user;
@@ -169,7 +168,7 @@ public class EmailNotification {
       return replyTo;
     }
 
-    public T getJob() {
+    public BackgroundJob getJob() {
       return job;
     }
 

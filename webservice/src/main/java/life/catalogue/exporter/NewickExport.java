@@ -28,7 +28,7 @@ public class NewickExport extends DatasetExportJob {
     }  }
 
   @Override
-  public void export() throws Exception {
+  protected void export() throws Exception {
     // do we have a full dataset export request?
     File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".nhx");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {

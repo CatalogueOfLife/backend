@@ -25,7 +25,7 @@ public class TextTreeExport extends DatasetExportJob {
   }
 
   @Override
-  public void export() throws Exception {
+  protected void export() throws Exception {
     File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".txt");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
       TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, req.toTreeTraversalParameter(), factory, writer);

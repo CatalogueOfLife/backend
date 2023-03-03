@@ -2,9 +2,11 @@ Thanks,
 ${fromName!"ChecklistBank"}
 
 
+<#if job.dataset?has_content>
 ---
-${dataset.title}<#if dataset.version??>, version ${dataset.version}</#if>:
-https://www.checklistbank.org/dataset/${dataset.key?c}
+${job.dataset.title}<#if job.dataset.version??>, version ${job.dataset.version}</#if>:
+https://www.checklistbank.org/dataset/${job.dataset.key?c}
+</#if>
 ---
 
 ChecklistBank: https://www.checklistbank.org

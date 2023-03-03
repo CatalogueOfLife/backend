@@ -34,7 +34,7 @@ public class TempFile implements AutoCloseable {
     }
   }
 
-  public TempFile() throws IOException {
+  public TempFile() {
     this("col-", "");
   }
   
@@ -63,7 +63,7 @@ public class TempFile implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     FileUtils.deleteQuietly(file);
   }
 }

@@ -1,22 +1,5 @@
 package life.catalogue.matching;
 
-import com.google.common.base.Preconditions;
-
-import com.univocity.parsers.common.AbstractParser;
-import com.univocity.parsers.common.AbstractWriter;
-import com.univocity.parsers.common.ParsingContext;
-import com.univocity.parsers.common.ResultIterator;
-
-import com.univocity.parsers.csv.CsvWriter;
-
-import com.univocity.parsers.csv.CsvWriterSettings;
-import com.univocity.parsers.tsv.TsvWriter;
-
-import com.univocity.parsers.tsv.TsvWriterSettings;
-
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
@@ -34,21 +17,13 @@ import life.catalogue.concurrent.JobPriority;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.dao.TreeStreams;
-import life.catalogue.db.mapper.*;
-
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.importer.NameInterpreter;
-
 import life.catalogue.parser.*;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.List;
@@ -56,6 +31,25 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+import com.univocity.parsers.common.AbstractParser;
+import com.univocity.parsers.common.AbstractWriter;
+import com.univocity.parsers.common.ParsingContext;
+import com.univocity.parsers.common.ResultIterator;
+import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
+import com.univocity.parsers.tsv.TsvWriter;
+import com.univocity.parsers.tsv.TsvWriterSettings;
+
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class MatchingJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingJob.class);
@@ -65,9 +59,9 @@ public class MatchingJob extends DatasetBlockingJob {
   private final WsServerConfig cfg;
   // job specifics
   private final MatchingRequest req;
-  private List<SimpleName> rootClassification;
-  private File result;
+  private final JobResult result;
   private final UsageCounter counter = new UsageCounter();
+  private List<SimpleName> rootClassification;
 
   public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, WsServerConfig cfg) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
@@ -75,7 +69,7 @@ public class MatchingJob extends DatasetBlockingJob {
     this.matcher = matcher;
     this.factory = factory;
     this.req = Preconditions.checkNotNull(req);
-    this.result = cfg.job.downloadFile(getKey());
+    this.result = new JobResult(getKey());
     this.dataset = loadDataset(factory, req.getDatasetKey());
     if (req.getTaxonID() != null) {
       final var key = DSID.of(req.getDatasetKey(), req.getTaxonID());
@@ -92,12 +86,17 @@ public class MatchingJob extends DatasetBlockingJob {
     }
   }
 
-  public File getResult() {
+  public JobResult getResult() {
     return result;
   }
 
   private File matchResultFile() {
     return new File(cfg.normalizer.scratchDir, "job/" + getKey().toString() + "." + req.getFormat().name().toLowerCase());
+  }
+
+  @Override
+  public String getEmailTemplatePrefix() {
+    return "matching";
   }
 
   @Override
@@ -138,8 +137,9 @@ public class MatchingJob extends DatasetBlockingJob {
       writer.close();
 
       // move to final result file
-      FileUtils.copyFile(tmp.file, result);
-      LOG.info("Matching {} with {} usages to dataset {} completed: {}", getKey(), counter.size(), datasetKey, result.getAbsolutePath());
+      FileUtils.copyFile(tmp.file, result.getFile());
+      result.calculateSizeAndMd5();
+      LOG.info("Matching {} with {} usages to dataset {} completed: {} [{}]", getKey(), counter.size(), datasetKey, result.getFile(), result.getSizeWithUnit());
     }
   }
 

@@ -35,6 +35,10 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
     return datasetKey;
   }
 
+  public Dataset getDataset() {
+    return dataset;
+  }
+
   public int getAttempt() {
     return attempt;
   }

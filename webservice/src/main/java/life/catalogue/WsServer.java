@@ -1,7 +1,7 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.SyncManager;
@@ -196,7 +196,7 @@ public class WsServer extends Application<WsServerConfig> {
     clearTmp(cfg);
 
     // update model configs
-    DatasetExport.setDownloadBaseURI(cfg.job.downloadURI);
+    JobResult.setDownloadConfigs(cfg.job.downloadURI, cfg.job.downloadDir);
 
     // create a managed service that controls our startable/stoppable components in sync with the DW lifecycle
     final ManagedService managedService = new ManagedService(env.lifecycle());

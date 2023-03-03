@@ -17,7 +17,6 @@ import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,7 +26,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
@@ -102,7 +100,16 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
     }
   }
 
-  public life.catalogue.api.model.DatasetExport getExport() {
+  @Override
+  public String getEmailTemplatePrefix() {
+    return "export";
+  }
+
+  public ExportRequest getReq() {
+    return req;
+  }
+
+  public DatasetExport getExport() {
     return export;
   }
 
@@ -146,8 +153,7 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
     export.setTaxonCount(counter.getTaxCounter().get());
     export.setTaxaByRankCount(counter.getRankCounterMap());
     try {
-      export.setSize(Files.size(archive.toPath()));
-      export.setMd5(ChecksumUtils.getMD5Checksum(archive));
+      export.calculateSizeAndMd5();
     } catch (IOException e) {
       LOG.error("Failed to read generated archive file stats for {}", archive, e);
     }

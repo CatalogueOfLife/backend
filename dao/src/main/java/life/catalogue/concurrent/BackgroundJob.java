@@ -2,6 +2,8 @@ package life.catalogue.concurrent;
 
 import com.codahale.metrics.Timer;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
@@ -186,10 +188,12 @@ public abstract class BackgroundJob implements Runnable {
     return userKey;
   }
 
+  @JsonIgnore
   public boolean isQueued() {
     return status == JobStatus.WAITING;
   }
 
+  @JsonIgnore
   public boolean isRunning() {
     return status == JobStatus.RUNNING;
   }
@@ -197,6 +201,7 @@ public abstract class BackgroundJob implements Runnable {
   /**
    * @return true if the job was done either by finishing successfully, failing or being canceled.
    */
+  @JsonIgnore
   public boolean isStopped() {
     return !isRunning() && !isQueued();
   }
@@ -213,17 +218,17 @@ public abstract class BackgroundJob implements Runnable {
    *
    * See also getEmailData() whcih supplies the data model to render the freemarker template.
    */
+  @JsonIgnore
   public String getEmailTemplatePrefix() {
     return null;
   }
 
   /**
    * Override this method to supply richer data if thats needed for the email templates
-   * @param user
    * @param cfg
    * @return
    */
-  public EmailNotification.EmailData getEmailData(User user, MailConfig cfg) {
+  public EmailNotification.EmailData getEmailData(MailConfig cfg) {
     return new EmailNotification.EmailData(this, user, cfg);
   }
 

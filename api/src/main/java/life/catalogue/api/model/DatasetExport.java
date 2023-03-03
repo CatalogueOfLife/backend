@@ -1,25 +1,16 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.JobStatus;
-import life.catalogue.common.text.StringUtils;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import com.google.common.collect.Maps;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class DatasetExport extends DataEntity<UUID> {
-  private static final Logger LOG = LoggerFactory.getLogger(DatasetExport.class);
-  private static URI DOWNLOAD_BASE_URI = URI.create("https://download.checklistbank.org/jobs/");
-
-  private UUID key;
+public class DatasetExport extends JobResult {
   private ExportRequest request;
   private List<SimpleName> classification;
   private Integer attempt; // datasets importAttempt when export was generated
@@ -30,15 +21,13 @@ public class DatasetExport extends DataEntity<UUID> {
   private String error;
   private Set<Term> truncated;
   // result metrics
-  private String md5; // md5 for file
-  private long size; // filesize in bytes
   private Integer synonymCount;
   private Integer taxonCount;
   private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
 
   public static DatasetExport createWaiting(UUID key, int userKey, ExportRequest req, Dataset dataset) {
     DatasetExport exp = new DatasetExport();
-    exp.key = key;
+    exp.setKey(key);
     exp.request = req;
     exp.status = JobStatus.WAITING;
     exp.setCreatedBy(userKey);
@@ -47,45 +36,12 @@ public class DatasetExport extends DataEntity<UUID> {
     return exp;
   }
 
-  /**
-   * @return the relative path to the download base URI that holds the download archive file.
-   * @param key job key
-   */
-  public static String downloadFilePath(UUID key) {
-    return key.toString().substring(0,2) + "/" + key + ".zip";
-  }
-
-  /**
-   * WARNING: Only set this when you know what you're doing!
-   */
-  public static void setDownloadBaseURI(URI downloadBaseURI) {
-    if (!downloadBaseURI.getPath().endsWith("/")) {
-      downloadBaseURI = URI.create(downloadBaseURI + "/");
-    }
-    LOG.warn("DownloadBaseURI changed from {} to {}", DatasetExport.DOWNLOAD_BASE_URI, downloadBaseURI);
-    DatasetExport.DOWNLOAD_BASE_URI = downloadBaseURI;
-  }
-
-  @Override
-  public UUID getKey() {
-    return key;
-  }
-
-  @Override
-  public void setKey(UUID key) {
-    this.key = key;
-  }
-
   public Integer getAttempt() {
     return attempt;
   }
 
   public void setAttempt(Integer attempt) {
     this.attempt = attempt;
-  }
-
-  public URI getDownload() {
-    return DOWNLOAD_BASE_URI.resolve(downloadFilePath(key));
   }
 
   public List<SimpleName> getClassification() {
@@ -143,26 +99,6 @@ public class DatasetExport extends DataEntity<UUID> {
     truncated.add(rowType);
   }
 
-  public String getMd5() {
-    return md5;
-  }
-
-  public void setMd5(String md5) {
-    this.md5 = md5;
-  }
-
-  public long getSize() {
-    return size;
-  }
-
-  public String getSizeWithUnit() {
-    return StringUtils.byteWithUnitSI(size);
-  }
-
-  public void setSize(long size) {
-    this.size = size;
-  }
-
   public Integer getSynonymCount() {
     return synonymCount;
   }
@@ -209,11 +145,22 @@ public class DatasetExport extends DataEntity<UUID> {
     if (!(o instanceof DatasetExport)) return false;
     if (!super.equals(o)) return false;
     DatasetExport that = (DatasetExport) o;
-    return size == that.size && Objects.equals(key, that.key) && Objects.equals(request, that.request) && Objects.equals(classification, that.classification) && Objects.equals(attempt, that.attempt) && Objects.equals(started, that.started) && Objects.equals(finished, that.finished) && Objects.equals(deleted, that.deleted) && status == that.status && Objects.equals(error, that.error) && Objects.equals(truncated, that.truncated) && Objects.equals(md5, that.md5) && Objects.equals(synonymCount, that.synonymCount) && Objects.equals(taxonCount, that.taxonCount) && Objects.equals(taxaByRankCount, that.taxaByRankCount);
+    return Objects.equals(request, that.request)
+           && Objects.equals(classification, that.classification)
+           && Objects.equals(attempt, that.attempt)
+           && Objects.equals(started, that.started)
+           && Objects.equals(finished, that.finished)
+           && Objects.equals(deleted, that.deleted)
+           && status == that.status
+           && Objects.equals(error, that.error)
+           && Objects.equals(truncated, that.truncated)
+           && Objects.equals(synonymCount, that.synonymCount)
+           && Objects.equals(taxonCount, that.taxonCount)
+           && Objects.equals(taxaByRankCount, that.taxaByRankCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, request, classification, attempt, started, finished, deleted, status, error, truncated, md5, size, synonymCount, taxonCount, taxaByRankCount);
+    return Objects.hash(super.hashCode(), request, classification, attempt, started, finished, deleted, status, error, truncated, synonymCount, taxonCount, taxaByRankCount);
   }
 }

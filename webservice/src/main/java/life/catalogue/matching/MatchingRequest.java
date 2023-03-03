@@ -1,5 +1,7 @@
 package life.catalogue.matching;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.TabularFormat;
 

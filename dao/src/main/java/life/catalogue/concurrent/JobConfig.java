@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 import com.google.common.base.Preconditions;
 
 import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.model.JobResult;
 
 import java.io.File;
 import java.net.URI;
@@ -54,22 +55,14 @@ public class JobConfig {
   public String onErrorFrom;
 
   public File downloadFile(UUID key) {
-    return new File(downloadDir, downloadFilePath(key));
+    return new File(downloadDir, JobResult.downloadFilePath(key));
   }
 
   /**
    * @return the final URI that holds the download archive file.
    */
   public URI downloadURI(UUID key) {
-    return downloadURI.resolve(downloadFilePath(key));
-  }
-
-  /**
-   * @return the relative path to the download base URI that holds the download archive file.
-   * @param key job key
-   */
-  private String downloadFilePath(UUID key) {
-    return key.toString().substring(0,2) + "/" + key + ".zip";
+    return downloadURI.resolve(JobResult.downloadFilePath(key));
   }
 
   /**

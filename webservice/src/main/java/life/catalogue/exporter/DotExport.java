@@ -26,7 +26,7 @@ public class DotExport extends DatasetExportJob {
   }
 
   @Override
-  public void export() throws Exception {
+  protected void export() throws Exception {
     // do we have a full dataset export request?
     f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".gv");
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {

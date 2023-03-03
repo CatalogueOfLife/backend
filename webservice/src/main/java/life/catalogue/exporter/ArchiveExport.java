@@ -107,7 +107,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
   }
 
   @Override
-  public void export() throws Exception {
+  protected void export() throws Exception {
     // do we have a full dataset export request?
     fullDataset = !req.hasFilter();
     try (SqlSession session = factory.openSession(false)) {
