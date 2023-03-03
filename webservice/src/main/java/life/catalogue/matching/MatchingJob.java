@@ -95,9 +95,13 @@ public class MatchingJob extends DatasetBlockingJob {
     return result;
   }
 
+  private File matchResultFile() {
+    return new File(cfg.normalizer.scratchDir, "job/" + getKey().toString() + "." + req.getFormat().name().toLowerCase());
+  }
+
   @Override
   public final void runWithLock() throws Exception {
-    try (TempFile tmp = new TempFile(cfg.normalizer.scratchDir, "job/" + getKey().toString());
+    try (TempFile tmp = new TempFile(matchResultFile());
          Writer fw = UTF8IoUtils.writerFromGzipFile(tmp.file)
     ) {
       LOG.info("Write matches for job {} to temp file {}", getKey(), tmp.file.getAbsolutePath());
