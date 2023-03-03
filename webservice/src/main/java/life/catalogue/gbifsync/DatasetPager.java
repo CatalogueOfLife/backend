@@ -272,7 +272,7 @@ public class DatasetPager {
     if (ids == null || ids.isEmpty()) {
       return null;
     }
-    // we enforce unique identifiers - there are often duploicates in GBIF
+    // we enforce unique identifiers - there are often duplicates in GBIF
     final Set<String> values = new HashSet<>();
     final Map<String, String> map = new HashMap<>();
     final Map<String, Integer> suffices = new HashMap<>();
@@ -312,9 +312,15 @@ public class DatasetPager {
           }
           break;
 
+        case "LSID":
+          // urn:lsid:zoobank.org:pub:392603E1-AC9A-4A4D-923D-307216718171
+          key = uniqueKey("LSID", map, suffices);
+          break;
+
         case "GBIF_PORTAL":
           // we dont need those - they are prehistoric
           continue;
+
         default:
           LOG.warn("Unknown GBIF identifier type {} found in dataset {}", id.type, uuid);
       }
