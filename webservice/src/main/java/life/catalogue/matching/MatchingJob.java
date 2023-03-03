@@ -100,6 +100,7 @@ public class MatchingJob extends DatasetBlockingJob {
     try (TempFile tmp = new TempFile(cfg.normalizer.scratchDir, "job/" + getKey().toString());
          Writer fw = UTF8IoUtils.writerFromGzipFile(tmp.file)
     ) {
+      LOG.info("Write matches for job {} to temp file {}", getKey(), tmp.file.getAbsolutePath());
       AbstractWriter<?> writer = req.getFormat() == TabularFormat.CSV ?
                             new CsvWriter(fw, new CsvWriterSettings()) :
                             new TsvWriter(fw, new TsvWriterSettings());
@@ -128,7 +129,7 @@ public class MatchingJob extends DatasetBlockingJob {
 
       // move to final result file
       FileUtils.copyFile(tmp.file, result);
-      LOG.info("Matching {} with {} usages to dataset {} completed", getKey(), counter.size(), datasetKey);
+      LOG.info("Matching {} with {} usages to dataset {} completed: {}", getKey(), counter.size(), datasetKey, result.getAbsolutePath());
     }
   }
 
