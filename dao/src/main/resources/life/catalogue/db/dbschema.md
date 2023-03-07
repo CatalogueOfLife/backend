@@ -11,6 +11,15 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-03-06 new release bot user
+```
+ALTER TYPE ISSUE ADD VALUE 'HOMOTYPIC_MULTI_ACCEPTED';
+
+INSERT INTO "user" (key, username, firstname, lastname, roles, created) VALUES
+ (13, 'releaser', 'Release', 'Bot', '{}', now());
+ (14, 'homotypic_grouper', 'Homotypic', 'Grouper', '{}', now());
+```
+
 ### 2023-03-02 more sector configs
 ```
 ALTER TABLE sector ADD COLUMN name_types NAMETYPE[] DEFAULT NULL;

@@ -2,19 +2,16 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.TaxGroup;
-import life.catalogue.common.collection.CountMap;
+import life.catalogue.common.collection.CountEnumMap;
 import life.catalogue.parser.TaxGroupParser;
 import life.catalogue.parser.UnparsableException;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.util.RankUtils;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,7 +147,7 @@ public class TaxGroupAnalyzer {
 
       } else {
         // if we have more than 1 group still we have a contradiction... count by root group and select the lowest group of the largest set
-        CountMap<TaxGroup> counts = new CountMap<>(TaxGroup.class);
+        CountEnumMap<TaxGroup> counts = new CountEnumMap<>(TaxGroup.class);
         for (var g : groups) {
           counts.inc(g.root());
         }
@@ -195,7 +192,7 @@ public class TaxGroupAnalyzer {
   @VisibleForTesting
   protected NomCode detectCode(SimpleName name, Collection<? extends SimpleName> classification) {
     // we count number of hints for the code to finally decide which it is
-    CountMap<NomCode> counter = new CountMap<>(NomCode.class);
+    CountEnumMap<NomCode> counter = new CountEnumMap<>(NomCode.class);
 
     // authorship -> code
     detectCodeFromAuthorship(name).ifPresent(c -> counter.inc(c, 2));
@@ -212,7 +209,7 @@ public class TaxGroupAnalyzer {
   @VisibleForTesting
   protected TaxGroup groupBySuffix(SimpleName name, Collection<? extends SimpleName> classification) {
     // we count number of hints for the code to finally decide which it is
-    CountMap<TaxGroup> counter = new CountMap<>(TaxGroup.class);
+    CountEnumMap<TaxGroup> counter = new CountEnumMap<>(TaxGroup.class);
 
     detectGroupFromSuffix(name).ifPresent(grps -> {
       for (var g : grps) {

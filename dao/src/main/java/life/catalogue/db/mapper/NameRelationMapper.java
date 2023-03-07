@@ -38,4 +38,6 @@ public interface NameRelationMapper extends Create<NameRelation>,
    * @param key the name id to start our from
    */
   List<String> listRelatedNameIDs(@Param("key") DSID<String> key, @Param("types") Set<NomRelType> types);
+
+  boolean exists(@Param("datasetKey") int datasetKey, @Param("from") String from, @Param("to") String to, @Param("type") NomRelType type);
 }

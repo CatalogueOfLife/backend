@@ -129,7 +129,7 @@ public enum Issue {
   
   BASIONYM_DERIVED(NAME, Level.INFO,
       "Record has a original name (basionym) relationship which was derived from name & authorship comparison, " +
-          "but did not exist explicitly in the data. Provisional catalogue specific issue."),
+          "but did not exist explicitly in the data. Extended release specific issue."),
   
   CONFLICTING_BASIONYM_COMBINATION(NAME, Level.ERROR,
       "There have been more than one accepted name in a homotypical basionym group of names. " +
@@ -407,6 +407,9 @@ public enum Issue {
 
   IDENTIFIER_WITHOUT_SCOPE(ANY, Level.WARNING,
     "The alternative identifier for a taxon, name or reference is lacking an identifier scope."),
+
+  HOMOTYPIC_MULTI_ACCEPTED(NAME_USAGE, Level.WARNING,
+    "Several accepted names exist which are considered homotypic names."),
   ;
 
   /**

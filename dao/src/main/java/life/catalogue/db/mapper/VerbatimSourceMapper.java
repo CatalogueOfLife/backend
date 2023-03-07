@@ -33,7 +33,21 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   VerbatimSource getIssues(@Param("key") DSID<String> key);
 
-  void updateIssues(@Param("key") DSID<String> key, @Param("issues") Set<Issue> issues);
+  int updateIssues(@Param("key") DSID<String> key, @Param("issues") Set<Issue> issues);
+
+  int _addIssueInternal(@Param("key") DSID<String> key, @Param("issue") Issue issue);
+
+  /**
+   * Add an issue to an existing verbatim source record or create a new one.
+   */
+  default void addIssue(@Param("key") DSID<String> key, @Param("issue") Issue issue) {
+    int mod = _addIssueInternal(key, issue);
+    if (mod < 1) {
+      VerbatimSource v = new VerbatimSource(key.getDatasetKey(), key.getId(), null, null);
+      v.addIssue(issue);
+      create(v);
+    }
+  }
 
   default void insertSources(@Param("key") DSID<String> key, @Param("source") DSID<String> secondarySource, @Param("groups") Set<InfoGroup> groups) {
     for (var group : groups) {

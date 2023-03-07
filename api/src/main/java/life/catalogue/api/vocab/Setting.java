@@ -119,6 +119,11 @@ public enum Setting {
   XRELEASE_EXCLUDE_SOURCE_DATASET(Integer.class, true, PROJECT),
 
   /**
+   * URL to a yaml file with the configuration for an extended release.
+   */
+  XRELEASE_CONFIG(URI.class, PROJECT),
+
+  /**
    * Number of first authors from a project/release to use for the container authors of a source chapter-in-a-book citation.
    * If not given all authors are used.
    */

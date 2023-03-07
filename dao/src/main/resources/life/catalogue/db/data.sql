@@ -4,7 +4,9 @@ INSERT INTO "user" (key, username, firstname, lastname, roles, created) VALUES
     (0, 'dbinit', 'DB', 'Init', '{}', now()),
     (10, 'importer', 'Importer', 'Bot', '{}', now()),
     (11, 'matcher', 'Name', 'Matcher', '{}', now()),
-    (12, 'gbifsync', 'GBIF', 'Sync', '{}', now());
+    (12, 'gbifsync', 'GBIF', 'Sync', '{}', now()),
+    (13, 'releaser', 'Release', 'Bot', '{}', now()),
+    (14, 'homotypic_grouper', 'Homotypic', 'Grouper', '{}', now());
 ALTER SEQUENCE user_key_seq RESTART WITH 100;
 
 -- insert well known datasets

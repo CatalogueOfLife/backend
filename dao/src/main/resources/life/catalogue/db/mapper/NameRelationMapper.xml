@@ -148,6 +148,13 @@
     </if>
   </insert>
 
+  <select id="exists" parameterType="map" resultType="boolean">
+    SELECT EXISTS (
+      SELECT 1 FROM name_rel
+      WHERE dataset_key=#{datasetKey} AND name_id=#{from} AND related_name_id=#{to} AND type=#{type}::NOMRELTYPE
+    )
+  </select>
+
   <select id="processSector" parameterType="map" resultMap="nameRelResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

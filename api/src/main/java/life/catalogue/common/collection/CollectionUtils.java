@@ -3,6 +3,7 @@ package life.catalogue.common.collection;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -67,6 +68,37 @@ public class CollectionUtils {
     List<T> list = new ArrayList<>();
     list.addAll(Arrays.asList(args));
     return list;
+  }
+
+  /**
+   * Returns the first object from the given list if it matches the given predicate.
+   */
+  public static <T> T find(Collection<T> objects, Predicate<T> filter) {
+    for (var obj : objects) {
+      if (filter.test(obj)) {
+          return obj;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns an object from the given list if it is the only object that matches the given predicate.
+   * If there are no or multiple matches null will be returned.
+   */
+  public static <T> T findSingle(Collection<T> objects, Predicate<T> filter) {
+    T match = null;
+    for (var obj : objects) {
+      if (filter.test(obj)) {
+        if (match != null) {
+          // multiple matches
+          return null;
+        } else {
+          match = obj;
+        }
+      }
+    }
+    return match;
   }
 
   public static boolean equals(List<?> first, Object[] second) {

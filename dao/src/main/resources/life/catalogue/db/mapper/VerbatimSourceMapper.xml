@@ -107,6 +107,12 @@
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 
+  <update id="_addIssueInternal" parameterType="map">
+    UPDATE verbatim_source
+    SET issues = array_append(issues, '${issue}'::ISSUE)
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
+
   <update id="insertSource" parameterType="map">
     INSERT INTO verbatim_source_secondary (dataset_key, id, type, source_dataset_key, source_id)
     VALUES (#{key.datasetKey}, #{key.id}, #{group}::INFOGROUP, #{source.datasetKey}, #{source.id})

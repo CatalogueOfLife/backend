@@ -155,7 +155,7 @@ public class NormalizerTreeIT {
       norm.call();
       // reopen the neo db
       store = NeoDbFactory.open(datasetKey, 1, cfg);
-      debug();
+      //debug();
       
       // assert tree
       InputStream tree = getClass().getResourceAsStream(resourceDir + "/expected.tree");

@@ -1,8 +1,12 @@
 package life.catalogue.common.collection;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 
-public class CountMap<K> extends HashMap<K, Integer> {
+public class CountEnumMap<K extends Enum<K>> extends EnumMap<K, Integer> {
+
+  public CountEnumMap(Class<K> keyType) {
+    super(keyType);
+  }
 
   /**
    * Increase counter by one or set to 1 if not existing already

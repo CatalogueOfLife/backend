@@ -14,12 +14,14 @@ import com.google.common.base.Joiner;
  */
 public class BasionymGroup<T> {
   private static final Joiner joiner = Joiner.on("; ").skipNulls();
-  private String epithet;
-  private Authorship authorship;
+  private final String epithet;
+  private final Authorship authorship;
+  private final List<T> recombinations = new ArrayList<>();
   private T basionym;
-  private List<T> recombinations = new ArrayList<>();
-  
-  public BasionymGroup() {
+
+  public BasionymGroup(String epithet, Authorship authorship) {
+    this.epithet = epithet;
+    this.authorship = authorship;
   }
   
   public T getBasionym() {
@@ -29,7 +31,11 @@ public class BasionymGroup<T> {
   public void setBasionym(T basionym) {
     this.basionym = basionym;
   }
-  
+
+  public void addRecombination(T recomb) {
+    recombinations.add(recomb);
+  }
+
   public List<T> getRecombinations() {
     return recombinations;
   }
@@ -50,11 +56,22 @@ public class BasionymGroup<T> {
     return epithet;
   }
   
-  public void setName(String epithet, Authorship authorship) {
-    this.epithet = epithet;
-    this.authorship = authorship;
+  public List<T> getAll() {
+    var all = new ArrayList<>(recombinations);
+    if (hasBasionym()) {
+      all.add(basionym);
+    }
+    return all;
   }
-  
+
+  public int size() {
+    return recombinations.size() + (hasBasionym() ? 1 : 0);
+  }
+
+  public boolean isEmpty() {
+    return size() < 1;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(basionym, recombinations, epithet, authorship);

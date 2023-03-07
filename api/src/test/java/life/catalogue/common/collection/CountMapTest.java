@@ -11,7 +11,7 @@ public class CountMapTest {
 
   @Test
   public void testCounter(){
-    CountMap<Rank> cnt = new CountMap<>(Rank.class);
+    CountEnumMap<Rank> cnt = new CountEnumMap<>(Rank.class);
 
     assertNull(cnt.get(Rank.FAMILY));
     cnt.inc(Rank.FAMILY);

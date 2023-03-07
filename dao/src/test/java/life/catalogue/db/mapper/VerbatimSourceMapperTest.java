@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
@@ -52,6 +53,28 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     iss = Set.of(Issue.INCONSISTENT_NAME, Issue.BASIONYM_DERIVED, Issue.WRONG_MONOMIAL_CASE);
     mapper().updateIssues(v1, iss);
     assertEquals(iss, mapper().getIssues(v1).getIssues());
+  }
+
+  @Test
+  public void addIssue() {
+    VerbatimSource v1 = create();
+    mapper().create(v1);
+
+    var issues = new HashSet<>(v1.getIssues());
+    var iss = mapper().getIssues(v1).getIssues();
+    assertEquals(iss, issues);
+
+    mapper().addIssue(v1, Issue.BASIONYM_DERIVED);
+    issues.add(Issue.BASIONYM_DERIVED);
+
+    iss = mapper().getIssues(v1).getIssues();
+    assertEquals(iss, issues);
+
+    // now without a pre-existing record
+    DSID<String> key = DSID.of(datasetKey, "s2");
+    mapper().addIssue(key, Issue.BASIONYM_DERIVED);
+    iss = mapper().getIssues(key).getIssues();
+    assertEquals(iss, Set.of(Issue.BASIONYM_DERIVED));
   }
 
   @Test

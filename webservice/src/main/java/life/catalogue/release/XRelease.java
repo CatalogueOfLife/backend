@@ -4,6 +4,8 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SyncFactory;
+import life.catalogue.basgroup.HomotypicConsolidator;
+import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
@@ -20,6 +22,7 @@ import life.catalogue.img.ImageService;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +43,7 @@ public class XRelease extends ProjectRelease {
   private final SyncFactory syncFactory;
   private final Int2IntMap sectorPriorities = new Int2IntOpenHashMap(); // sector keys
   private Taxon incertae;
+  private XReleaseConfig xCfg;
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
            ImageService imageService,
@@ -65,6 +69,9 @@ public class XRelease extends ProjectRelease {
 
   @Override
   void prepWork() throws Exception {
+    if (settings.containsKey(Setting.XRELEASE_CONFIG)) {
+      loadConfig(settings.getURI(Setting.XRELEASE_CONFIG));
+    }
     createReleaseDOI();
     int newSectors = sDao.createMissingMergeSectorsForProject(datasetKey, fullUser.getKey());
     LOG.info("Created {} newly published merge sectors", newSectors);
@@ -73,6 +80,11 @@ public class XRelease extends ProjectRelease {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       sectors = sm.listByPriority(datasetKey, Sector.Mode.MERGE);
     }
+  }
+
+  private void loadConfig(URI url) {
+    // TODO: load yaml configs from URL
+    xCfg = new XReleaseConfig();
   }
 
   @Override
@@ -91,7 +103,10 @@ public class XRelease extends ProjectRelease {
 
     updateState(ImportState.PROCESSING);
     // detect and group basionyms
-    new HomotypicConsolidator(factory, newDatasetKey, sectorPriorities).groupAll();
+    var secPrio = new SectorPriority(sectorPriorities);
+    var hc = HomotypicConsolidator.forAllFamilies(factory, newDatasetKey, secPrio::priority);
+    hc.setBasionymExclusions(xCfg.basionymExclusions);
+    hc.consolidate();
 
     // flagging of suspicous usages
     resolveParentMismatches();

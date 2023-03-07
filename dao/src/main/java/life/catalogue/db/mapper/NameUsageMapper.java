@@ -187,6 +187,16 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("userKey") int userKey);
 
   /**
+   * Moves the taxon given to a new parent by updating the parent_id and also sets a new status value.
+   * @param key the taxon to update
+   * @param parentId the new parentId to assign
+   */
+  void updateParentAndStatus(@Param("key") DSID<String> key,
+                      @Param("parentId") String parentId,
+                      @Param("status") TaxonomicStatus status,
+                      @Param("userKey") int userKey);
+
+  /**
    * Creates a new temp table for usage & name ids in the current transaction.
    * The table will be dropped immediately if the transaction is committed, otherwise at the end of the session.
    */
@@ -219,6 +229,22 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<String> deleteSubtree(@Param("key") DSID<String> key);
 
   /**
+   * List all usages from a sector different to the one given including nulls,
+   * which are direct children of a taxon from the given sector key.
+   *
+   * Returned SimpleName instances have the parentID as their parent property, not a scientificName!
+   *
+   * @param sectorKey sector that foreign children should point into
+   */
+  List<SimpleName> foreignChildren(@Param("key") DSID<Integer> sectorKey);
+
+  /**
+   * List all taxa of a project/release that are the root of a given sector by looking at the real usages.
+   * For ATTACH sectors this should just be one, but for UNIONs it is likely multiple.
+   */
+  List<SimpleName> sectorRoot(@Param("key") DSID<Integer> sectorKey);
+
+  /**
    * Iterates over all accepted descendants in a tree for a given start taxon
    * and processes them with the supplied handler. If the start taxon is null all root taxa are used.
    *
@@ -240,22 +266,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params,
                                     @Param("depthFirst") boolean depthFirst);
-
-  /**
-   * List all usages from a sector different to the one given including nulls,
-   * which are direct children of a taxon from the given sector key.
-   *
-   * Returned SimpleName instances have the parentID as their parent property, not a scientificName!
-   *
-   * @param sectorKey sector that foreign children should point into
-   */
-  List<SimpleName> foreignChildren(@Param("key") DSID<Integer> sectorKey);
-
-  /**
-   * List all taxa of a project/release that are the root of a given sector by looking at the real usages.
-   * For ATTACH sectors this should just be one, but for UNIONs it is likely multiple.
-   */
-  List<SimpleName> sectorRoot(@Param("key") DSID<Integer> sectorKey);
 
   /**
    * Depth first only implementation using a much lighter object then above.
