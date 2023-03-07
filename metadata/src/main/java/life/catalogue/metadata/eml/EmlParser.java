@@ -189,17 +189,13 @@ public class EmlParser {
                 break;
             }
 
-            if (isDataset) {
+            if (isDataset && !isProject) {
               switch (parser.getLocalName()) {
                 case "title":
-                  if (!isProject) {
-                    d.setTitle(text(text));
-                  }
+                  d.setTitle(text(text));
                   break;
                 case "shortName":
-                  if (!isProject) {
-                    d.setAlias(text(text));
-                  }
+                  d.setAlias(text(text));
                   break;
                 case "abstract":
                   d.setDescription(para.toString());

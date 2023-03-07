@@ -14,8 +14,7 @@ import java.util.Optional;
 import org.junit.Test;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -24,6 +23,14 @@ public class EmlParserTest {
 
   private DatasetWithSettings read(String name) throws IOException {
     return EmlParser.parse(getClass().getResourceAsStream("/metadata/" + name)).get();
+  }
+
+  @Test
+  public void waarnemingen() throws Exception {
+    Optional<DatasetWithSettings> m = EmlParser.parse(Resources.stream("metadata/Waarnemingen.xml"));
+    Dataset d = m.get().getDataset();
+    assertEquals("Waarnemingen.be / observations.be - List of species observed in Belgium", d.getTitle());
+    assertTrue(d.getDescription().startsWith("Waarnemingen.be / observations.be - List of species observed in Belgium is a species checklist dataset published by Natuurpunt"));
   }
 
   @Test
@@ -77,14 +84,13 @@ public class EmlParserTest {
     DatasetWithSettings d = read("famous.xml");
     Agent markus = Agent.person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
     markus.setOrganisation("GBIF");
-    Agent bouchard = Agent.person("Patrice", "Bouchard");
 
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
     assertEquals("https://github.com/mdoering/famous-organism", d.getUrl().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals(markus, d.getContact());
-    assertEquals(List.of(markus, bouchard), d.getCreator());
+    assertEquals(List.of(markus), d.getCreator());
     assertEquals("2017-01-19", d.getIssued().toString());
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
     assertEquals("Famous People", d.getAlias());

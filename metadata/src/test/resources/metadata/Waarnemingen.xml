@@ -1,0 +1,794 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.2/eml.xsd"
+packageId="2c38cf8a-f981-4dfb-bc9d-dd2b6fc792ed"  system="http://gbif.org" scope="system"
+xml:lang="en">
+
+    <dataset>
+            <alternateIdentifier>10.15468/a7wkuh</alternateIdentifier>
+                <alternateIdentifier>2c38cf8a-f981-4dfb-bc9d-dd2b6fc792ed</alternateIdentifier>
+                <alternateIdentifier>https://ipt.inbo.be/resource?r=natuurpunt-natagora-checklist</alternateIdentifier>
+        <title>Waarnemingen.be / observations.be - List of species observed in Belgium</title>
+            <creator>
+            <individualName>
+<givenName>Kristijn</givenName>                    <surName>Swinnen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>kristijn.swinnen@natuurpunt.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0002-1910-9247</userId>
+            </creator>
+            <creator>
+            <individualName>
+<givenName>Louis</givenName>                    <surName>Bronne</surName>
+            </individualName>
+<organizationName>Natagora</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>louis.bronne@natagora.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Marc</givenName>                    <surName>Herremans</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>marc.herremans@natuurpunt.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0002-9719-8732</userId>
+            </creator>
+            <creator>
+            <individualName>
+<givenName>Karin</givenName>                    <surName>Gielen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>karin.gielen@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Tim</givenName>                    <surName>Adriaens</surName>
+            </individualName>
+<organizationName>Research Institute for Nature and Forest (INBO)</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>tim.adriaens@inbo.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0001-7268-4200</userId>
+            </creator>
+            <creator>
+            <individualName>
+<givenName>Thomas</givenName>                    <surName>Baartmans</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>thomas.baartmans@groenhuysen.nl</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Dirk</givenName>                    <surName>Baert</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>dirk.baert99@telenet.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Hubert</givenName>                    <surName>Baltus</surName>
+            </individualName>
+<organizationName>Natagora</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>hubert.baltus@natagora.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Rutger</givenName>                    <surName>Barendse</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>rutger.barendse@telenet.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Margaux</givenName>                    <surName>Boeraeve</surName>
+            </individualName>
+<organizationName>Swedish University of Agricultural Sciences</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>margaux.boeraeve@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Kris</givenName>                    <surName>Boers</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>kris.boers@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Jo</givenName>                    <surName>Bogaert</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>johan.a.bogaert@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Nils</givenName>                    <surName>Bouillard</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>nils.bouillard@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Stéphane</givenName>                    <surName>Claerebout</surName>
+            </individualName>
+<organizationName>Natagora</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>stephane.claerebout@cercles-naturalistes.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Geert</givenName>                    <surName>De Knijf</surName>
+            </individualName>
+<organizationName>Research Institute for Nature and Forest (INBO)</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>geert.deknijf@inbo.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0002-7958-1420</userId>
+            </creator>
+            <creator>
+            <individualName>
+<givenName>Dirk</givenName>                    <surName>De Beer</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>dirk.debeer@telenet.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Pallieter</givenName>                    <surName>De Smedt</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>pallieterdesmedt@hotmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Raphaël</givenName>                    <surName>De Cock</surName>
+            </individualName>
+<organizationName>Glimwormenwerkgroep Natuurpunt</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>rdecock@hotmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>David</givenName>                    <surName>De Grave</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>daviddegrave@hotmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Augustijn</givenName>                    <surName>De Ketelaere</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>augustijn.de.ketelaere@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Isra</givenName>                    <surName>Deblauwe</surName>
+            </individualName>
+<organizationName>Entomology unit Institute of Tropical Medicine</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>ideblauwe@itg.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Lieven</givenName>                    <surName>Decrick</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>lievendecrick@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Daan</givenName>                    <surName>Dekeukeleire</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>daan.dekeukeleire@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Henry</givenName>                    <surName>Deraedt</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>henry.deraedt@live.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Jelle</givenName>                    <surName>Devalez</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>jelle.devalez@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Jens</givenName>                    <surName>D&apos;Haeseleer</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>jens.dhaeseleer@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Gerald</givenName>                    <surName>Driessens</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>gerald.driessens@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Dirk</givenName>                    <surName>Eysermans</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>diederik.eysermans@telenet.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Jean</givenName>                    <surName>Fagot</surName>
+            </individualName>
+<organizationName>ULiège</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>jean.fagot@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Rens</givenName>                    <surName>Hendrickx</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>saske.rens@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Robert</givenName>                    <surName>Jooris</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+            </creator>
+            <creator>
+            <individualName>
+<givenName>Ward</givenName>                    <surName>Langeraert</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>langeraert.ward@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Eddie</givenName>                    <surName>Lavreys</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>eddie.lavreys@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Koen</givenName>                    <surName>Lock</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>koen_lock@hotmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Garben</givenName>                    <surName>Logghe</surName>
+            </individualName>
+<organizationName>Ghent University</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>garbenlogghe@hotmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Koen</givenName>                    <surName>Maes</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>maeskoen@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Nicolas</givenName>                    <surName>Mayon</surName>
+            </individualName>
+<organizationName>Natagora</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>mayon.nico@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Erik</givenName>                    <surName>Moonen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>spoone@telenet.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Jonas</givenName>                    <surName>Mortelmans</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>jonasmortelmans@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>David</givenName>                    <surName>Muls</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>david.muls@outlook.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Wout</givenName>                    <surName>Opdekamp</surName>
+            </individualName>
+<organizationName>Natagora</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>wout.opdekamp@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Kris</givenName>                    <surName>Peeters</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>kkjm.peeters@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Robert</givenName>                    <surName>Pieters</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>robert.pieters2@telenet.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Marc</givenName>                    <surName>Pollet</surName>
+            </individualName>
+<organizationName>Research Institute for Nature and Forest (INBO)</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>mpollet.doli@gmail.com</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0001-5198-5928</userId>
+            </creator>
+            <creator>
+            <individualName>
+<givenName>Jorgen</givenName>                    <surName>Ravoet</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>jorgen.ravoet@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Flor</givenName>                    <surName>Rhebergen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>florrhebergen@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Anna</givenName>                    <surName>Schneider</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>schneider@live.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Stijn</givenName>                    <surName>Segers</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>segers.stijn@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Robin</givenName>                    <surName>Septor</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>robin.septor@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Jan</givenName>                    <surName>Soors</surName>
+            </individualName>
+<organizationName>Research Institute for Nature and Forest (INBO)</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>jan.soors@inbo.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Jeroen</givenName>                    <surName>Speybroeck</surName>
+            </individualName>
+<organizationName>Research Institute for Nature and Forest (INBO)</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>jeroen.speybroeck@inbo.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0002-7241-7804</userId>
+            </creator>
+            <creator>
+            <individualName>
+<givenName>Chris</givenName>                    <surName>Steeman</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>christiaan.steeman@telenet.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Roosmarijn</givenName>                    <surName>Steeman</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>roosmarijn.steeman@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Arno</givenName>                    <surName>Thomaes</surName>
+            </individualName>
+<organizationName>Research Institute for Nature and Forest (INBO)</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>arno.thomaes@inbo.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0001-5723-5976</userId>
+            </creator>
+            <creator>
+            <individualName>
+<givenName>Bart</givenName>                    <surName>Uitterhaegen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>validator.galwespen@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Loïc</givenName>                    <surName>van Doorn</surName>
+            </individualName>
+<organizationName>Research Institute for Nature and Forest (INBO)</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>loic.vandoorn@inbo.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0003-3497-9168</userId>
+            </creator>
+            <creator>
+            <individualName>
+<givenName>Peter</givenName>                    <surName>van der Schoot</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>petervanderschoot@telenet.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Tom</givenName>                    <surName>Van den Neucker</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>medionidus@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Edwin</givenName>                    <surName>van den Berg</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>bergvandenedwin@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Paul</givenName>                    <surName>Van Sanden</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>paul.vansanden@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Sam</givenName>                    <surName>Van De Poel</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>sam.vandepoel@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Carina</givenName>                    <surName>Van Steenwinkel</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>carin.vansteenwinkel@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Pieter</givenName>                    <surName>Vanormelingen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>pieter.vanormelingen@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Pieter</givenName>                    <surName>Vantieghem</surName>
+            </individualName>
+<organizationName>Ghent University</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>ptr.vantieghem@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Wim</givenName>                    <surName>Veraghtert</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>wim.veraghtert@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Dominique</givenName>                    <surName>Verbelen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>d.verbelen@telenet.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Goedele</givenName>                    <surName>Verbeylen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>goedele.verbeylen@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Floris</givenName>                    <surName>Verhaeghe</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>plattekaas@hotmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Fons</givenName>                    <surName>Verheyde</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>fonsverheyde@gmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Hans</givenName>                    <surName>Vermeiren</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>hans_vermeiren@hotmail.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Win</givenName>                    <surName>Vertommen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>winfried.vertommen@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Theo</givenName>                    <surName>Zeegers</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>th.zeegers@yahoo.com</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Jorg</givenName>                    <surName>Lambrechts</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>jorg.lambrechts@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Wouter</givenName>                    <surName>Vanreusel</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>wouter.vanreusel@natuurpunt.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Jean-Yves</givenName>                    <surName>Paquet</surName>
+            </individualName>
+<organizationName>Natagora</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>jean-yves.paquet@aves.be</electronicMailAddress>            </creator>
+            <creator>
+            <individualName>
+<givenName>Peter</givenName>                    <surName>Desmet</surName>
+            </individualName>
+<organizationName>Research Institute for Nature and Forest (INBO)</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>peter.desmet@inbo.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0002-8442-8025</userId>
+            </creator>
+            <metadataProvider>
+            <individualName>
+<givenName>Kristijn</givenName>                    <surName>Swinnen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>kristijn.swinnen@natuurpunt.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0002-1910-9247</userId>
+            </metadataProvider>
+            <metadataProvider>
+            <individualName>
+<givenName>Peter</givenName>                    <surName>Desmet</surName>
+            </individualName>
+<organizationName>Research Institute for Nature and Forest (INBO)</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>peter.desmet@inbo.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0002-8442-8025</userId>
+            </metadataProvider>
+            <pubDate>
+                2022-12-09
+            </pubDate>
+        <language>ENGLISH</language>
+            <abstract>
+                    <para>Waarnemingen.be / observations.be - List of species observed in Belgium is a species checklist dataset published by Natuurpunt and Natagora. Waarnemingen.be (in Dutch) and observation.be (in French) are the two local Belgian subsites of the global observation.org website. The checklist comprises 18.785 species observed in Belgium. Here, it is published as a standardized Darwin Core Archive and includes for each species: the scientific name, higher classification and stable taxon identifier (in the taxon core), its status (native, introduced) and first and last observation date per region (Flanders, Brussels Capital Region, Wallonia) in Belgium (in the distribution extension).</para>
+                    <para>Only observations which were approved by species specialists based on provided evidence (photograph or sound), or which were approved based on expert judgment by the validating experts were considered for publication (see Swinnen et al. 2022 for the validation procedure). Observers’ data-sharing settings were respected at all times. When the first or last observation from a species in a region was not to be shared, observers were contacted to request an exception for this species list. In the few cases this authorisation was not acquired, the next (for the oldest record) or previous (for the most recent record) observation date was considered for publication.</para>
+                    <para>This species list does not represent a complete overview of Belgian biodiversity, only species that are recorded in the citizen science platforms waarnemingen.be and observation.be. Other datasets and checklists have to be considered for the compilation of a complete Belgian overview.</para>
+                    <para>We have released this dataset under a Creative Commons Attribution 4.0 International License (CC-BY 4.0). We would appreciate it, however, if you read and follow these norms for data use (http://www.natuurpunt.be/normen-voor-datagebruik). If you use these data for a scientific paper, please cite the dataset following the applicable citation norms and/or consider us for co-authorship. We are always prepared to provide more information or knowledge on how to use the data, so please contact us via the contact information provided in the metadata or natuurdata&amp;#64;natuurpunt.be.</para>
+                    <para>This dataset was published as open data for the TrIAS project (Tracking Invasive Alien Species http://trias-project.be, Vanderhoeven et al. 2017, Groom et al. 2022), with technical support provided by the Research Institute for Nature and Forest (INBO). The subset of introduced species is selected as one of the authoritative sources for the compilation of a unified and reproducible checklist of alien species in Belgium published as the Global Register of Introduced and Invasive Species - Belgium (Desmet et al. 2021). This way, validated newly reported alien species on the waarnemingen.be/observation.be citizen science portal (Swinnen et al. 2018) quickly find their way to the scientific tools supporting alien species policies and management in Belgium.</para>
+            </abstract>
+                <keywordSet>
+                        <keyword>Checklist</keyword>
+                        <keywordThesaurus>GBIF Dataset Type Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_type_2015-07-10.xml</keywordThesaurus>
+                </keywordSet>
+                <keywordSet>
+                        <keyword>Inventoryregional</keyword>
+                        <keywordThesaurus>GBIF Dataset Subtype Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_subtype.xml</keywordThesaurus>
+                </keywordSet>
+                <keywordSet>
+                        <keyword>Brussels Capital Region</keyword>
+                        <keyword>biodiversity</keyword>
+                        <keyword>Flanders</keyword>
+                        <keyword>observation.org</keyword>
+                        <keyword>Natagora</keyword>
+                        <keyword>citizen science</keyword>
+                        <keyword>TrIAS</keyword>
+                        <keyword>checklist</keyword>
+                        <keyword>Natuurpunt</keyword>
+                        <keyword>Belgium</keyword>
+                        <keyword>native species</keyword>
+                        <keyword>Wallonia</keyword>
+                        <keyword>observations</keyword>
+                        <keyword>alien species</keyword>
+                        <keyword>waarnemingen.be</keyword>
+                        <keyword>observation.be</keyword>
+                        <keywordThesaurus>n/a</keywordThesaurus>
+                </keywordSet>
+            <intellectualRights>
+                    <para>This work is licensed under a <ulink url="http://creativecommons.org/licenses/by/4.0/legalcode"><citetitle>Creative Commons Attribution (CC-BY) 4.0 License</citetitle></ulink>.</para>
+            </intellectualRights>
+            <distribution scope="document">
+                <online>
+                    <url function="information">https://www.waarnemingen.be</url>
+                </online>
+            </distribution>
+            <coverage>
+                    <geographicCoverage>
+                            <geographicDescription>This checklist covers all species in Belgium recorded via the citizen science platforms waarnemingen.be and observation.be. Per species, the first and last observation date is given for Belgium as a whole as well as for each of the three regions (Flanders, Wallonia and the Brussels Capital Region). Observations recorded in the Belgian Part of North Sea are assigned to Flanders, so that the sum of the 3 regions equals the distributions in Belgium as a whole.</geographicDescription>
+                            <boundingCoordinates>
+                                <westBoundingCoordinate>2.53</westBoundingCoordinate>
+                                <eastBoundingCoordinate>6.41</eastBoundingCoordinate>
+                                <northBoundingCoordinate>51.51</northBoundingCoordinate>
+                                <southBoundingCoordinate>49.49</southBoundingCoordinate>
+                            </boundingCoordinates>
+                    </geographicCoverage>
+                    <temporalCoverage>
+                            <rangeOfDates>
+                                <beginDate>
+                                    <calendarDate>                1900-01-01
+</calendarDate>
+                                </beginDate>
+                                <endDate>
+                                    <calendarDate>                2022-02-06
+</calendarDate>
+                                </endDate>
+                            </rangeOfDates>
+                    </temporalCoverage>
+                        <taxonomicCoverage>
+                                <generalTaxonomicCoverage>This checklist covers all species in Belgium recorded via the citizen science platforms waarnemingen.be and observation.be. This includes 18785 species from 6 kingdoms. Infraspecific taxa and fossil remains are not included.</generalTaxonomicCoverage>
+                                <taxonomicClassification>
+                                        <taxonRankName>Kingdom</taxonRankName>
+                                    <taxonRankValue>Animalia</taxonRankValue>
+                                </taxonomicClassification>
+                                <taxonomicClassification>
+                                        <taxonRankName>Kingdom</taxonRankName>
+                                    <taxonRankValue>Bacteria</taxonRankValue>
+                                </taxonomicClassification>
+                                <taxonomicClassification>
+                                        <taxonRankName>Kingdom</taxonRankName>
+                                    <taxonRankValue>Chromista</taxonRankValue>
+                                </taxonomicClassification>
+                                <taxonomicClassification>
+                                        <taxonRankName>Kingdom</taxonRankName>
+                                    <taxonRankValue>Fungi</taxonRankValue>
+                                </taxonomicClassification>
+                                <taxonomicClassification>
+                                        <taxonRankName>Kingdom</taxonRankName>
+                                    <taxonRankValue>Plantae</taxonRankValue>
+                                </taxonomicClassification>
+                                <taxonomicClassification>
+                                        <taxonRankName>Kingdom</taxonRankName>
+                                    <taxonRankValue>Protozoa</taxonRankValue>
+                                </taxonomicClassification>
+                        </taxonomicCoverage>
+            </coverage>
+            <maintenance>
+                <description>
+                    <para></para>
+                </description>
+                <maintenanceUpdateFrequency>annually</maintenanceUpdateFrequency>
+            </maintenance>
+            <contact>
+            <individualName>
+<givenName>Kristijn</givenName>                    <surName>Swinnen</surName>
+            </individualName>
+<organizationName>Natuurpunt Studie</organizationName>            <address>
+<country>BELGIUM</country>            </address>
+<electronicMailAddress>kristijn.swinnen@natuurpunt.be</electronicMailAddress>            <userId directory="http://orcid.org/">0000-0002-1910-9247</userId>
+            </contact>
+            <methods>
+                    <methodStep>
+                        <description>
+                            <para>Species list and distribution extension was created in pgAdmin. This list was checked by species specialists which removed species which were previously approved, but currently under investigation and not yet changed in the portal. This resulted in a final species list and distribution extension.</para>
+                        </description>
+                    </methodStep>
+                    <methodStep>
+                        <description>
+                            <para>Create a taxon core file (https://rs.gbif.org/core/dwc_taxon_2022-02-02.xml).</para>
+                        </description>
+                    </methodStep>
+                    <methodStep>
+                        <description>
+                            <para>Create a distribution extension file (https://rs.gbif.org/extension/gbif/1.0/distribution_2022-02-02.xml).</para>
+                        </description>
+                    </methodStep>
+                    <methodStep>
+                        <description>
+                            <para>The resulting Darwin Core data files are uploaded to the INBO IPT and documented with metadata.</para>
+                        </description>
+                    </methodStep>
+                    <methodStep>
+                        <description>
+                            <para>The dataset is published and registered with GBIF.</para>
+                        </description>
+                    </methodStep>
+                    <sampling>
+                        <studyExtent>
+                            <description>
+                                <para>This checklist is based on species recorded in the citizen science platforms waarnemingen.be and observations.be. Both platforms were launched in 2008 and although older records are also included, the majority of the records are recent. Search effort for different species groups is highly variable, resulting in an underestimation of the species diversity in a number of less sampled species groups, particularly those whose species are difficult to recognise. A spatial bias is also present, favoring species rich habitats and areas, but with an underrepresentation of species poor agricultural and urban areas. Furthermore, the final result is highly dependent on the expertise of the 160 expert volunteer validators. In case of the absence of a species specialist to evaluate observations, these observations were not validated and hence not included in the species list. In case the active observer is also the only species group expert validator, observations remained unvalidated and were not added to the species list since the evaluation of your own observations is not allowed.</para>
+                            </description>
+                        </studyExtent>
+                        <samplingDescription>
+                            <para>Waarnemingen.be/observations.be is a citizen science platform allowing to register all species occurring in the wild, mainly focussing on plants, animals and fungi. It is mainly used as a notebook by naturalists to register and document their sightings and the majority of the observations are presence only records (Swinnen et al. 2022). A smaller proportion of the data (c. 10%) is part of a complete species list or transect count.</para>
+                        </samplingDescription>
+                    </sampling>
+                    <qualityControl>
+                        <description>
+                            <para>See step description.</para>
+                        </description>
+                    </qualityControl>
+            </methods>
+
+            <project id="TrIAS">
+                <title>Tracking Invasive Alien Species (TrIAS)</title>
+                    <personnel>
+            <individualName>
+<givenName>Tim</givenName>                    <surName>Adriaens</surName>
+            </individualName>
+            <userId directory="http://orcid.org/">0000-0001-7268-4200</userId>
+            <role>AUTHOR</role>
+                    </personnel>
+                    <personnel>
+            <individualName>
+<givenName>Peter</givenName>                    <surName>Desmet</surName>
+            </individualName>
+            <userId directory="http://orcid.org/">0000-0002-8442-8025</userId>
+            <role>AUTHOR</role>
+                    </personnel>
+                    <personnel>
+            <individualName>
+<givenName>Quentin</givenName>                    <surName>Groom</surName>
+            </individualName>
+            <userId directory="http://orcid.org/">0000-0002-0596-5376</userId>
+            <role>PRINCIPAL_INVESTIGATOR</role>
+                    </personnel>
+                    <personnel>
+            <individualName>
+<givenName>Diederik</givenName>                    <surName>Strubbe</surName>
+            </individualName>
+            <userId directory="http://orcid.org/">0000-0002-2613-4985</userId>
+            <role>AUTHOR</role>
+                    </personnel>
+                    <personnel>
+            <individualName>
+<givenName>Sonia</givenName>                    <surName>Vanderhoeven</surName>
+            </individualName>
+            <userId directory="http://orcid.org/">0000-0002-6298-5373</userId>
+            <role>AUTHOR</role>
+                    </personnel>
+                <abstract>
+                    <para>Imagine a future where dynamically, from year to year, we can track the progression of alien species (AS), identify emerging species, assess their current and future risk and timely inform policy in a seamless data-driven workflow. One that is built on open science and open data infrastructures. By using international biodiversity standards and facilities, we would ensure interoperability, repeatability and sustainability. This would make the process adaptable to future requirements in an evolving IAS policy landscape both locally and internationally. The project Tracking Invasive Alien Species (TrIAS) aims to do this for Belgium. For a full project description, see Vanderhoeven et al. (2017, https://doi.org/10.3897/rio.3.e13414).</para>
+                </abstract>
+                <funding>
+                    <para>TrIAS is funded by the Belgian Science Policy Office (BELSPO) call for Belgian Research Action through Interdisciplinary Networks (BRAIN).</para>
+                </funding>
+                    <studyAreaDescription>
+                        <descriptor name="generic" citableClassificationSystem="false">
+                            <descriptorValue>Belgium.</descriptorValue>
+                        </descriptor>
+                    </studyAreaDescription>
+                    <designDescription>
+                        <description>
+                            <para>The project builds on two components: 1) The establishment of a data mobilization framework for alien species data from diverse data sources and 2) the development of data-driven procedures for risk evaluation based on risk modelling, risk mapping and risk assessment. TrIAS uses facilities from the Global Biodiversity Information Facility (GBIF, http://www.gbif.org), standards from the Biodiversity Information Standards organization (TDWG, http://www.tdwg.org) and expertise from the Open science lab for biodiversity (https://oscibio.inbo.be) to create and facilitate a systematic workflow. Alien species data are gathered from a large set of regional, national and international initiatives, including citizen science data, with a wide taxonomic scope from marine, terrestrial and freshwater environments. Observation data are funnelled in repeatable ways to GBIF. In parallel, a Belgian checklist of alien species is established, benefiting from various taxonomic and project-based checklists foreseen for GBIF publication.</para>
+                        </description>
+                    </designDescription>
+            </project>
+    </dataset>
+
+    <additionalMetadata>
+        <metadata>
+            <gbif>
+                <dateStamp>2023-03-07T18:41:24Z</dateStamp>
+                <citation identifier="https://doi.org/10.15468/a7wkuh">Swinnen K, Bronne L, Herremans M, Gielen K, Adriaens T, Baartmans T, Baert D, Baltus H, Barendse R, Boeraeve M, Boers K, Bogaert J, Bouillard N, Claerebout S, De Knijf G, De Beer D, De Smedt P, De Cock R, De Grave D, De Ketelaere A, Deblauwe I, Decrick L, Dekeukeleire D, Deraedt H, Devalez J, D&apos;Haeseleer J, Driessens G, Eysermans D, Fagot J, Hendrickx R, Jooris R, Langeraert W, Lavreys E, Lock K, Logghe G, Maes K, Mayon N, Moonen E, Mortelmans J, Muls D, Opdekamp W, Peeters K, Pieters R, Pollet M, Ravoet J, Rhebergen F, Schneider A, Segers S, Septor R, Soors J, Speybroeck J, Steeman C, Steeman R, Thomaes A, Uitterhaegen B, van Doorn L, van der Schoot P, Van den Neucker T, van den Berg E, Van Sanden P, Van De Poel S, Van Steenwinkel C, Vanormelingen P, Vantieghem P, Veraghtert W, Verbelen D, Verbeylen G, Verhaeghe F, Verheyde F, Vermeiren H, Vertommen W, Zeegers T, Lambrechts J, Vanreusel W, Paquet J, Desmet P (2022). Waarnemingen.be / observations.be - List of species observed in Belgium. Version 1.1. Natuurpunt. Checklist dataset https://doi.org/10.15468/a7wkuh accessed via GBIF.org on 2023-03-07.</citation>
+                    <bibliography>
+                <citation>Desmet P, Reyserhove L, Oldoni D, Groom Q, Adriaens T, Vanderhoeven S, Pagad S (2021). Global Register of Introduced and Invasive Species - Belgium. Version 1.12. Invasive Species Specialist Group ISSG. Checklist dataset https://doi.org/10.15468/xoidmd</citation>
+                <citation>Groom Q, Vanderhoeven S, Eggermont H, Coupremanne M, Adriaens T, Desmet P, Reyserhove L, Oldoni D, Strubbe D, Davis A, Lens L, Monty A, Mahy G, Jacquemart A-L, Verleye T, Van Hoey G, Van De Kerckhove R, Backeljau T, Dispas M, Sciensano, Vilain A, De Troch R, Van Schaeybroeck B, Termonia P (2022). TrIAS: Tracking Invasive Alien Species: Building a data driven framework to inform policy. Final Report. Brussels, Belgium. Belgian Science Policy Office (Belspo). http://www.belspo.be/belspo/brain-be/projects/FinalReports/TrIAS_FinRep.pdf</citation>
+                <citation>Swinnen K, Jacobs A, Claus K, Ruyts S, Vercayie D, Lambrechts J, Herremans M (2022). ‘Animals under wheels’: Wildlife roadkill data collection by citizen scientists as a part of their nature recording activities. Nature Conservation 47: 121-153 https://doi.org/10.3897/natureconservation.47.72970</citation>
+                <citation>Swinnen K, Vercayie D, Vanreusel W, Barendse R, Boers K, Bogaert J, Dekeukeleire D, Driessens G, Dupriez P, Jooris R, Steeman R, Van Asten K, Van Den Neucker T, Van Dorsselaer P, Van Vooren P, Wysmantel N, Gielen K, Desmet P, Herremans M, all working groups, species validators and recorders Waarnemingen.be (2018) Waarnemingen.be – Non-native plant and animal occurrences in Flanders and the Brussels Capital Region, Belgium. BioInvasions Records 7(3): 335–342. https://doi.org/10.3391/bir.2018.7.3.17</citation>
+                <citation>Vanderhoeven S, Adriaens T, Desmet P, Strubbe D, Backeljau T, Barbier Y, Brosens D, Cigar J, Coupremanne M, De Troch R, Eggermont H, Heughebaert A, Hostens K, Huybrechts P, Jacquemart A, Lens L, Monty A, Paquet J, Prévot C, Robertson T, Termonia P, Van De Kerchove R, Van Hoey G, Van Schaeybroeck B, Vercayie D, Verleye T, Welby S, Groom Q (2017) Tracking Invasive Alien Species (TrIAS): Building a data-driven framework to inform policy. Research Ideas and Outcomes 3: e13414. https://doi.org/10.3897/rio.3.e13414</citation>
+                    </bibliography>
+            </gbif>
+        </metadata>
+    </additionalMetadata>
+
+</eml:eml>
