@@ -62,7 +62,7 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     assertEquals(20, mapper().search("user", null, page).size());
     assertEquals(11, mapper().search("user1", null, page).size());
     assertEquals(2, mapper().search("user2", null, page).size());
-    assertEquals(26, mapper().search("", null, page).size());
+    assertEquals(28, mapper().search("", null, page).size());
     mapper().search("", null, page).forEach(u -> {
       assertNotNull(u.getKey());
       assertNotNull(u.getUsername());
