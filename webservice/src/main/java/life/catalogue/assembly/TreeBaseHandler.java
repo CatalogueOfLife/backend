@@ -312,7 +312,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     try {
       switch (ed.getMode()) {
         case BLOCK:
-          throw new IllegalStateException("Blocked usage " + u.getId() + " should not have been traversed");
+          throw new IllegalStateException("Blocked usage " +u.getLabel() + " [" + u.getId() + "] should not have been traversed");
         case UPDATE:
           decisionCounter++;
           if (ed.getName() != null) {

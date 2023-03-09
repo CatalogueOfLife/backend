@@ -578,6 +578,10 @@
     <if test="param.extinct != null and !param.extinct">
       AND NOT u.extinct
     </if>
+    <if test="param.exclusion != null and !param.exclusion.isEmpty()">
+      AND u.id NOT IN
+      <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
+    </if>
     <if test="param.lowestRank">
       AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
     </if>
