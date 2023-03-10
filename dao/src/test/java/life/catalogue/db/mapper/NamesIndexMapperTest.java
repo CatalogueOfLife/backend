@@ -30,7 +30,7 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
       counter.incrementAndGet();
       assertNotNullProps(n);
     });
-    assertEquals(2, counter.get());
+    assertEquals(4, counter.get());
   }
 
   private void assertNotNullProps(Iterable<IndexName> ns){
@@ -56,7 +56,7 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
       var map = ApiModule.MAPPER.readValue(n.getId(), ref);
       System.out.println(map);
     }
-    assertEquals(4, counter.get());
+    assertEquals(2, counter.get());
   }
 
   @Test
