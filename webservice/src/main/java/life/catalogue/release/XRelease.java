@@ -90,7 +90,8 @@ public class XRelease extends ProjectRelease {
 
   @Override
   void prepWork() throws Exception {
-    if (settings.containsKey(Setting.XRELEASE_CONFIG)) {
+    //TODO: can this be removed? dont we always call modifyDataset anyways?
+    if (xCfg == null) {
       xCfg = loadConfig(settings.getURI(Setting.XRELEASE_CONFIG));
     }
     createReleaseDOI();
