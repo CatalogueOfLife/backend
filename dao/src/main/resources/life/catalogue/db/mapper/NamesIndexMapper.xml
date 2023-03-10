@@ -63,6 +63,12 @@
     </association>
   </resultMap>
 
+  <resultMap id="simpleNameResultMap" type="SimpleName" autoMapping="false">
+    <id property="id" column="ids"/>
+    <result property="name" column="scientific_name"/>
+    <result property="authorship" column="authorship"/>
+    <result property="rank" column="rank" />
+  </resultMap>
 
   <select id="get" resultMap="nameResultMap">
     SELECT <include refid="SELECT"/>
@@ -117,4 +123,13 @@
     ORDER BY scientific_name, id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
+
+  <select id="processDatasets" parameterType="map" resultMap="simpleNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT n.scientific_name, n.authorship, n.rank, jsonb_object_agg(u.dataset_key, u.id) as ids
+    FROM names_index n JOIN name_match nm ON n.id=nm.index_id JOIN name_usage u ON u.dataset_key = nm.dataset_key AND u.name_id = nm.name_id
+    WHERE nm.dataset_key IN <foreach item="key" collection="datasetKeys" open="(" separator="," close=")">#{key}</foreach>
+    GROUP BY n.scientific_name, n.authorship, n.rank
+    ORDER BY n.scientific_name, n.authorship, n.rank
+  </select>
+
 </mapper>

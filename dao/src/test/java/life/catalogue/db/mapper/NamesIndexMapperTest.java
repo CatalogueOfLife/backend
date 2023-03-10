@@ -1,9 +1,18 @@
 package life.catalogue.db.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.IndexName;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.db.TestDataRule;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
@@ -38,6 +47,19 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
     assertNotNull(n.getCanonicalId());
     assertNotNull(n.getScientificName());
     assertNotNull(n.getRank());
+  }
+
+  @Test
+  public void processDatasets() throws Exception {
+    final AtomicInteger counter = new AtomicInteger();
+    for (SimpleName n : mapper().processDatasets(List.copyOf(testDataRule.testData.datasetKeys))) {
+      counter.incrementAndGet();
+      System.out.println(n);
+      var ref = new TypeReference<Map<Integer, String>>() {};
+      var map = ApiModule.MAPPER.readValue(n.getId(), ref);
+      System.out.println(map);
+    }
+    assertEquals(4, counter.get());
   }
 
   @Test

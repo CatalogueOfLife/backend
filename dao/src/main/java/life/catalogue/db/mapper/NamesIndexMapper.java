@@ -51,8 +51,8 @@ public interface NamesIndexMapper extends CRUD<Integer, IndexName> {
                               @Param("page") Page page);
 
   /**
-   * Iterate through all name index entries as simple names with aggregated ids from sources.
+   * Iterate through all name index entries as simple names with aggregated ids (@@ concatenation) from sources.
    */
-  Cursor<SimpleName> processDatasets(Set<Integer> datasetKeys);
+  Cursor<SimpleName> processDatasets(@Param("datasetKeys") List<Integer> datasetKeys);
 
 }

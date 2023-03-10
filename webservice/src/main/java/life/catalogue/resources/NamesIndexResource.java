@@ -1,16 +1,23 @@
 package life.catalogue.resources;
 
+import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
 
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.importer.NameInterpreter;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexImpl;
 import life.catalogue.matching.NameIndexMapDBStore;
+
+import life.catalogue.matching.NidxExportJob;
+
+import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -39,9 +46,15 @@ public class NamesIndexResource {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexResource.class);
   private final NameIndex ni;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings());
+  private final SqlSessionFactory factory;
+  private final WsServerConfig cfg;
+  private final JobExecutor exec;
 
-  public NamesIndexResource(NameIndex ni) {
+  public NamesIndexResource(NameIndex ni, SqlSessionFactory factory, WsServerConfig cfg,JobExecutor exec) {
     this.ni = ni;
+    this.factory = factory;
+    this.cfg = cfg;
+    this.exec = exec;
   }
 
   @GET
@@ -98,6 +111,14 @@ public class NamesIndexResource {
     RegexUtils.validatePattern(regex);
     Page p = page == null ? new Page() : page;
     return session.getMapper(NamesIndexMapper.class).listByRegex(regex, canonical, rank, p);
+  }
+
+  @POST
+  @Path("export")
+  public NidxExportJob export(@QueryParam("datasetKey") List<Integer> keys, @Auth User user) {
+    NidxExportJob job = new NidxExportJob(keys, user.getKey(), factory, cfg);
+    exec.submit(job);
+    return job;
   }
 
   @POST
