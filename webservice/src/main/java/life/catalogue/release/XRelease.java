@@ -67,7 +67,7 @@ public class XRelease extends ProjectRelease {
   protected void modifyDataset(Dataset d, DatasetSettings ds) {
     super.modifyDataset(d, ds);
     if (xCfg == null) {
-      xCfg = loadConfig(settings.getURI(Setting.XRELEASE_CONFIG));
+      xCfg = loadConfig(ds.getURI(Setting.XRELEASE_CONFIG));
     }
     d.setOrigin(DatasetOrigin.XRELEASE);
     if (xCfg.alias != null) {
@@ -90,10 +90,6 @@ public class XRelease extends ProjectRelease {
 
   @Override
   void prepWork() throws Exception {
-    //TODO: can this be removed? dont we always call modifyDataset anyways?
-    if (xCfg == null) {
-      xCfg = loadConfig(settings.getURI(Setting.XRELEASE_CONFIG));
-    }
     createReleaseDOI();
     if (xCfg.sourcePublisher != null) {
       for (UUID pubKey : xCfg.sourcePublisher) {
