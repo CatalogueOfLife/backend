@@ -44,9 +44,7 @@ public class DatasetSettingsTest extends SerdeTestBase<DatasetSettings> {
       Map.entry(Setting.IMPORT_FREQUENCY, Frequency.MONTHLY),
       Map.entry(Setting.DATA_ACCESS, URI.create("www.gbif.org")),
       Map.entry(Setting.SECTOR_ENTITIES, List.of(EntityType.VERNACULAR)),
-      Map.entry(Setting.SECTOR_RANKS, List.of(Rank.GENUS, Rank.SPECIES, Rank.SUBGENUS, Rank.TRIBE)),
-      Map.entry(Setting.XRELEASE_SOURCE_PUBLISHER, List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())),
-      Map.entry(Setting.XRELEASE_EXCLUDE_SOURCE_DATASET, List.of(1010, 1020, 1233))
+      Map.entry(Setting.SECTOR_RANKS, List.of(Rank.GENUS, Rank.SPECIES, Rank.SUBGENUS, Rank.TRIBE))
     ));
     return ds;
   }

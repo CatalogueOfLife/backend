@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.basgroup.HomotypicConsolidator;
 import life.catalogue.basgroup.SectorPriority;
+import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
@@ -65,10 +66,25 @@ public class XRelease extends ProjectRelease {
   @Override
   protected void modifyDataset(Dataset d, DatasetSettings ds) {
     super.modifyDataset(d, ds);
+    if (xCfg == null) {
+      xCfg = loadConfig(settings.getURI(Setting.XRELEASE_CONFIG));
+    }
     d.setOrigin(DatasetOrigin.XRELEASE);
-    if (ds.has(Setting.XRELEASE_ALIAS_TEMPLATE)) {
-      String alias = CitationUtils.fromTemplate(d, ds.getString(Setting.XRELEASE_ALIAS_TEMPLATE));
+    if (xCfg.alias != null) {
+      String alias = CitationUtils.fromTemplate(d, xCfg.alias);
       d.setAlias(alias);
+    }
+    if (xCfg.title != null) {
+      String title = CitationUtils.fromTemplate(d, xCfg.title);
+      d.setTitle(title);
+    }
+    if (xCfg.version != null) {
+      String version = CitationUtils.fromTemplate(d, xCfg.version);
+      d.setVersion(version);
+    }
+    if (xCfg.description != null) {
+      String description = CitationUtils.fromTemplate(d, xCfg.description);
+      d.setDescription(description);
     }
   }
 
@@ -78,8 +94,12 @@ public class XRelease extends ProjectRelease {
       xCfg = loadConfig(settings.getURI(Setting.XRELEASE_CONFIG));
     }
     createReleaseDOI();
-    int newSectors = sDao.createMissingMergeSectorsForProject(datasetKey, fullUser.getKey());
-    LOG.info("Created {} newly published merge sectors", newSectors);
+    if (xCfg.sourcePublisher != null) {
+      for (UUID pubKey : xCfg.sourcePublisher) {
+        int newSectors = sDao.createMissingMergeSectorsFromPublisher(datasetKey, fullUser.getKey(), pubKey, xCfg.sourceDatasetExclusion);
+        LOG.info("Created {} newly published merge sectors from publisher {}", newSectors, pubKey);
+      }
+    }
 
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -94,7 +114,9 @@ public class XRelease extends ProjectRelease {
       return new XReleaseConfig();
     } else {
       try (InputStream in = url.toURL().openStream()) {
-        return YamlUtils.read(XReleaseConfig.class, in);
+        // odd workaround to use the stream directly - which breaks the yaml parsing for some reason
+        String yaml = InputStreamUtils.readEntireStream(in);
+        return YamlUtils.readString(XReleaseConfig.class, yaml);
       } catch (IOException e) {
         throw new IllegalArgumentException("Invalid xrelease configuration at "+ url, e);
       }

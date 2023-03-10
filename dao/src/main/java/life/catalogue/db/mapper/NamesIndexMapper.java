@@ -2,11 +2,13 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.db.CRUD;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
@@ -47,5 +49,10 @@ public interface NamesIndexMapper extends CRUD<Integer, IndexName> {
                               @Param("canonical") boolean canonical,
                               @Param("rank") Rank rank,
                               @Param("page") Page page);
+
+  /**
+   * Iterate through all name index entries as simple names with aggregated ids from sources.
+   */
+  Cursor<SimpleName> processDatasets(Set<Integer> datasetKeys);
 
 }

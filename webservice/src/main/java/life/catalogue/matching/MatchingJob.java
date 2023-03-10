@@ -91,7 +91,7 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   private File matchResultFile() {
-    return new File(cfg.normalizer.scratchDir, "job/" + getKey().toString() + ".gz");
+    return cfg.normalizer.jobResultFile(getKey());
   }
 
   @Override

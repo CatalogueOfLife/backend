@@ -193,8 +193,8 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @POST
   @Path("/createFromPublisher")
-  public int createFromPublisher(@PathParam("key") int projectKey, @QueryParam("publisherKey") List<UUID> publisherKeys, @QueryParam("ranks") Set<Rank> ranks, @Auth User user) throws Exception {
-    return dao.createMissingMergeSectorsFromPublisher(projectKey, user.getKey(), ranks, publisherKeys);
+  public int createFromPublisher(@PathParam("key") int projectKey, @QueryParam("publisherKey") UUID publisherKey, @QueryParam("ranks") Set<Rank> ranks, @Auth User user) throws Exception {
+    return dao.createMissingMergeSectorsFromPublisher(projectKey, user.getKey(), ranks, publisherKey, Set.of());
   }
 
 }

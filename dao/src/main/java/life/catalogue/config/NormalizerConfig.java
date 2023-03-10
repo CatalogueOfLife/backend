@@ -121,6 +121,10 @@ public class NormalizerConfig {
     return new File(scratchDir(datasetKey), fileName);
   }
 
+  public File jobResultFile(UUID key) {
+    return new File(scratchDir, "job/" + key.toString() + ".gz");
+  }
+
   /**
    * Creates a new random & unique scratch file that can e.g. be used for uploads.
    */

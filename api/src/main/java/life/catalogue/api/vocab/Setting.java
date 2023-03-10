@@ -99,26 +99,6 @@ public enum Setting {
   RELEASE_PREPARE_DOWNLOADS(Boolean.class, PROJECT),
 
   /**
-   * Template used to build a new extended release alias.
-   */
-  XRELEASE_ALIAS_TEMPLATE(String.class, PROJECT),
-
-  /**
-   * GBIF publisher organisation keys to be used as dynamic sources of sectors
-   * for extended releases. Each dataset published by these publishers become a sector
-   * in its entirety without a single subject root. These sectors will be persisted in the project
-   * so the sector key is fixed.
-   *
-   * Use the XRELEASE_EXCLUDE_SOURCE_DATASET setting to ignore specific datasets.
-   */
-  XRELEASE_SOURCE_PUBLISHER(UUID.class, true, PROJECT),
-
-  /**
-   * A list of dataset keys to be ignored as dynamic sources via the XRELEASE_SOURCE_PUBLISHER setting.
-   */
-  XRELEASE_EXCLUDE_SOURCE_DATASET(Integer.class, true, PROJECT),
-
-  /**
    * URL to a yaml file with the configuration for an extended release.
    */
   XRELEASE_CONFIG(URI.class, PROJECT),

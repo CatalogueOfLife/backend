@@ -5,6 +5,7 @@ import com.sun.source.doctree.TextTree;
 import life.catalogue.api.jackson.ApiModule;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -49,6 +50,14 @@ public class YamlUtils {
    */
   public static <T> T read(Class<T> objClass, File configFile) throws IOException {
     return read(objClass, new FileInputStream(configFile));
+  }
+
+  /**
+   * Deserializes an object from a yaml string.
+   */
+  public static <T> T readString(Class<T> objClass, String yaml) throws IOException {
+    InputStream stream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8));
+    return read(objClass, stream);
   }
 
   /**

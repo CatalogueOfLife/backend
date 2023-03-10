@@ -272,41 +272,29 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
-  public int createMissingMergeSectorsForProject(int projectKey, int userKey) {
-    DatasetSettings settings;
-    try (SqlSession session = factory.openSession(true)) {
-      settings = session.getMapper(DatasetMapper.class).getSettings(projectKey);
-    }
-    if (settings != null && settings.has(Setting.XRELEASE_SOURCE_PUBLISHER)) {
-      return createMissingMergeSectorsFromPublisher(projectKey, userKey, PUBLISHER_SECTOR_RANKS, settings.getList(Setting.XRELEASE_SOURCE_PUBLISHER));
-    }
-    return 0;
-  }
-
-  public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, @Nullable Set<Rank> ranks, List<UUID> publisherKeys) {
-    int count = 0;
-    if (publisherKeys != null) {
-      for (UUID publisher : publisherKeys) {
-        LOG.info("Retrieve newly published sectors from GBIF publisher {}", publisher);
-        List<Integer> datasetKeys;
-        try (SqlSession session = factory.openSession(true)) {
-          datasetKeys = session.getMapper(DatasetMapper.class).keysByPublisher(publisher);
-        }
-        count += createMissingMergeSectors(projectKey, userKey, ranks, datasetKeys);
-      }
-    }
-    return count;
+  public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, UUID publisherKey, @Nullable Set<Integer> datasetExclusion) {
+    return createMissingMergeSectorsFromPublisher(projectKey, userKey, PUBLISHER_SECTOR_RANKS, publisherKey, datasetExclusion);
   }
 
   /**
-   * Creates a new merge sectors for each given source dataset key unless there is an existing one already.
+   * Creates new merge sectors for source datasets published by the given GBIF publisher key unless there is an existing one already.
    * @param projectKey the project to create sectors in
    * @param userKey the creator
    * @param ranks optional set of ranks as sector setting to use
-   * @param datasetKeys list of source dataset keys to check
+   * @param publisherKey GBIF publisher key to scan for published datasets
+   * @param datasetExclusion optional set of dataset keys to exclude. No sectors will be created for these
    * @return number of newly created sectors
    */
-  public int createMissingMergeSectors(int projectKey, int userKey, @Nullable Set<Rank> ranks, List<Integer> datasetKeys) {
+  public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, @Nullable Set<Rank> ranks, UUID publisherKey, @Nullable Set<Integer> datasetExclusion) {
+    LOG.info("Retrieve newly published sectors from GBIF publisher {}", publisherKey);
+    List<Integer> datasetKeys;
+    try (SqlSession session = factory.openSession(true)) {
+      datasetKeys = session.getMapper(DatasetMapper.class).keysByPublisher(publisherKey);
+    }
+    // exclude some of these datasets?
+    if (datasetExclusion != null) {
+      datasetExclusion.forEach(datasetKeys::remove);
+    }
     int counter = 0;
     if (datasetKeys != null) {
       try (SqlSession session = factory.openSession(true)) {
