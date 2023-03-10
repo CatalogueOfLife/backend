@@ -1,5 +1,7 @@
 package life.catalogue.release;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
@@ -7,6 +9,7 @@ import life.catalogue.assembly.SyncFactory;
 import life.catalogue.basgroup.HomotypicConsolidator;
 import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.common.text.CitationUtils;
+import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -22,6 +25,8 @@ import life.catalogue.img.ImageService;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -70,7 +75,7 @@ public class XRelease extends ProjectRelease {
   @Override
   void prepWork() throws Exception {
     if (settings.containsKey(Setting.XRELEASE_CONFIG)) {
-      loadConfig(settings.getURI(Setting.XRELEASE_CONFIG));
+      xCfg = loadConfig(settings.getURI(Setting.XRELEASE_CONFIG));
     }
     createReleaseDOI();
     int newSectors = sDao.createMissingMergeSectorsForProject(datasetKey, fullUser.getKey());
@@ -82,9 +87,18 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  private void loadConfig(URI url) {
-    // TODO: load yaml configs from URL
-    xCfg = new XReleaseConfig();
+  @VisibleForTesting
+  protected static XReleaseConfig loadConfig(URI url) {
+    if (url == null) {
+      LOG.warn("No XRelease config supplied");
+      return new XReleaseConfig();
+    } else {
+      try (InputStream in = url.toURL().openStream()) {
+        return YamlUtils.read(XReleaseConfig.class, in);
+      } catch (IOException e) {
+        throw new IllegalArgumentException("Invalid xrelease configuration at "+ url, e);
+      }
+    }
   }
 
   @Override

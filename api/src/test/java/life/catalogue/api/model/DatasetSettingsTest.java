@@ -55,6 +55,7 @@ public class DatasetSettingsTest extends SerdeTestBase<DatasetSettings> {
   public void testSettings() throws Exception {
     DatasetSettings d = new DatasetSettings();
 
+    assertNull(d.getURI(Setting.XRELEASE_CONFIG));
     assertNull(d.getEnum(Setting.NOMENCLATURAL_CODE));
 
     d.put(Setting.NOMENCLATURAL_CODE, NomCode.BOTANICAL);

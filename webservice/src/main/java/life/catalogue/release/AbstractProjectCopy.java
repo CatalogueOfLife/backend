@@ -27,7 +27,7 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
  * and allows for custom pre/post work to be done.
  */
 public abstract class AbstractProjectCopy extends DatasetBlockingJob {
-  protected final Logger LOG = LoggerFactory.getLogger(getClass());
+  protected static final Logger LOG = LoggerFactory.getLogger(AbstractProjectCopy.class);
   protected final SqlSessionFactory factory;
   protected final DatasetImportDao diDao;
   protected final DatasetDao dDao;
