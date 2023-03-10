@@ -165,12 +165,22 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     M mapper = session.getMapper(mapperClass);
     updateBefore(obj, old, user, mapper, session);
     validate(obj);
-    int changed = mapper.update(obj);
-    session.commit();
-    if (updateAfter(obj, old, user, mapper, session, keepSessionOpen)) {
+
+    try {
+      int changed = mapper.update(obj);
       session.commit();
+      if (updateAfter(obj, old, user, mapper, session, keepSessionOpen)) {
+        session.commit();
+      }
+      return changed;
+
+    } catch (PersistenceException e) {
+      if (PgUtils.isUniqueConstraint(e)) {
+        LOG.warn("Violated unique constraint: {}", e.getMessage());
+        throw new NotUniqueException(e);
+      }
+      throw e;
     }
-    return changed;
   }
   
   protected void updateBefore(T obj, T old, int user, M mapper, SqlSession session) {
