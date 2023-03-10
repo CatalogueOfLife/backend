@@ -1,14 +1,9 @@
 package life.catalogue.db.mapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.vocab.Setting;
 import life.catalogue.db.TestDataRule;
 
 import java.util.List;
@@ -16,6 +11,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -33,7 +30,7 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
       counter.incrementAndGet();
       assertNotNullProps(n);
     });
-    assertEquals(4, counter.get());
+    assertEquals(2, counter.get());
   }
 
   private void assertNotNullProps(Iterable<IndexName> ns){
