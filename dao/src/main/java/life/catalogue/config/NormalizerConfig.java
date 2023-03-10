@@ -104,7 +104,15 @@ public class NormalizerConfig {
   public File scratchDir(int datasetKey) {
     return new File(scratchDir, String.valueOf(datasetKey));
   }
-  
+
+  public File scratchDir(UUID jobKey) {
+    return new File(scratchDir, "job/" + jobKey.toString());
+  }
+
+  public File scratchFile(UUID jobKey) {
+    return new File(scratchDir, "job/" + jobKey.toString() + ".gz");
+  }
+
   public File neoDir(int datasetKey) {
     return new File(scratchDir(datasetKey), "normalizer");
   }
@@ -119,10 +127,6 @@ public class NormalizerConfig {
   public File scratchFile(int datasetKey, String fileName) {
     Preconditions.checkArgument(!fileName.equalsIgnoreCase("normalizer") && !fileName.equalsIgnoreCase("source"));
     return new File(scratchDir(datasetKey), fileName);
-  }
-
-  public File jobResultFile(UUID key) {
-    return new File(scratchDir, "job/" + key.toString() + ".gz");
   }
 
   /**

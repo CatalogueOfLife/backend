@@ -91,7 +91,7 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   private File matchResultFile() {
-    return cfg.normalizer.jobResultFile(getKey());
+    return cfg.normalizer.scratchFile(getKey());
   }
 
   @Override

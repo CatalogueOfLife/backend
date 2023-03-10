@@ -95,9 +95,6 @@ public class YamlMapper {
   abstract static class DatasetMixIn {
 
     @JsonIgnore
-    abstract Integer getKey();
-
-    @JsonIgnore
     abstract UUID getGbifKey();
 
     @JsonIgnore

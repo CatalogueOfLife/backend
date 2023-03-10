@@ -7,6 +7,7 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.JobResult;
+import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.concurrent.BackgroundJob;
@@ -19,9 +20,11 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import life.catalogue.metadata.MetadataFactory;
+
+import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -68,10 +71,6 @@ public class NidxExportJob extends BackgroundJob {
     return result;
   }
 
-  private File matchResultFile() {
-    return cfg.normalizer.jobResultFile(getKey());
-  }
-
   @Override
   public String getEmailTemplatePrefix() {
     return "nidx-export";
@@ -79,17 +78,17 @@ public class NidxExportJob extends BackgroundJob {
 
   @Override
   public void execute() throws Exception {
-    try (TempFile tmp = new TempFile(matchResultFile());
-         Writer fw = UTF8IoUtils.writerFromGzipFile(tmp.file)
+    try (TempFile dir = TempFile.directory(cfg.normalizer.scratchDir(getKey()));
+         Writer fw = UTF8IoUtils.writerFromFile(new File(dir.file, "nidx-export.tsv"))
     ) {
-      LOG.info("Write nidx export for job {} to temp file {}", getKey(), tmp.file.getAbsolutePath());
+      LOG.info("Write nidx export for job {} to temp directory {}", getKey(), dir.file.getAbsolutePath());
       AbstractWriter<?> writer = new TsvWriter(fw, new TsvWriterSettings());
       List<String> headers = new ArrayList<>();
       headers.add("rank");
       headers.add("scientificName");
       headers.add("authorship");
       for (Integer key : datasetKeys) {
-        headers.add("dataset"+key+"-ID");
+        headers.add("IDdataset"+key);
       }
       writer.writeHeaders(headers);
 
@@ -116,8 +115,18 @@ public class NidxExportJob extends BackgroundJob {
         writer.close();
       }
 
-      // move to final result file
-      FileUtils.copyFile(tmp.file, result.getFile());
+      // export dataset metadata
+      LOG.info("Write {} dataset metadata files for job {} to temp directory {}", datasetKeys.size(), getKey(), dir.file.getAbsolutePath());
+      for (var d : datasets) {
+        File df = new File(dir.file, "dataset-"+d.getKey()+".yaml");
+        DatasetYamlWriter.write(d, df);
+      }
+      // zip up archive
+      LOG.info("Bundling export at {}", result.getFile().getAbsolutePath());
+      FileUtils.forceMkdir(result.getFile().getParentFile());
+      CompressionUtil.zipDir(dir.file, result.getFile(), false);
+
+      // stat final result file
       result.calculateSizeAndMd5();
       LOG.info("Nidx export {} with {} names from datasets {} completed: {} [{}]", getKey(), counter, datasetKeys.stream().map(Object::toString).collect(Collectors.joining(", ")), result.getFile(), result.getSizeWithUnit());
     }

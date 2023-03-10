@@ -26,6 +26,12 @@ public class TempFile implements AutoCloseable {
     return tf;
   }
 
+  public static TempFile directory(File dir) throws IOException {
+    TempFile tf = new TempFile(dir);
+    tf.file.mkdirs();
+    return tf;
+  }
+
   private static File createTempFile(String prefix, String suffix) {
     try {
       return File.createTempFile(prefix, suffix);
