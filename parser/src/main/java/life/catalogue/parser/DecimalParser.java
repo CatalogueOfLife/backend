@@ -34,21 +34,25 @@ public class DecimalParser implements Parser<Double> {
           int cIdx = value.lastIndexOf(",");
           int dIdx = value.lastIndexOf(".");
           if (cIdx > dIdx) {
-            return Optional.of(DE.parse(value).doubleValue());
+            return Optional.of(parse(DE,value));
           } else {
-            return Optional.of(US.parse(value).doubleValue());
+            return Optional.of(parse(US,value));
           }
 
         } else if (comma) {
-          return Optional.of(DE.parse(value).doubleValue());
+          return Optional.of(parse(DE,value));
 
         } else if (dot) {
-          return Optional.of(US.parse(value).doubleValue());
+          return Optional.of(parse(US,value));
         }
       } catch (ParseException ex) {
         // no further ideas
       }
     }
     throw new UnparsableException(Double.class, value);
+  }
+
+  private static synchronized double parse(NumberFormat format, String value) throws ParseException {
+    return format.parse(value).doubleValue();
   }
 }
