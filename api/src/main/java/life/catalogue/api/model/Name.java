@@ -68,19 +68,20 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   /**
    * Represents the monomial for genus, families or names at higher ranks which do not have further
-   * epithets.
+   * epithets. Not to be used for subgeneric names, use infragenericEpithet instead.
    */
   private String uninomial;
   
   /**
    * The genus part of a bi- or trinomial name. Not used for genus names which are represented by
-   * the uninomial alone.
+   * the uninomial alone. The genus can also be used to classify a subgeneric name.
    */
   private String genus;
   
   /**
    * The infrageneric epithet. Used as the terminal epithet for names at infrageneric ranks and
-   * optionally also for binomials
+   * optionally also for binomials.
+   * That means a subgenus should NOT be represented as a uninomial, but with infragenericEpithet
    */
   private String infragenericEpithet;
   

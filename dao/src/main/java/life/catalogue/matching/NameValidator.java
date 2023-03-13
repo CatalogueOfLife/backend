@@ -1,7 +1,6 @@
-package life.catalogue.importer;
+package life.catalogue.matching;
 
 import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.Issue;
 
@@ -119,15 +118,16 @@ public class NameValidator {
   
   private static void flagParsedIssues(Name n, IssueContainer issues) {
     final Rank rank = n.getRank();
-    if (n.getUninomial() != null && (n.getGenus() != null || n.getInfragenericEpithet() != null
-        || n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null)) {
-      LOG.info("Uninomial with further epithets in name {}", n.toStringComplete());
-      issues.addIssue(Issue.INCONSISTENT_NAME);
-      
-    } else if (n.getGenus() == null && (n.getSpecificEpithet() != null || n.getInfragenericEpithet() != null)) {
+    if (n.getUninomial() != null) {
+      if (n.getGenus() != null || n.getInfragenericEpithet() != null || n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null){
+        LOG.info("Uninomial with further epithets in name {}", n.toStringComplete());
+        issues.addIssue(Issue.INCONSISTENT_NAME);
+      }
+
+    } else if (n.getGenus() == null && n.getSpecificEpithet() != null) {
       LOG.info("Missing genus in name {}", n.toStringComplete());
       issues.addIssue(Issue.INCONSISTENT_NAME);
-      
+
     } else if (n.getSpecificEpithet() == null && n.getInfraspecificEpithet() != null) {
       LOG.info("Missing specific epithet in infraspecific name {}", n.toStringComplete());
       issues.addIssue(Issue.INCONSISTENT_NAME);
@@ -139,6 +139,8 @@ public class NameValidator {
           issues.addIssue(Issue.MULTI_WORD_MONOMIAL);
         }
         if (x.length() > 1 && !x.equals(x.substring(0,1).toUpperCase() + x.substring(1).toLowerCase())) {
+          issues.addIssue(Issue.WRONG_MONOMIAL_CASE);
+        } else if (x.length() == 1 && !x.equals(x.substring(0,1).toUpperCase())) {
           issues.addIssue(Issue.WRONG_MONOMIAL_CASE);
         }
       }
@@ -182,12 +184,11 @@ public class NameValidator {
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
         
-      } else if (rank.isInfrageneric() && rank.isSupraspecific()) {
+      } else if (rank.isInfragenericStrictly()) {
         if (n.getInfragenericEpithet() == null) {
           LOG.info("Missing infrageneric epithet for {}", n.toStringComplete());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
-        
         if (n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null) {
           LOG.info("Species or infraspecific epithet for {}", n.toStringComplete());
           issues.addIssue(Issue.INCONSISTENT_NAME);

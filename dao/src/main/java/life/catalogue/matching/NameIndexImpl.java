@@ -1,10 +1,7 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.exception.UnavailableException;
-import life.catalogue.api.model.FormattableName;
-import life.catalogue.api.model.IndexName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameMatch;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.func.Predicates;
@@ -102,16 +99,36 @@ public class NameIndexImpl implements NameIndex {
       m = NameMatch.noMatch();
     }
 
-    if (allowInserts && needsInsert(m, name)) {
+    if (allowInserts && needsInsert(m, name) && eligable(name)) {
       m = tryToAdd(name, m, verbose);
     }
     LOG.debug("Matched {} => {}", name.getLabel(), m);
     return m;
   }
 
+  /**
+   * Checkd
+   * @param m
+   * @param name
+   * @return
+   */
   private static boolean needsInsert(NameMatch m, Name name){
-    return (!m.hasMatch() || (name.hasAuthorship() && m.getType() == MatchType.CANONICAL))
-           && INDEX_NAME_TYPES.contains(name.getType());
+    return (!m.hasMatch() || (name.hasAuthorship() && m.getType() == MatchType.CANONICAL));
+  }
+
+  /**
+   * Checks if the given name is eligable to be included in the names index.
+   * We do not trust on all given properties and do a sanity check here to avoid bad names in the index
+   */
+  private static boolean eligable(Name n){
+    if (INDEX_NAME_TYPES.contains(n.getType())) {
+      IssueContainer issues = IssueContainer.simple();
+      NameValidator.flagIssues(n, issues);
+      if (!issues.hasIssues()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
@@ -156,8 +173,14 @@ public class NameIndexImpl implements NameIndex {
         score += 1;
       }
 
-      // we only want matches without an authorship
+      // we only want matches without an authorship if none was given
       if (!hasAuthorship && n.hasAuthorship()) {
+        continue;
+      }
+
+      // we only want matches with an authorship if it was given - or a canonical result
+      // a non canonical name can have no authorship if its rank is not a standard one!
+      if (hasAuthorship && !n.isCanonical() && !n.hasAuthorship()) {
         continue;
       }
 
@@ -315,8 +338,10 @@ public class NameIndexImpl implements NameIndex {
    * we can get parallel queries for the exact same name not previously existing, especially when rebuilding the index concurrently.
    * As these concurrent reads would all result in no matches which would subsequently becomes writes,
    * we need to make sure here again that the name indeed did not yet exist.
+   *
+   * This method assumes the name is well formatted and tested to be eligable to be inserted
    */
-  public synchronized NameMatch tryToAdd(Name orig, NameMatch match, boolean verbose) {
+  private synchronized NameMatch tryToAdd(Name orig, NameMatch match, boolean verbose) {
     LOG.debug("{} match, try to add {}", match.getType(), orig.getLabel());
     var match2 = match(orig, false, verbose);
     if (needsInsert(match2, orig)) {

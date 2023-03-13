@@ -1,9 +1,10 @@
-package life.catalogue.importer;
+package life.catalogue.matching;
 
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 
+import life.catalogue.matching.NameValidator;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -146,6 +147,29 @@ public class NameValidatorTest {
     n.setRank(Rank.SUBSPECIES);
     
     verify(n);
+  }
+
+  @Test
+  public void infragenerics() throws Exception {
+    // infrageneric names should be given with an infragenericEpithet property, not uninomial
+    Name n = new Name();
+    n.setType(NameType.SCIENTIFIC);
+    n.setRank(Rank.SUBGENUS);
+    n.setUninomial("Abies");
+    verify(n, Issue.INCONSISTENT_NAME);
+
+    n.setGenus("Marmorana");
+    verify(n, Issue.INCONSISTENT_NAME);
+
+    n.setInfragenericEpithet("Abies");
+    n.setUninomial(null);
+    verify(n);
+
+    n.setGenus(null);
+    verify(n);
+
+    n.setSpecificEpithet("saxetana");
+    verify(n, Issue.INCONSISTENT_NAME);
   }
   
   @Test

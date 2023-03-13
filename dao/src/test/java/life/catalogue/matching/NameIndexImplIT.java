@@ -7,6 +7,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -160,6 +161,93 @@ public class NameIndexImplIT {
     assertEquals(6, ni.size());
   }
 
+  @Test
+  public void basionymPlaceholders() throws Exception {
+    setupMemory(true);
+
+    Name n = new Name();
+    n.setRank(Rank.GENUS);
+    n.setUninomial("?");
+    n.setAuthorship("Nardo");
+    n.setCombinationAuthorship(Authorship.authors("Nardo"));
+    n.setCode(NomCode.ZOOLOGICAL);
+    n.setType(NameType.PLACEHOLDER);
+    assertNoInsert(n);
+
+    n = new Name();
+    n.setUninomial("'");
+    n.setCode(NomCode.ZOOLOGICAL);
+    n.setOrigin(Origin.IMPLICIT_NAME);
+    n.setType(NameType.SCIENTIFIC);
+    assertNoInsert(n);
+
+    n = new Name();
+    n.setRank(Rank.UNRANKED);
+    n.setUninomial("..");
+    n.setOrigin(Origin.VERBATIM_ACCEPTED);
+    n.setType(NameType.NO_NAME);
+    assertNoInsert(n);
+
+    n = new Name();
+    n.setRank(Rank.SUBGENUS);
+    n.setInfragenericEpithet("?");
+    n.setAuthorship("Nardo");
+    n.setCombinationAuthorship(Authorship.authors("Nardo"));
+    n.setType(NameType.SCIENTIFIC);
+    assertNoInsert(n);
+
+    n = new Name();
+    n.setUninomial("'");
+    n.setRank(Rank.FAMILY);
+    n.setCode(NomCode.ZOOLOGICAL);
+    n.setType(NameType.SCIENTIFIC);
+    assertNoInsert(n);
+
+    // good infragenerics
+    n = new Name();
+    n.setInfragenericEpithet("Tragulla");
+    n.setRank(Rank.SUBGENUS);
+    n.setType(NameType.SCIENTIFIC);
+    assertInsert(n);
+
+    n = new Name();
+    n.setInfragenericEpithet("Tragulla");
+    n.setAuthorship("Nardo");
+    n.setCombinationAuthorship(Authorship.authors("Nardo"));
+    n.setRank(Rank.SUBGENUS);
+    n.setType(NameType.SCIENTIFIC);
+    assertInsert(n);
+
+    n = new Name();
+    n.setGenus("Triceps");
+    n.setInfragenericEpithet("Tragulla");
+    n.setAuthorship("Nardo");
+    n.setCombinationAuthorship(Authorship.authors("Nardo"));
+    n.setRank(Rank.SECTION);
+    n.setType(NameType.SCIENTIFIC);
+    assertInsert(n);
+  }
+
+  private void assertNoInsert(Name n) {
+    final int origSize = ni.size();
+    n.rebuildScientificName();
+    var idx = ni.match(n, true, true);
+
+    assertEquals(MatchType.NONE, idx.getType());
+    assertEquals(origSize, ni.size());
+  }
+
+  private NameMatch assertInsert(Name n) {
+    final int origSize = ni.size();
+    n.rebuildScientificName();
+    var idx = ni.match(n, true, true);
+
+    assertEquals(MatchType.EXACT, idx.getType());
+    // new index can have 1 or 2 (canonical) records inserted
+    assertTrue(ni.size() > origSize && ni.size() <= origSize+2);
+    return idx;
+  }
+
   /**
    * match the same name over and over again to make sure we never insert duplicates
    */
@@ -305,7 +393,10 @@ public class NameIndexImplIT {
     final int canonID = m.getName().getCanonicalId();
     final int m1Key = m.getNameKey();
 
+    // new insert when the name is given as a subgenus!
     m = matchNameCopy(n1, MatchType.EXACT, n -> {
+      n.setInfragenericEpithet(n.getUninomial());
+      n.setUninomial(null);
       n.setRank(Rank.SUBGENUS);
     });
     assertNotEquals(m1Key, (int) m.getNameKey());
