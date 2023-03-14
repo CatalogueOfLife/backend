@@ -35,6 +35,30 @@ public class ObjectUtils {
     return null;
   }
 
+  /**
+   * Returns the first of the given parameters that is not null. If all given parameters are null, returns null.
+   *
+   * @param item first concrete item
+   * @param moreItems more items to check by calling their "lazy" supplier
+   * @param <T>
+   * @return
+   */
+  @SafeVarargs
+  public static <T> T coalesceLazy(T item, Supplier<T>... moreItems) {
+    if (item != null) {
+      return item;
+    }
+    for (Supplier<T> i : moreItems) {
+        if (i != null) {
+          T val = i.get();
+          if (val != null) {
+            return val;
+          }
+        }
+    }
+    return null;
+  }
+
   public static <T> T coalesce(Iterable<T> items) {
     if (items != null) {
       for (T i : items)

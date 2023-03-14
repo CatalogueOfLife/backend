@@ -34,6 +34,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setSourceKey(12345);
     d.setDoi(DOI.test("123456789"));
     d.setIssued(FuzzyDate.of("1999-09-21"));
+    d.setVersion("1999 v2");
     d.setIdentifier(Map.of(
       "gbif", UUID.randomUUID().toString(),
       "col", "1001"
@@ -79,6 +80,26 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     assertTrue(json.contains("\"1999-09-21\""));
     // CSL citation arrays
     assertTrue(json.contains("[[2024,11]]"));
+  }
+
+  @Test
+  public void version() throws Exception {
+    Dataset d = new Dataset();
+    assertNull(d.getVersion());
+    assertNull(d.getIssued());
+
+    d.setVersion("2345");
+    assertEquals("2345", d.getVersion());
+    assertNull(d.getIssued());
+
+    d.setIssued(FuzzyDate.of(2025));
+    assertEquals("2345", d.getVersion());
+    assertEquals(FuzzyDate.of(2025), d.getIssued());
+
+    // if there is no dedicated version use the issued date instead!
+    d.setVersion(null);
+    assertEquals("2025", d.getVersion());
+    assertEquals(FuzzyDate.of(2025), d.getIssued());
   }
 
   @Test

@@ -1,0 +1,25 @@
+ID	rank	scientificName	authorship	genus	subgenus	section	uninomial	genericName	infragenericEpithet	specificEpithet	infraspecificEpithet
+100	GENUS	Abies	Mill.								
+101	GENUS	Abies	Mill.				Abies				
+102	GENUS	Abies	Mill.					Abies			
+103	GENUS	Abies	Mill.	Abies				Abies			
+104	GENUS	Abies	Mill.	Abies							
+105	GENUS		Mill.	Abies							
+106	GENUS		Mill.					Abies			
+107	GENUS		Mill.	Abies				Abies			
+108	GENUS		Mill.				Abies				
+109	GENUS		Mill.				Abies	Abies			
+10a	GENUS		Mill.	Abies			Abies	Abies			
+110	SUBGENUS	Abies (Ferox)	Mill.								
+111	SUBGENUS	Abies (Ferox)	Mill.					Abies	Ferox		
+112	SUBGENUS	Abies (Ferox)	Mill.	Abies	Ferox			Abies	Ferox		
+113	SUBGENUS	Abies (Ferox)	Mill.					Abies	Ferox		
+121	SUBGENUS	Ferox	Mill.								
+122	SUBGENUS	Ferox	Mill.		Ferox						
+123	SUBGENUS	Ferox	Mill.				Ferox				
+124	SUBGENUS	Ferox	Mill.						Ferox		
+130	SECTION	Abies (Ferox)	Mill.								
+131	SECTION	Abies (Ferox)	Mill.			Ferox					
+132	SECTION	Abies (Ferox)	Mill.	Abies		Ferox		Abies			
+141	SECTION	Ferox	Mill.								
+142	SECTION	Ferox	Mill.		Ferox						

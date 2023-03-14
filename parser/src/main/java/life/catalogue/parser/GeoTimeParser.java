@@ -1,7 +1,5 @@
 package life.catalogue.parser;
 
-import com.google.common.base.Strings;
-
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.GeoTime;
 import life.catalogue.common.io.Resources;

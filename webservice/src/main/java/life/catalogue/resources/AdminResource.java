@@ -206,6 +206,9 @@ public class AdminResource {
   @Path("/gbif-sync")
   @Consumes(MediaType.APPLICATION_JSON)
   public BackgroundJob syncGBIF(List<UUID> keys, @Auth User user) {
+    if (keys == null || keys.isEmpty()) {
+      throw new IllegalArgumentException("list of dataset keys must be posted");
+    }
     GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), keys == null ? null : new HashSet<>(keys));
     return runJob(job);
   }

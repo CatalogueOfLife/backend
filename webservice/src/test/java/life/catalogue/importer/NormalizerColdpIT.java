@@ -12,6 +12,7 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.matching.NameIndexFactory;
 
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -19,6 +20,7 @@ import org.gbif.nameparser.api.Rank;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -120,6 +122,70 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
       t = usageByID("10");
       assertEquals(2, t.estimates.size());
+    }
+  }
+
+  @Test
+  public void infragenerics() throws Exception {
+    normalize(31);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      store.usages().allIds().forEach( id -> {
+        var u = store.usageWithName(id);
+        var n = u.getNeoName().getName();
+        System.out.println("\n" + u.getId());
+        System.out.println(n);
+        if (u.getId().startsWith("10")) {
+          assertEquals(Rank.GENUS, n.getRank());
+          assertEquals("Abies", n.getScientificName());
+          assertEquals("Mill.", n.getAuthorship());
+          assertEquals("Abies", n.getUninomial());
+          assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
+          assertNull(n.getGenus());
+          assertNull(n.getInfragenericEpithet());
+
+        } else if (u.getId().startsWith("11")) {
+          assertEquals(Rank.SUBGENUS, n.getRank());
+          assertEquals("Abies (Ferox)", n.getScientificName());
+          assertEquals("Mill.", n.getAuthorship());
+          assertEquals("Abies", n.getGenus());
+          assertEquals("Ferox", n.getInfragenericEpithet());
+          assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
+          assertNull(n.getUninomial());
+
+        } else if (u.getId().startsWith("12")) {
+          assertEquals(Rank.SUBGENUS, n.getRank());
+          assertEquals("Ferox", n.getScientificName());
+          assertEquals("Mill.", n.getAuthorship());
+          assertNull(n.getGenus());
+          assertEquals("Ferox", n.getInfragenericEpithet());
+          assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
+          assertNull(n.getUninomial());
+
+        } else if (u.getId().startsWith("13")) {
+          assertEquals(Rank.SECTION, n.getRank());
+          assertEquals("Abies sect. Ferox", n.getScientificName());
+          assertEquals("Mill.", n.getAuthorship());
+          assertEquals("Abies", n.getGenus());
+          assertEquals("Ferox", n.getInfragenericEpithet());
+          assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
+          assertNull(n.getUninomial());
+
+        } else if (u.getId().startsWith("14")) {
+          assertEquals(Rank.SECTION, n.getRank());
+          assertEquals("sect. Ferox", n.getScientificName());
+          assertEquals("Mill.", n.getAuthorship());
+          assertNull(n.getGenus());
+          assertEquals("Ferox", n.getInfragenericEpithet());
+          assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
+          assertNull(n.getUninomial());
+
+        } else if (u.usage.getOrigin() == Origin.DENORMED_CLASSIFICATION) {
+          // ignore
+        } else {
+          throw new IllegalStateException("Should not have usages with origin="+u.usage.getOrigin()+" and ID="+u.getId());
+        }
+      });
     }
   }
 

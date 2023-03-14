@@ -698,7 +698,7 @@ public class Dataset extends DataEntity<Integer> {
   }
 
   public String getVersion() {
-    return version;
+    return ObjectUtils.coalesceLazy(version, () -> issued == null ? null : issued.toString());
   }
 
   public void setVersion(String version) {

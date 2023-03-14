@@ -25,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import scala.annotation.meta.setter;
+
 import static life.catalogue.parser.SafeParser.parse;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
@@ -119,9 +121,12 @@ public class NameInterpreter {
       // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
       final boolean useAtoms;
       if (preferAtoms || StringUtils.isBlank(sciname)) {
-        if (rank.isSupraspecific()) {
-          // require uninomial, genus or infragenus
-          useAtoms = ObjectUtils.anyNonBlank(uninomial, genus, infraGenus);
+        if (rank.isInfragenericStrictly()) {
+          // require uninomial or infragenus
+          useAtoms = ObjectUtils.anyNonBlank(uninomial, infraGenus);
+        } else if (rank.isSupraspecific()) {
+          // require uninomial or genus
+          useAtoms = ObjectUtils.anyNonBlank(uninomial, genus);
         } else if (rank.isInfraspecific()) {
           // require genus, species and one lower level epithet
           useAtoms = ObjectUtils.allNonBlank(genus, species) && ObjectUtils.anyNonBlank(infraspecies, cultivar);
@@ -154,11 +159,23 @@ public class NameInterpreter {
         set(pnu, atom::setCultivarEpithet, cultivar);
 
         // misplaced uninomial in genus field
-        if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null && atom.getUninomial() == null) {
-          atom.setUninomial(atom.getGenus());
-          atom.setGenus(null);
+        if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null) {
+          if (atom.getUninomial() == null) {
+            atom.setUninomial(atom.getGenus());
+          } else if (!atom.getUninomial().equals(atom.getGenus())) {
+            issues.addIssue(Issue.INCONSISTENT_NAME);
+          }
+          atom.setGenus(null); // ignore genus if
         }
-
+        // misplaced infrageneric in uninomial field
+        if (rank.isInfragenericStrictly() && atom.getUninomial() != null) {
+          if (atom.getInfragenericEpithet() == null) {
+            atom.setInfragenericEpithet(atom.getUninomial()); // swap
+          } else if (!atom.getUninomial().equals(atom.getInfragenericEpithet())) {
+            issues.addIssue(Issue.INCONSISTENT_NAME);
+          }
+          atom.setUninomial(null); // no uninomial for infragenerics
+        }
         atom.rebuildScientificName();
 
         // parse the reconstructed name without authorship to detect name type and potential problems
