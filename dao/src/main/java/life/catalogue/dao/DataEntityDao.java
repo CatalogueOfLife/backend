@@ -32,6 +32,9 @@ public class DataEntityDao<K, T extends DataEntity<K>, M extends CRUD<K, T>> ext
     return super.create(obj, user);
   }
 
+  /**
+   * @return number of records that have been changed, i.e. 0 or 1.
+   */
   @Override
   public int update(T obj, int user) {
     obj.applyUser(user);

@@ -584,10 +584,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     return false;
   }
 
-  public int update(DatasetWithSettings obj, int user) {
-    final int key = super.update(obj.getDataset(), user);
-    putSettings(key, obj.getSettings(), user);
-    return key;
+  public void update(DatasetWithSettings obj, int user) {
+    super.update(obj.getDataset(), user);
+    putSettings(obj.getKey(), obj.getSettings(), user);
   }
 
   /**

@@ -136,6 +136,9 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     return true;
   }
 
+  /**
+   * @return number of records that have been changed, i.e. 0 or 1.
+   */
   public int update(T obj, int user) {
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
@@ -156,6 +159,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
    * Update method that takes the old version of the object so the before/after hooks can use them.
    * Useful if the old object exists already and avoids reloading it from the database as update(obj, user) does.
    * @param keepSessionOpen if true prevents any early closing of the session
+   * @return number of records that have been changed, i.e. 0 or 1.
    */
   private int update(T obj, T old, int user, SqlSession session, boolean keepSessionOpen) {
     // if an updateHook is requested we make sure that we have an old instance to avoid NPEs later on

@@ -32,10 +32,7 @@ import life.catalogue.resources.legacy.IdMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -206,10 +203,7 @@ public class AdminResource {
   @Path("/gbif-sync")
   @Consumes(MediaType.APPLICATION_JSON)
   public BackgroundJob syncGBIF(List<UUID> keys, @Auth User user) {
-    if (keys == null || keys.isEmpty()) {
-      throw new IllegalArgumentException("list of dataset keys must be posted");
-    }
-    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), keys == null ? null : new HashSet<>(keys));
+    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), Set.copyOf(keys));
     return runJob(job);
   }
 
