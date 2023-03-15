@@ -1,16 +1,14 @@
 package life.catalogue.matching;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.TabularFormat;
+
+import java.io.File;
+import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
-
-import java.io.File;
-import java.util.Objects;
 
 public class MatchingRequest extends TreeTraversalParameter {
 
