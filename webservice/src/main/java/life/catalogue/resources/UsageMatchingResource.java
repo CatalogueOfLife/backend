@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
 
-@Path("/dataset/{key}/nameusage/match")
+@Path("/dataset/{key}/match/nameusage")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
