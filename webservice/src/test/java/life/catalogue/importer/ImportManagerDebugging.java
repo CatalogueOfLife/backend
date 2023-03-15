@@ -1,5 +1,7 @@
 package life.catalogue.importer;
 
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetWithSettings;
@@ -92,9 +94,9 @@ public class ImportManagerDebugging {
     DatasetDao datasetDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, diDao, validator);
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    importManager = new ImportManager(cfg, metrics, hc, SqlSessionFactoryRule.getSqlSessionFactory(),
+    importManager = new ImportManager(cfg, metrics, hc, new EventBus("test-bus"), SqlSessionFactoryRule.getSqlSessionFactory(),
         NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started(),
-      datasetDao, sDao, dDao, UsageCache.passThru(), indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
+      datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
     importManager.start();
   }
   

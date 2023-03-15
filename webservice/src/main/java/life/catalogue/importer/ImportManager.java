@@ -1,5 +1,7 @@
 package life.catalogue.importer;
 
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
@@ -78,21 +80,23 @@ public class ImportManager implements Managed, Idle {
   private final NameUsageIndexService indexService;
 
   private final JobExecutor jobExecutor;
+  private final EventBus bus;
 
   private final SectorDao sDao;
   private final DatasetDao dDao;
   private final DatasetImportDao dao;
   private final DecisionDao decisionDao;
   private final ImageService imgService;
-  private final UsageCache usageCache;
   private final Validator validator;
   private final Timer importTimer;
   private final Counter failed;
   private int abortedAttempt;
-  public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-      SqlSessionFactory factory, NameIndex index, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, UsageCache usageCache,
+
+  public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client, EventBus bus,
+      SqlSessionFactory factory, NameIndex index, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
       NameUsageIndexService indexService, ImageService imgService, JobExecutor jobExecutor, Validator validator, DoiResolver resolver) {
     this.cfg = cfg;
+    this.bus = bus;
     this.factory = factory;
     this.validator = validator;
     this.resolver = resolver;
@@ -100,7 +104,6 @@ public class ImportManager implements Managed, Idle {
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken, cfg.importer.githubTokenGeoff);
     this.index = index;
     this.imgService = imgService;
-    this.usageCache = usageCache;
     this.indexService = indexService;
     this.dDao = dDao;
     this.sDao = sDao;
@@ -432,7 +435,7 @@ public class ImportManager implements Managed, Idle {
         ds.remove(Setting.DATA_ACCESS);
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
-      return new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, resolver, indexService, imgService, dDao, sDao, decisionDao, usageCache,
+      return new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, resolver, indexService, imgService, dDao, sDao, decisionDao, bus,
         () -> req.start(),
           this::successCallBack,
           this::errorCallBack);

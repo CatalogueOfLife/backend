@@ -208,8 +208,8 @@ public class UsageCacheMapDB implements UsageCache {
     if (datasets.containsKey(datasetKey)) {
       // MapDB lacks a method to delete a named object in v3.0.9 so we remove all records instead !!!
       datasets.get(datasetKey).clear();
+      LOG.info("Cleared all usages for datasetKey {} from the cache", datasetKey);
     }
-    LOG.info("Cleared all usages for datasetKey {} from the cache", datasetKey);
   }
 
   /**

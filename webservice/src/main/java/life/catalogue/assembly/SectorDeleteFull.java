@@ -1,5 +1,7 @@
 package life.catalogue.assembly;
 
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.Sector;
@@ -29,10 +31,10 @@ public class SectorDeleteFull extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDeleteFull.class);
   private final Set<Integer> visitedSectors = new HashSet<>();
   
-  SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService,
+  SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, EventBus bus,
                    SectorDao dao, SectorImportDao sid, Consumer<SectorRunnable> successCallback,
                    BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, false, false, true, factory, matcher, indexService, dao, sid, successCallback, errorCallback, user);
+    super(sectorKey, false, false, true, factory, matcher, indexService, dao, sid, bus, successCallback, errorCallback, user);
   }
 
   @Override

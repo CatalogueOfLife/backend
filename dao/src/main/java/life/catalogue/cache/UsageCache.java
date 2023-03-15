@@ -3,6 +3,7 @@ package life.catalogue.cache;
 import com.google.common.eventbus.Subscribe;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.model.SimpleNameWithPub;
@@ -45,6 +46,11 @@ public interface UsageCache extends AutoCloseable, Managed {
     if (event.isDeletion()) {
       clear(event.key);
     }
+  }
+
+  @Subscribe
+  default void dataChanged(DatasetDataChanged event){
+    clear(event.datasetKey);
   }
 
   default SimpleNameWithPub getOrLoad(DSID<String> key, Function<DSID<String>, SimpleNameWithPub> loader) {

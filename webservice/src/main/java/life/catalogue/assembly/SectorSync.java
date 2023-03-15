@@ -1,5 +1,7 @@
 package life.catalogue.assembly;
 
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.EstimateDao;
@@ -46,10 +48,10 @@ public class SectorSync extends SectorRunnable {
   private List<SimpleName> foreignChildren;
 
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, Taxon incertae,
-             SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
+             SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBus bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, successCallback, errorCallback, user);
+    super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, user);
     this.project = project;
     this.sid = sid;
     this.estimateDao = estimateDao;

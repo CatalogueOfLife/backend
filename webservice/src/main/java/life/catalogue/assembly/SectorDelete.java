@@ -1,5 +1,7 @@
 package life.catalogue.assembly;
 
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
@@ -34,10 +36,10 @@ public class SectorDelete extends SectorRunnable {
   private static final Rank maxAmbiguousRank = Arrays.stream(Rank.values()).filter(Rank::isAmbiguous).max(Rank::compareTo).orElseThrow(() -> new IllegalStateException("No ambiguous ranks exist"));
   private Rank cutoffRank = Rank.SPECIES;
 
-  SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid,
+  SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
                Consumer<SectorRunnable> successCallback,
                BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, false, false, true, factory, matcher, indexService, dao, sid, successCallback, errorCallback, user);
+    super(sectorKey, false, false, true, factory, matcher, indexService, dao, sid, bus, successCallback, errorCallback, user);
   }
 
   @Override

@@ -1,5 +1,7 @@
 package life.catalogue.assembly;
 
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.api.model.*;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
@@ -26,8 +28,10 @@ public class SyncFactory {
   private final UsageMatcherGlobal matcher;
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
+  private final EventBus bus;
 
-  public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, SectorDao sd, SectorImportDao sid, EstimateDao estimateDao, NameUsageIndexService indexService) {
+  public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, SectorDao sd, SectorImportDao sid, EstimateDao estimateDao, NameUsageIndexService indexService, EventBus bus) {
+    this.bus = bus;
     this.sd = sd;
     this.sid = sid;
     this.nameIndex = nameIndex;
@@ -38,19 +42,19 @@ public class SyncFactory {
   }
 
   public SectorSync project(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex, matcher, indexService, sd, sid, estimateDao, successCallback, errorCallback, user);
+    return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao, successCallback, errorCallback, user);
   }
 
   public SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, Taxon incertae, User user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, releaseDatasetKey, false, incertae, factory, nameIndex, matcher, indexService, sd, sid, estimateDao,
+    return new SectorSync(sectorKey, releaseDatasetKey, false, incertae, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
       x -> {}, (s,e) -> {LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e);}, user);
   }
 
   public SectorDelete delete(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    return new SectorDelete(sectorKey, factory, matcher, indexService, sd, sid, successCallback, errorCallback, user);
+    return new SectorDelete(sectorKey, factory, matcher, indexService, sd, sid, bus, successCallback, errorCallback, user);
   }
 
   public SectorDeleteFull deleteFull(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    return new SectorDeleteFull(sectorKey, factory, matcher, indexService, sd, sid, successCallback, errorCallback, user);
+    return new SectorDeleteFull(sectorKey, factory, matcher, indexService, bus, sd, sid, successCallback, errorCallback, user);
   }
 }

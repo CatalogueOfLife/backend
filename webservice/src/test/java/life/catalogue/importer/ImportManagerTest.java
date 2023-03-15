@@ -1,5 +1,7 @@
 package life.catalogue.importer;
 
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
@@ -112,8 +114,8 @@ public class ImportManagerTest {
     MetricRegistry metrics = new MetricRegistry();
     final WsServerConfig cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    manager = new ImportManager(cfg, metrics, hc, SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
-      datasetDao, sDao, dDao, UsageCache.passThru(), indexService, imgService, jobExecutor, validator, null);
+    manager = new ImportManager(cfg, metrics, hc, new EventBus("test-bus"), SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
+      datasetDao, sDao, dDao, indexService, imgService, jobExecutor, validator, null);
     manager.start();
   }
 

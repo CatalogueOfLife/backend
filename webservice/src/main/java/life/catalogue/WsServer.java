@@ -333,17 +333,17 @@ public class WsServer extends Application<WsServerConfig> {
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
 
     // syncs and releases
-    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, secdao, siDao, edao, indexService);
+    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, secdao, siDao, edao, indexService, bus);
     final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, diDao, ddao, siDao, ndao, secdao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
 
     // importer
     importManager = new ImportManager(cfg,
       env.metrics(),
       httpClient,
+      bus,
       getSqlSessionFactory(),
       ni,
       ddao, secdao, decdao,
-      uCache,
       indexService,
       imgService,
       executor,

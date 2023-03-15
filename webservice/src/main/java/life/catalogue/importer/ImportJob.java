@@ -1,6 +1,9 @@
 package life.catalogue.importer;
 
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
@@ -82,7 +85,7 @@ public class ImportJob implements Runnable {
   private final Validator validator;
   private final DoiResolver resolver;
   private final DistributedArchiveService distributedArchiveService;
-  private final UsageCache usageCache;
+  private final EventBus bus;
   private final StartNotifier notifier;
   private final Consumer<ImportRequest> successCallback;
   private final BiConsumer<ImportRequest, Exception> errorCallback;
@@ -90,7 +93,7 @@ public class ImportJob implements Runnable {
   ImportJob(ImportRequest req, DatasetWithSettings d,
             WsServerConfig cfg,
             DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, Validator validator, DoiResolver resolver,
-            NameUsageIndexService indexService, ImageService imgService, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, UsageCache usageCache,
+            NameUsageIndexService indexService, ImageService imgService, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBus bus,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
             BiConsumer<ImportRequest, Exception> errorCallback
@@ -111,7 +114,7 @@ public class ImportJob implements Runnable {
     this.decisionDao = decisionDao;
     dao = new DatasetImportDao(factory, cfg.metricsRepo);
     this.imgService = imgService;
-    this.usageCache = usageCache;
+    this.bus = bus;
 
     this.notifier = notifier;
     this.successCallback = successCallback;
@@ -312,12 +315,11 @@ public class ImportJob implements Runnable {
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
         new PgImport(di.getAttempt(), dataset, req.createdBy, store, factory, cfg.importer, dDao, indexService).call();
 
-        LOG.info("Clear name usage cache for dataset {}", datasetKey);
-        usageCache.clear(datasetKey);
-
         LOG.info("Build import metrics for dataset {}", datasetKey);
         updateState(ImportState.ANALYZING);
         dao.updateMetrics(di, datasetKey);
+
+        bus.post(new DatasetDataChanged(datasetKey));
 
         if (rematchDecisions()) {
           updateState(ImportState.MATCHING);
