@@ -21,12 +21,15 @@ public class MoreMediaTypes {
   public final static String APP_ZIP_ALT2 = "application/x-zip-compressed";
   public final static String APP_ZIP_ALT3 = "multipart/x-zip";
 
-  public final static String APP_YAML = "application/x-yaml";
-  public final static MediaType APP_YAML_TYPE = new MediaType("application", "x-yaml");
+  public final static String APP_YAML = "application/yaml";
+  public final static MediaType APP_YAML_TYPE = new MediaType("application", "yaml");
 
   public final static String APP_JSON_COLDP = "application/vnd.coldp+json";
+  public final static MediaType APP_JSON_COLDP_TYPE = new MediaType("application", "vnd.coldp+json");
   public final static String APP_JSON_CSL   = "application/vnd.citationstyles.csl+json";
+  public final static MediaType APP_JSON_CSL_TYPE = new MediaType("application", "vnd.citationstyles.csl+json");
   public final static String APP_BIBTEX = "application/x-bibtex";
+  public final static MediaType APP_BIBTEX_TYPE = new MediaType("application", "x-bibtex");
 
   public final static String APP_XLS   = "application/vnd.ms-excel";
   public final static String APP_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";

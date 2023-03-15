@@ -6,6 +6,7 @@ import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.parser.CSLTypeParser;
 
 import java.io.IOException;
@@ -27,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectReader;
  */
 public class DoiResolver {
   private static final Logger LOG = LoggerFactory.getLogger(DoiResolver.class);
-  private static final String CSL_TYPE = "application/vnd.citationstyles.csl+json";
   private CloseableHttpClient http;
   private ObjectReader reader;
 
@@ -38,7 +38,7 @@ public class DoiResolver {
 
   public Citation resolve(DOI doi, IssueContainer issues) {
     HttpGet request = new HttpGet(doi.getUrl());
-    request.addHeader(HttpHeaders.ACCEPT, CSL_TYPE);
+    request.addHeader(HttpHeaders.ACCEPT, MoreMediaTypes.APP_JSON_CSL);
 
     try (var resp = http.execute(request)) {
       if (resp.getStatusLine().getStatusCode() / 100 == 2) {

@@ -420,6 +420,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new NameParserResource(getSqlSessionFactory()));
     j.register(new MetadataParserResource());
     j.register(new ParserResource<>());
+    j.register(new ReferenceParserResource(doiResolver));
 
     j.register(new IdEncoderResource());
 

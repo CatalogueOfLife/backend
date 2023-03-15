@@ -35,6 +35,23 @@ public class NameFormatterTest {
   }
 
   @Test
+  public void cultivars() throws Exception {
+    Name n = new Name();
+    n.setGenus("Brassica");
+    n.setSpecificEpithet("oleracea");
+    n.setCultivarEpithet("Golden Wonder");
+    n.setRank(Rank.CULTIVAR);
+
+    assertEquals("Brassica oleracea 'Golden Wonder'", NameFormatter.scientificName(n));
+    n.setCode(NomCode.CULTIVARS);
+    assertEquals("Brassica oleracea 'Golden Wonder'", NameFormatter.scientificName(n));
+
+    n.setRank(Rank.CULTIVAR_GROUP);
+    n.setCultivarEpithet("Capitata");
+    assertEquals("Brassica oleracea Capitata Group", NameFormatter.scientificName(n));
+  }
+
+  @Test
   public void canonical() throws Exception {
     Name n = new Name();
     n.setGenus("Spirulina");
