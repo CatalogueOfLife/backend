@@ -4,7 +4,6 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
@@ -36,8 +35,8 @@ import io.dropwizard.auth.Auth;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class UsageMatchingResource {
-  private static final Logger LOG = LoggerFactory.getLogger(UsageMatchingResource.class);
+public class NameUsageMatchingResource {
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageMatchingResource.class);
 
   private final WsServerConfig cfg;
   private final JobExecutor exec;
@@ -45,7 +44,7 @@ public class UsageMatchingResource {
   private final UsageMatcherGlobal matcher;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings());
 
-  public UsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, UsageMatcherGlobal matcher) {
+  public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, UsageMatcherGlobal matcher) {
     this.cfg = cfg;
     this.exec = exec;
     this.factory = factory;
