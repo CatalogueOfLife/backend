@@ -11,6 +11,8 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.importer.NameInterpreter;
 import life.catalogue.matching.*;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -51,6 +53,9 @@ public class UsageMatchingResource {
   }
 
   private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn) {
+    if (StringUtils.isBlank(sn.getName())) {
+      throw new IllegalArgumentException("Missing name");
+    }
     IssueContainer issues = new IssueContainer.Simple();
     return match(datasetKey, sn, issues);
   }
