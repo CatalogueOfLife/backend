@@ -5,9 +5,11 @@ CREATE EXTENSION IF NOT EXISTS unaccent;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE EXTENSION IF NOT EXISTS btree_gin;
 
--- use unaccent by default for all simple search
-CREATE TEXT SEARCH CONFIGURATION public.simple2 ( COPY = pg_catalog.simple );
-ALTER TEXT SEARCH CONFIGURATION simple2 ALTER MAPPING FOR hword, hword_part, word WITH unaccent;
+-- search configs
+CREATE TEXT SEARCH CONFIGURATION public.dataset ( COPY = pg_catalog.english );
+CREATE TEXT SEARCH CONFIGURATION public.reference ( COPY = pg_catalog.english );
+CREATE TEXT SEARCH CONFIGURATION public.verbatim ( COPY = pg_catalog.simple );
+CREATE TEXT SEARCH CONFIGURATION public.vernacular ( COPY = pg_catalog.simple );
 
 -- immutable unaccent function to be used in indexes
 -- see https://stackoverflow.com/questions/11005036/does-postgresql-support-accent-insensitive-collations
@@ -809,23 +811,23 @@ CREATE TABLE dataset (
   deleted TIMESTAMP WITHOUT TIME ZONE,
 
   doc tsvector GENERATED ALWAYS AS (
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(alias,''))), 'A') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(doi, ''))), 'A') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(key::text, ''))), 'A') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(title,''))), 'B') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(array_str(keyword),''))), 'B') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(issn, ''))), 'C') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(creator), ''))), 'C') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(publisher), ''))), 'C') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(editor), ''))), 'C') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(geographic_scope,''))), 'D') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(taxonomic_scope,''))), 'D') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(temporal_scope,''))), 'D') ||
-      setweight(to_tsvector('simple2', f_unaccent(coalesce(description,''))), 'D')
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(alias,''))), 'A') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(key::text, ''))), 'A') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(doi, ''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(title,''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(array_str(keyword),''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(geographic_scope,''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(taxonomic_scope,''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(temporal_scope,''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(issn, ''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(creator), ''))), 'D') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(publisher), ''))), 'D') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(editor), ''))), 'D') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(description,''))), 'D')
   ) STORED
 );
 
@@ -1277,7 +1279,7 @@ CREATE TABLE verbatim (
   type TEXT,
   terms jsonb,
   issues ISSUE[] DEFAULT '{}',
-  doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('simple2', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED,
+  doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('verbatim', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED,
   PRIMARY KEY (dataset_key, id)
 ) PARTITION BY LIST (dataset_key);
 
@@ -1301,9 +1303,9 @@ CREATE TABLE reference (
   csl JSONB,
   citation TEXT,
   doc tsvector GENERATED ALWAYS AS (
-    jsonb_to_tsvector('simple2', coalesce(csl,'{}'::jsonb), '["string", "numeric"]') ||
-          to_tsvector('simple2', coalesce(citation,'')) ||
-          to_tsvector('simple2', coalesce(year::text,''))
+    jsonb_to_tsvector('reference', coalesce(csl,'{}'::jsonb), '["string", "numeric"]') ||
+          to_tsvector('reference', coalesce(citation,'')) ||
+          to_tsvector('reference', coalesce(year::text,''))
   ) STORED,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
@@ -1586,7 +1588,7 @@ CREATE TABLE vernacular_name (
   area TEXT,
   sex SEX,
   reference_id TEXT,
-  doc tsvector GENERATED ALWAYS AS (to_tsvector('simple2', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED,
+  doc tsvector GENERATED ALWAYS AS (to_tsvector('vernacular', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,

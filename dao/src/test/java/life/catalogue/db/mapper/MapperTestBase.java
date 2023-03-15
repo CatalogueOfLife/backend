@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.db.PgConnectionRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
@@ -37,7 +38,8 @@ public abstract class MapperTestBase<M> {
   protected static final DatasetDao.KeyGenerator datasetKeyGen = new DatasetDao.KeyGenerator(100, 100, 20);
 
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
+  public static SqlSessionFactoryRule pgRule = new PgSetupRule();
+  //public static SqlSessionFactoryRule pgRule = new PgConnectionRule("col", "postgres", "postgres");
 
   @Rule
   public final TestEntityUnmodifiedRule unomidifedRule = new TestEntityUnmodifiedRule();

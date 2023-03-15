@@ -77,7 +77,7 @@
         <foreach item="issue" index="index" collection="issues" open="array[" separator="," close="]">'${issue.name()}'::ISSUE</foreach>
       </if>
       <if test="q != null">
-        AND v.doc @@ plainto_tsquery('simple2', #{q})
+        AND v.doc @@ plainto_tsquery('verbatim', #{q})
       </if>
     </where>
   </sql>

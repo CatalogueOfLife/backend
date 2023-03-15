@@ -11,6 +11,48 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-03-15 better postgres full text search configs
+```
+CREATE TEXT SEARCH CONFIGURATION public.dataset ( COPY = pg_catalog.english );
+CREATE TEXT SEARCH CONFIGURATION public.reference ( COPY = pg_catalog.english );
+CREATE TEXT SEARCH CONFIGURATION public.verbatim ( COPY = pg_catalog.simple );
+CREATE TEXT SEARCH CONFIGURATION public.vernacular ( COPY = pg_catalog.simple );
+
+ALTER TABLE dataset DROP COLUMN doc;
+ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(alias,''))), 'A') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(key::text, ''))), 'A') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(doi, ''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(title,''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(array_str(keyword),''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(geographic_scope,''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(taxonomic_scope,''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(temporal_scope,''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(issn, ''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(creator), ''))), 'D') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(publisher), ''))), 'D') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(editor), ''))), 'D') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(description,''))), 'D')
+  ) STORED;
+  
+ALTER TABLE verbatim DROP COLUMN doc;
+ALTER TABLE verbatim ADD COLUMN doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('verbatim', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED;
+
+ALTER TABLE reference DROP COLUMN doc;
+ALTER TABLE reference ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+    jsonb_to_tsvector('reference', coalesce(csl,'{}'::jsonb), '["string", "numeric"]') ||
+          to_tsvector('reference', coalesce(citation,'')) ||
+          to_tsvector('reference', coalesce(year::text,''))
+  ) STORED;
+
+ALTER TABLE vernacular_name DROP COLUMN doc;
+ALTER TABLE vernacular_name ADD COLUMN doc tsvector GENERATED ALWAYS AS (to_tsvector('vernacular', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED;
+```
+
 ### 2023-03-06 new release bot user
 ```
 ALTER TYPE ISSUE ADD VALUE 'HOMOTYPIC_MULTI_ACCEPTED';

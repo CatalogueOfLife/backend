@@ -67,7 +67,7 @@
     <if test="req != null">
       <if test="req.q != null">
         <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
-        AND d.doc @@ plainto_tsquery('simple2', f_unaccent($Grtz5$%${req.q}%$Grtz5$))
+        AND d.doc @@ plainto_tsquery('dataset', f_unaccent($Grtz5$%${req.q}%$Grtz5$))
       </if>
       <if test="req.privat != null">
         AND d.private = #{req.privat}
@@ -250,7 +250,7 @@
         <bind name="sortBy" value="req.sortBy.name()"/>
         <choose>
           <when test="sortBy == 'RELEVANCE'">
-            ts_rank_cd(d.doc, plainto_tsquery('simple2', f_unaccent(#{req.q}))) DESC, size DESC, created DESC
+            ts_rank_cd(d.doc, plainto_tsquery('{0.001, 0.01, 0.1, 1.0}'::float4[], 'dataset', f_unaccent(#{req.q}))) DESC, size DESC, created DESC
           </when>
           <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED' ">
             ${req.sortBy.name().toLowerCase()}

@@ -3,6 +3,7 @@ package life.catalogue.assembly;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 
+import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
@@ -127,6 +128,7 @@ abstract class SectorRunnable implements Runnable {
       // clear matcher cache?
       if (clearMatcherCache) {
         matcher.clear(sectorKey.getDatasetKey());
+        bus.post(new DatasetDataChanged(sectorKey.getDatasetKey()));
       }
 
       doWork();

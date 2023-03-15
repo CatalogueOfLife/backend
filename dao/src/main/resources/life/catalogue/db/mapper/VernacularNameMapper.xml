@@ -69,7 +69,7 @@
         vn.dataset_key = #{datasetKey}
         <if test="req.q != null">
           <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
-          AND vn.doc @@ plainto_tsquery('simple2', $Grtz5$%${req.q}%$Grtz5$)
+          AND vn.doc @@ plainto_tsquery('vernacular', $Grtz5$%${req.q}%$Grtz5$)
         </if>
         <if test="req.language != null">
           AND vn.language = #{req.language}
@@ -120,7 +120,7 @@
     <where>
       <if test="q != null">
         <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
-        vn.doc @@ plainto_tsquery('simple2', $Grtz5$%${q}%$Grtz5$)
+        vn.doc @@ plainto_tsquery('vernacular', $Grtz5$%${q}%$Grtz5$)
       </if>
       <if test="lang != null">
         AND vn.language = #{lang}
