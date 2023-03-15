@@ -250,7 +250,7 @@
         <bind name="sortBy" value="req.sortBy.name()"/>
         <choose>
           <when test="sortBy == 'RELEVANCE'">
-            ts_rank_cd(d.doc, plainto_tsquery('{0.001, 0.01, 0.1, 1.0}'::float4[], 'dataset', f_unaccent(#{req.q}))) DESC, size DESC, created DESC
+            ts_rank_cd('{0.001, 0.01, 0.1, 1.0}'::float4[], d.doc, plainto_tsquery('dataset', f_unaccent(#{req.q}))) DESC, size DESC, created DESC
           </when>
           <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED' ">
             ${req.sortBy.name().toLowerCase()}

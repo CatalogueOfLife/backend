@@ -106,7 +106,7 @@ abstract class SectorRunnable implements Runnable {
           // COL unfortunaltey still uses the OTHER license which is always incompatible, so we exclude that from throwing for now
           //TODO: activate all exception when licensing consultations have been finished
           if (target.getLicense().isCreativeCommons()) {
-            throw new IllegalArgumentException("Source license " +source.getLicense()+ " is not compatible with license " +target.getLicense()+ " of project " + sectorKey.getDatasetKey());
+            throw new IllegalArgumentException("Source license " +source.getLicense()+ " of " + sector + " is not compatible with license " +target.getLicense()+ " of project " + sectorKey.getDatasetKey());
           }
         }
       }
