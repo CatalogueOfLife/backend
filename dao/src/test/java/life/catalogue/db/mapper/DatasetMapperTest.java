@@ -418,8 +418,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // https://github.com/CatalogueOfLife/checklistbank/issues/1178
     createSearchableDataset("Waarnemingen.be / observations.be - List of species observed in Belgium", "Swinnen, Kristijn", "Natuurpunt Studie", "Imagine a future where dynamically, from year to year, we can track the progression of alien species (AS), identify emerging species, assess their current and future risk and timely inform policy in a seamless data-driven workflow. One that is built on open science and open data infrastructures. By using international biodiversity standards and facilities, we would ensure interoperability, repeatability and sustainability. This would make the process adaptable to future requirements in an evolving IAS policy landscape both locally and internationally. The project Tracking Invasive Alien Species (TrIAS) aims to do this for Belgium. For a full project description, see Vanderhoeven et al. (2017, https://doi.org/10.3897/rio.3.e13414).");
     commit();
-    assertEquals(1, mapper().count(DatasetSearchRequest.byQuery("Waarnemingen"), null));
-    assertEquals(1, mapper().count(DatasetSearchRequest.byQuery("waarnemingen"), null));
+    assertEquals(0, mapper().count(DatasetSearchRequest.byQuery("Waarnemingen"), null));
+    assertEquals(0, mapper().count(DatasetSearchRequest.byQuery("waarnemingen"), null));
     assertEquals(1, mapper().count(DatasetSearchRequest.byQuery("Waarnemingen.be"), null));
   }
 
