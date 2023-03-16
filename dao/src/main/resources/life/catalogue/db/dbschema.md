@@ -18,8 +18,7 @@ CREATE TEXT SEARCH CONFIGURATION public.reference ( COPY = pg_catalog.english );
 CREATE TEXT SEARCH CONFIGURATION public.verbatim ( COPY = pg_catalog.simple );
 CREATE TEXT SEARCH CONFIGURATION public.vernacular ( COPY = pg_catalog.simple );
 
-ALTER TABLE dataset DROP COLUMN doc;
-ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+ALTER TABLE dataset ADD COLUMN doc2 tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('dataset', f_unaccent(coalesce(alias,''))), 'A') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(key::text, ''))), 'A') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(doi, ''))), 'B') ||
@@ -38,19 +37,24 @@ ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(description,''))), 'D')
   ) STORED;
+ALTER TABLE dataset DROP COLUMN doc;
+ALTER TABLE dataset RENAME COLUMN doc2 TO doc;
   
+ALTER TABLE verbatim ADD COLUMN doc2 tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('verbatim', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED;
 ALTER TABLE verbatim DROP COLUMN doc;
-ALTER TABLE verbatim ADD COLUMN doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('verbatim', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED;
+ALTER TABLE verbatim RENAME COLUMN doc2 TO doc;
 
-ALTER TABLE reference DROP COLUMN doc;
-ALTER TABLE reference ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+ALTER TABLE reference ADD COLUMN doc2 tsvector GENERATED ALWAYS AS (
     jsonb_to_tsvector('reference', coalesce(csl,'{}'::jsonb), '["string", "numeric"]') ||
           to_tsvector('reference', coalesce(citation,'')) ||
           to_tsvector('reference', coalesce(year::text,''))
   ) STORED;
+ALTER TABLE reference DROP COLUMN doc;
+ALTER TABLE reference RENAME COLUMN doc2 TO doc;
 
+ALTER TABLE vernacular_name ADD COLUMN doc2 tsvector GENERATED ALWAYS AS (to_tsvector('vernacular', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED;
 ALTER TABLE vernacular_name DROP COLUMN doc;
-ALTER TABLE vernacular_name ADD COLUMN doc tsvector GENERATED ALWAYS AS (to_tsvector('vernacular', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED;
+ALTER TABLE vernacular_name RENAME COLUMN doc2 TO doc;
 ```
 
 ### 2023-03-06 new release bot user

@@ -39,13 +39,17 @@ public class SectorImportDao {
    */
   public void updateMetrics(SectorImport si, int datasetKey) {
     try (SqlSession session = factory.openSession(true)) {
+      LOG.debug("Start metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
       SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
       populateCounts(mapper, si, datasetKey);
       mapper.update(si);
+      LOG.debug("Updated counts for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
 
       DSID<Integer> dataKey = DSID.of(datasetKey, si.getSectorKey());
       fileMetricsDao.updateTree(dataKey, si.getSectorDSID(), si.getAttempt());
+      LOG.debug("Updated tree for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
       fileMetricsDao.updateNames(dataKey, si.getSectorDSID(), si.getAttempt());
+      LOG.debug("Updated names for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
 
     } catch (IOException e) {
       LOG.error("Failed to update metrics for sector {} from dataset {}", si.getSectorDSID(), datasetKey, e);
