@@ -22,6 +22,15 @@ public class ParentStack {
     this.root = rootTarget;
   }
 
+  public boolean containsMatch(String id) {
+    for (var p : parents) {
+      if (p.match != null && p.match.getId().equals(id)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static class MatchedUsage {
     public final SimpleNameWithNidx usage;
     public SimpleNameWithNidx match;

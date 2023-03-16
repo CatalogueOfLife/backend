@@ -410,6 +410,9 @@ public enum Issue {
 
   HOMOTYPIC_MULTI_ACCEPTED(NAME_USAGE, Level.WARNING,
     "Several accepted names exist which are considered homotypic names."),
+
+  SYNC_OUTSIDE_TARGET(NAME_USAGE, Level.WARNING,
+    "Names from a sector sync have been placed outside of the configured target taxon of the project."),
   ;
 
   /**

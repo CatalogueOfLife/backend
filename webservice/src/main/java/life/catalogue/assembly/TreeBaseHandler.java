@@ -118,7 +118,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
    * Increases stat counters.
    * @return the simple name instance of the newly created & matched usage with parent being the parentID
    */
-  protected SimpleNameWithNidx create(NameUsageBase u, @Nullable Usage parent) {
+  protected SimpleNameWithNidx create(NameUsageBase u, @Nullable Usage parent, Issue... issues) {
     if (parent == null) {
       LOG.warn("Creating new root usage with no parent: {} {}", u.getRank(), u.getLabel());
     }

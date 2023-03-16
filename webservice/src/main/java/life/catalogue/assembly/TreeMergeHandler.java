@@ -121,7 +121,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (match.isMatch()) {
       update(nu, match);
     } else {
-      var sn = create(nu, parent);
+      // track if we are outside of the sector target
+      Issue[] issues;
+      if (sector.getTarget() != null && !parents.containsMatch(sector.getTarget().getId())) {
+        issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
+      } else {
+        issues = new Issue[0];
+      }
+      var sn = create(nu, parent, issues);
       parents.setMatch(sn);
       matcher.add(nu);
     }

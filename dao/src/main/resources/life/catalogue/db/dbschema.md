@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-03-16 new merge sector issues
+```
+ALTER TYPE ISSUE ADD VALUE 'SYNC_OUTSIDE_TARGET';
+```
+
 ### 2023-03-15 better postgres full text search configs
 ```
 CREATE TEXT SEARCH CONFIGURATION public.dataset ( COPY = pg_catalog.english );
@@ -62,7 +67,7 @@ ALTER TABLE vernacular_name RENAME COLUMN doc2 TO doc;
 ALTER TYPE ISSUE ADD VALUE 'HOMOTYPIC_MULTI_ACCEPTED';
 
 INSERT INTO "user" (key, username, firstname, lastname, roles, created) VALUES
- (13, 'releaser', 'Release', 'Bot', '{}', now());
+ (13, 'releaser', 'Release', 'Bot', '{}', now()),
  (14, 'homotypic_grouper', 'Homotypic', 'Grouper', '{}', now());
 ```
 

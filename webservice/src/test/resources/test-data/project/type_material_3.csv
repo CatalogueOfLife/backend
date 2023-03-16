@@ -1,25 +1,3 @@
-id,scientific_name,uninomial,genus,specific_epithet,infraspecific_epithet,rank,published_in_id
-1,Animalia,Animalia,,,,KINGDOM,r1
-2,Chordata,Chordata,,,,PHYLUM,r1
-3,Mammalia,Mammalia,,,,CLASS,r1
-4,Carnivora,Carnivora,,,,ORDER,r1
-5,Canidae,Canidae,,,,FAMILY,r1
-6,Felidae,Felidae,,,,FAMILY,r1
-10,Lynx,Lynx,,,,GENUS,r1
-11,Pardina,Pardina,,,,GENUS,r1
-12,Lynx lynx,,Lynx,lynx,,SPECIES,r1
-13,Lynx rufus,,Lynx,rufus,,SPECIES,r1
-14,Felis rufa,,Felis,rufa,,SPECIES,r1
-15,Lynx rufus baileii,,Lynx,rufus,baileii,SUBSPECIES,r1
-16,Lynx rufus gigas,,Lynx,rufus,gigas,SUBSPECIES,r1
-20,Canis,Canis,,,,GENUS,r1
-21,Alopsis,Alopsis,,,,GENUS,r1
-22,Lupulus,Lupulus,,,,GENUS,r1
-23,Canis adustus,,Canis,adustus,,SPECIES,r1
-24,Canis argentinus,,Canis,argentinus,,SPECIES,r1
-25,Canis aureus,,Canis,aureus,,SPECIES,r1
-30,Urocyon,Urocyon,,,,GENUS,r1
-31,Urocyon citrinus,,Urocyon,citrinus,,SPECIES,r1
-32,Urocyon littoralis,,Urocyon,littoralis,,SPECIES,r1
-33,Urocyon minicephalus,,Urocyon,minicephalus,,SPECIES,r1
-34,Urocyon webbi,,Urocyon,webbi,,SPECIES,r1
+id,name_id,citation,status,country,locality,latitude,longitude,altitude,sex,institution_code,catalog_number,date,collector,reference_id,link,remarks
+ROM:Mammals:20947,13,ROM:Mammals:20947,HOLOTYPE,Canada,"Near Thunder Bay (port Arthur), Mcintyre Twp",48.42974,-89.25924,,,ROM,20947,1951-04-04,Richardson,,,
+MCZ:Mamm:BANGS-4951,16,MCZ:Mamm:BANGS-4951,HOLOTYPE,Canada,"back of Bear River",44.5976720,-65.654690,,,MCZ,BANGS-4951,1895-12-11,SSR Ritchie,,,
