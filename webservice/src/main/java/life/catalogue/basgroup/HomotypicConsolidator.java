@@ -72,7 +72,7 @@ public class HomotypicConsolidator {
     return new HomotypicConsolidator(factory, datasetKey, families, priorityFunc);
   }
 
-  private HomotypicConsolidator(SqlSessionFactory factory, int datasetKey, List<SimpleName> families, java.util.function.Function<LinneanNameUsage, Integer> priorityFunc) {
+  private HomotypicConsolidator(SqlSessionFactory factory, int datasetKey, List<SimpleName> families, Function<LinneanNameUsage, Integer> priorityFunc) {
     this.factory = factory;
     this.datasetKey = datasetKey;
     this.dsid = DSID.root(datasetKey);

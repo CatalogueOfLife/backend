@@ -1,8 +1,5 @@
 package life.catalogue.assembly;
 
-import com.google.common.eventbus.AsyncEventBus;
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -17,7 +14,6 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
-
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.Rank;
@@ -34,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.eventbus.EventBus;
 
 abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);

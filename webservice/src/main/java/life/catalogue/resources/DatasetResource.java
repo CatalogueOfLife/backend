@@ -6,6 +6,7 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
+import life.catalogue.basgroup.HomotypicConsolidationJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
@@ -167,6 +168,14 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void copy(@PathParam("key") int key, @Auth User user) {
     var job = jobFactory.buildDuplication(key, user.getKey());
+    exec.submit(job);
+  }
+
+  @POST
+  @Path("/{key}/group-homotypic")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void homotypicGrouping(@PathParam("key") int key, @QueryParam("taxonID") String taxonID, @Auth User user) {
+    HomotypicConsolidationJob job = new HomotypicConsolidationJob(factory, key, user.getKey());
     exec.submit(job);
   }
 
