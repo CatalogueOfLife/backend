@@ -2,25 +2,18 @@ package life.catalogue.basgroup;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
-
 import life.catalogue.db.mapper.NameUsageMapper;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.Rank;
 
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collections;
-import java.util.List;
 
 public class HomotypicConsolidationJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidationJob.class);

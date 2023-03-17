@@ -175,7 +175,12 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("/{key}/consolidate-homotypic")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void homotypicGrouping(@PathParam("key") int key, @QueryParam("taxonID") String taxonID, @Auth User user) {
-    HomotypicConsolidationJob job = new HomotypicConsolidationJob(factory, key, user.getKey());
+    HomotypicConsolidationJob job;
+    if (taxonID != null) {
+      job = new HomotypicConsolidationJob(factory, key, user.getKey(), taxonID);
+    } else {
+      job = new HomotypicConsolidationJob(factory, key, user.getKey());
+    }
     exec.submit(job);
   }
 
