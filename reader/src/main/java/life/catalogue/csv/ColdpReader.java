@@ -134,7 +134,7 @@ public class ColdpReader extends CsvReader {
     for (ColdpTerm t : NAMEID_SCHEMAS) {
       require(t, ColdpTerm.nameID);
     }
-    Term nameRowType = requireOneSchema(ColdpTerm.Name, ColdpTerm.NameUsage);
+    requireOneSchema(ColdpTerm.Name, ColdpTerm.NameUsage, ColdpTerm.Reference);
 
     require(ColdpTerm.NameRelation, ColdpTerm.relatedNameID);
     require(ColdpTerm.NameRelation, ColdpTerm.type);
@@ -145,7 +145,8 @@ public class ColdpReader extends CsvReader {
     require(ColdpTerm.SpeciesInteraction, ColdpTerm.type);
 
     // either require the scientificName or at least some parsed field
-    if (!hasData(nameRowType, ColdpTerm.scientificName)) {
+    Term nameRowType = findFirstSchema(ColdpTerm.Name, ColdpTerm.NameUsage);
+    if (nameRowType != null && !hasData(nameRowType, ColdpTerm.scientificName)) {
       LOG.warn("No scientificName mapped! Require parsed name fields");
       // genus & specificEpithet must exist otherwise!
       if (nameRowType.equals(ColdpTerm.NameUsage)) {

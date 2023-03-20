@@ -93,4 +93,9 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
       names.put(n.getName().getScientificName(), nids);
     }
   }
+
+  public int size() {
+    return names.size();
+  }
+
 }

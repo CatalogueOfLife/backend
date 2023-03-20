@@ -211,6 +211,15 @@ public class CsvReader {
     }
   }
 
+  protected Term findFirstSchema(Term... rowTypes) {
+    for (Term rt : rowTypes) {
+      if (hasData(rt)) {
+        return rt;
+      }
+    }
+    return null;
+  }
+
   protected Term requireOneSchema(Term... rowTypes) {
     for (Term rt : rowTypes) {
       if (hasData(rt)) {

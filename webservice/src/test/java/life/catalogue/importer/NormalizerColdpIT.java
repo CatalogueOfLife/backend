@@ -630,4 +630,15 @@ public class NormalizerColdpIT extends NormalizerITBase {
     System.out.println("Test FINISHED");
   }
 
+  @Test
+  public void literatureOnly() throws Exception {
+    normalize(32);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      assertEquals(11, store.references().size());
+      assertEquals(0, store.names().size());
+      assertEquals(0, store.typeMaterial().size());
+    }
+  }
+
 }
