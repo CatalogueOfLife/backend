@@ -138,6 +138,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     CatCopy.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user.getKey(), entities, this::lookupReference, this::lookupReference);
     // track source
     VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), origID);
+    v.addIssues(issues);
     vm.create(v);
     // match name
     var nm = matchName(u.getName());
@@ -209,7 +210,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         // match to names index - does not persist yet
         matchName(n);
         // did we sync the name before in the same sector?
-        Usage existing = findExisting(n);
+        Usage existing = findExisting(n, parent);
         if (existing != null) {
           LOG.debug("Found implicit {} {} in sector {}", r, origName.getScientificName(), sector);
           parent = existing;
@@ -246,7 +247,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return parent;
   }
 
-  protected abstract Usage findExisting(Name n);
+  protected abstract Usage findExisting(Name n, Usage parent);
 
   protected abstract void cacheImplicit(Taxon t, Usage parent);
 

@@ -144,7 +144,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
    * Use the same usage matching to find existing taxa
    */
   @Override
-  protected Usage findExisting(Name n) {
+  protected Usage findExisting(Name n, Usage parent) {
     // we need to commit the batch session to see the recent inserts
     batchSession.commit();
     Taxon t = new Taxon(n);

@@ -6,6 +6,7 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -116,6 +117,12 @@ public class Classification {
     this.subgenus = other.subgenus;
     this.section = other.section;
     this.species = other.species;
+  }
+
+  public Classification(Collection<SimpleName> fullClassification) {
+    for (var sn : fullClassification) {
+      setByRank(sn.getRank(), sn.getName());
+    }
   }
 
   public String getSuperkingdom() {

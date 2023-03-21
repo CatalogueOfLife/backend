@@ -153,7 +153,8 @@ public class TreeCopyHandler extends TreeBaseHandler {
     }
   }
 
-  protected Usage findExisting(Name n) {
+  @Override
+  protected Usage findExisting(Name n, Usage parent) {
     RanKnName rnn = new RanKnName(n.getRank(), n.getScientificName());
     // did we create that implicit name before?
     if (implicits.containsKey(rnn)) {

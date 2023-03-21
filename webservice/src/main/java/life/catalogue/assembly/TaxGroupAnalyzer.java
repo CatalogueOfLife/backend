@@ -103,29 +103,27 @@ public class TaxGroupAnalyzer {
     NomCode code = name.getCode();
     if (code == null) {
       code = detectCode(name, classification);
+    } else {
+      // filter by code
+      final var codeFinal = code;
+      groups.removeIf(tg -> tg.getCode() != codeFinal);
     }
 
     // add group based on code
-    if (code != null) {
-      if (groups.isEmpty()) {
-        switch (code) {
-          case BACTERIAL:
-            groups.add(TaxGroup.Prokaryotes);
-            break;
-          case ZOOLOGICAL:
-            groups.add(TaxGroup.Animals);
-            break;
-          case VIRUS:
-            groups.add(TaxGroup.Viruses);
-            break;
-          case CULTIVARS:
-            groups.add(TaxGroup.Angiosperms);
-            break;
-        }
-      } else {
-        // filter by code
-        final var codeFinal = code;
-        groups.removeIf(tg -> tg.getCode() != codeFinal);
+    if (code != null && groups.isEmpty()) {
+      switch (code) {
+        case BACTERIAL:
+          groups.add(TaxGroup.Prokaryotes);
+          break;
+        case ZOOLOGICAL:
+          groups.add(TaxGroup.Animals);
+          break;
+        case VIRUS:
+          groups.add(TaxGroup.Viruses);
+          break;
+        case CULTIVARS:
+          groups.add(TaxGroup.Angiosperms);
+          break;
       }
     }
 

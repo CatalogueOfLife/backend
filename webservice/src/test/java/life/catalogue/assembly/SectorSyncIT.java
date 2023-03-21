@@ -87,6 +87,12 @@ public class SectorSyncIT {
     }
   }
 
+  public static List<SimpleName> getClassification(DSID<String> taxon) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      return session.getMapper(TaxonMapper.class).classificationSimple(taxon);
+    }
+  }
+
   public static VerbatimSource getSource(DSID<String> key) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
       return session.getMapper(VerbatimSourceMapper.class).get(key);
@@ -745,7 +751,13 @@ public class SectorSyncIT {
     syncAll();
     print(Datasets.COL);
 
-    // TODO: we have one plant that falls outside the target sector...
+    // we have one plant that falls outside the target Animalia sector:
+    // 20	Plantae	Tracheophyta	Apiaceae		species	Oenanthe aquatica	(L.) Poir.
+    var oa = getByName(Datasets.COL, Rank.SPECIES, "Oenanthe aquatica");
+    Classification cl = new Classification(getClassification(oa));
+    assertEquals("Plantae", cl.getKingdom());
+    var v = getSource(oa);
+    assertTrue(v.hasIssue(Issue.SYNC_OUTSIDE_TARGET));
   }
 
   Sector sector(DSID<Integer> key) {
