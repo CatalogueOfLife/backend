@@ -1,5 +1,8 @@
 package life.catalogue.cache;
 
+import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
+
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameWithPub;
 import life.catalogue.api.vocab.MatchType;
@@ -27,11 +30,6 @@ import org.slf4j.LoggerFactory;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 /**
  * UsageCache implementation that is backed by a mapdb using kryo serialization.
  * For each dataset key a separate mapdb is used that can be cleared or warmed.
@@ -39,7 +37,8 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 public class UsageCacheMapDB implements UsageCache {
   private static final Logger LOG = LoggerFactory.getLogger(UsageCacheMapDB.class);
 
-  private final Int2ObjectMap<Map<String, SimpleNameWithPub>> datasets = new Int2ObjectOpenHashMap<>();
+  // make this one thread safe
+  private final Int2ObjectMap<Map<String, SimpleNameWithPub>> datasets = Int2ObjectMaps.synchronize(new Int2ObjectOpenHashMap<>());
   private final DBMaker.Maker dbMaker;
   private final Pool<Kryo> pool;
   private final File dbFile;
@@ -180,14 +179,10 @@ public class UsageCacheMapDB implements UsageCache {
     if (usage == null || usage.getId() == null) {
       throw new IllegalArgumentException("Usage ID required");
     }
-    Map<String, SimpleNameWithPub> store;
-    if (datasets.containsKey(datasetKey)) {
-      store = datasets.get(datasetKey);
-    } else {
+    var store = datasets.computeIfAbsent(datasetKey, (dk) -> {
       LOG.info("Creating new usage cache for dataset {}", datasetKey);
-      store = storeMaker(datasetKey, expireMutable).create();
-      datasets.put(datasetKey, store);
-    }
+      return storeMaker(datasetKey, expireMutable).create();
+    });
     return store.put(usage.getId(), usage);
   }
 
