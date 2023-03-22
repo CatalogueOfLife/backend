@@ -24,6 +24,7 @@ import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLNameBuilder;
 import de.undercouch.citeproc.csl.CSLType;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class CslFormatterTest {
@@ -105,6 +106,28 @@ public class CslFormatterTest {
     x = html.cite(builder.build());
     System.out.println(x);
     assertFalse(x.contains("(n.d.)"));
+  }
+
+  @Test
+  public void bookChapter() throws JsonProcessingException {
+    CSLItemDataBuilder builder = new CSLItemDataBuilder()
+      .type(CSLType.CHAPTER)
+      .title("The Diary of a Young Girl and children's literature of atrocity.")
+      .author("S", "Minslow")
+      .issued(2017)
+      .containerTitle("Critical Insights: The Diary of a Young Girl")
+      .publisher("Grey House")
+      .page("60-75")
+      ;
+    var text = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT);
+
+    assertEquals("Minslow, S. (2017). The Diary of a Young Girl and children’s literature of atrocity. In Critical Insights: The Diary of a Young Girl (pp. 60–75). Grey House.", text.cite(builder.build()));
+
+    builder.containerAuthor("Markus","Döring");
+    assertEquals("Minslow, S. (2017). The Diary of a Young Girl and children’s literature of atrocity. In M. Döring, Critical Insights: The Diary of a Young Girl (pp. 60–75). Grey House.", text.cite(builder.build()));
+
+    builder.editor("Ewald","Döring");
+    assertEquals("Minslow, S. (2017). The Diary of a Young Girl and children’s literature of atrocity. In E. Döring (Ed.), Critical Insights: The Diary of a Young Girl (pp. 60–75). Grey House.", text.cite(builder.build()));
   }
 
   /**

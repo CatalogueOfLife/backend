@@ -29,3 +29,7 @@ radioBroadcast,BROADCAST
 statute,LEGISLATION
 tvBroadcast,BROADCAST
 videoRecording,MOTION_PICTURE
+# other custom mappings
+article_reference,ARTICLE_JOURNAL
+nested_reference,CHAPTER
+book_reference,BOOK
