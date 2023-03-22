@@ -195,14 +195,14 @@
   <select id="countDistributionsByGazetteer" resultType="StringCount">
     SELECT gazetteer AS key, count(*) AS count
     FROM distribution x
-    JOIN name_usage u ON u.id=x.taxon_id
+    JOIN name_usage u ON u.id=x.taxon_id AND u.dataset_key=x.dataset_key
     WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
     GROUP BY gazetteer
   </select>
   <select id="countMediaByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
     FROM media x
-    JOIN name_usage u ON u.id=x.taxon_id AND x.dataset_key=u.dataset_key
+    JOIN name_usage u ON u.id=x.taxon_id AND u.dataset_key=x.dataset_key
     WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
     GROUP BY type
   </select>
@@ -253,19 +253,22 @@
   </select>
   <select id="countTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
-    FROM name_usage t JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
+    FROM name_usage t
+    JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
     WHERE t.dataset_key=#{datasetKey} AND NOT t.is_synonym AND t.sector_key=#{sectorKey}
     GROUP BY n.rank
   </select>
   <select id="countExtinctTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
-    FROM name_usage t JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
+    FROM name_usage t
+    JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
     WHERE t.dataset_key=#{datasetKey} AND NOT t.is_synonym AND t.sector_key=#{sectorKey} AND t.extinct
     GROUP BY n.rank
   </select>
   <select id="countSynonymsByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
-    FROM name_usage t JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
+    FROM name_usage t
+    JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
     WHERE t.dataset_key=#{datasetKey} AND t.is_synonym AND t.sector_key=#{sectorKey}
     GROUP BY n.rank
   </select>
@@ -290,7 +293,7 @@
   <select id="countVernacularsByLanguage" resultType="StringCount">
     SELECT language AS key, count(*) AS count
     FROM vernacular_name x
-    JOIN name_usage u ON x.dataset_key=#{datasetKey} AND u.id=x.taxon_id
+    JOIN name_usage u ON x.dataset_key=u.dataset_key AND u.id=x.taxon_id
     WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
     GROUP BY language
   </select>
