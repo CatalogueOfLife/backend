@@ -75,6 +75,7 @@ public class NameUsageProcessor {
       final var sm = session.getMapper(SectorMapper.class);
 
       // reusable dsids for this dataset
+      final DSID<String> uKey = DSID.of(datasetKey, null);
       final DSID<Integer> sKey = DSID.of(datasetKey, null);
       // we exclude some rather static info from our already massive joins and set them manually in code:
       final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
@@ -119,9 +120,17 @@ public class NameUsageProcessor {
                 LOG.warn("Synonym {} without parentID found {}", syn.getId(), syn.getLabel());
                 return;
               }
-              // we list all accepted first, so the key must exist
-              Taxon acc = (Taxon) Preconditions.checkNotNull(taxa.get(syn.getParentId()), "accepted name for synonym "+ syn +" missing").getUsage();
-              syn.setAccepted(acc);
+              // we list all accepted first, so the key must exist UNLESS we have a merged synonym pointing to an accepted name outside of its sector!
+              NameUsage acc;
+              if (!taxa.contains(syn.getParentId())) {
+                // load it
+                LOG.debug("Load missing usage {} of dataset {}", syn.getParentId(), datasetKey);
+                acc = num.get(uKey.id(syn.getParentId()));
+                taxa.put(new NameUsageWrapper(acc));
+              } else {
+                acc = taxa.get(syn.getParentId()).getUsage();
+              }
+              syn.setAccepted((Taxon)acc);
               addClassification(nuw, taxa, usageCache, num);
             }
             consumer.accept(nuw);
