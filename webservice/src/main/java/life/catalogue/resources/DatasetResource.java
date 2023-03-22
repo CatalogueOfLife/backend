@@ -29,6 +29,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -176,10 +177,10 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void homotypicGrouping(@PathParam("key") int key, @QueryParam("taxonID") String taxonID, @Auth User user) {
     HomotypicConsolidationJob job;
-    if (taxonID != null) {
-      job = new HomotypicConsolidationJob(factory, key, user.getKey(), taxonID);
-    } else {
+    if (StringUtils.isBlank(taxonID)) {
       job = new HomotypicConsolidationJob(factory, key, user.getKey());
+    } else {
+      job = new HomotypicConsolidationJob(factory, key, user.getKey(), taxonID);
     }
     exec.submit(job);
   }

@@ -295,4 +295,9 @@ public class LinneanNameUsage implements FormattableName {
   public int hashCode() {
     return Objects.hash(id, parentId, sectorKey, status, nameId, type, code, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
   }
+
+  @Override
+  public String toString() {
+    return "LinneanNameUsage{" + id + ": " + getLabelWithRank() + '}';
+  }
 }

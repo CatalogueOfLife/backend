@@ -2,10 +2,13 @@ package life.catalogue.basgroup;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.gbif.nameparser.api.Rank;
@@ -14,6 +17,11 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class HomotypicConsolidationJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidationJob.class);
@@ -35,9 +43,16 @@ public class HomotypicConsolidationJob extends DatasetBlockingJob {
       } else if (!root.getStatus().isTaxon()) {
         throw new IllegalArgumentException("Root taxon is not an accepted name: " + taxonID);
       }
-      var families = mapper.findSimple(datasetKey, null, TaxonomicStatus.ACCEPTED, Rank.FAMILY, null);
-      var familiesProv = mapper.findSimple(datasetKey, null, TaxonomicStatus.PROVISIONALLY_ACCEPTED, Rank.FAMILY, null);
-      families.addAll(familiesProv);
+
+      List<SimpleName> families = new ArrayList<>();
+      TreeTraversalParameter params = TreeTraversalParameter.datasetNoSynonyms(datasetKey);
+      params.setTaxonID(taxonID);
+      params.setLowestRank(Rank.FAMILY);
+      PgUtils.consume(()->mapper.processTreeSimple(params), sn -> {
+        if (sn.getRank()==Rank.FAMILY && sn.getStatus().isTaxon()) {
+          families.add(sn);
+        }
+      });
       LOG.info("Found {} families to consolidate for root taxon {}", families.size(), root);
       hc = HomotypicConsolidator.forFamilies(factory, datasetKey, families);
     }

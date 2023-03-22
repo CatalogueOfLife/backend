@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TempNameUsageRelated;
 import life.catalogue.db.mapper.*;
@@ -15,6 +16,7 @@ import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -140,12 +142,16 @@ public class SectorDelete extends SectorRunnable {
           ttp.setTaxonID(u.getId());
           ttp.setLowestRank(Rank.INFRAGENERIC_NAME);
           ttp.setSynonyms(false);
-          for (SimpleName sn : um.processTreeSimple(ttp)) {
-            if (sn.getRank().higherThan(maxAmbiguousRank)) {
-              um.removeFromTemp(nid);
-              counter++;
-              break usageLoop;
+          try (var cursor = um.processTreeSimple(ttp)) {
+            for (SimpleName sn : cursor) {
+              if (sn.getRank().higherThan(maxAmbiguousRank)) {
+                um.removeFromTemp(nid);
+                counter++;
+                break usageLoop;
+              }
             }
+          } catch (IOException e) {
+            throw new RuntimeException(e);
           }
         }
       }
