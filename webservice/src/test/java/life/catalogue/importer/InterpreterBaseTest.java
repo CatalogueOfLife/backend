@@ -48,6 +48,25 @@ public class InterpreterBaseTest {
   }
 
   @Test
+  public void replaceHtml() throws Exception {
+    assertNull(ib.replaceHtml(null, true));
+    assertNull(ib.replaceHtml("", true));
+    assertNull(ib.replaceHtml(" ", true));
+
+    assertEquals("x", ib.replaceHtml("x", true));
+    assertEquals("x", ib.replaceHtml("x", false));
+    assertEquals("Hypoclinea humilis [Mayr, 1868b](https://antcat.org/references/127225)[PDF: 164 (w.) ARGENTINA (Buenos Aires). Neotropic. Primary type information: Primary type material: holotype (?) worker. Primary type locality: Argentina: Buenos Aires, 1866 (Strobel).](https://antcat.org/documents/2148/4369.pdf)",
+      ib.replaceHtml("<div class=\"antcat_taxon\">Hypoclinea humilis <a title=\"Mayr, G. 1868b. Formicidae novae Americanae collectae a Prof. P. de Strobel. Annuario della Società dei Naturalisti e Matematici, Modena 3:161-178.\" href=\"https://antcat.org/references/127225\">Mayr, 1868b <a class=\"pdf-link\" rel=\"nofollow\" href=\"https://antcat.org/documents/2148/4369.pdf\">PDF: 164 (w.) ARGENTINA (Buenos Aires). Neotropic. Primary type information: Primary type material: holotype (?) worker. Primary type locality: Argentina: Buenos Aires, 1866 (Strobel).", true));
+    assertEquals("Hypoclinea humilis Mayr, 1868b PDF: 164 (w.) ARGENTINA (Buenos Aires). Neotropic. Primary type information: Primary type material: holotype (?) worker. Primary type locality: Argentina: Buenos Aires, 1866 (Strobel).",
+      ib.replaceHtml("<div class=\"antcat_taxon\">Hypoclinea humilis <a title=\"Mayr, G. 1868b. Formicidae novae Americanae collectae a Prof. P. de Strobel. Annuario della Società dei Naturalisti e Matematici, Modena 3:161-178.\" href=\"https://antcat.org/references/127225\">Mayr, 1868b <a class=\"pdf-link\" rel=\"nofollow\" href=\"https://antcat.org/documents/2148/4369.pdf\">PDF: 164 (w.) ARGENTINA (Buenos Aires). Neotropic. Primary type information: Primary type material: holotype (?) worker. Primary type locality: Argentina: Buenos Aires, 1866 (Strobel).", false));
+    assertEquals("tsn:2134\\,COL:GHS", ib.replaceHtml(" tsn:2134\\,COL:GHS", true));
+    assertEquals("tsn:2134\\,COL:GHS", ib.replaceHtml(" tsn:2134\\,COL:GHS", false));
+    assertEquals("https://species.wikimedia.org/wiki/Poa_annua", ib.replaceHtml("https://species.wikimedia.org/wiki/Poa_annua", true));
+    assertEquals("Hypoclinea humilis [Mayr, 1868b](https://antcat.org/references/127225)[PDF: 164 (w.) ARGENTINA (Buenos Aires). Neotropic. Primary type information: Primary type material: holotype (?) worker. Primary type locality: Argentina: Buenos Aires, 1866 (Strobel).](https://antcat.org/documents/2148/4369.pdf)",
+      ib.replaceHtml("Hypoclinea humilis [Mayr, 1868b](https://antcat.org/references/127225)[PDF: 164 (w.) ARGENTINA (Buenos Aires). Neotropic. Primary type information: Primary type material: holotype (?) worker. Primary type locality: Argentina: Buenos Aires, 1866 (Strobel).](https://antcat.org/documents/2148/4369.pdf)", true));
+  }
+
+  @Test
   public void identifier() throws Exception {
     IssueContainer issues = IssueContainer.simple();
 

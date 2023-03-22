@@ -1,11 +1,9 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -13,11 +11,6 @@ import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.util.RankUtils;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -31,6 +24,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +32,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 import static life.catalogue.parser.SafeParser.parse;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**
  * Base interpreter providing common methods for both ACEF and DWC
@@ -52,7 +45,6 @@ public class InterpreterBase {
   private static final int MAX_YEAR = Year.now().getValue() + 10;
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
   private static final Pattern SPLIT_COMMA = Pattern.compile("(?<!\\\\),");
-
   protected final NeoDb store;
   protected final DatasetSettings settings;
   protected final NameInterpreter nameInterpreter;
@@ -82,6 +74,26 @@ public class InterpreterBase {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Strips all html tags if they exist and optionally converts link to markdown links.
+   */
+  protected String replaceHtml(String x, boolean useMarkdownLinks) {
+    if (StringUtils.isBlank(x)) return null;
+
+    var doc = Jsoup.parse(x);
+    if (useMarkdownLinks) {
+      var links = doc.select("a");
+      for (var link : links) {
+        String url = link.attr("href");
+        if (!StringUtils.isBlank(url)) {
+          String md = String.format("[%s](%s)", link.text(), url);
+          link.text(md);
+        }
+      }
+    }
+    return doc.wholeText().trim();
   }
 
   protected Reference setReference(VerbatimRecord v, Term refIdTerm, Consumer<String> refIdConsumer){

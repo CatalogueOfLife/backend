@@ -145,7 +145,7 @@ public class ColdpInterpreter extends InterpreterBase {
     u.setVerbatimKey(v.getId());
     setReference(v, ColdpTerm.accordingToID, u.usage::setAccordingToId, u.usage::setAccordingTo);
     u.usage.setOrigin(Origin.SOURCE);
-    u.usage.setRemarks(v.get(ColdpTerm.remarks));
+    u.usage.setRemarks(getRemarks(v));
     u.usage.setNamePhrase(ObjectUtils.coalesce(v.get(ColdpTerm.namePhrase), n.pnu.getTaxonomicNote()));
     if (!u.usage.isBareName()) {
       NameUsageBase nub = (NameUsageBase) u.usage;
@@ -175,11 +175,15 @@ public class ColdpInterpreter extends InterpreterBase {
     if (type.isPresent()) {
       rel.setType(typeFunction.apply(type.get()));
       rel.setRelatedScientificName(rec.get(ColdpTerm.relatedTaxonScientificName));
-      rel.setRemarks(rec.get(ColdpTerm.remarks));
+      rel.setRemarks(getRemarks(rec));
       setReference(rel, rec);
       return Optional.of(rel);
     }
     return Optional.empty();
+  }
+
+  String getRemarks(VerbatimRecord v) {
+    return replaceHtml(v.get(ColdpTerm.remarks), true);
   }
 
   Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
@@ -206,7 +210,7 @@ public class ColdpInterpreter extends InterpreterBase {
     m.setDate(rec.get(ColdpTerm.date));
     m.setCollector(rec.get(ColdpTerm.collector));
     m.setLink(uri(rec, Issue.URL_INVALID, ColdpTerm.link));
-    m.setRemarks(rec.get(ColdpTerm.remarks));
+    m.setRemarks(getRemarks(rec));
     setReference(m, rec);
     return Optional.of(m);
   }
@@ -262,7 +266,7 @@ public class ColdpInterpreter extends InterpreterBase {
         est.setType(SafeParser.parse(EstimateTypeParser.PARSER, rec.get(ColdpTerm.type))
           .orElse(EstimateType.SPECIES_LIVING, Issue.ESTIMATE_TYPE_INVALID, rec));
         setReference(est, rec);
-        est.setRemarks(rec.get(ColdpTerm.remarks));
+        est.setRemarks(getRemarks(rec));
         return Lists.newArrayList(est);
 
       } else {
@@ -291,7 +295,7 @@ public class ColdpInterpreter extends InterpreterBase {
         v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet),
         v.get(ColdpTerm.code), v.get(nomStatusTerm),
-        v.get(ColdpTerm.link), v.get(remarksTerm), v.getRaw(altIdTerm), v);
+        v.get(ColdpTerm.link), replaceHtml(v.get(remarksTerm), true), v.getRaw(altIdTerm), v);
     if (opt.isPresent()) {
       // publishedIn
       Name n = opt.get().getName();

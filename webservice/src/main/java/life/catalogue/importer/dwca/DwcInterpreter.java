@@ -94,7 +94,7 @@ public class DwcInterpreter extends InterpreterBase {
     SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColdpTerm.type));
     if (type.isPresent()) {
       rel.setType(RelType.from(type.get()));
-      rel.setRemarks(rec.get(ColdpTerm.remarks));
+      rel.setRemarks(replaceHtml(rec.get(ColdpTerm.remarks), true));
       if (rec.hasTerm(DcTerm.bibliographicCitation)) {
         Reference ref = refFactory.fromDWC(rec.get(ColdpTerm.referenceID), rec.get(DcTerm.bibliographicCitation), null, rec);
         rel.setReferenceId(ref.getId());

@@ -1,9 +1,6 @@
 package life.catalogue.concurrent;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.config.MailConfig;
 import life.catalogue.metadata.FmUtil;
@@ -13,16 +10,16 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import javax.annotation.Nullable;
 
 import org.simplejavamail.api.email.Email;
-import org.simplejavamail.api.mailer.AsyncResponse;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import freemarker.template.TemplateException;
 
@@ -67,16 +64,14 @@ public class EmailNotification {
           .withPlainText(text)
           .buildEmail();
 
-        AsyncResponse asyncResp = mailer.sendMail(mail, true);
-        asyncResp.onSuccess(() -> {
+        var asyncResp = mailer.sendMail(mail, true).thenAccept((resp) -> {
           LOG.info("Successfully sent mail for {} {} to {}", job.getJobName(), job.getKey(), user.getEmail());
-        });
-        asyncResp.onException((e) -> {
+        }).exceptionally((e) -> {
           LOG.error("Error sending mail for {} {} to {}", job.getJobName(), job.getKey(), user.getEmail(), e);
+          return null;
         });
-        if (cfg.block) {
-          Future<?> f = asyncResp.getFuture();
-          f.get(); // blocks
+        if (cfg.block && asyncResp != null) {
+          asyncResp.get(); // blocks
         }
         LOG.info("Sent email notification for {} {} to user [{}] {} <{}>", job.getJobName(), job.getKey(), user.getKey(), user.getName(), user.getEmail());
 

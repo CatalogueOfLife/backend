@@ -18,9 +18,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.apache.commons.text.StringEscapeUtils;
-
-import org.gbif.nameparser.util.UnicodeUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

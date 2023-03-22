@@ -54,13 +54,14 @@
     <citeproc.version>3.0.0-alpha.6</citeproc.version>
     <citeproc-styles.version>2.0.0</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
-    <commons-compress.version>1.19</commons-compress.version>
+    <commons-compress.version>1.22</commons-compress.version>
     <commons-io.version>2.11.0</commons-io.version>
+    <copy_down.version>1.1</copy_down.version>
     <dropwizard.version>2.1.5</dropwizard.version>
     <dwc-api.version>1.45</dwc-api.version>
     <dwca-io.version>2.13</dwca-io.version>
     <elasticsearch.version>8.1.1</elasticsearch.version>
-    <fastutil.version>8.5.9</fastutil.version>
+    <fastutil.version>8.5.12</fastutil.version>
     <ganglia.version>1.0.7</ganglia.version>
     <gbif-api.version>0.174</gbif-api.version>
     <hikaricp.version>5.0.1</hikaricp.version>
@@ -69,21 +70,21 @@
     <httpcore.version>4.4.12</httpcore.version>
     <icu4j.version>72.1</icu4j.version>
     <jakarta.xml.version>2.3.3</jakarta.xml.version>
-    <java-diff-utils.version>4.0</java-diff-utils.version>
+    <java-diff-utils.version>4.12</java-diff-utils.version>
     <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
     <javers.version>6.8.0</javers.version>
     <jbibtex.version>1.0.20</jbibtex.version>
     <jcommander.version>1.82</jcommander.version>
     <jjwt.version>0.11.5</jjwt.version>
-    <jsoup.version>1.15.3</jsoup.version>
+    <jsoup.version>1.15.4</jsoup.version>
     <junit.version>4.12</junit.version>
     <kryo-serializers.version>0.45</kryo-serializers.version>
-    <kryo.version>5.3.0</kryo.version>
+    <kryo.version>5.4.0</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
     <logstash-logback.version>6.4</logstash-logback.version>
     <mapdb.version>3.0.9</mapdb.version>
     <mockito.version>3.1.0</mockito.version>
-    <mybatis.version>3.5.11</mybatis.version>
+    <mybatis.version>3.5.13</mybatis.version>
     <name-parser.version>3.8.6-SNAPSHOT</name-parser.version>
     <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
     <neo4j.version>3.4.17</neo4j.version>
@@ -91,7 +92,7 @@
     <poi.version>5.2.3</poi.version>
     <postgresql.version>42.5.3</postgresql.version>
     <scribejava.version>8.3.1</scribejava.version>
-    <simple-mail.version>6.6.1</simple-mail.version>
+    <simple-mail.version>8.0.0</simple-mail.version>
     <stax2.version>4.2.1</stax2.version>
     <testcontainers.version>1.17.6</testcontainers.version>
     <text-tree.version>1.0.0</text-tree.version>
