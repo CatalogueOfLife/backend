@@ -12,7 +12,7 @@
 
   <properties>
     <mainClass>life.catalogue.WsServer</mainClass>
-    <swagger.version>2.2.9</swagger.version>
+    <swagger.version>2.2.8</swagger.version>
   </properties>
 
   <dependencies>
