@@ -34,17 +34,18 @@ public class HomotypicConsolidationJob extends DatasetBlockingJob {
 
   public HomotypicConsolidationJob(SqlSessionFactory factory, int datasetKey, int userKey, String taxonID) {
     super(datasetKey, userKey, JobPriority.MEDIUM);
+    List<SimpleName> families = new ArrayList<>();
+    SimpleName root;
     try (SqlSession session = factory.openSession()) {
       var mapper = session.getMapper(NameUsageMapper.class);
       var key = DSID.of(datasetKey, taxonID);
-      var root = mapper.getSimple(key);
+      root = mapper.getSimple(key);
       if (root == null) {
         throw NotFoundException.notFound(Taxon.class, key);
       } else if (!root.getStatus().isTaxon()) {
         throw new IllegalArgumentException("Root taxon is not an accepted name: " + taxonID);
       }
 
-      List<SimpleName> families = new ArrayList<>();
       TreeTraversalParameter params = TreeTraversalParameter.datasetNoSynonyms(datasetKey);
       params.setTaxonID(taxonID);
       params.setLowestRank(Rank.FAMILY);
@@ -53,9 +54,9 @@ public class HomotypicConsolidationJob extends DatasetBlockingJob {
           families.add(sn);
         }
       });
-      LOG.info("Found {} families to consolidate for root taxon {}", families.size(), root);
-      hc = HomotypicConsolidator.forFamilies(factory, datasetKey, families);
     }
+    LOG.info("Found {} families to consolidate for root taxon {}", families.size(), root);
+    hc = HomotypicConsolidator.forFamilies(factory, datasetKey, families);
   }
 
   @Override

@@ -76,20 +76,20 @@ public class HomotypicConsolidatorTest {
   }
 
   @Test
-  public void groupFamily() {
+  public void groupFamily() throws IOException {
     var hc = HomotypicConsolidator.forFamilies(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key,
       List.of(SimpleName.sn("x5", Rank.FAMILY, "Chironomidae", "")),
-      u -> {
-        return Integer.parseInt(u.getId());
-      });
-    hc.consolidate();
+      u -> Integer.parseInt(u.getId())
+    );
     printTree();
+    hc.consolidate();
+    assertTree("hg-x5.txt");
   }
 
 
-  void printTree() {
+  void printTree() throws IOException {
     Writer writer = new StringWriter();
-    PrinterFactory.dataset(TextTreePrinter.class, dataRule.testData.key, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
+    PrinterFactory.dataset(TextTreePrinter.class, dataRule.testData.key, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     System.out.println(writer.toString().trim());
   }
 

@@ -44,6 +44,7 @@ public class HomotypicConsolidator {
   private final AuthorComparator authorComparator;
   private final BasionymSorter basSorter;
   private final Function<LinneanNameUsage, Integer> priorityFunc;
+  private int synCounter;
 
   public static HomotypicConsolidator forAllFamilies(SqlSessionFactory factory, int datasetKey) {
     SectorPriority prio = new SectorPriority(datasetKey, factory);
@@ -168,9 +169,9 @@ public class HomotypicConsolidator {
     for (var epithetGroup : epithets.entrySet()) {
       var groups = basSorter.groupBasionyms(epithetGroup.getValue(), a -> a);
       // go through groups and persistent basionym relations where needed
-      try (SqlSession session = factory.openSession(true)) {
-        NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
-        for (var group : groups) {
+      for (var group : groups) {
+        try (SqlSession session = factory.openSession(false)) {
+          NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
           // we only need to process groups that contain recombinations
           if (group.hasRecombinations()) {
             // if we have a basionym creating relations is straight forward
@@ -193,8 +194,9 @@ public class HomotypicConsolidator {
             }
           }
           // finally make sure we only have one accepted name!
-          consolidate(family, group);
+          session.commit();
         }
+        consolidate(family, group);
       }
     }
     LOG.info("Discovered {} new basionym relations and created {} basionym placeholders in family {}", newRelations, newBasionyms, family);
@@ -265,7 +267,6 @@ public class HomotypicConsolidator {
           } else {
             SimpleName previousParent = loadSN(u.getParentId());
             if (previousParent != null) {
-              //TODO: add to usage remarks
               LOG.debug("Originally was treated as {} {} {}", u.getStatus(), u.getStatus().isSynonym() ? "of" : "taxon within", previousParent.getLabel());
             }
             convertToSynonym(u, accepted, Issue.CONFLICTING_BASIONYM_COMBINATION, session);
@@ -279,10 +280,9 @@ public class HomotypicConsolidator {
   /**
    * Converts the given taxon to a synonym of the given accepted usage.
    * All included descendants, both synonyms and accepted children, are also changed to become synonyms of the accepted.
-   *  @param u
-   * @param accepted
-   * @param issue
-   * @param session
+   *  @param u taxon to convert to synonym
+   * @param accepted newly accepted parent of the new synonym
+   * @param issue optional issue to flag
    */
   public void convertToSynonym(LinneanNameUsage u, LinneanNameUsage accepted, @Nullable Issue issue, SqlSession session) {
     VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
@@ -306,11 +306,12 @@ public class HomotypicConsolidator {
     treeParams.setSynonyms(true);
     try (var cursor = num.processTreeSimple(treeParams)) {
       for (var sn : cursor) {
-        LOG.info("Also convert descendant {} into a synonym of {}", sn, accepted);
-        num.updateParentAndStatus(dsid.id(sn.getId()), accepted.getId(), TaxonomicStatus.SYNONYM, Users.HOMOTYPIC_GROUPER);
+        var newStatus = sn.getStatus().isSynonym() ? sn.getStatus() : TaxonomicStatus.SYNONYM;
+        LOG.info("Also convert descendant {} into a {} of {}", sn, newStatus, accepted);
+        num.updateParentAndStatus(dsid.id(sn.getId()), accepted.getId(), newStatus, Users.HOMOTYPIC_GROUPER);
       }
       // persist usage instance changes
-      num.updateParentId(dsid.id(u.getId()), accepted.getId(), Users.HOMOTYPIC_GROUPER);
+      num.updateParentAndStatus(dsid.id(u.getId()), accepted.getId(), u.getStatus(), Users.HOMOTYPIC_GROUPER);
     } catch (IOException e) {
       LOG.error("Failed to traverse descendants of "+u.getLabel(), e);
     }

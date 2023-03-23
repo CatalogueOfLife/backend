@@ -1,0 +1,6 @@
+Diptera [order]
+  Chironomidae [family]
+    Ablabesmyia aurea (Johannsen, 1907) [species]
+      *Ablamius aureus Johannsen, 1907 [species]
+    Ablabesmyia kara (Johannsen, 1927) [species]
+      *Ablamius karus (Johannsen, 1927) [species]
