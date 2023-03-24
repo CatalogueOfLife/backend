@@ -137,7 +137,7 @@ public class XRelease extends ProjectRelease {
     updateState(ImportState.PROCESSING);
     // detect and group basionyms
     var secPrio = new SectorPriority(sectorPriorities);
-    var hc = HomotypicConsolidator.forAllFamilies(factory, newDatasetKey, secPrio::priority);
+    var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, secPrio::priority);
     hc.setBasionymExclusions(xCfg.basionymExclusions);
     hc.consolidate();
 

@@ -282,7 +282,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    *
    * Processed SimpleName instances have the parentID as their parent property, not a scientificName!
    *
-   * @param params various tree traveersal request parameters:
+   * @param params various tree traversal request parameters:
    */
   Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params);
 

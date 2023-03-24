@@ -138,7 +138,14 @@ public class SciNameNormalizer {
     // normalize frequent variations of t/r sometimes followed by an 'h'
     return trh.matcher(s).replaceAll("$1");
   }
-  
+
+  /**
+   * Stems and normalizes some few, but frequent misspellings
+   */
+  public static String normalizeEpithet(String epithet) {
+    return normStrongly(epithet, true);
+  }
+
   /**
    * Does a stemming of a latin epithet removing any gender carrying suffix.
    */

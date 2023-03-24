@@ -4,12 +4,9 @@ import life.catalogue.TestDataGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.basgroup.HomotypicConsolidator;
-import life.catalogue.common.id.IdConverter;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
@@ -19,13 +16,8 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
-import life.catalogue.importer.neo.printer.GraphFormat;
-import life.catalogue.importer.neo.printer.PrinterUtils;
 
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.apache.poi.ss.formula.functions.T;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -40,6 +32,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
@@ -59,33 +52,53 @@ public class HomotypicConsolidatorTest {
 
   @Test
   public void consolidateNoPrios() throws IOException {
-    var hc = HomotypicConsolidator.forAllFamilies(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key);
+    var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key);
     hc.consolidate();
-    printTree();
-    assertTree("hg1.txt");
+    assertTree("hg1.txt", null);
 
+    Set<String> skipped = Set.of("1","2","3","4");
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
       var vm = session.getMapper(VerbatimSourceMapper.class);
-      consumeTree(u -> {
-        if (u.getRank().isSpeciesOrBelow()) {
-          var v = vm.getIssues(DSID.of(dataRule.testData.key, u.getId()));
-          assertTrue(v.getIssues().contains(Issue.HOMOTYPIC_MULTI_ACCEPTED));
-        }
-      });
+      final DSID<String> key = DSID.root(dataRule.testData.key);
+      for (var id : skipped) {
+        var v = vm.get(key.id(id));
+        assertTrue(v.getIssues().contains(Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED));
+      }
     }
   }
 
   @Test
   public void groupFamily() throws IOException {
-    var hc = HomotypicConsolidator.forFamilies(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key,
-      List.of(SimpleName.sn("x5", Rank.FAMILY, "Chironomidae", "")),
+    var hc = HomotypicConsolidator.forTaxa(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key,
+      List.of(SimpleName.sn("dfc", Rank.FAMILY, "Chironomidae", "")),
       u -> Integer.parseInt(u.getId())
     );
     printTree();
     hc.consolidate();
-    assertTree("hg-x5.txt");
+    assertTree("hg-dfc.txt", "dfc");
   }
 
+  @Test
+  public void groupTribe() throws IOException {
+    System.out.println("\n\n*** CICHORIEAE ***");
+    var hc = HomotypicConsolidator.forTaxa(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key,
+      List.of(SimpleName.sn("atc", Rank.TRIBE, "Cichorieae", "")),
+      u -> Integer.parseInt(u.getId()) // lower ids have priority!
+    );
+    printTree();
+    hc.consolidate();
+    assertTree("hg-atc.txt", "atc");
+
+    System.out.println("\n\n*** VERNONIEAE ***");
+
+    hc = HomotypicConsolidator.forTaxa(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key,
+      List.of(SimpleName.sn("atv", Rank.TRIBE, "Vernonieae", "")),
+      u -> Integer.parseInt(u.getId()) // lower ids have priority!
+    );
+    printTree();
+    hc.consolidate();
+    assertTree("hg-atv.txt", "atv");
+  }
 
   void printTree() throws IOException {
     Writer writer = new StringWriter();
@@ -103,8 +116,8 @@ public class HomotypicConsolidatorTest {
     }
   }
 
-  void assertTree(String filename) throws IOException {
-    SectorSyncIT.assertTree(dataRule.testData.key, openResourceStream(filename));
+  void assertTree(String filename, String rootID) throws IOException {
+    SectorSyncIT.assertTree(dataRule.testData.key, rootID, openResourceStream(filename));
   }
 
   InputStream openResourceStream(String filename) {

@@ -1,5 +1,5 @@
-Diptera [order]
-  Chironomidae [family]
+Chironomidae [family]
+  Diamesini [tribe]
     Ablabesmyia aurea (Johannsen, 1907) [species]
       *Ablamius aureus Johannsen, 1907 [species]
     Ablabesmyia kara (Johannsen, 1927) [species]

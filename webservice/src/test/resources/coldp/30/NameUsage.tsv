@@ -1,5 +1,49 @@
-col:ID	col:status	col:rank	col:order	col:family	col:scientificName	col:authorship
-1	accepted	species	Diptera	Chironomidae	Ablabesmyia aurea	(Johannsen, 1907)
-2	accepted	species	Diptera	Chironomidae	Ablamius aureus	Johannsen, 1907
-3	accepted	species	Diptera	Chironomidae	Ablabesmyia kara	(Johannsen, 1927)
-4	accepted	species	Diptera	Chironomidae	Ablamius karus	(Johannsen, 1927)
+col:ID	col:parentID	col:status	col:rank	col:scientificName	col:authorship	col:nameStatus
+dip		accepted	order	Diptera		
+dfc	dip	accepted	family	Chironomidae		
+dtd	dfc	accepted	tribe	Diamesini		
+
+ast		accepted	order	Asterales		
+afa	ast	accepted	family	Asteraceae	Bercht. & J.Presl	
+atc	afa	accepted	tribe	Cichorieae		
+atv	afa	accepted	tribe	Vernonieae		
+
+1	dtd	accepted	species	Ablabesmyia aurea	(Johannsen, 1907)	
+2	dtd	accepted	species	Ablamius aureus	Johannsen, 1907	
+3	dtd	accepted	species	Ablabesmyia kara	(Johannsen, 1927)	
+4	dtd	accepted	species	Ablamius karus	(Johannsen, 1927)	
+
+10	atc	accepted	species	Pilosella acutifolia	(Vill.) Arv.-Touv.	
+11	atc	accepted	species	Hieracium aurantiacum	L.	
+12	atc	accepted	species	Pilosella aurantiaca	(L.) F.W.Schultz & Sch.Bip.	
+13	atc	accepted	species	Pilosella melinomelas	(Peter) Holub	
+14	13	synonym	species	Hieracium acrothyrsum	Nägeli & Peter	
+15	13	synonym	species	Pilosella acrothyrsa	(Nägeli & Peter) Soják	
+16	atc	accepted	species	Hieracium acrothyrsum	N. & P.	
+17	atc	accepted	species	Hieracium acrotyrsum	Nägeli & Peter	
+18	atc	accepted	subspecies	Hieracium vulgaris acrothyrsum	(Nägeli & Peter) Döring	
+19	atc	accepted	species	Hieracium perennis	L.	
+119	19	synonym	species	Hieracium acrothyrsum	Nangsdorfer	nom.inval.
+
+20	atv	accepted	species	Vernonia arborea	Buch.-Ham.	
+21	20	synonym	species	Conyza acuminata	Wall.	nom.inval.
+22	20	misapplied	species	Flustula tomentosa	Raf.	nom.illeg.
+23	20	synonym	species	Vernonia wallichii	Ridl.	nom.illeg.
+24	20	synonym	species	Vernonia wallichi	Ridl	
+28	atv	accepted	species	Flustula arborea	(Buch.-Ham.) Peter	
+29	28	synonym	species	Flustula walichi	Ridler	
+30	atv	accepted	species	Vernonia albolea	Peter	
+40	atv	accepted	species	Vernonia vulgaris	Bankí	
+41	40	accepted	subspecies	Vernonia vulgaris subsp. amsterdamii	Bankí	
+42	40	accepted	subspecies	Vernonia vulgaris subsp. rotterdamii	Bankí	
+43	atv	accepted	species	Flustula amsterdamii	(Bankí) Döring	
+
+50	atv	accepted	species	Flustula vulgaris	Mengele	
+51	atv	accepted	species	Conyza vulgaris	(Mengele) Mög.	
+
+60	atv	accepted	species	Flustula perennis		
+61	atv	accepted	species	Conyza perennis		
+
+70	atv	accepted	species	Vernonia karalba	Peter	
+71	70	synonym	species	Flustula alba	DC	
+72	atv	accepted	species	Conyza alba	(DC) Smith	

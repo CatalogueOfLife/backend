@@ -18,10 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
@@ -84,7 +81,14 @@ public class HomotypicGroupingResource {
     }
     // finally compare authorships for each epithet group
     for (Map.Entry<String, List<VerbatimName>> epithetGroup : epithets.entrySet()) {
-      gr.groups.addAll(basSorter.groupBasionyms(epithetGroup.getValue(), a -> a.parsed));
+      gr.groups.addAll(basSorter.groupBasionyms(epithetGroup.getValue(), a -> a.parsed, b -> {
+        for (var vn : b.first()) {
+          gr.ignored.add(vn.verbatim);
+        }
+        for (var vn : b.second()) {
+          gr.ignored.add(vn.verbatim);
+        }
+      }));
     }
     return gr;
   }
@@ -102,6 +106,11 @@ public class HomotypicGroupingResource {
     try (BufferedReader br = UTF8IoUtils.readerFromStream(names)) {
       return group(br.lines().collect(Collectors.toList()));
     }
+  }
+
+  @GET
+  public GroupingResult groupQueryParams(@QueryParam("name") List<String> names) {
+    return group(names);
   }
 
 }

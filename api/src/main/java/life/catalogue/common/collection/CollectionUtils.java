@@ -73,13 +73,26 @@ public class CollectionUtils {
   /**
    * Returns the first object from the given list if it matches the given predicate.
    */
-  public static <T> T find(Collection<T> objects, Predicate<T> filter) {
+  public static <T> T first(Collection<T> objects, Predicate<T> filter) {
     for (var obj : objects) {
       if (filter.test(obj)) {
           return obj;
       }
     }
     return null;
+  }
+
+  /**
+   * Returns the objects from the given list that match the given predicate.
+   */
+  public static <T> List<T> find(Collection<T> objects, Predicate<T> filter) {
+    List<T> matches = new ArrayList<>();
+    for (var obj : objects) {
+      if (filter.test(obj)) {
+        matches.add(obj);
+      }
+    }
+    return matches;
   }
 
   /**

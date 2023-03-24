@@ -79,7 +79,7 @@ public class TestDataGenerator {
     Map.entry(Pair.of(DataFormat.DWCA,45),115)
   ));
   final static TestDataRule.TestData XCOL = new TestDataRule.TestData("xcol", 3, 2, 4, null);
-  final static TestDataRule.TestData GROUPING = new TestDataRule.TestData("homgroup", 101, 1, 3, null);
+  final static TestDataRule.TestData GROUPING = new TestDataRule.TestData("homgroup", 4, 2, 4, null);
 
   public static TestDataRule homotypigGrouping() {
     return new TestDataRule(GROUPING);
@@ -198,7 +198,7 @@ public class TestDataGenerator {
   public void prepareHomotypicGroupingData() throws Throwable {
     export(GROUPING.name,
       PgImportRule.create(
-        DatasetOrigin.EXTERNAL, DataFormat.COLDP, 30
+        DatasetOrigin.PROJECT, DataFormat.COLDP, 30
       )
     );
   }

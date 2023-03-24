@@ -5,7 +5,6 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TreeTraversalParameter;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.db.PgUtils;
@@ -19,9 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class HomotypicConsolidationJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidationJob.class);
@@ -29,7 +26,7 @@ public class HomotypicConsolidationJob extends DatasetBlockingJob {
 
   public HomotypicConsolidationJob(SqlSessionFactory factory, int datasetKey, int userKey) {
     super(datasetKey, userKey, JobPriority.MEDIUM);
-    hc = HomotypicConsolidator.forAllFamilies(factory, datasetKey);
+    hc = HomotypicConsolidator.entireDataset(factory, datasetKey);
   }
 
   public HomotypicConsolidationJob(SqlSessionFactory factory, int datasetKey, int userKey, String taxonID) {
@@ -56,7 +53,7 @@ public class HomotypicConsolidationJob extends DatasetBlockingJob {
       });
     }
     LOG.info("Found {} families to consolidate for root taxon {}", families.size(), root);
-    hc = HomotypicConsolidator.forFamilies(factory, datasetKey, families);
+    hc = HomotypicConsolidator.forTaxa(factory, datasetKey, families);
   }
 
   @Override

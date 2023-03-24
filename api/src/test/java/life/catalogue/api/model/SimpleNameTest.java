@@ -5,6 +5,7 @@ import org.gbif.nameparser.api.Rank;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class SimpleNameTest {
@@ -28,7 +29,16 @@ public class SimpleNameTest {
       System.out.println(sn);
     }
   }
-  
+
+  @Test
+  public void to_String() {
+    SimpleName sn = new SimpleName("atc", "Cichorieae", Rank.TRIBE);
+    Assert.assertEquals("TRIBE Cichorieae [atc]", sn.toString());
+
+    sn.setParent("Asteraceae");
+    Assert.assertEquals("TRIBE Cichorieae [atc parent=Asteraceae]", sn.toString());
+  }
+
   static SimpleName sn(Rank rank, String name, String author) {
     return new SimpleName(null, name, author, rank);
   }

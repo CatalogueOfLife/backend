@@ -298,6 +298,28 @@ public class LinneanNameUsage implements FormattableName {
 
   @Override
   public String toString() {
-    return "LinneanNameUsage{" + id + ": " + getLabelWithRank() + '}';
+    // output similar to SimpleName
+    StringBuilder sb = new StringBuilder();
+    if (status != null) {
+      sb.append(status);
+      sb.append(" ");
+    }
+    if (rank != null) {
+      sb.append(rank);
+      sb.append(" ");
+    }
+    sb.append(getLabel());
+    if (id != null || parentId != null) {
+      sb.append(" [");
+      if (id != null) {
+        sb.append(id);
+      }
+      if (parentId != null) {
+        sb.append(" parentId=");
+        sb.append(parentId);
+      }
+      sb.append("]");
+    }
+    return sb.toString();
   }
 }

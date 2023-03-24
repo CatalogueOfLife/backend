@@ -1,5 +1,12 @@
 package life.catalogue.matching.authorship;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import life.catalogue.api.model.FormattableName;
+
+import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.common.text.StringUtils;
+
 import org.gbif.nameparser.api.Authorship;
 
 import java.util.ArrayList;
@@ -8,15 +15,19 @@ import java.util.Objects;
 
 import com.google.common.base.Joiner;
 
+import org.gbif.nameparser.api.LinneanName;
+
 
 /**
  * A group of recombined names and their original basionym with the epithet and original publication author.
+ * Duplicate basionyms can be given if the name is considered the same combination & rank, but with potentially minor misspellings.
  */
 public class BasionymGroup<T> {
   private static final Joiner joiner = Joiner.on("; ").skipNulls();
   private final String epithet;
   private final Authorship authorship;
   private final List<T> recombinations = new ArrayList<>();
+  private final List<T> basionymDuplicates = new ArrayList<>();
   private T basionym;
 
   public BasionymGroup(String epithet, Authorship authorship) {
@@ -39,7 +50,19 @@ public class BasionymGroup<T> {
   public List<T> getRecombinations() {
     return recombinations;
   }
-  
+
+  public List<T> getBasionymDuplicates() {
+    return basionymDuplicates;
+  }
+
+  public void addBasionymDuplicates(T original) {
+    basionymDuplicates.add(original);
+  }
+
+  public boolean hasBasionymDuplicates() {
+    return !basionymDuplicates.isEmpty();
+  }
+
   public boolean hasBasionym() {
     return basionym != null;
   }
@@ -55,9 +78,11 @@ public class BasionymGroup<T> {
   public String getEpithet() {
     return epithet;
   }
-  
+
+  @JsonIgnore
   public List<T> getAll() {
     var all = new ArrayList<>(recombinations);
+    all.addAll(basionymDuplicates);
     if (hasBasionym()) {
       all.add(basionym);
     }
@@ -65,7 +90,7 @@ public class BasionymGroup<T> {
   }
 
   public int size() {
-    return recombinations.size() + (hasBasionym() ? 1 : 0);
+    return recombinations.size() + basionymDuplicates.size() + (hasBasionym() ? 1 : 0);
   }
 
   public boolean isEmpty() {
@@ -73,28 +98,26 @@ public class BasionymGroup<T> {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(basionym, recombinations, epithet, authorship);
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof BasionymGroup)) return false;
+    BasionymGroup<?> that = (BasionymGroup<?>) o;
+    return Objects.equals(epithet, that.epithet)
+           && Objects.equals(authorship, that.authorship)
+           && Objects.equals(recombinations, that.recombinations)
+           && Objects.equals(basionymDuplicates, that.basionymDuplicates)
+           && Objects.equals(basionym, that.basionym);
   }
-  
+
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null || getClass() != obj.getClass()) {
-      return false;
-    }
-    final BasionymGroup other = (BasionymGroup) obj;
-    return Objects.equals(this.basionym, other.basionym)
-        && Objects.equals(this.recombinations, other.recombinations)
-        && Objects.equals(this.epithet, other.epithet)
-        && Objects.equals(this.authorship, other.authorship);
+  public int hashCode() {
+    return Objects.hash(epithet, authorship, recombinations, basionymDuplicates, basionym);
   }
-  
+
   @Override
   public String toString() {
     return "BasionymGroup{" + epithet + ' ' + authorship + " | " +
-        basionym + ": " + joiner.join(recombinations) + '}';
+           basionym + ": " + joiner.join(recombinations) +
+           ", DUPES: " + joiner.join(basionymDuplicates) + '}';
   }
 }

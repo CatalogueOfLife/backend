@@ -130,13 +130,12 @@ public enum Issue {
   BASIONYM_DERIVED(NAME, Level.INFO,
       "Record has a original name (basionym) relationship which was derived from name & authorship comparison, " +
           "but did not exist explicitly in the data. Extended release specific issue."),
-  
-  CONFLICTING_BASIONYM_COMBINATION(NAME, Level.ERROR,
-      "There have been more than one accepted name in a homotypical basionym group of names. " +
-          "Provisional catalogue specific issue."),
+
+  HOMOTYPIC_CONSOLIDATION_UNRESOLVED(NAME, Level.WARNING,
+      "There have been more than one accepted name in a homotypic group of names which could not be resolved."),
   
   CHAINED_BASIONYM(NAME, Level.ERROR,
-      "A basionym that claims to have itself another basionym."),
+      "A basionym that claims itself to have another basionym."),
   
   NAME_NOT_UNIQUE(NAME, Level.ERROR,
       "A scientific name has been used to point to another record (synonym->accepted, combination->basionym) " +
@@ -408,11 +407,14 @@ public enum Issue {
   IDENTIFIER_WITHOUT_SCOPE(ANY, Level.WARNING,
     "The alternative identifier for a taxon, name or reference is lacking an identifier scope."),
 
-  HOMOTYPIC_MULTI_ACCEPTED(NAME_USAGE, Level.WARNING,
-    "Several accepted names exist which are considered homotypic names."),
+  HOMOTYPIC_CONSOLIDATION(NAME_USAGE, Level.INFO,
+    "Several accepted names existed which are considered homotypic names and which have been resolved into a single one."),
 
   SYNC_OUTSIDE_TARGET(NAME_USAGE, Level.WARNING,
     "Names from a sector sync have been placed outside of the configured target taxon of the project."),
+
+  MULTIPLE_BASIONYMS(NAME, Level.WARNING,
+    "There have been more than one name that appears to be the basionym / original combination. No homotypic consolidation can be performed."),
   ;
 
   /**

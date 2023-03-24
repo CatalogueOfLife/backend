@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
@@ -247,10 +248,14 @@ public class SectorSyncIT {
   }
 
   public static void assertTree(int datasetKey, InputStream expectedTree) throws IOException {
+    assertTree(datasetKey, null, expectedTree);
+  }
+  public static void assertTree(int datasetKey, @Nullable String rootID, InputStream expectedTree) throws IOException {
     String expected = UTF8IoUtils.readString(expectedTree).trim();
     
     Writer writer = new StringWriter();
-    PrinterFactory.dataset(TextTreePrinter.class, datasetKey, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
+    TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey, rootID);
+    PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     String tree = writer.toString().trim();
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
     
