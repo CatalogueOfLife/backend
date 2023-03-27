@@ -4,6 +4,8 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.es.ddl.Analyzers;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Objects;
 
 import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
@@ -37,21 +39,21 @@ public class NameStrings {
    * @param name
    */
   public NameStrings(Name name) {
-    if (name.getScientificName() != null) {
+    if (!StringUtils.isBlank(name.getScientificName())) {
       sciNameLetter = Character.toLowerCase(name.getScientificName().charAt(0));
     }
-    if (name.getGenus() != null) {
+    if (!StringUtils.isBlank(name.getGenus())) {
       genusLetter = Character.toLowerCase(name.getGenus().charAt(0));
       genusOrMonomial = getStrings(name.getGenus(), normalizeWeakly(name.getGenus()));
-    } else if (name.getUninomial() != null) {
+    } else if (!StringUtils.isBlank(name.getUninomial())) {
       genusOrMonomial = getStrings(name.getUninomial().toLowerCase(), normalizeWeakly(name.getUninomial()));
     }
     // we used to use the strong normaliser to index species/infraspecific epithets...
     // But that caused more problems than it helped...
-    if (name.getSpecificEpithet() != null) {
+    if (!StringUtils.isBlank(name.getSpecificEpithet())) {
       specificEpithet = getStrings(name.getSpecificEpithet().toLowerCase(), normalizeWeakly(name.getSpecificEpithet()));
     }
-    if (name.getInfraspecificEpithet() != null) {
+    if (!StringUtils.isBlank(name.getInfraspecificEpithet())) {
       infraspecificEpithet = getStrings(name.getInfraspecificEpithet().toLowerCase(), normalizeWeakly(name.getInfraspecificEpithet()));
     }
   }
