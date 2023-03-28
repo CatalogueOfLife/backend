@@ -11,7 +11,7 @@
     t.status,
     t.name_phrase,
     t.extinct,
-    (select count(*) from name_usage c WHERE c.dataset_key=t.dataset_key AND c.parent_id=t.id AND NOT c.is_synonym <if test="_parameter.containsKey('extinct') and !extinct">AND (c.extinct IS NULL OR NOT c.extinct)</if>) AS child_count,
+    (select count(*) from name_usage c WHERE c.dataset_key=t.dataset_key AND c.parent_id=t.id AND NOT is_synonym(c.status) <if test="_parameter.containsKey('extinct') and !extinct">AND (c.extinct IS NULL OR NOT c.extinct)</if>) AS child_count,
     <include refid="life.catalogue.db.mapper.NameMapper.minimalNameCols">
       <property name="alias" value="n"/>
       <property name="prefix" value=""/>
@@ -95,7 +95,7 @@
     FROM <include refid="FROM"/>
     WHERE t.dataset_key=#{key.datasetKey}
       AND <include refid="equalsParent"/>
-      AND NOT t.is_synonym <include refid="EXTINCT"/>
+      AND NOT is_synonym(t.status) <include refid="EXTINCT"/>
     ORDER BY n.rank, n.scientific_name
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -108,7 +108,7 @@
       <include refid="FROM_USAGE"/>
       WHERE t.dataset_key=#{key.datasetKey}
         AND <include refid="equalsParent"/>
-        AND NOT is_synonym <include refid="EXTINCT"/>
+        AND NOT is_synonym(status) <include refid="EXTINCT"/>
       <if test="rank!=null">
         AND n.rank > #{rank}::rank
       </if>
@@ -120,7 +120,7 @@
     FROM<include refid="FROM"/>, first
     WHERE t.dataset_key=#{key.datasetKey}
       AND <include refid="equalsParent"/>
-      AND NOT t.is_synonym AND first.rank=n.rank <include refid="EXTINCT"/>
+      AND NOT is_synonym(t.status) AND first.rank=n.rank <include refid="EXTINCT"/>
     ORDER BY n.rank, n.scientific_name
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -146,7 +146,7 @@
     FROM <include refid="FROM_USAGE"/>
     WHERE t.dataset_key=#{key.datasetKey}
       AND <include refid="equalsParent"/>
-      AND NOT t.is_synonym
+      AND NOT is_synonym(t.status)
     <if test="rank != null">
       AND n.rank &lt;= #{rank}::rank
     </if>

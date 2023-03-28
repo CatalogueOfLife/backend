@@ -97,7 +97,7 @@ public class HomotypicConsolidator {
   }
 
   public void consolidate() {
-    LOG.info("Discover homotypic relations in {} accepted taxa", taxa.size());
+    LOG.info("Discover homotypic relations in {} accepted taxa of dataset {}", taxa.size(), datasetKey);
     for (var tax : taxa) {
       consolidate(tax);
     }

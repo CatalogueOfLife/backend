@@ -187,7 +187,7 @@ WITH RECURSIVE tree AS(
         JOIN __tax_keys tk ON t.id=tk.id
         JOIN name n ON n.id=t.name_id AND n.dataset_key={{datasetKey}}
         LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
-    WHERE t.parent_id IS NULL AND NOT t.is_synonym AND t.dataset_key={{datasetKey}}
+    WHERE t.parent_id IS NULL AND NOT is_synonym(t.status) AND t.dataset_key={{datasetKey}}
   UNION
     SELECT
         tk.key,
@@ -207,7 +207,7 @@ WITH RECURSIVE tree AS(
         JOIN __tax_keys tk ON t.id=tk.id
         JOIN name n ON n.id=t.name_id AND n.dataset_key={{datasetKey}}
         LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
-        JOIN tree ON (tree.id = t.parent_id) AND NOT t.is_synonym
+        JOIN tree ON (tree.id = t.parent_id) AND NOT is_synonym(t.status)
     WHERE t.dataset_key={{datasetKey}}
 )
 SELECT * FROM tree
@@ -289,7 +289,7 @@ SELECT
     -- unparsable ones
     ELSE NULL
   END AS author,
-  CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
+  CASE WHEN is_synonym(t.status) THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
   t.scrutinizer_date AS scrutiny_date,
   CASE WHEN t.status='ACCEPTED' THEN 1
@@ -299,12 +299,12 @@ SELECT
        WHEN t.status='MISAPPLIED' THEN 3
   END AS sp2000_status_id, -- 1=ACCEPTED, 2=AMBIGUOUS_SYNONYM, 3=MISAPPLIED, 4=PROVISIONALLY_ACCEPTED, 5=SYNONYM
                            -- Java: ACCEPTED,PROVISIONALLY_ACCEPTED,SYNONYM,AMBIGUOUS_SYNONYM,MISAPPLIED
-  CASE WHEN t.is_synonym THEN coalesce(cs.dataset_key, {{datasetKey}}) ELSE coalesce(c.dataset_key, {{datasetKey}}) END AS database_id,
+  CASE WHEN is_synonym(t.status) THEN coalesce(cs.dataset_key, {{datasetKey}}) ELSE coalesce(c.dataset_key, {{datasetKey}}) END AS database_id,
   sc.key AS specialist_id,
   cf.key AS family_id,
   NULL AS specialist_code,
   c.family_id AS family_code,
-  CASE WHEN t.is_synonym THEN 0 ELSE 1 END AS is_accepted_name,
+  CASE WHEN is_synonym(t.status) THEN 0 ELSE 1 END AS is_accepted_name,
   NULL AS GSDTaxonGUID,
   NULL AS GSDNameGUID,
   CASE WHEN t.extinct THEN 1 ELSE 0 END AS is_extinct,
@@ -332,7 +332,7 @@ SELECT
   NULL AS infraspecies,
   NULL AS infraspecies_marker,
   NULL AS author,
-  CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
+  CASE WHEN is_synonym(t.status) THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
   t.scrutinizer_date AS scrutiny_date,
   1 AS sp2000_status_id, -- 1=ACCEPTED
@@ -349,7 +349,7 @@ SELECT
   0 AS has_modern
 FROM name n
     JOIN name_usage t ON n.id=t.name_id AND t.dataset_key={{datasetKey}}
-    LEFT JOIN name_usage tc ON tc.parent_id=t.id AND NOT t.is_synonym AND tc.dataset_key={{datasetKey}}
+    LEFT JOIN name_usage tc ON tc.parent_id=t.id AND NOT is_synonym(t.status) AND tc.dataset_key={{datasetKey}}
     LEFT JOIN __classification c  ON t.id=c.id
     LEFT JOIN __classification cf ON c.family_id=cf.id
     LEFT JOIN __scrutinizer sc ON t.scrutinizer=sc.name AND c.dataset_key=sc.dataset_key
@@ -357,7 +357,7 @@ FROM name n
 
 WHERE n.dataset_key={{datasetKey}}
     AND n.rank = 'GENUS'::rank
-    AND NOT t.is_synonym
+    AND NOT is_synonym(t.status)
     AND tc.id IS NULL
 
 ) TO 'scientific_names.csv';

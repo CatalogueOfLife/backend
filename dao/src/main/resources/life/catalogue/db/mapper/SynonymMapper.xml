@@ -63,25 +63,25 @@
   <select id="listByTaxon" resultMap="synonymResultMap">
     SELECT <include refid="SELECT_NO_ACCEPTED"/>
     FROM <include refid="FROM_NO_ACCEPTED"/>
-    WHERE u.dataset_key=#{key.datasetKey} AND u.parent_id = #{key.id} AND u.is_synonym
+    WHERE u.dataset_key=#{key.datasetKey} AND u.parent_id = #{key.id} AND is_synonym(u.status)
     ORDER BY u.status, n.scientific_name
   </select>
 
   <select id="listByNameID" resultMap="synonymResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{datasetKey} AND u.is_synonym AND u.name_id = #{nameId}
+    WHERE u.dataset_key=#{datasetKey} AND is_synonym(u.status) AND u.name_id = #{nameId}
   </select>
 
   <select id="count" resultType="integer">
     SELECT count(*) FROM name_usage
-    WHERE dataset_key=#{datasetKey} AND is_synonym
+    WHERE dataset_key=#{datasetKey} AND is_synonym(status)
   </select>
 
   <select id="list" resultMap="synonymResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{datasetKey} AND u.is_synonym
+    WHERE u.dataset_key=#{datasetKey} AND is_synonym(u.status)
     ORDER BY id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -89,13 +89,13 @@
   <select id="get" resultMap="synonymResultMap" flushCache="true">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{key.datasetKey} AND u.id = #{key.id} AND u.is_synonym
+    WHERE u.dataset_key=#{key.datasetKey} AND u.id = #{key.id} AND is_synonym(u.status)
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="synonymResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{datasetKey} AND u.is_synonym
+    WHERE u.dataset_key=#{datasetKey} AND is_synonym(u.status)
   </select>
 
   <insert id="create" parameterType="Synonym" useGeneratedKeys="false" keyProperty="id">
@@ -106,22 +106,22 @@
   <update id="update" parameterType="Synonym" keyProperty="id">
     UPDATE name_usage
     SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
-    WHERE dataset_key=#{datasetKey} AND id = #{id} AND is_synonym
+    WHERE dataset_key=#{datasetKey} AND id = #{id} AND is_synonym(status)
   </update>
 
   <delete id="delete" parameterType="map">
     DELETE FROM name_usage
-    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id} AND is_synonym
+    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id} AND is_synonym(status)
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">
     DELETE FROM name_usage
-    WHERE dataset_key=#{datasetKey} AND is_synonym
+    WHERE dataset_key=#{datasetKey} AND is_synonym(status)
   </delete>
 
   <delete id="deleteByTaxon" parameterType="map">
     DELETE FROM name_usage
-    WHERE dataset_key=#{key.datasetKey} AND parent_id = #{key.id} AND is_synonym
+    WHERE dataset_key=#{key.datasetKey} AND parent_id = #{key.id} AND is_synonym(status)
   </delete>
 
 </mapper>

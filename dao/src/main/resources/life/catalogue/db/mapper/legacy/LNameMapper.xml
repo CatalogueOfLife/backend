@@ -64,7 +64,7 @@
 
 
   <sql id="SELECT">
-    CASE WHEN u.is_synonym THEN 1
+    CASE WHEN is_synonym(u.status) THEN 1
       WHEN n.rank &lt; 'SPECIES_AGGREGATE'::rank THEN 2
       ELSE 3
     END AS java_class,
@@ -183,13 +183,13 @@
   <select id="children" parameterType="map" resultMap="higherResultMap">
     <include refid="HIGHER_SELECT"/>,n.authorship
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{datasetKey} AND u.parent_id = #{id} AND NOT u.is_synonym AND n.rank > 'SPECIES'::rank
+    WHERE u.dataset_key=#{datasetKey} AND u.parent_id = #{id} AND NOT is_synonym(u.status) AND n.rank > 'SPECIES'::rank
   </select>
 
   <select id="synonyms" parameterType="map" resultMap="speciesResultMap">
     SELECT <include refid="SELECT_FULL"/>
     FROM <include refid="FROM_FULL"/>
-    WHERE u.dataset_key=#{datasetKey} AND u.parent_id = #{id} AND u.is_synonym
+    WHERE u.dataset_key=#{datasetKey} AND u.parent_id = #{id} AND is_synonym(u.status)
   </select>
 
 </mapper>

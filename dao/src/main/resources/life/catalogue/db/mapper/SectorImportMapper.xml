@@ -162,10 +162,10 @@
     SELECT count(*) FROM reference WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
   </select>
   <select id="countTaxon" resultType="integer">
-    SELECT count(*) FROM name_usage WHERE dataset_key=#{datasetKey} AND NOT is_synonym AND sector_key=#{sectorKey}
+    SELECT count(*) FROM name_usage WHERE dataset_key=#{datasetKey} AND NOT is_synonym(status) AND sector_key=#{sectorKey}
   </select>
   <select id="countSynonym" resultType="integer">
-    SELECT count(*) FROM name_usage WHERE dataset_key=#{datasetKey} AND is_synonym AND sector_key=#{sectorKey}
+    SELECT count(*) FROM name_usage WHERE dataset_key=#{datasetKey} AND is_synonym(status) AND sector_key=#{sectorKey}
   </select>
 
   <select id="countIssues" resultType="StringCount">
@@ -255,21 +255,21 @@
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage t
     JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
-    WHERE t.dataset_key=#{datasetKey} AND NOT t.is_synonym AND t.sector_key=#{sectorKey}
+    WHERE t.dataset_key=#{datasetKey} AND NOT is_synonym(t.status) AND t.sector_key=#{sectorKey}
     GROUP BY n.rank
   </select>
   <select id="countExtinctTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage t
     JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
-    WHERE t.dataset_key=#{datasetKey} AND NOT t.is_synonym AND t.sector_key=#{sectorKey} AND t.extinct
+    WHERE t.dataset_key=#{datasetKey} AND NOT is_synonym(t.status) AND t.sector_key=#{sectorKey} AND t.extinct
     GROUP BY n.rank
   </select>
   <select id="countSynonymsByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage t
     JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
-    WHERE t.dataset_key=#{datasetKey} AND t.is_synonym AND t.sector_key=#{sectorKey}
+    WHERE t.dataset_key=#{datasetKey} AND is_synonym(t.status) AND t.sector_key=#{sectorKey}
     GROUP BY n.rank
   </select>
   <select id="countTypeMaterialByStatus" resultType="StringCount">

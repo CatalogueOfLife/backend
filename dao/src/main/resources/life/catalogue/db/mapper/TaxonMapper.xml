@@ -80,14 +80,14 @@
 
   <select id="count" resultType="integer">
     SELECT count(*) FROM name_usage
-    WHERE dataset_key=#{datasetKey} AND NOT is_synonym
+    WHERE dataset_key=#{datasetKey} AND NOT is_synonym(status)
   </select>
 
   <select id="countChildren" resultType="integer">
     SELECT count(*) FROM name_usage u
     WHERE u.dataset_key=#{key.datasetKey}
       AND <include refid="equalsParent"/>
-      AND NOT u.is_synonym
+      AND NOT is_synonym(u.status)
   </select>
 
   <select id="countChildrenWithRank" resultType="integer">
@@ -95,7 +95,7 @@
     FROM name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
     WHERE u.dataset_key=#{key.datasetKey}
       AND <include refid="equalsParent"/>
-      AND NOT u.is_synonym AND n.rank=#{rank}::rank
+      AND NOT is_synonym(u.status) AND n.rank=#{rank}::rank
   </select>
 
   <select id="countChildrenBelowRank" resultType="integer">
@@ -103,19 +103,19 @@
     FROM name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
     WHERE u.dataset_key=#{key.datasetKey}
       AND <include refid="equalsParent"/>
-      AND NOT u.is_synonym and n.rank > #{rank}::rank
+      AND NOT is_synonym(u.status) and n.rank > #{rank}::rank
   </select>
 
   <select id="countRoot" resultType="integer">
     SELECT count(*)
     FROM name_usage
-    WHERE dataset_key=#{datasetKey} AND parent_id IS NULL AND NOT is_synonym
+    WHERE dataset_key=#{datasetKey} AND parent_id IS NULL AND NOT is_synonym(status)
   </select>
 
   <select id="list" resultMap="taxonResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{datasetKey} AND NOT u.is_synonym
+    WHERE u.dataset_key=#{datasetKey} AND NOT is_synonym(u.status)
     ORDER BY id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -123,7 +123,7 @@
   <select id="listRoot" resultMap="taxonResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{datasetKey} AND u.parent_id IS NULL AND NOT u.is_synonym
+    WHERE u.dataset_key=#{datasetKey} AND u.parent_id IS NULL AND NOT is_synonym(u.status)
     ORDER BY id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -131,7 +131,7 @@
   <select id="listRootIds" resultType="string">
     SELECT id
     FROM name_usage
-    WHERE dataset_key=#{datasetKey} AND parent_id IS NULL AND NOT is_synonym
+    WHERE dataset_key=#{datasetKey} AND parent_id IS NULL AND NOT is_synonym(status)
     ORDER BY id
   </select>
 
@@ -145,7 +145,7 @@
   <select id="children" resultMap="taxonResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{key.datasetKey} AND  u.parent_id = #{key.id} AND NOT u.is_synonym
+    WHERE u.dataset_key=#{key.datasetKey} AND  u.parent_id = #{key.id} AND NOT is_synonym(u.status)
     <if test="rank != null">
       AND n.rank > #{rank}::rank
     </if>
@@ -186,7 +186,7 @@
   <select id="getCounts" resultMap="taxonCountResultMap">
     SELECT id, dataset_sectors
     FROM name_usage
-    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id} AND NOT is_synonym
+    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id} AND NOT is_synonym(status)
   </select>
 
   <select id="classificationCounts" resultMap="taxonCountResultMap">
@@ -206,13 +206,13 @@
   <select id="get" resultMap="taxonResultMap" flushCache="true">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{key.datasetKey} AND u.id = #{key.id} AND NOT u.is_synonym
+    WHERE u.dataset_key=#{key.datasetKey} AND u.id = #{key.id} AND NOT is_synonym(u.status)
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="taxonResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{datasetKey} AND NOT u.is_synonym
+    WHERE u.dataset_key=#{datasetKey} AND NOT is_synonym(u.status)
   </select>
 
   <insert id="create" parameterType="Taxon" useGeneratedKeys="false" keyProperty="id">
@@ -230,7 +230,7 @@
 
   <delete id="delete" parameterType="map">
     DELETE FROM name_usage
-    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id} AND NOT is_synonym
+    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id} AND NOT is_synonym(status)
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">
@@ -271,7 +271,7 @@
     FROM name n
     WHERE u.dataset_key=#{datasetKey} AND n.dataset_key=#{datasetKey} AND n.id=u.name_id
       AND n.rank &lt;= 'GENUS'
-      AND NOT u.is_synonym
+      AND NOT is_synonym(u.status)
   </update>
 
 </mapper>

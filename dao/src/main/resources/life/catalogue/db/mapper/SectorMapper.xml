@@ -283,7 +283,7 @@
       SELECT t.id, s.id
       FROM name_usage t LEFT JOIN sector s ON t.id=s.target_id AND s.dataset_key=#{key.datasetKey}
       JOIN x ON x.id = t.parent_id
-      WHERE t.dataset_key=#{key.datasetKey} AND NOT t.is_synonym
+      WHERE t.dataset_key=#{key.datasetKey} AND NOT is_synonym(t.status)
     )
     SELECT DISTINCT sid FROM x WHERE sid IS NOT NULL
   </select>

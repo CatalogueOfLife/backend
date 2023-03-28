@@ -750,6 +750,12 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 CREATE CAST (text AS cslname) WITH FUNCTION text2cslname;
 
+-- other functions used in table/index definitions
+CREATE OR REPLACE FUNCTION is_synonym(status TAXONOMICSTATUS) RETURNS BOOLEAN AS $$
+  SELECT status IN ('SYNONYM','AMBIGUOUS_SYNONYM','MISAPPLIED')
+$$
+LANGUAGE SQL
+IMMUTABLE PARALLEL SAFE;
 
 
 CREATE TABLE "user" (
@@ -1453,7 +1459,6 @@ CREATE TABLE name_usage (
   sector_key INTEGER,
   verbatim_key INTEGER,
   -- shared with name_usage_archive, keep in sync!
-  is_synonym BOOLEAN NOT NULL,
   extinct BOOLEAN,
   status TAXONOMICSTATUS NOT NULL,
   origin ORIGIN NOT NULL,
@@ -1489,6 +1494,7 @@ CREATE INDEX ON name_usage (dataset_key, parent_id);
 CREATE INDEX ON name_usage (dataset_key, verbatim_key);
 CREATE INDEX ON name_usage (dataset_key, sector_key);
 CREATE INDEX ON name_usage (dataset_key, according_to_id);
+CREATE INDEX ON name_usage (dataset_key, is_synonym(status));
 
 CREATE TABLE verbatim_source (
   id TEXT NOT NULL,
@@ -1723,6 +1729,13 @@ IMMUTABLE PARALLEL SAFE;
 -- botanical subgeneric ranks that are placed above genus level in zoology
 CREATE FUNCTION ambiguousRanks() RETURNS rank[] AS $$
   SELECT ARRAY['SUPERSECTION','SECTION','SUBSECTION','SUPERSERIES','SERIES','SUBSERIES','OTHER','UNRANKED']::rank[]
+$$
+LANGUAGE SQL
+IMMUTABLE PARALLEL SAFE;
+
+-- understands the status enum
+CREATE OR REPLACE FUNCTION isSynonym(status TAXONOMICSTATUS) RETURNS BOOLEAN AS $$
+  SELECT status IN ('SYNONYM','AMBIGUOUS_SYNONYM','MISAPPLIED')
 $$
 LANGUAGE SQL
 IMMUTABLE PARALLEL SAFE;

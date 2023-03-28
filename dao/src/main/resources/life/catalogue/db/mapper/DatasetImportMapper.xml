@@ -230,10 +230,10 @@
     SELECT count(*) FROM reference WHERE dataset_key = #{key}
   </select>
   <select id="countTaxon" resultType="integer">
-    SELECT count(*) FROM name_usage WHERE dataset_key = #{key} AND NOT is_synonym
+    SELECT count(*) FROM name_usage WHERE dataset_key = #{key} AND NOT is_synonym(status)
   </select>
   <select id="countSynonym" resultType="integer">
-    SELECT count(*) FROM name_usage WHERE dataset_key = #{key} AND is_synonym
+    SELECT count(*) FROM name_usage WHERE dataset_key = #{key} AND is_synonym(status)
   </select>
   <select id="countTreatment" resultType="integer">
     SELECT count(*) FROM treatment WHERE dataset_key = #{key}
@@ -294,19 +294,19 @@
   <select id="countTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage t JOIN name n ON n.dataset_key=t.dataset_key AND t.name_id=n.id
-    WHERE t.dataset_key = #{key} AND NOT t.is_synonym
+    WHERE t.dataset_key = #{key} AND NOT is_synonym(t.status)
     GROUP BY n.rank
   </select>
   <select id="countExtinctTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage t JOIN name n ON n.dataset_key=t.dataset_key AND  t.name_id=n.id
-    WHERE t.dataset_key = #{key} AND NOT t.is_synonym AND t.extinct
+    WHERE t.dataset_key = #{key} AND NOT is_synonym(t.status) AND t.extinct
     GROUP BY n.rank
   </select>
   <select id="countSynonymsByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage t JOIN name n ON n.dataset_key=t.dataset_key AND  t.name_id=n.id
-    WHERE t.dataset_key = #{key} AND t.is_synonym
+    WHERE t.dataset_key = #{key} AND is_synonym(t.status)
     GROUP BY n.rank
   </select>
   <select id="countSpeciesInteractionsByType" resultType="StringCount">

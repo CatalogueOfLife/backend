@@ -71,7 +71,6 @@ public class HomotypicGroupingResource {
         if (!pn.isBinomial()) {
           gr.ignored.add(n);
         } else {
-          pn.setRemarks(n);
           String epithet = SciNameNormalizer.stemEpithet(pn.getTerminalEpithet());
           epithets.computeIfAbsent(epithet, k -> new ArrayList<>()).add(new VerbatimName(n, pn));
         }

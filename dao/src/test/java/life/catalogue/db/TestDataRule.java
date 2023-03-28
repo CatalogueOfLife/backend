@@ -448,10 +448,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     copyPartitionedTable(pgc, "name_rel", key, datasetEntityDefaults(key));
     copyPartitionedTable(pgc, "type_material", key, datasetEntityDefaults(key));
     copyPartitionedTable(pgc, "name_usage", key,
-      datasetEntityDefaults(key, ImmutableMap.<String, Object>of("origin", Origin.SOURCE)),
-      ImmutableMap.<String, Function<String[], String>>of(
-        "is_synonym", this::isSynonym
-      )
+      datasetEntityDefaults(key, ImmutableMap.<String, Object>of("origin", Origin.SOURCE))
     );
     copyPartitionedTable(pgc, "verbatim_source", key, ImmutableMap.of("dataset_key", key));
     copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key));
@@ -469,11 +466,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         .put("created_by", 0)
         .put("modified_by", 0)
         .build();
-  }
-
-  private String isSynonym(String[] row) {
-    TaxonomicStatus ts = TaxonomicStatus.valueOf(row[testData.taxStatusColumn]);
-    return String.valueOf(ts.isSynonym());
   }
 
   private boolean copyGlobalTable(PgConnection pgc, String table) throws IOException, SQLException {

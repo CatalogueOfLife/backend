@@ -11,6 +11,19 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-03-24 replace is_synonym column with function and index
+```
+CREATE OR REPLACE FUNCTION is_synonym(status TAXONOMICSTATUS) RETURNS BOOLEAN AS $$
+  SELECT status IN ('SYNONYM','AMBIGUOUS_SYNONYM','MISAPPLIED')
+$$
+LANGUAGE SQL
+IMMUTABLE PARALLEL SAFE;
+
+CREATE INDEX ON name_usage (dataset_key, is_synonym(status));
+ALTER TABLE name_usage DROP COLUMN is_synonym;
+ALTER TABLE name_usage_archive DROP COLUMN is_synonym;
+```
+
 ### 2023-03-16 new merge sector issues
 ```
 ALTER TYPE ISSUE RENAME VALUE 'HOMOTYPIC_MULTI_ACCEPTED' TO 'HOMOTYPIC_CONSOLIDATION';

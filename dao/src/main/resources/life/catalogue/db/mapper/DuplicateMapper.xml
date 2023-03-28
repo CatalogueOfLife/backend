@@ -53,7 +53,7 @@
 
   <select id="usagesByTableIds" resultMap="usageDecisionResultMap">
     SELECT
-    u.is_synonym,
+    is_synonym(u.status) AS is_synonym,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="u"/>
       <property name="prefix" value=""/>
@@ -82,7 +82,7 @@
     FROM name_usage u
       JOIN duplicate_ids i ON i.id=u.id
       JOIN name n ON n.dataset_key=#{datasetKey} AND u.name_id=n.id
-      LEFT JOIN name_usage a ON a.dataset_key=#{datasetKey} AND u.parent_id=a.id AND u.is_synonym
+      LEFT JOIN name_usage a ON a.dataset_key=#{datasetKey} AND u.parent_id=a.id AND is_synonym(u.status)
       LEFT JOIN name an ON an.dataset_key=#{datasetKey} AND a.name_id=an.id
       LEFT JOIN reference r ON r.dataset_key=#{datasetKey} AND n.published_in_id=r.id
       LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.subject_dataset_key=#{datasetKey} AND ed.dataset_key=#{projectKey}
@@ -212,7 +212,7 @@
       <if test="!withDecision">= 0</if>
     </if>
     <if test="acceptedDifferent != null">
-      AND count(DISTINCT CASE u.is_synonym WHEN true THEN u.parent_id ELSE u.id END)
+      AND count(DISTINCT CASE is_synonym(u.status) WHEN true THEN u.parent_id ELSE u.id END)
       <!-- make sure at least 2 parents are different -->
       <if test="acceptedDifferent">&gt; 1</if>
       <!-- make sure all parent ids are the same -->

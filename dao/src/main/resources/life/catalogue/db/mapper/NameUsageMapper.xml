@@ -25,7 +25,7 @@
   </sql>
 
   <sql id="SELECT_BASE">
-    u.is_synonym,
+    is_synonym(u.status) AS is_synonym,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="u"/>
       <property name="prefix" value=""/>
@@ -64,7 +64,6 @@
     ${alias}sector_key,
     ${alias}verbatim_key,
     ${alias}status,
-    ${alias}is_synonym,
     ${alias}origin,
     ${alias}name_phrase,
     ${alias}according_to_id,
@@ -94,7 +93,6 @@
     parent_id,
     name_id,
     status,
-    is_synonym,
     origin,
     name_phrase,
     according_to_id,
@@ -112,7 +110,6 @@
     #{parentId},
     #{name.id},
     #{status}::TAXONOMICSTATUS,
-    #{status.synonym},
     #{origin}::ORIGIN,
     #{namePhrase},
     #{accordingToId},
@@ -144,7 +141,7 @@
   </sql>
 
   <sql id="FROM_ACCEPTED">
-    LEFT JOIN name_usage a ON a.id=u.parent_id AND u.is_synonym AND a.dataset_key=u.dataset_key
+    LEFT JOIN name_usage a ON a.id=u.parent_id AND is_synonym(u.status) AND a.dataset_key=u.dataset_key
     LEFT JOIN name an ON a.name_id=an.id AND an.dataset_key=u.dataset_key
     LEFT JOIN name_match anm ON anm.dataset_key=an.dataset_key AND anm.name_id=an.id
     LEFT JOIN reference ar ON ar.id=a.according_to_id AND ar.dataset_key=u.dataset_key
@@ -522,7 +519,7 @@
   <insert id="addSectorSynonymsToTemp" parameterType="map">
     INSERT INTO _tmp_nu
     SELECT u.id, u.name_id FROM name_usage u
-    WHERE u.dataset_key=#{key.datasetKey} AND u.sector_key = #{key.id} AND u.is_synonym
+    WHERE u.dataset_key=#{key.datasetKey} AND u.sector_key = #{key.id} AND is_synonym(u.status)
   </insert>
 
   <insert id="addSectorBelowRankToTemp" parameterType="map">
@@ -571,7 +568,7 @@
         u.parent_id IS NULL
       </otherwise>
     </choose>
-    AND NOT u.is_synonym
+    AND NOT is_synonym(u.status)
     <if test="param.extinct != null and param.extinct">
       AND u.extinct
     </if>
@@ -589,7 +586,7 @@
 
   <sql id="WHERE_UNION">
     <if test="!param.synonyms">
-      AND NOT u.is_synonym
+      AND NOT is_synonym(u.status)
     </if>
     <if test="param.extinct != null and param.extinct">
       AND u.extinct
@@ -623,7 +620,7 @@
 
     SELECT <include refid="SELECT_BASE"/>
     <if test="depthFirst">
-      ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id) AS path
+      ,concat_ws('|', x.path, not is_synonym(u.status), n.scientific_name, u.id) AS path
     </if>
     FROM <include refid="FROM_BASE"/>
     JOIN x ON x.id = u.parent_id
@@ -660,7 +657,7 @@
       FROM <include refid="FROM_SIMPLE"/>
       WHERE u.dataset_key=#{param.datasetKey} AND <include refid="WHERE_START"/>
     UNION
-      SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)
+      SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', x.path, not is_synonym(u.status), n.scientific_name, u.id)
       FROM <include refid="FROM_SIMPLE"/>
         JOIN x ON x.id = u.parent_id
       <where>
@@ -699,7 +696,7 @@
   <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT id FROM name_usage WHERE dataset_key=#{datasetKey}
     <if test="!synonyms">
-      AND NOT is_synonym
+      AND NOT is_synonym(status)
     </if>
   </select>
 
