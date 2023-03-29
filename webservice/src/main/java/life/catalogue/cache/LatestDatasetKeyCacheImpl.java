@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -124,8 +125,15 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSearchRequest req = new DatasetSearchRequest();
-      req.setReleasedFrom(Datasets.COL);
       req.setAlias(String.format("%s%02d", col, year - 2000));
+      req.setPrivat(false);
+      if (year >= 2021) {
+        // proper releases
+        req.setReleasedFrom(Datasets.COL);
+      } else {
+        // external datasets
+        req.setOrigin(List.of(DatasetOrigin.EXTERNAL));
+      }
       var resp = dm.search(req, null, new Page());
       if (resp != null && !resp.isEmpty()) {
         if (resp.size() > 1) {
