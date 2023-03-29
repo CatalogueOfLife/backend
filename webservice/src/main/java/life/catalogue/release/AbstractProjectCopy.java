@@ -190,7 +190,6 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     } finally {
       metrics.setFinished(LocalDateTime.now());
       diDao.update(metrics);
-
       if (mapIds) {
         LOG.info("Remove id mapping tables for project {}", datasetKey);
         try (SqlSession session = factory.openSession(true)) {

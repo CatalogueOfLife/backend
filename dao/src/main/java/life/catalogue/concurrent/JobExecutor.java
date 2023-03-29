@@ -226,6 +226,7 @@ public class JobExecutor implements Managed, Idle {
     job.setUser(user);
     job.setEmailer(emailer);
     job.setTimer(timer);
+    job.setCfg(cfg);
     var ftask = new ComparableFutureTask(job);
     futures.put(job.getKey(), ftask);
     exec.execute(ftask);

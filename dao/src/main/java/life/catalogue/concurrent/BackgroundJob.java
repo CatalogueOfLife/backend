@@ -9,6 +9,8 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -17,6 +19,7 @@ import javax.annotation.Nullable;
 
 import life.catalogue.config.MailConfig;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +39,7 @@ public abstract class BackgroundJob implements Runnable {
   // the following are added by the JobExecutor before a job is submitted
   private @Nullable EmailNotification emailer;
   // you can expect the following to exist and never be null!
+  private JobConfig cfg;
   private User user;
   private Timer timer;
 
@@ -58,6 +62,10 @@ public abstract class BackgroundJob implements Runnable {
 
   void setTimer(Timer timer) {
     this.timer = timer;
+  }
+
+  public void setCfg(JobConfig cfg) {
+    this.cfg = cfg;
   }
 
   void setUser(User user) {
@@ -131,6 +139,7 @@ public abstract class BackgroundJob implements Runnable {
         } catch (Exception e) {
           LOG.error("Failed to finish {} job {}", getClass().getSimpleName(), key, e);
         }
+
         // email notification
         if (emailer != null) {
           emailer.sendFinalEmail(this);
@@ -144,6 +153,25 @@ public abstract class BackgroundJob implements Runnable {
       // will cause the dataset sifting appender reach end-of-life. It will linger for a few seconds.
       LOG.info(LoggingUtils.FINALIZE_SESSION_MARKER, "About to end {} {}", getJobName(), key);
       LoggingUtils.removeJobMDC();
+
+      // copy job logs to download directory
+      if (cfg != null) {
+        File log = cfg.jobLog(key);
+        if (log.exists()) {
+          copyLogFile(log);
+        }
+      }
+    }
+  }
+
+  /**
+   * @param log Gzipped log file from appender log.gz
+   */
+  protected void copyLogFile(File log) {
+    try {
+      FileUtils.copyFile(log, cfg.downloadJobLog(key));
+    } catch (IOException e) {
+      LOG.error("Failed to copy job logs from {}", log, e);
     }
   }
 

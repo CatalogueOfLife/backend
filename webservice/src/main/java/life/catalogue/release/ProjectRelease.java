@@ -161,6 +161,19 @@ public class ProjectRelease extends AbstractProjectCopy {
     idProvider.run();
   }
 
+  @Override
+  protected void copyLogFile(File log) {
+    super.copyLogFile(log);
+    // copy job logs also to release dir
+    File reportDir = cfg.release.reportDir(datasetKey, attempt);
+    var target = new File(reportDir, "job.log.gz");
+    try {
+      FileUtils.copyFile(log, target);
+    } catch (IOException e) {
+      LOG.error("Failed to copy job logs from {} to {}", log, target, e);
+    }
+  }
+
   /**
    * Creates a new DOI for the new release using the latest public release for the prevReleaseKey
    * @return the previous releases datasetKey

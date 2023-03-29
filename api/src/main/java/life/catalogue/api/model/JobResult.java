@@ -47,7 +47,11 @@ public class JobResult extends DataEntity<UUID> {
    * @param key job key
    */
   public static String downloadFilePath(UUID key) {
-    return key.toString().substring(0,2) + "/" + key + ".zip";
+    return downloadFilePath(key,"zip");
+  }
+
+  public static String downloadFilePath(UUID key, String suffix) {
+    return key.toString().substring(0,2) + "/" + key + "." + suffix;
   }
 
   @Override

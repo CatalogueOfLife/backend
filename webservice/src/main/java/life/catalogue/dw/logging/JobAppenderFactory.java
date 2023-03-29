@@ -23,6 +23,9 @@ import io.dropwizard.logging.async.AsyncAppenderFactory;
 import io.dropwizard.logging.filter.LevelFilterFactory;
 import io.dropwizard.logging.layout.LayoutFactory;
 
+import life.catalogue.concurrent.JobConfig;
+
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +65,7 @@ public class JobAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
       @Override
       public Appender<ILoggingEvent> buildAppender(Context context, String discriminatingValue) throws JoranException {
         var fa = new GZipFileAppender<ILoggingEvent>();
-        fa.setFile(new File(directory, "job-" + discriminatingValue + ".log.gz").getAbsolutePath());
+        fa.setFile(JobConfig.jobLog(directory, discriminatingValue).getAbsolutePath());
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         encoder.setPattern(PATTERN);
         encoder.setContext(context);
@@ -76,6 +79,10 @@ public class JobAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
     sift.addFilter(levelFilterFactory.build(threshold));
     getFilterFactories().forEach(f -> sift.addFilter(f.build()));
     sift.start();
+
+    if (!directory.exists() && !directory.mkdirs()) {
+      LOG.error("Failed to create missing job log directory {}", directory);
+    }
 
     LOG.info("Created asynchroneous job appender for directory {}", directory);
     return wrapAsync(sift, asyncAppenderFactory);
