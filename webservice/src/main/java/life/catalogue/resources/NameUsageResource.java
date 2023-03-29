@@ -2,8 +2,11 @@ package life.catalogue.resources;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.util.RegexUtils;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
@@ -39,10 +42,12 @@ public class NameUsageResource {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageResource.class);
   private final NameUsageSearchService searchService;
   private final NameUsageSuggestionService suggestService;
+  private final LatestDatasetKeyCache datasetKeyCache;
 
-  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest) {
+  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, LatestDatasetKeyCache datasetKeyCache) {
     this.searchService = search;
     this.suggestService = suggest;
+    this.datasetKeyCache = datasetKeyCache;
   }
 
   @GET
@@ -73,10 +78,21 @@ public class NameUsageResource {
   @Path("{id}")
   public NameUsageBase get(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     var key = DSID.of(datasetKey, id);
-    NameUsageBase u = session.getMapper(NameUsageMapper.class).get(key);
+    var num = session.getMapper(NameUsageMapper.class);
+    NameUsageBase u = num.get(key);
     if (u == null) {
-      // try name usage archive
-      u = session.getMapper(ArchivedNameUsageMapper.class).get(key);
+      var info = DatasetInfoCache.CACHE.info(datasetKey);
+      if (info.origin == DatasetOrigin.PROJECT) {
+        // try latest release first
+        var latest = datasetKeyCache.getLatestRelease(datasetKey, false);
+        if (latest != null) {
+          u = num.get(DSID.of(latest, id));
+        }
+        if (u == null) {
+          // try last archived usage with project key as last resort before we send a 404
+          u = session.getMapper(ArchivedNameUsageMapper.class).get(key);
+        }
+      }
     }
     return u;
   }
