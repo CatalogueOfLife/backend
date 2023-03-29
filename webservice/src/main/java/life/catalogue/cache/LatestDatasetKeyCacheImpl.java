@@ -127,7 +127,7 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
       DatasetSearchRequest req = new DatasetSearchRequest();
       req.setAlias(String.format("%s%02d", col, year - 2000));
       req.setPrivat(false);
-      if (year >= 2021) {
+      if (year >= 2021 || extended) {
         // proper releases
         req.setReleasedFrom(Datasets.COL);
       } else {
