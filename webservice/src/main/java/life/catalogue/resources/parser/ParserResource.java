@@ -51,6 +51,7 @@ public class ParserResource<T> {
     parsers.put("rank", RankParser.PARSER);
     parsers.put("referencetype", ReferenceTypeParser.PARSER);
     parsers.put("sex", SexParser.PARSER);
+//    parsers.put("taxgroup", TaxGroupParser.PARSER);
     parsers.put("taxonomicstatus", TaxonomicStatusParser.PARSER);
     parsers.put("treatmentformat", TreatmentFormatParser.PARSER);
     parsers.put("typestatus", TypeStatusParser.PARSER);
