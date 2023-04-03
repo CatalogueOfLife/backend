@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.VerbatimRecordMapper;
 import life.catalogue.db.tree.*;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
@@ -50,7 +51,6 @@ import io.dropwizard.auth.Auth;
 @Path("/dataset/{key}/export")
 @Produces(MediaType.APPLICATION_JSON)
 public class DatasetExportResource {
-  private final DatasetImportDao diDao;
   private final SqlSessionFactory factory;
   private final NameUsageSearchService searchService;
   private final ExportManager exportManager;
@@ -63,11 +63,10 @@ public class DatasetExportResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExportResource.class);
 
-  public DatasetExportResource(SqlSessionFactory factory, NameUsageSearchService searchService, ExportManager exportManager, DatasetImportDao diDao, WsServerConfig cfg) {
+  public DatasetExportResource(SqlSessionFactory factory, NameUsageSearchService searchService, ExportManager exportManager, WsServerConfig cfg) {
     this.factory = factory;
     this.searchService = searchService;
     this.exportManager = exportManager;
-    this.diDao = diDao;
     this.cfg = cfg;
   }
 
@@ -112,6 +111,7 @@ public class DatasetExportResource {
     @QueryParam("synonyms") boolean synonyms;
     @QueryParam("extinct") Boolean extinct;
     @QueryParam("countBy") Rank countBy;
+    @QueryParam("issues") boolean issues;
 
     void init() throws IllegalArgumentException {
       if (minRank != null || maxRank != null) {
@@ -198,15 +198,14 @@ public class DatasetExportResource {
   public Stream<Object[]> exportCsv(@PathParam("key") int datasetKey,
                                     @BeanParam ExportQueryParams params,
                                     @Context SqlSession session) {
-    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
     params.init();
+    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
     return Stream.concat(
       Stream.of(EXPORT_HEADERS),
       Streams.stream(num.processTreeSimple(params.toTreeTraversalParameter(datasetKey)))
              .map(this::map)
     );
   }
-
 
   private Object[] map(SimpleName sn){
     return new Object[]{

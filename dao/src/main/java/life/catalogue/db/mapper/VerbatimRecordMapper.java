@@ -1,13 +1,12 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
+
+import org.apache.ibatis.cursor.Cursor;
 
 import org.gbif.dwc.terms.Term;
 
@@ -78,5 +77,11 @@ public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetPro
    * @param sectorKey optional sector to restrict the issues to
    */
   void createTmpIssuesTable(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
+
+  /**
+   * Process all dataset issues of the temporary table tmp_usage_issues that needs to be existing for the given session.
+   */
+  Cursor<IssueContainer.SimpleWithID> processIssues(@Param("datasetKey") int datasetKey);
+
 }
 

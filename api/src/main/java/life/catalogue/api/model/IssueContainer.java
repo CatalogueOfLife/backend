@@ -81,6 +81,21 @@ public interface IssueContainer {
   }
 
   /**
+   * Simple hash map based issue container with an id value, e.g. for linking issues to names or name usages.
+   */
+  class SimpleWithID extends Simple {
+    private String id;
+
+    public String getId() {
+      return id;
+    }
+
+    public void setId(String id) {
+      this.id = id;
+    }
+  }
+
+    /**
    * Reusable issue container that does not store anything.
    */
   class DevNull implements IssueContainer {

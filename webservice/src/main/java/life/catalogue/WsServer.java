@@ -380,7 +380,8 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetEditorResource(adao));
-    j.register(new DatasetExportResource(getSqlSessionFactory(), searchService, exportManager, diDao, cfg));
+    j.register(new DatasetExportResource(getSqlSessionFactory(), searchService, exportManager, cfg));
+    j.register(new DatasetIssuesResource(getSqlSessionFactory()));
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetPatchResource());
     j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, assembly, copyFactory, executor));
