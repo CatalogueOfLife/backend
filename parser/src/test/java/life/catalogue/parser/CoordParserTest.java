@@ -14,6 +14,7 @@ public class CoordParserTest {
   public void parse() throws Exception {
     assertCoord("24.134", "-13.02", 24.134, -13.02);
     assertCoord("13.26", "93.26", 13.26, 93.26);
+    assertCoord("+39.69", "-105.64", 39.69, -105.64);
   }
 
   void assertCoord(String lat, String lon, double latExpected, double lonExpected) throws UnparsableException {

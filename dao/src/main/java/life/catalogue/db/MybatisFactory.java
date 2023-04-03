@@ -1,9 +1,6 @@
 package life.catalogue.db;
 
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.Duplicate;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.TreeNode;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameMapper;
@@ -149,6 +146,7 @@ public class MybatisFactory {
     registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
     registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
     registry.registerAlias("DuplicateMybatis", Duplicate.Mybatis.class);
+    registry.registerAlias("SimpleWithID", IssueContainer.SimpleWithID.class);
     registry.registerAlias("ArchivedSimpleNameWithNidx", ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx.class);
   }
   
