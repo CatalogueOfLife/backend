@@ -298,13 +298,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         });
       }
       if (d.getCreator() != null) {
-        d.getCreator().removeIf(java.util.Objects::isNull);
+        d.setCreator(CollectionUtils.removeNull(d.getCreator()));
       }
       if (d.getEditor() != null) {
-        d.getEditor().removeIf(java.util.Objects::isNull);
+        d.setEditor(CollectionUtils.removeNull(d.getEditor()));
       }
       if (d.getContributor() != null) {
-        d.getContributor().removeIf(java.util.Objects::isNull);
+        d.setContributor(CollectionUtils.removeNull(d.getContributor()));
       }
       if (d.getDescription() != null) {
         d.setDescription(stripHtml(d.getDescription()));
@@ -317,7 +317,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   private static String buildID(Citation c) {
     StringBuilder sb = new StringBuilder();
-    if (c.getAuthor() != null && c.getAuthor().size() > 0) {
+    if (c.getAuthor() != null && !c.getAuthor().isEmpty()) {
       sb.append(c.getAuthor().get(0).getFamily());
     }
     if (c.getIssued() != null) {

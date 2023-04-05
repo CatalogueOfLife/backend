@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -48,6 +49,17 @@ public class CollectionUtils {
    */
   public static int size(Collection<?> c) {
     return c == null ? 0 : c.size();
+  }
+
+  /**
+   * Returns a new (!) list with all nulls removed.
+   * We don't change the list in place to allow for immutable input
+   */
+  public static <T> List<T> removeNull(List<T> c) {
+    if (c == null) return null;
+    return c.stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
   }
 
   /**
