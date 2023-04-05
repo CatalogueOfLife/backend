@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 public class CoordParser {
   public static final CoordParser PARSER = new CoordParser();
 
-  public Optional<Coordinate> parse(String longitude, String latitude) throws UnparsableException {
+  public Optional<Coordinate> parse(String latitude, String longitude) throws UnparsableException {
     if (StringUtils.isBlank(latitude) && StringUtils.isBlank(longitude)) {
       return Optional.empty();
     }

@@ -641,4 +641,24 @@ public class NormalizerColdpIT extends NormalizerITBase {
     }
   }
 
+  @Test
+  public void latlon() throws Exception {
+    normalize(33);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoName nn = nameByID("S110070040");
+      assertEquals("Caloptilia acerifoliella", nn.getName().getScientificName());
+      assertEquals("(Chambers, 1875)", nn.getName().getAuthorship());
+
+      var nu = usageByID("S110070040");
+      var v = store.getVerbatim(nu.getVerbatimKey());
+      assertFalse(v.getIssues().contains(Issue.LAT_LON_INVALID));
+
+      for (TypeMaterial tm : store.typeMaterial()) {
+        v = store.getVerbatim(tm.getVerbatimKey());
+        assertFalse(v.getIssues().contains(Issue.LAT_LON_INVALID));
+      }
+    }
+  }
+
 }

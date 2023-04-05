@@ -18,13 +18,13 @@ public class CoordParserTest {
   }
 
   void assertCoord(String lat, String lon, double latExpected, double lonExpected) throws UnparsableException {
-    Optional<Coordinate> ll = CoordParser.PARSER.parse(lon, lat);
+    Optional<Coordinate> ll = CoordParser.PARSER.parse(lat, lon);
     assertEquals(new Coordinate(lonExpected, latExpected), ll.get());
   }
 
   @Test(expected = UnparsableException.class)
   public void parseOutOfBounds() throws Exception {
     CoordParser cp = CoordParser.PARSER;
-    Optional<Coordinate> ll = cp.parse("24.134", "-113.02");
+    Optional<Coordinate> ll = cp.parse("-113.02", "24.134");
   }
 }
