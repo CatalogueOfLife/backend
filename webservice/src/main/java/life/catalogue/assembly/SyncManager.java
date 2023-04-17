@@ -5,6 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
@@ -186,11 +187,14 @@ public class SyncManager implements Managed, Idle {
       final AtomicInteger cnt = new AtomicInteger();
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
-        sm.processSectors(catalogueKey, request.getDatasetKey()).forEach(s -> {
-          if (syncSector(s, user)) {
-            cnt.getAndIncrement();
+        PgUtils.consume(
+          () -> sm.processSectors(catalogueKey, request.getDatasetKey()),
+          s -> {
+            if (syncSector(s, user)) {
+              cnt.getAndIncrement();
+            }
           }
-        });
+        );
       }
       // now that we have them schedule syncs
       LOG.info("Queued {} sectors from dataset {} for sync", cnt.get(), request.getDatasetKey());
@@ -281,10 +285,10 @@ public class SyncManager implements Managed, Idle {
   
   private int syncAll(int catalogueKey, User user) {
     LOG.warn("Sync all sectors. Triggered by user {}", user);
-    List<Sector> sectors;
+    final List<Sector> sectors = new ArrayList<>();
     try (SqlSession session = factory.openSession(false)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      sectors = Iterables.asList(sm.processDataset(catalogueKey));
+      PgUtils.consume(()->sm.processDataset(catalogueKey), sectors::add);
     }
     sectors.sort(SECTOR_ORDER);
     int failed = 0;

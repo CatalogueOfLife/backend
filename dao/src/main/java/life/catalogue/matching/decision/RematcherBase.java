@@ -7,6 +7,7 @@ import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.BaseDecisionMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 
@@ -109,9 +110,7 @@ public abstract class RematcherBase<
       } else {
         LOG.info("Match {}s from project {}", type, projectKey);
         S searchRequest = toSearchRequest(req);
-        for (T obj : mapper.processSearch(searchRequest)) {
-          match(obj);
-        }
+        PgUtils.consume(() -> mapper.processSearch(searchRequest), this::match);
       }
       LOG.info("Rematched {} {}s from project {}. updated: {}, broken: {}", counter.getTotal(), type, projectKey, counter.updated, counter.broken);
       return counter;

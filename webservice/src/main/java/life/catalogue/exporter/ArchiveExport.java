@@ -206,7 +206,10 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
       // add bare names?
       if (req.isBareNames()) {
-        num.processDatasetBareNames(datasetKey, null, null).forEach(this::consumeUsage);
+        PgUtils.consume(
+          () -> num.processDatasetBareNames(datasetKey, null, null),
+          this::consumeUsage
+        );
       }
 
     } catch (RuntimeException e) {

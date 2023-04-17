@@ -11,6 +11,7 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.Create;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.neo.NeoDb;
@@ -339,15 +340,18 @@ public class PgImport implements Callable<Boolean> {
       final Map<String, List<SimpleDecision>> decisions = new HashMap<>();
       try (SqlSession session = sessionFactory.openSession(true)) {
         AtomicInteger cnt = new AtomicInteger(0);
-        session.getMapper(DecisionMapper.class).processDecisions(null, dataset.getKey()).forEach(d -> {
-          if (d.getSubject().getId() != null) {
-            if (!decisions.containsKey(d.getSubject().getId())) {
-              decisions.put(d.getSubject().getId(), new ArrayList<>());
+        PgUtils.consume(
+          () -> session.getMapper(DecisionMapper.class).processDecisions(null, dataset.getKey()),
+          d -> {
+            if (d.getSubject().getId() != null) {
+              if (!decisions.containsKey(d.getSubject().getId())) {
+                decisions.put(d.getSubject().getId(), new ArrayList<>());
+              }
+              decisions.get(d.getSubject().getId()).add(new SimpleDecision(d.getId(), d.getDatasetKey(), d.getMode()));
+              cnt.incrementAndGet();
             }
-            decisions.get(d.getSubject().getId()).add(new SimpleDecision(d.getId(), d.getDatasetKey(), d.getMode()));
-            cnt.incrementAndGet();
           }
-        });
+        );
         LOG.info("Loaded {} decisions for indexing", cnt);
       }
       interruptIfCancelled();

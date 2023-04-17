@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
@@ -125,18 +126,21 @@ public class SectorSync extends SectorRunnable {
     // also load all sector subjects to auto block them
     try (SqlSession session = factory.openSession()) {
       AtomicInteger counter = new AtomicInteger();
-      session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey).forEach(s -> {
-        if (!s.getId().equals(sectorKey.getId()) && s.getSubject().getId() != null) {
-          EditorialDecision d = new EditorialDecision();
-          d.setSubject(s.getSubject());
-          d.setDatasetKey(sectorKey.getDatasetKey());
-          d.setSubjectDatasetKey(subjectDatasetKey);
-          d.setMode(EditorialDecision.Mode.BLOCK);
-          d.setNote("Auto blocked subject of sector " + s.getId());
-          decisions.put(s.getSubject().getId(), d);
-          counter.incrementAndGet();
+      PgUtils.consume(
+        () -> session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey),
+        s -> {
+          if (!s.getId().equals(sectorKey.getId()) && s.getSubject().getId() != null) {
+            EditorialDecision d = new EditorialDecision();
+            d.setSubject(s.getSubject());
+            d.setDatasetKey(sectorKey.getDatasetKey());
+            d.setSubjectDatasetKey(subjectDatasetKey);
+            d.setMode(EditorialDecision.Mode.BLOCK);
+            d.setNote("Auto blocked subject of sector " + s.getId());
+            decisions.put(s.getSubject().getId(), d);
+            counter.incrementAndGet();
+          }
         }
-      });
+      );
       LOG.info("Loaded {} sector subjects for auto blocking", counter);
     }
   }
@@ -260,8 +264,10 @@ public class SectorSync extends SectorRunnable {
       if (sector.getMode() == Sector.Mode.ATTACH || sector.getMode() == Sector.Mode.MERGE) {
         String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
         TreeTraversalParameter ttp = TreeTraversalParameter.dataset(subjectDatasetKey, rootID, blockedIds);
-        um.processTree(ttp, sector.getMode() == Sector.Mode.MERGE)
-            .forEach(treeHandler);
+        PgUtils.consume(
+          () -> um.processTree(ttp, sector.getMode() == Sector.Mode.MERGE),
+          treeHandler
+        );
 
       } else if (sector.getMode() == Sector.Mode.UNION) {
         LOG.info("Traverse taxon tree at {}, ignoring immediate children above rank {}. Blocking {} nodes", sector.getSubject().getId(), sector.getPlaceholderRank(), blockedIds.size());
@@ -279,8 +285,10 @@ public class SectorSync extends SectorRunnable {
           } else {
             LOG.info("Traverse child {}", child);
             TreeTraversalParameter ttp = TreeTraversalParameter.dataset(subjectDatasetKey, child.getId(), blockedIds);
-            um.processTree(ttp, false)
-                .forEach(treeHandler);
+            PgUtils.consume(
+              () -> um.processTree(ttp, false),
+              treeHandler
+            );
           }
           treeHandler.reset();
         }

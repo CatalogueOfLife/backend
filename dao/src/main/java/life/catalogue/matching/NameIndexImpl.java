@@ -8,6 +8,7 @@ import life.catalogue.common.func.Predicates;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
@@ -64,7 +65,10 @@ public class NameIndexImpl implements NameIndex {
     LOG.info("Loading names from postgres into names index");
     try (SqlSession s = sqlFactory.openSession()) {
       NamesIndexMapper mapper = s.getMapper(NamesIndexMapper.class);
-      mapper.processAll().forEach(this::addFromPg);
+      PgUtils.consume(
+        () -> mapper.processAll(),
+        this::addFromPg
+      );
       LOG.info("Loaded {} names from postgres into names index", store.count());
     }
   }

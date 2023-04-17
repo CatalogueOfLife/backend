@@ -3,6 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.tree.TextTreePrinter;
 
@@ -62,7 +63,10 @@ public abstract class FileMetricsDao<K> {
       NameMapper nm = session.getMapper(NameMapper.class);
 
       DSID<Integer> skey = sectorKey(dataKey);
-      nm.processNameStrings(skey.getDatasetKey(), skey.getId()).forEach(nHandler);
+      PgUtils.consume(
+        () -> nm.processNameStrings(skey.getDatasetKey(), skey.getId()),
+        nHandler
+      );
       LOG.info("Written {} name strings for {} {}-{}", nHandler.counter, type, dataKey, attempt);
     }
   }

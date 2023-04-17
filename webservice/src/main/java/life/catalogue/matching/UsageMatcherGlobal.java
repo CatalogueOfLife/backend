@@ -213,6 +213,7 @@ public class UsageMatcherGlobal {
                                         .map(p -> p.usage)
                                         .collect(Collectors.toList());
         var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), parentsSN);
+        LOG.debug("Only consider matches for usage {} with classifications in {} group", nu.getName().getLabelWithRank(), group);
         existingWithCl.removeIf(rn -> !classificationMatches(group, rn));
       }
     }

@@ -11,10 +11,7 @@ import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.NameUsageProcessor;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameUsageWrapperMapper;
-import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.*;
 
 import java.io.File;
@@ -82,9 +79,10 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   private void index(Cursor<NameUsageWrapper> cursor, NameUsageIndexer indexer) throws IOException {
     try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
-      cursor.forEach(handler);
-    } finally {
-      cursor.close();
+      PgUtils.consume(
+        () -> cursor,
+        handler
+      );
     }
   }
 

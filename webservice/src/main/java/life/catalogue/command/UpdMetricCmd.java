@@ -144,10 +144,13 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     final AtomicInteger counter = new AtomicInteger(0);
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      dm.process(null).forEach(d -> {
-        counter.incrementAndGet();
-        updateDataset(d);
-      });
+      PgUtils.consume(
+        () -> dm.process(null),
+        d -> {
+          counter.incrementAndGet();
+          updateDataset(d);
+        }
+      );
     }
     LOG.info("Finished metrics update, updating {} datasets", counter);
   }

@@ -12,6 +12,7 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.UsageMatcherGlobal;
@@ -241,9 +242,9 @@ abstract class SectorRunnable implements Runnable {
   
   private void loadDecisions() {
     try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DecisionMapper.class).processSearch(DecisionSearchRequest.byDataset(sectorKey.getDatasetKey(), subjectDatasetKey)).forEach(ed -> {
-        decisions.put(ed.getSubject().getId(), ed);
-      });
+      PgUtils.consume(() -> session.getMapper(DecisionMapper.class).processSearch(DecisionSearchRequest.byDataset(sectorKey.getDatasetKey(), subjectDatasetKey)),
+        ed -> decisions.put(ed.getSubject().getId(), ed)
+      );
     }
     LOG.info("Loaded {} editorial decisions for sector {}", decisions.size(), sectorKey);
   }

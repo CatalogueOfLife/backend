@@ -576,24 +576,26 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
       // we remove usages, names, verbatim sources and associated infos.
       // but NOT name_rels or refs
-      DSID<String> key = DSID.copy(id);
-      for (UsageNameID unid : num.processTreeIds(id)) {
-        final var nuKey = key.id(unid.usageId);
-        // deletes no longer cascade, remove vernacular, distributions, media and treatments manually
-        taxProcMappers.forEach(m -> m.deleteByTaxon(nuKey));
-        trm.deleteByTaxon(nuKey);
-        // remove usage
-        num.delete(nuKey);
-        vsm.delete(nuKey);
-        // remove name relations and name
-        final var nnKey = key.id(unid.nameId);
-        nameProcMappers.forEach(m -> m.deleteByName(nnKey));
-        nm.delete(nnKey);
-      }
+      PgUtils.consume(
+        () -> num.processTreeIds(id),
+        unid -> {
+          final var nuKey = DSID.of(id.getDatasetKey(), unid.usageId);
+          // deletes no longer cascade, remove vernacular, distributions, media and treatments manually
+          taxProcMappers.forEach(m -> m.deleteByTaxon(nuKey));
+          trm.deleteByTaxon(nuKey);
+          // remove usage
+          num.delete(nuKey);
+          vsm.delete(nuKey);
+          // remove name relations and name
+          final var nnKey = nuKey.id(unid.nameId);
+          nameProcMappers.forEach(m -> m.deleteByName(nnKey));
+          nm.delete(nnKey);
+        }
+      );
       session.commit();
 
       // remove delta from parents
-      key = DSID.copy(id);
+      var key = DSID.copy(id);
       if (!delta.isEmpty()) {
         for (TaxonSectorCountMap tc : parents) {
           if (!tc.getId().equals(id.getId())) {

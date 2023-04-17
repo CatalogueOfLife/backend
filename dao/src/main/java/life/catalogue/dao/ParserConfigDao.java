@@ -6,6 +6,7 @@ import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.vocab.Origin;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.ParserConfigMapper;
 import life.catalogue.parser.NameParser;
 
@@ -52,10 +53,13 @@ public class ParserConfigDao {
     try (SqlSession session = factory.openSession(true)) {
       ParserConfigMapper pcm = session.getMapper(ParserConfigMapper.class);
       LOG.info("Start loading parser configs");
-      pcm.process().forEach(pc -> {
-        addToParser(pc);
-        counter.incrementAndGet();
-      });
+      PgUtils.consume(
+        pcm::process,
+        pc -> {
+          addToParser(pc);
+          counter.incrementAndGet();
+        }
+      );
       LOG.info("Loaded {} parser configs", counter);
     }
     return counter.get();

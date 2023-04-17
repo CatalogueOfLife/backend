@@ -5,7 +5,9 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.search.DecisionSearchRequest;
+import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.dao.DecisionDao;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.decision.DecisionRematchRequest;
@@ -24,6 +26,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import io.dropwizard.auth.Auth;
+
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Path("/dataset/{key}/decision")
 @Produces(MediaType.APPLICATION_JSON)
@@ -57,15 +62,18 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
                               @Context SqlSession session, @Auth User user) {
     Preconditions.checkNotNull(datasetKey, "datasetKey parameter is required");
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);
-    int counter = 0;
-    for (EditorialDecision d : mapper.processDecisions(projectKey, datasetKey)) {
-      if (!broken || d.getSubject().isBroken()) {
-        dao.delete(d.getKey(), user.getKey());
-        counter++;
+    AtomicInteger counter = new AtomicInteger(0);
+    PgUtils.consume(
+      () -> mapper.processDecisions(projectKey, datasetKey),
+      d -> {
+        if (!broken || d.getSubject().isBroken()) {
+          dao.delete(d.getKey(), user.getKey());
+          counter.incrementAndGet();
+        }
       }
-    }
+    );
     LOG.info("Deleted {}{} decisions for dataset {} in catalogue {}", counter, broken ? " broken" : "", datasetKey, projectKey);
-    return counter;
+    return counter.get();
   }
 
   @POST

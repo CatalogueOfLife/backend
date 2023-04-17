@@ -12,6 +12,7 @@ import life.catalogue.common.io.TabWriter;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.config.ReleaseConfig;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.release.ReleasedIds.ReleasedId;
 
@@ -381,15 +382,19 @@ public class IdProvider {
       final LoadStats stats = new LoadStats();
 
       // load entire last release
-      session.getMapper(NameUsageMapper.class).processNxIds(lastReleaseKey)
-             .forEach(sn -> addReleaseId(lastReleaseKey, sn, stats));
+      PgUtils.consume(
+        () -> session.getMapper(NameUsageMapper.class).processNxIds(lastReleaseKey),
+        sn -> addReleaseId(lastReleaseKey, sn, stats)
+      );
       LOG.info("Read {} from last release {}. Total ids={}", stats, lastReleaseKey, ids.size());
 
       // also include the archived names if they have not been processed before yet
       final int sizeBefore = ids.size();
       ids.log();
-      session.getMapper(ArchivedNameUsageMapper.class).processArchivedUsages(projectKey)
-             .forEach(sn -> addReleaseId(sn.getLastReleaseKey(), sn, stats));
+      PgUtils.consume(
+        () -> session.getMapper(ArchivedNameUsageMapper.class).processArchivedUsages(projectKey),
+        sn -> addReleaseId(sn.getLastReleaseKey(), sn, stats)
+      );
       LOG.info("Read {} from archived names. Adding {} previously used ids to a total of {}", stats, ids.size() - sizeBefore, ids.size());
       ids.log();
     }

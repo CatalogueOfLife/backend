@@ -4,6 +4,8 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.common.io.DownloadException;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.db.PgUtils;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.io.File;
@@ -81,16 +83,19 @@ public class LogoUpdateJob extends BackgroundJob {
     AtomicInteger failed = new AtomicInteger();
     try (SqlSession session = factory.openSession()) {
       LOG.info("Update all logos");
-      session.getMapper(DatasetMapper.class).process("logo IS NOT NULL").forEach(d -> {
-        Boolean result = pullLogo(d);
-        if (result != null) {
-          if (result) {
-            counter.incrementAndGet();
-          } else {
-            failed.incrementAndGet();
+      PgUtils.consume(
+        () -> session.getMapper(DatasetMapper.class).process("logo IS NOT NULL"),
+        d -> {
+          Boolean result = pullLogo(d);
+          if (result != null) {
+            if (result) {
+              counter.incrementAndGet();
+            } else {
+              failed.incrementAndGet();
+            }
           }
         }
-      });
+      );
       LOG.info("Finished pulling all logos");
       
     } catch (Exception e) {

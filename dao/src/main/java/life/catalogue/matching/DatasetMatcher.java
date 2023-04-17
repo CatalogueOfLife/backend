@@ -67,7 +67,10 @@ public class DatasetMatcher {
       // also match archived names
       if (isProject) {
         final int totalBeforeArchive = total;
-        session.getMapper(ArchivedNameUsageMapper.class).processArchivedNames(datasetKey).forEach(hu);
+        PgUtils.consume(
+          () -> session.getMapper(ArchivedNameUsageMapper.class).processArchivedNames(datasetKey),
+          hu
+        );
         archived = archived + total - totalBeforeArchive;
       }
     } catch (Exception e) {

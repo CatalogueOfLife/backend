@@ -27,11 +27,6 @@ public interface NameUsageWrapperMapper {
   NameUsageWrapper getBareName(@Param("datasetKey") int datasetKey, @Param("id") String nameId);
 
   /**
-   * Iterates over all usages for a given dataset.
-   * The returned wrapper does only include the usage and issues related to name and usage, but no further information.
-   */
-  Cursor<NameUsageWrapper> processDatasetUsageWithIssues(@Param("datasetKey") int datasetKey);
-  /**
    * Iterates over all bare names not linked to a synonym or taxon for a given dataset. This
    * allows a single query to efficiently stream all its values without keeping them in memory.
    */

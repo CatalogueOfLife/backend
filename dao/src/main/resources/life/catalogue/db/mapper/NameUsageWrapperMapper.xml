@@ -130,17 +130,6 @@
     </if>
   </select>
 
-  <select id="processDatasetUsageWithIssues" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT u.id AS uid, null AS ed_id, null AS v_id,
-    <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
-    vbn.issues || vbt.issues AS issues
-    FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
-    LEFT JOIN verbatim vbt ON vbt.id=u.verbatim_key AND vbt.dataset_key=#{datasetKey}
-    LEFT JOIN verbatim vbn ON vbn.id=n.verbatim_key AND vbn.dataset_key=#{datasetKey}
-    WHERE u.dataset_key=#{datasetKey}
-      AND array_length(vbn.issues, 1) > 0 OR array_length(vbt.issues, 1) > 0
-  </select>
-
   <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT
     <include refid="bareNameSelectFrom"/>
