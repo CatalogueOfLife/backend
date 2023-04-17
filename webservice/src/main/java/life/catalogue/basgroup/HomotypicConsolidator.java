@@ -361,7 +361,7 @@ public class HomotypicConsolidator {
       Integer priority = priorityFunc.apply(u);
       if (Objects.equals(priority, highestPriority)) {
         candidates.add(u);
-      } else if (priority != null && highestPriority == null || priority < highestPriority) {
+      } else if (priority != null && (highestPriority == null || priority < highestPriority)) {
         highestPriority = priority;
         candidates.clear();
         candidates.add(u);
