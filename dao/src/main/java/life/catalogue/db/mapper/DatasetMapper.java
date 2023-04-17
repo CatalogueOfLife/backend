@@ -6,7 +6,6 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;

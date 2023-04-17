@@ -20,9 +20,16 @@ public class SectorRematchRequest extends RematchRequest {
     super(datasetKey, brokenOnly);
   }
 
-  public SectorRematchRequest(int datasetKey, int subjectDatasetKey, boolean brokenOnly) {
-    super(datasetKey, brokenOnly);
+  /**
+   * A rematch request for all subjects regardless if broken or not. But not for targets
+   * @param datasetKey
+   * @param subjectDatasetKey
+   */
+  public SectorRematchRequest(int datasetKey, int subjectDatasetKey) {
+    super(datasetKey, false);
     this.subjectDatasetKey = subjectDatasetKey;
+    subject = true;
+    target = false;
   }
 
 

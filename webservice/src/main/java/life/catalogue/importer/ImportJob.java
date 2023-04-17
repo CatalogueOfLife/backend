@@ -329,7 +329,7 @@ public class ImportJob implements Runnable {
           }
           LOG.info("Rematching all sectors from any project for subject dataset {}", datasetKey);
           for (Integer projectKey : sDao.listProjects(datasetKey)) {
-            SectorRematcher.match(sDao, new SectorRematchRequest(projectKey, datasetKey, false), req.createdBy);
+            SectorRematcher.match(sDao, new SectorRematchRequest(projectKey, datasetKey), req.createdBy);
           }
         }
 
