@@ -158,7 +158,10 @@ public abstract class BackgroundJob implements Runnable {
       if (cfg != null) {
         File log = cfg.jobLog(key);
         if (log.exists()) {
+          LOG.info("Copy logs for job {} from {}", key, log);
           copyLogFile(log);
+        } else {
+          LOG.warn("Logs for job {} missing", key);
         }
       }
     }
