@@ -2,6 +2,8 @@ package life.catalogue.matching.decision;
 
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.SectorMapper;
@@ -33,7 +35,8 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
   void match(Sector obj) {
     final Sector old = new Sector(obj);
     // subject
-    if (req.isSubject() && obj.getSubject() != null) {
+    if (needsRematching(req.isSubject(), obj.getSubject())) {
+      LOG.debug("Match subject {} of sector {} in project {}", obj.getSubject(), obj.getId(), projectKey);
       NameUsage u = matchSubjectUniquely(obj.getSubjectDatasetKey(), obj, obj.getSubject(), obj.getOriginalSubjectId());
       obj.getSubject().setId(null);
       if (u != null) {
@@ -47,7 +50,8 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
       }
     }
     // target can have multiple sectors
-    if (req.isTarget() && obj.getTarget() != null) {
+    if (needsRematching(req.isTarget(), obj.getTarget())) {
+      LOG.debug("Match target {} of sector {} in project {}", obj.getTarget(), obj.getId(), projectKey);
       NameUsage u = matchTargetUniquely(obj, obj.getTarget());
       obj.getTarget().setId(null);
       if (u != null) {
@@ -58,6 +62,11 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
     if (updateCounter(old.getSubjectID(), obj.getSubjectID(),   old.getTargetID(), obj.getTargetID())) {
       dao.update(obj, old, userKey, session);
     }
+  }
+
+  private static boolean needsRematching(Boolean flag, SimpleName sn){
+    if (flag != null) return flag;
+    return sn == null || sn.getId() == null;
   }
   
 }

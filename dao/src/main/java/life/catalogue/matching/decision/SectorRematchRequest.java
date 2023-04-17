@@ -6,8 +6,8 @@ import java.util.Objects;
 
 public class SectorRematchRequest extends RematchRequest {
   private Integer subjectDatasetKey;
-  private boolean target = false;
-  private boolean subject = true;
+  private Boolean target;
+  private Boolean subject;
 
   public SectorRematchRequest() {
   }
@@ -34,7 +34,10 @@ public class SectorRematchRequest extends RematchRequest {
     this.subjectDatasetKey = subjectDatasetKey;
   }
 
-  public boolean isTarget() {
+  /**
+   * @return true when the target should be rematched
+   */
+  public Boolean isTarget() {
     return target;
   }
 
@@ -42,7 +45,10 @@ public class SectorRematchRequest extends RematchRequest {
     this.target = target;
   }
 
-  public boolean isSubject() {
+  /**
+   * @return true when the subject should be rematched
+   */
+  public Boolean isSubject() {
     return subject;
   }
 
