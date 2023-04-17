@@ -74,6 +74,7 @@ public class SectorRematcherTest {
 
     SectorRematchRequest req = new SectorRematchRequest(Datasets.COL, false);
     req.setSubjectDatasetKey(datasetKey);
+    req.setTarget(false);
     SectorRematcher.match(dao, req, Users.TESTER);
 
     Sector s1b;
