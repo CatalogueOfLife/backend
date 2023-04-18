@@ -80,8 +80,10 @@ public class DataPackageBuilder {
   
   private static final Map<ColdpTerm, ForeignKey> foreignKeys = ImmutableMap.<ColdpTerm, ForeignKey>builder()
       .put(ColdpTerm.referenceID, new ForeignKey(ColdpTerm.referenceID, ColdpTerm.Reference, ColdpTerm.ID))
+      .put(ColdpTerm.accordingToID, new ForeignKey(ColdpTerm.accordingToID, ColdpTerm.Reference, ColdpTerm.ID))
       .put(ColdpTerm.nameID, new ForeignKey(ColdpTerm.nameID, ColdpTerm.Name, ColdpTerm.ID))
       .put(ColdpTerm.relatedNameID, new ForeignKey(ColdpTerm.relatedNameID, ColdpTerm.Name, ColdpTerm.ID))
+      .put(ColdpTerm.basionymID, new ForeignKey(ColdpTerm.basionymID, ColdpTerm.Name, ColdpTerm.ID))
       .put(ColdpTerm.taxonID, new ForeignKey(ColdpTerm.taxonID, ColdpTerm.Taxon, ColdpTerm.ID))
       .put(ColdpTerm.parentID, new ForeignKey(ColdpTerm.parentID, ColdpTerm.Taxon, ColdpTerm.ID))
       .build();
@@ -150,7 +152,7 @@ public class DataPackageBuilder {
       }
       if (ColdpTerm.ID == t) {
         s.setPrimaryKey(t.simpleName());
-        //constraints.put(Field.CONSTRAINT_KEY_UNIQUE, true);
+        constraints.put(Field.CONSTRAINT_KEY_UNIQUE, true);
       }
       if (foreignKeys.containsKey(t)) {
         s.getForeignKeys().add(foreignKeys.get(t));
