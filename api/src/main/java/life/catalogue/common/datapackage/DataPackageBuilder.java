@@ -26,8 +26,7 @@ import de.undercouch.citeproc.csl.CSLType;
 import org.gbif.nameparser.util.UnicodeUtils;
 
 public class DataPackageBuilder {
-  private static final String MONOMIAL_PATTERN = "^[A-Z\\p{Lu}]\\p{L}+$";
-  
+
   // only non string data types here
   private static final Map<Class, String> dataTypes = Map.of(
     String.class, Field.TYPE_STRING,
@@ -45,12 +44,7 @@ public class DataPackageBuilder {
   private static final Map<Class, String> dataFormats = Map.of(
       URI.class, Field.FORMAT_URI
   );
-  
-  private static final Set<ColdpTerm> monomials = ImmutableSet.copyOf(
-    Arrays.stream(ColdpTerm.DENORMALIZED_RANKS)
-      .filter(t -> t != ColdpTerm.species)
-      .collect(Collectors.toSet())
-  );
+
 
   /**
    * Vocabulary enums by term, then rowType.
@@ -160,9 +154,6 @@ public class DataPackageBuilder {
       }
       if (foreignKeys.containsKey(t)) {
         s.getForeignKeys().add(foreignKeys.get(t));
-      }
-      if (monomials.contains(t)) {
-        constraints.put(Field.CONSTRAINT_KEY_PATTERN, MONOMIAL_PATTERN);
       }
       s.getFields().add(new Field(t.simpleName(), type, format, null, null, constraints));
     }
