@@ -428,6 +428,10 @@ public class HomotypicConsolidator {
     try (SqlSession session = factory.openSession()) {
       var nub = session.getMapper(NameUsageMapper.class).get(DSID.of(datasetKey, id));
       return new LinneanNameUsage(nub);
+
+    } catch (Exception e) {
+      LOG.error("Failed to load usage {}", id, e);
+      throw new RuntimeException(e);
     }
   }
 
