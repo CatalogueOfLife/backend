@@ -39,7 +39,8 @@ public class NameIndexImpl implements NameIndex {
   static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
       NameType.SCIENTIFIC, NameType.HYBRID_FORMULA, NameType.VIRUS, NameType.OTU
   );
-  
+
+  private final boolean verifyIndex; // if true compares counts from index with postgres counts and reloads if wrong
   private final NameIndexStore store;
   private final AuthorComparator authComp;
   private final SqlSessionFactory sqlFactory;
@@ -48,10 +49,11 @@ public class NameIndexImpl implements NameIndex {
    * @param sqlFactory sql session factory to talk to the data store backend if needed for inserts or initial loading
    * @throws IllegalStateException when db is in a bad state
    */
-  public NameIndexImpl(NameIndexStore store, AuthorshipNormalizer normalizer, SqlSessionFactory sqlFactory) {
+  public NameIndexImpl(NameIndexStore store, AuthorshipNormalizer normalizer, SqlSessionFactory sqlFactory, boolean verifyIndex) {
     this.store = store;
     this.authComp = new AuthorComparator(normalizer);
     this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
+    this.verifyIndex = verifyIndex;
   }
   
   private int countPg() {
@@ -469,8 +471,10 @@ public class NameIndexImpl implements NameIndex {
       // verify postgres and store match up - otherwise trust postgres
       int pgCount = countPg();
       if (pgCount != storeSize) {
-        LOG.warn("Existing name index contains {} names, but postgres has {}. Trust postgres", storeSize, pgCount);
-        loadFromPg();
+        LOG.warn("Existing name index contains {} names, but postgres has {}.", storeSize, pgCount);
+        if (verifyIndex) {
+          loadFromPg();
+        }
       }
     }
     LOG.info("Started name index with {} names", store.count());

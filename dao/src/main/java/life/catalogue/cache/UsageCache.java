@@ -4,7 +4,9 @@ import com.google.common.eventbus.Subscribe;
 
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.model.SimpleNameWithPub;
 
@@ -97,6 +99,7 @@ public interface UsageCache extends AutoCloseable, Managed {
         put(parentKey.getDatasetKey(), p);
       } else {
         LOG.warn("Missing usage {}", parentKey);
+        throw NotFoundException.notFound(NameUsage.class, parentKey);
       }
     }
     if (p != null) {

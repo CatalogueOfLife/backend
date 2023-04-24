@@ -4,6 +4,7 @@ import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.io.Resources;
 
@@ -109,6 +110,13 @@ public class EmlParserTest {
     assertEquals("2017-12-18", d.getIssued().toString());
     assertEquals(37, d.getSource().size());
     assertEquals(List.of("VASCAN", "Canadensys", "Canada", "Greenland", "Saint Pierre and Miquelon", "checklist", "taxonomy", "synonymy", "hybrids", "vernacular names", "English", "French", "distribution", "provinces", "habit", "open data", "Checklist", "Inventoryregional"), d.getKeyword());
+  }
+
+  @Test
+  public void iptSubtye() throws Exception {
+    DatasetWithSettings d = read("ipt.xml");
+    assertEquals(DatasetType.TAXONOMIC, d.getType());
+    assertEquals(List.of("Checklist", "Taxonomic Authority", "aquatic ecosystems", "conservation", "endemic", "richness", "South America", "ecosistemas acuáticos", "conservación", "endemismos", "riqueza", "América del Sur", "Checklist"), d.getKeyword());
   }
 
   @Test

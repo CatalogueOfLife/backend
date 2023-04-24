@@ -517,8 +517,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       psm.deleteByRelease(key);
       cm.deleteByRelease(key);
       // exports
-      LOG.info("Delete exports for private dataset {}", key);
-      exportDao.deleteByDataset(key, user);
+      if (exportDao == null) {
+        LOG.warn("No export dao configured. Cannot delete exports for private dataset {}", key);
+      } else {
+        LOG.info("Delete exports for private dataset {}", key);
+        exportDao.deleteByDataset(key, user);
+      }
     }
     // trigger DOI update at the very end for the now removed sources!
     dois.forEach(doi -> bus.post(DoiChange.change(doi)));

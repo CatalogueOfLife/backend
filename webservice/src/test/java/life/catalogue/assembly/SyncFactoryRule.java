@@ -1,11 +1,6 @@
 package life.catalogue.assembly;
 
-import com.google.common.eventbus.AsyncEventBus;
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.cache.UsageCache;
-import life.catalogue.concurrent.ExecutorUtils;
-import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.*;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.SqlSessionFactoryRule;
@@ -20,6 +15,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.eventbus.EventBus;
 
 /**
  * A junit test rule that sets up a new in memory names index and a sync factory.

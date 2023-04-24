@@ -12,8 +12,9 @@ public class PgConnectionRule extends SqlSessionFactoryRule {
     this.cfg = cfg;
   }
 
-  public PgConnectionRule(String database, String user, String password) {
+  public PgConnectionRule(String database, String user, String password, int minExternalDatasetKey) {
     this("localhost", database, user, password);
+    cfg.minExternalDatasetKey = minExternalDatasetKey;
   }
 
   public PgConnectionRule(String host, String database, String user, String password) {

@@ -6,12 +6,10 @@ import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
-import life.catalogue.parser.CountryParser;
-import life.catalogue.parser.DateParser;
-import life.catalogue.parser.LicenseParser;
-import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -313,13 +311,51 @@ public class EmlParser {
     return url;
   }
 
+  public static DatasetType parseType(String datasetType) {
+    if (!StringUtils.isBlank(datasetType)) {
+      switch (datasetType.toUpperCase().replaceAll("_+", " ")) {
+        case "NOMENCLATOR AUTHORITY":
+          return DatasetType.NOMENCLATURAL;
+        case "TAXONOMIC AUTHORITY":
+        case "GLOBAL SPECIES DATASET":
+        case "INVENTORY REGIONAL":
+          return DatasetType.TAXONOMIC;
+        case "INVENTORY THEMATIC":
+          return DatasetType.THEMATIC;
+        case "TREATMENT ARTICLE":
+          return DatasetType.ARTICLE;
+        default:
+          return DatasetType.OTHER;
+      }
+    }
+    return null;
+  }
+
   private static void consolidate(DatasetWithSettings ds){
     Dataset d = ds.getDataset();
     // dedupe agents
     dedupe(d.getCreator(), d::setCreator);
     dedupe(d.getEditor(), d::setEditor);
     dedupe(d.getContributor(), d::setContributor);
+    // derive type from keywords, see https://github.com/CatalogueOfLife/backend/issues/1217
+    if (d.getKeyword() != null) {
+      var iter = d.getKeyword().iterator();
+      while (iter.hasNext()) {
+        String kw = iter.next();
+        if (StringUtils.isBlank(kw) || kw.equalsIgnoreCase("null")) {
+          iter.remove();
+          continue;
+        }
+        if (d.getType() == null || d.getType() == DatasetType.OTHER) {
+          var type = parseType(kw);
+          if (type != null && type != DatasetType.OTHER) {
+            d.setType(type);
+          }
+        }
+      }
+    }
   }
+
   private static void dedupe(List<Agent> agents, Consumer<List<Agent>> setter){
     if (agents != null) {
       agents = agents.stream().distinct().collect(Collectors.toList());

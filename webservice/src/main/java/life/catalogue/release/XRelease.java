@@ -90,6 +90,8 @@ public class XRelease extends ProjectRelease {
 
   @Override
   void prepWork() throws Exception {
+    // fail early if components are not ready
+    syncFactory.assertComponentsOnline();
     createReleaseDOI();
     if (xCfg.sourcePublisher != null) {
       for (UUID pubKey : xCfg.sourcePublisher) {

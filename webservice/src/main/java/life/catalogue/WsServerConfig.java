@@ -127,6 +127,12 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public File namesIndexFile;
 
   /**
+   * If true verifies the existing names index file if it is in sync with the latest index in the database.
+   * For a large names index reloading it from the database can take an hour.
+   */
+  public boolean namesIndexVerification = true;
+
+  /**
    * Usage cache mapdb file to persist map on disk. If empty will use a volatile memory index.
    */
   @NotNull

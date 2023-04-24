@@ -57,4 +57,8 @@ public class SyncFactory {
   public SectorDeleteFull deleteFull(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     return new SectorDeleteFull(sectorKey, factory, matcher, indexService, bus, sd, sid, successCallback, errorCallback, user);
   }
+
+  public void assertComponentsOnline() {
+    matcher.assertComponentsOnline();
+  }
 }

@@ -5,9 +5,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.util.YamlUtils;
-import life.catalogue.db.PgDbConfig;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.*;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -41,7 +39,10 @@ public abstract class CmdTestBase {
   private final Supplier<Command> cmdSupply;
 
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
+  public static SqlSessionFactoryRule pgRule = new PgSetupRule();
+  // replace above rule with this one to connect to a local pg and init the connected db
+  // make sure to also change the adminDB settings below !!!
+  //public static SqlSessionFactoryRule pgRule = new PgConnectionRule("col", "postgres", "postgres", 100);
 
   @Rule
   public final TestDataRule testDataRule = TestDataRule.empty();
@@ -57,7 +58,7 @@ public abstract class CmdTestBase {
       try (var w = UTF8IoUtils.writerFromFile(cfg.file)) {
         w.write(Resources.toString(res, Charsets.UTF_8));
         // append db & adminDb cfg for pg container
-        var db = PgSetupRule.getCfg();
+        var db = SqlSessionFactoryRule.getCfg();
         w.write("\ndb:\n");
         YamlUtils.write(db, 2, w);
 

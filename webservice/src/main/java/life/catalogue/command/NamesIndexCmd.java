@@ -95,7 +95,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
     }
 
-    NameIndex ni = NameIndexFactory.persistentOrMemory(indexBuildFile(cfg), factory, AuthorshipNormalizer.INSTANCE);
+    NameIndex ni = NameIndexFactory.persistentOrMemory(indexBuildFile(cfg), factory, AuthorshipNormalizer.INSTANCE, cfg.namesIndexVerification);
     ni.start();
 
     IntSet keys;

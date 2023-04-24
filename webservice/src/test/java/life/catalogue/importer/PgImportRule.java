@@ -5,6 +5,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.config.ImporterConfig;
@@ -16,6 +17,7 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
+import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 
 import org.gbif.nameparser.api.NomCode;
@@ -59,16 +61,20 @@ public class PgImportRule extends ExternalResource {
     IMPORT_USER.getRoles().add(User.Role.ADMIN);
   }
 
+  private final Validator validator;
+  private final DatasetDao ddao;
+
   private NeoDb store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
   private DatasetWithSettings dataset;
   private final TestResource[] datasets;
+  private Pair<DataFormat, String> colImportSource;
   private final Map<Pair<DataFormat, Integer>, Integer> datasetKeyMap = new HashMap<>();
-  private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   private final TempFile sourceDir;
+  private NameIndex nidx = NameIndexFactory.passThru();
 
-  public static PgImportRule create(Object... params) {
+  public static List<TestResource> buildTestResources(Object... params) {
     List<TestResource> resources = new ArrayList<>();
     DatasetOrigin origin = DatasetOrigin.PROJECT;
     DataFormat format = null;
@@ -90,6 +96,11 @@ public class PgImportRule extends ExternalResource {
         resources.add(new TestResource((Integer)p, resourceFile, origin, Preconditions.checkNotNull(format), code, type));
       }
     }
+    return resources;
+  }
+
+  public static PgImportRule create(Object... params) {
+    List<TestResource> resources = buildTestResources(params);
     return new PgImportRule(resources.toArray(new TestResource[0]));
   }
 
@@ -100,6 +111,8 @@ public class PgImportRule extends ExternalResource {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
+    validator = Validation.buildDefaultValidatorFactory().getValidator();
+    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, validator);
   }
   
   public static class TestResource {
@@ -132,10 +145,18 @@ public class PgImportRule extends ExternalResource {
       return Objects.hash(key, format);
     }
   }
-  
+
+  public void setColImportSource(DataFormat format, String resourceFile) {
+    this.colImportSource = Pair.of(format, resourceFile);
+  }
+
+  public void setNidx(NameIndex nidx) {
+    this.nidx = nidx;
+  }
+
   @Override
   public void before() throws Throwable {
-    LOG.info("run PgImportRule with {} datasets", datasets.length);
+    LOG.info("run PgImportRule with {} datasets{}", datasets.length, colImportSource==null ? "" : " and import COL from " + colImportSource.second());
     super.before();
 
     cfg = new NormalizerConfig();
@@ -144,7 +165,10 @@ public class PgImportRule extends ExternalResource {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(UserMapper.class).create(IMPORT_USER);
     }
-  
+
+    if (colImportSource != null) {
+      normalizeAndImportCOL();
+    }
     for (TestResource tr : datasets) {
       normalizeAndImport(tr);
       Pair<DataFormat, Integer> key = new ObjectIntImmutablePair<>(tr.format, tr.key);
@@ -173,15 +197,28 @@ public class PgImportRule extends ExternalResource {
     return datasetKeyMap.get(new ObjectIntImmutablePair<>(format, key));
   }
 
+  void normalizeAndImportCOL() throws Exception {
+    dataset = ddao.getWithSettings(Datasets.COL);
+    dataset.setDataFormat(colImportSource.first());
+
+    FileUtils.cleanDirectory(sourceDir.file);
+    Resources.copy(colImportSource.second(), new File(sourceDir.file, "textree.txt"));
+    Path source = sourceDir.file.toPath();
+    normalizeAndImportDataset(source);
+
+  }
   void normalizeAndImport(TestResource tr) throws Exception {
+    String title;
     Path source;
     if (tr.resourceFile == null) {
       var url = getClass().getResource("/" + tr.format.name().toLowerCase() + "/" + tr.key);
       source = Paths.get(url.toURI());
+      title = String.format("%s-%s", tr.format, tr.key);
     } else {
       FileUtils.cleanDirectory(sourceDir.file);
       Resources.copy(tr.resourceFile, new File(sourceDir.file, "textree.txt"));
       source = sourceDir.file.toPath();
+      title = tr.resourceFile;
     }
     dataset = new DatasetWithSettings();
     dataset.setCreatedBy(IMPORT_USER.getKey());
@@ -190,17 +227,17 @@ public class PgImportRule extends ExternalResource {
     dataset.setType(tr.type);
     dataset.setOrigin(tr.origin);
     dataset.setCode(tr.code);
-    dataset.setTitle("Test Dataset " + source.toString());
-
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    DatasetDao ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, validator);
-    // insert trusted dataset
+    dataset.setTitle("Test Dataset " + title);
     // this creates a new key, usually above 1000!
     ddao.create(dataset, IMPORT_USER.getKey());
 
+    normalizeAndImportDataset(source);
+  }
+
+  private void normalizeAndImportDataset(Path source) throws Exception {
     // normalize
     store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
-    Normalizer norm = new Normalizer(dataset, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator, null);
+    Normalizer norm = new Normalizer(dataset, store, source, nidx, ImageService.passThru(), validator, null);
     norm.call();
 
     // import into postgres
@@ -208,5 +245,4 @@ public class PgImportRule extends ExternalResource {
     PgImport importer = new PgImport(1, dataset, IMPORT_USER.getKey(), store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru());
     importer.call();
   }
-  
 }

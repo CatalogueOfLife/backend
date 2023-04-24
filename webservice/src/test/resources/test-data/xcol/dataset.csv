@@ -1,3 +1,11 @@
-key,type,alias,title,origin,url,created_by,modified_by,created
-101,TAXONOMIC,,Test Dataset /tmp/col/63058f43-85d0-4b4f-9869-7619fd317760,EXTERNAL,,101,101,2022-09-20 22:12:25.212472
-102,TAXONOMIC,,Test Dataset /tmp/col/63058f43-85d0-4b4f-9869-7619fd317760,EXTERNAL,,101,101,2022-09-20 22:12:35.595557
+key,source_key,type,alias,title,origin,url,created_by,modified_by,created
+4,3,TAXONOMIC,Catalogue of Life-2023-04-21,Catalogue of Life,RELEASE,https://www.checklistbank.org/dataset/4,13,13,2023-04-21 21:08:36.749382
+101,,TAXONOMIC,,Test Dataset /tmp/col/a51c30ac-95aa-4cb2-8f48-64a0db9ad546,EXTERNAL,,101,101,2023-04-21 21:06:11.777686
+102,,TAXONOMIC,,Test Dataset /tmp/col/a51c30ac-95aa-4cb2-8f48-64a0db9ad546,EXTERNAL,,101,101,2023-04-21 21:06:16.269762
+103,,TAXONOMIC,,Test Dataset /tmp/col/a51c30ac-95aa-4cb2-8f48-64a0db9ad546,EXTERNAL,,101,101,2023-04-21 21:06:20.991273
+104,,TAXONOMIC,,Test Dataset /tmp/col/a51c30ac-95aa-4cb2-8f48-64a0db9ad546,EXTERNAL,,101,101,2023-04-21 21:07:23.493348
+105,,TAXONOMIC,,Test Dataset /tmp/col/a51c30ac-95aa-4cb2-8f48-64a0db9ad546,EXTERNAL,,101,101,2023-04-21 21:07:40.661067
+106,,TAXONOMIC,,Test Dataset /tmp/col/a51c30ac-95aa-4cb2-8f48-64a0db9ad546,EXTERNAL,,101,101,2023-04-21 21:07:48.548531
+107,,TAXONOMIC,,Test Dataset /tmp/col/a51c30ac-95aa-4cb2-8f48-64a0db9ad546,EXTERNAL,,101,101,2023-04-21 21:07:53.097688
+108,,TAXONOMIC,,Test Dataset /tmp/col/a51c30ac-95aa-4cb2-8f48-64a0db9ad546,EXTERNAL,,101,101,2023-04-21 21:07:57.253637
+109,,TAXONOMIC,,Test Dataset /tmp/col/a51c30ac-95aa-4cb2-8f48-64a0db9ad546,EXTERNAL,,101,101,2023-04-21 21:08:02.331793

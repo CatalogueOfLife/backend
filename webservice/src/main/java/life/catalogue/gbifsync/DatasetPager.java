@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.config.GbifConfig;
+import life.catalogue.metadata.eml.EmlParser;
 import life.catalogue.parser.*;
 
 import java.net.URI;
@@ -194,24 +195,7 @@ public class DatasetPager {
       d.setType(DatasetType.ARTICLE);
 
     } else if (g.subtype != null) {
-      switch (g.subtype) {
-        case "NOMENCLATOR_AUTHORITY":
-          d.setType(DatasetType.NOMENCLATURAL);
-          break;
-        case "TAXONOMIC_AUTHORITY":
-        case "GLOBAL_SPECIES_DATASET":
-        case "INVENTORY_REGIONAL":
-          d.setType(DatasetType.TAXONOMIC);
-          break;
-        case "INVENTORY_THEMATIC":
-          d.setType(DatasetType.THEMATIC);
-          break;
-        case "TREATMENT_ARTICLE":
-          d.setType(DatasetType.ARTICLE);
-          break;
-        default:
-          d.setType(DatasetType.OTHER);
-        }
+      d.setType(EmlParser.parseType(g.subtype));
     } else {
       d.setType(DatasetType.OTHER);
     }
@@ -460,6 +444,12 @@ public class DatasetPager {
   }
 
   static class GComment {
+    public String content;
+    public String createdBy;
+    public String modifiedBy;
+  }
+
+  static class GKeywords {
     public String content;
     public String createdBy;
     public String modifiedBy;

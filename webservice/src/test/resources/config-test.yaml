@@ -14,7 +14,6 @@ logging:
 normalizer:
   scratchDir: /tmp/colplus/scratch
   archiveDir: /tmp/colplus/archives
-downloadURI: "http://localhost"
 portalURI: "http://localhost"
 apiURI: "http://localhost"
 client:
@@ -60,3 +59,7 @@ doi:
   prefix: ${datacite.prefix}
   username: ${datacite.username}
   password: ${datacite.password}
+job:
+  threads: 2
+  queue: 100
+  downloadURI: "http://localhost"

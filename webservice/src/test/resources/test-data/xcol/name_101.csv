@@ -1,5 +1,5 @@
-id,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
-3,Abies,,GENUS,,,SCIENTIFIC,f,,Abies,,,,,,{},{},,{},{},,,,,,,,,
-4,Abies alba,,SPECIES,,,SCIENTIFIC,f,,,Abies,,alba,,,{},{},,{},{},,,,,,,,,
-2,Pinaceae,,FAMILY,,,SCIENTIFIC,f,,Pinaceae,,,,,,{},{},,{},{},,,,,,,,,
-1,Pinales,,ORDER,,,SCIENTIFIC,f,,Pinales,,,,,,{},{},,{},{},,,,,,,,,
+id,sector_key,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
+3,,Abies,,GENUS,,,SCIENTIFIC,f,,Abies,,,,,,{},{},,{},{},,,,,,,,,
+4,,Abies alba,,SPECIES,,,SCIENTIFIC,f,,,Abies,,alba,,,{},{},,{},{},,,,,,,,,
+2,,Pinaceae,,FAMILY,,,SCIENTIFIC,f,,Pinaceae,,,,,,{},{},,{},{},,,,,,,,,
+1,,Pinales,,ORDER,,,SCIENTIFIC,f,,Pinales,,,,,,{},{},,{},{},,,,,,,,,

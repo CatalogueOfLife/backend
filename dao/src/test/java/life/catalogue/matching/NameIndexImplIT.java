@@ -128,7 +128,7 @@ public class NameIndexImplIT {
   }
 
   void setupPersistent(File location) throws Exception {
-    ni = NameIndexFactory.persistent(location, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
+    ni = NameIndexFactory.persistent(location, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer, true).started();
   }
 
   @Test

@@ -1,4 +1,0 @@
-Pinales [order]
-  Pinaceae [family]
-    Abies [genus]
-      Abies alba [species]

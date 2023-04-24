@@ -1,0 +1,892 @@
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1"
+         xmlns:dc="http://purl.org/dc/terms/"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml.xsd"
+         packageId="7e3a2242-46d6-4b90-b80c-42c5d27ed93b/v2.15" system="http://gbif.org" scope="system"
+         xml:lang="spa">
+
+<dataset>
+  <alternateIdentifier>doi:10.15472/numrso</alternateIdentifier>
+  <alternateIdentifier>7e3a2242-46d6-4b90-b80c-42c5d27ed93b</alternateIdentifier>
+  <alternateIdentifier>https://ipt.biodiversidad.co/sib/resource?r=ictiofauna_colombiana_dulceacuicola</alternateIdentifier>
+  <title xml:lang="spa">Lista de especies de peces de agua dulce de Colombia / Checklist of the freshwater fishes of Colombia</title>
+      <creator>
+    <individualName>
+        <givenName>Carlos</givenName>
+      <surName>DoNascimiento</surName>
+    </individualName>
+    <organizationName>Instituto de Investigación de Recursos Biológicos Alexander von Humboldt</organizationName>
+    <positionName>Curador</positionName>
+    <address>
+        <city>Villa de Leyva</city>
+        <administrativeArea>Boyacá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>cdonascimiento@humboldt.org.co</electronicMailAddress>
+      </creator>
+      <creator>
+    <individualName>
+        <givenName>Juan David</givenName>
+      <surName>Bogotá Gregory</surName>
+    </individualName>
+    <address>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>juandbogota@gmail.com</electronicMailAddress>
+      </creator>
+      <creator>
+    <individualName>
+        <givenName>Juan Gabriel</givenName>
+      <surName>Albornoz Garzón</surName>
+    </individualName>
+    <organizationName>Instituto de Investigación de Recursos Biológicos Alexander von Humboldt</organizationName>
+    <address>
+        <city>Villa de Leyva</city>
+        <administrativeArea>Boyacá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>jalbornoz@humboldt.org.co</electronicMailAddress>
+      </creator>
+      <creator>
+    <individualName>
+        <givenName>Alejandro</givenName>
+      <surName>Méndez López</surName>
+    </individualName>
+    <organizationName>Instituto de Investigación de Recursos Biológicos Alexander von Humboldt</organizationName>
+    <address>
+        <city>Villa de Leyva</city>
+        <administrativeArea>Boyacá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>mendez.alejandro@javeriana.edu.co</electronicMailAddress>
+      </creator>
+      <creator>
+    <individualName>
+        <givenName>Francisco Antonío</givenName>
+      <surName>Villa Navarro</surName>
+    </individualName>
+    <organizationName>Universidad del Tolima</organizationName>
+    <positionName>curador</positionName>
+    <address>
+        <city>Ibagué</city>
+        <administrativeArea>Tolima</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>favilla@ut.edu.co</electronicMailAddress>
+          <userId directory="http://orcid.org/">0000-0001-5913-188X</userId>
+      </creator>
+      <creator>
+    <individualName>
+        <givenName>Edgar Esteban</givenName>
+      <surName>Herrera Collazos</surName>
+    </individualName>
+    <organizationName>Laboratorio de Ictiología, Departamento de Biología, Facultad de Ciencias, Pontificia Universidad Javeriana</organizationName>
+    <address>
+        <city>Bogotá</city>
+        <administrativeArea>Bogotá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>edgarestebanhc@gmail.com</electronicMailAddress>
+          <userId directory="https://www.linkedin.com/profile/view?id=">edgar-esteban-herrera-collazos-71540638</userId>
+      </creator>
+      <creator>
+    <individualName>
+        <givenName>Henry</givenName>
+      <surName>Agudelo Zamora</surName>
+    </individualName>
+    <organizationName>Instituto de Ciencias Naturales, Universidad Nacional de Colombia</organizationName>
+    <positionName>Programa Informatica de la Biodiversidad</positionName>
+    <address>
+        <city>Bogotá</city>
+        <administrativeArea>Bogotá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>hdagudeloz@unal.edu.co</electronicMailAddress>
+          <userId directory="http://orcid.org/">0000-0001-8571-7235</userId>
+      </creator>
+      <creator>
+    <individualName>
+        <givenName>Mariangeles</givenName>
+      <surName>Arce H.</surName>
+    </individualName>
+    <organizationName>The Academy of Natural Sciences of Drexel University</organizationName>
+    <positionName>Collection manager</positionName>
+    <address>
+        <city>Philadelphia</city>
+        <country>US</country>
+    </address>
+          <userId directory="http://scholar.google.com/citations?user=">1_gV5Q0AAAAJ&amp;hl=en</userId>
+      </creator>
+      <metadataProvider>
+    <individualName>
+        <givenName>Carlos</givenName>
+      <surName>DoNascimiento</surName>
+    </individualName>
+    <organizationName>Instituto de Investigación de Recursos Biológicos Alexander von Humboldt</organizationName>
+    <positionName>Curador</positionName>
+    <address>
+        <city>Villa de Leyva</city>
+        <administrativeArea>Boyacá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>cdonascimiento@humboldt.org.co</electronicMailAddress>
+      </metadataProvider>
+      <metadataProvider>
+    <individualName>
+        <givenName>Edgar Esteban</givenName>
+      <surName>Herrera-Collazos</surName>
+    </individualName>
+    <organizationName>Laboratorio de Ictiología, Departamento de Biología, Facultad de Ciencias, Pontificia Universidad Javeriana</organizationName>
+    <address>
+        <deliveryPoint>Carrera 7 N° 43-82</deliveryPoint>
+        <city>Bogota</city>
+        <administrativeArea>Bogota</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>edgarestebanhc@gmail.com</electronicMailAddress>
+          <userId directory="https://www.linkedin.com/profile/view?id=">edgar-esteban-herrera-collazos-71540638</userId>
+      </metadataProvider>
+      <metadataProvider>
+    <individualName>
+        <givenName>Javier A.</givenName>
+      <surName>Maldonado-Ocampo</surName>
+    </individualName>
+    <organizationName>Departamento de Biología, Facultad de Ciencias, Pontificia Universidad Javeriana</organizationName>
+    <positionName>Director</positionName>
+    <address>
+        <deliveryPoint>Carrera 7 N° 43-82</deliveryPoint>
+        <city>Bogotá</city>
+        <administrativeArea>Bogotá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>maldonadoj@javeriana.edu.co</electronicMailAddress>
+          <userId directory="http://orcid.org/">0000-0003- 3024-237X</userId>
+      </metadataProvider>
+      <metadataProvider>
+    <individualName>
+        <givenName>Henry</givenName>
+      <surName>Agudelo Zamora</surName>
+    </individualName>
+    <organizationName>Instituto de Ciencias Naturales/Universidad Nacional de Colombia</organizationName>
+    <positionName>Programa de Informatica de la Biodiversidad</positionName>
+    <address>
+        <deliveryPoint>Ciudad Universitaria, edificio 425</deliveryPoint>
+        <city>Bogotá D.C</city>
+        <administrativeArea>Bogotá D.C</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>hdagudeloz@unal.edu.co</electronicMailAddress>
+          <userId directory="http://orcid.org/">0000-0001-8571-7235</userId>
+      </metadataProvider>
+      <associatedParty>
+    <individualName>
+        <givenName>Carlos</givenName>
+      <surName>DoNascimiento</surName>
+    </individualName>
+    <organizationName>Instituto de Investigación de Recursos Biológicos Alexander von Humboldt</organizationName>
+    <positionName>Curador</positionName>
+    <address>
+        <city>Villa de Leyva</city>
+        <administrativeArea>Boyacá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>cdonascimiento@humboldt.org.co</electronicMailAddress>
+    <role>author</role>
+      </associatedParty>
+      <associatedParty>
+    <individualName>
+        <givenName>Edgar Esteban</givenName>
+      <surName>Herrera-Collazos</surName>
+    </individualName>
+    <organizationName>Laboratorio de Ictiología, Departamento de Biología, Facultad de Ciencias, Pontificia Universidad Javeriana</organizationName>
+    <address>
+        <deliveryPoint>Carrera 7 N° 43-82</deliveryPoint>
+        <city>Bogotá</city>
+        <administrativeArea>Bogotá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>edgarestebanhc@gmail.com</electronicMailAddress>
+          <userId directory="https://www.linkedin.com/profile/view?id=">edgar-esteban-herrera-collazos-71540638</userId>
+    <role>author</role>
+      </associatedParty>
+      <associatedParty>
+    <individualName>
+        <givenName>Guido</givenName>
+      <surName>Herrera-R</surName>
+    </individualName>
+    <organizationName>Université Paul Sabatier, Laboratoire Evolution &amp; Diversité Biologique</organizationName>
+    <positionName>Estudiante</positionName>
+    <address>
+        <deliveryPoint>118 route de Narbonne, F-31062</deliveryPoint>
+        <country>FR</country>
+    </address>
+    <electronicMailAddress>guidohero@hotmail.com</electronicMailAddress>
+    <role>author</role>
+      </associatedParty>
+      <associatedParty>
+    <individualName>
+        <givenName>Armando</givenName>
+      <surName>Ortega-Lara</surName>
+    </individualName>
+    <organizationName>Grupo de Investigación en Peces Neotropicales, Fundación para la Investigación y el Desarrollo Sostenible (FUNINDES)</organizationName>
+    <positionName>Curador</positionName>
+    <address>
+        <city>Cali</city>
+        <administrativeArea>Valle del Cauca</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>ictiologortega@gmail.com</electronicMailAddress>
+    <role>author</role>
+      </associatedParty>
+      <associatedParty>
+    <individualName>
+        <givenName>Francisco A.</givenName>
+      <surName>Villa-Navarro</surName>
+    </individualName>
+    <organizationName>Universidad del Tolima, Facultad de Ciencias, Grupo de Investigación en Zoología</organizationName>
+    <positionName>Curador</positionName>
+    <address>
+        <deliveryPoint>Calle 20 sur N° 23A-144</deliveryPoint>
+        <city>Ibagué</city>
+        <administrativeArea>Tolima</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>favilla@ut.edu.co</electronicMailAddress>
+    <role>author</role>
+      </associatedParty>
+      <associatedParty>
+    <individualName>
+        <givenName>José Saulo</givenName>
+      <surName>Usma Oviedo</surName>
+    </individualName>
+    <organizationName>Programa Ecosistemas de Agua Dulce de WWF Colombia</organizationName>
+    <address>
+        <city>Cali</city>
+        <administrativeArea>Valle del Cauca</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>jsusma@wwf.org.co</electronicMailAddress>
+    <role>author</role>
+      </associatedParty>
+      <associatedParty>
+    <individualName>
+        <givenName>Javier A.</givenName>
+      <surName>Maldonado-Ocampo</surName>
+    </individualName>
+    <organizationName>Departamento de Biología, Facultad de Ciencias, Pontificia Universidad Javeriana</organizationName>
+    <positionName>Director</positionName>
+    <address>
+        <deliveryPoint>Carrera 7 N° 43-82</deliveryPoint>
+        <city>Bogotá</city>
+        <administrativeArea>Bogotá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>maldonadoj@javeriana.edu.co</electronicMailAddress>
+    <role>author</role>
+      </associatedParty>
+  <pubDate>
+      2023-01-10
+  </pubDate>
+  <language>spa</language>
+  <abstract>
+    <para>La presente lista consiste en la actualización del conjunto de datos que compone la Lista de Especies de Peces de Agua Dulce de Colombia, publicada en noviembre de 2017, en la revista Zookeys (https://zookeys.pensoft.net/articles.php?id=13897). 
+
+Esta es la versión 2.13 y se adicionan seis especies respecto a la version 2.12, se modifica la clasificación de Serrasalmidae, Centromochlinae, Loricariinae, Heptapteridae, Acanthomodpha y Pseudopimelodidae. Este proceso de revisión y depuración resultó en las siguientes cifras: 1. Número total de especies de peces de agua dulce para Colombia 1616; 2. Número de especies registradas por región hidrográfica, Amazonas: 764, Orinoco: 715, Magdalena-Cauca: 235, Caribe: 231, Pacífico: 128; 3. Número de especies endémicas 413.</para>
+  </abstract>
+      <keywordSet>
+            <keyword>Checklist</keyword>
+        <keywordThesaurus>GBIF Dataset Type Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_type.xml</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+            <keyword>Taxonomic Authority</keyword>
+        <keywordThesaurus>GBIF Dataset Subtype Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_subtype.xml</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+            <keyword>aquatic ecosystems</keyword>
+            <keyword>conservation</keyword>
+            <keyword>endemic</keyword>
+            <keyword>richness</keyword>
+            <keyword>South America</keyword>
+            <keyword>null</keyword>
+        <keywordThesaurus>N/A</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+            <keyword>ecosistemas acuáticos</keyword>
+            <keyword>conservación</keyword>
+            <keyword>endemismos</keyword>
+            <keyword>riqueza</keyword>
+            <keyword>América del Sur</keyword>
+        <keywordThesaurus>N/A</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+            <keyword>Checklist</keyword>
+        <keywordThesaurus>GBIF Dataset Type Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_type_2015-07-10.xml</keywordThesaurus>
+      </keywordSet>
+  <intellectualRights>
+    <para>This work is licensed under a <ulink url="http://creativecommons.org/licenses/by/4.0/legalcode"><citetitle>Creative Commons Attribution (CC-BY) 4.0 License</citetitle></ulink>.</para>
+  </intellectualRights>
+  <distribution scope="document">
+    <online>
+      <url function="information">http://www.acictios.org/listado-de-peces-de-agua-dulce-de-colombia/</url>
+    </online>
+  </distribution>
+  <coverage>
+      <geographicCoverage>
+          <geographicDescription>Todas las Zonas Hidrográficas de Colombia: Amazonas, Orinoco, Caribe, Magdalena-Cauca y Pacífico (IDEAM 2015).</geographicDescription>
+        <boundingCoordinates>
+          <westBoundingCoordinate>-78.838</westBoundingCoordinate>
+          <eastBoundingCoordinate>-67.061</eastBoundingCoordinate>
+          <northBoundingCoordinate>12.555</northBoundingCoordinate>
+          <southBoundingCoordinate>-4.478</southBoundingCoordinate>
+        </boundingCoordinates>
+      </geographicCoverage>
+          <temporalCoverage>
+              <rangeOfDates>
+                  <beginDate>
+                    <calendarDate>2008-01-01</calendarDate>
+                  </beginDate>
+                <endDate>
+                  <calendarDate>2021-12-31</calendarDate>
+                </endDate>
+              </rangeOfDates>
+          </temporalCoverage>
+          <taxonomicCoverage>
+              <generalTaxonomicCoverage>De los 1616 taxa disponibles, 13 se encuentran a nivel de género y los restantes se encuentran a nivel de especie. La totalidad de los registros se encuentran clasificados en 3 clases, 13 órdenes, 56 familias y 437 géneros diferentes.</generalTaxonomicCoverage>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Acestrorhynchidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Achiridae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Anostomidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Apteronotidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Ariidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Aspredinidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Astroblepidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Auchenipteridae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Batrachoididae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Belonidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Bryconidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Callichthyidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Cetopsidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Chalceidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Characidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Chilodontidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Cichlidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Crenuchidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Ctenoluciidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Curimatidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Cynodontidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Cyprinodontidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Doradidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Eleotridae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Engraulidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Erythrinidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Fluviphylacidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Gasteropelecidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Gymnotidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Hemiodontidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Hemiramphidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Heptapteridae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Hypopomidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Iguanodectidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Lebiasinidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Lepidosirenidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Loricariidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Osteoglossidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Parodontidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Pimelodidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Poeciliidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Polycentridae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Potamotrygonidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Pristigasteridae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Prochilodontidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Pseudopimelodidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Rhamphichthyidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Rivulidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Sciaenidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Scoloplacidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Serrasalmidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Sternopygidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Synbranchidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Tetraodontidae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Trichomycteridae</taxonRankValue>
+              </taxonomicClassification>
+              <taxonomicClassification>
+                  <taxonRankName>family</taxonRankName>
+                <taxonRankValue>Triportheidae</taxonRankValue>
+              </taxonomicClassification>
+          </taxonomicCoverage>
+  </coverage>
+  <maintenance>
+    <description>
+      <para>Mayor información sobre la actualización 2.13 se puede encontrar online en el siguiente link: http://www.acictios.org/listado-de-peces-de-agua-dulce-de-colombia/
+Allí podrá encontrar la información y soporte detallado de todos los cambios geográficos y taxonómicos de la actualización de la lista.</para>
+    </description>
+    <maintenanceUpdateFrequency>unkown</maintenanceUpdateFrequency>
+  </maintenance>
+
+      <contact>
+    <individualName>
+        <givenName>Carlos</givenName>
+      <surName>DoNascimiento</surName>
+    </individualName>
+    <organizationName>Instituto de Investigación de Recursos Biológicos Alexander von Humboldt</organizationName>
+    <positionName>Curador</positionName>
+    <address>
+        <city>Villa de Leyva</city>
+        <administrativeArea>Boyacá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>cdonascimiento@humboldt.org.co</electronicMailAddress>
+      </contact>
+      <contact>
+    <individualName>
+        <givenName>Edgar Esteban</givenName>
+      <surName>Herrera-Collazos</surName>
+    </individualName>
+    <organizationName>Laboratorio de Ictiología, Departamento de Biología, Facultad de Ciencias, Pontificia Universidad Javeriana</organizationName>
+    <address>
+        <deliveryPoint>Carrera 7 N° 43-82</deliveryPoint>
+        <city>Bogotá</city>
+        <administrativeArea>Bogotá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <phone>3193790213</phone>
+    <electronicMailAddress>edgarestebanhc@gmail.com</electronicMailAddress>
+          <userId directory="https://www.linkedin.com/profile/view?id=">edgar-esteban-herrera-collazos-71540638</userId>
+      </contact>
+      <contact>
+    <individualName>
+        <givenName>Javier A.</givenName>
+      <surName>Maldonado-Ocampo</surName>
+    </individualName>
+    <organizationName>Departamento de Biología, Facultad de Ciencias, Pontificia Universidad Javeriana</organizationName>
+    <positionName>Director</positionName>
+    <address>
+        <deliveryPoint>Carrera 7 N° 43-82</deliveryPoint>
+        <city>Bogotá</city>
+        <administrativeArea>Bogotá</administrativeArea>
+        <country>CO</country>
+    </address>
+    <electronicMailAddress>maldonadoj@javeriana.edu.co</electronicMailAddress>
+          <userId directory="http://orcid.org/">https://orcid.org/0000-0003- 3024-237X</userId>
+      </contact>
+  <methods>
+        <methodStep>
+          <description>
+            <para>El proceso metodológico consistió en los siguientes puntos: 1. Añadir nuevas especies descritas desde el 2009 y especies descritas originalmente de Colombia, pero omitidas involuntariamente en 2008; 2. Añadir nuevos registros de especies ya descritas; 3. Eliminar especies cuya presencia en Colombia no fue apoyada por ejemplares en colecciones ictiológicas; y 4. Revisar la distribución geográfica de las especies listadas en 2008. Las principales fuentes utilizadas para esta revisión consistieron en artículos de investigación que describen especies nuevas, revisiones taxonómicas y sistemáticas de géneros y familias, examen directo de especímenes catalogados.</para>
+          </description>
+        </methodStep>
+        <methodStep>
+          <description>
+            <para>La lista completa de especies fue ensamblada usando el estándar Darwin Core (DwC). A continuación se enumeran los campos para los que consideramos una explicación más detallada de los criterios adoptados, para proporcionar un marco inequívoco para las definiciones utilizadas para cada elemento.</para>
+          </description>
+        </methodStep>
+        <methodStep>
+          <description>
+            <para>taxonID. Este campo se define como un identificador alfanumérico único y estable a través del tiempo (identificador taxonómico) proporcionado por Life Science Identifier (LSID).</para>
+          </description>
+        </methodStep>
+        <methodStep>
+          <description>
+            <para>namePublishedIn. Este campo vincula cada nombre de especie a su respectiva fuente (es decir, una referencia bibliográfica) y se restringió para incluir solamente aquellas especies descritas originalmente de Colombia, es decir, sólo la referencia bibliográfica de la descripción original de especies que listan especímenes colombianos (en algunos casos de zonas fronterizas) como tipos, así como descripciones que explícitamente listan especímenes colombianos como no-tipos.</para>
+          </description>
+        </methodStep>
+        <methodStep>
+          <description>
+            <para>bibliographicCitation. Este campo está reservado para aquellas especies no descritas en Colombia, pero cuya presencia en el país está respaldada por una referencia bibliográfica. En este caso, hicimos un esfuerzo especial para localizar la primera referencia cronológica que mencionaba explícitamente especímenes colombianos colectados y depositados en colecciones nacionales o internacionales, o que proporcionaban imágenes que permitieran el reconocimiento inequívoco de una especie determinada, para cada sistema hidrográfico principal. En algunos casos, complementamos estas referencias bibliográficas primarias con referencias más recientes, donde se proporcionan lotes catalogados adicionales.</para>
+          </description>
+        </methodStep>
+        <methodStep>
+          <description>
+            <para>associatedOccurrences. Como en el elemento anterior, aquí apoyamos la presencia de especies no descritas originalmente de Colombia. Se listaron lotes catalogados (preferiblemente disponibles en colecciones colombianas) para especies no respaldadas por referencias bibliográficas o para complementar referencias no soportadas por lotes. Se proporcionan lotes para cada sistema hidrográfico principal. Además, también se enumeran aquí los lotes catalogados, correspondientes a los tipos.</para>
+          </description>
+        </methodStep>
+        <methodStep>
+          <description>
+            <para>dynamicProperties. Corresponde a la columna CT (especie amenazada y en peligro de extinción) utilizada en Maldonado-Ocampo et al. (2008) y en DoNascimiento et al (2017). La información de este elemento se basó en Mojica et al. (2012) y dado que el alcance de la presente lista es de escala nacional, las categorías de amenaza están restringidas a Colombia.</para>
+          </description>
+        </methodStep>
+        <methodStep>
+          <description>
+            <para>occurrenceRemarks. Indica el tipo de uso comercial de cada especie (es decir, Pesquerías, Ornamentales). La lista de especies de peces incluidas en las pesquerías continentales colombianas es de Lasso et al. (2011a), mientras que la lista de especies ornamentales es de Ortega-Lara et al. (2015) y Ortega-Lara (2016).</para>
+          </description>
+        </methodStep>
+        <methodStep>
+          <description>
+            <para>locality. Las localidades tipo de especies descritas de Colombia se enumeran como se citan en sus respectivas descripciones originales o como aparecen en el Catálogo de Peces de California (http://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatmain.asp</para>
+          </description>
+        </methodStep>
+        <methodStep>
+          <description>
+            <para>Las siglas institucionales siguen a Sabaj (2016). La clasificación de taxones de rangos taxonómicos ordinales y supraordinales (Clase a Suborden) y el orden de arreglo de los respectivos taxones siguieron la propuesta de Betancur-R. et al. (2017). Se adoptaron las siguientes propuestas de clasificación para los grupos indicados: Tagliacollo et al. (2016): Gymnotiformes; Mirande (2009, 2010) y Oliveira et al. (2011): Characiformes, pero en casos incongruentes, adoptamos la última propuesta publicada (es decir, Oliveira et al., 2011), sin implicar en modo alguno una validación sobre las contribuciones de Mirande; Thomaz et al. (2015): Stevardiinae; Sullivan et al. (2006): Siluriformes; Lujan et al. (2015a): Hypostominae; Roxo et al. (2014): Hypoptopomatinae y Otothyrinae; Covain et al. (2016): Loricariinae; Birindelli (2014): Doradoidea; Sullivan et al. (2013a): Pimelodoidea; López-Fernández et al. (2010): Cichlidae. Para los grupos restantes seguimos Nelson et al. (2016).</para>
+          </description>
+        </methodStep>
+        <methodStep>
+          <description>
+            <para>Nota editorial:
+
+En agosto de 2021, Carlos A. Ardila Rodríguez describió para la cuenca del río Magdalena, Creagrutus mariposa, Creagrutus jordanensis, Creagrutus ardilai y Creagrutus martinezi. En esta ocasión, el comité editorial de la Lista de especies de peces de agua dulce de Colombia ha tomado la decisión de no incorporar estos nombres, a pesar de estar disponibles en la nomenclatura zoológica, de acuerdo a las disposiciones del Código Internacional de Nomenclatura Zoológica vigente. Esta decisión está fundamentada en la cuestionable validez taxonómica de los nombres propuestos (una refutación taxonómica de estas especies nominales está siendo preparada para su publicación en una revista científica arbitrada e indexada, por parte de uno de los autores de la presente actualización de la lista, J. G. A. G.). La inclusión de estos nombres en la lista nos demandaría su registro en ZooBank (The Official Registry of Zoological Nomenclature), acción que brindaría aval a la reiterada publicación de nombres científicos en medios que no cuentan con un proceso de revisión por pares y un proceso editorial que velen por la calidad científica de las publicaciones asociadas a estos nombres.
+
+Referencia bibliográfica citada:
+Ardila Rodríguez, C. A. 2021. Creagrutus mariposa sp. nov. - C. jordanensis C. ardilai y C. martinezi, cuatro nuevas especies del departamento de Santander Colombia. Barranquilla, departamento del Atlántico 75: 1-28.</para>
+          </description>
+        </methodStep>
+      <sampling>
+        <studyExtent>
+          <description>
+            <para>Todas las Zonas Hidrográficas de Colombia: Amazonas, Orinoco, Caribe, Magdalena-Cauca y Pacífico (IDEAM 2015).</para>
+          </description>
+        </studyExtent>
+        <samplingDescription>
+          <para>El proceso metodológico consistió en los siguientes puntos: 1. Añadir nuevas especies descritas desde el 2009 y especies descritas originalmente de Colombia, pero omitidas involuntariamente en 2008; 2. Añadir nuevos registros de especies ya descritas; 3. Eliminar especies cuya presencia en Colombia no fue apoyada por ejemplares de vouchers en colecciones ictiológicas; y 4. Revisar la distribución geográfica de las especies listadas en 2008.</para>
+        </samplingDescription>
+      </sampling>
+      <qualityControl>
+        <description>
+          <para>Para las especies, se realizó la revisión nomenclatural siguiendo CALACADEMY, FISHBASE y COL.
+
+La clasificación de Serrasalmidae sigue:
+•	Kolmann, M. A., L. C. Hughes, L. P. Hernandez, D. Arcila, R. Betancur-R., M. H. Sabaj, H. López-Fernández &amp; G. Ortí. 2020. Phylogenomics of piranhas and pacus (Serrasalmidae) uncovers how dietary convergence and parallelism obfuscate traditional morphological taxonomy, Systematic Biology 70 (3): 576–592. https://doi.org/10.1093/sysbio/syaa065.
+•	Mateussi, N. T. B., B. F. Melo, R. P. Ota, F. F. Roxo, L. E. Ochoa, F. Foresti &amp; C. Oliveira. 2020. Phylogenomics of the Neotropical fish family Serrasalmidae with a novel intrafamilial classification (Teleostei: Characiformes). Molecular Phylogenetics and Evolution 153: 106945. https://doi.org/10.1016/j.ympev.2020.106945.
+
+La clasificación de Centromochlinae sigue:
+•	Sarmento-Soares, L. M. &amp; R. F. Martins-Pinheiro. 2020. A reappraisal of phylogenetic relationships among auchenipterid catfishes of the subfamily Centromochlinae and diagnosis of its genera (Teleostei: Siluriformes). Proceedings of the Academy of Natural Sciences of Philadelphia 167 (1): 85-146. https://doi.org/10.1635/053.167.0108.
+
+La clasificación de Loricariinae sigue:
+•	Londoño-Burbano, A. &amp; R. E. Reis. 2021. A combined molecular and morphological phylogeny of the Loricariinae (Siluriformes: Loricariidae), with emphasis on the Harttiini and Farlowellini. PLoS ONE 16 (3): e0247747. https://doi.org/10.1371/journal.pone.0247747.
+La clasificación de Heptapteridae sigue:
+•	Silva, G. S. C., F. F. Roxo, B. F. Melo, L. E. Ochoa, F. A. Bockmann, M. H. Sabaj, F. C. Jerep, F. Foresti, R. C. Benine &amp; C. Oliveira. 2021. Evolutionary history of Heptapteridae catfishes using ultraconserved elements (Teleostei, Siluriformes). Zoologica Scripta 50 (5): 543-554. https://doi.org/10.1111/zsc.12493.
+•	Faustino-Fuster, D. R., V. Meza-Vargas, N. R. Lovejoy &amp; Nathan K. Lujan. 2021. Multi-locus phylogeny with dense Guiana Shield sampling supports new suprageneric classification of the Neotropical three-barbeled catfishes (Siluriformes: Heptapteridae). Molecular Phylogenetics and Evolution 62: 107186. https://doi.org/10.1016/j.ympev.2021.107186.
+
+La clasificación de Acanthomorpha sigue:
+•	Dornburg, A. &amp; T. J. Near. 2021. The emerging phylogenetic perspective on the evolution of actinopterygian fishes. Annual Review of Ecology, Evolution, and Systematics 52. https://doi.org/10.1146/annurev-ecolsys-122120-122554.
+
+La clasificación de Pseudopimelodidae sigue:
+•	Silva, G. S. C., B. F. Melo, F. F. Roxo, L. E. Ochoa, O. A. Shibatta, M. H. Sabaj &amp; C. Oliveira. 2021. Phylogenomics of the bumblebee catfishes (Siluriformes: Pseudopimelodidae) using ultraconserved elements. Journal of Zoological Systematics and Evolutionary Research. https://doi.org/10.1111/jzs.12513.
+Los subgéneros de Rivulus, Anablepsoides, Cynodonichthys y Laimosemion, se utilizan cómo géneros plenos, a fin de guardar coherencia con la clasificación adoptada en Eschmeyer&apos;s Catalog of Fishes.
+2. Especies nuevas descritas, posterior a la versión 2.12: 15 spp.
+Myliobatiformes (3 spp)
+Paratrygon orinocensis Loboda, Lasso, Rosa y Carvalho, 2021
+Paratrygon parvaspina Loboda, Lasso, Rosa y Carvalho, 2021
+Potamotrygon roulini Roberts, 2021
+Characiformes (3 spp)
+Characidae (1 sp)
+Creagrutus argos Ardila Rodríguez 2020
+Crenuchidae (2 spp)
+Characidium dule Agudelo-Zamora, Tavera, Murillo &amp; Ortega-Lara, 2020
+Characidium tatama Agudelo-Zamora, Tavera, Murillo &amp; Ortega-Lara, 2020
+Siluriformes (5 spp)
+Loricariidae (1 sp)
+Chaetostoma chimu Urbano-Bonilla &amp; Ballen, 2020
+Pimelodidae (2 spp)
+Hypophthalmus celiae Littmann, Lundberg y Rocha, 2021
+Hypophthalmus donascimientoi Littmann, Lundberg y Rocha, 2021
+Pseudopimelodidae (2 spp)
+Pseudopimelodus atricaudus Restrepo-Gómez, Rangel-Medrano, Márquez &amp; Ortega-Lara, 2020
+Pseudopimelodus magnus Restrepo-Gómez, Rangel-Medrano, Márquez &amp; Ortega-Lara, 2020
+Blenniiformes (4 spp)
+Rivulidae (4 spp)
+Rivulus carolinae Vermeulen &amp; Mejia-Vargas, 2020
+Rivulus flammaecauda Vermeulen &amp; Mejia-Vargas, 2020
+Rivulus foliiscola Vermeulen &amp; Mejia-Vargas, 2020
+Rivulus mejiai Vermeulen, 2020</para>
+        </description>
+      </qualityControl>
+  </methods>
+  <project id="BID-CA2020-030-USE">
+    <title>Proyectos asociados a la Asociación Colombiana de Ictiólogos</title>
+      <personnel>
+        <individualName>
+            <givenName>Javier Alejandro</givenName>
+          <surName>Maldonado Ocampo</surName>
+        </individualName>
+              <userId directory="http://orcid.org/">0000-0003-3024-237X</userId>
+        <role>principalInvestigator</role>
+      </personnel>
+      <personnel>
+        <individualName>
+            <givenName>Carlos</givenName>
+          <surName>DoNascimiento</surName>
+        </individualName>
+        <role>principalInvestigator</role>
+      </personnel>
+      <personnel>
+        <individualName>
+            <givenName>Lauren</givenName>
+          <surName>Raz</surName>
+        </individualName>
+              <userId directory="http://orcid.org/">0000-0002-3152-4726</userId>
+        <role>principalInvestigator</role>
+      </personnel>
+      <abstract>
+        <para>Este recurso contiene la información correspondiente al proyecto &quot;Catálogo de los Peces de Colombia&quot; con el identificador BID-CA2020-030-USE y duración del 1 julio 2021 al 30 junio 2023. Este es un proyecto de colaboración interinstitucional que reúne los esfuerzos académicos, técnicos y financieros de los investigadores e instituciones participantes. Tiene su inicio en 2014, a partir de la firma de un convenio de cooperación entre el Instituto de Investigación de Recursos Biológicos Alexander von Humboldt (IAvH) y la Asociación Colombiana de Ictiólogos (ACICTIOS), cuyo objeto se centró en: “Aunar esfuerzos técnicos, administrativos y financieros para apoyar la realización de listas de especies de peces, publicar registros biológicos y documentar información sobre peces de Colombia, como parte del fortalecimiento de colecciones biológicas. El Catálogo de Peces de Colombia será una herramienta digital que agregará conocimiento sobre todas las especies de peces marinos y de agua dulce en Colombia. Esta iniciativa, que reúne a más de 50 especialistas en ictiología neotropical de siete países, creará una lista nacional y páginas de especies para todas las 3.800 especies de peces estimadas en Colombia, incluida información sobre taxonomía, distribución, información trófica y reproductiva, estado de conservación y literatura relevante.</para>
+      </abstract>
+      <funding>
+        <para>Los fondos para la realización de la actualización v. 2.13, provienen del Instituto de Investigación de Recursos Biológicos Alexander von Humboldt, la Universidad Nacional de Colombia y la subvención de la Unión Europea-BID Caribbean Program y Global Biodiversity Information Facility (GBIF) para el catálogo de Peces de Colombia
+</para>
+      </funding>
+      <studyAreaDescription>
+        <descriptor name="generic"
+                    citableClassificationSystem="false">
+          <descriptorValue>Sistemas dulceacuícolas colombianos, específicamente las regiones hidrográficas de Amazonas, Orinoco, Magdalena-Cauca, Pacífico y Caribe.</descriptorValue>
+        </descriptor>
+      </studyAreaDescription>
+      <designDescription>
+        <description>
+          <para>El presente trabajo es parte de un proceso para crear un Catálogo de Peces de Agua Dulce de Colombia y consistió en la depuración y actualización de los componentes taxonómico y geográfico del listado de peces de agua dulce de Colombia. Una revisión exhaustiva de las 1435 especies registradas en 2008 fue necesaria para: 1. Adicionar las especies nuevas descritas desde 2009 y especies descritas originalmente para Colombia pero omitidas inadvertidamente en 2008; 2. Adicionar nuevos registros de especies ya descritas; 3. Eliminar especies cuya presencia en Colombia no estaba soportada por especímenes en colecciones ictiológicas; y 4. Revisar la distribución geográfica de las especies listadas en 2008.</para>
+        </description>
+      </designDescription>
+  </project>
+</dataset>
+  <additionalMetadata>
+    <metadata>
+      <gbif>
+          <dateStamp>2017-07-31T14:55:03.574+00:00</dateStamp>
+          <hierarchyLevel>dataset</hierarchyLevel>
+            <citation identifier="https://doi.org/10.15472/numrso">DoNascimiento C, Bogotá Gregory J D, Albornoz Garzón J G, Méndez López A, Villa Navarro F A, Herrera Collazos E E, Agudelo Zamora H, Arce H. M (2023): Lista de especies de peces de agua dulce de Colombia / Checklist of the freshwater fishes of Colombia. v2.15. Asociación Colombiana de Ictiólogos. Dataset/Checklist. https://doi.org/10.15472/numrso</citation>
+          <bibliography>
+                <citation>Angulo, A., C. DoNascimiento, O. M. Lasso-Alcalá, A. Farah-Pérez, F. Langeani &amp; C. D. McMahan. Redescription of Trichomycterus striatus (Meek &amp; Hildebrand, 1913) (Siluriformes: Trichomycteridae), with notes on its geographic distribution. Zootaxa 4420 (4): 530-550. https://doi.org/10.11646/zootaxa.4420.4.5.</citation>
+                <citation>Ardila Rodríguez, C. A. 2017. Dos nuevas especies de peces Trichomycterus para el departamento de Santander, Colombia. Barranquilla, Departamento del Atlántico (10): 24 pp.</citation>
+                <citation>Bragança, P. H. N., P. F. Amorim &amp; W. J. E. M. Costa. 2018. Pantanodontidae (Teleostei, Cyprinodontiformes), the sister group to all other cyprinodontoid killifishes as inferred by molecular data. Zoosystematics and Evolution 94 (1): 137-145. DOI 10.3897/zse.94.22173.</citation>
+                <citation>Carvalho, T. P., M. Arce H., R. E. Reis, M. H. Sabaj. 2018. Molecular phylogeny of Banjo Catfishes (Ostaryophisi: Siluriformes: Aspredinidae): a continental radiation in South American freshwaters. Molecular Phylogenetics and Evolution. doi: https://doi.org/10.1016/j.ympev.2018.04.039.</citation>
+                <citation>Costa, W. J. E. M. 2014. Phylogeny and evolutionary radiation in seasonal rachovine killifishes: biogeographical and taxonomical implications. Vertebrate Zoology 64 (2): 177-192.</citation>
+                <citation>Delapieve, M. L. S., P. Lehmann A. &amp; R. E. Reis. 2017. An appraisal of the phylogenetic relationships of Hypoptopomatini cascudinhos with description of two new genera and three new species (Siluriformes: Loricariidae). Neotropical Ichthyology 15 (4): http://dx.doi.org/10.1590/1982-0224-20170079.</citation>
+                <citation>Galvis G., J. I. Mojica, F. Provenzano, C. Lasso, D. Taphorn, R. Royero, C. Castellanos, A. Gutiérrez, M. Gutiérrez, Y. López, L. Mesa, P. Sánchez &amp; C. Cipamocha.2007. Peces de la Orinoquia colombiana con énfasis en especies de interés ornamental. Ministerio de Agricultura y Desarrollo Rural, INCODER, Universidad Nacional de Colombia - Departamento de Biología- Instituto de Ciencias Naturales. Bogotá, Colombia. 425 pp.</citation>
+                <citation>Hilton, E. J. &amp; C. Cox Fernandes. 2017. Identity of “Apteronotus” bonapartii (Castelnau, 1855), a sexually dimorphic South American knifefish from the Amazon, with notes on its cranial osteology and on the taxonomic status of “Apteronotus” apurensis Fernández-Yépez, 1968 (Gymnotiformes, Apteronotidae). Proceedings of the Academy of Natural Sciences of Philadelphia 165: 91-103.</citation>
+                <citation>Huber, J. H. 2018. Killi-Data International, http://www.killi-data.org/list-names-encyclopedia.php.</citation>
+                <citation>Mateussi, N. T. B., C. Oliveira &amp; C. S. Pavanelli. 2018. Taxonomic revision of the Cis-Andean species of Mylossoma Eigenmann &amp; Kennedy, 1903 (Teleostei: Characiformes: Serrasalmidae). Zootaxa 4387 (2): 275-309.</citation>
+                <citation>Mojica, J. I., C. C. Martínez-González, A. G. Acosta-Vela, E. Larrarte-Rivera, W. González-Daza, F. L. Ávila-Rojas, E. Martínez-Aguirre &amp; J. D. Forero-Cano. 2017. Lista de los peces de la cuenca del río Mira, vertiente Pacífico, Colombia. Biota Colombiana 18(2): 190-198.</citation>
+                <citation>Provenzano R., F. 2018. Rediscovery of Chaetostomus setosus Boulenger 1887 (Siluriformes, Loricariidae), and assessment of the external characters used for determination of genera within the Chaetostoma group. Zootaxa 4378 (3): 397-413. DOI 10.11646/zootaxa.4378.3.8.
+Provenzano R., F., N. Milani &amp; C. Ardila R. 2017. A new species of the catfish genus Cordylancistrus (Siluriformes, Loricariidae) from the Sierra Nevada de Santa Marta, Colombia. Zootaxa 4329 (3): 256-266.</citation>
+                <citation>Ruiz-C., R. I., C. Román-Valencia, D. C. Taphorn, P. A. Buckup &amp; H. Ortega. 2018. Revision of the Astyanax orthodus species-group (Teleostei: Characidae) with descriptions of three new species. European Journal of Taxonomy 402: 1-45. DOI 10.5852/ejt.2018.402.</citation>
+                <citation>Ruiz-C., R. I., C. Román-Valencia, D. C. Taphorn, P. A. Buckup &amp; H. Ortega. 2018. Revision of the Astyanax orthodus species-group (Teleostei: Characidae) with descriptions of three new species. European Journal of Taxonomy 402: 1-45. DOI 10.5852/ejt.2018.402.</citation>
+                <citation>Tencatt, L. F. C. &amp; W. M. Ohara. 2016. A new long-snouted species of Corydoras Lacépède, 1803 (Siluriformes: Callichthyidae) from the rio Madeira basin. Zootaxa 4144 (3): 430-442.</citation>
+                <citation>Urbano-Bonilla, A., G. A. Ballen, G. A. Herrera-R, J. Zamudio, E. E. Herrera-Collazos, C. DoNascimiento, S. Prada-Pedreros &amp; J. A. Maldonado-Ocampo. 2018. Fishes of the Cusiana River (Meta River basin, Colombia), with an identification key to its species. ZooKeys 733: 65-97.</citation>
+                <citation>Zamudio, J., A. Urbano-Bonilla, V. Preciado-Silva, D. Rodríguez-Cubillos &amp; E. E. Herrera-Collazos. 2017. Ichthyofauna of piedmont and savannah environments in the Casanare River drainage, Orinoco Basin, Colombia. Biota Colombiana 18(2): 199-211.</citation>
+                <citation>Bogotá-Gregory, J. D., F. C. T. Lima, C. DoNascimiento, A. Acosta-Santos, F. A. Navarro-Villa &amp; E. A. Córdoba. 2020. First records of freshwater fish species in Colombia: extending the distribution of Amazonian and Orinoco fish species. Check List 16 (5): 1395-1406. https://doi.org/10.15560/16.5.1395.</citation>
+                <citation>Schmitter-Soto, J. J. 2017. A revision of Astyanax (Characiformes: Characidae) in Central and North America, with the description of nine new species. Journal of Natural History 51 (23/24): 1331-1424.</citation>
+                <citation>Provenzano R., F. &amp; R. Barriga Salazar. 2018. Species of Ancistrus (Siluriformes, Loricariidae) from Ecuador, with the description of a new species from the Amazon River Basin. Zootaxa 4527 (2): 211-238.</citation>
+                <citation>Loboda, T. S., C. A. Lasso, R. de S. Rosa &amp; M. R. de Carvalho. 2021. Two new species of freshwater stingrays of the genus Paratrygon (Chondrichthyes: Potamotrygonidae) from the Orinoco basin, with comments on the taxonomy of Paratrygon aiereba. Neotropical Ichthyology 19 Neotropical Ichthyology 19 (2): 1-80. https://doi.org/10.1590/1982-0224-2020-0083.</citation>
+                <citation>Van der Sleen, P. &amp; J. S. Albert (eds.). 2017. Field guide to the fishes of the Amazon, Orinoco &amp; Guianas. Princeton University Press, Princeton. 464 p</citation>
+                <citation>Urbano‐Bonilla, A. &amp; G.A. Ballen. 2020. A new species of Chaetostoma (Siluriformes: Loricariidae) from the Orinoco basin with comments on Amazonian species of the genus in Colombia. Journal of Fish Biology 98 (4): 1091-1104. https://doi.org/10.1111/jfb.14640.</citation>
+          </bibliography>
+          <resourceLogoUrl>https://statics.sibcolombia.net/sib-resources/images/logos-socios/500px/acictios.jpg</resourceLogoUrl>
+              <collection>
+                  <parentCollectionIdentifier>CAR</parentCollectionIdentifier>
+                <collectionName>Colección Ictiológica Carlos Ardila Rodríguez</collectionName>
+              </collection>
+              <collection>
+                  <parentCollectionIdentifier>CIACOL</parentCollectionIdentifier>
+                  <collectionIdentifier>Registro Nacional de Colecciones Biológicas: 12</collectionIdentifier>
+                <collectionName>Colección Ictiológica de la Amazonia Colombiana</collectionName>
+              </collection>
+              <collection>
+                  <parentCollectionIdentifier>CIUA</parentCollectionIdentifier>
+                  <collectionIdentifier>Registro Nacional de Colecciones Biológicas: 168</collectionIdentifier>
+                <collectionName>Colección de Ictiológica Universidad de Antioquia</collectionName>
+              </collection>
+              <collection>
+                  <parentCollectionIdentifier>CP-UCO</parentCollectionIdentifier>
+                  <collectionIdentifier>Registro Nacional de Colecciones Biológicas: 161</collectionIdentifier>
+                <collectionName>Universidad Católica de Oriente - Colección de Peces</collectionName>
+              </collection>
+              <collection>
+                  <parentCollectionIdentifier>CZUT</parentCollectionIdentifier>
+                  <collectionIdentifier>Registro Nacional de Colecciones Biológicas: 156</collectionIdentifier>
+                <collectionName>Colección Zoológica de la Universidad del Tolima - Peces</collectionName>
+              </collection>
+              <collection>
+                  <parentCollectionIdentifier>Instituto Alexander von Humboldt</parentCollectionIdentifier>
+                  <collectionIdentifier>Registro Nacional de Colecciones Biológicas: 3</collectionIdentifier>
+                <collectionName>Colección de Peces Instituto Alexander von Humboldt - IAvH-P</collectionName>
+              </collection>
+              <collection>
+                  <parentCollectionIdentifier>ICN-MHN</parentCollectionIdentifier>
+                  <collectionIdentifier>Registro Nacional de Colecciones Biológicas: 5</collectionIdentifier>
+                <collectionName>Colección de Zoología del Instituto de Ciencias Naturales de la Universidad Nacional de Colombia</collectionName>
+              </collection>
+              <collection>
+                  <parentCollectionIdentifier>IMCN</parentCollectionIdentifier>
+                  <collectionIdentifier>Registro Nacional de Colecciones Biológicas: 52</collectionIdentifier>
+                <collectionName>Colecciones Zoológicas de Referencia Cientifíca - IMCN</collectionName>
+              </collection>
+              <collection>
+                  <parentCollectionIdentifier>MPUJ</parentCollectionIdentifier>
+                  <collectionIdentifier>Registro Nacional de Colecciones Biológicas: 12</collectionIdentifier>
+                <collectionName>Colección de Peces Pontificia Universidad Javeriana - MPUJ</collectionName>
+              </collection>
+                <specimenPreservationMethod>alcohol</specimenPreservationMethod>
+            <jgtiCuratorialUnit>
+                <jgtiUnitType>Lote</jgtiUnitType>
+                <jgtiUnitRange>
+                  <beginRange>1</beginRange>
+                  <endRange>10000</endRange>
+                </jgtiUnitRange>
+            </jgtiCuratorialUnit>
+          <dc:replaces>7e3a2242-46d6-4b90-b80c-42c5d27ed93b/v2.15.xml</dc:replaces>
+      </gbif>
+    </metadata>
+  </additionalMetadata>
+</eml:eml>

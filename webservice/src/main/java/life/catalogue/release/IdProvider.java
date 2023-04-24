@@ -517,7 +517,7 @@ public class IdProvider {
    */
   private void issueIDs(Integer nidx, List<SimpleNameWithNidx> names, Writer nomatchWriter) throws IOException {
     if (nidx == null) {
-      LOG.info("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
+      LOG.warn("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
       for (SimpleNameWithNidx n : names) {
         nomatchWriter.write(n.toStringBuilder().toString());
         nomatchWriter.write("\n");

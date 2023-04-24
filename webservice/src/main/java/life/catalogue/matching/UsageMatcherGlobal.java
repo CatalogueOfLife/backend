@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;

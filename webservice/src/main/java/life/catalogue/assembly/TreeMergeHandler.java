@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.UsageCache;
@@ -78,7 +79,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
 
     // find out matching - even if we don't include the name in the merge we want the parents matched
-    var match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
+    UsageMatch match = null;
+    try {
+      match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
+    } catch (NotFoundException e) {
+      // we have an open batch session that writes new usages to the release which might not be flushed to the database - try that first
+      batchSession.commit();
+      match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
+    }
     LOG.debug("{} matches {}", nu.getLabel(), match);
     // avoid the case when an accepted name without author is being matched against synonym names with authors from the same source
     if (match.isMatch()

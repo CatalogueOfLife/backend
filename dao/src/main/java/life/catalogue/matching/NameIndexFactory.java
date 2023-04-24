@@ -150,13 +150,14 @@ public class NameIndexFactory {
 
   /**
    * Returns a persistent index if location is given, otherwise an in memory one
+   * @param verifyIndex if true the index is verified and rebuild if not consistent with the database
    */
-  public static NameIndexImpl persistentOrMemory(@Nullable File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) throws IOException {
+  public static NameIndexImpl persistentOrMemory(@Nullable File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer, boolean verifyIndex) throws IOException {
     NameIndexImpl ni;
     if (location == null) {
       ni = memory(sqlFactory, aNormalizer);
     } else {
-      ni = persistent(location, sqlFactory, aNormalizer);
+      ni = persistent(location, sqlFactory, aNormalizer, verifyIndex);
     }
     return ni;
   }
@@ -164,13 +165,13 @@ public class NameIndexFactory {
   public static NameIndexImpl memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
     LOG.info("Use volatile in memory names index");
     NameIndexStore store = new NameIndexMapDBStore(DBMaker.memoryDB());
-    return new NameIndexImpl(store, authorshipNormalizer, sqlFactory);
+    return new NameIndexImpl(store, authorshipNormalizer, sqlFactory, true);
   }
 
   /**
    * Creates or opens a persistent mapdb names index for the names index.
    */
-  public static NameIndexImpl persistent(File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
+  public static NameIndexImpl persistent(File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer, boolean verifyIndex) throws IOException {
     if (!location.exists()) {
       FileUtils.forceMkdirParent(location);
       LOG.info("Create persistent names index at {}", location.getAbsolutePath());
@@ -181,7 +182,7 @@ public class NameIndexFactory {
         .fileDB(location)
         .fileMmapEnableIfSupported();
     NameIndexStore store = new NameIndexMapDBStore(maker, location);
-    return new NameIndexImpl(store, authorshipNormalizer, sqlFactory);
+    return new NameIndexImpl(store, authorshipNormalizer, sqlFactory, verifyIndex);
   }
   
 }

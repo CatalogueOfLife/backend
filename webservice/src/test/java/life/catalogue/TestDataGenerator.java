@@ -8,17 +8,22 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.common.io.Resources;
+import life.catalogue.config.ReleaseConfig;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ImageService;
 import life.catalogue.importer.PgImportRule;
 import life.catalogue.postgres.PgCopyUtils;
+
+import life.catalogue.release.ProjectCopyFactory;
+
+import life.catalogue.release.ProjectRelease;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -33,6 +38,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
+import javax.validation.Validation;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -51,7 +57,7 @@ import org.postgresql.jdbc.PgConnection;
 
 @Ignore("for manual use only")
 public class TestDataGenerator {
-  final static PgSetupRule pg = new PgSetupRule();
+  final static SqlSessionFactoryRule pg = new PgSetupRule(); // new PgConnectionRule("col", "postgres", "postgres", 100);
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   final static TestDataRule dataRule = TestDataRule.empty();
   final static NameMatchingRule matchingRule = new NameMatchingRule();
@@ -175,23 +181,39 @@ public class TestDataGenerator {
     return sector;
   }
 
+  /**
+   * Keep the project
+   * @throws Throwable
+   */
   @Test
   public void prepareXcolData() throws Throwable {
     List<Object> params = new ArrayList<>();
     params.addAll(List.of(DatasetOrigin.EXTERNAL, DataFormat.TEXT_TREE, DatasetType.TAXONOMIC));
-    for (int key = 101; key<200; key++) {
-      String res = String.format("xcol/%s.txt", key);
+    for (int key = 100; key<150; key++) {
+      String res = String.format("xcol/%s.txtree", key);
       var url = getClass().getClassLoader().getResource(res);
       if (url != null) {
         params.add(res);
         params.add(key);
       }
     }
-    export("xcol", PgImportRule.create(params.toArray()));
-    // also add in the draft test data resources!
-    for (String fn : List.of("name_3.csv", "name_usage_3.csv")) {
-      Resources.copy("/test-data/" + TestDataRule.DRAFT.name + "/" + fn, new File(dir, fn));
-    }
+    List<PgImportRule.TestResource> resources = PgImportRule.buildTestResources(params.toArray());
+    var importRule = new PgImportRule(resources.toArray(new PgImportRule.TestResource[0]));
+    // now also import the COL project - needs special attention to get the dataset key right
+    importRule.setColImportSource(DataFormat.TEXT_TREE, "xcol/3.txtree");
+    //export(XCOL.name, importRule, this::supplyNoSectors, true);
+    export(XCOL.name, importRule, this::supplyXcolAttachSectors, true);
+  }
+
+  List<Sector> supplyXcolAttachSectors(PgImportRule importRule) {
+    List<Sector> sectors = new ArrayList<>();
+    sectors.add(
+      sector(Sector.Mode.UNION,null, importRule.datasetKey(102, DataFormat.TEXT_TREE),
+        SimpleNameLink.of("1", "Mammalia", Rank.CLASS),
+        SimpleNameLink.of("3", "Mammalia", Rank.CLASS)
+      )
+    );
+    return sectors;
   }
 
   @Test
@@ -208,6 +230,11 @@ public class TestDataGenerator {
   }
 
   void export(String name, PgImportRule importRule, Function<PgImportRule, List<Sector>> sectorSupplier) throws Throwable {
+    export(name, importRule, sectorSupplier, false);
+  }
+
+  void export(String name, PgImportRule importRule, Function<PgImportRule, List<Sector>> sectorSupplier, boolean releaseCOL) throws Throwable {
+    importRule.setNidx(NameMatchingRule.getIndex());
     importRule.before();
     System.out.println("KEY MAP:");
     for (var ent : importRule.getDatasetKeyMap().entrySet()) {
@@ -236,6 +263,32 @@ public class TestDataGenerator {
       }
     }
 
+    if (releaseCOL) {
+      System.out.print("Release COL project");
+      final ReleaseConfig cfg = new ReleaseConfig();
+      cfg.restart = false;
+      final WsServerConfig wcfg = new WsServerConfig();
+      wcfg.release = cfg;
+
+      var validator = Validation.buildDefaultValidatorFactory().getValidator();
+      DatasetDao     ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, syncFactoryRule.getDiDao(), validator);
+      var projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(),
+        syncFactoryRule.getDiDao(), ddao, syncFactoryRule.getSiDao(), syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
+        null, NameUsageIndexService.passThru(), ImageService.passThru(), null, null, SqlSessionFactoryRule.getSqlSessionFactory(),
+        validator, wcfg
+      );
+      var rel = projectCopyFactory.buildRelease(Datasets.COL, Users.RELEASER);
+      rel.run();
+      if (rel.getMetrics().getState() != ImportState.FINISHED){
+        throw new IllegalStateException("COL release failed with error: " + rel.getError());
+      }
+      final int releaseKey = rel.getNewDatasetKey();
+      // publish release
+      var d = ddao.get(releaseKey);
+      d.setPrivat(false);
+      ddao.update(d, d.getCreatedBy());
+    }
+
     List<Dataset> datasets;
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
@@ -250,7 +303,7 @@ public class TestDataGenerator {
     try (var con = pg.connect()) {
       // DATASET
       dump("dataset",
-        "key,type,alias,title,origin,url,created_by,modified_by,created",
+        "key,source_key,type,alias,title,origin,url,created_by,modified_by,created",
         "key != " + Datasets.COL, con
       );
 
