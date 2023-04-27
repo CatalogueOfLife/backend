@@ -363,7 +363,7 @@
       <dependency>
         <groupId>be.tomcools</groupId>
         <artifactId>dropwizard-websocket-jsr356-bundle</artifactId>
-        <version>4.0.0-beta.1</version>
+        <version>4.0.0</version>
       </dependency>
 
       <!-- jackson additions to DW BOM -->
