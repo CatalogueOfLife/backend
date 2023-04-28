@@ -1,6 +1,7 @@
 package life.catalogue.metadata.eml;
 
 import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Country;
@@ -96,13 +97,24 @@ public class EmlParserTest {
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
     assertEquals("Famous People", d.getAlias());
   }
-  
+
+  @Test
+  public void authorParsing() throws Exception {
+    assertEquals(new CslName(null, "Döring", null), EmlParser.name("Döring"));
+    assertEquals(new CslName("Markus", "Döring", null), EmlParser.name("Döring, Markus"));
+    assertEquals(new CslName("M.", "DÖRING", null), EmlParser.name("DÖRING, M."));
+    assertEquals(new CslName("MC.", "DÖRING", null), EmlParser.name("DÖRING,  MC."));
+    assertEquals(new CslName("Markus", "Döring", "van der"), EmlParser.name("van der Döring, Markus"));
+  }
+
   @Test
   public void vascan() throws Exception {
     DatasetWithSettings d = read("vascan.xml");
     
     assertEquals("Database of Vascular Plants of Canada (VASCAN)", d.getTitle());
-    assertEquals("The Database of Vascular Plants of Canada or VASCAN (http://data.canadensys.net/vascan) is a comprehensive and curated checklist of all vascular plants reported in Canada, Greenland (Denmark), and Saint Pierre and Miquelon (France). VASCAN was developed at the Université de Montréal Biodiversity Centre and is maintained by a group of editors and contributors. For every core taxon in the checklist (species, subspecies, or variety), VASCAN provides the accepted scientific name, the accepted French and English vernacular names, and their synonyms/alternatives in Canada, as well as the distribution status (native, introduced, ephemeral, excluded, extirpated, doubtful or absent) of the plant for each province or territory, and the habit (tree, shrub, herb and/or vine) of the plant in Canada. For reported hybrids (nothotaxa or hybrid formulas) VASCAN also provides the hybrid parents, except if the parents of the hybrid do not occur in Canada. All taxa are linked to a classification. VASCAN refers to a source for all name, classification and distribution information. All data have been released to the public domain under a CC0 waiver and are available through Canadensys and the Global Biodiversity Information Facility (GBIF). VASCAN is a service to the scientific community and the general public, including administrations, companies, and non-governmental organizations.", d.getDescription());
+    assertEquals("The Database of Vascular Plants of Canada or VASCAN (http://data.canadensys.net/vascan) is a comprehensive and curated checklist of all vascular plants reported in Canada, Greenland (Denmark), and Saint Pierre and Miquelon (France). VASCAN was developed at the Université de Montréal Biodiversity Centre and is maintained by a group of editors and contributors. For every core taxon in the checklist (species, subspecies, or variety), VASCAN provides the accepted scientific name, the accepted French and English vernacular names, and their synonyms/alternatives in Canada, as well as the distribution status (native, introduced, ephemeral, excluded, extirpated, doubtful or absent) of the plant for each province or territory, and the habit (tree, shrub, herb and/or vine) of the plant in Canada. For reported hybrids (nothotaxa or hybrid formulas) VASCAN also provides the hybrid parents, except if the parents of the hybrid do not occur in Canada. All taxa are linked to a classification. VASCAN refers to a source for all name, classification and distribution information.\n"
+                 + "\n"
+                 + "All data have been released to the public domain under a CC0 waiver and are available through Canadensys and the Global Biodiversity Information Facility (GBIF). VASCAN is a service to the scientific community and the general public, including administrations, companies, and non-governmental organizations.", d.getDescription());
     assertEquals("http://data.canadensys.net/vascan/", d.getUrl().toString());
     assertEquals(License.CC0, d.getLicense());
     assertEquals("Brouillet L.", d.getContact().toString());

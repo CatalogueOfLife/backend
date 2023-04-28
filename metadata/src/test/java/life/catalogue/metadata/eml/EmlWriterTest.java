@@ -1,10 +1,7 @@
 package life.catalogue.metadata.eml;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.CitationTest;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetTest;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.io.InputStreamUtils;
@@ -12,19 +9,22 @@ import life.catalogue.common.io.InputStreamUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 public class EmlWriterTest {
 
@@ -46,20 +46,41 @@ public class EmlWriterTest {
         Agent.person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456", "Collector"),
         Agent.person("Max", "Groningen", null, "0789-5678-9012-3455", "Programmer"),
         Agent.person("Morn", "Microfel", null, null, "Library research, UK"),
-        Agent.person("Fax", "Feier")
+        Agent.person("Fax", "Feier"),
+        Agent.organisation("Species 2000")
       ));
       d.setLicense(License.CC0);
+      d.setLogo(URI.create("http://huhu.me"));
+      d.setTaxonomicScope("tax scope");
+      d.setVersion("134.17");
       d.setKeyword(List.of("Foo", "Bar Z"));
+      var c = createCitation();
+      c.setTitle("Bad something & nothing <else>");
       d.setSource(List.of(
-        CitationTest.create(),
-        CitationTest.create()
+        c,
+        createCitation(),
+        Citation.create("Unparsed bad something & nothing <else>.")
       ));
       EmlWriter.write(d, f);
 
       String eml = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
       System.out.println(eml);
       assertFalse(eml.contains("COL backend services"));
+      assertTrue(eml.contains("Species 2000"));
 
+      // roundtrip?
+      Dataset d2 = EmlParser.parse(IOUtils.toInputStream(eml, StandardCharsets.UTF_8), StandardCharsets.UTF_8).get().getDataset();
+      // copy properties not in EML
+      d2.setKey(d.getKey());
+      d2.setSourceKey(d.getSourceKey());
+      d2.setType(d.getType());
+      d2.setOrigin(d.getOrigin());
+      d2.setNotes(d.getNotes());
+      d2.getContributor().get(3).setNote(null); // we will get contributor othertwise
+      d2.getContributor().get(4).setNote(null); // we will get contributor othertwise
+      d.setUrl(URI.create("http://www.gbif.org")); // we normalise the URL
+
+      assertEquals(d, d2);
       // try with empty agents
       d.setEditor(null);
       d.setContributor(new ArrayList<>());
@@ -68,6 +89,12 @@ public class EmlWriterTest {
     } finally {
       f.delete();
     }
+  }
+
+  private Citation createCitation() {
+    var c = CitationTest.create();
+    c.setId(c.getDoi().getUrl().toString());
+    return c;
   }
 
   @Test

@@ -85,6 +85,11 @@ public class Identifier {
     return Objects.equals(scope, Scope.LOCAL.prefix());
   }
 
+  @JsonIgnore
+  public boolean isDOI() {
+    return Objects.equals(scope, Scope.DOI.prefix());
+  }
+
   public String getScope() {
     return scope;
   }

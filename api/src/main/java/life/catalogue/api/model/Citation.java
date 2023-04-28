@@ -121,6 +121,30 @@ public class Citation {
     return c;
   }
 
+  public boolean isUnparsed() {
+    return (type==null || type==CSLType.BOOK)
+           // && only title doesn't matter
+                && (author == null || author.isEmpty())
+                && (editor == null || editor.isEmpty())
+                && (containerAuthor == null || containerAuthor.isEmpty())
+                && containerTitle == null
+                && issued == null
+                && accessed == null
+                && collectionTitle == null
+                && collectionEditor == null
+                && volume == null
+                && issue == null
+                && edition == null
+                && page == null
+                && publisher == null
+                && publisherPlace == null
+                && version == null
+                && isbn == null
+                && issn == null
+                && url == null
+                && note == null;
+  }
+
   public CSLItemData toCSL() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
     builder
@@ -391,7 +415,7 @@ public class Citation {
     if (this == o) return true;
     if (!(o instanceof Citation)) return false;
     Citation citation = (Citation) o;
-    return Objects.equals(id, citation.id)
+    var b = Objects.equals(id, citation.id)
            && type == citation.type
            && Objects.equals(doi, citation.doi)
            && Objects.equals(author, citation.author)
@@ -414,6 +438,7 @@ public class Citation {
            && Objects.equals(issn, citation.issn)
            && Objects.equals(url, citation.url)
            && Objects.equals(note, citation.note);
+    return b;
   }
 
   @Override

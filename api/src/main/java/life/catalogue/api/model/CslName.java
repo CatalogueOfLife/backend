@@ -117,4 +117,31 @@ public class CslName {
   public int hashCode() {
     return Objects.hash(family, given, droppingParticle, nonDroppingParticle, suffix, isInstitution, orcid);
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    if (nonDroppingParticle != null) {
+      sb.append(nonDroppingParticle);
+    }
+    if (family != null) {
+      if (sb.length()>0) {
+        sb.append(" ");
+      }
+      sb.append(family);
+    }
+    if (suffix != null) {
+      if (sb.length()>0) {
+        sb.append(" ");
+      }
+      sb.append(suffix);
+    }
+    if (given != null) {
+      if (sb.length()>0) {
+        sb.append(", ");
+      }
+      sb.append(given);
+    }
+    return sb.toString();
+  }
 }

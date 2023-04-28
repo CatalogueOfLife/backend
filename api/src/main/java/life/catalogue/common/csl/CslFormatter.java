@@ -107,6 +107,6 @@ public class CslFormatter {
    */
   static String customCleaning(String x){
     return x.replaceAll(" *\\[Data +set\\]", "")
-            .replaceFirst("^(<div class=\"csl-entry\">)?\\(n\\.d\\.\\)\\. *", "$1");
+            .replaceFirst("(<div class=\"csl-entry\">)? *\\(n\\.d\\.\\)\\. *", "$1");
   }
 }

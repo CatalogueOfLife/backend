@@ -11,8 +11,7 @@ import org.junit.Test;
 
 import de.undercouch.citeproc.csl.CSLType;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class CitationTest {
 
@@ -55,13 +54,17 @@ public class CitationTest {
   public void citationStringOnly() {
     assertCitation("Corona epidemic forever.");
     assertCitation("Schneider, B., & Berners Lee, T. (2024). Corona epidemic forever.");
-    assertCitation("Schneider, B., & Berners Lee, T. (2024). Corona epidemic forever. Global Pandemics, 34(4), 1345–1412. https://doi.org/10.80631/097d692c-3938-419d-8f2b-7279c3bf0a5a");
+    assertCitation("Schneider, B., & Berners Lee, T. (2024). Corona epidemic forever. Global Pandemics, 34(4), 1345–1412. https://doi.org/10.80631/097d692c-3938-419d-8f2b-7279c3bf0a5a.");
   }
 
   void assertCitation(String citation) {
     Citation c = Citation.create(citation);
-    var cite = CslUtil.buildCitation(c.toCSL());
+    assertTrue(c.isUnparsed());
+    var cite = c.getCitationText();
     System.out.println(cite);
     assertEquals(citation, cite);
+
+    c.setType(CSLType.ARTICLE_JOURNAL);
+    assertFalse(c.isUnparsed());
   }
 }

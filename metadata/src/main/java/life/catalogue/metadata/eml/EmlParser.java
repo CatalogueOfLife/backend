@@ -1,10 +1,9 @@
 package life.catalogue.metadata.eml;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.constraints.AbsoluteURIValidator;
-import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.Citation;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.common.date.FuzzyDate;
@@ -17,6 +16,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -29,6 +29,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,14 +70,13 @@ public class EmlParser {
       StringBuilder para = new StringBuilder();
       EmlAgent agent = new EmlAgent();
       URI url = null;
-      String identifier = null;
+      Citation cite = null;
       int event;
       
       while ((event = parser.next()) != XMLStreamConstants.END_DOCUMENT) {
         switch (event) {
           case XMLStreamConstants.START_ELEMENT:
             text = new StringBuilder();
-            identifier = null;
             switch (parser.getLocalName()) {
               case "dataset":
                 isDataset = true;
@@ -96,6 +96,7 @@ public class EmlParser {
                 para = new StringBuilder();
                 break;
               case "creator":
+              case "publisher":
               case "metadataProvider":
               case "contact":
               case "associatedParty":
@@ -106,7 +107,7 @@ public class EmlParser {
                 String val = parser.getAttributeValue(null, "url");
                 if (val != null) {
                   try {
-                    url = URI.create(val);
+                    url = getAbsoluteUri(val);
                   } catch (IllegalArgumentException e) {
                     LOG.warn("Invalid ulink URL {}", val);
                     url = null;
@@ -114,7 +115,33 @@ public class EmlParser {
                 }
                 break;
               case "citation":
-                identifier = parser.getAttributeValue(null, "identifier");
+                cite = new Citation();
+                cite.setId(parser.getAttributeValue(null, "identifier"));
+                if (parser.getAttributeCount()>1) {
+                  cite.setType(parse(parser.getAttributeValue(null, "type"), CSLTypeParser.PARSER));
+                  cite.setDoi(doi(parser.getAttributeValue(null, "doi")));
+                  cite.setTitle(parser.getAttributeValue(null, "title"));
+                  cite.setContainerTitle(parser.getAttributeValue(null, "containerTitle"));
+                  cite.setIssued(date(parser.getAttributeValue(null, "issued")));
+                  cite.setAccessed(date(parser.getAttributeValue(null, "accessed")));
+                  cite.setCollectionTitle(parser.getAttributeValue(null, "collectionTitle"));
+                  cite.setVolume(parser.getAttributeValue(null, "volume"));
+                  cite.setIssue(parser.getAttributeValue(null, "issue"));
+                  cite.setEdition(parser.getAttributeValue(null, "edition"));
+                  cite.setPage(parser.getAttributeValue(null, "page"));
+                  cite.setPublisher(parser.getAttributeValue(null, "publisher"));
+                  cite.setPublisherPlace(parser.getAttributeValue(null, "publisherPlace"));
+                  cite.setVersion(parser.getAttributeValue(null, "version"));
+                  cite.setIsbn(parser.getAttributeValue(null, "isbn"));
+                  cite.setIssn(parser.getAttributeValue(null, "issn"));
+                  cite.setUrl(parser.getAttributeValue(null, "url"));
+                  cite.setNote(parser.getAttributeValue(null, "note"));
+                  // names
+                  cite.setAuthor(names(parser.getAttributeValue(null, "author")));
+                  cite.setEditor(names(parser.getAttributeValue(null, "editor")));
+                  cite.setContainerAuthor(names(parser.getAttributeValue(null, "containerAuthor")));
+                  cite.setCollectionEditor(names(parser.getAttributeValue(null, "collectionEditor")));
+                }
                 break;
             }
             break;
@@ -189,6 +216,17 @@ public class EmlParser {
 
             if (isDataset && !isProject) {
               switch (parser.getLocalName()) {
+                case "alternateIdentifier":
+                  String val = text(text);
+                  if (val != null) {
+                    Identifier id = Identifier.parse(val);
+                    if (id.isDOI()) {
+                      d.setDoi(DOI.parse(id.toString()).get());
+                    } else {
+                      d.getIdentifier().put(id.getScope(), id.getId());
+                    }
+                    break;
+                  }
                 case "title":
                   d.setTitle(text(text));
                   break;
@@ -258,7 +296,9 @@ public class EmlParser {
                 case "citation":
                   // we dont want to add the dataset citation, just the bibliography
                   if (isBibliography) {
-                    Citation cite = Citation.create(text.toString(), identifier);
+                    if (cite.isUnparsed()) {
+                      cite = Citation.create(text.toString(), cite.getId());
+                    }
                     d.getDataset().addSource(cite);
                   }
                   break;
@@ -271,9 +311,9 @@ public class EmlParser {
             
           case XMLStreamConstants.CHARACTERS:
             if (isDataset || isAdditionalMetadata || isProject) {
-              String x = StringUtils.normalizeSpace(parser.getText());
+              String x = parser.getText();
               if (!StringUtils.isBlank(x)) {
-                text.append(x.trim());
+                text.append(x);
               }
             }
             break;
@@ -290,25 +330,66 @@ public class EmlParser {
     return Optional.empty();
   }
 
-  private static URI getAbsoluteUri(StringBuilder text) {
-    URI url = null;
-    if (text != null && text.length() > 1) {
+  private static List<CslName> names(String author) {
+    if (StringUtils.isBlank(author)) return null;
+
+    List<CslName> result = new ArrayList<>();
+    if (author.contains(";")) {
+      for (var part : author.split(";")) {
+
+        result.add(name(part));
+      }
+    } else {
+      result.add(name(author));
+    }
+    return result;
+  }
+
+  @VisibleForTesting
+  protected static CslName name(String author) {
+    Pattern authorPattern = Pattern.compile("^\\s*([a-z -]+ )?([^,]+)(?:\\s*,\\s*(.+))?$");
+    if (StringUtils.isBlank(author)) return null;
+    CslName n;
+    var m = authorPattern.matcher(author);
+    if (m.find()) {
+      n = new CslName(StringUtils.trimToNull(m.group(3)), StringUtils.trimToNull(m.group(2)), StringUtils.trimToNull(m.group(1)));
+    } else {
+      n = new CslName(author.trim());
+    }
+    return n;
+  }
+
+
+  private static <T> T parse(String val, Parser<T> parser) {
+    if (val != null) {
       try {
-        var str = text.toString();
-        if (!StringUtils.isBlank(str)) {
-          url = URI.create(str.trim());
-          // require absolute URLs
-          if (!AbsoluteURIValidator.isAbsolut(url)) {
-            LOG.debug("Remove relative URL {}", url);
-            url = null;
-          }
-        }
-      } catch (IllegalArgumentException e) {
-        LOG.warn("Invalid URL {}", text);
-        url = null;
+        return parser.parse(val).get();
+      } catch (UnparsableException e) {
+        // result is null now
+        LOG.info("Invalid value {}", val);
       }
     }
-    return url;
+    return null;
+  }
+  private static DOI doi(String val) {
+    if (val != null) {
+      return DOI.parse(val).orElse(null);
+    }
+    return null;
+  }
+
+  private static URI getAbsoluteUri(StringBuilder text) {
+    if (text != null && text.length() > 1) {
+      return getAbsoluteUri(text.toString());
+    }
+    return null;
+  }
+
+  private static URI getAbsoluteUri(String text) {
+    if (text != null && text.length() > 1) {
+      return SafeParser.parse(UriParser.PARSER, text).orNull();
+    }
+    return null;
   }
 
   public static DatasetType parseType(String datasetType) {
@@ -416,7 +497,7 @@ public class EmlParser {
   }
 
   private static String text(StringBuilder text) {
-    return text == null || text.length() < 1 ? null : StringUtils.trimToNull(stripHtml(text.toString()));
+    return text == null || text.length() < 1 ? null : StringUtils.trimToNull(StringUtils.normalizeSpace(stripHtml(text.toString())));
   }
 
   private static Integer integer(StringBuilder text) {
@@ -429,9 +510,12 @@ public class EmlParser {
   }
 
   private static FuzzyDate date(StringBuilder text) {
-    return SafeParser.parse(DateParser.PARSER, text.toString()).orNull();
+    return date(text.toString());
   }
-  
+  private static FuzzyDate date(String text) {
+    return SafeParser.parse(DateParser.PARSER, StringUtils.trimToNull(text)).orNull();
+  }
+
   static class EmlAgent {
     public String role;
     public String onlineUrl;
