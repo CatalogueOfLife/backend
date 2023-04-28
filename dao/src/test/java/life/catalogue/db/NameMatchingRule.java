@@ -21,13 +21,19 @@ public class NameMatchingRule extends ExternalResource {
 
   private static NameIndex nidx;
   private final Supplier<SqlSessionFactory> factorySupplier;
+  private final boolean matchAll;
 
   public NameMatchingRule() {
-    this(SqlSessionFactoryRule::getSqlSessionFactory);
+    this(SqlSessionFactoryRule::getSqlSessionFactory, true);
   }
 
-  public NameMatchingRule(Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
+  public NameMatchingRule(boolean matchAll) {
+    this(SqlSessionFactoryRule::getSqlSessionFactory, matchAll);
+  }
+
+  public NameMatchingRule(Supplier<SqlSessionFactory> sqlSessionFactorySupplier, boolean matchAll) {
     this.factorySupplier = sqlSessionFactorySupplier;
+    this.matchAll = matchAll;
   }
 
   @Override
@@ -36,8 +42,10 @@ public class NameMatchingRule extends ExternalResource {
     LOG.info("Setup in-memory names index");
     nidx = NameIndexFactory.memory(factory, AuthorshipNormalizer.INSTANCE);
     nidx.start();
-    LOG.info("Rematch all names");
-    RematchJob.all(Users.MATCHER, factory, nidx).run();
+    if (matchAll) {
+      LOG.info("Rematch all names");
+      RematchJob.all(Users.MATCHER, factory, nidx).run();
+    }
   }
 
   public void rematch(int datasetKey) {
