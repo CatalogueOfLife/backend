@@ -1,17 +1,18 @@
 col:ID	col:parentID	col:status	col:rank	col:scientificName	col:authorship	col:nameStatus
-dip		accepted	order	Diptera		
+a		accepted	kingdom	Animalia		
+dip	a	accepted	order	Diptera		
 dfc	dip	accepted	family	Chironomidae		
 dtd	dfc	accepted	tribe	Diamesini		
-
-ast		accepted	order	Asterales		
-afa	ast	accepted	family	Asteraceae	Bercht. & J.Presl	
-atc	afa	accepted	tribe	Cichorieae		
-atv	afa	accepted	tribe	Vernonieae		
 
 1	dtd	accepted	species	Ablabesmyia aurea	(Johannsen, 1907)	
 2	dtd	accepted	species	Ablamius aureus	Johannsen, 1907	
 3	dtd	accepted	species	Ablabesmyia kara	(Johannsen, 1927)	
 4	dtd	accepted	species	Ablamius karus	(Johannsen, 1927)	
+
+ast		accepted	order	Asterales		
+afa	ast	accepted	family	Asteraceae	Bercht. & J.Presl	
+atc	afa	accepted	tribe	Cichorieae		
+atv	afa	accepted	tribe	Vernonieae		
 
 10	atc	accepted	species	Pilosella acutifolia	(Vill.) Arv.-Touv.	
 11	atc	accepted	species	Hieracium aurantiacum	L.	
@@ -47,3 +48,26 @@ atv	afa	accepted	tribe	Vernonieae
 70	atv	accepted	species	Vernonia karalba	Peter	
 71	70	synonym	species	Flustula alba	DC	
 72	atv	accepted	species	Conyza alba	(DC) Smith	
+
+afr	ast	accepted	family	Rousseaceae		
+80	afr	accepted	species	Abrophyllum ornans	(F.Muell.) Hook. f. ex Benth.	
+81	afr	PROVISIONALLY_ACCEPTED	species	Brachynema ornans	F.Muell.	
+82	81	accepted	variety	Abrophyllum ornans var. ornans	(F.Muell.) Benth.	
+83	81	accepted	variety	Abrophyllum ornans var. microcarpum	F.M.Bailey	
+
+mam	a	accepted	class	Mammalia		
+mfo	mam	accepted	family	Procyonidae		
+90	mfo	accepted	species	Nasua olivacea	Gray, 1865	
+91	90	synonym	species	Nasuella olivacea	(Gray, 1865)	
+92	90	synonym	species	Nasuella lagunetae	(J.A.Allen, 1913)	
+93	90	synonym	subspecies	Nasuella olivacea meridensis	(Thomas, 1901)	
+
+95	90	accepted	subspecies	Nasua olivacea quitensis	Lönnberg, 1913	
+96	95	synonym	subspecies	Nasuella olivacea quitensis	(Lönnberg, 1913)	
+
+98	90	accepted	subspecies	Nasua olivacea olivacea	Gray, 1865	
+99	98	synonym	subspecies	Nasuella olivacea olivacea	(Gray, 1865)	
+
+100	mfo	accepted	species	Mustela frenata	Lichtenstein, 1831	
+101	100	accepted	subspecies	Mustela frenata olivacea	Howell, 1913	
+102	101	synonym	subspecies	Mustela peninsulae olivacea	Howell, 1913	

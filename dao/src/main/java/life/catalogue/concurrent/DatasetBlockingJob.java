@@ -81,17 +81,21 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
     // try to acquire a lock, otherwise fail
     UUID proc = DatasetLock.lock(datasetKey, getKey());
     if (getKey().equals(proc)) {
-      try {
-        LoggingUtils.setDatasetMDC(datasetKey, getClass());
-        runWithLock();
-      } finally {
-        DatasetLock.unlock(datasetKey);
-        LoggingUtils.removeDatasetMDC();
-      }
+      LoggingUtils.setDatasetMDC(datasetKey, getClass());
+      runWithLock();
     } else {
       LOG.info("Failed to acquire lock for dataset {} from {} job {} #{}. Blocked by currently running job {}", datasetKey, this.getClass().getSimpleName(), getKey(), attempt, proc);
       throw new DatasetBlockedException(proc, datasetKey);
     }
   }
 
+  @Override
+  protected void onFinish() throws Exception {
+    try {
+      super.onFinish();
+    } finally {
+      DatasetLock.unlock(datasetKey);
+      LoggingUtils.removeDatasetMDC();
+    }
+  }
 }

@@ -82,9 +82,27 @@ public abstract class BackgroundJob implements Runnable {
    * The method should only be fired when the job is truely done, i.e. status.isDone().
    *
    * Blocked jobs will be resubmitted and only trigger the onFinish once when they finally run.
+   * This method will be called for every job, no matter if it succeeded, failed or was cancelled.
+   * OnError or onCancel will be called before onFinish.
    */
   protected void onFinish() throws Exception {
     // dont persist by default
+  }
+
+  /**
+   * Called in case the job fails.
+   * Implement this method e.g. to run specific cleanups in subclasses
+   */
+  protected void onError(Exception e) {
+    // dont do nothing - override if needed
+  }
+
+  /**
+   * Called in case the job was cancelled by a user.
+   * Implement this method e.g. to run specific cleanups in subclasses
+   */
+  protected void onCancel() {
+    // dont do nothing - override if needed
   }
 
   /**
@@ -125,11 +143,13 @@ public abstract class BackgroundJob implements Runnable {
     } catch (InterruptedException e) {
       status = JobStatus.CANCELED;
       LOG.warn("Interrupted {} job {}", getClass().getSimpleName(), key);
+      onCancel();
 
     } catch (Exception e) {
       status = JobStatus.FAILED;
       error = e;
       LOG.error("Error running {} job {}", getClass().getSimpleName(), key, e);
+      onError(e);
 
     } finally {
       finished = LocalDateTime.now();

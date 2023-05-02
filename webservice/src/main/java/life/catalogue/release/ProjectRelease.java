@@ -260,7 +260,8 @@ public class ProjectRelease extends AbstractProjectCopy {
   }
 
   @Override
-  void onError() {
+  protected void onError(Exception e) {
+    super.onError(e);
     // remove reports
     File dir = cfg.release.reportDir(datasetKey, attempt);
     if (dir.exists()) {

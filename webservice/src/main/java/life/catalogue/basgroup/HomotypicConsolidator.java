@@ -1,5 +1,6 @@
 package life.catalogue.basgroup;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import it.unimi.dsi.fastutil.Pair;
@@ -18,6 +19,8 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.BasionymGroup;
 import life.catalogue.matching.authorship.BasionymSorter;
+
+import org.apache.ibatis.annotations.Param;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -39,6 +42,9 @@ import com.google.common.collect.Maps;
 
 public class HomotypicConsolidator {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidator.class);
+  private static final List<TaxonomicStatus> STATUS_ORDER = List.of(TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED, TaxonomicStatus.SYNONYM, TaxonomicStatus.AMBIGUOUS_SYNONYM);
+  private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_ORDER = Comparator.comparing(u -> STATUS_ORDER.indexOf(u.getStatus()));
+
   private final SqlSessionFactory factory;
   private final int datasetKey;
   private final DSID<String> dsid;
@@ -48,6 +54,7 @@ public class HomotypicConsolidator {
   private final BasionymSorter basSorter;
   private final Function<LinneanNameUsage, Integer> priorityFunc;
   private int synCounter;
+  private Map<String, LinneanNameUsage> usages; // lookup by id for each taxon group being consolidated
 
   /**
    * @return a consolidator that will group an entire dataset family by family
@@ -145,6 +152,14 @@ public class HomotypicConsolidator {
       LOG.debug("{} distinct epithets found in {}", epithets.size(), tax);
     }
 
+    // keep identity map of all usages
+    usages = new HashMap<>();
+    for (var lnus : epithets.values()) {
+      for (var lnu : lnus) {
+        usages.put(lnu.getId(), lnu);
+      }
+    }
+
     // now compare authorships for each epithet group
     for (var epithetGroup : epithets.entrySet()) {
       var groups = basSorter.groupBasionyms(epithetGroup.getValue(), a -> a, this::flagMultipleBasionyms);
@@ -187,6 +202,7 @@ public class HomotypicConsolidator {
       }
     }
     LOG.info("Discovered {} new basionym, {} homotypic and {} spelling relations. Created {} basionym placeholders and converted {} taxa into synonyms in {}", newBasionymRelations, newHomotypicRelations, newSpellingRelations, newBasionyms, synCounter, tax);
+    usages = null;
   }
 
   /**
@@ -242,6 +258,9 @@ public class HomotypicConsolidator {
    *  2) if multiple synonyms (senso lato) with different accepted names exist, pick the synonym with the homotypic accepted name that has the same epithet.
    * <p>
    * In case we have duplicates of the basionym treat them just as recombinations that need to be consolidated and synonymised to the primary accepted name.
+   *
+   * @param tax taxon context of all groups
+   * @param group homotypic group to consolidate
    */
   private void consolidate(SimpleName tax, BasionymGroup<LinneanNameUsage> group) {
     if (group.size() > 1) {
@@ -291,7 +310,9 @@ public class HomotypicConsolidator {
   /**
    * Converts the given taxon to a synonym of the given accepted usage.
    * All included descendants, both synonyms and accepted children, are also changed to become synonyms of the accepted.
-   *  @param u taxon to convert to synonym
+   *
+   * The method also updates the already loaded group instances to reflect the status & parent changes.
+   * @param u taxon to convert to synonym
    * @param accepted newly accepted parent of the new synonym
    * @param issue optional issue to flag
    */
@@ -300,6 +321,10 @@ public class HomotypicConsolidator {
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
 
     Preconditions.checkArgument(accepted.getStatus().isTaxon());
+    if (u.getId().equals(accepted.getId())) {
+      LOG.warn("Trying to convert {} into a synonym of itself is suspicious. Abort", u);
+      return;
+    }
 
     if (u.getRank().isGenusOrSuprageneric()) {
       // pretty high ranks, warn!
@@ -308,8 +333,6 @@ public class HomotypicConsolidator {
       LOG.info("Convert {} into a synonym of {}", u, accepted);
     }
     // convert to synonym, removing old parent relation
-    // change status
-    u.setStatus(TaxonomicStatus.SYNONYM);
     if (issue != null) {
       vsm.addIssue(dsid.id(u.getId()), issue);
     }
@@ -322,14 +345,23 @@ public class HomotypicConsolidator {
         if (sn.getId().equals(u.getId())) continue; // exclude root
         var newStatus = sn.getStatus().isSynonym() ? sn.getStatus() : TaxonomicStatus.SYNONYM;
         LOG.info("Also convert descendant {} into a {} of {}", sn, newStatus, accepted);
-        num.updateParentAndStatus(dsid.id(sn.getId()), accepted.getId(), newStatus, Users.HOMOTYPIC_GROUPER);
-        synCounter++;
+        updateParentAndStatus(sn.getId(), accepted.getId(), newStatus, num);
       }
       // persist usage instance changes
-      num.updateParentAndStatus(dsid.id(u.getId()), accepted.getId(), u.getStatus(), Users.HOMOTYPIC_GROUPER);
-      synCounter++;
+      updateParentAndStatus(u.getId(), accepted.getId(), TaxonomicStatus.SYNONYM, num);
     } catch (IOException e) {
       LOG.error("Failed to traverse descendants of "+u.getLabel(), e);
+    }
+  }
+
+  private void updateParentAndStatus(String id, String parentId, TaxonomicStatus status, NameUsageMapper num) {
+    num.updateParentAndStatus(dsid.id(id), parentId, status, Users.HOMOTYPIC_GROUPER);
+    synCounter++;
+    // track change in our memory instances too
+    if (usages.containsKey(id)) {
+      var u = usages.get(id);
+      u.setStatus(status);
+      u.setParentId(parentId);
     }
   }
 
@@ -344,7 +376,8 @@ public class HomotypicConsolidator {
    *  b) return NULL if the source contains multiple accepted usages - this is either a bad taxonomy in the source
    *  or we did a bad basionym detection and we would wrongly lump names.
    */
-  private LinneanNameUsage findPrimaryUsage(BasionymGroup<LinneanNameUsage> group) {
+  @VisibleForTesting
+  protected LinneanNameUsage findPrimaryUsage(BasionymGroup<LinneanNameUsage> group) {
     if (group == null || group.isEmpty()) {
       return null;
     }
@@ -411,6 +444,10 @@ public class HomotypicConsolidator {
         LOG.info("Skip basionym group {} with {} accepted names out of {} usages from the most trusted sector {}",
           candidates.get(0).getLabel(), accCounts.size(), candidates.size(), sectorKey);
         return null;
+
+      } else if (candidates.size() > 1){
+        // multiple candidates? Prefer accepted ones
+        candidates.sort(PREFERRED_STATUS_ORDER);
       }
     }
 

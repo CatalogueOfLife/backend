@@ -1,4 +1,4 @@
-package life.catalogue.release;
+package life.catalogue.basgroup;
 
 import life.catalogue.TestDataGenerator;
 import life.catalogue.api.model.DSID;
@@ -37,7 +37,7 @@ import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
 
-public class HomotypicConsolidatorTest {
+public class HomotypicConsolidatorIT {
 
   @ClassRule
   public final static PgSetupRule pg = new PgSetupRule();
@@ -65,6 +65,17 @@ public class HomotypicConsolidatorTest {
         assertTrue(v.getIssues().contains(Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED));
       }
     }
+  }
+
+  @Test
+  public void subspeciesSynonyms() throws IOException {
+    var hc = HomotypicConsolidator.forTaxa(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key,
+      List.of(SimpleName.sn("mfo", Rank.FAMILY, "Procyonidae", "")),
+      u -> Integer.parseInt(u.getId())
+    );
+    printTree();
+    hc.consolidate();
+    assertTree("hg-mfo.txt", "mfo");
   }
 
   @Test

@@ -98,107 +98,103 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     // dont do nothing - override if needed
   }
 
-  /**
-   * Called in case the job fails to run specific cleanups in subclasses
-   */
-  void onError() {
-    // dont do nothing - override if needed
+  @Override
+  public void runWithLock() throws Exception {
+    checkIfCancelled();
+    LOG.info("{} project {} to new dataset {}", actionName, datasetKey, getNewDatasetKey());
+    // prepare new tables
+    updateState(ImportState.PROCESSING);
+    Partitioner.partition(factory, newDatasetKey, newDatasetOrigin);
+    // TODO: build indices concurrently AFTER copying data to be much quicker
+    // Note: attaching also creates missing indices and constraint from the master partition - if they are missing that takes long and blocks queries meanwhile
+    // build indices and attach partition - the actual copy commands use the concrete table names so we can load them without being attached yet
+    Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
+
+    // is an id mapping table needed?
+    if (mapIds) {
+      checkIfCancelled();
+      LOG.info("Create clean id mapping tables for project {}", datasetKey);
+      try (SqlSession session = factory.openSession(true)) {
+        DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
+        DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> {
+          dmp.dropTable(t, datasetKey);
+          dmp.createIdMapTable(t, datasetKey);
+        });
+      }
+    }
+
+    // load settings
+    try (SqlSession session = factory.openSession(true)) {
+      settings = session.getMapper(DatasetMapper.class).getSettings(datasetKey);
+    }
+
+    // call prep
+    checkIfCancelled();
+    prepWork();
+
+    // copy data
+    checkIfCancelled();
+    copyData();
+
+    // at last copy name matches - we need an attached table for this to fulfill constraints
+    checkIfCancelled();
+    try (SqlSession session = factory.openSession(true)) {
+      copyTable(NameMatch.class, NameMatchMapper.class, session);
+    }
+
+    // subclass specifics
+    checkIfCancelled();
+    finalWork();
+
+    checkIfCancelled();
+    metrics();
+    checkIfCancelled();
+
+    try {
+      // ES index
+      LOG.info("Index dataset {} into ES", newDatasetKey);
+      updateState(ImportState.INDEXING);
+      index();
+    } catch (RuntimeException e) {
+      // allow indexing to fail - sth we can do afterwards again
+      LOG.error("Error indexing new dataset {} into ES. Source dataset={}", newDatasetKey, datasetKey, e);
+    }
+
+    metrics.setState(ImportState.FINISHED);
+    LOG.info("Successfully finished {} project {} into dataset {}", actionName,  datasetKey, newDatasetKey);
   }
 
   @Override
-  public void runWithLock() throws InterruptedException {
-    try {
-      checkIfCancelled();
-      LOG.info("{} project {} to new dataset {}", actionName, datasetKey, getNewDatasetKey());
-      // prepare new tables
-      updateState(ImportState.PROCESSING);
-      Partitioner.partition(factory, newDatasetKey, newDatasetOrigin);
-      // TODO: build indices concurrently AFTER copying data to be much quicker
-      // Note: attaching also creates missing indices and constraint from the master partition - if they are missing that takes long and blocks queries meanwhile
-      // build indices and attach partition - the actual copy commands use the concrete table names so we can load them without being attached yet
-      Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
+  protected void onError(Exception e) {
+    metrics.setState(ImportState.FAILED);
+    metrics.setError(Exceptions.getFirstMessage(e));
+    LOG.error("Error {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
+    // cleanup failed remains
+    LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
+    dDao.delete(newDatasetKey, user);
+  }
 
-      // is an id mapping table needed?
-      if (mapIds) {
-        checkIfCancelled();
-        LOG.info("Create clean id mapping tables for project {}", datasetKey);
-        try (SqlSession session = factory.openSession(true)) {
-          DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> {
-            dmp.dropTable(t, datasetKey);
-            dmp.createIdMapTable(t, datasetKey);
-          });
-        }
-      }
+  @Override
+  protected void onCancel() {
+    metrics.setState(ImportState.CANCELED);
+    LOG.warn("Cancelled {} project {} into dataset {}", actionName, datasetKey, newDatasetKey);
+    // cleanup failed remains
+    LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt());
+    dDao.delete(newDatasetKey, user);
+  }
 
-      // load settings
+  @Override
+  protected void onFinish() throws Exception {
+    metrics.setFinished(LocalDateTime.now());
+    diDao.update(metrics);
+    if (mapIds) {
+      LOG.info("Remove id mapping tables for project {}", datasetKey);
       try (SqlSession session = factory.openSession(true)) {
-        settings = session.getMapper(DatasetMapper.class).getSettings(datasetKey);
-      }
-
-      // call prep
-      checkIfCancelled();
-      prepWork();
-
-      // copy data
-      checkIfCancelled();
-      copyData();
-
-      // at last copy name matches - we need an attached table for this to fulfill constraints
-      checkIfCancelled();
-      try (SqlSession session = factory.openSession(true)) {
-        copyTable(NameMatch.class, NameMatchMapper.class, session);
-      }
-
-      // subclass specifics
-      checkIfCancelled();
-      finalWork();
-
-      checkIfCancelled();
-      metrics();
-      checkIfCancelled();
-
-      try {
-        // ES index
-        LOG.info("Index dataset {} into ES", newDatasetKey);
-        updateState(ImportState.INDEXING);
-        index();
-      } catch (RuntimeException e) {
-        // allow indexing to fail - sth we can do afterwards again
-        LOG.error("Error indexing new dataset {} into ES. Source dataset={}", newDatasetKey, datasetKey, e);
-      }
-
-      metrics.setState(ImportState.FINISHED);
-      LOG.info("Successfully finished {} project {} into dataset {}", actionName,  datasetKey, newDatasetKey);
-
-    } catch (InterruptedException e) {
-      metrics.setState(ImportState.CANCELED);
-      LOG.warn("Cancelled {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
-      // cleanup failed remains
-      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
-      dDao.delete(newDatasetKey, user);
-
-    } catch (Exception e) {
-      metrics.setState(ImportState.FAILED);
-      metrics.setError(Exceptions.getFirstMessage(e));
-      LOG.error("Error {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
-      // cleanup failed remains
-      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
-      dDao.delete(newDatasetKey, user);
-      onError();
-
-    } finally {
-      metrics.setFinished(LocalDateTime.now());
-      diDao.update(metrics);
-      if (mapIds) {
-        LOG.info("Remove id mapping tables for project {}", datasetKey);
-        try (SqlSession session = factory.openSession(true)) {
-          DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, datasetKey));
-        } catch (Exception e) {
-          // avoid any exceptions as it would bring down the finally block
-          LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);
-        }
+        DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
+        DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, datasetKey));
+      } catch (Exception e) {
+        // avoid any exceptions as it would bring down the finally block
+        LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);
       }
     }
   }

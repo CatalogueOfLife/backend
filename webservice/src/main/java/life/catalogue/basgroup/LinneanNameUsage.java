@@ -35,6 +35,9 @@ public class LinneanNameUsage implements FormattableName {
   private Authorship basionymAuthorship = new Authorship();
   private String sanctioningAuthor;
 
+  public LinneanNameUsage() {
+  }
+
   public LinneanNameUsage(NameUsageBase nu) {
     id = nu.getId();
     parentId = nu.getParentId();
