@@ -113,7 +113,7 @@ public class CslUtilTest {
         .originalTitle("my orig tittel");
     
     CSLItemData csl = builder.build();
-    assertEquals("Döring, M. (n.d.). my Title. https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(csl));
+    assertEquals("Döring, M. my Title. https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(csl));
 
     System.out.println("Start time measuring");
     StopWatch watch = StopWatch.createStarted();
@@ -121,7 +121,7 @@ public class CslUtilTest {
     for (int x=1; x<=times; x++){
       builder.title("my Title "+x);
       csl = builder.accessed(1900+x).build();
-      assertEquals("Döring, M. (n.d.). my Title "+x+". https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(csl));
+      assertEquals("Döring, M. my Title "+x+". https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(csl));
     }
     watch.stop();
     System.out.println(watch);
