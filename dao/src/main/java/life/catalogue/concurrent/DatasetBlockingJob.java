@@ -90,7 +90,7 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   }
 
   @Override
-  final protected void onFinish() throws Exception {
+  protected final void onFinish() throws Exception {
     try {
       onFinishLocked();
     } finally {
