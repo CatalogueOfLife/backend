@@ -184,7 +184,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   }
 
   @Override
-  protected void onFinish() throws Exception {
+  protected void onFinishLocked() throws Exception {
     metrics.setFinished(LocalDateTime.now());
     diDao.update(metrics);
     if (mapIds) {

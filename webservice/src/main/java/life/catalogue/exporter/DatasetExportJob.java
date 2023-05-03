@@ -142,7 +142,7 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
    * Tracks the successfully executed request in the database.
    */
   @Override
-  protected void onFinish() throws Exception {
+  protected void onFinishLocked() throws Exception {
     // first update the export instance
     if (getError() != null) {
       String msg = Exceptions.getFirstMessage(getError());

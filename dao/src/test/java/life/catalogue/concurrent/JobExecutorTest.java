@@ -121,7 +121,7 @@ public class JobExecutorTest {
     }
 
     @Override
-    protected void onFinish() throws Exception {
+    protected void onFinishLocked() throws Exception {
       if (getStatus().isDone()) {
         System.out.println("Done " + getClass().getSimpleName() + " " + getKey());
         finished.add(getKey());

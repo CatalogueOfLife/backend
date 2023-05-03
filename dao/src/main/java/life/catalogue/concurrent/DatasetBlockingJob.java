@@ -90,12 +90,20 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   }
 
   @Override
-  protected void onFinish() throws Exception {
+  final protected void onFinish() throws Exception {
     try {
-      super.onFinish();
+      onFinishLocked();
     } finally {
       DatasetLock.unlock(datasetKey);
       LoggingUtils.removeDatasetMDC();
     }
   }
+
+  /**
+   * Override the onFinish method which is made final to make sure to unlock the dataset.
+   * @throws Exception
+   */
+  protected void onFinishLocked() throws Exception {
+  }
+
 }
