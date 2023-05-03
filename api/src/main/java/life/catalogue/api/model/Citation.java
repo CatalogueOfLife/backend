@@ -103,7 +103,8 @@ public class Citation {
   }
 
   public static Citation create(String citation, String identifier) {
-    Citation c = create(citation);
+    if (StringUtils.isBlank(citation)) return null;
+    Citation c = create(citation.trim());
     if (!StringUtils.isBlank(identifier)) {
       var opt = DOI.parse(identifier);
       if (opt.isPresent()) {
@@ -415,7 +416,7 @@ public class Citation {
     if (this == o) return true;
     if (!(o instanceof Citation)) return false;
     Citation citation = (Citation) o;
-    var b = Objects.equals(id, citation.id)
+    return Objects.equals(id, citation.id)
            && type == citation.type
            && Objects.equals(doi, citation.doi)
            && Objects.equals(author, citation.author)
@@ -438,7 +439,6 @@ public class Citation {
            && Objects.equals(issn, citation.issn)
            && Objects.equals(url, citation.url)
            && Objects.equals(note, citation.note);
-    return b;
   }
 
   @Override
