@@ -409,7 +409,7 @@ public class NameParserTest {
                           .filter(t -> t.getName().startsWith(NameParserGBIF.THREAD_NAME))
                           .count();
       System.out.println(wsize + " worker threads still existing");
-      if (counter++ == 20) {
+      if (counter++ == 30) {
         break;
       }
       TimeUnit.SECONDS.sleep(1);
