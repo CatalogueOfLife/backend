@@ -2,10 +2,9 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.txtree.Tree;
-import life.catalogue.api.txtree.TreeNode;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.TxtTreeDataKey;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
@@ -14,16 +13,24 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.txtree.SimpleTreeNode;
+import org.gbif.txtree.Tree;
+
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static javax.ws.rs.Priorities.USER;
 
 /**
  * A junit test rule that loads test data from a text tree file into a given dataset.
@@ -36,29 +43,42 @@ import org.slf4j.LoggerFactory;
 public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TxtTreeDataRule.class);
 
-  final private Map<Integer, TreeData> datasets;
+  final private Map<Integer, String> datasets;
+  final private Set<Integer> sectors = new HashSet<>();
   private SqlSession session;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
   private NameMapper nm;
   private TaxonMapper tm;
   private SynonymMapper sm;
+  private SectorMapper secm;
 
   public enum TreeData {
     ANIMALIA, MAMMALIA, TRILOBITA;
 
-    InputStream resource() throws IOException {
-      return Resources.getResourceAsStream("trees/" + name().toLowerCase()+".tree");
+    public String resource() {
+      return "trees/" + name().toLowerCase()+".tree";
     }
   }
 
-
-  public TxtTreeDataRule(Integer datasetKey, TreeData treeData) {
-    this(Map.of(datasetKey, treeData));
+  public TxtTreeDataRule(Integer datasetKey, TreeData tree) {
+    this(datasetKey, tree.resource());
   }
 
-  public TxtTreeDataRule(Map<Integer, TreeData> treeData) {
+  public TxtTreeDataRule(Integer datasetKey, String treeResource) {
+    this(Map.of(datasetKey, treeResource));
+  }
+
+  public TxtTreeDataRule(Map<Integer, String> treeData) {
     this.datasets = treeData;
     sqlSessionFactorySupplier = SqlSessionFactoryRule::getSqlSessionFactory;
+  }
+
+  public static TxtTreeDataRule create(Map<Integer, TreeData> treeData) {
+    Map<Integer, String> data = new HashMap<>();
+    for (Map.Entry<Integer, TreeData> x : treeData.entrySet()) {
+      data.put(x.getKey(), x.getValue().resource());
+    }
+    return new TxtTreeDataRule(data);
   }
 
   @Override
@@ -66,14 +86,14 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     LOG.info("Load text trees");
     super.before();
     initSession();
-    for (Map.Entry<Integer, TreeData> x : datasets.entrySet()) {
-      final TreeData tree = x.getValue();
+    for (Map.Entry<Integer, String> x : datasets.entrySet()) {
+      final String treeName = x.getValue();
       final int datasetKey = x.getKey();
-      LOG.info("Loading dataset {} from tree {}", datasetKey, tree);
+      LOG.info("Loading dataset {} from tree {}", datasetKey, treeName);
       createDataset(datasetKey);
       // create required partitions to load data
       MybatisTestUtils.partition(session, datasetKey);
-      loadTree(datasetKey, tree);
+      loadTree(datasetKey, treeName);
       updateSequences(datasetKey);
     }
   }
@@ -90,25 +110,26 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     session.commit();
   }
 
-  private void loadTree(int datasetKey, TreeData td) throws IOException, InterruptedException{
-    Tree tree = Tree.read(td.resource());
-    LOG.debug("Inserting {} usages for dataset {}", tree.getCount(), datasetKey);
-    for (TreeNode n : tree.getRoot().children) {
+  private void loadTree(int datasetKey, String resourceName) throws IOException, InterruptedException{
+    var stream = Resources.getResourceAsStream(resourceName);
+    Tree<SimpleTreeNode> tree = Tree.simple(stream);
+    LOG.debug("Inserting {} usages for dataset {}", tree.size(), datasetKey);
+    for (SimpleTreeNode n : tree.getRoot()) {
       insertSubtree(datasetKey, null, n);
     }
   }
 
-  private void insertSubtree(int datasetKey, TreeNode parent, TreeNode t) throws InterruptedException {
+  private void insertSubtree(int datasetKey, SimpleTreeNode parent, SimpleTreeNode t) throws InterruptedException {
     insertNode(datasetKey, parent, t, false);
-    for (TreeNode syn : t.synonyms) {
+    for (SimpleTreeNode syn : t.synonyms) {
       insertNode(datasetKey, t, syn, true);
     }
-    for (TreeNode c : t.children) {
+    for (SimpleTreeNode c : t.children) {
       insertSubtree(datasetKey, t, c);
     }
   }
 
-  private void insertNode(int datasetKey, TreeNode parent, TreeNode tn, boolean synonym) throws InterruptedException {
+  private void insertNode(int datasetKey, SimpleTreeNode parent, SimpleTreeNode tn, boolean synonym) throws InterruptedException {
     ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, VerbatimRecord.VOID).get();
     Name n = nat.getName();
     n.setDatasetKey(datasetKey);
@@ -117,19 +138,34 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     n.applyUser(Users.DB_INIT);
     nm.create(n);
 
+    Integer sk = null;
+    if (tn.infos.containsKey(TxtTreeDataKey.PRIO.name())) {
+      sk = Integer.parseInt(tn.infos.get(TxtTreeDataKey.PRIO.name())[0]);
+      if (!sectors.contains(sk)) {
+        Sector s = new Sector();
+        s.setDatasetKey(datasetKey);
+        s.setSubjectDatasetKey(datasetKey);
+        s.setId(sk);
+        s.applyUser(Users.DB_INIT);
+        secm.createWithID(s);
+        sectors.add(sk);
+      }
+    }
+
     if (synonym) {
       Synonym s = new Synonym();
-      prepUsage(s, datasetKey, nat, TaxonomicStatus.SYNONYM, parent);
+      prepUsage(s, datasetKey, sk, nat, TaxonomicStatus.SYNONYM, parent, tn);
       sm.create(s);
     } else {
       Taxon t = new Taxon();
-      prepUsage(t, datasetKey, nat, TaxonomicStatus.ACCEPTED, parent);
+      prepUsage(t, datasetKey, sk, nat, TaxonomicStatus.ACCEPTED, parent, tn);
       tm.create(t);
     }
   }
 
-  private static void prepUsage(NameUsageBase u, int datasetKey, ParsedNameUsage nat, TaxonomicStatus status, TreeNode parent) {
+  private static void prepUsage(NameUsageBase u, int datasetKey, Integer sectorKey, ParsedNameUsage nat, TaxonomicStatus status, SimpleTreeNode parent, SimpleTreeNode tn) {
       u.setDatasetKey(datasetKey);
+      u.setSectorKey(sectorKey);
       u.setId(String.valueOf(nat.getName().getId()));
       u.setName(nat.getName());
       u.setOrigin(Origin.SOURCE);
@@ -158,6 +194,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       nm = session.getMapper(NameMapper.class);
       tm = session.getMapper(TaxonMapper.class);
       sm = session.getMapper(SynonymMapper.class);
+      secm = session.getMapper(SectorMapper.class);
     }
   }
 

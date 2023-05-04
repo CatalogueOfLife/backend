@@ -1,11 +1,11 @@
 package life.catalogue.importer.txttree;
 
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.txtree.Tree;
-import life.catalogue.api.txtree.TreeLine;
-import life.catalogue.api.txtree.TreeNode;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
@@ -22,20 +22,22 @@ import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.metadata.MetadataFactory;
 import life.catalogue.parser.NameParser;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.Set;
+import org.gbif.txtree.SimpleTreeNode;
+
+import org.gbif.txtree.Tree;
+import org.gbif.txtree.TreeLine;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -56,7 +58,7 @@ public class TxtTreeInserter implements NeoInserter {
   private final int datasetKey;
   private Path treeFile;
   private String treeFileName;
-  private Tree tree;
+  private org.gbif.txtree.Tree<SimpleTreeNode> tree;
   private Long2IntMap line2verbatimKey = new Long2IntOpenHashMap();
 
   public TxtTreeInserter(NeoDb store, Path folder) throws IOException {
@@ -77,7 +79,7 @@ public class TxtTreeInserter implements NeoInserter {
 
   public static Optional<Path> findReadable(Path folder) {
     try {
-      for (Path f : PathUtils.listFiles(folder, Set.of("tree", "txt", "text", "archive"))) {
+      for (Path f : PathUtils.listFiles(folder, Set.of("txtree", "tree", "txt", "text", "archive"))) {
         if (Tree.verify(Files.newInputStream(f))) {
           LOG.info("Found readable tree file {}", f);
           return Optional.of(f);
@@ -101,10 +103,10 @@ public class TxtTreeInserter implements NeoInserter {
   public void insertAll() throws NormalizationFailedException {
     try {
       LOG.info("Read tree and insert verbatim records from {}", treeFile);
-      tree = Tree.read(Files.newInputStream(treeFile), this::addVerbatim);
-      LOG.info("Read tree with {} nodes from {}", tree.getCount(), treeFile);
+      tree = org.gbif.txtree.Tree.simple(Files.newInputStream(treeFile), this::addVerbatim);
+      LOG.info("Read tree with {} nodes from {}", tree.size(), treeFile);
       // insert names and taxa in depth first order
-      for (TreeNode t : tree.getRoot().children) {
+      for (SimpleTreeNode t : tree.getRoot()) {
         try (Transaction tx = store.getNeo().beginTx()) {
           recursiveNodeInsert(null, t);
           tx.success();
@@ -120,13 +122,13 @@ public class TxtTreeInserter implements NeoInserter {
     return MetadataFactory.readMetadata(folder);
   }
 
-  private void recursiveNodeInsert(Node parent, TreeNode t) throws InterruptedException {
+  private void recursiveNodeInsert(Node parent, SimpleTreeNode t) throws InterruptedException {
     NeoUsage u = usage(t, false);
     store.createNameAndUsage(u);
     if (parent != null) {
       store.assignParent(parent, u.node);
     }
-    for (TreeNode syn : t.synonyms){
+    for (SimpleTreeNode syn : t.synonyms){
       NeoUsage s = usage(syn, true);
       store.createNameAndUsage(s);
       store.createSynonymRel(s.node, u.node);
@@ -137,12 +139,12 @@ public class TxtTreeInserter implements NeoInserter {
         store.createNeoRel(u.nameNode, s.nameNode, rel);
       }
     }
-    for (TreeNode c : t.children){
+    for (SimpleTreeNode c : t.children){
       recursiveNodeInsert(u.node, c);
     }
   }
 
-  private NeoUsage usage(TreeNode tn, boolean synonym) throws InterruptedException {
+  private NeoUsage usage(SimpleTreeNode tn, boolean synonym) throws InterruptedException {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
     ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, v).get();
     NeoUsage u = synonym ?

@@ -41,7 +41,7 @@ public class TreeDaoTest {
   @ClassRule
   public static RuleChain chain= RuleChain
       .outerRule(new PgSetupRule())
-      .around(new TxtTreeDataRule(Map.of(
+      .around(TxtTreeDataRule.create(Map.of(
         catKey, TxtTreeDataRule.TreeData.ANIMALIA,
         TRILOBITA, TxtTreeDataRule.TreeData.TRILOBITA,
         MAMMALIA, TxtTreeDataRule.TreeData.MAMMALIA

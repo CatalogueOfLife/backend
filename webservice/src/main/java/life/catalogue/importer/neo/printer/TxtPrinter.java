@@ -1,11 +1,12 @@
 package life.catalogue.importer.neo.printer;
 
-import life.catalogue.api.txtree.Tree;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.model.RelType;
 
 import java.io.IOException;
 import java.io.Writer;
+
+import org.gbif.txtree.Tree;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;

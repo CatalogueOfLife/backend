@@ -211,7 +211,7 @@ public class PgImportRule extends ExternalResource {
     String title;
     Path source;
     if (tr.resourceFile == null) {
-      var url = getClass().getResource("/" + tr.format.name().toLowerCase() + "/" + tr.key);
+      var url = getClass().getResource("/" + tr.format.getFilename().toLowerCase() + "/" + tr.key);
       source = Paths.get(url.toURI());
       title = String.format("%s-%s", tr.format, tr.key);
     } else {

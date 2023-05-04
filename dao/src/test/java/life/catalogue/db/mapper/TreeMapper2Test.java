@@ -23,7 +23,7 @@ public class TreeMapper2Test extends MapperTestBase<TreeMapper> {
   static final int MAMMALIA = 101;
 
   @ClassRule
-  public static TxtTreeDataRule treeRule = new TxtTreeDataRule(Map.of(
+  public static TxtTreeDataRule treeRule = TxtTreeDataRule.create(Map.of(
     catKey, TxtTreeDataRule.TreeData.ANIMALIA,
     TRILOBITA, TxtTreeDataRule.TreeData.TRILOBITA,
     MAMMALIA, TxtTreeDataRule.TreeData.MAMMALIA

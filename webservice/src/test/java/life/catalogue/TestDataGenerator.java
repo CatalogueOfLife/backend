@@ -189,7 +189,7 @@ public class TestDataGenerator {
   public void prepareXcolData() throws Throwable {
     List<Object> params = new ArrayList<>();
     params.addAll(List.of(DatasetOrigin.EXTERNAL, DataFormat.TEXT_TREE, DatasetType.TAXONOMIC));
-    for (int key = 100; key<150; key++) {
+    for (int key = 100; key<120; key++) {
       String res = String.format("xcol/%s.txtree", key);
       var url = getClass().getClassLoader().getResource(res);
       if (url != null) {
@@ -201,7 +201,6 @@ public class TestDataGenerator {
     var importRule = new PgImportRule(resources.toArray(new PgImportRule.TestResource[0]));
     // now also import the COL project - needs special attention to get the dataset key right
     importRule.setColImportSource(DataFormat.TEXT_TREE, "xcol/3.txtree");
-    //export(XCOL.name, importRule, this::supplyNoSectors, true);
     export(XCOL.name, importRule, this::supplyXcolAttachSectors, true);
   }
 
