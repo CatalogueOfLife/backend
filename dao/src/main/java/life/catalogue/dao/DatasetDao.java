@@ -46,7 +46,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.units.qual.K;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -416,6 +415,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       List<Dataset> result = dm.search(req, userKey, page);
       return new ResultPage<>(page, result, () -> dm.count(req, userKey));
+    }
+  }
+
+  public List<Duplicate.IntKeys> listDuplicates(int minCount, @Nullable UUID publisherKey) {
+    try (SqlSession session = factory.openSession()){
+      return session.getMapper(DatasetMapper.class).duplicates(minCount, publisherKey);
     }
   }
 

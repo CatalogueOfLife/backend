@@ -146,6 +146,7 @@ public class MybatisFactory {
     registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
     registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
     registry.registerAlias("DuplicateMybatis", Duplicate.Mybatis.class);
+    registry.registerAlias("DuplicateIntKeys", Duplicate.IntKeys.class);
     registry.registerAlias("SimpleWithID", IssueContainer.SimpleWithID.class);
     registry.registerAlias("ArchivedSimpleNameWithNidx", ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx.class);
   }

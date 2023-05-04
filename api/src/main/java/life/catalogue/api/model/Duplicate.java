@@ -1,7 +1,10 @@
 package life.catalogue.api.model;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class Duplicate {
   private String key;
@@ -39,6 +42,40 @@ public class Duplicate {
     @Override
     public int hashCode() {
       return Objects.hash(key, usages);
+    }
+  }
+
+  public static class IntKeys {
+    private String name;
+    private IntSet keys;
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public void setKeys(IntSet keys) {
+      this.keys = keys;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public IntSet getKeys() {
+      return keys;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof IntKeys)) return false;
+      IntKeys intKey = (IntKeys) o;
+      return Objects.equals(name, intKey.name) && Objects.equals(keys, intKey.keys);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name, keys);
     }
   }
 

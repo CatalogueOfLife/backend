@@ -1,17 +1,14 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.Page;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.*;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -20,6 +17,8 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
+
+import org.gbif.nameparser.api.Rank;
 
 /**
  * The dataset mappers create method expects the key to be provided.
@@ -106,6 +105,16 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * List all releases of a project, including deleted and private ones.
    */
   List<Dataset> listReleases(@Param("projectKey") int projectKey);
+
+  /**
+   * Looks for potential duplicates of a dataset by aggregating them on title and description.
+   *
+   * @param minCount minimum number of datasets to be considered a duplicate.
+   * @param gbifPublisherKey optional publisher filter
+   *
+   * @return list of duplicate titles, each with all dataset keys listed in it.
+   */
+  List<Duplicate.IntKeys> duplicates(@Param("minCount") Integer minCount, @Param("gbifPublisherKey") UUID gbifPublisherKey);
 
   /**
    * @param origin optional dataset origin filter, combined with OR if multiple

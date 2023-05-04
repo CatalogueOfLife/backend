@@ -179,6 +179,10 @@
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.SettingsTypeHandler"/>
   </resultMap>
 
+  <resultMap id="duplicateResultMap" type="DuplicateIntKeys" autoMapping="false">
+    <id column="name" property="name"/>
+    <result property="keys" column="keys" typeHandler="life.catalogue.db.type.IntSetTypeHandler"/>
+  </resultMap>
 
 
   <select id="listAgents" resultMap="datasetResultMap">
@@ -300,6 +304,18 @@
     FROM <include refid="FROM"/>
     WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
     ORDER BY d.created, d.key
+  </select>
+
+  <select id="duplicates" resultMap="duplicateResultMap">
+    SELECT title AS name, array_agg(key) AS keys
+    FROM dataset
+    WHERE deleted is null
+    <if test="gbifPublisherKey != null">
+      AND gbif_publisher_key = #{gbifPublisherKey}
+    </if>
+    GROUP BY title, description
+    HAVING count(*) >= #{minCount}
+    ORDER BY title
   </select>
 
   <sql id="importable">

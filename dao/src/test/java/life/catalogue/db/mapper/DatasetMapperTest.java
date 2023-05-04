@@ -116,7 +116,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     assertEquals(d1, d2);
   }
 
-
   @Test
   public void privateProjectReleases() throws Exception {
     // use a real user (not a bot) as a creator
@@ -329,6 +328,41 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     dr.setQ("Life");
     actual = mapper().searchKeys(dr, DatasetMapper.MAGIC_ADMIN_USER_KEY);
     assertEquals(List.of(Datasets.COL), actual);
+  }
+
+  @Test
+  public void dupes() throws Exception {
+    Dataset d = create();
+    mapper().create(d);
+
+    d = create();
+    d.setTitle("My life");
+    d.setDescription("Something different");
+    mapper().create(d);
+
+    for (int i = 0; i < 10; i++) {
+      d = create();
+      if (i<3) {
+        d.setTitle("My life");
+      } else {
+        d.setTitle("Your life");
+      }
+      d.setDescription("Always the same");
+      mapper().create(d);
+    }
+    commit();
+
+    var dupes = mapper().duplicates(2, null);
+    assertEquals(2, dupes.size());
+    assertEquals(3, dupes.get(0).getKeys().size());
+    assertEquals(7, dupes.get(1).getKeys().size());
+
+    dupes = mapper().duplicates(5, null);
+    assertEquals(1, dupes.size());
+    assertEquals(7, dupes.get(0).getKeys().size());
+
+    dupes = mapper().duplicates(10, null);
+    assertEquals(0, dupes.size());
   }
 
   private List<Dataset> createExpected() throws Exception {

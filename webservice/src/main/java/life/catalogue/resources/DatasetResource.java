@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -18,10 +20,7 @@ import life.catalogue.release.AuthorlistGenerator;
 import life.catalogue.release.ProjectCopyFactory;
 import life.catalogue.release.ProjectRelease;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -78,6 +77,13 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("keys")
   public List<Integer> listAllKeys(@BeanParam DatasetSearchRequest req) {
     return dao.searchKeys(req);
+  }
+
+  @GET
+  @Path("duplicates")
+  public List<Duplicate.IntKeys> listDuplicates(@QueryParam("minCount") @DefaultValue("2") int minCount,  @QueryParam("gbifPublisherKey") UUID gbifPublisherKey) {
+    Preconditions.checkArgument(minCount>1, "minCount parameter must be greater than 1");
+    return dao.listDuplicates(minCount, gbifPublisherKey);
   }
 
   @GET

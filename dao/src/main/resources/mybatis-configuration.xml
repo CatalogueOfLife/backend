@@ -15,6 +15,7 @@
         <typeAlias type="life.catalogue.api.model.TreeNode$TreeNodeMybatis" alias="TreeNodeMybatis" />
         <typeAlias type="life.catalogue.api.model.Duplicate$UsageDecision" alias="UsageDecision" />
         <typeAlias type="life.catalogue.api.model.Duplicate$Mybatis" alias="DuplicateMybatis" />
+        <typeAlias type="life.catalogue.api.model.Duplicate$IntKeys" alias="DuplicateIntKeys" />
         <typeAlias type="life.catalogue.api.model.IssueContainer$SimpleWithID" alias="SimpleWithID" />
         <typeAlias type="life.catalogue.db.mapper.ArchivedNameUsageMapper$ArchivedSimpleNameWithNidx" alias="ArchivedSimpleNameWithNidx" />
         <package name="life.catalogue.api.model" />
