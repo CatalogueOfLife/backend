@@ -6,3 +6,14 @@ Austiaceae
     *Aus cus Miller
   Wus kus Smith
     *Wus zus (Zorn)
+Karaceae
+  Karus simplex L. {PRIO=1}
+    Karus simplex simplex
+    Karus simplex atlantica Varo
+    Karus simplex corsica (Hell.)
+      *Huron corsica Hell.
+  Karus corsica (Hell.) {PRIO=1}
+  Svetlana corsica (Hell.) {PRIO=2}
+    Svetlana corsica africana
+    Svetlana corsica nubium
+      *Huron nubium

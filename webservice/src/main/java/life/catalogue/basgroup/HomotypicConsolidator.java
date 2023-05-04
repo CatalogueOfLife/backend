@@ -281,25 +281,21 @@ public class HomotypicConsolidator {
       }
 
       // get the accepted usage in case of synonyms
-      final var accepted = primary.getStatus().isSynonym() ? load(primary.getParentId()) : primary;
+      final var primaryAcc = primary.getStatus().isSynonym() ? load(primary.getParentId()) : primary;
       try (SqlSession session = factory.openSession(false)) {
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("Consolidating homotypic group with {} primary usage {}: {}", primary.getStatus(), primary.getLabel(), names(group.getAll()));
         }
-        Set<String> parents = tm.classificationSimple(dsid.id(accepted.getParentId())).stream().map(SimpleName::getId).collect(Collectors.toSet());
+        Set<String> parents = tm.classificationSimple(dsid.id(primaryAcc.getParentId())).stream().map(SimpleName::getId).collect(Collectors.toSet());
         for (LinneanNameUsage u : group.getAll()) {
           if (u.equals(primary)) continue;
           if (parents.contains(u.getId())) {
             LOG.debug("Exclude parent {} from basionym consolidation of {}", u.getLabel(), primary.getLabel());
 
           } else {
-            SimpleName previousParent = loadSN(u.getParentId());
-            if (previousParent != null) {
-              LOG.debug("Originally was treated as {} {} {}", u.getStatus(), u.getStatus().isSynonym() ? "of" : "taxon within", previousParent.getLabel());
-            }
-            convertToSynonym(u, accepted, Issue.HOMOTYPIC_CONSOLIDATION, session);
+            convertToSynonym(u, primaryAcc, Issue.HOMOTYPIC_CONSOLIDATION, session);
           }
         }
         session.commit();
@@ -326,12 +322,21 @@ public class HomotypicConsolidator {
       return;
     }
 
-    if (u.getRank().isGenusOrSuprageneric()) {
+    SimpleName previousParent = loadSN(u.getParentId());
+    if(u.getStatus().isSynonym()) {
+      LOG.info("Move synonym {} from {} to {}", u, previousParent, accepted);
+    } else if (u.getRank().isGenusOrSuprageneric()) {
       // pretty high ranks, warn!
-      LOG.warn("Converting {} into a synonym of {}", u, accepted);
+      LOG.warn("Trying to convert {} into a synonym of {}, but rank {} is too high. Abort", u, accepted, u.getRank());
+      return;
+
     } else {
       LOG.info("Convert {} into a synonym of {}", u, accepted);
     }
+    if (previousParent != null) {
+      LOG.debug("Originally was treated as {} {} {}", u.getStatus(), u.getStatus().isSynonym() ? "of" : "taxon within", previousParent.getLabel());
+    }
+
     // convert to synonym, removing old parent relation
     if (issue != null) {
       vsm.addIssue(dsid.id(u.getId()), issue);
@@ -344,7 +349,12 @@ public class HomotypicConsolidator {
       for (var sn : cursor) {
         if (sn.getId().equals(u.getId())) continue; // exclude root
         var newStatus = sn.getStatus().isSynonym() ? sn.getStatus() : TaxonomicStatus.SYNONYM;
-        LOG.info("Also convert descendant {} into a {} of {}", sn, newStatus, accepted);
+        if(sn.getStatus().isSynonym()) {
+          var prev = loadSN(sn.getParent());
+          LOG.info("Also move descendant synonym {} from {} to {}", sn, prev, accepted);
+        } else {
+          LOG.info("Also convert descendant {} into a {} of {}", sn, newStatus, accepted);
+        }
         updateParentAndStatus(sn.getId(), accepted.getId(), newStatus, num);
       }
       // persist usage instance changes
