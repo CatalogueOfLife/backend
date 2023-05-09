@@ -132,8 +132,8 @@ public class ImportJob implements Runnable {
       throw new IllegalArgumentException("Dataset " + datasetKey + " cannot be reimported and uploaded");
 
     } else if (req.reimportAttempt != null) {
-      if (!cfg.normalizer.archive(dataset.getKey(), req.reimportAttempt).exists()) {
-       throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a source archive for import attempt " + dataset.getImportAttempt());
+      if (!cfg.normalizer.archive(datasetKey, req.reimportAttempt).exists()) {
+       throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a source archive for import attempt " + req.reimportAttempt);
       }
 
     } else if (req.hasUpload()) {
@@ -204,9 +204,9 @@ public class ImportJob implements Runnable {
 
     if (req.reimportAttempt != null) {
       // copy previous up/downloaded archive to repository
-      Path prev = cfg.normalizer.archive(dataset.getKey(), req.reimportAttempt).toPath();
-      LOG.info("Move previous archive {} for dataset {} from {} to {}", req.reimportAttempt, datasetKey, prev, archive);
-      Files.copy(prev, archive.toPath());
+      Path prev = cfg.normalizer.archive(datasetKey, req.reimportAttempt).toPath();
+      LOG.info("Symlink previous archive from import attempt {} for dataset {}: {}", req.reimportAttempt, datasetKey, prev);
+      Files.createSymbolicLink(archive.toPath(), prev);
 
     } else if (req.hasUpload()) {
       // if data was uploaded we need to find out the format.
