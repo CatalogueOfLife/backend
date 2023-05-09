@@ -119,7 +119,7 @@ public class ImporterResource {
       throw new IllegalArgumentException("No previous archive existing for dataset "+datasetKey+" to reimport");
     }
     int attempt = NormalizerConfig.attemptFromArchive(latest);
-    return importManager.submit(ImportRequest.reimport(datasetKey, user.getKey(), attempt));
+    return importManager.submit(ImportRequest.reimport(datasetKey, attempt, user.getKey()));
   }
 
   @POST

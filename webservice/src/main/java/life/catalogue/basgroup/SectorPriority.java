@@ -11,15 +11,16 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Simple class to map sector priorities for a given dataset.
+ * If a usage has no sector, i.e. it is managed in the project, it will have a top priority of -1.
+ * Otherwise all priorities must be given explicitly for each sector or result in NULL.
+ */
 public class SectorPriority {
   private static final Logger LOG = LoggerFactory.getLogger(SectorPriority.class);
   private final Int2IntMap sectorPriorities;
 
-  public SectorPriority(Int2IntMap sectorPriorities) {
-    this.sectorPriorities = sectorPriorities;
-  }
-
-  SectorPriority(int datasetKey, SqlSessionFactory factory) {
+  public SectorPriority(int datasetKey, SqlSessionFactory factory) {
     LOG.info("Load sector priorities for dataset {}", datasetKey);
     this.sectorPriorities = new Int2IntOpenHashMap();
     try (SqlSession session = factory.openSession()) {
@@ -33,10 +34,15 @@ public class SectorPriority {
   }
 
   public Integer priority(LinneanNameUsage u) {
-    if (u.getSectorKey() != null && sectorPriorities.containsKey((int) u.getSectorKey())) {
-      return sectorPriorities.get((int) u.getSectorKey());
+    if (u.getSectorKey() == null) {
+      return -1;
+
+    } else {
+      if (sectorPriorities.containsKey((int) u.getSectorKey())) {
+        return sectorPriorities.get((int) u.getSectorKey());
+      }
+      return null;
     }
-    return null;
   }
 
 }

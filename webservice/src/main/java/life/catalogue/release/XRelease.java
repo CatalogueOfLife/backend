@@ -38,16 +38,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-
 public class XRelease extends ProjectRelease {
   private final int baseReleaseKey;
   private final SectorImportDao siDao;
   private List<Sector> sectors;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
-  private final Int2IntMap sectorPriorities = new Int2IntOpenHashMap(); // sector keys
   private Taxon incertae;
   private XReleaseConfig xCfg;
 
@@ -138,8 +134,8 @@ public class XRelease extends ProjectRelease {
 
     updateState(ImportState.PROCESSING);
     // detect and group basionyms
-    var secPrio = new SectorPriority(sectorPriorities);
-    var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, secPrio::priority);
+    final var prios = new SectorPriority(getDatasetKey(), factory);
+    var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
     hc.setBasionymExclusions(xCfg.basionymExclusions);
     hc.consolidate();
 
@@ -214,7 +210,6 @@ public class XRelease extends ProjectRelease {
    */
   private void mergeSectors() throws Exception {
     updateState(ImportState.INSERTING);
-    int priority = 0;
     for (Sector s : sectors) {
       // the sector might not have been copied to the xrelease yet - we only copied all sectors from the base release, not the project.
       // create only if missing
@@ -226,8 +221,6 @@ public class XRelease extends ProjectRelease {
           sm.createWithID(s2);
         }
       }
-      priority = s.getPriority() == null ? priority + 1 : s.getPriority();
-      sectorPriorities.put((int)s.getId(), priority);
       checkIfCancelled();
       var ss = syncFactory.release(s, newDatasetKey, incertae, fullUser);
       ss.run();

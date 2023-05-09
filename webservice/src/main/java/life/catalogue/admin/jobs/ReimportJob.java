@@ -68,7 +68,7 @@ public class ReimportJob extends GlobalBlockingJob {
         if (latestArchive != null && latestArchive.exists()) {
           int attempt = cfg.normalizer.attemptFromArchive(latestArchive);
           LOG.debug("Import local archive for dataset {} from last attempt {}", key, attempt);
-          ImportRequest req = ImportRequest.reimport(key, getUserKey(), attempt);
+          ImportRequest req = ImportRequest.reimport(key, attempt, getUserKey());
           importManager.submit(req);
           counter++;
         } else {

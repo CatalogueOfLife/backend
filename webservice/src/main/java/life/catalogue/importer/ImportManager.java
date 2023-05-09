@@ -457,7 +457,7 @@ public class ImportManager implements Managed, Idle {
       dao.updateImportCancelled(di);
       // add back to queue
       try {
-        requests.add(ImportRequest.reimport(di.getDatasetKey(), di.getCreatedBy(), di.getAttempt()));
+        requests.add(ImportRequest.reimport(di.getDatasetKey(), di.getAttempt(), di.getCreatedBy()));
       } catch (IllegalArgumentException e) {
         // swallow
       }
