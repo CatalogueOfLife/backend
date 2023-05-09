@@ -93,7 +93,8 @@ public class ImportJob implements Runnable {
   ImportJob(ImportRequest req, DatasetWithSettings d,
             WsServerConfig cfg,
             DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, Validator validator, DoiResolver resolver,
-            NameUsageIndexService indexService, ImageService imgService, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBus bus,
+            NameUsageIndexService indexService, ImageService imgService,
+            DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBus bus,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
             BiConsumer<ImportRequest, Exception> errorCallback
@@ -112,7 +113,7 @@ public class ImportJob implements Runnable {
     this.dDao = dDao;
     this.sDao = sDao;
     this.decisionDao = decisionDao;
-    dao = new DatasetImportDao(factory, cfg.metricsRepo);
+    this.dao = diao;
     this.imgService = imgService;
     this.bus = bus;
 
@@ -131,12 +132,9 @@ public class ImportJob implements Runnable {
       throw new IllegalArgumentException("Dataset " + datasetKey + " cannot be reimported and uploaded");
 
     } else if (req.reimportAttempt != null) {
-
-       if(dataset.getImportAttempt() == null) {
-         throw new IllegalArgumentException("Dataset " + datasetKey + " was never imported before");
-       } else if (!cfg.normalizer.archive(dataset.getKey(), dataset.getImportAttempt()).exists()) {
-         throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a source archive for import attempt " + dataset.getImportAttempt());
-       }
+      if (!cfg.normalizer.archive(dataset.getKey(), req.reimportAttempt).exists()) {
+       throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a source archive for import attempt " + dataset.getImportAttempt());
+      }
 
     } else if (req.hasUpload()) {
       if(!Files.exists(req.upload)) {
@@ -203,7 +201,14 @@ public class ImportJob implements Runnable {
   private boolean prepareSourceData(Path sourceDir) throws IOException, IllegalArgumentException, InterruptedException {
     File archive = cfg.normalizer.archive(datasetKey, getAttempt());
     archive.getParentFile().mkdirs();
-    if (req.hasUpload()) {
+
+    if (req.reimportAttempt != null) {
+      // copy previous up/downloaded archive to repository
+      Path prev = cfg.normalizer.archive(dataset.getKey(), req.reimportAttempt).toPath();
+      LOG.info("Move previous archive {} for dataset {} from {} to {}", req.reimportAttempt, datasetKey, prev, archive);
+      Files.copy(prev, archive.toPath());
+
+    } else if (req.hasUpload()) {
       // if data was uploaded we need to find out the format.
       // We do this after decompression, but we need to check if we have a proxy descriptor so we can download the real files first
       if (DataFormatDetector.isProxyDescriptor(req.getUpload())) {

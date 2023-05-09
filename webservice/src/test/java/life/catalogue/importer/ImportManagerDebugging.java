@@ -96,7 +96,7 @@ public class ImportManagerDebugging {
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, new EventBus("test-bus"), SqlSessionFactoryRule.getSqlSessionFactory(),
         NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started(),
-      datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
+      diDao, datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img), jobExecutor, validator, null);
     importManager.start();
   }
   

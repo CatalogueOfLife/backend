@@ -90,10 +90,9 @@ public class ImportManager implements Managed, Idle {
   private final Validator validator;
   private final Timer importTimer;
   private final Counter failed;
-  private int abortedAttempt;
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client, EventBus bus,
-      SqlSessionFactory factory, NameIndex index, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
+      SqlSessionFactory factory, NameIndex index, DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
       NameUsageIndexService indexService, ImageService imgService, JobExecutor jobExecutor, Validator validator, DoiResolver resolver) {
     this.cfg = cfg;
     this.bus = bus;
@@ -108,7 +107,7 @@ public class ImportManager implements Managed, Idle {
     this.dDao = dDao;
     this.sDao = sDao;
     this.decisionDao = decisionDao;
-    this.dao = new DatasetImportDao(factory, cfg.metricsRepo);
+    this.dao = diao;
     importTimer = registry.timer("life.catalogue.import.timer");
     failed = registry.counter("life.catalogue.import.failed");
   }
@@ -435,7 +434,7 @@ public class ImportManager implements Managed, Idle {
         ds.remove(Setting.DATA_ACCESS);
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
-      return new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, resolver, indexService, imgService, dDao, sDao, decisionDao, bus,
+      return new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, validator, resolver, indexService, imgService, dao, dDao, sDao, decisionDao, bus,
         () -> req.start(),
           this::successCallBack,
           this::errorCallBack);

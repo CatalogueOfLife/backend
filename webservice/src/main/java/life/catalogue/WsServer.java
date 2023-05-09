@@ -343,7 +343,7 @@ public class WsServer extends Application<WsServerConfig> {
       bus,
       getSqlSessionFactory(),
       ni,
-      ddao, secdao, decdao,
+      diDao, ddao, secdao, decdao,
       indexService,
       imgService,
       executor,
