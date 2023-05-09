@@ -22,13 +22,6 @@ class RequestValidator {
     } else if (request.getContent() == null || request.getContent().isEmpty()) {
        request.setContentDefault();
     }
-    if (request.hasFilter(USAGE_ID)) {
-      if (!request.hasFilter(DATASET_KEY)) {
-        throw invalidSearchRequest("When specifying a usage ID, the dataset key must also be specified");
-      } else if (request.getFilters().size() != 2 && !request.hasFilter(UNSAFE)) {
-        throw invalidSearchRequest("No filters besides dataset key allowed when specifying usage ID");
-      }
-    }
     if (request.hasFilter(DECISION_MODE)) {
       // require a project key
       if (!request.hasFilter(CATALOGUE_KEY) || request.getFilterValues(CATALOGUE_KEY).size() > 1) {
