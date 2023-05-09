@@ -12,6 +12,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.Sex;
+
+import org.checkerframework.checker.units.qual.C;
 import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.newVernacularName;
@@ -29,6 +33,9 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
 		for (String l: new String[]{"eng", "deu", "fra"}) {
 			VernacularName v = newVernacularName(RandomUtils.randomLatinString(30));
 			v.setLanguage(l);
+      v.setSex(Sex.MALE);
+      v.setCountry(Country.FRANCE);
+      v.setArea("Bretagne");
 			objs.add(TestEntityGenerator.setUserDate(v));
 		}
 		// now sort by name as this is the order we expect in listByTaxon

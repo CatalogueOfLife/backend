@@ -52,7 +52,7 @@
     #{obj.language},
     #{obj.country},
     #{obj.area},
-    #{obj.sex},
+    #{obj.sex}::SEX,
     #{obj.referenceId},
     #{obj.createdBy},
     #{obj.modifiedBy}
