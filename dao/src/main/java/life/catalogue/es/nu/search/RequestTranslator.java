@@ -21,11 +21,7 @@ import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
 class RequestTranslator implements DownwardConverter<NameUsageSearchRequest, EsSearchRequest> {
 
   static Query generateQuery(NameUsageSearchRequest request) {
-    if (request.hasFilter(USAGE_ID)) {
-      return BoolQuery.withFilters(
-          new FilterTranslator(request).translate(DATASET_KEY),
-          new FilterTranslator(request).translate(USAGE_ID));
-    } else if (FiltersTranslator.mustGenerateFilters(request)) {
+    if (FiltersTranslator.mustGenerateFilters(request)) {
       if (request.hasQ()) {
         return BoolQuery.withFilters(
             new FiltersTranslator(request).translate(),
