@@ -3,14 +3,17 @@ package life.catalogue.resources;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
-import life.catalogue.dao.DuplicateDao;
 import life.catalogue.common.ws.MoreMediaTypes;
+import life.catalogue.dao.DuplicateDao;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
 import java.util.stream.Stream;
 
 import javax.validation.Valid;
-import javax.ws.rs.*;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.slf4j.Logger;

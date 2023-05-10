@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
 /**
  *
  */
-public abstract class NameUsageBase extends DatasetScopedEntity<String> implements NameUsage, SectorEntity {
+public abstract class NameUsageBase extends DatasetScopedEntity<String> implements NameUsage {
   public static final char EXTINCT_SYMBOL = '†';
   private static final Pattern SEC_YEAR = Pattern.compile("\\b[12][7890]\\d\\d\\b");
   private static final Pattern AUTHOR = Pattern.compile("^(?:[a-zA-Z]{1,3}[ '´`’.-]+){0,3}[\\p{L}-]{2,60}\\b");

@@ -58,7 +58,17 @@ public class BareName implements NameUsage {
   public void setDatasetKey(Integer key) {
     name.setDatasetKey(key);
   }
-  
+
+  @Override
+  public Integer getSectorKey() {
+    return name.getSectorKey();
+  }
+
+  @Override
+  public void setSectorKey(Integer sectorKey) {
+    name.setSectorKey(sectorKey);
+  }
+
   @Override
   public Name getName() {
     return name;

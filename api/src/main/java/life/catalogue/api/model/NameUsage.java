@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  *
  */
-public interface NameUsage extends DSID<String>, VerbatimEntity, RankedID, Remarkable {
+public interface NameUsage extends DSID<String>, VerbatimEntity, SectorEntity, RankedID, Remarkable {
 
   String getLabel();
 

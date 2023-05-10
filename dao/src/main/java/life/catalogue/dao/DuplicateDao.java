@@ -2,6 +2,11 @@ package life.catalogue.dao;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.MatchingMode;
@@ -9,7 +14,13 @@ import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DuplicateMapper;
 
+import life.catalogue.db.mapper.SectorMapper;
+
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
+
+import org.checkerframework.checker.units.qual.K;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -36,11 +47,24 @@ public class DuplicateDao {
   private static final Logger LOG = LoggerFactory.getLogger(DuplicateDao.class);
   private static final Object[][] EXPORT_HEADERS = new Object[1][];
   static {
-    EXPORT_HEADERS[0] = new Object[]{"ID", "decision", "status", "rank", "label", "scientificName", "authorship", "genus", "specificEpithet", "infraspecificEpithet", "accepted", "classification"};
+    EXPORT_HEADERS[0] = new Object[]{"sourceDatasetKey", "ID", "decision", "status", "rank", "label", "scientificName", "authorship", "genus", "specificEpithet", "infraspecificEpithet", "accepted", "classification"};
   }
 
 
   private final SqlSessionFactory factory;
+  private final LoadingCache<DSID<Integer>, Integer> sectorCache = Caffeine.newBuilder()
+                                            .maximumSize(10000)
+                                            .build(this::getSectorDatasetKey);
+
+  private Integer getSectorDatasetKey(@NonNull DSID<Integer> sectorKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      var s = session.getMapper(SectorMapper.class).get(sectorKey);
+      if (s != null) {
+        return s.getSubjectDatasetKey();
+      }
+    }
+    return null;
+  }
 
   public DuplicateDao(SqlSessionFactory factory) {
     this.factory = factory;
@@ -199,8 +223,9 @@ public class DuplicateDao {
   }
 
   private Stream<Object[]> mapCSV(Duplicate d) {
-    // "ID", "decision", "status", "rank", "label", "scientificName", "authorship", "genus", "specificEpithet", "infraspecificEpithet", "accepted", "classification"};
+    // "sourceDatasetKey", "ID", "decision", "status", "rank", "label", "scientificName", "authorship", "genus", "specificEpithet", "infraspecificEpithet", "accepted", "classification"};
     return d.getUsages().stream().map(u -> new Object[]{
+      u.getUsage().getSectorKey() == null ? null : sectorCache.get(u.getUsage().getSectorDSID()),
       u.getUsage().getId(),
       u.getDecision() == null ? null : u.getDecision().getMode(),
       u.getUsage().getStatus(),
