@@ -273,7 +273,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         d.setType(DatasetType.OTHER);
       }
       // remove null sources & agents
-      if (d.getSource() != null) {
+      if (d.getSource() != null && !d.getSource().isEmpty()) {
         try {
           d.getSource().removeIf(java.util.Objects::isNull);
         } catch (UnsupportedOperationException e) {
@@ -297,13 +297,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         });
       }
       if (d.getCreator() != null) {
-        d.setCreator(CollectionUtils.removeNull(d.getCreator()));
+        d.setCreator(removeNullOrEmpty(d.getCreator()));
       }
       if (d.getEditor() != null) {
-        d.setEditor(CollectionUtils.removeNull(d.getEditor()));
+        d.setEditor(removeNullOrEmpty(d.getEditor()));
       }
       if (d.getContributor() != null) {
-        d.setContributor(CollectionUtils.removeNull(d.getContributor()));
+        d.setContributor(removeNullOrEmpty(d.getContributor()));
       }
       if (d.getDescription() != null) {
         d.setDescription(stripHtml(d.getDescription()));
@@ -312,6 +312,17 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         d.setTitle(stripHtml(d.getTitle()));
       }
     }
+  }
+
+  /**
+   * Returns a new (!) list with all nulls or empty agents removed.
+   * We don't change the list in place to allow for immutable input
+   */
+  private static List<Agent> removeNullOrEmpty(List<Agent> c) {
+    if (c == null) return null;
+    return c.stream()
+            .filter(a -> a != null && !a.isEmpty())
+            .collect(Collectors.toList());
   }
 
   private static String buildID(Citation c) {

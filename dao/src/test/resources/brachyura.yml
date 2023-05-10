@@ -1,0 +1,21 @@
+---
+title: 'World List of marine Brachyura'
+alias: 'WoRMS Brachyura'
+description: 'This global marine species list is part of the World Register of Marine Species database, which aims to provide the most authoritative list of names of all marine species globally. Data have been contributed to the Catalogue of Life via the WoRMS, hosted by the Flanders Marine Institute (VLIZ).'
+geographicScope: Global
+taxonomicScope: crabs
+temporalScope: 1758-2023
+confidence: '5'
+completeness: '100'
+license: CC-BY
+version: 'ver. (04/2023)'
+released: '2023-04-01'
+website: 'https://www.marinespecies.org'
+logo: 'https://www.marinespecies.org/documents/WoRMS%20branding/WoRMS_logo_blue_negative.png'
+citation: 'Ng, P.K.L.; Davie, P. (2023). World List of marine Brachyura. Accessed at https://www.marinespecies.org on 2023-04-01'
+code: zoological
+gazetteer: mrgid
+contact: {  }
+editors: {  }
+organisations: {  }
+
