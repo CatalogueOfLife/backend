@@ -18,30 +18,42 @@ import org.slf4j.LoggerFactory;
  */
 public class SectorPriority {
   private static final Logger LOG = LoggerFactory.getLogger(SectorPriority.class);
-  private final Int2IntMap sectorPriorities;
+  private final Int2IntMap mergeSectorPrios;
+  private final int minimum;
 
   public SectorPriority(int datasetKey, SqlSessionFactory factory) {
     LOG.info("Load sector priorities for dataset {}", datasetKey);
-    this.sectorPriorities = new Int2IntOpenHashMap();
+    this.mergeSectorPrios = new Int2IntOpenHashMap();
+    int min = 0;
+    int max = 0;
     try (SqlSession session = factory.openSession()) {
       var sm = session.getMapper(SectorMapper.class);
+      // ordered by priority null sort last
       for (var s : sm.listByPriority(datasetKey, Sector.Mode.MERGE)) {
         if (s.getPriority() != null) {
-          sectorPriorities.put(s.getId(), s.getPriority());
+          mergeSectorPrios.put(s.getId(), s.getPriority());
+          min = Math.min(min, s.getPriority());
+          max = Math.max(max, s.getPriority());
+        } else {
+          mergeSectorPrios.put((int)s.getId(), ++max);
         }
       }
     }
+    this.minimum = min;
+    LOG.info("Loaded {} merge sector priorities for dataset {} from {} to {}", mergeSectorPrios.size(), datasetKey, min, max);
   }
 
   public Integer priority(LinneanNameUsage u) {
     if (u.getSectorKey() == null) {
-      return -1;
+      // project managed data has highest priority
+      return minimum-2;
 
     } else {
-      if (sectorPriorities.containsKey((int) u.getSectorKey())) {
-        return sectorPriorities.get((int) u.getSectorKey());
+      if (mergeSectorPrios.containsKey((int) u.getSectorKey())) {
+        return mergeSectorPrios.get((int) u.getSectorKey());
       }
-      return null;
+      // no merge sector, use 2nd highest priority
+      return minimum-1;
     }
   }
 

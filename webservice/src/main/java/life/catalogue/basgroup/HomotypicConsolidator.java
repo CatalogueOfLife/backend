@@ -399,13 +399,13 @@ public class HomotypicConsolidator {
     List<LinneanNameUsage> candidates = new ArrayList<>();
 
     // 1. by sector priority
-    Integer highestPriority = null;
+    Integer currMinPriority = null;
     for (LinneanNameUsage u : group.getAll()) {
       Integer priority = priorityFunc.apply(u);
-      if (Objects.equals(priority, highestPriority)) {
+      if (Objects.equals(priority, currMinPriority)) {
         candidates.add(u);
-      } else if (priority != null && (highestPriority == null || priority < highestPriority)) {
-        highestPriority = priority;
+      } else if (priority != null && (currMinPriority == null || priority < currMinPriority)) {
+        currMinPriority = priority;
         candidates.clear();
         candidates.add(u);
       }
