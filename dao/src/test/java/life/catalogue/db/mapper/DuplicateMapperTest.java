@@ -116,8 +116,12 @@ public class DuplicateMapperTest {
       }
 
       // test with larger number of parameter ids than postgres 32767 limit
-      ids = IntStream.range(1, 50000).boxed().map(String::valueOf).collect(Collectors.toList());
+      ids = IntStream.range(0, 50000).boxed().map(String::valueOf).collect(Collectors.toList());
       res = dm.usagesByIds(datasetKey, Datasets.COL, ids);
+
+      // try with project
+      res = dm.usagesByIds(datasetKey, datasetKey, ids);
+      res = dm.usagesByIds(Datasets.COL, Datasets.COL, ids);
     }
 
   }
@@ -173,7 +177,8 @@ public class DuplicateMapperTest {
     dups = mapper.duplicates(MatchingMode.FUZZY, null, 2, datasetKey, 999, 999, null,
       null, null, true, null, null, null, null, null,
       new Page(0, 5));
-    assertEquals(0, dups.size());  }
+    assertEquals(0, dups.size());
+  }
   
   @Test
   public void duplicateNames() {

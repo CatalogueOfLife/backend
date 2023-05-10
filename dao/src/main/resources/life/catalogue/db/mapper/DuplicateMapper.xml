@@ -85,7 +85,15 @@
       LEFT JOIN name_usage a ON a.dataset_key=#{datasetKey} AND u.parent_id=a.id AND is_synonym(u.status)
       LEFT JOIN name an ON an.dataset_key=#{datasetKey} AND a.name_id=an.id
       LEFT JOIN reference r ON r.dataset_key=#{datasetKey} AND n.published_in_id=r.id
-      LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.subject_dataset_key=#{datasetKey} AND ed.dataset_key=#{projectKey}
+    <choose>
+      <when test="datasetKey == projectKey">
+        LEFT JOIN verbatim_source v ON v.dataset_key=#{projectKey} AND v.id=u.id
+        LEFT JOIN decision ed ON ed.subject_id=v.source_id AND ed.subject_dataset_key=#{datasetKey} AND ed.dataset_key=#{projectKey}
+      </when>
+      <otherwise>
+        LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.subject_dataset_key=#{datasetKey} AND ed.dataset_key=#{projectKey}
+      </otherwise>
+    </choose>
     WHERE u.dataset_key=#{datasetKey}
   </select>
 
