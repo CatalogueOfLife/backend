@@ -95,6 +95,33 @@ public class DuplicateMapperTest {
     assertNotNull(d.getKey());
     printDiff(DecisionMapperTest.removeCreatedProps(d), d1);
     assertEquals(DecisionMapperTest.removeCreatedProps(d), d1);
+
+    // now with project duplicates without decisions
+    res = mapper.usagesByIds(datasetKey, datasetKey, ids);
+    assertEquals(1, res.size());
+    for (Duplicate.UsageDecision u : res) {
+      assertFalse(u.getClassification().isEmpty());
+      assertNull(u.getDecision());
+    }
+
+    // project dupe with decision
+    EditorialDecision d2 = TestEntityGenerator.setUser(new EditorialDecision());
+    d2.setDatasetKey(datasetKey);
+    d2.setSubjectDatasetKey(1001);
+    d2.setSubject(TreeMapperTest.nameref("X45"));
+    d2.setMode(EditorialDecision.Mode.UPDATE);
+    dm.create(d2);
+
+    res = mapper.usagesByIds(datasetKey, datasetKey, ids);
+    assertEquals(1, res.size());
+    for (Duplicate.UsageDecision u : res) {
+      assertFalse(u.getClassification().isEmpty());
+      d = u.getDecision();
+      assertNotNull(d);
+      assertNotNull(d.getKey());
+      printDiff(DecisionMapperTest.removeCreatedProps(d), d2);
+      assertEquals(DecisionMapperTest.removeCreatedProps(d), d2);
+    }
   }
 
   void printDiff(Object o1, Object o2) {

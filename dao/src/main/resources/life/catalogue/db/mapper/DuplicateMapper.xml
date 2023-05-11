@@ -94,7 +94,7 @@
     <choose>
       <when test="datasetKey == projectKey">
         LEFT JOIN verbatim_source v ON v.dataset_key=#{projectKey} AND v.id=u.id
-        LEFT JOIN decision ed ON ed.subject_id=v.source_id AND ed.subject_dataset_key=#{datasetKey} AND ed.dataset_key=#{projectKey}
+        LEFT JOIN decision ed ON ed.subject_id=v.source_id AND ed.subject_dataset_key=v.source_dataset_key AND ed.dataset_key=#{projectKey}
       </when>
       <otherwise>
         LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.subject_dataset_key=#{datasetKey} AND ed.dataset_key=#{projectKey}
