@@ -53,9 +53,22 @@ public class ManagedService {
     return state;
   }
 
+  /**
+   * Tries to start all managed components. If one fails to start, the other ones are still tried and finally an exception thrown.
+   * @throws Exception
+   */
   public void startAll() throws Exception {
+    Exception e = null;
     for (var c : Component.values()) {
-      start(c);
+      try {
+        start(c);
+      } catch (Exception ex) {
+        LOG.error("Failed to start component {}", c, ex);
+        e = ex;
+      }
+    }
+    if (e!= null) {
+      throw e;
     }
   }
 
