@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.db.PgConnectionRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
@@ -42,7 +43,7 @@ public class DuplicateMapperTest {
   DuplicateMapper mapper;
   SqlSession session;
 
-  public static PgSetupRule pg = new PgSetupRule();
+  public static SqlSessionFactoryRule pg = new PgSetupRule();
   public static final TestDataRule dataRule = TestDataRule.duplicates();
 
   @ClassRule
@@ -118,10 +119,21 @@ public class DuplicateMapperTest {
       // test with larger number of parameter ids than postgres 32767 limit
       ids = IntStream.range(0, 50000).boxed().map(String::valueOf).collect(Collectors.toList());
       res = dm.usagesByIds(datasetKey, Datasets.COL, ids);
+      assertEquals(51, res.size());
 
       // try with project
       res = dm.usagesByIds(datasetKey, datasetKey, ids);
+      assertEquals(51, res.size());
+      for (var u : res) {
+        if (u.getUsage().getRank().isSuprageneric()) continue;
+        assertNull(u.getDecision());
+        assertNotNull(u.getUsage());
+        assertNotNull(u.getSourceId());
+        assertEquals(1001, (int)u.getSourceDatasetKey());
+        assertFalse(u.getClassification().isEmpty());
+      }
       res = dm.usagesByIds(Datasets.COL, Datasets.COL, ids);
+      assertEquals(0, res.size());
     }
 
   }

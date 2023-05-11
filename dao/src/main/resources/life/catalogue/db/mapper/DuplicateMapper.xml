@@ -57,28 +57,34 @@
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="u"/>
       <property name="prefix" value=""/>
-    </include>
-    ,
+    </include>,
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
       <property name="alias" value="n"/>
       <property name="prefix" value="n_"/>
-    </include>
-    ,
+    </include>,
     coalesce(parseInt(n.combination_year), r.year) AS n_publishedInYear,
     <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
       <property name="alias" value="a"/>
       <property name="prefix" value="a_"/>
-    </include>
-    ,
+    </include>,
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
       <property name="alias" value="an"/>
       <property name="prefix" value="a_n_"/>
-    </include>
-    ,
+    </include>,
     <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
       <property name="alias" value="ed."/>
       <property name="prefix" value="ed_"/>
-    </include>
+    </include>,
+    <choose>
+      <when test="datasetKey == projectKey">
+        v.source_id,
+        v.source_dataset_key
+      </when>
+      <otherwise>
+        NULL as source_id,
+        NULL as source_dataset_key
+      </otherwise>
+    </choose>
     FROM name_usage u
       JOIN duplicate_ids i ON i.id=u.id
       JOIN name n ON n.dataset_key=#{datasetKey} AND u.name_id=n.id

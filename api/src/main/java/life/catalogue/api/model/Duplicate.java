@@ -81,6 +81,8 @@ public class Duplicate {
 
   public static class UsageDecision {
     private NameUsage usage;
+    private String sourceId;
+    private Integer sourceDatasetKey;
     private List<SimpleName> classification;
     private EditorialDecision decision;
   
@@ -91,7 +93,23 @@ public class Duplicate {
     public void setUsage(NameUsage usage) {
       this.usage = usage;
     }
-  
+
+    public String getSourceId() {
+      return sourceId;
+    }
+
+    public void setSourceId(String sourceId) {
+      this.sourceId = sourceId;
+    }
+
+    public Integer getSourceDatasetKey() {
+      return sourceDatasetKey;
+    }
+
+    public void setSourceDatasetKey(Integer sourceDatasetKey) {
+      this.sourceDatasetKey = sourceDatasetKey;
+    }
+
     public List<SimpleName> getClassification() {
       return classification;
     }
@@ -107,20 +125,22 @@ public class Duplicate {
     public void setDecision(EditorialDecision decision) {
       this.decision = decision;
     }
-  
+
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (!(o instanceof UsageDecision)) return false;
       UsageDecision that = (UsageDecision) o;
-      return Objects.equals(usage, that.usage) &&
-          Objects.equals(classification, that.classification) &&
-          Objects.equals(decision, that.decision);
+      return Objects.equals(usage, that.usage)
+             && Objects.equals(sourceId, that.sourceId)
+             && Objects.equals(sourceDatasetKey, that.sourceDatasetKey)
+             && Objects.equals(classification, that.classification)
+             && Objects.equals(decision, that.decision);
     }
-  
+
     @Override
     public int hashCode() {
-      return Objects.hash(usage, classification, decision);
+      return Objects.hash(usage, sourceId, sourceDatasetKey, classification, decision);
     }
 
     @Override
