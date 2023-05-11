@@ -153,7 +153,11 @@ public class DuplicateMapperTest {
       assertEquals(51, res.size());
       for (var u : res) {
         if (u.getUsage().getRank().isSuprageneric()) continue;
-        assertNull(u.getDecision());
+        if (u.getUsage().getId().equals("45")) {
+          assertNotNull(u.getDecision());
+        } else {
+          assertNull(u.getDecision());
+        }
         assertNotNull(u.getUsage());
         assertNotNull(u.getSourceId());
         assertEquals(1001, (int)u.getSourceDatasetKey());
