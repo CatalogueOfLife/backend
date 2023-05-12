@@ -1,12 +1,10 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetImport;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.type2.StringCount;
@@ -105,7 +103,7 @@ public class DatasetImportDao {
       }
     }
   }
-  
+
   public DatasetImport getAttempt(int datasetKey, int attempt) {
     try (SqlSession session = factory.openSession(true)) {
       return session.getMapper(DatasetImportMapper.class).get(datasetKey, attempt);
@@ -290,5 +288,26 @@ public class DatasetImportDao {
     } catch (IOException e) {
       LOG.error("Failed to remove all metrics for dataset {}", datasetKey, e);
     }
+  }
+
+  /**
+   * @return the aggregated metrics for all releases of the project
+   * @param projectKey
+   * @param inclDeleted if true also aggregate metrics from deleted releases
+   * @return
+   */
+  public ImportMetrics getReleaseMetrics(int projectKey, boolean inclDeleted) {
+    ImportMetrics metrics = new ImportMetrics();
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      DatasetImportMapper dim = session.getMapper(DatasetImportMapper.class);
+      for (var d : dm.listReleases(projectKey)) {
+        if (d.isDeleted() && !inclDeleted) {
+          continue;
+        }
+        metrics.add(dim.get(projectKey, d.getAttempt()));
+      }
+    }
+    return metrics;
   }
 }

@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -69,4 +70,9 @@ public class DatasetImportResource {
     return diDao.getFileMetricsDao().getNames(key, attempt);
   }
 
+  @GET
+  @Path("releases")
+  public ImportMetrics getReleaseMetrics(@PathParam("key") int key) {
+    return diDao.getReleaseMetrics(key, false);
+  }
 }

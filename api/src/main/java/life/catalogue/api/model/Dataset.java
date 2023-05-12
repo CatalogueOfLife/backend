@@ -754,6 +754,12 @@ public class Dataset extends DataEntity<Integer> {
     this.issn = issn;
   }
 
+
+  @JsonIgnore
+  public boolean isDeleted() {
+    return deleted != null;
+  }
+
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getCitation() {
     if (_citation == null) {
@@ -828,5 +834,4 @@ public class Dataset extends DataEntity<Integer> {
   public String toString() {
     return "Dataset " + key + ": " + attempt;
   }
-
 }
