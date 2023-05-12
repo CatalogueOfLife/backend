@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.security.RolesAllowed;
@@ -189,5 +190,16 @@ public class ImporterResource {
       }
     }
     return null;
+  }
+
+  @POST
+  @Path("github")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public void githubWebhook(@Context HttpHeaders headers, Map<String, Object> json) {
+    String signature = headers.getHeaderString("X-Hub-Signature");
+    String signature256 = headers.getHeaderString("X-Hub-Signature-256");
+    LOG.info("Github signature: {}", signature);
+    LOG.info("Github signature256: {}", signature256);
+    LOG.info("Github webhook received: {}", json);
   }
 }
