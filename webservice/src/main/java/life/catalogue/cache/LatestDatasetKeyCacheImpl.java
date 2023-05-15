@@ -1,5 +1,6 @@
 package life.catalogue.cache;
 
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -9,6 +10,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.NotFoundException;
@@ -49,12 +51,14 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
                                                                           .build(k -> lookupLatest(k, true, true));
   private final LoadingCache<Integer, Integer> annualReleases = Caffeine.newBuilder()
                                                                         .maximumSize(50)
-                                                                        .expireAfterWrite(30, TimeUnit.DAYS)
                                                                         .build(y -> lookupAnnualRelease(y, false));
   private final LoadingCache<Integer, Integer> annualXReleases = Caffeine.newBuilder()
                                                                         .maximumSize(50)
-                                                                        .expireAfterWrite(30, TimeUnit.DAYS)
-                                                                         .build(y -> lookupAnnualRelease(y, true));
+                                                                        .build(y -> lookupAnnualRelease(y, true));
+  private final LoadingCache<UUID, Integer> gbif2clb = Caffeine.newBuilder()
+                                                                         .maximumSize(MAX_SIZE)
+                                                                         .build(gbif -> lookupByGbif(gbif));
+
   private final LoadingCache<ReleaseAttempt, Integer> releaseAttempt = Caffeine.newBuilder()
                                                                                .maximumSize(MAX_SIZE)
                                                                                .expireAfterWrite(30, TimeUnit.DAYS)
@@ -94,6 +98,11 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
   }
 
   @Override
+  public @Nullable Integer getDatasetKeyByGbif(UUID gbif) {
+    return null;
+  }
+
+  @Override
   public boolean isLatestRelease(int datasetKey) {
     var info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.origin == DatasetOrigin.RELEASE && info.sourceKey != null) {
@@ -117,6 +126,12 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       return dm.releaseAttempt(release.projectKey, release.attempt);
+    }
+  }
+
+  private Integer lookupByGbif(UUID gbif) {
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(DatasetMapper.class).getKeyByGBIF(gbif);
     }
   }
 

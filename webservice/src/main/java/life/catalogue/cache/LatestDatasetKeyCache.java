@@ -1,9 +1,9 @@
 package life.catalogue.cache;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public interface LatestDatasetKeyCache {
@@ -16,6 +16,8 @@ public interface LatestDatasetKeyCache {
   @Nullable Integer getReleaseByAttempt(int projectKey, int attempt);
 
   @Nullable Integer getColAnnualRelease(int year, boolean extended);
+
+  @Nullable Integer getDatasetKeyByGbif(UUID gbif);
 
   boolean isLatestRelease(int datasetKey);
 

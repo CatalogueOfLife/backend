@@ -12,6 +12,7 @@ import life.catalogue.db.TestDataRule;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.UUID;
 
 import org.apache.http.HttpStatus;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -45,6 +46,11 @@ public class PortalPageRendererTest {
 
     @Override
     public @Nullable Integer getColAnnualRelease(int year, boolean ext) {
+      return null;
+    }
+
+    @Override
+    public @Nullable Integer getDatasetKeyByGbif(UUID gbif) {
       return null;
     }
 

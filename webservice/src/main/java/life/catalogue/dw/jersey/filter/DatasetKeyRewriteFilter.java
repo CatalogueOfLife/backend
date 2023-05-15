@@ -8,10 +8,7 @@ import life.catalogue.dao.DatasetInfoCache;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +42,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   private static final String COL_PREFIX = "(X?COL)";
   private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_PREFIX + "(20\\d\\d)", Pattern.CASE_INSENSITIVE);
   private static final Pattern COL_PATTERN = Pattern.compile("^" + COL_PREFIX + "(20\\d\\d)$");
+  protected static final Pattern GBIF_PATTERN = Pattern.compile("^gbif-([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$", Pattern.CASE_INSENSITIVE);
   // all parameters that contain dataset keys and which we check if they need to be rewritten
   private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey", "sourcedatasetkey", "hassourcedataset", "releasedfrom");
   private static final Set<String> METHODS  = Set.of(HttpMethod.POST, HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
@@ -100,6 +98,17 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
         Integer rkey = releaseKeyFromYear(m);
         builder.replacePath(m.replaceFirst("dataset/" + rkey));
         req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1) + m.group(2));
+      } else {
+        m = GBIF_PATTERN.matcher(req.getUriInfo().getPath());
+        if (m.find()) {
+          UUID gbif = UUID.fromString(m.group(1));
+          Integer datasetKey = cache.getDatasetKeyByGbif(gbif);
+          if (datasetKey == null) {
+            throw new NotFoundException("GBIF dataset key " + m.group() + " not found");
+          }
+          builder.replacePath(m.replaceFirst("dataset/" + datasetKey));
+          req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group());
+        }
       }
     }
 
