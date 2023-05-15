@@ -199,7 +199,7 @@ public class ImporterResource {
     String signature = headers.getHeaderString("X-Hub-Signature");
     String signature256 = headers.getHeaderString("X-Hub-Signature-256");
     LOG.info("Github signature: {}", signature);
-    LOG.info("Github signature256: {}", signature256);
+    LOG.info("Github signature256: {}", signature256 );
     LOG.info("Github webhook received: {}", json);
   }
 }
