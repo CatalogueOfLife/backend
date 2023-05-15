@@ -756,7 +756,7 @@ public class Dataset extends DataEntity<Integer> {
 
 
   @JsonIgnore
-  public boolean isDeleted() {
+  public boolean hasDeletionDate() {
     return deleted != null;
   }
 

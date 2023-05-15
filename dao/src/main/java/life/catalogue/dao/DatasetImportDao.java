@@ -4,7 +4,6 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.lang.Exceptions;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.type2.StringCount;
@@ -302,7 +301,7 @@ public class DatasetImportDao {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetImportMapper dim = session.getMapper(DatasetImportMapper.class);
       for (var d : dm.listReleases(projectKey)) {
-        if (d.isDeleted() && !inclDeleted) {
+        if (d.hasDeletionDate() && !inclDeleted) {
           continue;
         }
         metrics.add(dim.get(projectKey, d.getAttempt()));
