@@ -5,6 +5,9 @@ emendation,SPELLING_CORRECTION
 correction,SPELLING_CORRECTION
 correction_of,SPELLING_CORRECTION
 spelling_correction_of,SPELLING_CORRECTION
+orthographic variant,SPELLING_CORRECTION
+orth.var.,SPELLING_CORRECTION
+orthographic variety,SPELLING_CORRECTION
 based,BASED_ON
 nomen novum,REPLACEMENT_NAME
 replacement,REPLACEMENT_NAME

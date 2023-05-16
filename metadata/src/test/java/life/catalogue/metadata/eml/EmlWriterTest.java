@@ -49,7 +49,7 @@ public class EmlWriterTest {
         Agent.person("Fax", "Feier"),
         Agent.organisation("Species 2000")
       ));
-      d.setLicense(License.CC0);
+      d.setLicense(License.OTHER);
       d.setLogo(URI.create("http://huhu.me"));
       d.setTaxonomicScope("tax scope");
       d.setVersion("134.17");
@@ -67,6 +67,13 @@ public class EmlWriterTest {
       System.out.println(eml);
       assertFalse(eml.contains("COL backend services"));
       assertTrue(eml.contains("Species 2000"));
+      assertFalse(eml.contains("intellectualRights"));
+
+      d.setLicense(License.CC0);
+      EmlWriter.write(d, f);
+      eml = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
+      System.out.println(eml);
+      assertTrue(eml.contains("intellectualRights"));
 
       // roundtrip?
       Dataset d2 = EmlParser.parse(IOUtils.toInputStream(eml, StandardCharsets.UTF_8), StandardCharsets.UTF_8).get().getDataset();

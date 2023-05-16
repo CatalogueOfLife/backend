@@ -18,6 +18,8 @@ public class NomRelTypeParserTest extends ParserTestBase<NomRelType> {
   public void parse() throws Exception {
     assertParse(NomRelType.BASIONYM, "hasBasionym");
     assertParse(NomRelType.SPELLING_CORRECTION, "EMENDATION");
+    assertParse(NomRelType.SPELLING_CORRECTION, "Orthographic variant");
+    assertParse(NomRelType.SPELLING_CORRECTION, "Orth var");
     assertParse(NomRelType.HOMOTYPIC, "objective synonym");
     assertParse(NomRelType.HOMOTYPIC, "nomenclatural-synonym");
   }
