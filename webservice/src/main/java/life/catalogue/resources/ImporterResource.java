@@ -20,6 +20,8 @@ import life.catalogue.importer.ImportRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -188,6 +190,42 @@ public class ImporterResource {
     return null;
   }
 
+  public static class WebHook {
+    public Integer hook_id;
+    public Hook hook;
+    public Sender sender;
+  }
+  public static class Hook {
+    public String name;
+    public boolean active;
+    public List<String> events;
+    public ZonedDateTime updated_at;
+    public ZonedDateTime created_at;
+  }
+  public static class Sender {
+    public Integer id;
+    public String login;
+    public String type;
+    public String url;
+    public String html_url;
+  }
+
+  @POST
+  @Path("{key}/github2")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public void githubWebhook2(@PathParam("key") int datasetKey, @Context HttpHeaders headers, WebHook hook) {
+    String signature = headers.getHeaderString("X-Hub-Signature");
+    String signature256 = headers.getHeaderString("X-Hub-Signature-256");
+    LOG.info("Github signature: {}", signature);
+    LOG.info("Github signature256: {}", signature256 );
+    LOG.info("Github webhook received: {}", hook);
+    LOG.info("Github webhook received from user {} ({}): {}", hook.sender.login, hook.sender.id, hook.sender.html_url);
+    if (cfg.githubTokens == null || !cfg.githubTokens.contains(signature)) {
+      // no auth
+      throw new NotAuthorizedException("Valid github token is required");
+    }
+  }
+
   @POST
   @Path("{key}/github")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -197,6 +235,7 @@ public class ImporterResource {
     LOG.info("Github signature: {}", signature);
     LOG.info("Github signature256: {}", signature256 );
     LOG.info("Github webhook received: {}", json);
+    LOG.info("Github webhook received from: {}", json.get("sender"));
     if (cfg.githubTokens == null || !cfg.githubTokens.contains(signature)) {
       // no auth
       throw new NotAuthorizedException("Valid github token is required");
