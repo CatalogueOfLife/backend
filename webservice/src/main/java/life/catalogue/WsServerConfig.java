@@ -19,7 +19,9 @@ import life.catalogue.img.ImgConfig;
 import java.io.File;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.validation.Valid;
@@ -65,6 +67,12 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    * Require a secure SSL connection when basic authentication is used.
    */
   public boolean requireSSL = false;
+
+  /**
+   * Github security tokens.
+   */
+  @NotNull
+  public Set<String> githubTokens = new HashSet<>();
 
   @Valid
   @NotNull
