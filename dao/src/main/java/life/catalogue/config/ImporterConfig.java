@@ -32,7 +32,12 @@ public class ImporterConfig {
    */
   public String githubToken;
   public String githubTokenGeoff;
-  
+  /**
+   * Github shared secret to encrypt webhook messages
+   */
+  @NotNull
+  public String githubHookSecret;
+
   /**
    * Number of seconds to wait after an import has finished before the job is done.
    * This is really for testing only to avoid import jobs to complete before the assertions have run.

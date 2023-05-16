@@ -20,6 +20,7 @@ import life.catalogue.importer.ImportRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -32,6 +33,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.codec.digest.HmacAlgorithms;
+import org.apache.commons.codec.digest.HmacUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,12 +53,19 @@ public class ImporterResource {
   private final DatasetImportDao dao;
   private final DatasetDao ddao;
   private final WsServerConfig cfg;
+  private final HmacUtils ghSha256;
 
   public ImporterResource(WsServerConfig cfg, ImportManager importManager, DatasetImportDao diDao, DatasetDao ddao) {
     this.importManager = importManager;
     dao = diDao;
     this.ddao = ddao;
     this.cfg = cfg;
+    if (StringUtils.isBlank(cfg.importer.githubHookSecret)) {
+      ghSha256 = null;
+      LOG.warn("No GitHub hook secret configured. Turn webhooks off");
+    } else {
+      ghSha256 = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, cfg.importer.githubHookSecret);
+    }
   }
   
   @GET
@@ -190,56 +201,22 @@ public class ImporterResource {
     return null;
   }
 
-  public static class WebHook {
-    public Integer hook_id;
-    public Hook hook;
-    public Sender sender;
-  }
-  public static class Hook {
-    public String name;
-    public boolean active;
-    public List<String> events;
-    public ZonedDateTime updated_at;
-    public ZonedDateTime created_at;
-  }
-  public static class Sender {
-    public Integer id;
-    public String login;
-    public String type;
-    public String url;
-    public String html_url;
-  }
-
-  @POST
-  @Path("{key}/github2")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public void githubWebhook2(@PathParam("key") int datasetKey, @Context HttpHeaders headers, WebHook hook) {
-    String signature = headers.getHeaderString("X-Hub-Signature");
-    String signature256 = headers.getHeaderString("X-Hub-Signature-256");
-    LOG.info("Github signature: {}", signature);
-    LOG.info("Github signature256: {}", signature256 );
-    LOG.info("Github webhook received: {}", hook);
-    LOG.info("Github webhook received from user {} ({}): {}", hook.sender.login, hook.sender.id, hook.sender.html_url);
-    if (cfg.githubTokens == null || !cfg.githubTokens.contains(signature)) {
-      // no auth
-      throw new NotAuthorizedException("Valid github token is required");
-    }
-  }
-
   @POST
   @Path("{key}/github")
   @Consumes(MediaType.APPLICATION_JSON)
-  public ImportRequest githubWebhook(@PathParam("key") int datasetKey, @Context HttpHeaders headers, Map<String, Object> json) {
-    String signature = headers.getHeaderString("X-Hub-Signature");
+  public ImportRequest githubWebhook(@PathParam("key") int datasetKey, @Context HttpHeaders headers, String payload) {
+    // sha256=4eed68333c53cbf583400f11eec7eb4b8f1aee19f476da4e49be833762d159d7
     String signature256 = headers.getHeaderString("X-Hub-Signature-256");
-    LOG.info("Github signature: {}", signature);
     LOG.info("Github signature256: {}", signature256 );
-    LOG.info("Github webhook received: {}", json);
-    LOG.info("Github webhook received from: {}", json.get("sender"));
-    if (cfg.githubTokens == null || !cfg.githubTokens.contains(signature)) {
-      // no auth
-      throw new NotAuthorizedException("Valid github token is required");
+    LOG.info("Github webhook received: {}", payload);
+
+    String signed = "sha256=" + ghSha256.hmacHex(payload);
+    LOG.info("Github payload signed: {}", signed);
+
+    if (signed.equals(signature256)) {
+      return importManager.submit(ImportRequest.external(datasetKey, Users.IMPORTER));
     }
-    return importManager.submit(ImportRequest.external(datasetKey, Users.IMPORTER));
+    throw new NotAuthorizedException("Valid github token is required to schedule import of dataset {}", datasetKey);
   }
+  
 }
