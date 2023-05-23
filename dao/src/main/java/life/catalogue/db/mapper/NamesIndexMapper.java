@@ -52,7 +52,9 @@ public interface NamesIndexMapper extends CRUD<Integer, IndexName> {
 
   /**
    * Iterate through all name index entries as simple names with aggregated ids (@@ concatenation) from sources.
+   * @param datasetKeys list of datasets to include in the result
+   * @param minDatasets minimum number of datasets in which the name appears
    */
-  Cursor<SimpleName> processDatasets(@Param("datasetKeys") List<Integer> datasetKeys);
+  Cursor<SimpleName> processDatasets(@Param("datasetKeys") List<Integer> datasetKeys, @Param("minDatasets") Integer minDatasets );
 
 }

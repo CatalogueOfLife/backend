@@ -27,6 +27,6 @@ public class NidxExportJobTest extends EmailNotificationTemplateTest {
 
   @Override
   public BackgroundJob buildJob() {
-    return new NidxExportJob(List.copyOf(dataRule.testData.datasetKeys), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), new WsServerConfig());
+    return new NidxExportJob(List.copyOf(dataRule.testData.datasetKeys), 1, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), new WsServerConfig());
   }
 }

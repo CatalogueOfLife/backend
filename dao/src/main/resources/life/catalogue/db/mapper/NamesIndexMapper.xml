@@ -129,6 +129,9 @@
     FROM names_index n JOIN name_match nm ON n.id=nm.index_id JOIN name_usage u ON u.dataset_key = nm.dataset_key AND u.name_id = nm.name_id
     WHERE nm.dataset_key IN <foreach item="key" collection="datasetKeys" open="(" separator="," close=")">#{key}</foreach>
     GROUP BY n.scientific_name, n.authorship, n.rank
+    <if test="minDatasets != null and minDatasets > 0">
+      HAVING count(u.dataset_key) >= #{minDatasets}
+    </if>
     ORDER BY n.scientific_name, n.authorship, n.rank
   </select>
 

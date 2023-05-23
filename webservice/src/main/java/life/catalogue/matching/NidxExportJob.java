@@ -45,11 +45,13 @@ public class NidxExportJob extends BackgroundJob {
   private final List<Integer> datasetKeys;
   private final List<Dataset> datasets;
   private final JobResult result;
+  private int minDatasets;
   private int counter = 0;
 
-  public NidxExportJob(List<Integer> datasetKeys, int userKey, SqlSessionFactory factory, WsServerConfig cfg) {
+  public NidxExportJob(List<Integer> datasetKeys, int minDatasets, int userKey, SqlSessionFactory factory, WsServerConfig cfg) {
     super(JobPriority.LOW, userKey);
     this.cfg = cfg;
+    this.minDatasets = minDatasets;
     this.datasetKeys = List.copyOf(datasetKeys);
     List<Dataset> datasets = new ArrayList<>();
     try (SqlSession session = factory.openSession()) {
@@ -94,7 +96,7 @@ public class NidxExportJob extends BackgroundJob {
 
       try (SqlSession session = factory.openSession()) {
         var nim = session.getMapper(NamesIndexMapper.class);
-        try (var cursor = nim.processDatasets(datasetKeys)) {
+        try (var cursor = nim.processDatasets(datasetKeys, minDatasets)) {
           for (var sn : cursor) {
             counter++;
             var row = new String[datasetKeys.size()+3];

@@ -115,8 +115,8 @@ public class NamesIndexResource {
 
   @POST
   @Path("export")
-  public NidxExportJob export(@QueryParam("datasetKey") List<Integer> keys, @Auth User user) {
-    NidxExportJob job = new NidxExportJob(keys, user.getKey(), factory, cfg);
+  public NidxExportJob export(@QueryParam("datasetKey") List<Integer> keys, @QueryParam("min") int minDatasets, @Auth User user) {
+    NidxExportJob job = new NidxExportJob(keys, minDatasets, user.getKey(), factory, cfg);
     exec.submit(job);
     return job;
   }

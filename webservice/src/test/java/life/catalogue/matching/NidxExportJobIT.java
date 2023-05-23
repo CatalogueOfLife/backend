@@ -24,7 +24,7 @@ public class NidxExportJobIT {
 
   @Test
   public void export() {
-    var job = new NidxExportJob(List.copyOf(dataRule.testData.datasetKeys), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), new WsServerConfig());
+    var job = new NidxExportJob(List.copyOf(dataRule.testData.datasetKeys), 1, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), new WsServerConfig());
     job.run();
   }
 }

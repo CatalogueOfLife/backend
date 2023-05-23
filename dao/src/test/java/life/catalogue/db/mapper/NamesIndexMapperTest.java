@@ -49,14 +49,23 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
   @Test
   public void processDatasets() throws Exception {
     final AtomicInteger counter = new AtomicInteger();
-    for (SimpleName n : mapper().processDatasets(List.copyOf(testDataRule.testData.datasetKeys))) {
+    final var ref = new TypeReference<Map<Integer, String>>() {};
+    for (SimpleName n : mapper().processDatasets(List.copyOf(testDataRule.testData.datasetKeys), 1)) {
       counter.incrementAndGet();
       System.out.println(n);
-      var ref = new TypeReference<Map<Integer, String>>() {};
       var map = ApiModule.MAPPER.readValue(n.getId(), ref);
       System.out.println(map);
     }
     assertEquals(2, counter.get());
+
+    counter.set(0);
+    for (SimpleName n : mapper().processDatasets(List.copyOf(testDataRule.testData.datasetKeys), 2)) {
+      counter.incrementAndGet();
+      System.out.println(n);
+      var map = ApiModule.MAPPER.readValue(n.getId(), ref);
+      System.out.println(map);
+    }
+    assertEquals(1, counter.get());
   }
 
   @Test
