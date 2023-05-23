@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-05-23 new dataset type 
+```
+ALTER TYPE DATASETTYPE ADD VALUE 'IDENTIFICATION' BEFORE 'OTHER';
+```
+
 ### 2023-03-24 replace is_synonym column with function and index
 ```
 CREATE OR REPLACE FUNCTION is_synonym(status TAXONOMICSTATUS) RETURNS BOOLEAN AS $$

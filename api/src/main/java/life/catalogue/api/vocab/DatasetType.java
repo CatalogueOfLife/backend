@@ -33,9 +33,14 @@ public enum DatasetType {
   LEGAL,
 
   /**
-   * A dataset focussed on a specific theme like red lists, invasiveness, keys, traits, species interactions, etc.
+   * A dataset focussed on a specific theme like red lists, invasiveness, traits, species interactions, etc.
    */
   THEMATIC,
+
+  /**
+   * A dataset with the focus on being a species identification resource, e.g. keys.
+   */
+  IDENTIFICATION,
   
   OTHER;
 }
