@@ -195,6 +195,11 @@ public class UsageMatcherGlobal {
       existing.removeIf(u -> u.getRank() != nu.getRank());
     }
 
+    // remove canonical matches between 2 qualified, non suprageneric names
+    if (qualifiedName && !nu.getRank().isSuprageneric()) {
+      existing.removeIf(u -> u.hasAuthorship() && !u.getNamesIndexId().equals(nu.getName().getNamesIndexId()));
+    }
+
     // from here on we need the classification of all candidates
     final var existingWithCl = existing.stream()
                                  .map(ex -> uCache.withClassification(datasetKey, ex, this::loadUsage))

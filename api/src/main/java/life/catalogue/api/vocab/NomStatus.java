@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
  * Distilled to the most important entries relevant for both codes and leaving the detailed
  * status and argumentation to free text and the name relations instead.
  * <p>
- * We use BioCode terminology as much as possible, see https://github.com/Sp2000/colplus-backend/issues/318
+ * We use BioCode terminology as much as possible, see https://github.com/CatalogueOfLife/backend/issues/318
  * As valid/invalid is very overloaded and used for different things in both codes we avoid the term entirely.
  * <p>
  * The main purpose for this enumeration is to differ between available/unavailable and legitimate/illegitimate names

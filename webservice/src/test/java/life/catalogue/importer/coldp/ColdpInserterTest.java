@@ -28,6 +28,22 @@ import static org.junit.Assert.*;
 
 public class ColdpInserterTest extends InserterBaseTest {
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1229
+   */
+  @Test
+  public void bracketYearAuthorship() throws Exception {
+    NeoInserter ins = setup("/coldp/36");
+    ins.insertAll();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      var n = store.names().objByID("667").getName();
+      assertEquals("Toleria aegerides", n.getScientificName());
+      assertEquals("(Strand, [1916])", n.getAuthorship());
+      assertEquals(Rank.SPECIES, n.getRank());
+    }
+  }
+
   @Test
   public void bareNamesWithAccordingToID() throws Exception {
     NeoInserter ins = setup("/coldp/20");

@@ -1,0 +1,9 @@
+ID	parentID	status	rank	scientificName	authorship
+k		accepted	kingdom	Animalia	
+p	k	accepted	phylum	Arthropoda	
+o	p	accepted	order	Coleoptera	
+supf	o	accepted	superfamily	Chrysomeloidea	
+f	supf	accepted	family	Chrysomelidae	Latreille, 1802
+sf	f	accepted	subfamily	Galerucinae	Latreille, 1802
+t	sf	accepted	tribe	Alticini	Newman, 1835
+g	sf	accepted	genus	Chaetocnema	Stephens, 1831

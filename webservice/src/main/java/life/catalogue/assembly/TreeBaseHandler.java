@@ -189,7 +189,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
           if (origName.getInfragenericEpithet() == null) {
             continue;
           }
-          n.setUninomial(origName.getInfragenericEpithet());
+          n.setGenus(origName.getGenus()); // we keep the genus placement
+          n.setInfragenericEpithet(origName.getInfragenericEpithet());
 
         } else if (r == Rank.SPECIES) {
           n.setGenus(origName.getGenus());

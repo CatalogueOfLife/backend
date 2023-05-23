@@ -157,6 +157,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
     batchSession.commit();
     Taxon t = new Taxon(n);
     var m = matcher.matchWithParents(targetDatasetKey, t, parents.classification());
+    // make sure rank is correct - canonical matches blend close ranks
+    if (m.usage == null || m.usage.getRank() != n.getRank()) {
+      return null;
+    }
     return usage(m.usage);
   }
 

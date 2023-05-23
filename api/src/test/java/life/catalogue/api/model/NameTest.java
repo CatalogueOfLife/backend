@@ -41,6 +41,21 @@ public class NameTest extends SerdeTestBase<Name> {
   }
 
   /**
+   * https://github.com/CatalogueOfLife/backend/issues/1229
+   */
+  @Test
+  public void squarebracketAuthors() throws Exception {
+    Name n = new Name();
+    n.setGenus("Toleria");
+    n.setSpecificEpithet("aegerides");
+    n.setBasionymAuthorship(Authorship.yearAuthors("[1916]", "Strand"));
+    n.setRank(Rank.SPECIES);
+    n.rebuildAuthorship();
+    n.rebuildScientificName();
+    assertEquals("Toleria aegerides (Strand, [1916])", n.getLabel());
+  }
+
+  /**
    * https://github.com/CatalogueOfLife/checklistbank/issues/1122
    */
   @Test
@@ -58,6 +73,12 @@ public class NameTest extends SerdeTestBase<Name> {
     assertEquals("Acritus (Acritus)", n.getLabel());
     assertEquals("<i>Acritus (Acritus)</i>", n.getLabelHtml());
 
+    n.setGenus(null);
+    n.rebuildScientificName();
+    assertEquals("Acritus", n.getLabel());
+    assertEquals("<i>Acritus</i>", n.getLabelHtml());
+
+    n.setGenus("Acritus");
     n.setSpecificEpithet("fidjiensis");
     n.rebuildScientificName();
     assertEquals("Acritus (Acritus) fidjiensis", n.getLabel());

@@ -1,0 +1,15 @@
+ID	parentID	status	rank	scientificName	authorship
+k		accepted	kingdom	Animalia	
+p	k	accepted	phylum	Arthropoda	
+c	p	accepted	class	Insecta	
+o	c	accepted	order	Coleoptera	
+f	o	accepted	family	Chrysomelidae	
+g	f	accepted	genus	Chaetocnema	Stephens, 1831
+sg1	g	accepted	subgenus	Chaetocnema (Chaetocnema)	Ruan & Yang & Konstantinov & Prathapan & Zhang, 2019
+sg2	g	accepted	subgenus	Chaetocnema (Chaetocnema)	Ruan & Yang & Konstantinov & Prathapan & Zhang, 2019
+s1	g	accepted	species	Chaetocnema (Chaetocnema) appendiculata	Ruan & Yang & Konstantinov & Prathapan & Zhang, 2019
+s2	g	accepted	species	Chaetocnema (Chaetocnema) babai	Kimoto, 1991
+s3	g	accepted	species	Chaetocnema (Chaetocnema) granulicollis	Jacoby, 1896
+s4	g	accepted	species	Chaetocnema (Udorpes) bella	(Baly, 1876)
+s5	g	accepted	species	Chaetocnema (Udorpes) belli	Jacoby, 1904
+

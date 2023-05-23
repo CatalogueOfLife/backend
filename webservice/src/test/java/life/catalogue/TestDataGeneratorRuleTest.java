@@ -28,9 +28,9 @@ public class TestDataGeneratorRuleTest {
   @Parameterized.Parameters(name= "{index}: {0}")
   public static Iterable<Object[]> data() {
     List<TestDataRule.TestData> list = List.of(
+      TestDataGenerator.SYNCS,
       XReleaseBasicIT.XRELEASE_DATA,
       TestDataGenerator.MATCHING,
-      TestDataGenerator.SYNCS,
       TestDataGenerator.XCOL,
       TestDataGenerator.GROUPING,
       IdProviderIT.PROJECT_DATA

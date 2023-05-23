@@ -137,6 +137,17 @@ public class NameParserTest {
       .nothingElse();
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1229
+   */
+  @Test
+  public void parseBracketYear() throws Exception {
+    assertName("Toleria aegerides (Strand, [1916])", "Toleria aegerides")
+      .species("Toleria", "aegerides")
+      .basAuthors("1916", "Strand")
+      .nothingElse();
+  }
+
   @Test
   public void parsePhrases() throws Exception {
     assertName("Lepidoptera sp. JGP0404", "Lepidoptera sp.JGP0404", NameType.INFORMAL)

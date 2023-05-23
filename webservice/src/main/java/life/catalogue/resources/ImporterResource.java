@@ -218,5 +218,5 @@ public class ImporterResource {
     }
     throw new NotAuthorizedException("Valid github token is required to schedule import of dataset {}", datasetKey);
   }
-  
+
 }

@@ -880,6 +880,24 @@ public class NameIndexImplIT {
     assertEquals(3, ni.size());
   }
 
+
+  @Test
+  public void testZooAuthors() throws Exception {
+    setupMemory(true);
+    assertEquals(0, ni.size());
+
+    var m = ni.match(name("Chaetocnema belli Jacoby, 1904", Rank.SPECIES), true, true);
+    assertEquals("Jacoby, 1904", m.getName().getAuthorship());
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals(2, ni.size());
+
+    var m2 = ni.match(name("Chaetocnema bella (Baly, 1876)", Rank.SPECIES), true, true);
+    assertEquals(MatchType.EXACT, m2.getType());
+    assertNotEquals(m.getNameKey(), m2.getNameKey());
+    assertEquals("(Baly, 1876)", m2.getName().getAuthorship());
+    assertEquals(3, ni.size()); // same stemmed canonical
+  }
+
   static Name name(String name, Rank rank) throws InterruptedException {
     Name n = TestEntityGenerator.setUserDate(NameParser.PARSER.parse(name, rank, null, VerbatimRecord.VOID).get().getName());
     n.setRank(rank);

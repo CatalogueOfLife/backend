@@ -37,8 +37,8 @@ import com.google.common.collect.ImmutableMap;
 public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
   public static final NameParser PARSER = new NameParser(2000);
-  private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:])\\s*");
-  private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[])\\s*");
+  private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:]+)\\s*");
+  private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[]+)\\s*");
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
   private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?");
   private static final Pattern NORM_ANON = Pattern.compile("\\b(anon\\.?)(\\b|\\s|$)");

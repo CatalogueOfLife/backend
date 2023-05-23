@@ -308,6 +308,34 @@ public class SectorSyncIT {
     assertTree("cat22.txt");
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1230
+   */
+  @Test
+  public void subgenera() throws Exception {
+    final int srcKey1 = dataRule.mapKey(DataFormat.COLDP, 34);
+    print(Datasets.COL);
+    print(srcKey1);
+
+    NameUsageBase src = getByName(srcKey1, Rank.ORDER, "Coleoptera");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    createSector(Sector.Mode.ATTACH, src, trg);
+
+    syncAll();
+    assertTree("cat34.txt");
+
+    final int srcKey2 = dataRule.mapKey(DataFormat.COLDP, 35);
+    print(srcKey2);
+    src = getByName(srcKey2, Rank.FAMILY, "Chrysomelidae");
+    trg = getByName(Datasets.COL, Rank.FAMILY, "Chrysomelidae");
+    createSector(Sector.Mode.MERGE, src, trg, s -> {
+      s.setRanks(Set.of(Rank.FAMILY, Rank.GENUS, Rank.SUBGENUS, Rank.SPECIES, Rank.SUBSPECIES));
+    });
+
+    syncAll();
+    assertTree("cat34-35.txt");
+  }
+
   @Test
   public void test1_5_6() throws Exception {
     final int srcKey1 = dataRule.mapKey(DataFormat.ACEF, 1);
