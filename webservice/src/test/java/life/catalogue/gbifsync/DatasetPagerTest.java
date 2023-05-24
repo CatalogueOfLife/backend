@@ -3,6 +3,7 @@ package life.catalogue.gbifsync;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.config.GbifConfig;
 
+import java.time.LocalDate;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +48,7 @@ public class DatasetPagerTest {
   
     final Client client = ClientBuilder.newClient(cfg);
     
-    DatasetPager pager = new DatasetPager(client, new GbifConfig());
+    DatasetPager pager = new DatasetPager(client, new GbifConfig(), LocalDate.of(2023, 5, 23));
 
     // test VASCAN
     var vascan = pager.get(UUID.fromString("3f8a1297-3259-4700-91fc-acc4170b27ce"));

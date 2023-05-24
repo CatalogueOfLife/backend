@@ -12,12 +12,14 @@ import life.catalogue.metadata.eml.EmlParser;
 import life.catalogue.parser.*;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -52,9 +54,11 @@ public class DatasetPager {
   private final LoadingCache<UUID, Agent> publisherCache;
   private final LoadingCache<UUID, Agent> hostCache;
   private final Set<UUID> articlePublishers;
+  private final LocalDate since;
 
-  public DatasetPager(Client client, GbifConfig gbif) {
+  public DatasetPager(Client client, GbifConfig gbif, @Nullable LocalDate since) {
     this.client = client;
+    this.since = since;
     articlePublishers = Set.copyOf(gbif.articlePublishers);
     dataset = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"));
     datasets = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"))
@@ -93,21 +97,18 @@ public class DatasetPager {
     return null;
   }
 
-  <T> T getFirst(List<T> vals) {
-    for (T val : vals) {
-      if (val != null) return val;
-    }
-    return null;
-  }
-
   public boolean hasNext() {
     return hasNext;
   }
   
   private WebTarget datasetPage() {
-    return datasets
+    var wt = datasets
         .queryParam("offset", page.getOffset())
         .queryParam("limit", page.getLimit());
+    if (since != null) {
+      wt = wt.queryParam("modified", since.toString());
+    }
+    return wt;
   }
   
   public int currPageNumber() {

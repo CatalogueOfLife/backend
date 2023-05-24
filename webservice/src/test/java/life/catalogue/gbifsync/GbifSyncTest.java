@@ -70,7 +70,7 @@ public class GbifSyncTest {
 
   @Test
   public void syncSingle() {
-    GbifSyncJob job = new GbifSyncJob(cfg, client, ddao, SqlSessionFactoryRule.getSqlSessionFactory(), Users.GBIF_SYNC, Set.of(UUID.fromString("30f55c63-a829-4cb2-9676-3b1b6f981567")));
+    GbifSyncJob job = new GbifSyncJob(cfg, client, ddao, SqlSessionFactoryRule.getSqlSessionFactory(), Users.GBIF_SYNC, Set.of(UUID.fromString("30f55c63-a829-4cb2-9676-3b1b6f981567")), false);
     job.run();
     Assert.assertEquals(JobStatus.FINISHED, job.getStatus());
   }

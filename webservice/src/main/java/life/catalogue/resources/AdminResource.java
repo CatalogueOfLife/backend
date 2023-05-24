@@ -32,6 +32,7 @@ import life.catalogue.resources.legacy.IdMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.time.LocalDate;
 import java.util.*;
 
 import javax.annotation.security.PermitAll;
@@ -203,7 +204,7 @@ public class AdminResource {
   @Path("/gbif-sync")
   @Consumes(MediaType.APPLICATION_JSON)
   public BackgroundJob syncGBIF(List<UUID> keys, @Auth User user) {
-    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), Set.copyOf(keys));
+    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), Set.copyOf(keys), false);
     return runJob(job);
   }
 
@@ -213,7 +214,7 @@ public class AdminResource {
   public BackgroundJob syncGBIFText(InputStream keysAsText, @Auth User user) {
     try (var lr = new LineReader(keysAsText)) {
       var keys = IterUtils.setOf(lr, UUID::fromString);
-      GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), keys);
+      GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), keys, false);
       return runJob(job);
     }
   }

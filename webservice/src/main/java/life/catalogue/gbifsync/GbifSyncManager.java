@@ -48,7 +48,7 @@ public class GbifSyncManager implements Managed {
   }
   
   public void syncNow() {
-    Runnable job = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC);
+    Runnable job = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true);
     job.run();
   }
 
@@ -62,10 +62,15 @@ public class GbifSyncManager implements Managed {
       scheduler = Executors.newScheduledThreadPool(1,
           new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
       );
-      LOG.info("Enable GBIF registry sync job every {} hours", cfg.syncFrequency);
-      job = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC);
-      future = scheduler.scheduleAtFixedRate(job, 1, cfg.syncFrequency, TimeUnit.HOURS);
-   
+      LOG.info("Enable incremental GBIF registry sync job every {} minutes", cfg.syncFrequency);
+      job = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true);
+      // we delay the first run by 30 minutes as we do a full sync first
+      future = scheduler.scheduleAtFixedRate(job, 30, cfg.syncFrequency, TimeUnit.MINUTES);
+
+      LOG.info("Submit one complete GBIF registry sync job now");
+      var jobNow = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, false);
+      scheduler.submit(jobNow);
+
     } else {
       LOG.warn("Disable GBIF dataset sync");
     }

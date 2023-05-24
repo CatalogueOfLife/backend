@@ -12,6 +12,9 @@ import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.DatasetMapper;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalField;
 import java.util.*;
 
 import javax.ws.rs.client.Client;
@@ -34,24 +37,40 @@ public class GbifSyncJob extends GlobalBlockingJob {
   private int created;
   private int updated;
   private int deleted;
+  private boolean todayOnly;
   private DatasetPager pager;
 
-  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey) {
-    this(cfg, client, ddao, sessionFactory, userKey, Collections.emptySet());
+  /**
+   *  Syncs updates of today
+   **/
+  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, boolean todayOnly) {
+    this(cfg, client, ddao, sessionFactory, userKey, Collections.emptySet(), todayOnly);
   }
 
-  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, Set<UUID> keys) {
+  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, Set<UUID> keys, boolean todayOnly) {
     super(userKey, JobPriority.HIGH);
     this.cfg = cfg;
     this.client = client;
     this.dao = ddao;
     this.sessionFactory = sessionFactory;
     this.keys = keys == null ? new HashSet<>() : keys;
+    this.todayOnly = todayOnly;
   }
 
   @Override
   public void execute() throws Exception {
-    pager = new DatasetPager(client, cfg);
+    LocalDate since = null;
+    if (todayOnly) {
+      if (LocalDateTime.now().getHour() == 0) {
+        // in the first hour after midnight we might miss changes happening between the last sync of the previous day and the first of the new day
+        // so lets sync since 2 days ago then
+        since = LocalDate.now().minusDays(1);
+      } else {
+        // normally we just look for changes of the day
+        since = LocalDate.now();
+      }
+    }
+    pager = new DatasetPager(client, cfg, since);
     if (!keys.isEmpty()) {
       syncSelected();
     } else {

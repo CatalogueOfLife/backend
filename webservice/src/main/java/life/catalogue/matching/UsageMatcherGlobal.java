@@ -230,7 +230,7 @@ public class UsageMatcherGlobal {
       for (var u : existingWithCl) {
         if (u.getNamesIndexId().equals(nu.getName().getNamesIndexId())) {
           if (match != null) {
-            LOG.warn("Exact homonyms existing in dataset {} for {}", datasetKey, nu.getName().getLabelWithRank());
+            LOG.info("Exact homonyms existing in dataset {} for {}", datasetKey, nu.getName().getLabelWithRank());
             match = null;
             break;
           } else {
