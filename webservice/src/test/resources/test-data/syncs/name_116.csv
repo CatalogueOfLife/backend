@@ -1,9 +1,13 @@
 id,sector_key,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
+s3,,Chaetocnema anisota,"R. White, 1996",SPECIES,ZOOLOGICAL,,SCIENTIFIC,f,,,Chaetocnema,,anisota,,,{},{},,{R.White},{},1996,,,,,,,,
 t,,Alticini,"Newman, 1835",TRIBE,ZOOLOGICAL,,SCIENTIFIC,f,,Alticini,,,,,,{},{},,{Newman},{},1835,,,,,,,,
 o,,Coleoptera,,ORDER,ZOOLOGICAL,,SCIENTIFIC,f,,Coleoptera,,,,,,{},{},,{},{},,,,,,,,,
 p,,Arthropoda,,PHYLUM,ZOOLOGICAL,,SCIENTIFIC,f,,Arthropoda,,,,,,{},{},,{},{},,,,,,,,,
 sf,,Galerucinae,"Latreille, 1802",SUBFAMILY,ZOOLOGICAL,,SCIENTIFIC,f,,Galerucinae,,,,,,{},{},,{Latreille},{},1802,,,,,,,,
+s4,,Chaetocnema blatchleyi,"Csiki in Heikertinger & Csiki, 1940",SPECIES,ZOOLOGICAL,,SCIENTIFIC,f,,,Chaetocnema,,blatchleyi,,,{},{},,{Csiki},{},1940,,,,,,,,
+s2,,Chaetocnema acupunctata,"R. White, 1996",SPECIES,ZOOLOGICAL,,SCIENTIFIC,f,,,Chaetocnema,,acupunctata,,,{},{},,{R.White},{},1996,,,,,,,,
 g,,Chaetocnema,"Stephens, 1831",GENUS,ZOOLOGICAL,,SCIENTIFIC,f,,Chaetocnema,,,,,,{},{},,{Stephens},{},1831,,,,,,,,
 supf,,Chrysomeloidea,,SUPERFAMILY,ZOOLOGICAL,,SCIENTIFIC,f,,Chrysomeloidea,,,,,,{},{},,{},{},,,,,,,,,
 k,,Animalia,,KINGDOM,ZOOLOGICAL,,SCIENTIFIC,f,,Animalia,,,,,,{},{},,{},{},,,,,,,,,
 f,,Chrysomelidae,"Latreille, 1802",FAMILY,ZOOLOGICAL,,SCIENTIFIC,f,,Chrysomelidae,,,,,,{},{},,{Latreille},{},1802,,,,,,,,
+s1,,Chaetocnema acuminata,"R. White, 1996",SPECIES,ZOOLOGICAL,,SCIENTIFIC,f,,,Chaetocnema,,acuminata,,,{},{},,{R.White},{},1996,,,,,,,,

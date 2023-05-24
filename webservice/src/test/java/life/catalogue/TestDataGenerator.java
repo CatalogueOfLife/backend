@@ -63,7 +63,7 @@ public class TestDataGenerator {
   final static NameMatchingRule matchingRule = new NameMatchingRule();
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
 
-  final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, 1, 3, Set.of(101));
+  final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, 2, 4, Set.of(101, 102));
 
    final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, 2, 4, null, Map.ofEntries(
      Map.entry(Pair.of(DataFormat.COLDP, 2), 111),
@@ -117,7 +117,7 @@ public class TestDataGenerator {
   @Test
   public void prepareMatchingData() throws Throwable {
     export(MATCHING.name,
-      PgImportRule.create(DatasetOrigin.EXTERNAL, DatasetType.TAXONOMIC, DataFormat.COLDP, 28)
+      PgImportRule.create(DatasetOrigin.EXTERNAL, DatasetType.TAXONOMIC, DataFormat.COLDP, 28, 37)
     );
   }
 

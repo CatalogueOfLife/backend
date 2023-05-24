@@ -1,12 +1,61 @@
-ID	parentID	status	rank	scientificName	authorship	nameReferenceID	kingdom	phylum	subphylum	class	subclass	order	suborder	superfamily	family	subfamily	genus
+ID	parentID	status	rank	scientificName	authorship	nameReferenceID
 
-cc1			species	Caretta caretta			Animalia								Cheloniidae		
-cc2			species	Caretta caretta	Linnaeus, 1758		Animalia								Keloniidae		
-cc3			species	Caretta caretta	(Linnaeus)		Animalia								Teeloniidae		
-cc4			species	Caretta caretta	(Linnaeus	brian	Animalia								Pheloniidae		
+k1		accepted	kingdom	Animalia		
+k2		accepted	kingdom	Plantae		
 
-oen1			genus	Oenanthe	L.	SpPl	Plantae	Tracheophyta		Magnoliopsida		Apiales			Apiaceae		
-oen2			genus	Oenanthe	Vieillot, 1816	RAF1815	Animalia	Chordata		Aves		Passeriformes			Muscicapidae		
-oen3	oen2	synonym	genus	Oenanthe	Pallas, 1771	RR											
-oen4			species	Oenanthe oenanthe	(Linnaeus, 1758)		Animalia	Chordata		Aves		Passeriformes			Muscicapidae		Oenanthe
-oen5			species	Oenanthe pimpinelloides	L.		Plantae	Tracheophyta		Magnoliopsida		Apiales			Apiaceae		Oenanthe
+
+p1	k1	accepted	phylum	Arthropoda		
+c1	p1	accepted	class	Insecta		
+o1	c1	accepted	order	Coleoptera		
+supf1	o1	accepted	superfamily	Chrysomeloidea		
+f1	supf1	accepted	family	Chrysomelidae	Latreille, 1802	
+sf1	f1	accepted	subfamily	Galerucinae	Latreille, 1802	
+
+t1	sf1	accepted	tribe	Alticini	Newman, 1835	
+g1	t1	accepted	genus	Chaetocnema	Stephens, 1831	
+sc1	g1	accepted	species	Chaetocnema acuminata	R. White, 1996	
+sc2	g1	accepted	species	Chaetocnema acupunctata	R. White, 1996	
+sc3	g1	accepted	species	Chaetocnema anisota	R. White, 1996	
+sc4	g1	accepted	species	Chaetocnema blatchleyi	Csiki in Heikertinger & Csiki, 1940	
+
+sg1	g1	accepted	subgenus	Chaetocnema	Duda, 1934	
+sg2	g1	accepted	subgenus	Chaetocnema (Chaetocnema)	Stephens, 1831	
+sg3	g1	accepted	subgenus	Chaetocnema (Chaetocnema)	Ruan & Yang & Konstantinov & Prathapan & Zhang, 2019	
+s1	sg3	accepted	species	Chaetocnema (Chaetocnema) appendiculata	Ruan & Yang & Konstantinov & Prathapan & Zhang, 2019	
+s2	sg2	accepted	species	Chaetocnema (Chaetocnema) babai	Kimoto, 1991	
+s3	g1	accepted	species	Chaetocnema (Chaetocnema) granulicollis	Jacoby, 1896	
+s4	g1	accepted	species	Chaetocnema (Udorpes) bella	(Baly, 1876)	
+s5	g1	accepted	species	Chaetocnema (Udorpes) belli	Jacoby, 1904	
+s1	g1	accepted	species	Chaetocnema acuminata	R. White, 1996	
+s2	g1	accepted	species	Chaetocnema acupunctata	R. White, 1996	
+s3	g1	accepted	species	Chaetocnema anisota	R. White, 1996	
+
+
+
+
+f2	k1	accepted	family	Cheloniidae		
+f3	k1	accepted	family	Keloniidae		
+f4	k1	accepted	family	Teeloniidae		
+f5	k1	accepted	family	Pheloniidae		
+cc1	f2		species	Caretta caretta		
+cc2	f3		species	Caretta caretta	Linnaeus, 1758	
+cc3	f4		species	Caretta caretta	(Linnaeus)	
+cc4	f5		species	Caretta caretta	(Linnaeus	brian
+
+
+
+
+p2	k2	accepted	phylum	Tracheophyta		
+c2	p2	accepted	class	Magnoliopsida		
+o2	c2	accepted	order	Apiales		
+f6	o2	accepted	family	Apiaceae		
+oen1	f6		genus	Oenanthe	L.	SpPl
+oen5	oen1		species	Oenanthe pimpinelloides	L.	
+
+p3	k1	accepted	phylum	Chordata		
+c3	p3	accepted	class	Aves		
+o3	c3	accepted	order	Passeriformes		
+f7	o3	accepted	family	Muscicapidae		
+oen2	f7		genus	Oenanthe	Vieillot, 1816	RAF1815
+oen3	oen2	synonym	genus	Oenanthe	Pallas, 1771	RR
+oen4	oen2		species	Oenanthe oenanthe	(Linnaeus, 1758)	

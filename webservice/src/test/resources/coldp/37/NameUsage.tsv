@@ -1,0 +1,18 @@
+ID	parentID	status	rank	scientificName	authorship	kingdom	phylum	class	order	family	tribe
+
+1		accepted	family	Chrysomelidae	Latreille, 1802	Animalia	Arthropoda	Insecta	Coleoptera		
+2		accepted	subfamily	Galerucinae	Latreille, 1802	Animalia	Arthropoda	Insecta	Coleoptera	Chrysomelidae	
+3		accepted	tribe	Alticini	Newman, 1835	Animalia	Arthropoda	Insecta	Coleoptera	Chrysomelidae	
+4		accepted	genus	Chaetocnema	Stephens, 1831	Animalia	Arthropoda	Insecta	Coleoptera	Chrysomelidae	
+5	4	accepted	species	Chaetocnema acuminata	R. White, 1996						
+6	4	accepted	species	Chaetocnema acupunctata	R. White, 1996						
+7	4	accepted	species	Chaetocnema anisota	R. White, 1996						
+8	4	accepted	species	Chaetocnema blatchleyi	Csiki in Heikertinger & Csiki, 1940						
+9			tribe	Chaetocnema	Duda, 1934	Animalia	Arthropoda	Insecta	Coleoptera	Chrysomelidae	
+10			genus	Chaetocnema	Duda, 1934	Animalia	Arthropoda	Insecta	Coleoptera	Chrysomelidae	
+11			genus	Chaetocnema	Stephens, 1831	Animalia	Arthropoda				
+12			subgenus	Chaetocnema	Duda, 1934	Animalia	Arthropoda				
+13			subgenus	Chaetocnema (Chaetocnema)	Stephens, 1831	Animalia	Arthropoda				
+14			subgenus	Chaetocnema (Chaetocnema)	Unspecified Agent	Animalia	Arthropoda				
+15			unranked	Chaetocnema		Animalia	Arthropoda				
+16			unranked	Chaetocnema (Chaetocnema)		Animalia	Arthropoda				

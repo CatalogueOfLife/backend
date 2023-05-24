@@ -1,2 +1,3 @@
-key,type,alias,title,origin,url,created_by,modified_by,created
-101,TAXONOMIC,,Test Dataset /Users/markus/code/col/backend/webservice/target/test-classes/coldp/28,EXTERNAL,,101,101,2022-09-20 12:49:17.551133
+key,source_key,type,alias,title,origin,url,created_by,modified_by,created
+101,,TAXONOMIC,,Test Dataset COLDP-28,EXTERNAL,,101,101,2023-05-24 18:43:41.182059
+102,,TAXONOMIC,,Test Dataset COLDP-37,EXTERNAL,,101,101,2023-05-24 18:43:52.832266

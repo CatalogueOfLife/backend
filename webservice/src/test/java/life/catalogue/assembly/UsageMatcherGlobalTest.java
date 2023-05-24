@@ -110,6 +110,24 @@ public class UsageMatcherGlobalTest {
     assertEquals("oen1", match.usage.getId());
   }
 
+  @Test
+  public void chaetocnema() throws Exception {
+    var match = match(Rank.GENUS, "Chaetocnema", "Stephens, 1831", null, null);
+    assertEquals("g1", match.usage.getId());
+
+    match = match(Rank.GENUS, "Chaetocnema", "1831", null, null);
+    assertEquals("g1", match.usage.getId());
+
+    match = match(Rank.SUBGENUS, "Chaetocnema", "Stephens, 1831", null, null);
+    assertEquals("sg2", match.usage.getId());
+
+    match = match(Rank.SUBGENUS, "Chaetocnema (Chaetocnema)", "Stephens, 1831", null, null);
+    assertEquals("sg2", match.usage.getId());
+
+    match = match(Rank.SUBGENUS, "Chaetocnema (Chaetocnema)", "Ruan & Yang & Konstantinov & Prathapan & Zhang, 2019", null, null);
+    assertEquals("sg3", match.usage.getId());
+  }
+
   UsageMatch match(Rank rank, String name, String authors, TaxonomicStatus status, NomCode code, SimpleName... parents) throws InterruptedException {
     var opt = NameParser.PARSER.parse(name, authors, rank, code, VerbatimRecord.VOID);
     Name n = opt.get().getName();
@@ -129,7 +147,8 @@ public class UsageMatcherGlobalTest {
     var matchedParents = Arrays.stream(parents)
                               .map(this::fromRankedName)
                               .collect(Collectors.toList());
-    return matcher.matchWithParents(datasetKey, u, matchedParents);
+    var result = matcher.matchWithParents(datasetKey, u, matchedParents);
+    return result;
   }
 
   ParentStack.MatchedUsage fromRankedName(SimpleName sn) {

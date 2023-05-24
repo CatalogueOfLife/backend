@@ -143,6 +143,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // match name
     var nm = matchName(u.getName());
     persistMatch(u.getName());
+    LOG.debug("Created {} {} usage {} from source {}:{}", u.getStatus(), u.getRank(), u.getLabel(), sector.getSubjectDatasetKey(), u.getId());
 
     if (u.isTaxon()) {
       state.setTaxonCount(++tCounter);
@@ -213,7 +214,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         // did we sync the name before in the same sector?
         Usage existing = findExisting(n, parent);
         if (existing != null) {
-          LOG.debug("Found implicit {} {} in sector {}", r, origName.getScientificName(), sector);
+          LOG.debug("Found implicit {} {} in project", r, n.getLabel());
           parent = existing;
           continue;
         }
@@ -222,7 +223,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         n.setDatasetKey(targetDatasetKey);
         n.setOrigin(Origin.IMPLICIT_NAME);
         n.applyUser(user);
-        LOG.debug("Create implicit {} from {}: {}", r, origName.getScientificName(), n);
+        LOG.debug("Create implicit {} {} from {}", r, n.getLabel(), origName.getScientificName());
         nm.create(n);
         // persist match name
         persistMatch(n);

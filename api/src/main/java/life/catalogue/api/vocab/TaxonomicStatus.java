@@ -42,6 +42,19 @@ public enum TaxonomicStatus {
   }
 
   /**
+   * @return accepted, synonym or bad name
+   */
+  public TaxonomicStatus getMajorStatus() {
+    if (isTaxon()) {
+      return ACCEPTED;
+    } else if (this==BARE_NAME) {
+      return BARE_NAME;
+    } else {
+      return SYNONYM;
+    }
+  }
+
+  /**
    * @return true for a status valid for a synonym
    */
   public boolean isSynonym() {

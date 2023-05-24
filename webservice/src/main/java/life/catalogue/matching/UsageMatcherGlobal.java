@@ -143,7 +143,8 @@ public class UsageMatcherGlobal {
     if (canonNidx != null) {
       var existing = usages.get(canonNidx);
       if (existing != null && !existing.isEmpty()) {
-        return match(datasetKey, nu, existing, parents);
+        // we modify the existing list, so use a copy
+        return match(datasetKey, nu, new ArrayList<>(existing), parents);
       }
     }
     return UsageMatch.empty(datasetKey);

@@ -788,7 +788,19 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public String toString() {
-    return getId() + " " + getLabel();
+    StringBuilder sb = new StringBuilder();
+    sb.append(getLabel(false));
+    if (rank != null) {
+      sb.append(" [");
+      sb.append(rank);
+      sb.append("]");
+    }
+    if (getId() != null) {
+      sb.append(" {");
+      sb.append(getId());
+      sb.append("}");
+    }
+    return sb.toString();
   }
   
   public String toStringComplete() {

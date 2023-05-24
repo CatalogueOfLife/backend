@@ -188,7 +188,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   private boolean update(NameUsageBase nu, UsageMatch existing) {
-    if (nu.getStatus() == existing.usage.getStatus()) {
+    if (nu.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
+      LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
+
       Set<InfoGroup> updated = EnumSet.noneOf(InfoGroup.class);
       // set targetKey to the existing usage
       targetKey.id(existing.usage.getId());
@@ -238,6 +240,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
         vm.insertSources(targetKey, nu, updated);
         return true;
       }
+    } else {
+      LOG.debug("Ignore update of {} {} {} from source {}:{} with different status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
     }
     return false;
   }
