@@ -316,7 +316,7 @@ public class HomotypicConsolidator {
     VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
 
-    Preconditions.checkArgument(accepted.getStatus().isTaxon());
+    Preconditions.checkArgument(accepted.getStatus().isTaxon(), String.format("Fail to convert usage %s into a synonym of the non accepted name %s [%s]", u.getLabel(), accepted.getLabel(), accepted.getStatus()));
     if (u.getId().equals(accepted.getId())) {
       LOG.warn("Trying to convert {} into a synonym of itself is suspicious. Abort", u);
       return;
