@@ -54,18 +54,24 @@ public class JobAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
     var sift = new ClosingSiftingAppender();
     sift.setName("job-appender");
     sift.setContext(context);
-    sift.addFilter(new MDCJobFilter());
+    var filter = new MDCJobFilter();
+    filter.start();
+    sift.addFilter(filter);
 
     var discrimiator = new MDCBasedDiscriminator();
     discrimiator.setKey(LoggingUtils.MDC_KEY_JOB);
     discrimiator.setDefaultValue("none");
+    discrimiator.start();
     sift.setDiscriminator(discrimiator);
 
     sift.setAppenderFactory(new AppenderFactory<ILoggingEvent>() {
       @Override
       public Appender<ILoggingEvent> buildAppender(Context context, String discriminatingValue) throws JoranException {
         var fa = new GZipFileAppender<ILoggingEvent>();
-        fa.setFile(JobConfig.jobLog(directory, discriminatingValue).getAbsolutePath());
+        var dir = JobConfig.jobLog(directory, discriminatingValue).getAbsolutePath();
+        LOG.info("Starting new job log appender at {}", dir);
+        fa.setFile(dir);
+        fa.setContext(context);
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         encoder.setPattern(PATTERN);
         encoder.setContext(context);
