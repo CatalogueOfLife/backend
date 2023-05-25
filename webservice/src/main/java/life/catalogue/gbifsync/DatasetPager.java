@@ -127,6 +127,21 @@ public class DatasetPager {
         .join();
   }
 
+  /**
+   * @return total number of datasets to page through
+   */
+  public int count() {
+    var wt = datasets.queryParam("limit", 0);
+    if (since != null) {
+      wt = wt.queryParam("modified", since.toString());
+    }
+    return wt
+      .request()
+      .accept(MediaType.APPLICATION_JSON_TYPE)
+      .get(GResp.class)
+      .count;
+  }
+
   public List<DatasetWithSettings> next() {
     LOG.debug("retrieve {}", page);
     try {
@@ -389,6 +404,7 @@ public class DatasetPager {
   
   static class GResp {
     public boolean endOfRecords;
+    public int count;
     public List<GDataset> results;
   }
   

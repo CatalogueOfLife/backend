@@ -92,7 +92,8 @@ public class GbifSyncJob extends GlobalBlockingJob {
 
   private void syncAll() throws Exception {
     final IntSet keys = new IntOpenHashSet();
-    LOG.info("Syncing all datasets from GBIF registry {}", cfg.api);
+    int count = pager.count();
+    LOG.info("Start {} sync of {} datasets from GBIF registry {}", incremental ? "incremental" : "full", count, cfg.api);
     while (pager.hasNext()) {
       List<DatasetWithSettings> page = pager.next();
       LOG.debug("Received page {} with {} datasets from GBIF", pager.currPageNumber(), page.size());
@@ -120,6 +121,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
             } else {
               LOG.warn("Delete dataset {} {} with GBIF key {} which was removed in GBIF", key, d.getTitle(), d.getGbifKey());
               dao.delete(key, Users.GBIF_SYNC);
+              deleted++;
             }
           }
         });
