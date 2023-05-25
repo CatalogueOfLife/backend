@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
+
 public class TreeCopyHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
 
@@ -98,7 +100,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
   }
 
   @Override
-  public void accept(NameUsageBase u) {
+  public void acceptThrows(NameUsageBase u) throws InterruptedException{
     // We buffer all children of a given parentID and sort them by rank before we pass them on to the handler
     if (!Objects.equals(lastParentID, u.getParentId())) {
       processLast();
@@ -107,14 +109,16 @@ public class TreeCopyHandler extends TreeBaseHandler {
     lastUsages.add(u);
   }
 
-  private void processLast() {
+  private void processLast() throws InterruptedException {
     // sort by rank, then process
     lastUsages.sort(Comparator.comparing(NameUsage::getRank));
-    lastUsages.forEach(this::process);
+    for (var u : lastUsages) {
+      process(u);
+    }
     lastUsages.clear();
   }
 
-  private void process(NameUsageBase u) {
+  private void process(NameUsageBase u) throws InterruptedException {
     u.setSectorKey(sector.getId());
     u.getName().setSectorKey(sector.getId());
     // before we apply a specific decision
@@ -148,6 +152,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
 
     // commit in batches
     if ((sCounter + tCounter) % 1000 == 0) {
+      interruptIfCancelled();
       session.commit();
       batchSession.commit();
     }
@@ -178,14 +183,14 @@ public class TreeCopyHandler extends TreeBaseHandler {
   }
 
   @Override
-  public void reset() {
-      processLast();
+  public void reset() throws InterruptedException {
+    processLast();
     ids.clear();
     super.reset();
   }
 
   @Override
-  public void close() {
+  public void close() throws InterruptedException {
     processLast();
     super.close();
   }

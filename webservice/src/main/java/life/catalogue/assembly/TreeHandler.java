@@ -5,6 +5,8 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import life.catalogue.common.func.ThrowingConsumer;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Map;
@@ -15,9 +17,9 @@ import java.util.function.Consumer;
  * Consumers should not expect the accepted property of a Synonym to exist!
  * Use the parentID property instead to lookup the accepted name if needed.
  */
-public interface TreeHandler extends Consumer<NameUsageBase>, AutoCloseable {
+public interface TreeHandler extends ThrowingConsumer<NameUsageBase, InterruptedException>, AutoCloseable {
 
-  void reset();
+  void reset() throws InterruptedException;
 
   void copyRelations();
 
@@ -26,7 +28,7 @@ public interface TreeHandler extends Consumer<NameUsageBase>, AutoCloseable {
   int getDecisionCounter();
 
   @Override
-  void close();
+  void close() throws InterruptedException;
 
   class Usage {
     String id;

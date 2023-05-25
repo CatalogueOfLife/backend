@@ -4,6 +4,7 @@ import com.google.common.eventbus.EventBus;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
@@ -304,6 +305,10 @@ public class SectorSync extends SectorRunnable {
       // copy handler stats to metrics
       state.setAppliedDecisionCount(treeHandler.getDecisionCounter());
       state.setIgnoredByReasonCount(Map.copyOf(treeHandler.getIgnoredCounter()));
+
+    } catch (InterruptedRuntimeException e) {
+      // tree handlers are throwing consumer which wrap exceptions as runtime exceptions - unpack them!
+      throw e.asChecked();
     }
   }
 

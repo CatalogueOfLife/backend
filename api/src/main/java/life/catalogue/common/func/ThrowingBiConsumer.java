@@ -15,8 +15,12 @@ public interface ThrowingBiConsumer<T, U, E extends Exception> extends BiConsume
     try {
       acceptThrows(obj, obj2);
     } catch (final Exception e) {
-      throw new RuntimeException(e);
+      throw wrapException(e);
     }
+  }
+
+  default RuntimeException wrapException(Exception e) {
+    return new RuntimeException(e);
   }
 
   void acceptThrows(T obj, U obj2) throws E;

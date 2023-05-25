@@ -14,8 +14,12 @@ public interface ThrowingConsumer<T, E extends Exception> extends Consumer<T> {
     try {
       acceptThrows(obj);
     } catch (final Exception e) {
-      throw new RuntimeException(e);
+      throw wrapException(e);
     }
+  }
+
+  default RuntimeException wrapException(Exception e) {
+    return new RuntimeException(e);
   }
 
   void acceptThrows(T obj) throws E;

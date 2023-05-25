@@ -2,6 +2,7 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.CatCopy;
 import life.catalogue.dao.DatasetEntityDao;
@@ -472,12 +473,17 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   @Override
-  public void reset() {
+  public RuntimeException wrapException(Exception e) {
+    return new InterruptedRuntimeException(e);
+  }
+
+  @Override
+  public void reset() throws InterruptedException{
     ignoredTaxa.clear();
   }
 
   @Override
-  public void close() {
+  public void close() throws InterruptedException{
     session.commit();
     session.close();
     batchSession.commit();

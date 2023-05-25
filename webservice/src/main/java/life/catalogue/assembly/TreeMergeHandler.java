@@ -19,6 +19,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
+
 /**
  * Expects depth first traversal!
  */
@@ -62,7 +64,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   @Override
-  public void accept(NameUsageBase nu) {
+  public void acceptThrows(NameUsageBase nu) throws InterruptedException {
     // make rank non null
     if (nu.getName().getRank() == null) nu.getName().setRank(Rank.UNRANKED);
     // sector defaults before we apply a specific decision
@@ -143,6 +145,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // commit in batches
     if ((sCounter + tCounter + updCounter) % 1000 == 0) {
+      interruptIfCancelled();
       session.commit();
       batchSession.commit();
     }
