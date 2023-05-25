@@ -3,6 +3,7 @@ package life.catalogue.gbifsync;
 import life.catalogue.api.exception.NotUniqueException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.Exceptions;
@@ -14,7 +15,6 @@ import life.catalogue.db.mapper.DatasetMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalField;
 import java.util.*;
 
 import javax.ws.rs.client.Client;
@@ -37,30 +37,30 @@ public class GbifSyncJob extends GlobalBlockingJob {
   private int created;
   private int updated;
   private int deleted;
-  private boolean todayOnly;
+  private boolean incremental;
   private DatasetPager pager;
 
   /**
    *  Syncs updates of today
    **/
-  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, boolean todayOnly) {
-    this(cfg, client, ddao, sessionFactory, userKey, Collections.emptySet(), todayOnly);
+  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, boolean incremental) {
+    this(cfg, client, ddao, sessionFactory, userKey, Collections.emptySet(), incremental);
   }
 
-  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, Set<UUID> keys, boolean todayOnly) {
+  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, Set<UUID> keys, boolean incremental) {
     super(userKey, JobPriority.HIGH);
     this.cfg = cfg;
     this.client = client;
     this.dao = ddao;
     this.sessionFactory = sessionFactory;
     this.keys = keys == null ? new HashSet<>() : keys;
-    this.todayOnly = todayOnly;
+    this.incremental = incremental;
   }
 
   @Override
   public void execute() throws Exception {
     LocalDate since = null;
-    if (todayOnly) {
+    if (incremental) {
       if (LocalDateTime.now().getHour() == 0) {
         // in the first hour after midnight we might miss changes happening between the last sync of the previous day and the first of the new day
         // so lets sync since 2 days ago then
@@ -103,16 +103,24 @@ public class GbifSyncJob extends GlobalBlockingJob {
         }
       }
     }
-    // report datasets no longer in GBIF
-    try (SqlSession session = sessionFactory.openSession()) {
-      var dm = session.getMapper(DatasetMapper.class);
-      dm.listGBIF().forEach(key -> {
-        if (!keys.contains(key)) {
-          // this key was not seen in this registry sync round before - TODO: delete it ???
-          Dataset d = dm.get(key);
-          LOG.warn("Dataset {} {} missing in GBIF but has key {}", key, d.getTitle(), d.getGbifKey());
-        }
-      });
+
+    // report datasets no longer in GBIF if we sync all, but not if we only look at todays changes
+    if (!incremental) {
+      try (SqlSession session = sessionFactory.openSession()) {
+        var dm = session.getMapper(DatasetMapper.class);
+        dm.listGBIF().forEach(key -> {
+          if (!keys.contains((int)key)) {
+            // this key was not seen in this registry sync round before - delete it
+            Dataset d = dm.get(key);
+            if (d.getOrigin() != DatasetOrigin.EXTERNAL) {
+              LOG.warn("Dataset {} {} has GBIF key {}, but is of origin {}", key, d.getTitle(), d.getGbifKey(), d.getOrigin());
+            } else {
+              LOG.info("Delete dataset {} {} with GBIF key {}, but missing in GBIF", key, d.getTitle(), d.getGbifKey());
+              dao.delete(key, Users.GBIF_SYNC);
+            }
+          }
+        });
+      }
     }
   }
 

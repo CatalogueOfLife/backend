@@ -8,10 +8,9 @@ import life.catalogue.dao.DatasetDao;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 import javax.ws.rs.client.Client;
 
@@ -28,12 +27,12 @@ public class GbifSyncManager implements Managed {
   private static final String THREAD_NAME = "gbif-sync";
 
   private ScheduledExecutorService scheduler;
-  private GbifSyncJob job;
+  private boolean started;
   private final GbifConfig cfg;
   private final DatasetDao ddao;
   private final SqlSessionFactory sessionFactory;
   private final Client client;
-  private ScheduledFuture<?> future;
+  private final List<ScheduledFuture<?>> futures = new ArrayList<>();
 
   public GbifSyncManager(GbifConfig gbif, DatasetDao ddao, SqlSessionFactory sessionFactory, Client client) {
     this.cfg = gbif;
@@ -44,7 +43,7 @@ public class GbifSyncManager implements Managed {
 
   @Override
   public boolean hasStarted() {
-    return job != null;
+    return started;
   }
   
   public void syncNow() {
@@ -59,17 +58,23 @@ public class GbifSyncManager implements Managed {
   @Override
   public void start() throws Exception {
     if (cfg.syncFrequency > 0) {
+      started = true;
       scheduler = Executors.newScheduledThreadPool(1,
           new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
       );
-      LOG.info("Enable incremental GBIF registry sync job every {} minutes", cfg.syncFrequency);
-      job = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true);
-      // we delay the first run by 30 minutes as we do a full sync first
-      future = scheduler.scheduleAtFixedRate(job, 30, cfg.syncFrequency, TimeUnit.MINUTES);
 
-      LOG.info("Submit one complete GBIF registry sync job now");
-      var jobNow = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, false);
-      scheduler.submit(jobNow);
+      LOG.info("Schedule a full GBIF registry sync incl deletions once a week");
+      futures.add(scheduler.scheduleAtFixedRate(
+        new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, false),
+        0, 7, TimeUnit.DAYS)
+      );
+
+      LOG.info("Enable incremental GBIF registry sync job every {} minutes", cfg.syncFrequency);
+      // we delay the first run by 30 minutes as we do a full sync first
+      futures.add(scheduler.scheduleAtFixedRate(
+        new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true),
+        30, cfg.syncFrequency, TimeUnit.MINUTES)
+      );
 
     } else {
       LOG.warn("Disable GBIF dataset sync");
@@ -79,11 +84,11 @@ public class GbifSyncManager implements Managed {
   @Override
   public void stop() throws Exception {
     if (scheduler != null) {
-      if (future != null) {
-        future.cancel(true);
+      if (!futures.isEmpty()) {
+        futures.forEach(f -> f.cancel(true));
       }
       ExecutorUtils.shutdown(scheduler, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
     }
-    job = null;
+    started = false;
   }
 }
