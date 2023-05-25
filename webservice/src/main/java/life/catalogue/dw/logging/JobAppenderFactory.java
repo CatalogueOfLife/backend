@@ -69,7 +69,7 @@ public class JobAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
       public Appender<ILoggingEvent> buildAppender(Context context, String discriminatingValue) throws JoranException {
         var fa = new GZipFileAppender<ILoggingEvent>();
         var dir = JobConfig.jobLog(directory, discriminatingValue).getAbsolutePath();
-        LOG.info("Starting new job log appender at {}", dir);
+        LOG.debug("Starting new job log appender at {}", dir);
         fa.setFile(dir);
         fa.setContext(context);
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
