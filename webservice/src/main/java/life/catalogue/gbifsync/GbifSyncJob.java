@@ -19,6 +19,7 @@ import java.util.*;
 
 import javax.ws.rs.client.Client;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -114,8 +115,10 @@ public class GbifSyncJob extends GlobalBlockingJob {
             Dataset d = dm.get(key);
             if (d.getOrigin() != DatasetOrigin.EXTERNAL) {
               LOG.warn("Dataset {} {} has GBIF key {}, but is of origin {}", key, d.getTitle(), d.getGbifKey(), d.getOrigin());
+            } else if(d.getCreated().plusHours(12).isAfter(LocalDateTime.now())) {
+              LOG.info("Potentially deleted GBIF dataset found that was created within the last 12h. Keep it for now: {} {} with GBIF key {}", key, d.getTitle(), d.getGbifKey());
             } else {
-              LOG.info("Delete dataset {} {} with GBIF key {}, but missing in GBIF", key, d.getTitle(), d.getGbifKey());
+              LOG.warn("Delete dataset {} {} with GBIF key {} which was removed in GBIF", key, d.getTitle(), d.getGbifKey());
               dao.delete(key, Users.GBIF_SYNC);
             }
           }
