@@ -15,10 +15,20 @@ public class GbifConfig {
   public String api = "https://api.gbif.org/v1/";
 
   /**
-   * GBIF registry sync frequency in minutes.
+   * Incremental GBIF registry sync frequency in minutes.
+   * Incremental syncs only look at changes for the day and cannot spot deleted datasets in GBIF.
    * If zero or negative GBIF sync is off.
    */
   public int syncFrequency = 0;
+
+  /**
+   * Full GBIF registry sync frequency in days.
+   * If zero or negative, full GBIF syncs are off.
+   *
+   * Full syncs are needed to delete datasets and fix any potentially incrementally aggregated problems.
+   * The default is daily.
+   */
+  public int fullSyncFrequency = 1;
 
   /**
    * GBIF publisher keys for journals and other publishers who exclusively publish article based datasets, e.g. Plazi & Pensoft.

@@ -57,24 +57,28 @@ public class GbifSyncManager implements Managed {
 
   @Override
   public void start() throws Exception {
-    if (cfg.syncFrequency > 0) {
+    if (cfg.syncFrequency > 0 || cfg.fullSyncFrequency > 0) {
       started = true;
       scheduler = Executors.newScheduledThreadPool(1,
           new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
       );
 
-      LOG.info("Schedule a full GBIF registry sync incl deletions once a week");
-      futures.add(scheduler.scheduleAtFixedRate(
-        new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, false),
-        0, 7, TimeUnit.DAYS)
-      );
+      if (cfg.fullSyncFrequency > 0) {
+        LOG.info("Schedule a full GBIF registry sync incl deletions every {} days", cfg.fullSyncFrequency);
+        futures.add(scheduler.scheduleAtFixedRate(
+          new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, false),
+          0, cfg.fullSyncFrequency, TimeUnit.DAYS)
+        );
+      }
 
-      LOG.info("Enable incremental GBIF registry sync job every {} minutes", cfg.syncFrequency);
-      // we delay the first run by 30 minutes as we do a full sync first
-      futures.add(scheduler.scheduleAtFixedRate(
-        new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true),
-        30, cfg.syncFrequency, TimeUnit.MINUTES)
-      );
+      if (cfg.syncFrequency > 0) {
+        LOG.info("Enable incremental GBIF registry syncs every {} minutes", cfg.syncFrequency);
+        // we delay the first run by 30 minutes as we do the full sync first
+        futures.add(scheduler.scheduleAtFixedRate(
+          new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true),
+          30, cfg.syncFrequency, TimeUnit.MINUTES)
+        );
+      }
 
     } else {
       LOG.warn("Disable GBIF dataset sync");
