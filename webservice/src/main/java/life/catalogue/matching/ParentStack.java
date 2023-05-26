@@ -65,6 +65,20 @@ public class ParentStack {
     return parents;
   }
 
+  public String classificationToString() {
+    StringBuilder sb = new StringBuilder();
+    for (var p : parents) {
+      if (sb.length() > 0) sb.append(" | ");
+      sb.append(p.usage.getRank());
+      sb.append(" ");
+      sb.append(p.usage.getLabel());
+      if (p.match != null) {
+        sb.append("*");
+      }
+    }
+    return sb.toString();
+  }
+
   public boolean isDoubtful() {
     return doubtfulUsageID != null;
   }

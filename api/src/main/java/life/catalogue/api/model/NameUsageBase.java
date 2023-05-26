@@ -109,7 +109,12 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   }
 
   public String getLabel(boolean html) {
-    return labelBuilder(name, null, status, namePhrase, accordingTo, html).toString();
+    return getLabelBuilder(html).toString();
+  }
+
+  @JsonIgnore
+  public StringBuilder getLabelBuilder(boolean html) {
+    return labelBuilder(name, null, status, namePhrase, accordingTo, html);
   }
 
   public static StringBuilder labelBuilder(Name name, Boolean extinct, TaxonomicStatus status, String namePhrase, String accordingTo, boolean html) {

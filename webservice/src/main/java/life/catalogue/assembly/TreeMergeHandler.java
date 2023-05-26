@@ -73,7 +73,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
     parents.put(matcher.toSimpleName(nu));
-    LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classification());
+    LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
     counter++;
     // decisions
     if (decisions.containsKey(nu.getId())) {
