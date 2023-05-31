@@ -71,30 +71,29 @@ public class AuthorComparatorTest {
     assertEquals(Equality.UNKNOWN, comp.compare(p1, p2));
     
     p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("Reichen."));
-    ;
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
     
     p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("Reichenbrg."));
-    ;
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
     
     p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("Reichenberger"));
-    ;
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
     
     p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("Müller"));
-    ;
     assertEquals(Equality.DIFFERENT, comp.compare(p1, p2));
     
     p2.setCombinationAuthorship(parse("Jenkins, Marx & Kluse"));
-    ;
     assertEquals(Equality.DIFFERENT, comp.compare(p1, p2));
     
     p1.getCombinationAuthorship().setAuthors(Lists.newArrayList("Mill."));
-    ;
     p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("L."));
-    ;
     assertEquals(Equality.DIFFERENT, comp.compare(p1, p2));
+
+    p1.setCombinationAuthorship(Authorship.yearAuthors("1933","Mortensen"));
+    p2.setCombinationAuthorship(Authorship.yearAuthors("1924","Meixner"));
+    assertEquals(Equality.DIFFERENT, comp.compare(p1, p2));
+
+
   }
   
   /**
