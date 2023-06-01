@@ -124,7 +124,6 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
       d.setKey(10000+x);
       d.applyUser(TestEntityGenerator.USER_USER);
       dam.create(d);
-      Partitioner.partition(session(), d.getKey(), DatasetOrigin.PROJECT);
 
       dm.create(TestEntityGenerator.newDecision(d.getKey(), datasetKey, "t15")); // taxon
       dm.create(TestEntityGenerator.newDecision(d.getKey(), datasetKey, "s22")); // synonym

@@ -74,7 +74,6 @@ public class RepartitionCmd extends AbstractMybatisCmd {
     // current suffices for external datasets
     final Set<String> existing = new HashSet<>();
     final Map<String, String> tables = new HashMap<>();
-    final boolean createDefault = !defaultPartitionsExists();
 
     // detach existing default partitions
     try (SqlSession session = factory.openSession();
@@ -109,11 +108,8 @@ public class RepartitionCmd extends AbstractMybatisCmd {
           }
         }
       }
-      if (createDefault) {
-        LOG.info("Create new default partitions");
-      }
-      LOG.info("Create "+partitions+" new default subpartitions");
-      dpm.createDefaultPartitions(partitions, createDefault);
+      LOG.info("Create "+partitions+" new partitions");
+      dpm.createPartitions(partitions);
       session.commit();
 
       LOG.info("Copy data to new partitions");
@@ -138,17 +134,5 @@ public class RepartitionCmd extends AbstractMybatisCmd {
       }
       con.commit();
     }
-  }
-
-  private boolean defaultPartitionsExists(){
-    try (Connection c = cfg.db.connect();
-         Statement st = c.createStatement()
-    ){
-      // we do a simple test to check if the default partition already exists
-      st.execute("SELECT * FROM name_default LIMIT 1");
-      return true;
-    } catch (SQLException e) {
-    }
-    return false;
   }
 }

@@ -83,9 +83,6 @@ public class PgImportITBase {
     dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
     dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 
-    if (fullInit) {
-      InitDbUtils.createNonDefaultPartitions(SqlSessionFactoryRule.getSqlSessionFactory());
-    }
     sdao = new SynonymDao(SqlSessionFactoryRule.getSqlSessionFactory(), validator);
     ndao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
     tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, indexService, validator);

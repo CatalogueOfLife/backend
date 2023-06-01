@@ -443,8 +443,8 @@
 
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, created, modified, acl_editor)
-    VALUES (#{key},<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now(),
+    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, created, modified, acl_editor)
+    VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now(),
       <if test="sourceKey != null">NULL</if>
       <if test="sourceKey == null">
         <if test="createdBy &lt; 100">NULL</if>

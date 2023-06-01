@@ -94,12 +94,10 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
   }
 
   void testUnique(Dataset d, String expected) throws Exception {
-    testDataRule.getKeyGenerator().setKey(d);
     mapper(DatasetMapper.class).create(d);
     commit();
 
     try {
-      testDataRule.getKeyGenerator().setKey(d);
       mapper(DatasetMapper.class).create(d);
       assertNull("No unique error expected", expected);
 

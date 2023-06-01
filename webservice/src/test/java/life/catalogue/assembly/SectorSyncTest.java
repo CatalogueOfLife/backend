@@ -54,9 +54,6 @@ public class SectorSyncTest {
   @Before
   public void init() {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      // draft partition
-      MybatisTestUtils.partition(session, Datasets.COL);
-
       Name n = new Name();
       n.setDatasetKey(Datasets.COL);
       n.setUninomial("Coleoptera");

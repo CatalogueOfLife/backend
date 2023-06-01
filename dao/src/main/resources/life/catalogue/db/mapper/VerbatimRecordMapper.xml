@@ -136,9 +136,10 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO verbatim_${newDatasetKey} (id,dataset_key,<include refid="COLS_NO_DATASETKEY"/>)
+    INSERT INTO verbatim (id,dataset_key,<include refid="COLS_NO_DATASETKEY"/>)
     SELECT id,#{newDatasetKey},<include refid="COLS_NO_DATASETKEY"/>
-    FROM verbatim_${datasetKey}
+    FROM verbatim
+    WHERE dataset_key = #{datasetKey}
   </insert>
 
   <update id="update" parameterType="VerbatimRecord" keyProperty="id">

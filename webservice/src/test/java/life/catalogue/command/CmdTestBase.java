@@ -39,10 +39,10 @@ public abstract class CmdTestBase {
   private final Supplier<Command> cmdSupply;
 
   @ClassRule
-  public static SqlSessionFactoryRule pgRule = new PgSetupRule();
+  //public static SqlSessionFactoryRule pgRule = new PgSetupRule();
   // replace above rule with this one to connect to a local pg and init the connected db
   // make sure to also change the adminDB settings below !!!
-  //public static SqlSessionFactoryRule pgRule = new PgConnectionRule("col", "postgres", "postgres", 100);
+  public static SqlSessionFactoryRule pgRule = new PgConnectionRule("col", "postgres", "postgres");
 
   @Rule
   public final TestDataRule testDataRule = TestDataRule.empty();
@@ -65,6 +65,7 @@ public abstract class CmdTestBase {
         w.write("\nadminDb:\n");
         PgDbConfig adb = new PgDbConfig();
         adb.database = PgSetupRule.ADMIN_DB_NAME;
+        adb.database = "markus";
         adb.password = db.password;
         adb.user = db.user;
         YamlUtils.write(adb, 2, w);

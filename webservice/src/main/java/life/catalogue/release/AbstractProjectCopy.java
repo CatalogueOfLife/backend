@@ -104,11 +104,6 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     LOG.info("{} project {} to new dataset {}", actionName, datasetKey, getNewDatasetKey());
     // prepare new tables
     updateState(ImportState.PROCESSING);
-    Partitioner.partition(factory, newDatasetKey, newDatasetOrigin);
-    // TODO: build indices concurrently AFTER copying data to be much quicker
-    // Note: attaching also creates missing indices and constraint from the master partition - if they are missing that takes long and blocks queries meanwhile
-    // build indices and attach partition - the actual copy commands use the concrete table names so we can load them without being attached yet
-    Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
 
     // is an id mapping table needed?
     if (mapIds) {

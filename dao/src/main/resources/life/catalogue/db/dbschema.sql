@@ -1127,29 +1127,6 @@ CREATE INDEX ON decision (dataset_key);
 CREATE INDEX ON decision (subject_dataset_key);
 CREATE INDEX ON decision (subject_dataset_key, subject_id);
 
-CREATE TABLE estimate (
-  id INTEGER NOT NULL,
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  verbatim_key INTEGER,
-  target_rank RANK,
-  target_code NOMCODE,
-  estimate INTEGER,
-  type ESTIMATETYPE NOT NULL,
-  created_by INTEGER NOT NULL,
-  modified_by INTEGER NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  target_id TEXT,
-  target_name TEXT,
-  target_authorship TEXT,
-  reference_id TEXT,
-  note TEXT,
-  PRIMARY KEY (dataset_key, id)
-);
-
-CREATE INDEX ON estimate (dataset_key);
-CREATE INDEX ON estimate (dataset_key, target_id);
-CREATE INDEX ON estimate (dataset_key, reference_id);
 
 CREATE TABLE names_index (
   id SERIAL PRIMARY KEY,
@@ -1291,7 +1268,7 @@ CREATE TABLE verbatim (
   issues ISSUE[] DEFAULT '{}',
   doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('verbatim', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED,
   PRIMARY KEY (dataset_key, id)
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON verbatim (dataset_key, type);
 CREATE INDEX on verbatim (dataset_key, id) WHERE array_length(issues, 1) > 0;
@@ -1320,7 +1297,7 @@ CREATE TABLE reference (
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON reference (dataset_key, verbatim_key);
 CREATE INDEX ON reference (dataset_key, sector_key);
@@ -1375,7 +1352,7 @@ CREATE TABLE name (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON name (dataset_key, sector_key);
 CREATE INDEX ON name (dataset_key, verbatim_key);
@@ -1405,7 +1382,7 @@ CREATE TABLE name_rel (
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
   FOREIGN KEY (dataset_key, name_id) REFERENCES name,
   FOREIGN KEY (dataset_key, related_name_id) REFERENCES name
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON name_rel (dataset_key, name_id);
 CREATE INDEX ON name_rel (dataset_key, related_name_id);
@@ -1447,12 +1424,28 @@ CREATE TABLE type_material (
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
   FOREIGN KEY (dataset_key, name_id) REFERENCES name
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON type_material (dataset_key, name_id);
 CREATE INDEX ON type_material (dataset_key, sector_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_key);
 CREATE INDEX ON type_material (dataset_key, reference_id);
+
+
+CREATE TABLE name_match (
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  index_id INTEGER NOT NULL REFERENCES names_index,
+  name_id TEXT NOT NULL,
+  type MATCHTYPE,
+  PRIMARY KEY (dataset_key, name_id),
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON name_match (dataset_key, sector_key);
+CREATE INDEX ON name_match (dataset_key, index_id);
+CREATE INDEX ON name_match (index_id);
 
 
 CREATE TABLE name_usage (
@@ -1489,7 +1482,7 @@ CREATE TABLE name_usage (
   FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference,
   FOREIGN KEY (dataset_key, name_id) REFERENCES name,
   FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON name_usage (dataset_key, name_id);
 CREATE INDEX ON name_usage (dataset_key, parent_id);
@@ -1506,7 +1499,7 @@ CREATE TABLE verbatim_source (
   issues ISSUE[] DEFAULT '{}',
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, id) REFERENCES name_usage
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
 
@@ -1517,7 +1510,7 @@ CREATE TABLE verbatim_source_secondary (
   source_id TEXT,
   source_dataset_key INTEGER,
   FOREIGN KEY (dataset_key, id) REFERENCES name_usage
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON verbatim_source_secondary (dataset_key, id);
 CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
@@ -1542,7 +1535,7 @@ CREATE TABLE taxon_concept_rel (
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
   FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
   FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON taxon_concept_rel (dataset_key, taxon_id);
 CREATE INDEX ON taxon_concept_rel (dataset_key, related_taxon_id);
@@ -1572,7 +1565,7 @@ CREATE TABLE species_interaction (
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
   FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
   FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON species_interaction (dataset_key, taxon_id);
 CREATE INDEX ON species_interaction (dataset_key, related_taxon_id);
@@ -1604,7 +1597,7 @@ CREATE TABLE vernacular_name (
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
   FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON vernacular_name (dataset_key, taxon_id);
 CREATE INDEX ON vernacular_name (dataset_key, sector_key);
@@ -1632,7 +1625,7 @@ CREATE TABLE distribution (
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
   FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON distribution (dataset_key, taxon_id);
 CREATE INDEX ON distribution (dataset_key, sector_key);
@@ -1654,10 +1647,35 @@ CREATE TABLE treatment (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, id) REFERENCES name_usage
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON treatment (dataset_key, sector_key);
 CREATE INDEX ON treatment (dataset_key, verbatim_key);
+
+
+CREATE TABLE estimate (
+  id INTEGER NOT NULL,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  verbatim_key INTEGER,
+  target_rank RANK,
+  target_code NOMCODE,
+  estimate INTEGER,
+  type ESTIMATETYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  target_id TEXT,
+  target_name TEXT,
+  target_authorship TEXT,
+  reference_id TEXT,
+  note TEXT,
+  PRIMARY KEY (dataset_key, id)
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON estimate (dataset_key);
+CREATE INDEX ON estimate (dataset_key, target_id);
+CREATE INDEX ON estimate (dataset_key, reference_id);
 
 
 CREATE TABLE media (
@@ -1684,7 +1702,7 @@ CREATE TABLE media (
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
   FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
-) PARTITION BY LIST (dataset_key);
+) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON media (dataset_key, taxon_id);
 CREATE INDEX ON media (dataset_key, sector_key);
@@ -1695,20 +1713,6 @@ CREATE INDEX ON media (dataset_key, reference_id);
 --
 -- SHARED TABLES REFERRING TO DATA TABLES
 --
-CREATE TABLE name_match (
-  dataset_key INTEGER NOT NULL,
-  sector_key INTEGER,
-  index_id INTEGER NOT NULL REFERENCES names_index,
-  name_id TEXT NOT NULL,
-  type MATCHTYPE,
-  PRIMARY KEY (dataset_key, name_id),
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name
-);
-CREATE INDEX ON name_match (dataset_key, sector_key);
-CREATE INDEX ON name_match (dataset_key, index_id);
-CREATE INDEX ON name_match (index_id);
-
 CREATE TABLE name_usage_archive_match (
   dataset_key INTEGER NOT NULL,
   index_id INTEGER NOT NULL REFERENCES names_index,
@@ -1895,6 +1899,7 @@ CREATE VIEW v_name_usage AS (
 
 
 
+-- we track counts for usages and names to avoid long count() queries
 CREATE TABLE usage_count (
   dataset_key int PRIMARY KEY,
   counter int
