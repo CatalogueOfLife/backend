@@ -777,7 +777,7 @@ CREATE TABLE "user" (
 
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
-  doi text EXCLUDE (doi WITH =) WHERE (deleted IS null),
+  doi text,
   source_key INTEGER REFERENCES dataset,
   attempt INTEGER,
   private BOOLEAN DEFAULT FALSE,
@@ -837,7 +837,8 @@ CREATE TABLE dataset (
       setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(editor), ''))), 'D') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(description,''))), 'D')
-  ) STORED
+  ) STORED,
+  EXCLUDE (doi WITH =) WHERE (deleted IS null)
 );
 
 CREATE INDEX ON dataset (gbif_key);
