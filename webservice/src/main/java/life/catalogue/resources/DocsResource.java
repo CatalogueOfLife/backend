@@ -6,6 +6,7 @@ import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -23,11 +24,13 @@ import io.swagger.v3.oas.models.OpenAPI;
 @Path("/")
 public class DocsResource {
   private final String version;
+  private final LocalDateTime startup;
   private final OpenAPI openApi;
 
-  public DocsResource(WsServerConfig cfg, OpenAPI openApi) {
+  public DocsResource(WsServerConfig cfg, OpenAPI openApi, LocalDateTime startup) {
     version = cfg.versionString();
     this.openApi = openApi;
+    this.startup = startup;
   }
   
   @GET
@@ -50,4 +53,10 @@ public class DocsResource {
     return version;
   }
 
+  @GET
+  @Path("/version/startup")
+  @Produces(MediaType.TEXT_PLAIN)
+  public String startup() {
+    return startup.toString();
+  }
 }

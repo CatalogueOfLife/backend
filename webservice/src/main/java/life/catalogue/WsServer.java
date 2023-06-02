@@ -1,6 +1,7 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.jackson.PermissiveJavaDateSerde;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
@@ -64,6 +65,7 @@ import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.time.LocalDateTime;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -387,7 +389,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, assembly, copyFactory, executor));
     j.register(new DatasetReviewerResource(adao));
     j.register(new DecisionResource(decdao));
-    j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));
+    j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env), LocalDateTime.now()));
     j.register(new DuplicateResource(dupeDao));
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exdao, cfg));
