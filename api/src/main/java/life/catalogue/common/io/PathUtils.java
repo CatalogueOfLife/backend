@@ -73,9 +73,10 @@ public class PathUtils {
    */
   public static void deleteRecursively(Path dir) throws IOException {
     if (Files.exists(dir)) {
-      Files.walk(dir)
-          .sorted(Comparator.reverseOrder())
-          .forEach(PathUtils::deleteQuietly);
+     try (var paths = Files.walk(dir)) {
+       paths.sorted(Comparator.reverseOrder())
+            .forEach(PathUtils::deleteQuietly);
+     }
     }
   }
   
@@ -85,10 +86,12 @@ public class PathUtils {
    */
   public static void cleanDirectory(Path dir) throws IOException {
     if (Files.exists(dir)) {
-      Files.walk(dir)
+      try (var paths = Files.walk(dir)) {
+        paths
           .sorted(Comparator.reverseOrder())
           .filter(p -> !p.equals(dir))
           .forEach(PathUtils::deleteQuietly);
+      }
     }
   }
   

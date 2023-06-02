@@ -2,6 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.dw.jersey.FileStreamingOutput;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.common.ws.MoreMediaTypes;
 
@@ -41,12 +42,8 @@ public class DatasetArchiveResource {
       String msg = attempt == null ? "Archive for dataset " + key + " not found" : "Archive for import attempt " + attempt + " of dataset " + key + " not found";
       throw new NotFoundException(key, msg);
     }
-    StreamingOutput stream = os -> {
-      InputStream in = new FileInputStream(source);
-      IOUtils.copy(in, os);
-      os.flush();
-    };
 
+    StreamingOutput stream = new FileStreamingOutput(source);
     return Response.ok(stream)
       .type(MoreMediaTypes.APP_ZIP)
       .header(MoreHttpHeaders.CONTENT_DISPOSITION, ResourceUtils.fileAttachment("dataset-" + key + ".zip"))

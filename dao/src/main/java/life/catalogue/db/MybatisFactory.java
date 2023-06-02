@@ -100,12 +100,10 @@ public class MybatisFactory {
   }
 
   private static SqlSessionFactory requireUtf8Encoding(SqlSessionFactory factory) {
-    Connection c = null;
-    Statement st = null;
-    try (SqlSession session = factory.openSession()) {
-      c = session.getConnection();
-      st = c.createStatement();
-
+    try (SqlSession session = factory.openSession();
+         Connection c = session.getConnection();
+         Statement st = c.createStatement();
+    ) {
       st.execute("SHOW SERVER_ENCODING");
       st.getResultSet().next();
       String cs = st.getResultSet().getString(1);
@@ -118,9 +116,6 @@ public class MybatisFactory {
 
     } catch (SQLException e) {
       LOG.error("Failed to setup mybatis session factory", e);
-
-    } finally {
-      Closer.closeQuitely(st, c);
     }
     return factory;
   }

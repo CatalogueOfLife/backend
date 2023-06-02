@@ -46,9 +46,11 @@ public class Partitioner {
               try {
                 int key = Integer.parseInt(m.group(1));
                 originStmt.execute("select origin from dataset where key = "+key + " AND origin='"+origin.name()+"'::datasetorigin");
-                if (!originStmt.getResultSet().next()) {
-                  // no matching origin
-                  continue;
+                try (var ors = originStmt.getResultSet()) {
+                  if (!ors.next()) {
+                    // no matching origin
+                    continue;
+                  }
                 }
               } catch (NumberFormatException e) {
                 if (origin != DatasetOrigin.EXTERNAL) {
