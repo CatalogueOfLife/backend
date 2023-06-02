@@ -777,7 +777,7 @@ CREATE TABLE "user" (
 
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
-  doi text UNIQUE,
+  doi text EXCLUDE (doi WITH =) WHERE (deleted IS null),
   source_key INTEGER REFERENCES dataset,
   attempt INTEGER,
   private BOOLEAN DEFAULT FALSE,

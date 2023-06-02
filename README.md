@@ -1,7 +1,7 @@
 # Catalogue of Life Backend
 
 For source code contributions please see our [developer guide](DEVELOPER-GUIDE.md).
-The COL backend is a [Dropwizard](https://www.dropwizard.io/) application, that drives the [COL ChecklistBank API](https://api.catalogueoflife.org/). 
+The COL backend is a [Dropwizard](https://www.dropwizard.io/) application, that drives the [COL ChecklistBank API](https://api.checklistbank.org/). 
 `webservice` is the maven module that builds the application.
 
 

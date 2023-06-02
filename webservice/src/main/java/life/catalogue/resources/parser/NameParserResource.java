@@ -169,7 +169,7 @@ public class NameParserResource {
   /**
    * Parsing names by uploading a plain UTF-8 text file using one line per scientific name.
    * <pre>
-   * curl -F names=@scientific_names.txt http://api.catalogueoflife.org/parser/name
+   * curl -F names=@scientific_names.txt http://api.checklistbank.org/parser/name
    * </pre>
    */
   @POST
@@ -189,7 +189,7 @@ public class NameParserResource {
    * Parsing names by posting plain text content using one line per scientific name.
    * Make sure to preserve new lines (\n) in the posted data, for example use --data-binary with curl:
    * <pre>
-   * curl POST -H "Content-Type:text/plain" --data-binary @scientific_names.txt http://api.catalogueoflife.org/parser/name
+   * curl POST -H "Content-Type:text/plain" --data-binary @scientific_names.txt http://api.checklistbank.org/parser/name
    * </pre>
    */
   @POST

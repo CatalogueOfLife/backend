@@ -51,7 +51,7 @@ public class MetadataParserResource {
   /**
    * Parses metadata POSTed directly as a YAML file.
    * <pre>
-   * curl POST -H "Content-Type:text/yaml" --data-binary @metadata.yaml http://api.catalogueoflife.org/parser/metadata
+   * curl POST -H "Content-Type:text/yaml" --data-binary @metadata.yaml http://api.checklistbank.org/parser/metadata
    * </pre>
    */
   @POST

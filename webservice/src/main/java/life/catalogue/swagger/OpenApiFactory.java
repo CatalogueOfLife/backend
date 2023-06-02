@@ -52,8 +52,8 @@ public class OpenApiFactory {
 
       // add fixed prod & dev servers
       oas.setServers(List.of(
-        server("production", "https://api.catalogueoflife.org"),
-        server("test", "https://api.dev.catalogueoflife.org")
+        server("production", "https://api.checklistbank.org"),
+        server("test", "https://api.dev.checklistbank.org")
       ));
 
       // security

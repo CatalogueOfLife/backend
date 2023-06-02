@@ -123,7 +123,7 @@ public class EmlWriterTest {
     FileUtils.cleanDirectory(dir);
     for (int key : keys) {
       try {
-        InputStream stream = new URL("http://api.catalogueoflife.org/dataset/" + key).openStream();
+        InputStream stream = new URL("http://api.checklistbank.org/dataset/" + key).openStream();
         String json = InputStreamUtils.readEntireStream(stream);
         Dataset d = ApiModule.MAPPER.readValue(json, Dataset.class);
         if (d == null) {

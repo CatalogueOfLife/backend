@@ -96,7 +96,7 @@ public class HomotypicGroupingResource {
    * Parsing names by posting plain text content using one line per scientific name.
    * Make sure to preserve new lines (\n) in the posted data, for example use --data-binary with curl:
    * <pre>
-   * curl POST -H "Content-Type:text/plain" --data-binary @scientific_names.txt http://api.catalogueoflife.org/parser/homotypic
+   * curl POST -H "Content-Type:text/plain" --data-binary @scientific_names.txt http://api.checklistbank.org/parser/homotypic
    * </pre>
    */
   @POST

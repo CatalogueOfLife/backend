@@ -11,6 +11,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-06-02 unique doi only for non deleted datasets
+```
+ALTER TABLE dataset ADD CONSTRAINT dataset_doi_unique EXCLUDE (doi WITH =) WHERE (deleted IS null);
+ALTER TABLE dataset DROP CONSTRAINT dataset_doi_key;
+```
+
 ### 2023-05-23 new dataset type 
 ```
 ALTER TYPE DATASETTYPE ADD VALUE 'IDENTIFICATION' BEFORE 'OTHER';

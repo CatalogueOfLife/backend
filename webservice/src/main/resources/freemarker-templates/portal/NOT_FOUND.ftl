@@ -217,7 +217,7 @@ xhr.onload = function () {
 	}
 
 };
-xhr.open('GET', 'https://api.catalogueoflife.org/admin/settings');
+xhr.open('GET', 'https://api.checklistbank.org/admin/settings');
 xhr.send();
 }
 getHealth()
