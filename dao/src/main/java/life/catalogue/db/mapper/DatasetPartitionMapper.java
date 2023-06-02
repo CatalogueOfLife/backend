@@ -26,7 +26,6 @@ import com.google.common.collect.Lists;
  */
 public interface DatasetPartitionMapper {
   Logger LOG = LoggerFactory.getLogger(DatasetPartitionMapper.class);
-  int MAX_PARTITION_KEY = 999; // maximum key for manually created individual project partitions like the COL project
 
   List<String> IDMAP_TABLES = Lists.newArrayList(
     "idmap_name",
@@ -35,6 +34,7 @@ public interface DatasetPartitionMapper {
 
   // order is important !!!
   List<String> PARTITIONED_TABLES = Lists.newArrayList(
+      "dataset_import",
       "verbatim",
       "verbatim_source",
       "verbatim_source_secondary",

@@ -919,61 +919,6 @@ ALTER TABLE dataset_patch ADD FOREIGN KEY (key) REFERENCES dataset;
 ALTER TABLE dataset_patch ADD FOREIGN KEY (dataset_key) REFERENCES dataset;
 
 
-CREATE TABLE dataset_import (
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
-  attempt INTEGER NOT NULL,
-  state IMPORTSTATE NOT NULL,
-  origin DATASETORIGIN NOT NULL,
-  format DATAFORMAT,
-  started TIMESTAMP WITHOUT TIME ZONE,
-  finished TIMESTAMP WITHOUT TIME ZONE,
-  download TIMESTAMP WITHOUT TIME ZONE,
-  created_by INTEGER NOT NULL,
-  verbatim_count INTEGER,
-  -- shared
-  applied_decision_count INTEGER,
-  bare_name_count INTEGER,
-  distribution_count INTEGER,
-  estimate_count INTEGER,
-  media_count INTEGER,
-  name_count INTEGER,
-  reference_count INTEGER,
-  synonym_count INTEGER,
-  taxon_count INTEGER,
-  treatment_count INTEGER,
-  type_material_count INTEGER,
-  vernacular_count INTEGER,
-  distributions_by_gazetteer_count HSTORE,
-  extinct_taxa_by_rank_count HSTORE,
-  ignored_by_reason_count HSTORE,
-  issues_by_issue_count HSTORE,
-  media_by_type_count HSTORE,
-  name_relations_by_type_count HSTORE,
-  names_by_code_count HSTORE,
-  names_by_rank_count HSTORE,
-  names_by_status_count HSTORE,
-  names_by_type_count HSTORE,
-  species_interactions_by_type_count HSTORE,
-  synonyms_by_rank_count HSTORE,
-  taxa_by_rank_count HSTORE,
-  taxon_concept_relations_by_type_count HSTORE,
-  type_material_by_status_count HSTORE,
-  usages_by_origin_count HSTORE,
-  usages_by_status_count HSTORE,
-  vernaculars_by_language_count HSTORE,
-  -- extra
-  verbatim_by_row_type_count JSONB,
-  verbatim_by_term_count HSTORE,
-  job TEXT NOT NULL,
-  error TEXT,
-  md5 TEXT,
-  download_uri TEXT,
-  PRIMARY KEY (dataset_key, attempt)
-);
-
-CREATE INDEX ON dataset_import (dataset_key);
-CREATE INDEX ON dataset_import (started);
-
 CREATE TABLE dataset_export (
   key UUID PRIMARY KEY,
   -- request
@@ -1257,6 +1202,62 @@ CREATE TABLE parser_config (
 --
 -- PARTITIONED DATA TABLES
 --
+
+CREATE TABLE dataset_import (
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  attempt INTEGER NOT NULL,
+  state IMPORTSTATE NOT NULL,
+  origin DATASETORIGIN NOT NULL,
+  format DATAFORMAT,
+  started TIMESTAMP WITHOUT TIME ZONE,
+  finished TIMESTAMP WITHOUT TIME ZONE,
+  download TIMESTAMP WITHOUT TIME ZONE,
+  created_by INTEGER NOT NULL,
+  verbatim_count INTEGER,
+  -- shared
+  applied_decision_count INTEGER,
+  bare_name_count INTEGER,
+  distribution_count INTEGER,
+  estimate_count INTEGER,
+  media_count INTEGER,
+  name_count INTEGER,
+  reference_count INTEGER,
+  synonym_count INTEGER,
+  taxon_count INTEGER,
+  treatment_count INTEGER,
+  type_material_count INTEGER,
+  vernacular_count INTEGER,
+  distributions_by_gazetteer_count HSTORE,
+  extinct_taxa_by_rank_count HSTORE,
+  ignored_by_reason_count HSTORE,
+  issues_by_issue_count HSTORE,
+  media_by_type_count HSTORE,
+  name_relations_by_type_count HSTORE,
+  names_by_code_count HSTORE,
+  names_by_rank_count HSTORE,
+  names_by_status_count HSTORE,
+  names_by_type_count HSTORE,
+  species_interactions_by_type_count HSTORE,
+  synonyms_by_rank_count HSTORE,
+  taxa_by_rank_count HSTORE,
+  taxon_concept_relations_by_type_count HSTORE,
+  type_material_by_status_count HSTORE,
+  usages_by_origin_count HSTORE,
+  usages_by_status_count HSTORE,
+  vernaculars_by_language_count HSTORE,
+  -- extra
+  verbatim_by_row_type_count JSONB,
+  verbatim_by_term_count HSTORE,
+  job TEXT NOT NULL,
+  error TEXT,
+  md5 TEXT,
+  download_uri TEXT,
+  PRIMARY KEY (dataset_key, attempt)
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON dataset_import (dataset_key);
+CREATE INDEX ON dataset_import (started);
+
 
 CREATE TABLE verbatim (
   id INTEGER NOT NULL,

@@ -28,7 +28,8 @@ public class Partitioner {
   private static final Pattern TABLE_PATTERN = Pattern.compile("name_(.+)$");
 
   /**
-   * @return list of all dataset suffices for which a name data partition exists - no matter if attached or not.
+   * @return list of all dataset suffices for which a name data partition exists - no matter if attached or not. Includes both
+   *         the default partitions for external datasets and project/release tables.
    */
   public static Set<String> partitionSuffices(Connection con, @Nullable DatasetOrigin origin) throws SQLException {
     try (Statement st = con.createStatement();
