@@ -14,19 +14,20 @@ and done it manually. So we can as well log changes here.
 
 ### 2023-06-05 migrate partitioning
 This is a serious change, removing the list partitioning and replacing it with just the hash one and a fixed number of partitions.
-First create an empty, brand new database with the new partition scheme. Use the InitCmd to do this, e.g. with 24 partitions.
+First create an empty, brand new database with the new partition scheme. Use the InitCmd to do this, e.g. with 32 partitions.
 
-Then migrate data from the old db to new one using foreign data wrappers in postgres:
 ```
-create extension postgres_fdw;
+CREATE EXTENSION postgres_fdw;
 CREATE SERVER colold FOREIGN DATA WRAPPER postgres_fdw OPTIONS (host 'localhost', dbname 'colold', port '5432');
 CREATE USER MAPPING FOR postgres SERVER colold OPTIONS (user 'postgres', password 'postgres');
+CREATE USER MAPPING FOR col SERVER colold OPTIONS (user 'col', password 'xxx');
 CREATE SCHEMA old;
+CREATE TEXT SEARCH CONFIGURATION public.simple2 ( COPY = pg_catalog.simple );
 IMPORT FOREIGN SCHEMA public FROM SERVER colold INTO old;
 ```
 
 ```
-INSERT INTO "user" SELECT * FROM "old.user" WHERE key > 99;
+INSERT INTO "user" (key,last_login,created,blocked,username,firstname,lastname,email,orcid,country,roles,settings) SELECT key,last_login,created,blocked,username,firstname,lastname,email,orcid,country,roles,settings FROM old."user" WHERE key > 99;
 TRUNCATE dataset CASCADE;
 INSERT INTO dataset (key,doi,source_key,attempt,private,type,origin,gbif_key,gbif_publisher_key,identifier,title,alias,description,issued,version,issn,contact,creator,editor,publisher,contributor,keyword,geographic_scope,taxonomic_scope,temporal_scope,confidence,completeness,license,url,logo,notes,settings,acl_editor,acl_reviewer,created_by,modified_by,created,modified,deleted) SELECT key,doi,source_key,attempt,private,type,origin,gbif_key,gbif_publisher_key,identifier,title,alias,description,issued,version,issn,contact,creator,editor,publisher,contributor,keyword,geographic_scope,taxonomic_scope,temporal_scope,confidence,completeness,license,url,logo,notes,settings,acl_editor,acl_reviewer,created_by,modified_by,created,modified,deleted FROM old.dataset;
 INSERT INTO dataset_citation (dataset_key,id,type,doi,author,editor,title,container_author,container_title,issued,accessed,collection_editor,collection_title,volume,issue,edition,page,publisher,publisher_place,version,isbn,issn,url,note) SELECT dataset_key,id,type,doi,author,editor,title,container_author,container_title,issued,accessed,collection_editor,collection_title,volume,issue,edition,page,publisher,publisher_place,version,isbn,issn,url,note FROM old.dataset_citation;
@@ -46,8 +47,6 @@ INSERT INTO parser_config (id,candidatus,extinct,rank,notho,code,type,created_by
 INSERT INTO dataset_import (dataset_key,attempt,state,origin,format,started,finished,download,created_by,verbatim_count,applied_decision_count,bare_name_count,distribution_count,estimate_count,media_count,name_count,reference_count,synonym_count,taxon_count,treatment_count,type_material_count,vernacular_count,distributions_by_gazetteer_count,extinct_taxa_by_rank_count,ignored_by_reason_count,issues_by_issue_count,media_by_type_count,name_relations_by_type_count,names_by_code_count,names_by_rank_count,names_by_status_count,names_by_type_count,species_interactions_by_type_count,synonyms_by_rank_count,taxa_by_rank_count,taxon_concept_relations_by_type_count,type_material_by_status_count,usages_by_origin_count,usages_by_status_count,vernaculars_by_language_count,verbatim_by_row_type_count,verbatim_by_term_count,job,error,md5,download_uri) SELECT dataset_key,attempt,state,origin,format,started,finished,download,created_by,verbatim_count,applied_decision_count,bare_name_count,distribution_count,estimate_count,media_count,name_count,reference_count,synonym_count,taxon_count,treatment_count,type_material_count,vernacular_count,distributions_by_gazetteer_count,extinct_taxa_by_rank_count,ignored_by_reason_count,issues_by_issue_count,media_by_type_count,name_relations_by_type_count,names_by_code_count,names_by_rank_count,names_by_status_count,names_by_type_count,species_interactions_by_type_count,synonyms_by_rank_count,taxa_by_rank_count,taxon_concept_relations_by_type_count,type_material_by_status_count,usages_by_origin_count,usages_by_status_count,vernaculars_by_language_count,verbatim_by_row_type_count,verbatim_by_term_count,job,error,md5,download_uri FROM old.dataset_import;
 
 INSERT INTO verbatim (id,dataset_key,line,file,type,terms,issues) SELECT id,dataset_key,line,file,type,terms,issues FROM old.verbatim;
-INSERT INTO verbatim_source (id,dataset_key,source_id,source_dataset_key,issues) SELECT id,dataset_key,source_id,source_dataset_key,issues FROM old.verbatim_source;
-INSERT INTO verbatim_source_secondary (id,dataset_key,type,source_id,source_dataset_key) SELECT id,dataset_key,type,source_id,source_dataset_key FROM old.verbatim_source_secondary;
 INSERT INTO reference (id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation) SELECT id,dataset_key,sector_key,verbatim_key,year,created_by,modified_by,created,modified,csl,citation FROM old.reference;
 INSERT INTO name (id,dataset_key,sector_key,verbatim_key,rank,candidatus,notho,code,nom_status,origin,type,scientific_name,authorship,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,identifier,link,remarks,scientific_name_normalized,authorship_normalized,created_by,modified_by,created,modified) SELECT id,dataset_key,sector_key,verbatim_key,rank,candidatus,notho,code,nom_status,origin,type,scientific_name,authorship,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,identifier,link,remarks,scientific_name_normalized,authorship_normalized,created_by,modified_by,created,modified FROM old.name;
 INSERT INTO name_rel (id,dataset_key,sector_key,verbatim_key,type,created_by,modified_by,created,modified,name_id,related_name_id,reference_id,remarks) SELECT id,dataset_key,sector_key,verbatim_key,type,created_by,modified_by,created,modified,name_id,related_name_id,reference_id,remarks FROM old.name_rel;
@@ -61,10 +60,51 @@ INSERT INTO media (id,dataset_key,sector_key,verbatim_key,type,captured,license,
 INSERT INTO estimate (id,dataset_key,verbatim_key,target_rank,target_code,estimate,type,created_by,modified_by,created,modified,target_id,target_name,target_authorship,reference_id,note) SELECT id,dataset_key,verbatim_key,target_rank,target_code,estimate,type,created_by,modified_by,created,modified,target_id,target_name,target_authorship,reference_id,note FROM old.estimate;
 INSERT INTO treatment (id,dataset_key,sector_key,verbatim_key,format,created_by,modified_by,created,modified,document) SELECT id,dataset_key,sector_key,verbatim_key,format,created_by,modified_by,created,modified,document FROM old.treatment;
 INSERT INTO vernacular_name (id,dataset_key,sector_key,verbatim_key,created_by,modified_by,created,modified,language,country,taxon_id,name,latin,area,sex,reference_id) SELECT id,dataset_key,sector_key,verbatim_key,created_by,modified_by,created,modified,language,country,taxon_id,name,latin,area,sex,reference_id FROM old.vernacular_name;
+INSERT INTO verbatim_source (id,dataset_key,source_id,source_dataset_key,issues) SELECT id,dataset_key,source_id,source_dataset_key,issues FROM old.verbatim_source;
+INSERT INTO verbatim_source_secondary (id,dataset_key,type,source_id,source_dataset_key) SELECT id,dataset_key,type,source_id,source_dataset_key FROM old.verbatim_source_secondary;
 
 INSERT INTO name_usage_archive_match (dataset_key,index_id,usage_id,type) SELECT dataset_key,index_id,usage_id,type FROM old.name_usage_archive_match;
 ```
 
+To update all sequences run the following sql with the ExecuteCmd CLI:
+```
+./exec-sql.sh sql/migrate-sequences.sql --origin EXTERNAL
+./exec-sql.sh sql/migrate-sequences.sql --origin PROJECT
+
+CREATE SEQUENCE IF NOT EXISTS verbatim_{KEY}_id_seq START 1;
+SELECT setval('verbatim_{KEY}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM verbatim WHERE dataset_key={KEY})); 
+
+CREATE SEQUENCE IF NOT EXISTS name_rel_{KEY}_id_seq START 1;
+SELECT setval('name_rel_{KEY}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM name_rel WHERE dataset_key={KEY})); 
+
+CREATE SEQUENCE IF NOT EXISTS taxon_concept_rel_{KEY}_id_seq START 1;
+SELECT setval('taxon_concept_rel_{KEY}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM taxon_concept_rel WHERE dataset_key={KEY})); 
+
+CREATE SEQUENCE IF NOT EXISTS species_interaction_{KEY}_id_seq START 1;
+SELECT setval('species_interaction_{KEY}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM species_interaction WHERE dataset_key={KEY})); 
+
+CREATE SEQUENCE IF NOT EXISTS distribution_{KEY}_id_seq START 1;
+SELECT setval('distribution_{KEY}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM distribution WHERE dataset_key={KEY})); 
+
+CREATE SEQUENCE IF NOT EXISTS media_{KEY}_id_seq START 1;
+SELECT setval('media_{KEY}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM media WHERE dataset_key={KEY})); 
+
+CREATE SEQUENCE IF NOT EXISTS estimate_{KEY}_id_seq START 1;
+SELECT setval('estimate_{KEY}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM estimate WHERE dataset_key={KEY})); 
+
+CREATE SEQUENCE IF NOT EXISTS vernacular_name_{KEY}_id_seq START 1;
+SELECT setval('vernacular_name_{KEY}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM vernacular_name WHERE dataset_key={KEY})); 
+```
+
+```
+./exec-sql.sh sql/migrate-project-sequences.sql --origin PROJECT
+
+CREATE SEQUENCE IF NOT EXISTS sector_{KEY}_id_seq START 1;
+SELECT setval('sector_{KEY}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM sector WHERE dataset_key={KEY})); 
+
+CREATE SEQUENCE IF NOT EXISTS decision_{KEY}_id_seq START 1;
+SELECT setval('decision_{KEY}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM decision WHERE dataset_key={KEY})); 
+```
 
 ### 2023-06-02 unique doi only for non deleted datasets
 ```

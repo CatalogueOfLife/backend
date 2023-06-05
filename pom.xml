@@ -7,7 +7,7 @@
 
   <groupId>org.catalogueoflife</groupId>
   <artifactId>motherpom</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0TEST-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>COL motherpom</name>
@@ -90,7 +90,7 @@
     <neo4j.version>3.4.17</neo4j.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.2.3</poi.version>
-    <postgresql.version>42.5.3</postgresql.version>
+    <postgresql.version>42.6.0</postgresql.version>
     <scribejava.version>8.3.1</scribejava.version>
     <simple-mail.version>8.0.0</simple-mail.version>
     <stax2.version>4.2.1</stax2.version>

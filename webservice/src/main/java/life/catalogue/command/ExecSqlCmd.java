@@ -9,11 +9,13 @@ import life.catalogue.db.PgConfig;
 import java.io.File;
 import java.io.StringReader;
 import java.sql.Connection;
+import java.sql.Statement;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.ScriptRunner;
+import org.postgresql.util.PSQLState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,13 +24,11 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
- * Command to execute given SQL statements for each dataset partition.
- * The command executes a SQL template passed into the command for each dataset where data partitions exist.
+ * Command to execute given SQL statements for each dataset.
+ * The command executes a SQL template passed into the command for each dataset which is not deleted.
  * Before execution of the SQL the command replaces all {KEY} variables in the template with the actual integer key.
  *
- * If the optional "managed" argument is given with any non null value, only managed datasets with a partition are processed.
- *
- * The command will look at the existing name partition tables to find the datasets with data.
+ * If the optional "origin" argument is given with any non null value, only datasets of that origin are processed.
  */
 public class ExecSqlCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(ExecSqlCmd.class);
@@ -38,7 +38,7 @@ public class ExecSqlCmd extends AbstractPromptCmd {
   private static final String ARG_SILENT = "silent"; // if true does not throw SQL errors and continue
 
   public ExecSqlCmd() {
-    super("execSql", "Executes a SQL template for each data partition");
+    super("execSql", "Executes a SQL template for each dataset");
   }
   
   @Override
@@ -48,7 +48,7 @@ public class ExecSqlCmd extends AbstractPromptCmd {
         .dest(ARG_SQL)
         .type(String.class)
         .required(false)
-        .help("SQL to execute for each dataset partition");
+        .help("SQL to execute for each dataset (partition)");
     subparser.addArgument("--"+ ARG_FILE, "-f")
       .dest(ARG_FILE)
       .type(String.class)
@@ -69,7 +69,7 @@ public class ExecSqlCmd extends AbstractPromptCmd {
 
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
-    return String.format("Executing SQL per partition table in database %s on %s.\n", cfg.db.database, cfg.db.host);
+    return String.format("Executing SQL per dataset in database %s on %s.\n", cfg.db.database, cfg.db.host);
   }
 
   @Override
@@ -94,9 +94,20 @@ public class ExecSqlCmd extends AbstractPromptCmd {
   }
 
   private void execute(final String template, @Nullable DatasetOrigin originOnly, boolean silent) throws Exception {
-    try (Connection con = cfg.db.connect(cfg.db)) {
+    try (Connection con = cfg.db.connect(cfg.db);
+         Statement stmt = con.createStatement()
+    ) {
       ScriptRunner runner = PgConfig.scriptRunner(con);
-      for (String key : Partitioner.partitionSuffices(con, originOnly)) {
+      StringBuilder sql = new StringBuilder();
+      sql.append("SELECT key FROM dataset WHERE deleted IS NULL");
+      if (originOnly != null) {
+        sql.append(" AND origin = '" + originOnly + "'");
+      }
+      sql.append(" ORDER BY key");
+      stmt.execute(sql.toString());
+      var rs = stmt.getResultSet();
+      while(rs.next()) {
+        var key = rs.getInt(1);
         execute(runner, template, String.valueOf(key), silent);
         con.commit();
       }
