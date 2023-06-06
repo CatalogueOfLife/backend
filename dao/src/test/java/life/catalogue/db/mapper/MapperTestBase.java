@@ -5,13 +5,13 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.PgConnectionRule;
+import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
-import java.sql.Connection;
 import java.time.LocalDateTime;
 
 import javax.validation.Validation;
@@ -34,13 +34,14 @@ public abstract class MapperTestBase<M> {
   static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   private final Class<M> mapperClazz;
   protected final static int appleKey = TestDataRule.APPLE.key;
+  protected static final DatasetDao.KeyGenerator datasetKeyGen = new DatasetDao.KeyGenerator(100, 100, 20);
 
   @ClassRule
-  //public static SqlSessionFactoryRule pgRule = new PgSetupRule();
-  public static SqlSessionFactoryRule pgRule = new PgConnectionRule("col", "postgres", "postgres");
+  public static SqlSessionFactoryRule pgRule = new PgSetupRule();
+  //public static SqlSessionFactoryRule pgRule = new PgConnectionRule("col", "postgres", "postgres");
 
   @Rule
-  public final TestEntityUnmodifiedRule unmodifiedRule = new TestEntityUnmodifiedRule();
+  public final TestEntityUnmodifiedRule unomidifedRule = new TestEntityUnmodifiedRule();
 
   @Rule
   public final TestDataRule testDataRule;
@@ -60,6 +61,7 @@ public abstract class MapperTestBase<M> {
   public MapperTestBase(Class<M> mapperClazz, TestDataRule testDataRule) {
     this.mapperClazz = mapperClazz;
     this.testDataRule = testDataRule;
+    datasetKeyGen.setMax(100, testDataRule.testData.maxDatasetKey());
   }
   
   public M mapper() {
@@ -69,11 +71,7 @@ public abstract class MapperTestBase<M> {
   public <X> X mapper(Class<X> clazz) {
     return testDataRule.getMapper(clazz);
   }
-
-  public Connection connection() {
-    return testDataRule.getSqlSession().getConnection();
-  }
-
+  
   public SqlSession session() {
     return testDataRule.getSqlSession();
   }

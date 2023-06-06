@@ -114,13 +114,12 @@
   </delete>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO media (dataset_key, taxon_id, id, <include refid="COLS_COPY"/>, created, modified)
+    INSERT INTO media_${newDatasetKey} (dataset_key, taxon_id, id, <include refid="COLS_COPY"/>, created, modified)
     SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>taxon_id),nextval('media_${newDatasetKey}_id_seq'),<include refid="COLS_COPY"/>, created, modified
-    FROM media md
+    FROM media_${datasetKey} md
     <if test="mapIds">
       LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=md.taxon_id
     </if>
-    WHERE dataset_key = #{datasetKey}
   </insert>
 
   <select id="processSector" parameterType="map" resultMap="mediaResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

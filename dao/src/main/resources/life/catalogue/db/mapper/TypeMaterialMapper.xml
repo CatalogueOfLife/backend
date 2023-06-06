@@ -177,9 +177,4 @@
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
-  <delete id="deleteByDataset" parameterType="map">
-    DELETE FROM type_material
-    WHERE dataset_key=#{datasetKey}
-  </delete>
-
 </mapper>

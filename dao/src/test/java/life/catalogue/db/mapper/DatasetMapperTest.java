@@ -36,6 +36,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   public static Dataset populate(Dataset d) {
+    d.setKey(datasetKeyGen.nextExternalKey());
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setGbifKey(UUID.randomUUID());
     d.setGbifPublisherKey(UUID.randomUUID());
@@ -381,7 +382,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   public void list() throws Exception {
     List<Dataset> ds = createExpected();
     for (Dataset d : ds) {
-      if (d.getKey() == null) {
+      if (d.getKey() > 12) {
         mapper().create(d);
       }
       // dont compare created stamps
@@ -415,7 +416,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     List<Dataset> ds = createExpected();
     int withURL = 0;
     for (Dataset d : ds) {
-      if (d.getKey() == null) {
+      if (d.getKey() > 12) {
         mapper().create(d);
         // we need a URL to be considered for imports
         if (withURL++ < 3) {
@@ -629,6 +630,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // create another catalogue to test non draft sectors
     Dataset cat = TestEntityGenerator.newDataset("cat2");
     TestEntityGenerator.setUser(cat);
+    datasetKeyGen.setKey(cat);
     mapper(DatasetMapper.class).create(cat);
     mapper(DatasetPartitionMapper.class).createManagedSequences(cat.getKey());
     // new sectors
@@ -700,6 +702,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.PROJECT);
+    ds.setKey(datasetKeyGen.nextProjectKey());
     ds.setContact(Agent.person("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
     ds.setEditor(List.of(
       Agent.person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),

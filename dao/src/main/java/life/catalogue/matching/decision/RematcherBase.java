@@ -52,6 +52,7 @@ public abstract class RematcherBase<
     this.projectKey = req.getDatasetKey();
     try(SqlSession session = factory.openSession(true)) {
       var info = DatasetInfoCache.CACHE.info(projectKey);
+      Preconditions.checkArgument(session.getMapper(DatasetPartitionMapper.class).exists(projectKey, info.origin), "DatasetKey required for rematching");
     }
   }
 

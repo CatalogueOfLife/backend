@@ -7,11 +7,12 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.SqlSessionFactoryRule;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,33 +29,21 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
   public CRUDPageableTestBase(Class<M> mapperClazz) {
     super(mapperClazz);
   }
-
+  
   public int newDataset(){
     Dataset d = new Dataset();
     d.setTitle("New dataset");
     d.setType(DatasetType.TAXONOMIC);
     d.setOrigin(DatasetOrigin.PROJECT);
     d.applyUser(Users.TESTER);
+    testDataRule.getKeyGenerator().setKey(d);
     mapper(DatasetMapper.class).create(d);
+    Partitioner.partition(SqlSessionFactoryRule.getSqlSessionFactory(), d.getKey(), d.getOrigin());
     return d.getKey();
-  }
-
-  void removeNameRelated(int datasetKey) throws SQLException {
-    mapper(NameMatchMapper.class).deleteByDataset(datasetKey);
-    mapper(NameRelationMapper.class).deleteByDataset(datasetKey);
-    mapper(TypeMaterialMapper.class).deleteByDataset(datasetKey);
-  }
-  void removeNameUsageRelated() throws SQLException {
-    var c = connection();
-    try (var st = c.createStatement()) {
-      st.execute("TRUNCATE name_usage CASCADE");
-    }
   }
 
   @Test
   public void deleteByDataset() throws Exception {
-    removeNameRelated(datasetKey);
-    removeNameUsageRelated();
     mapper().deleteByDataset(datasetKey);
   }
   

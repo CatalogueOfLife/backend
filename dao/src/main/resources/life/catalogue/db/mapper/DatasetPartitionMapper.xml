@@ -4,8 +4,16 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.DatasetPartitionMapper">
 
-  <update id="createPartition" parameterType="map">
-    CREATE TABLE ${table}_mod${remainder} PARTITION OF ${table} FOR VALUES WITH (modulus ${modulus}, remainder ${remainder});
+  <update id="createDefaultPartition" parameterType="map">
+    CREATE TABLE ${table}_default PARTITION OF ${table} DEFAULT PARTITION BY HASH(dataset_key);
+  </update>
+
+  <update id="createDefaultSubPartition" parameterType="map">
+    CREATE TABLE ${table}_mod${remainder} PARTITION OF ${table}_default FOR VALUES WITH (modulus ${modulus}, remainder ${remainder});
+  </update>
+
+  <update id="createTable" parameterType="map">
+    CREATE TABLE ${table}_${key} (LIKE ${table} INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
   </update>
 
   <update id="createIdMapTable" parameterType="map">
@@ -13,6 +21,15 @@
       id TEXT PRIMARY KEY,
       id2 TEXT NOT NULL UNIQUE
     )
+  </update>
+
+  <update id="createDatasetKeyCheck" parameterType="map">
+    ALTER TABLE ${table}_${key} ADD CONSTRAINT ${table}_${key}_dataset_key_check CHECK (dataset_key = ${key});
+  </update>
+
+  <update id="createSerial" parameterType="map">
+    CREATE SEQUENCE IF NOT EXISTS ${table}_${key}_id_seq START 1;
+    ALTER TABLE ${table}_${key} ALTER COLUMN id SET DEFAULT nextval('${table}_${key}_id_seq');
   </update>
 
   <update id="createIdSequence" parameterType="map">
@@ -42,14 +59,14 @@
   </select>
 
   <update id="attachTriggers" parameterType="map">
-    CREATE TRIGGER trg_name_usage_${suffix}_insert
-    AFTER INSERT ON name_usage_${suffix}
+    CREATE TRIGGER trg_name_usage_${key}_insert
+    AFTER INSERT ON name_usage_${key}
     REFERENCING NEW TABLE AS inserted
     FOR EACH STATEMENT
     EXECUTE FUNCTION track_usage_count();
 
-    CREATE TRIGGER trg_name_usage_${suffix}_delete
-    AFTER DELETE ON name_usage_${suffix}
+    CREATE TRIGGER trg_name_usage_${key}_delete
+    AFTER DELETE ON name_usage_${key}
     REFERENCING OLD TABLE AS deleted
     FOR EACH STATEMENT
     EXECUTE FUNCTION track_usage_count();
@@ -68,9 +85,30 @@
     DELETE FROM usage_count WHERE dataset_key=#{key};
   </update>
 
+  <select id="existsDatasetSpecific" parameterType="map" resultType="boolean">
+    SELECT exists(
+    SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'name_${key}'
+    )
+  </select>
+
+  <select id="existingPartitions" resultType="integer">
+    SELECT replace((i.inhrelid::regclass)::text, 'name_', '')::int AS datasetkey
+    FROM pg_inherits i
+    WHERE i.inhparent = 'public.name'::regclass
+    ORDER BY datasetkey
+  </select>
+
   <select id="columns" resultType="string">
     SELECT column_name FROM information_schema.columns
     WHERE table_name = #{t} AND column_name NOT IN('doc')
   </select>
+
+  <update id="dropDatasetKeyCheck" parameterType="map">
+    ALTER TABLE ${table}_default DROP CONSTRAINT IF EXISTS ${table}_default_dataset_key_no_project_check
+  </update>
+
+  <update id="addDatasetKeyCheck" parameterType="map">
+    ALTER TABLE ${table}_default ADD CONSTRAINT ${table}_default_dataset_key_no_project_check CHECK (dataset_key &lt; ${below} OR dataset_key &gt; ${beyond})
+  </update>
 
 </mapper>

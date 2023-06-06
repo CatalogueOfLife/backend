@@ -56,7 +56,7 @@ public class PgSetupRule extends SqlSessionFactoryRule {
   }
 
   public static PostgreSQLContainer<?> setupPostgres() {
-    PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:15.3").withDatabaseName(ADMIN_DB_NAME);
+    PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:14.6").withDatabaseName(ADMIN_DB_NAME);
     container.withReuse(true)
              .withLabel("reuse.tag", "col_PG_container");
     container.setWaitStrategy(Wait.defaultWaitStrategy().withStartupTimeout(Duration.ofSeconds(60)));
@@ -92,7 +92,7 @@ public class PgSetupRule extends SqlSessionFactoryRule {
       LookupTables.recreateTables(con);
     }
     setupMybatis(cfg);
-    Partitioner.createPartitions(getSqlSessionFactory(), 2);
+    Partitioner.createDefaultPartitions(getSqlSessionFactory(), 2);
   }
 
   @Override

@@ -106,14 +106,13 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO species_interaction (dataset_key,taxon_id,related_taxon_id,id,<include refid="COLS_COPY"/>, created, modified)
+    INSERT INTO species_interaction_${newDatasetKey} (dataset_key,taxon_id,related_taxon_id,id,<include refid="COLS_COPY"/>, created, modified)
     SELECT #{newDatasetKey},coalesce(<if test="mapIds">m1.id2,</if>taxon_id),coalesce(<if test="mapIds">m2.id2,</if>related_taxon_id),nextval('species_interaction_${newDatasetKey}_id_seq'),<include refid="COLS_COPY"/>, created, modified
-    FROM species_interaction r
+    FROM species_interaction_${datasetKey} r
     <if test="mapIds">
       LEFT JOIN idmap_name_usage_${datasetKey} m1 ON m1.id=r.taxon_id
       LEFT JOIN idmap_name_usage_${datasetKey} m2 ON m2.id=r.related_taxon_id
     </if>
-    WHERE dataset_key = #{datasetKey}
   </insert>
 
   <select id="processSector" parameterType="map" resultMap="speciesInteractionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

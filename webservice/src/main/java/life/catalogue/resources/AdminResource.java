@@ -175,6 +175,19 @@ public class AdminResource {
     return idMap.size();
   }
 
+  @GET
+  @Path("/dataset-keygap")
+  public int keyGap(@Auth User user) throws IOException {
+    return ddao.gapSize();
+  }
+
+  @POST
+  @Path("/dataset-keygap")
+  public int reloadGaps(@Auth User user) throws IOException {
+    ddao.updateKeyGenSequence();
+    return ddao.gapSize();
+  }
+
   @POST
   @Path("/logo-update")
   public BackgroundJob updateAllLogos(@Auth User user) {

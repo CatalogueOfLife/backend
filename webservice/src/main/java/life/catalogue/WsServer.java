@@ -150,11 +150,12 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new DoiUpdateCmd());
     bootstrap.addCommand(new RepartitionCmd());
     bootstrap.addCommand(new ArchiveCmd());
+    bootstrap.addCommand(new UpdDatasetKeyCheckCmd());
   }
 
   @Override
   public String getName() {
-    return "ChecklistBank";
+    return "COLServer";
   }
 
   public String getUserAgent(WsServerConfig cfg) {
@@ -296,7 +297,7 @@ public class WsServer extends Application<WsServerConfig> {
     // daos
     AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), bus);
     DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), bus, validator);
-    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
+    DatasetDao ddao = new DatasetDao(cfg.db.minExternalDatasetKey, getSqlSessionFactory(), cfg.normalizer, cfg.release, new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
     DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());

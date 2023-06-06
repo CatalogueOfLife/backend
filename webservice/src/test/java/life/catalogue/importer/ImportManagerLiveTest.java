@@ -126,6 +126,7 @@ public class ImportManagerLiveTest {
     d.setDataAccess(URI.create("http://rs.gbif.org/datasets/dsmz.zip"));
     d.setCreatedBy(TestDataRule.TEST_USER.getKey());
     d.setModifiedBy(TestDataRule.TEST_USER.getKey());
+    testDataRule.getKeyGenerator().setKey(d.getDataset());
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true) ) {
       session.getMapper(DatasetMapper.class).createAll(d);
       session.commit();

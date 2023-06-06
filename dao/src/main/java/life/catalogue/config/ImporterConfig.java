@@ -1,6 +1,5 @@
 package life.catalogue.config;
 
-import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -36,7 +35,7 @@ public class ImporterConfig {
   /**
    * Github shared secret to encrypt webhook messages
    */
-  @Nullable
+  @NotNull
   public String githubHookSecret;
 
   /**

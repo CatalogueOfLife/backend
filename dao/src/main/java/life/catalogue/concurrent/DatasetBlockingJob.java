@@ -54,6 +54,9 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
       if (dataset == null || dataset.getDeleted() != null) {
         throw new NotFoundException("Dataset " + datasetKey + " does not exist");
       }
+      if (!session.getMapper(DatasetPartitionMapper.class).exists(datasetKey, dataset.getOrigin())) {
+        throw new IllegalArgumentException("Dataset "+datasetKey+" does not have any data");
+      }
       return dataset;
     }
   }

@@ -52,4 +52,29 @@ public class InitDbUtils {
     }
   }
 
+  public static void updateDatasetKeyConstraints(SqlSessionFactory factory, int minExternalDatasetKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+
+      // exclusive boundaries
+      int below = intDefault(dm.getMaxKey(minExternalDatasetKey), 10)+1;
+      int beyond= minExternalDatasetKey-1;
+      LOG.info("Add external dataset key constraints on the default partitions < {} OR > {}", below, beyond);
+      session.getMapper(DatasetPartitionMapper.class).updateDatasetKeyChecks(below, beyond);
+    }
+  }
+
+  public static void createNonDefaultPartitions(SqlSessionFactory factory) {
+    // add project partitions & dataset key constraints
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      for (DatasetOrigin o : DatasetOrigin.values()) {
+        for (var dk : dm.keys(o)) {
+          Partitioner.partition(session, dk, o);
+          Partitioner.attach(session, dk, o);
+        }
+      }
+    }
+  }
+
 }

@@ -42,10 +42,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
 
   @Test
   public void copyDataset() throws Exception {
-    // verbatim and reference are referred to from name records so we also need to copy them
-    CopyDatasetTestComponent.copy(mapper(VerbatimRecordMapper.class), testDataRule.testData.key, false);
-    CopyDatasetTestComponent.copy(mapper(ReferenceMapper.class), testDataRule.testData.key, false);
-    commit();
     CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
   }
 
@@ -141,8 +137,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     assertNotNull(nameMapper.get(n1.getKey()));
 
     TimeUnit.SECONDS.sleep(1);
-    removeNameRelated(n1.getDatasetKey());
-
     Name n2 = TestEntityGenerator.newName("n2");
     TestEntityGenerator.nullifyDate(n2);
     nameMapper.create(n2);

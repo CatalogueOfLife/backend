@@ -42,13 +42,49 @@ public class PgImportTest {
   AtomicInteger cnt = new AtomicInteger(0);
   DatasetDao ddao = Mockito.mock(DatasetDao.class);
 
+  static class PartitionJob implements Callable<Boolean> {
+    final int datasetKey;
+    
+    PartitionJob(int datasetKey) {
+      this.datasetKey = datasetKey;
+    }
+    
+    @Override
+    public Boolean call() throws Exception {
+      System.out.println("START " + datasetKey);
+      System.out.println("PARTITION " + datasetKey);
+      Partitioner.partition(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.PROJECT);
+
+      System.out.println("INDEX & ATTACH " + datasetKey);
+      Partitioner.attach(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.PROJECT);
+      System.out.println("FINISHED " + datasetKey);
+      return true;
+    }
+  }
+  
+  @Test
+  public void testConcurrentPartitioning() throws Exception {
+    ExecutorService exec = Executors.newFixedThreadPool(4);
+    try {
+      testConcurrentPartitioningOnce(exec);
+      // run same dataset keys again so we have to delete the previous ones
+      testConcurrentPartitioningOnce(exec);
+      exec.shutdown();
+      
+    } finally {
+      ExecutorUtils.shutdown(exec, 10, TimeUnit.SECONDS);
+    }
+  }
+
   @Test
   public void duplicateAlias() throws Exception {
     Dataset d = TestEntityGenerator.setUser(TestEntityGenerator.newDataset("first"));
     d.setAlias("first");
+    testDataRule.getKeyGenerator().setKey(d);
 
     Dataset d2 = TestEntityGenerator.setUser(TestEntityGenerator.newDataset("second"));
     d2.setAlias("second");
+    testDataRule.getKeyGenerator().setKey(d2);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.create(d);
@@ -62,4 +98,18 @@ public class PgImportTest {
     imp.updateMetadata();
   }
 
+  private void testConcurrentPartitioningOnce(ExecutorService exec) throws Exception {
+    System.out.println("\n\nSTART SEQUENTIAL PASS " + cnt.incrementAndGet());
+    System.out.println("\n");
+    List<Future<Boolean>> tasks = Lists.newArrayList();
+    for (int k = 3; k < 10; k++) {
+      tasks.add(exec.submit(new PartitionJob(k)));
+    }
+    for (Future<Boolean> f : tasks) {
+      assertTrue(f.get());
+    }
+    System.out.println("\n\nEND SEQUENTIAL PASS " + cnt.get());
+    System.out.println("\n");
+  }
+  
 }

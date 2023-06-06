@@ -43,7 +43,7 @@ public class DatasetDaoTest extends DaoTestBase {
     DatasetImportDao diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     JobConfig cfg = new JobConfig();
     DatasetExportDao exDao = new DatasetExportDao(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), new EventBus(), validator);
-    dao = new DatasetDao(factory(),
+    dao = new DatasetDao(testDataRule.keyGenerator.minExternalDatasetKey, factory(),
       new NormalizerConfig(), new ReleaseConfig(),
       null,
       ImageService.passThru(),
@@ -53,6 +53,29 @@ public class DatasetDaoTest extends DaoTestBase {
       new EventBus(),
       validator
     );
+  }
+
+  @Test
+  public void keygen() throws Exception {
+    DatasetDao.KeyGenerator gen = new DatasetDao.KeyGenerator(100, 108, 3);
+    assertEquals(109, gen.nextExternalKey());
+    assertEquals(110, gen.nextExternalKey());
+    assertEquals(111, gen.nextExternalKey());
+    assertEquals(112, gen.nextExternalKey());
+
+    assertEquals(4, gen.nextProjectKey());
+    assertEquals(5, gen.nextProjectKey());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void keygenThrow() throws Exception {
+    DatasetDao.KeyGenerator gen = new DatasetDao.KeyGenerator(100, 108, 98);
+    assertEquals(109, gen.nextExternalKey());
+    assertEquals(110, gen.nextExternalKey());
+    assertEquals(111, gen.nextExternalKey());
+
+    assertEquals(99, gen.nextProjectKey());
+    gen.nextProjectKey();
   }
 
   @Test

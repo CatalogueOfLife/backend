@@ -106,11 +106,13 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
 
     Dataset d1 = TestEntityGenerator.newDataset("all");
     d1.applyUser(Users.TESTER);
+    testDataRule.getKeyGenerator().setKey(d1);
     dm.create(d1);
     dm.updateEditors(d1.getKey(), new IntOpenHashSet(all), Users.TESTER);
 
     Dataset d2 = TestEntityGenerator.newDataset("even");
     d2.applyUser(Users.TESTER);
+    testDataRule.getKeyGenerator().setKey(d2);
     dm.create(d2);
     dm.updateEditors(d2.getKey(), new IntOpenHashSet(even), Users.TESTER);
 
