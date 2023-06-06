@@ -17,7 +17,6 @@ import java.util.function.Supplier;
 public class PgUtils {
   private static final Logger LOG = LoggerFactory.getLogger(PgUtils.class);
   public static final String CODE_UNIQUE = "23505";
-  public static final String CODE_EXCLUSION = "23P01";
 
   private PgUtils () {
 
@@ -26,10 +25,9 @@ public class PgUtils {
   public static boolean isUniqueConstraint(PersistenceException e) {
     if (e.getCause() instanceof PSQLException) {
       PSQLException pe = (PSQLException) e.getCause();
-      // https://www.postgresql.org/docs/14/errcodes-appendix.html
+      // https://www.postgresql.org/docs/12/errcodes-appendix.html
       // 23505 = unique_violation
-      // 23P01 = exclusion_violation
-      return pe.getSQLState().equals(CODE_UNIQUE) || pe.getSQLState().equals(CODE_EXCLUSION);
+      return pe.getSQLState().equals(CODE_UNIQUE);
     }
     return false;
   }
