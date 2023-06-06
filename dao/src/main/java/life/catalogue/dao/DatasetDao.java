@@ -29,10 +29,12 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -53,6 +55,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.eventbus.EventBus;
 
+import static life.catalogue.common.util.PrimitiveUtils.intDefault;
 import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 /**
@@ -434,8 +437,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.commit();
     // now also remove sectors
     session.getMapper(SectorMapper.class).deleteByDataset(key);
-    // drop id sequences
-    session.getMapper(DatasetPartitionMapper.class).deleteSequences(key);
+      // drop managed id sequences
+    session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
     // now also clear filesystem
     diDao.removeMetrics(key);
     FileUtils.deleteQuietly(nCfg.scratchDir(key));

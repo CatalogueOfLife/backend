@@ -27,6 +27,14 @@
     DROP SEQUENCE IF EXISTS ${table}_${key}_id_seq
   </delete>
 
+  <update id="attachTable" parameterType="map">
+    ALTER TABLE ${table} ATTACH PARTITION ${table}_${key} FOR VALUES IN ( ${key} )
+  </update>
+
+  <update id="detachTable" parameterType="map">
+    ALTER TABLE ${table} DETACH PARTITION ${table}_${key}
+  </update>
+
   <select id="updateUsageCounter" parameterType="map" resultType="int">
     DELETE FROM usage_count WHERE dataset_key=#{key};
     INSERT INTO usage_count (dataset_key, counter) VALUES (${key}, (SELECT count(*) FROM name_usage WHERE dataset_key = ${key}));

@@ -14,11 +14,11 @@ public class ExecSqlCmdIT extends CmdTestBase {
 
   @Test
   public void execute() throws Exception {
-    assertTrue(run("execSql", "--prompt", "0", "--sql", "SELECT id, scientific_name FROM name WHERE dataset_key={KEY} LIMIT 1").isEmpty());
+    assertTrue(run("execSql", "--prompt", "0", "--sql", "SELECT id, scientific_name FROM name_{KEY} LIMIT 1").isEmpty());
   }
 
   @Test
-  public void projectOnly() throws Exception {
+  public void managed() throws Exception {
     File f = new File("target/test-classes/exec-test.sql");
     assertTrue(f.exists());
     assertTrue(run("execSql", "--prompt", "0", "--origin", "PROJECT", "--sqlfile", f.getAbsolutePath()).isEmpty());

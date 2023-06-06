@@ -110,11 +110,6 @@ public interface DatasetPartitionMapper {
     SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
   }
 
-  default void deleteSequences(@Param("key") int key) {
-    SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
-    PROJECT_SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
-  }
-
   default void createManagedSequences(@Param("key") int key) {
     PROJECT_SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
   }
@@ -125,6 +120,10 @@ public interface DatasetPartitionMapper {
    */
   default void updateManagedSequences(int key) {
     PROJECT_SERIAL_TABLES.forEach(t -> updateIdSequence(t, key));
+  }
+
+  default void deleteManagedSequences(@Param("key") int key) {
+    PROJECT_SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
   }
 
   /**
