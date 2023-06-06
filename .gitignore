@@ -5,6 +5,7 @@
 
 dao/127.0.0.1/
 dao/dataset/
+webservice/dataset/
 webservice/graphs/
 webservice/localhost/
 webservice/config-*.yaml
