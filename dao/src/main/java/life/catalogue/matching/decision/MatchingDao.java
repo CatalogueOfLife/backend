@@ -89,7 +89,7 @@ public class MatchingDao {
 
   private List<Taxon> matchSector(String name, @Nullable String authorship, @Nullable Rank rank, Sector sector) {
     List<Taxon> matches = new ArrayList<>();
-    for (NameUsage u : uMapper.listByName(sector.getDatasetKey(), name, rank, new Page(0, 1000))) {
+    for (NameUsageBase u : uMapper.listByName(sector.getDatasetKey(), name, rank, new Page(0, 1000))) {
       if (u.isTaxon()) {
         Taxon t = (Taxon) u;
         if (t.getSectorKey() != null && t.getSectorKey().equals(sector.getId())

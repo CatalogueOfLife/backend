@@ -16,6 +16,12 @@ and done it manually. So we can as well log changes here.
 This is a serious change, removing the list partitioning and replacing it with just the hash one and a fixed number of partitions.
 First create an empty, brand new database with the new partition scheme. Use the InitCmd to do this, e.g. with 32 partitions.
 
+Then dump the data of existing database with pg_dump like this to avoid using previous partition names:
+> nohup pg_dump -U postgres -d col -Fc -Z 7 --data-only --load-via-partition-root --exclude-table '__*' --exclude-table '_md_*' --exclude-table '*_seq' -f clb.dump &
+
+Restore the dump to the newly crealeted database:
+> nohup pg_restore -U postgres -d col --data-only --exit-on-error clb.dump &
+
 ```
 CREATE EXTENSION postgres_fdw;
 CREATE SERVER colold FOREIGN DATA WRAPPER postgres_fdw OPTIONS (host 'localhost', dbname 'colold', port '5432');
