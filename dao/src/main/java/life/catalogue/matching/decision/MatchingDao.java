@@ -1,8 +1,11 @@
 package life.catalogue.matching.decision;
 
 import life.catalogue.api.model.*;
+import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+
+import life.catalogue.matching.authorship.AuthorComparator;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -23,7 +26,7 @@ public class MatchingDao {
   private final SqlSession session;
   private final NameUsageMapper uMapper;
   private final NameMapper nMapper;
-  
+
   
   public MatchingDao(SqlSession sqlSession) {
     this.session = sqlSession;
@@ -89,16 +92,22 @@ public class MatchingDao {
 
   private List<Taxon> matchSector(String name, @Nullable String authorship, @Nullable Rank rank, Sector sector) {
     List<Taxon> matches = new ArrayList<>();
-    for (NameUsage u : uMapper.listByName(sector.getDatasetKey(), name, rank, new Page(0, 1000))) {
+    for (NameUsageBase u : uMapper.listByName(sector.getDatasetKey(), name, rank, new Page(0, 1000))) {
       if (u.isTaxon()) {
         Taxon t = (Taxon) u;
-        if (t.getSectorKey() != null && t.getSectorKey().equals(sector.getId())
-            && Objects.equals(StringUtils.trimToNull(authorship), StringUtils.trimToNull(u.getName().getAuthorship()))) {
+        if (t.getSectorKey() != null && t.getSectorKey().equals(sector.getId()) && authorshipMatches(authorship, u.getName().getAuthorship())) {
           matches.add(t);
         }
       }
     }
     return matches;
+  }
+
+  private boolean authorshipMatches(String a1, String a2) {
+    if (StringUtils.trimToNull(a1) == null || StringUtils.trimToNull(a2) == null) {
+      return true;
+    }
+    return Objects.equals(AuthorshipNormalizer.normalize(a1), AuthorshipNormalizer.normalize(a2));
   }
   
 }
