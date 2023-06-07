@@ -227,17 +227,37 @@ public class UsageMatcherGlobal {
 
     // first try exact single match with authorship
     if (qualifiedName) {
+      boolean matchExact = false;
+      boolean onlyUseIfExact = false;
       SimpleNameClassified<SimpleNameWithPub> match = null;
       for (var u : existingWithCl) {
         if (u.getNamesIndexId().equals(nu.getName().getNamesIndexId())) {
-          if (match != null) {
-            LOG.info("Exact homonyms existing in dataset {} for {}", datasetKey, nu.getName().getLabelWithRank());
-            match = null;
-            break;
-          } else {
+          boolean exact = u.getLabel().equalsIgnoreCase(nu.getLabel());
+          if (match == null) {
             match = u;
+            matchExact = exact;
+          } else {
+            // there are multiple matches. Maybe just one matches the exact same name string?
+            if (exact && matchExact) {
+              LOG.info("Exact homonyms existing in dataset {} for {}", datasetKey, nu.getName().getLabelWithRank());
+              match = null;
+              break;
+            } else if (exact){
+              // this is an exact match, but previous one was not, so use this match instead
+              match = u;
+              matchExact = true;
+            } else if(matchExact) {
+              // this is no exact match, but previous one was, so keep it
+            } else {
+              // this and previous match was not exact. Dont use any match, but continue to look for exact match
+              onlyUseIfExact = true;
+            }
           }
         }
+      }
+      // dont use the match if it was ambiguous before and isn't exact
+      if (onlyUseIfExact && !matchExact) {
+        match = null;
       }
       if (match != null) {
         return UsageMatch.match(match, datasetKey);
