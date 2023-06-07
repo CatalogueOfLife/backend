@@ -8,12 +8,14 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -193,9 +195,8 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       project = dm.get(key);
-      DatasetSearchRequest req = new DatasetSearchRequest();
-      req.setReleasedFrom(key);
-      releases = dm.search(req, userKey, new Page(0, 1000));
+      releases = dm.listReleases(key);
+      releases.removeIf(Dataset::hasDeletedDate);
     }
 
     // first update the latest version of the project itself - it might have newer syncs
@@ -215,11 +216,19 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
       return;
     }
 
-    final int projectKey = RELEASE == d.getOrigin() ? d.getSourceKey() : d.getKey();
-    final String kind = RELEASE == d.getOrigin() ? "release" : "project";
+    final int projectKey;
+    final String kind;
+    final LocalDateTime createdTime;
     if (RELEASE == d.getOrigin()) {
+      projectKey = d.getSourceKey();
+      kind = "release";
+      createdTime = d.getCreated();
       LOG.info("Updating sector metrics for project {} release {}#{}", projectKey, d.getKey(), d.getAttempt());
+
     } else {
+      projectKey = d.getKey();
+      kind = "project";
+      createdTime = LocalDateTime.now();
       LOG.info("Updating sector metrics for project {}: {}", d.getKey(), d.getAliasOrTitle());
     }
 
@@ -230,6 +239,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     try (SqlSession session = factory.openSession(true)) {
       final SectorMapper sm = session.getMapper(SectorMapper.class);
       final SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+      final DatasetImportMapper dim = session.getMapper(DatasetImportMapper.class);
 
       PgUtils.consume(()->sm.processDataset(d.getKey()), s -> {
         counter.incrementAndGet();
@@ -255,8 +265,30 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
               si.setJob(getClass().getSimpleName());
               si.setState(ImportState.ANALYZING);
               si.setCreatedBy(user.getKey());
-              // how can we approximately recreate with those timestamps ?
-              si.setStarted(LocalDateTime.now());
+              // we approximate the time of the sync:
+              // it has to be after the sector was created and the source dataset imported
+              // but before the release was done or the next dataset import happened
+              LocalDateTime min = s.getCreated();
+              LocalDateTime max = createdTime;
+              if (s.getDatasetAttempt() != null) {
+                var di = dim.get(s.getSubjectDatasetKey(), s.getDatasetAttempt());
+                if (di != null) {
+                  if (di.getFinished().isAfter(min)) {
+                    min = di.getFinished();
+                  }
+                  var di2 = dim.getNext(s.getSubjectDatasetKey(), s.getDatasetAttempt(), ImportState.FINISHED);
+                  if (di2 != null) {
+                    if (di2.getFinished().isBefore(max)) {
+                      max = di2.getFinished();
+                    }
+                  }
+                }
+              }
+
+              var diffTime = ChronoUnit.MINUTES.between(min, max);
+              LocalDateTime syncTime = min.plus(diffTime / 2, ChronoUnit.MINUTES);
+
+              si.setStarted(syncTime);
               sim.create(si);
               created.incrementAndGet();
               calcMetrics = true;
@@ -275,7 +307,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
                 si.setState(ImportState.FINISHED);
               }
               if (si.getFinished()==null) {
-                si.setFinished(LocalDateTime.now());
+                si.setFinished(si.getStarted().plus(1, ChronoUnit.MINUTES));
               }
               sim.update(si);
             }

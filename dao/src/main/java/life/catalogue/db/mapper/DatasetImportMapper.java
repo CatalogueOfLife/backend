@@ -23,6 +23,13 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   DatasetImport get(@Param("key") int datasetKey, @Param("attempt") int attempt);
 
   /**
+   * Looks up the next dataset import with the given state, i.e. the import with a higher attempt
+   */
+  DatasetImport getNext(@Param("key") int datasetKey,
+                        @Param("attempt") int attempt,
+                        @Param("state") ImportState finished);
+
+  /**
    * Returns just the MD5 hash of the dataset archive used for the given import attempt.
    */
   String getMD5(@Param("key") int datasetKey, @Param("attempt") int attempt);
@@ -85,6 +92,5 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   List<StringCount> countVerbatimByType(@Param("key") int datasetKey);
   List<StringCount> countVerbatimTerms(@Param("key") int datasetKey, @Param("rowType") Term rowType);
   List<StringCount> countVernacularsByLanguage(@Param("key") int datasetKey);
-
 
 }

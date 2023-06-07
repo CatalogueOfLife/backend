@@ -178,6 +178,18 @@
     WHERE di.dataset_key=#{key} AND di.attempt=#{attempt}
   </select>
 
+  <select id="getNext" resultMap="datasetImportResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE di.dataset_key=#{key} AND di.attempt > #{attempt} AND di.state=#{state}::IMPORTSTATE
+    ORDER BY di.attempt
+    LIMIT 1
+  </select>
+
+  DatasetImport getNext(@Param("key") int datasetKey,
+  @Param("attempt") int attempt,
+  @Param("state") ImportState finished);
+
   <select id="getMD5" resultType="string">
     SELECT md5
     FROM <include refid="FROM"/>
