@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndex;
 
@@ -105,15 +106,21 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   }
 
   public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, int userKey) {
-    try (SqlSession session = factory.openSession()) {
-      int cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
-      session.commit();
+    final int cnt;
+    try (SqlSession session = factory.openSession(false)) {
+      cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
       LOG.info("Removed {} orphan names from dataset {} by user {}", cnt, datasetKey, userKey);
-      // also remove from ES
-      int cnt2 = indexService.deleteBareNames(datasetKey);
-      LOG.info("Removed {} bare names from ES index for dataset {}", cnt2, datasetKey);
-      return cnt;
+      // also remove orphaned name relations and type material in the same session to not break the FK constraints
+      int cnt2 = session.getMapper(NameRelationMapper.class).deleteOrphans(datasetKey, before);
+      LOG.info("Removed {} orphan name relations from dataset {} by user {}", cnt2, datasetKey, userKey);
+      cnt2 = session.getMapper(TypeMaterialMapper.class).deleteOrphans(datasetKey, before);
+      LOG.info("Removed {} orphan type materials from dataset {} by user {}", cnt2, datasetKey, userKey);
+      session.commit();
     }
+    // also remove from ES
+    int cnt2 = indexService.deleteBareNames(datasetKey);
+    LOG.info("Removed {} bare names from ES index for dataset {}", cnt2, datasetKey);
+    return cnt;
   }
 
   /**

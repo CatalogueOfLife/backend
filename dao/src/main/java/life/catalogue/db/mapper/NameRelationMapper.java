@@ -5,10 +5,13 @@ import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
+
+import javax.annotation.Nullable;
 
 public interface NameRelationMapper extends Create<NameRelation>,
   DatasetProcessable<NameRelation>, SectorProcessable<NameRelation>, NameProcessable<NameRelation>, CopyDataset {
@@ -40,4 +43,12 @@ public interface NameRelationMapper extends Create<NameRelation>,
   List<String> listRelatedNameIDs(@Param("key") DSID<String> key, @Param("types") Set<NomRelType> types);
 
   boolean exists(@Param("datasetKey") int datasetKey, @Param("from") String from, @Param("to") String to, @Param("type") NomRelType type);
+
+  /**
+   * Deletes all name relations that have no or broken links to a name or related name.
+   * @param datasetKey the datasetKey to restrict the deletion to
+   * @param before optional timestamp to restrict deletions to orphans before the given time
+   * @return number of deleted name relations
+   */
+  int deleteOrphans(@Param("datasetKey") int datasetKey, @Param("before") @Nullable LocalDateTime before);
 }

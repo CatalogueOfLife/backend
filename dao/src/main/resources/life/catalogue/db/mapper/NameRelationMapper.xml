@@ -155,6 +155,18 @@
     )
   </select>
 
+  <delete id="deleteOrphans" parameterType="map">
+    DELETE FROM name_rel r
+    WHERE (
+      NOT EXISTS (SELECT NULL FROM name n WHERE n.dataset_key=r.dataset_key AND r.name_id = n.id)
+      OR NOT EXISTS (SELECT NULL FROM name n WHERE n.dataset_key=r.dataset_key AND r.related_name_id = n.id)
+    )
+    <if test="before!=null">
+      AND r.modified &lt; #{before}
+    </if>
+    AND r.dataset_key=#{datasetKey}
+  </delete>
+
   <select id="processSector" parameterType="map" resultMap="nameRelResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
