@@ -12,6 +12,7 @@ public abstract class GlobalBlockingJob extends BackgroundJob {
 
   public GlobalBlockingJob(int userKey, @Nullable JobPriority priority) {
     super(priority, userKey);
+    keepLogFile = false; // these are usually admin jobs when we can read logs in kibana
   }
 
   @Override

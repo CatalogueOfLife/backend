@@ -42,6 +42,8 @@ public abstract class BackgroundJob implements Runnable {
   private JobConfig cfg;
   private User user;
   private Timer timer;
+  // if true copies job logs into the results directory
+  protected boolean keepLogFile = true;
 
   protected BackgroundJob(int userKey) {
     this(JobPriority.MEDIUM, userKey);
@@ -164,7 +166,7 @@ public abstract class BackgroundJob implements Runnable {
         if (emailer != null) {
           emailer.sendFinalEmail(this);
         } else {
-          LOG.info("No emailer configured. Do not notify users about {} {} {}", getStatus(), getJobName(), getKey());
+          LOG.debug("No emailer configured. Do not notify users about {} {} {}", getStatus(), getJobName(), getKey());
         }
         if (ctxt != null) {
           ctxt.stop(); // we dont want to measure blocked runs
@@ -175,7 +177,7 @@ public abstract class BackgroundJob implements Runnable {
       LoggingUtils.removeJobMDC();
 
       // copy job logs to download directory
-      if (cfg != null) {
+      if (keepLogFile && cfg != null) {
         File log = cfg.jobLog(key);
         if (log.exists()) {
           LOG.info("Copy logs for job {} from {}", key, log);

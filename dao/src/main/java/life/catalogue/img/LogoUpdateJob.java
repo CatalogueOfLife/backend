@@ -67,6 +67,7 @@ public class LogoUpdateJob extends BackgroundJob {
     this.factory = factory;
     this.downloader = downloader;
     this.scratchFileFunc = scratchFileFunc;
+    this.keepLogFile = false;
   }
   
   @Override

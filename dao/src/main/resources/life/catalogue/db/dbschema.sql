@@ -845,6 +845,13 @@ CREATE INDEX ON dataset (gbif_key);
 CREATE INDEX ON dataset USING GIN (f_unaccent(title) gin_trgm_ops);
 CREATE INDEX ON dataset USING GIN (f_unaccent(alias) gin_trgm_ops);
 CREATE INDEX ON dataset USING GIN (doc);
+-- used by import scheduler:
+CREATE INDEX ON dataset (key)
+ WHERE deleted IS NULL
+ AND NOT private
+ AND origin = 'EXTERNAL'
+ AND settings ->> 'data access' IS NOT NULL
+ AND coalesce((settings ->> 'import frequency')::int, 0) >= 0;
 
 CREATE TABLE dataset_citation (
   dataset_key INTEGER REFERENCES dataset,
@@ -973,6 +980,8 @@ CREATE TABLE dataset_import (
 
 CREATE INDEX ON dataset_import (dataset_key);
 CREATE INDEX ON dataset_import (started);
+-- used by import scheduler:
+CREATE INDEX ON dataset_import (dataset_key, attempt) WHERE finished IS NOT NULL;
 
 CREATE TABLE dataset_export (
   key UUID PRIMARY KEY,

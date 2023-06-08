@@ -23,6 +23,7 @@ public class IndexJob extends BackgroundJob {
     super(priority, user.getKey());
     this.req = req;
     this.indexService = indexService;
+    this.keepLogFile = false;
   }
 
   @Override

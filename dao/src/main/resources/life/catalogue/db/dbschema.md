@@ -11,6 +11,19 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-06-08 improve import scheduler sql for large import table 
+```
+-- used by import scheduler:
+CREATE INDEX ON dataset (key)
+  WHERE deleted IS NULL
+  AND NOT private  
+  AND origin = 'EXTERNAL'
+  AND settings ->> 'data access' IS NOT NULL
+  AND coalesce((settings ->> 'import frequency')::int, 0) >= 0;
+  
+CREATE INDEX ON dataset_import (dataset_key, attempt) WHERE finished IS NOT NULL;  
+```
+
 ### 2023-06-02 unique doi only for non deleted datasets
 ```
 ALTER TABLE dataset ADD CONSTRAINT dataset_doi_unique EXCLUDE (doi WITH =) WHERE (deleted IS null);
