@@ -70,6 +70,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
       for (NameRelation nr : nrm.listByName(key.id(n.getKey()))) {
         if (!relIds.contains((int)nr.getId())) {
           updateFKs(nr);
+          nr.setSectorKey(sector.getId());
           nr.setNameId(nameIds.get(nr.getNameId()));
           nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
           if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
