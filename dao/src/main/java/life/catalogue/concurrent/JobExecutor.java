@@ -102,9 +102,14 @@ public class JobExecutor implements Managed, Idle {
 
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
-      super.afterExecute(r, t);
       // no check as we cannot submit any other jobs
       BackgroundJob job = ((ComparableFutureTask) r).task;
+      if (t != null) {
+        // what shall we do with this? Do throwables ever reach here?
+        // or are they the same as wrapped with ExecutionException below???
+        LOG.error("Job {} failed with {}", job.getKey(), t.getMessage(), t);
+      }
+
       try {
         futures.remove(job.getKey()).get();
       } catch (InterruptedException e) {
@@ -119,8 +124,12 @@ public class JobExecutor implements Managed, Idle {
         }
       }
       // mail on error if configured
-      if (job.getStatus() == JobStatus.FAILED) {
-        emailer.sendErrorMail(job);
+      if (emailer != null && job.getStatus() == JobStatus.FAILED) {
+        try {
+          emailer.sendErrorMail(job);
+        } catch (Exception e) {
+          LOG.error("Failed to send error email for job {}", job.getKey(), e);
+        }
       }
     }
   }

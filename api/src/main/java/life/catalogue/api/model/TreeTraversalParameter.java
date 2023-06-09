@@ -50,6 +50,19 @@ public class TreeTraversalParameter {
   @DefaultValue("true")
   private boolean synonyms = true;
 
+  public TreeTraversalParameter() {
+  }
+
+  public TreeTraversalParameter(TreeTraversalParameter other) {
+    this.datasetKey = other.datasetKey;
+    this.sectorKey = other.sectorKey;
+    this.taxonID = other.taxonID;
+    this.exclusion = other.exclusion;
+    this.lowestRank = other.lowestRank;
+    this.extinct = other.extinct;
+    this.synonyms = other.synonyms;
+  }
+
   public static TreeTraversalParameter all(int datasetKey, Integer sectorKey, String taxonID, Set<String> exclusion, Rank lowestRank, Boolean extinct, boolean synonyms) {
     var ttp = TreeTraversalParameter.dataset(datasetKey);
     ttp.setSectorKey(sectorKey);

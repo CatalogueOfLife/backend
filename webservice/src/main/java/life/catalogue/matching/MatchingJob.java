@@ -121,7 +121,10 @@ public class MatchingJob extends DatasetBlockingJob {
 
       } else if (req.getSourceDatasetKey() != null) {
         try (SqlSession session = factory.openSession()) {
-          writeMatches(writer, TreeStreams.dataset(session, req)
+          // we need to swap datasetKey for sourceDatasetKey - we dont want to traverse and match the target!
+          final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
+          ttp.setDatasetKey(req.getSourceDatasetKey());
+          writeMatches(writer, TreeStreams.dataset(session, ttp)
                                           .map(sn -> {
                                             if (rootClassification != null) {
                                               sn.getClassification().addAll(rootClassification);

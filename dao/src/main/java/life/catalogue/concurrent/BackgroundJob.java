@@ -252,6 +252,14 @@ public abstract class BackgroundJob implements Runnable {
   }
 
   /**
+   * @return true if a job is finished regularly and successfully
+   */
+  @JsonIgnore
+  public boolean isFinished() {
+    return status == JobStatus.FINISHED;
+  }
+
+  /**
    * @return true if the job was done either by finishing successfully, failing or being canceled.
    */
   @JsonIgnore
