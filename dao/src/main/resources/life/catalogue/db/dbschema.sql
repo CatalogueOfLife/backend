@@ -994,7 +994,7 @@ CREATE index ON sector (dataset_key, target_id);
 
 CREATE TABLE sector_import (
   dataset_key INTEGER NOT NULL,
-  sector_key INTEGER NOT NULL,
+  sector_key INTEGER NOT NULL, -- no foreign key as we keep sector imports for deleted sectors!
   attempt INTEGER NOT NULL,
   dataset_attempt INTEGER,
   started TIMESTAMP WITHOUT TIME ZONE,
@@ -1035,9 +1035,9 @@ CREATE TABLE sector_import (
   job TEXT NOT NULL,
   warnings TEXT[],
   error TEXT,
-  PRIMARY KEY (dataset_key, sector_key, attempt),
-  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE
+  PRIMARY KEY (dataset_key, sector_key, attempt)
 );
+CREATE INDEX ON sector_import (dataset_key, sector_key);
 
 CREATE TABLE decision (
   id INTEGER NOT NULL,
