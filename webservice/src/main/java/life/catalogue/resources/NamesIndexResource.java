@@ -101,7 +101,6 @@ public class NamesIndexResource {
   }
 
   @GET
-  @Timed
   @Path("pattern")
   public List<IndexName> searchByRegex(@QueryParam("q") String regex,
                                        @QueryParam("canonical") @DefaultValue("true") boolean canonical,

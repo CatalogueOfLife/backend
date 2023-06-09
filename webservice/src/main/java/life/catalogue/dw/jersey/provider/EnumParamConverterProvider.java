@@ -5,6 +5,7 @@ import life.catalogue.api.util.VocabularyUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
@@ -12,16 +13,21 @@ import javax.ws.rs.ext.Provider;
 
 import com.google.common.base.Strings;
 
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper
  * to serde enums.
  */
 @Provider
 public class EnumParamConverterProvider implements ParamConverterProvider {
-  
+  // some enum classes are better handled with a proper parser - see CodeParamConverterProvider
+  private Set<Class> parserHandled = Set.of(Rank.class, NomCode.class);
+
   @Override
   public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] antns) {
-    if (!rawType.isEnum()) {
+    if (!rawType.isEnum() || parserHandled.contains(rawType)) {
       return null;
     }
     return new EnumParamConverter<T>(rawType);
