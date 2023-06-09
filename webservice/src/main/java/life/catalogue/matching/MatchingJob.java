@@ -26,11 +26,14 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -50,6 +53,10 @@ import com.univocity.parsers.tsv.TsvWriterSettings;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
+import javax.swing.tree.RowMapper;
+
+import static life.catalogue.common.io.PathUtils.getFilename;
 
 public class MatchingJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingJob.class);
@@ -106,39 +113,42 @@ public class MatchingJob extends DatasetBlockingJob {
 
   @Override
   public final void runWithLock() throws Exception {
-    try (TempFile tmp = new TempFile(matchResultFile());
-         Writer fw = UTF8IoUtils.writerFromGzipFile(tmp.file)
-    ) {
-      LOG.info("Write matches for job {} to temp file {}", getKey(), tmp.file.getAbsolutePath());
-      AbstractWriter<?> writer = req.getFormat() == TabularFormat.CSV ?
-                            new CsvWriter(fw, new CsvWriterSettings()) :
-                            new TsvWriter(fw, new TsvWriterSettings());
-      // match
-      if (req.getUpload() != null) {
-        writeMatches(writer, streamUpload());
-        // delete file upload
-        FileUtils.deleteQuietly(req.getUpload());
+    try (TempFile tmp = TempFile.created(matchResultFile())) {
+      try (ZipOutputStream zos = UTF8IoUtils.zipStreamFromFile(tmp.file)) {
 
-      } else if (req.getSourceDatasetKey() != null) {
-        try (SqlSession session = factory.openSession()) {
-          // we need to swap datasetKey for sourceDatasetKey - we dont want to traverse and match the target!
-          final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
-          ttp.setDatasetKey(req.getSourceDatasetKey());
-          writeMatches(writer, TreeStreams.dataset(session, ttp)
-                                          .map(sn -> {
-                                            if (rootClassification != null) {
-                                              sn.getClassification().addAll(rootClassification);
-                                            }
-                                            return new IssueName(sn, new IssueContainer.Simple());
-                                          })
-          );
+        LOG.info("Write matches for job {} to temp file {}", getKey(), tmp.file.getAbsolutePath());
+        zos.putNextEntry(new ZipEntry(req.resultFileName()));
+
+        AbstractWriter<?> writer = req.getFormat() == TabularFormat.CSV ?
+                                   new CsvWriter(zos, StandardCharsets.UTF_8, new CsvWriterSettings()) :
+                                   new TsvWriter(zos, StandardCharsets.UTF_8, new TsvWriterSettings());
+        // match
+        if (req.getUpload() != null) {
+          writeMatches(writer, streamUpload());
+          // delete file upload
+          FileUtils.deleteQuietly(req.getUpload());
+
+        } else if (req.getSourceDatasetKey() != null) {
+          try (SqlSession session = factory.openSession()) {
+            // we need to swap datasetKey for sourceDatasetKey - we dont want to traverse and match the target!
+            final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
+            ttp.setDatasetKey(req.getSourceDatasetKey());
+            writeMatches(writer, TreeStreams.dataset(session, ttp)
+                                            .map(sn -> {
+                                              if (rootClassification != null) {
+                                                sn.getClassification().addAll(rootClassification);
+                                              }
+                                              return new IssueName(sn, new IssueContainer.Simple());
+                                            })
+            );
+          }
+
+        } else {
+          throw new IllegalArgumentException("Upload or sourceDatasetKey required");
         }
-
-      } else {
-        throw new IllegalArgumentException("Upload or sourceDatasetKey required");
+        writer.flush();
+        zos.closeEntry();
       }
-      writer.close();
-
       // move to final result file
       FileUtils.copyFile(tmp.file, result.getFile());
       result.calculateSizeAndMd5();

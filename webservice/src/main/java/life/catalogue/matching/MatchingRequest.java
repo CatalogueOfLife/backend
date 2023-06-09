@@ -1,7 +1,11 @@
 package life.catalogue.matching;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.TabularFormat;
+
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.util.Objects;
@@ -42,6 +46,25 @@ public class MatchingRequest extends TreeTraversalParameter {
 
   public void setFormat(TabularFormat format) {
     this.format = format;
+  }
+
+  @JsonIgnore
+  public String resultFileName() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("match-");
+    if (upload != null) {
+      sb.append(FilenameUtils.removeExtension(upload.getName()));
+
+    } else {
+      sb.append("dataset-");
+      sb.append(sourceDatasetKey);
+    }
+    if (format == TabularFormat.TSV) {
+      sb.append(".tsv");
+    } else {
+      sb.append(".csv");
+    }
+    return sb.toString();
   }
 
   @Override

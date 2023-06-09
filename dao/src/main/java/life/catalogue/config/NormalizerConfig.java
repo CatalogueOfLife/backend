@@ -110,7 +110,7 @@ public class NormalizerConfig {
   }
 
   public File scratchFile(UUID jobKey) {
-    return new File(scratchDir, "job/" + jobKey.toString() + ".gz");
+    return new File(scratchDir, "job/" + jobKey.toString());
   }
 
   public File neoDir(int datasetKey) {

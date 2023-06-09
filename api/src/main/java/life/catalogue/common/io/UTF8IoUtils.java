@@ -5,13 +5,21 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 
 import com.google.common.io.Files;
 
 public class UTF8IoUtils {
-  
+
+  public static ZipOutputStream zipStreamFromFile(File f) throws IOException {
+    Files.createParentDirs(f);
+    FileOutputStream fos = new FileOutputStream(f);
+    BufferedOutputStream bos = new BufferedOutputStream(fos);
+    return new ZipOutputStream(bos);
+  }
+
   public static BufferedWriter writerFromGzipFile(File f) throws IOException {
     Files.createParentDirs(f);
     return writerFromStream(new GZIPOutputStream(new FileOutputStream(f)));
