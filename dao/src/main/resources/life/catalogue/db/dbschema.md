@@ -39,10 +39,42 @@ pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'id_report'
 
 > nohup pg_dump -U postgres -d col -Fc -Z 7 --data-only --load-via-partition-root --exclude-table '__*' --exclude-table '_md_*' --exclude-table '*_seq' -f clb.dump &
 
---column-inserts
---rows-per-insert=512
+Deactivate all triggers/constraints during import:
+>ALTER TABLE dataset DISABLE TRIGGER ALL;
+ALTER TABLE dataset_citation DISABLE TRIGGER ALL;
+ALTER TABLE dataset_archive DISABLE TRIGGER ALL;
+ALTER TABLE dataset_archive_citation DISABLE TRIGGER ALL;
+ALTER TABLE dataset_source DISABLE TRIGGER ALL;
+ALTER TABLE dataset_source_citation DISABLE TRIGGER ALL;
+ALTER TABLE dataset_patch DISABLE TRIGGER ALL;
+ALTER TABLE dataset_export DISABLE TRIGGER ALL;
+ALTER TABLE sector DISABLE TRIGGER ALL;
+ALTER TABLE sector_import DISABLE TRIGGER ALL;
+ALTER TABLE decision DISABLE TRIGGER ALL;
+ALTER TABLE names_index DISABLE TRIGGER ALL;
+ALTER TABLE id_report DISABLE TRIGGER ALL;
+ALTER TABLE name_usage_archive DISABLE TRIGGER ALL;
+ALTER TABLE parser_config DISABLE TRIGGER ALL;
+ALTER TABLE dataset_import DISABLE TRIGGER ALL;
+ALTER TABLE verbatim DISABLE TRIGGER ALL;
+ALTER TABLE reference DISABLE TRIGGER ALL;
+ALTER TABLE name DISABLE TRIGGER ALL;
+ALTER TABLE name_rel DISABLE TRIGGER ALL;
+ALTER TABLE name_match DISABLE TRIGGER ALL;
+ALTER TABLE type_material DISABLE TRIGGER ALL;
+ALTER TABLE name_usage DISABLE TRIGGER ALL;
+ALTER TABLE taxon_concept_rel DISABLE TRIGGER ALL;
+ALTER TABLE species_interaction DISABLE TRIGGER ALL;
+ALTER TABLE distribution DISABLE TRIGGER ALL;
+ALTER TABLE media DISABLE TRIGGER ALL;
+ALTER TABLE estimate DISABLE TRIGGER ALL;
+ALTER TABLE treatment DISABLE TRIGGER ALL;
+ALTER TABLE vernacular_name DISABLE TRIGGER ALL;
+ALTER TABLE verbatim_source DISABLE TRIGGER ALL;
+ALTER TABLE verbatim_source_secondary DISABLE TRIGGER ALL;
+ALTER TABLE name_usage_archive_match DISABLE TRIGGER ALL;
 
-Restore the dump to the newly crealeted database:
+Restore the dump to the newly created database:
 >pg_restore -U postgres -d col -j 12 --data-only --exit-on-error user.dump
 pg_restore -U postgres -d col -j 12 --data-only --exit-on-error lookups.dump
 pg_restore -U postgres -d col -j 12 --data-only --exit-on-error dataset.dump
@@ -61,8 +93,42 @@ pg_restore -U postgres -d col -j 12 --data-only --exit-on-error name_usage_rels.
 pg_restore -U postgres -d col -j 12 --data-only --exit-on-error verbatim_source.dump
 pg_restore -U postgres -d col -j 12 --data-only --exit-on-error idreport.dump
 
+enable triggers again
+>ALTER TABLE dataset ENABLE TRIGGER ALL;
+ALTER TABLE dataset_citation ENABLE TRIGGER ALL;
+ALTER TABLE dataset_archive ENABLE TRIGGER ALL;
+ALTER TABLE dataset_archive_citation ENABLE TRIGGER ALL;
+ALTER TABLE dataset_source ENABLE TRIGGER ALL;
+ALTER TABLE dataset_source_citation ENABLE TRIGGER ALL;
+ALTER TABLE dataset_patch ENABLE TRIGGER ALL;
+ALTER TABLE dataset_export ENABLE TRIGGER ALL;
+ALTER TABLE sector ENABLE TRIGGER ALL;
+ALTER TABLE sector_import ENABLE TRIGGER ALL;
+ALTER TABLE decision ENABLE TRIGGER ALL;
+ALTER TABLE names_index ENABLE TRIGGER ALL;
+ALTER TABLE id_report ENABLE TRIGGER ALL;
+ALTER TABLE name_usage_archive ENABLE TRIGGER ALL;
+ALTER TABLE parser_config ENABLE TRIGGER ALL;
+ALTER TABLE dataset_import ENABLE TRIGGER ALL;
+ALTER TABLE verbatim ENABLE TRIGGER ALL;
+ALTER TABLE reference ENABLE TRIGGER ALL;
+ALTER TABLE name ENABLE TRIGGER ALL;
+ALTER TABLE name_rel ENABLE TRIGGER ALL;
+ALTER TABLE name_match ENABLE TRIGGER ALL;
+ALTER TABLE type_material ENABLE TRIGGER ALL;
+ALTER TABLE name_usage ENABLE TRIGGER ALL;
+ALTER TABLE taxon_concept_rel ENABLE TRIGGER ALL;
+ALTER TABLE species_interaction ENABLE TRIGGER ALL;
+ALTER TABLE distribution ENABLE TRIGGER ALL;
+ALTER TABLE media ENABLE TRIGGER ALL;
+ALTER TABLE estimate ENABLE TRIGGER ALL;
+ALTER TABLE treatment ENABLE TRIGGER ALL;
+ALTER TABLE vernacular_name ENABLE TRIGGER ALL;
+ALTER TABLE verbatim_source ENABLE TRIGGER ALL;
+ALTER TABLE verbatim_source_secondary ENABLE TRIGGER ALL;
+ALTER TABLE name_usage_archive_match ENABLE TRIGGER ALL;
 
-> nohup pg_restore -U postgres -d col --data-only --disable-triggers --exit-on-error clb.dump &
+ 
 
 ```
 CREATE EXTENSION postgres_fdw;

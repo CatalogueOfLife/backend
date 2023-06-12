@@ -130,7 +130,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // finally create or update records
     if (match.isMatch()) {
       update(nu, match);
-    } else {
+    } else if (match.type != MatchType.AMBIGUOUS) {
+      // only add a new name if we do not have already multiple names that we cannot clearly match
       // track if we are outside of the sector target
       Issue[] issues;
       if (sector.getTarget() != null && !parents.containsMatch(sector.getTarget().getId())) {
