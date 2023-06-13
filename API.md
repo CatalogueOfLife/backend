@@ -34,8 +34,8 @@ The bulk matching is only available via the API at this stage, the UI will follo
 
 Bulk matching accepts different inputs for names:
 
- - 1) upload a `CSV` or `TSV` file to supply names for matching or
- - 2) select a source dataset from ChecklistBank that you want to use to supply names for matching. This can then also be filtered by various parameters to just match a subtree, certain ranks, etc
+ 1) upload a `CSV` or `TSV` file to supply names for matching or
+ 2) select a source dataset from ChecklistBank that you want to use to supply names for matching. This can then also be filtered by various parameters to just match a subtree, certain ranks, etc
 
  A bulk matching request could look like this:
  ```
