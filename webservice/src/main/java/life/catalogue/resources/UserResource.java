@@ -10,6 +10,7 @@ import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.AuthFilter;
+import life.catalogue.dw.auth.IdentityService;
 import life.catalogue.dw.auth.JwtCodec;
 import life.catalogue.dw.auth.Roles;
 
@@ -42,10 +43,12 @@ public class UserResource {
   
   private final JwtCodec jwt;
   private final UserDao dao;
+  private final IdentityService idService;
 
-  public UserResource(JwtCodec jwt, UserDao dao) {
+  public UserResource(JwtCodec jwt, UserDao dao, IdentityService idService) {
     this.jwt = jwt;
     this.dao = dao;
+    this.idService = idService;
   }
 
   /**
@@ -156,5 +159,12 @@ public class UserResource {
       throw NotFoundException.notFound(User.class, key);
     }
     return user;
+  }
+
+  @DELETE
+  @Path("/cache")
+  @RolesAllowed({Roles.ADMIN})
+  public int flushCache() throws Exception {
+    return idService.flush();
   }
 }

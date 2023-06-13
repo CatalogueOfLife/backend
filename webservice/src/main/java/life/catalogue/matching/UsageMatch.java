@@ -9,7 +9,7 @@ import life.catalogue.api.vocab.MatchType;
 
 import java.util.List;
 
-public class UsageMatch {
+public class UsageMatch implements DSID<String> {
   @JsonIgnore
   public final int datasetKey; // dataset key the usage and classification belongs to
   public final SimpleNameClassified<SimpleNameWithPub> usage;
@@ -77,5 +77,25 @@ public class UsageMatch {
   @Override
   public String toString() {
     return String.format("%s [%s] %s", usage, type, datasetKey);
+  }
+
+  @Override
+  public String getId() {
+    return usage.getId();
+  }
+
+  @Override
+  public void setId(String id) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Integer getDatasetKey() {
+    return datasetKey;
+  }
+
+  @Override
+  public void setDatasetKey(Integer key) {
+    throw new UnsupportedOperationException();
   }
 }

@@ -1,11 +1,13 @@
 package life.catalogue.db;
 
+import life.catalogue.common.func.ThrowingSupplier;
 import life.catalogue.dao.Partitioner;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
+import java.util.function.Supplier;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
@@ -78,8 +80,20 @@ public class PgSetupRule extends SqlSessionFactoryRule {
    * The cfg instance will be changed to contain the new, unique dbname.
    */
   public static void initDb(PostgreSQLContainer<?> container, PgConfig cfg) throws Exception {
+    initDb(() -> container.createConnection(""), cfg);
+  }
+
+  /**
+   * Creates a new database with a unique database name based on the supplied cfg.database.
+   * The cfg instance will be changed to contain the new, unique dbname.
+   * This also sets up mybatis.
+   *
+   * @param connectionSupplier db admin connection to drop and create databases
+   * @param cfg configs for the to be created database
+   */
+  public static void initDb(ThrowingSupplier<Connection, Exception> connectionSupplier, PgConfig cfg) throws Exception {
     LOG.info("Starting initialisation of db {}", cfg);
-    try (Connection con = container.createConnection("")) {
+    try (Connection con = connectionSupplier.get()) {
       PgUtils.createDatabase(con, cfg.database, cfg.user);
     }
 

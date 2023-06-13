@@ -222,6 +222,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
         pn.rebuildAuthorship();
         // also update the original match as we cache and reuse that
         existing.usage.setAuthorship(pn.getAuthorship());
+        if (nu.getName().getNamesIndexId() != existing.usage.getNamesIndexId()) {
+          existing.usage.setNamesIndexId(nu.getName().getNamesIndexId());
+          // update name match in db
+          nmm.update(pn, nu.getName().getNamesIndexId(), nu.getName().getNamesIndexType());
+          batchSession.commit(); // we need the matches to be up to date all the time! cache loaders...
+        }
         LOG.debug("Updated {} with authorship {}", pn.getScientificName(), pn.getAuthorship());
       }
       if (existing.usage.getPublishedInID() == null && nu.getName().getPublishedInId() != null) {

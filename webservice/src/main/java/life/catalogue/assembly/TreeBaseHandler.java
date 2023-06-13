@@ -48,6 +48,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final SqlSession session;
   protected final SqlSession batchSession;
   protected final VerbatimSourceMapper vm;
+  protected final NameMatchMapper nmm;
   protected final ReferenceMapper rm;
   protected final TaxonMapper tm;
   protected final NameMapper nm;
@@ -103,6 +104,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     rm = batchSession.getMapper(ReferenceMapper.class);
     tm = batchSession.getMapper(TaxonMapper.class);
     nm = batchSession.getMapper(NameMapper.class);
+    nmm= batchSession.getMapper(NameMatchMapper.class);
   }
 
   protected Usage usage(NameUsageBase u) {

@@ -215,7 +215,7 @@ public class UsageMatcherGlobal {
 
     } else {
       // check classification for all others
-      if (parents != null) {
+      if (parents != null && !existingWithCl.isEmpty()) {
         List<SimpleName> parentsSN = parents.stream()
                                         .map(p -> p.usage)
                                         .collect(Collectors.toList());
@@ -313,8 +313,12 @@ public class UsageMatcherGlobal {
       return UsageMatch.snap(existingWithCl.get(0), datasetKey);
     }
 
-    LOG.debug("{} ambiguous homonyms encountered for {} in source {}, picking accepted name randomly", existingWithCl.size(), nu.getLabel(), datasetKey);
-    return UsageMatch.empty(existingWithCl, datasetKey);
+    if (existingWithCl.isEmpty()) {
+      return UsageMatch.empty(datasetKey);
+    } else {
+      LOG.debug("{} ambiguous names matched for {} in source {}", existingWithCl.size(), nu.getLabel(), datasetKey);
+      return UsageMatch.empty(existingWithCl, datasetKey);
+    }
   }
 
   private static boolean contains(Collection<? extends SimpleNameWithNidx> usages, Rank rank) {

@@ -158,4 +158,9 @@ public class IdentityService {
     return optUser;
   }
 
+  public int flush() {
+    int num = cache.size();
+    cache.clear();
+    return num;
+  }
 }
