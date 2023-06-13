@@ -79,13 +79,17 @@ public class SectorSyncIT {
     draftRule.getSqlSession().close();
   }
 
-  public static NameUsageBase getByName(int datasetKey, Rank rank, String name) {
+  public static List<NameUsageBase> listByName(int datasetKey, Rank rank, String name) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      List<NameUsageBase> taxa = session.getMapper(NameUsageMapper.class).listByName(datasetKey, name, rank, new Page(0,100));
-      if (taxa.isEmpty()) return null;
-      if (taxa.size() > 1) throw new IllegalStateException("Multiple taxa found for name="+name);
-      return taxa.get(0);
+      return session.getMapper(NameUsageMapper.class).listByName(datasetKey, name, rank, new Page(0,100));
     }
+  }
+
+  public static NameUsageBase getByName(int datasetKey, Rank rank, String name) {
+    List<NameUsageBase> taxa = listByName(datasetKey, rank, name);
+    if (taxa.isEmpty()) return null;
+    if (taxa.size() > 1) throw new IllegalStateException("Multiple taxa found for name="+name);
+    return taxa.get(0);
   }
 
   public static List<SimpleName> getClassification(DSID<String> taxon) {
@@ -121,6 +125,10 @@ public class SectorSyncIT {
 
   private static SimpleNameLink simple(NameUsageBase nu) {
     return nu == null ? null : nu.toSimpleNameLink();
+  }
+
+  public static DSID<Integer> createSector(Sector.Mode mode, int srcDatasetKey, NameUsageBase target) {
+    return createSector(mode, srcDatasetKey, null, simple(target));
   }
 
   public static DSID<Integer> createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
@@ -773,6 +781,37 @@ public class SectorSyncIT {
     reticulatus = getByName(Datasets.COL, Rank.SPECIES, "Tenebrio reticulatus");
     assertNull(parent);
     assertNull(reticulatus);
+  }
+
+  /**
+   * Skip ambiguous name matches.
+   */
+  @Test
+  public void mergeAmbiguous() throws Exception {
+    final int srcDatasetKey = dataRule.mapKey(DataFormat.COLDP, 26);
+    final NameUsageBase animalia = getByName(Datasets.COL, Rank.KINGDOM, "Animalia");
+    var src = getByName(srcDatasetKey, Rank.KINGDOM, "Animalia");
+    createSector(Sector.Mode.UNION, src, animalia);
+
+    syncAll();
+    print(Datasets.COL);
+    var carettas = listByName(Datasets.COL, Rank.SPECIES, "Caretta caretta");
+    assertEquals(4, carettas.size());
+
+    createSector(Sector.Mode.MERGE, srcDatasetKey, animalia);
+
+    src = getByName(srcDatasetKey, Rank.FAMILY, "Keloniidae");
+    createSector(Sector.Mode.MERGE, src, animalia);
+
+    // do the merges 2 times to make sure internal deletions and the matcher cache work correct
+    syncMergesOnly();
+    print(Datasets.COL);
+    syncMergesOnly();
+    print(Datasets.COL);
+
+    // still just 4
+    carettas = listByName(Datasets.COL, Rank.SPECIES, "Caretta caretta");
+    assertEquals(4, carettas.size());
   }
 
   @Test

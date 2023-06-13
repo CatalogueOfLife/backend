@@ -28,7 +28,7 @@ public class SectorPriority {
     int max = 0;
     try (SqlSession session = factory.openSession()) {
       var sm = session.getMapper(SectorMapper.class);
-      // ordered by priority null sort last
+      // ordered by priority null sort last so we can increase the maximum for those sectors
       for (var s : sm.listByPriority(datasetKey, Sector.Mode.MERGE)) {
         if (s.getPriority() != null) {
           mergeSectorPrios.put(s.getId(), s.getPriority());

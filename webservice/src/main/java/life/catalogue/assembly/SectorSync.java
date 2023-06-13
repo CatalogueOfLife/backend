@@ -130,7 +130,7 @@ public class SectorSync extends SectorRunnable {
       PgUtils.consume(
         () -> session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey),
         s -> {
-          if (!s.getId().equals(sectorKey.getId()) && s.getSubject().getId() != null) {
+          if (!s.getId().equals(sectorKey.getId()) && s.getSubject() != null && s.getSubject().getId() != null) {
             EditorialDecision d = new EditorialDecision();
             d.setSubject(s.getSubject());
             d.setDatasetKey(sectorKey.getDatasetKey());

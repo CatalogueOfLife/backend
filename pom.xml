@@ -48,7 +48,6 @@
         liquibase, freemarker, jetty, jackson, metrics, etc.
     -->
     <antlr.version>4.7.2</antlr.version>
-    <asm.version></asm.version>
     <assertj.version>3.11.1</assertj.version>
     <batik.version>1.15</batik.version>
     <citeproc.version>3.0.0-alpha.6</citeproc.version>
@@ -111,7 +110,7 @@
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
-    <maven-git-commit-id-plugin.version>4.0.4</maven-git-commit-id-plugin.version>
+    <maven-git-commit-id-plugin.version>4.9.10</maven-git-commit-id-plugin.version>
     <maven-install-plugin.version>3.0.0-M1</maven-install-plugin.version>
     <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
     <maven-release-plugin.version>3.0.0-M1</maven-release-plugin.version>
@@ -324,11 +323,6 @@
       <dependency>
         <groupId>io.dropwizard</groupId>
         <artifactId>dropwizard-testing</artifactId>
-        <version>${dropwizard.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.dropwizard</groupId>
-        <artifactId>dropwizard-client</artifactId>
         <version>${dropwizard.version}</version>
       </dependency>
       <dependency>

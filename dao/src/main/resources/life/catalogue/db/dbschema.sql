@@ -1728,6 +1728,14 @@ CREATE TABLE name_usage_archive_match (
 CREATE INDEX ON name_usage_archive_match (dataset_key, index_id);
 CREATE INDEX ON name_usage_archive_match (index_id);
 
+--
+-- LOOKUPS mostly for manual queries
+--
+CREATE TABLE latin29 (
+  id TEXT,
+  idnum INTEGER,
+  PRIMARY KEY (id)
+);
 
 
 -- FUNCTIONS
