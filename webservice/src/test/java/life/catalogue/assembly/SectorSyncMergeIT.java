@@ -5,10 +5,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgConnectionRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.*;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.TxtTreeDataRule;
 
@@ -31,7 +28,7 @@ import org.junit.runners.Parameterized;
 @Ignore("work in pgrogress still fails")
 public class SectorSyncMergeIT extends SectorSyncTestBase {
   
-  final static SqlSessionFactoryRule pg = new PgConnectionRule("col", "postgres", "postgres"); //new PgSetupRule();
+  final static SqlSessionFactoryRule pg = new PgSetupRule(); // new PgConnectionRule("col", "postgres", "postgres");
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   final static NameMatchingRule matchingRule = new NameMatchingRule();
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();

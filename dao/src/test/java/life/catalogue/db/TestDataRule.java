@@ -317,6 +317,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
     for (int dk : testData.datasetKeys) {
       pm.createManagedSequences(dk);
+      pm.createIdSequences(dk);
       pm.updateIdSequences(dk);
     }
     session.commit();

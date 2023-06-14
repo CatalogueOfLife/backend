@@ -106,7 +106,7 @@ public interface DatasetPartitionMapper {
    */
   default void create(int key, DatasetOrigin origin) {
     // create dataset specific sequences regardless which origin
-    SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
+    createIdSequences(key);
     // estimates can exist also in non managed datasets, so we need to have an id sequence for them in all datasets
     // but they are not a partitioned table, treat them special
     createIdSequence("estimate", key);
@@ -136,6 +136,10 @@ public interface DatasetPartitionMapper {
    * @param key
    */
   void createSerial(@Param("table") String table, @Param("key") int key);
+
+  default void createIdSequences(@Param("key") int key) {
+    SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
+  }
 
   /**
    * Creates a new standalone id sequence named after the table and dataset key
