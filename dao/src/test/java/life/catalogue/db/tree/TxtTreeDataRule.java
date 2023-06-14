@@ -2,10 +2,7 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.api.vocab.TxtTreeDataKey;
-import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.*;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
@@ -47,6 +44,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   final private Set<Integer> sectors = new HashSet<>();
   private SqlSession session;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
+  private DatasetOrigin origin = DatasetOrigin.PROJECT;
   private NameMapper nm;
   private TaxonMapper tm;
   private SynonymMapper sm;
@@ -81,8 +79,12 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     return new TxtTreeDataRule(data);
   }
 
+  public void setOrigin(DatasetOrigin origin) {
+    this.origin = origin;
+  }
+
   @Override
-  protected void before() throws Throwable {
+  public void before() throws Throwable {
     LOG.info("Load text trees");
     super.before();
     initSession();
@@ -105,6 +107,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       d = TestEntityGenerator.newDataset("Tree " + datasetKey);
       d.setKey(datasetKey);
       d.applyUser(Users.TESTER);
+      d.setOrigin(origin);
       dm.create(d);
     }
     session.commit();
@@ -139,7 +142,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     nm.create(n);
 
     Integer sk = null;
-    if (tn.infos.containsKey(TxtTreeDataKey.PRIO.name())) {
+    if (origin.isManagedOrRelease() && tn.infos.containsKey(TxtTreeDataKey.PRIO.name())) {
       sk = Integer.parseInt(tn.infos.get(TxtTreeDataKey.PRIO.name())[0]);
       if (!sectors.contains(sk)) {
         Sector s = new Sector();
@@ -178,7 +181,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   }
 
   @Override
-  protected void after() {
+  public void after() {
     super.after();
     session.close();
   }
@@ -200,8 +203,10 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
 
   public void updateSequences(int datasetKey) {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-    pm.updateIdSequences(datasetKey);
-    pm.createManagedSequences(datasetKey);
+    if (origin.isManagedOrRelease()) {
+      pm.updateIdSequences(datasetKey);
+      pm.createManagedSequences(datasetKey);
+    }
     session.commit();
   }
 

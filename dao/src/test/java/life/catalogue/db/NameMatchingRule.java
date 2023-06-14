@@ -37,19 +37,23 @@ public class NameMatchingRule extends ExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
+  public void before() throws Throwable {
     SqlSessionFactory factory = factorySupplier.get();
     LOG.info("Setup in-memory names index");
     nidx = NameIndexFactory.memory(factory, AuthorshipNormalizer.INSTANCE);
     nidx.start();
     if (matchAll) {
       LOG.info("Rematch all names");
-      RematchJob.all(Users.MATCHER, factory, nidx).run();
+      rematchAll();
     }
   }
 
+  public void rematchAll() {
+    RematchJob.all(Users.MATCHER, factorySupplier.get(), nidx).run();
+  }
+
   public void rematch(int datasetKey) {
-    RematchJob.one(TestDataRule.TEST_USER.getKey(), factorySupplier.get(), nidx, datasetKey).run();
+    RematchJob.one(Users.MATCHER, factorySupplier.get(), nidx, datasetKey).run();
   }
 
   public static NameIndex getIndex() {
@@ -57,7 +61,7 @@ public class NameMatchingRule extends ExternalResource {
   }
 
   @Override
-  protected void after() {
+  public void after() {
     try {
       nidx.close();
     } catch (Exception e) {
