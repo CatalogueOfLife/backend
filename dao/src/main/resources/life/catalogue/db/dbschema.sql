@@ -1258,6 +1258,8 @@ CREATE TABLE dataset_import (
 CREATE INDEX ON dataset_import (dataset_key);
 CREATE INDEX ON dataset_import (started);
 
+CREATE TABLE dataset_import_mod0 PARTITION OF dataset_import FOR VALUES WITH (modulus 2, remainder 0);
+CREATE TABLE dataset_import_mod1 PARTITION OF dataset_import FOR VALUES WITH (modulus 2, remainder 1);
 
 CREATE TABLE verbatim (
   id INTEGER NOT NULL,

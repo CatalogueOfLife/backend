@@ -34,7 +34,6 @@ public interface DatasetPartitionMapper {
 
   // order is important !!!
   List<String> PARTITIONED_TABLES = Lists.newArrayList(
-      "dataset_import",
       "verbatim",
       "verbatim_source",
       "verbatim_source_secondary",

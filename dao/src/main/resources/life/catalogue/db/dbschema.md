@@ -14,7 +14,7 @@ and done it manually. So we can as well log changes here.
 
 ### 2023-06-05 migrate partitioning
 This is a serious change, removing the list partitioning and replacing it with just the hash one and a fixed number of partitions.
-First create an empty, brand new database with the new partition scheme. Use the InitCmd to do this, e.g. with 32 partitions.
+First create an empty, brand new database with the new partition scheme. Use the InitCmd to do this, e.g. with 24 partitions.
 
 Then dump the data of existing database with pg_dump into various pieces as we need to restore them in a specific order 
 that pg_restore cannot supply out of the box:
