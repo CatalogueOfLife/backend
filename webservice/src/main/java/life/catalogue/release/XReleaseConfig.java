@@ -44,6 +44,13 @@ public class XReleaseConfig {
   public boolean groupBasionyms = true;
 
   /**
+   * List of scientific names that are globally blocked from any source.
+   */
+  @NotNull
+  @Valid
+  public Set<String> blockedNames = new HashSet<>();
+
+  /**
    * List of higher wrong homonyms that should be removed, regardless of which source they came from.
    * Map of a canonical name to its direct parent.
    * All other names with the same canonical name, but different parent, are kept.

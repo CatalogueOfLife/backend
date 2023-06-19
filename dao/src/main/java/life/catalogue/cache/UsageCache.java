@@ -79,17 +79,31 @@ public interface UsageCache extends AutoCloseable, Managed {
     return sncl;
   }
 
-  default List<SimpleNameWithPub> getClassification(DSID<String> start, Function<DSID<String>, SimpleNameWithPub> loader) {
+  /**
+   * Same as getClassification but never throws a NotFoundException
+
+   */
+  default List<SimpleNameWithPub> getClassificationSilent(DSID<String> start, Function<DSID<String>, SimpleNameWithPub> loader) {
+    List<SimpleNameWithPub> classification = new ArrayList<>();
+    try {
+      addParents(classification, start, loader);
+    } catch (NotFoundException e) {
+      LOG.error("Parent not found", e);
+    }
+    return classification;
+  }
+
+  default List<SimpleNameWithPub> getClassification(DSID<String> start, Function<DSID<String>, SimpleNameWithPub> loader) throws NotFoundException {
     List<SimpleNameWithPub> classification = new ArrayList<>();
     addParents(classification, start, loader);
     return classification;
   }
 
-  private void addParents(List<SimpleNameWithPub> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameWithPub> loader) {
+  private void addParents(List<SimpleNameWithPub> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameWithPub> loader) throws NotFoundException {
     addParents(classification, parentKey, loader, new HashSet<>());
   }
 
-  private void addParents(List<SimpleNameWithPub> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameWithPub> loader, Set<String> visitedIDs) {
+  private void addParents(List<SimpleNameWithPub> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameWithPub> loader, Set<String> visitedIDs) throws NotFoundException {
     SimpleNameWithPub p;
     if (contains(parentKey)) {
       p = get(parentKey);

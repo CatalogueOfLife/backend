@@ -1,5 +1,6 @@
-ID	parentID	nameID
-1		1
-11	1	11
-12	1	12
-13	1	13
+ID	parentID	nameID	status
+1		1	accepted
+11	1	11	accepted
+12	1	12	accepted
+13	1	13	accepted
+14	12	14	synonym

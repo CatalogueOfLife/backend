@@ -66,25 +66,25 @@ public class TestDataGenerator {
   final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, 2, 4, Set.of(101, 102));
 
    final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, 2, 4, null, Map.ofEntries(
+     Map.entry(Pair.of(DataFormat.ACEF, 1), 102),
+     Map.entry(Pair.of(DataFormat.ACEF, 11), 110),
+     Map.entry(Pair.of(DataFormat.ACEF, 14), 119),
+     Map.entry(Pair.of(DataFormat.ACEF, 5), 108),
+     Map.entry(Pair.of(DataFormat.ACEF, 6), 109),
+     Map.entry(Pair.of(DataFormat.COLDP, 0), 103),
+     Map.entry(Pair.of(DataFormat.COLDP, 14), 113),
      Map.entry(Pair.of(DataFormat.COLDP, 2), 111),
+     Map.entry(Pair.of(DataFormat.COLDP, 22), 104),
+     Map.entry(Pair.of(DataFormat.COLDP, 24), 114),
+     Map.entry(Pair.of(DataFormat.COLDP, 25), 105),
+     Map.entry(Pair.of(DataFormat.COLDP, 26), 115),
+     Map.entry(Pair.of(DataFormat.COLDP, 27), 101),
      Map.entry(Pair.of(DataFormat.COLDP, 34), 116),
      Map.entry(Pair.of(DataFormat.COLDP, 35), 117),
      Map.entry(Pair.of(DataFormat.COLDP, 4), 112),
      Map.entry(Pair.of(DataFormat.DWCA, 1), 106),
-     Map.entry(Pair.of(DataFormat.ACEF, 14), 119),
      Map.entry(Pair.of(DataFormat.DWCA, 2), 107),
-     Map.entry(Pair.of(DataFormat.ACEF, 11), 110),
-     Map.entry(Pair.of(DataFormat.COLDP, 14), 113),
-     Map.entry(Pair.of(DataFormat.ACEF, 1), 102),
-     Map.entry(Pair.of(DataFormat.COLDP, 22), 104),
-     Map.entry(Pair.of(DataFormat.COLDP, 24), 114),
-     Map.entry(Pair.of(DataFormat.COLDP, 25), 105),
-     Map.entry(Pair.of(DataFormat.DWCA, 45), 118),
-     Map.entry(Pair.of(DataFormat.COLDP, 26), 115),
-     Map.entry(Pair.of(DataFormat.COLDP, 27), 101),
-     Map.entry(Pair.of(DataFormat.ACEF, 6), 109),
-     Map.entry(Pair.of(DataFormat.ACEF, 5), 108),
-     Map.entry(Pair.of(DataFormat.COLDP, 0), 103)
+     Map.entry(Pair.of(DataFormat.DWCA, 45), 118)
   ));
   final static TestDataRule.TestData XCOL = new TestDataRule.TestData("xcol", 3, 2, 4, null);
   final static TestDataRule.TestData GROUPING = new TestDataRule.TestData("homgroup", 4, 2, 4, null);

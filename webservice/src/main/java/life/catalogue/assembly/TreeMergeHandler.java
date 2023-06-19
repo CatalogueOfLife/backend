@@ -181,7 +181,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (existingParent.getRank().higherThan(proposedParent.getRank())
            && !existingParent.getId().equals(proposedParent.getId())) {
       // now check the newly proposed classification does also contain the current parent to avoid changes - we only want to patch missing ranks
-      var proposedClassification = uCache.getClassification(proposedParent.toDSID(targetDatasetKey), num::getSimplePub);
+      var proposedClassification = uCache.getClassificationSilent(proposedParent.toDSID(targetDatasetKey), num::getSimplePub);
       for (var propHigherTaxon : proposedClassification) {
         if (propHigherTaxon.getId().equals(existingParent.getId())) {
           return true;
