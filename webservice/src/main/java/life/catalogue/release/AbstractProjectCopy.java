@@ -44,12 +44,14 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   private final DatasetOrigin newDatasetOrigin;
   protected final boolean mapIds;
   protected DatasetSettings settings;
+  private final boolean deleteOnError;
 
 
   public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, DatasetDao dDao, NameUsageIndexService indexService, Validator validator,
-                             int userKey, int datasetKey, boolean mapIds) {
+                             int userKey, int datasetKey, boolean mapIds, boolean deleteOnError) {
     super(datasetKey, userKey, JobPriority.HIGH);
     DaoUtils.requireManaged(datasetKey, "Only managed datasets can be duplicated.");
+    this.deleteOnError = deleteOnError;
     this.actionName = actionName;
     this.factory = factory;
     this.diDao = diDao;
@@ -169,9 +171,11 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     metrics.setState(ImportState.FAILED);
     metrics.setError(Exceptions.getFirstMessage(e));
     LOG.error("Error {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
-    // cleanup failed remains
-    LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
-    dDao.delete(newDatasetKey, user);
+    // cleanup failed remains?
+    if (deleteOnError) {
+      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
+      dDao.delete(newDatasetKey, user);
+    }
   }
 
   @Override

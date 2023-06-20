@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.dao.DatasetDao;
@@ -16,8 +17,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 public class ProjectDuplication extends AbstractProjectCopy {
 
   ProjectDuplication(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, Validator validator,
-                     int datasetKey, int userKey) {
-    super("duplicating", factory, diDao, dDao, indexService, validator, userKey, datasetKey, false);
+                     int datasetKey, int userKey, WsServerConfig cfg) {
+    super("duplicating", factory, diDao, dDao, indexService, validator, userKey, datasetKey, false, cfg.release.deleteOnError);
   }
 
   @Override

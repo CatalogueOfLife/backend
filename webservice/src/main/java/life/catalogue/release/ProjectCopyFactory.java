@@ -83,7 +83,7 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectDuplication buildDuplication(int projectKey, int userKey) {
-    return new ProjectDuplication(factory, indexService, diDao, dDao, validator, projectKey, userKey);
+    return new ProjectDuplication(factory, indexService, diDao, dDao, validator, projectKey, userKey, cfg);
   }
 
 }

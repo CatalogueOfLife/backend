@@ -64,7 +64,7 @@ public class ProjectRelease extends AbstractProjectCopy {
                  ImageService imageService,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super(action, factory, diDao, dDao, indexService, validator, userKey, datasetKey, true);
+    super(action, factory, diDao, dDao, indexService, validator, userKey, datasetKey, true, cfg.release.deleteOnError);
     this.imageService = imageService;
     this.doiService = doiService;
     this.nDao = nDao;

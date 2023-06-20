@@ -18,6 +18,8 @@ public class ReleaseConfig {
   // nidx deduplication workaround - should be fixed by now so not enabled by default
   public boolean nidxDeduplication = false;
 
+  public boolean deleteOnError = true;
+
   @NotNull
   public File reportDir = new File("/tmp/col/release");
 
