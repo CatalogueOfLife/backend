@@ -112,6 +112,7 @@ public class XRelease extends ProjectRelease {
       // match targets to base release
       for (var s : sectors) {
         if (s.getTarget() != null){
+          s.getTarget().setStatus(TaxonomicStatus.ACCEPTED);
           NameUsageBase nu = new Taxon(s.getTarget());
           var m = matcher.match(baseReleaseKey, nu, (Classification)null);
           if (m.isMatch()) {
