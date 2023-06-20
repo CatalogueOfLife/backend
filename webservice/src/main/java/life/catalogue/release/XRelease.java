@@ -109,17 +109,18 @@ public class XRelease extends ProjectRelease {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       sectors = sm.listByPriority(datasetKey, Sector.Mode.MERGE);
-      //TODO: match target to base release
+      // match targets to base release
       for (var s : sectors) {
-        NameUsageBase nu = new Taxon(s.getTarget());
-        var m = matcher.match(baseReleaseKey, nu, (Classification)null);
-        if (m.isMatch()) {
-          s.getTarget().setBroken(false);
-          s.getTarget().setId(m.getId());
-        } else {
-          LOG.warn("Failed to match target {} of sector {}[{}] to base release {}. Ignoring sector in release {}!", s.getTarget(), s.getId(), s.getSubjectDatasetKey(), baseReleaseKey, newDatasetKey);
-          s.getTarget().setBroken(true);
-          s.getTarget().setId(null);
+        if (s.getTarget() != null){
+          NameUsageBase nu = new Taxon(s.getTarget());
+          var m = matcher.match(baseReleaseKey, nu, (Classification)null);
+          if (m.isMatch()) {
+            s.getTarget().setBroken(false);
+            s.getTarget().setId(m.getId());
+          } else {
+            LOG.warn("Failed to match target {} of sector {}[{}] to base release {}. Ignoring sector target in release {}!", s.getTarget(), s.getId(), s.getSubjectDatasetKey(), baseReleaseKey, newDatasetKey);
+            s.setTarget(null);
+          }
         }
       }
     }
