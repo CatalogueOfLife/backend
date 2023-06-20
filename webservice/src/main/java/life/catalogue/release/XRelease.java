@@ -23,6 +23,11 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 
+import life.catalogue.matching.UsageMatcherGlobal;
+
+import life.catalogue.matching.decision.SectorRematchRequest;
+import life.catalogue.matching.decision.SectorRematcher;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -44,16 +49,19 @@ public class XRelease extends ProjectRelease {
   private List<Sector> sectors;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
+  private final UsageMatcherGlobal matcher;
   private Taxon incertae;
   private XReleaseConfig xCfg;
 
-  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, NameUsageIndexService indexService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
+  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService,
+           DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
            ImageService imageService,
            int releaseKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
            DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super("releasing extended", factory, indexService, diDao, dDao, nDao, sDao, imageService, DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE).sourceKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
     this.siDao = siDao;
     this.syncFactory = syncFactory;
+    this.matcher = matcher;
     baseReleaseKey = releaseKey;
     fullUser.setKey(userKey);
     LOG.info("Build extended release for project {} from public release {}", datasetKey, baseReleaseKey);
@@ -96,9 +104,24 @@ public class XRelease extends ProjectRelease {
       }
     }
 
+    // load all merge sectors from project as they not exist in the base release
+    // note that target taxa still refer to temp identifiers used in the project, not the stable ids from the base release
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       sectors = sm.listByPriority(datasetKey, Sector.Mode.MERGE);
+      //TODO: match target to base release
+      for (var s : sectors) {
+        NameUsageBase nu = new Taxon(s.getTarget());
+        var m = matcher.match(baseReleaseKey, nu, (Classification)null);
+        if (m.isMatch()) {
+          s.getTarget().setBroken(false);
+          s.getTarget().setId(m.getId());
+        } else {
+          LOG.warn("Failed to match target {} of sector {}[{}] to base release {}. Ignoring sector in release {}!", s.getTarget(), s.getId(), s.getSubjectDatasetKey(), baseReleaseKey, newDatasetKey);
+          s.getTarget().setBroken(true);
+          s.getTarget().setId(null);
+        }
+      }
     }
   }
 

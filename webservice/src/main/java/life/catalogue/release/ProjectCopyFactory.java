@@ -13,6 +13,8 @@ import javax.validation.Validator;
 
 import life.catalogue.matching.NameIndex;
 
+import life.catalogue.matching.UsageMatcherGlobal;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -32,14 +34,14 @@ public class ProjectCopyFactory {
   private final ImageService imageService;
   private final CloseableHttpClient client;
   private final Validator validator;
-  private final NameIndex nameIndex;
+  private final UsageMatcherGlobal matcher;
   private final WsServerConfig cfg;
 
-  public ProjectCopyFactory(CloseableHttpClient client, NameIndex nameIndex, SyncFactory syncFactory, DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
+  public ProjectCopyFactory(CloseableHttpClient client, UsageMatcherGlobal matcher, SyncFactory syncFactory, DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
                             ExportManager exportManager, NameUsageIndexService indexService, ImageService imageService,
                             DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator, WsServerConfig cfg) {
     this.client = client;
-    this.nameIndex = nameIndex;
+    this.matcher = matcher;
     this.syncFactory = syncFactory;
     this.exportManager = exportManager;
     this.diDao = diDao;
@@ -63,7 +65,7 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not a release
    */
   public XRelease buildExtendedRelease(final int releaseKey, final int userKey) {
-    return new XRelease(factory, syncFactory, indexService, dDao, diDao, siDao, nDao, sDao, imageService, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    return new XRelease(factory, syncFactory, matcher, indexService, dDao, diDao, siDao, nDao, sDao, imageService, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**

@@ -78,7 +78,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     this.referenceIds = other.referenceIds;
   }
 
-  public NameUsageBase(SimpleName sn) {
+  protected NameUsageBase(SimpleName sn) {
     setId(sn.getId());
     Name n = new Name(sn);
     setName(n);

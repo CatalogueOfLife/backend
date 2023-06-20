@@ -79,20 +79,6 @@ public interface UsageCache extends AutoCloseable, Managed {
     return sncl;
   }
 
-  /**
-   * Same as getClassification but never throws a NotFoundException
-
-   */
-  default List<SimpleNameWithPub> getClassificationSilent(DSID<String> start, Function<DSID<String>, SimpleNameWithPub> loader) {
-    List<SimpleNameWithPub> classification = new ArrayList<>();
-    try {
-      addParents(classification, start, loader);
-    } catch (NotFoundException e) {
-      LOG.error("Parent not found", e);
-    }
-    return classification;
-  }
-
   default List<SimpleNameWithPub> getClassification(DSID<String> start, Function<DSID<String>, SimpleNameWithPub> loader) throws NotFoundException {
     List<SimpleNameWithPub> classification = new ArrayList<>();
     addParents(classification, start, loader);

@@ -64,7 +64,7 @@ public abstract class ProjectBaseIT {
     DoiUpdater doiUpdater = new DoiUpdater(SqlSessionFactoryRule.getSqlSessionFactory(), doiService, lrCache, converter);
     validator = Validation.buildDefaultValidatorFactory().getValidator();
     dDao = new DatasetDao(100, SqlSessionFactoryRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, null, ImageService.passThru(), syncFactoryRule.getDiDao(), exDao, NameUsageIndexService.passThru(), null, bus, validator);
-    projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(),
+    projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, SqlSessionFactoryRule.getSqlSessionFactory(), validator, cfg
     );

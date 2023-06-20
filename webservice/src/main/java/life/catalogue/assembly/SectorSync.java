@@ -61,7 +61,7 @@ public class SectorSync extends SectorRunnable {
     this.matcher = matcher;
     this.targetDatasetKey = targetDatasetKey;
     if (targetDatasetKey != sectorKey.getDatasetKey()) {
-      LOG.info("Syncing into release {}", targetDatasetKey);
+      LOG.info("Syncing sector {} into release {}", sectorKey, targetDatasetKey);
     }
     this.incertae = incertae;
   }

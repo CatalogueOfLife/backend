@@ -28,8 +28,15 @@ public class SectorRematchRequest extends RematchRequest {
   public SectorRematchRequest(int datasetKey, int subjectDatasetKey) {
     super(datasetKey, false);
     this.subjectDatasetKey = subjectDatasetKey;
-    subject = true;
-    target = false;
+    this.subject = true;
+    this.target = false;
+  }
+
+  public SectorRematchRequest(int datasetKey, int subjectDatasetKey, boolean subject, boolean target) {
+    super(datasetKey, false);
+    this.subjectDatasetKey = subjectDatasetKey;
+    this.subject = subject;
+    this.target = target;
   }
 
 
