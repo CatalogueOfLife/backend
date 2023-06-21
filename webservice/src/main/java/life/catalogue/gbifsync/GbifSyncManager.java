@@ -81,6 +81,7 @@ public class GbifSyncManager implements Managed {
       }
 
     } else {
+      started = false;
       LOG.warn("Disable GBIF dataset sync");
     }
   }

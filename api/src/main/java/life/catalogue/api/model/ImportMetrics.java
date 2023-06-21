@@ -12,9 +12,11 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoField;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -131,9 +133,12 @@ public class ImportMetrics implements ImportAttempt {
     this.finished = finished;
   }
 
+  /**
+   * @return duration between start and finish in milliseconds.
+   */
   public Long getDuration() {
     if (started != null && finished != null) {
-      return finished.toEpochSecond(ZoneOffset.UTC) - started.toEpochSecond(ZoneOffset.UTC);
+      return 1000 * (finished.toEpochSecond(ZoneOffset.UTC) - started.toEpochSecond(ZoneOffset.UTC));
     }
     return null;
   }
