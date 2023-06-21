@@ -2,11 +2,16 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.*;
 
+import life.catalogue.common.util.HumanSize;
+
+import org.apache.commons.lang3.time.DurationFormatUtils;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -124,6 +129,13 @@ public class ImportMetrics implements ImportAttempt {
   @Override
   public void setFinished(LocalDateTime finished) {
     this.finished = finished;
+  }
+
+  public Long getDuration() {
+    if (started != null && finished != null) {
+      return finished.toEpochSecond(ZoneOffset.UTC) - started.toEpochSecond(ZoneOffset.UTC);
+    }
+    return null;
   }
 
   public Integer getCreatedBy() {

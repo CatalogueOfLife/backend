@@ -17,6 +17,8 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.UsageMatcherGlobal;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
@@ -165,6 +167,7 @@ abstract class SectorRunnable implements Runnable {
           session.getMapper(SectorMapper.class).updateLastSync(sectorKey, state.getAttempt());
         }
       }
+      LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDurationHMS(state.getDuration()));
       LoggingUtils.removeSectorMDC();
     }
   }

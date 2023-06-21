@@ -138,7 +138,7 @@ public class UsageMatcherGlobal {
    * @param parents classification of the usage to be matched
    * @return
    */
-  public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<ParentStack.MatchedUsage> parents) {
+  public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<ParentStack.MatchedUsage> parents) throws NotFoundException {
     var canonNidx = matchNidxIfNeeded(datasetKey, nu);
     if (canonNidx != null) {
       var existing = usages.get(canonNidx);
@@ -184,8 +184,9 @@ public class UsageMatcherGlobal {
    * @param existing candidates to be matched against
    * @param parents classification of the usage to be matched
    * @return single match
+   * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch match(int datasetKey, NameUsageBase nu, List<SimpleNameWithPub> existing, List<ParentStack.MatchedUsage> parents) {
+  private UsageMatch match(int datasetKey, NameUsageBase nu, List<SimpleNameWithPub> existing, List<ParentStack.MatchedUsage> parents) throws NotFoundException {
     final boolean qualifiedName = nu.getName().hasAuthorship();
 
     // make sure we never have bare names - we want usages!

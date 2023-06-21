@@ -30,7 +30,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final UsageMatcherGlobal matcher;
   private final UsageCache uCache;
   private int counter = 0;  // all source usages
-  private int updCounter = 0; // updates
+  private int ignored = 0;
+  private int created = 0;
+  private int updated = 0; // updates
   private final int subjectDatasetKey;
 
   TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, User user, Sector sector, SectorImport state, Taxon incertae) {
@@ -87,7 +89,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
     } catch (NotFoundException e) {
       // we have an open batch session that writes new usages to the release which might not be flushed to the database - try that first
       batchSession.commit();
-      match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
+      try {
+        match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
+      } catch (NotFoundException e2) {
+        // sth else - ignore this usage!!!
+        LOG.warn("Unable to match {}. Ignore usage.", nu.getLabel(), e2);
+        ignored++;
+        return;
+      }
     }
     LOG.debug("{} matches {}", nu.getLabel(), match);
     // avoid the case when an accepted name without author is being matched against synonym names with authors from the same source
@@ -103,6 +112,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     if (ignoreUsage(nu, decisions.get(nu.getId()), match)) {
       // skip this taxon, but include children
+      ignored++;
       return;
     }
 
@@ -142,10 +152,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
       var sn = create(nu, parent, issues);
       parents.setMatch(sn);
       matcher.add(nu);
+      created++;
     }
 
     // commit in batches
-    if ((sCounter + tCounter + updCounter) % 1000 == 0) {
+    if ((sCounter + tCounter + updated) % 1000 == 0) {
       interruptIfCancelled();
       session.commit();
       batchSession.commit();
@@ -160,12 +171,18 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // we need to commit the batch session to see the recent inserts
     batchSession.commit();
     Taxon t = new Taxon(n);
-    var m = matcher.matchWithParents(targetDatasetKey, t, parents.classification());
-    // make sure rank is correct - canonical matches blend close ranks
-    if (m.usage == null || m.usage.getRank() != n.getRank()) {
+    try {
+      var m = matcher.matchWithParents(targetDatasetKey, t, parents.classification());
+      // make sure rank is correct - canonical matches blend close ranks
+      if (m.usage == null || m.usage.getRank() != n.getRank()) {
+        return null;
+      }
+      return usage(m.usage);
+
+    } catch (NotFoundException e) {
+      LOG.warn("Unable to match {} with classification {}", n.getLabel(), parents.classificationToString(), e);
       return null;
     }
-    return usage(m.usage);
   }
 
   @Override
@@ -243,7 +260,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
       // TODO: implement updates basionym, vernaculars, etc
       if (!updated.isEmpty()) {
-        updCounter++;
+        this.updated++;
         // update name
         nm.update(pn);
         // track source
@@ -270,6 +287,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     session.close();
     batchSession.commit();
     batchSession.close();
+    LOG.info("Total processed={}, ignored={}, created={}, updated={}", counter, ignored, created, updated);
   }
 
 }
