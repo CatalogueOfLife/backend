@@ -167,7 +167,7 @@ abstract class SectorRunnable implements Runnable {
           session.getMapper(SectorMapper.class).updateLastSync(sectorKey, state.getAttempt());
         }
       }
-      LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDurationHMS(state.getDuration()));
+      LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDuration(state.getDuration(), "HH:mm:ss"));
       LoggingUtils.removeSectorMDC();
     }
   }
