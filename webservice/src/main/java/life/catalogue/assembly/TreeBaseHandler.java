@@ -388,7 +388,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
             try {
               u.setStatus(ed.getStatus());
             } catch (IllegalArgumentException e) {
-              LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().getLabel(), ed.getStatus(), e);
+              LOG.warn("Cannot convert {} {} from {} to {}: {}", u.getName().getRank(), u.getName().getLabel(), u.getStatus(), ed.getStatus(), e.getMessage());
             }
           }
           if (u.isTaxon()) {

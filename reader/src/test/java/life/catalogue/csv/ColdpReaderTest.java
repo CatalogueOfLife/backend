@@ -59,6 +59,14 @@ public class ColdpReaderTest {
 
 
   @Test
+  public void defaultValues() throws Exception {
+    ColdpReader reader = ColdpReader.from(Resources.toFile("coldp/1").toPath());
+
+    var schema = reader.schema(ColdpTerm.Distribution).get();
+    assertTrue(schema.hasTerm(ColdpTerm.gazetteer));
+  }
+
+  @Test
   public void excelExport() throws Exception {
     ColdpReader reader = ColdpReader.from(Resources.toFile("coldp/10").toPath());
 

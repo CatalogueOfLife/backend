@@ -24,6 +24,8 @@ import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 public class IdMap implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(IdMap.class);
   private static final String SERVICE_NAME = "legacy ID redirection";
@@ -59,7 +61,7 @@ public class IdMap implements Managed {
     return new IdMap(file, "none", null);
   }
 
-  public static IdMap fromURI(File file, URI tsv) throws IOException {
+  public static IdMap fromURI(File file, @Nullable URI tsv) throws IOException {
     if (tsv == null) return empty(file);
 
     final URL url = tsv.toURL();

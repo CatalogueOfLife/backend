@@ -1,8 +1,11 @@
 package life.catalogue.csv;
 
 
+import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.PathUtils;
+
+import life.catalogue.common.util.YamlUtils;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
@@ -12,10 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ColdpReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpReader.class);
+  private static final String TERM_PREFIX = "col";
   // Synonym and TypeMaterial also have IDs but do not require them as there is no foreign key to them
   private static final Set<ColdpTerm> ID_SCHEMAS = Set.of(ColdpTerm.NameUsage, ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
   private static final Set<ColdpTerm> NAMEID_SCHEMAS;
@@ -78,7 +79,7 @@ public class ColdpReader extends CsvReader {
   private Path treatments;
 
   private ColdpReader(Path folder) throws IOException {
-    super(folder, "col", "coldp");
+    super(folder, TERM_PREFIX, "coldp");
     detectMappedClassification(ColdpTerm.Taxon, RANK2COLDP.entrySet().stream()
                                                                        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey))
     );
@@ -106,6 +107,57 @@ public class ColdpReader extends CsvReader {
       treatments = treat;
       LOG.info("Treatments folder found: {}", treatments);
     }
+
+    // read default values
+    Path dfn = dir.resolve("default.yaml");
+    if (Files.exists(dfn)) {
+      LOG.info("Reading default values from default.yaml");
+      final var TF = TermFactory.instance();
+      final var def = YamlUtils.read(Map.class, dfn.toFile());
+      for (Object key : def.keySet()) {
+        Optional<Term> rtOpt = VocabularyUtils.findTerm(TERM_PREFIX, key.toString(), true);
+        if (rtOpt.isPresent()) {
+          Term rt = rtOpt.get();
+          var sOpt = schema(rt);
+          if (sOpt.isPresent()) {
+            var s = sOpt.get();
+            final var columns = new ArrayList<>(s.columns);
+            Map<String,Object> terms = (Map<String,Object>) def.get(key);
+            for (var te : terms.entrySet()) {
+              Optional<Term> tOpt = VocabularyUtils.findTerm(TERM_PREFIX, te.getKey(), false);
+              if (tOpt.isPresent()) {
+                Term t = tOpt.get();
+                String val = te.getValue().toString();
+                if (s.hasTerm(t)) {
+                  int idx = 0;
+                  for (Schema.Field f : columns) {
+                    if (f.term != null && f.term.equals(t)) {
+                      Schema.Field f2 = new Schema.Field(t, val, f.index, f.delimiter);
+                      columns.set(idx, f2);
+                      break;
+                    }
+                    idx++;
+                  }
+                } else {
+                  Schema.Field f = new Schema.Field(t, val, null, null);
+                  columns.add(f);
+                }
+              } else {
+                LOG.info("Unknown term {} for schema {}", te, rt);
+              }
+            }
+            // replace final schema
+            Schema s2 = new Schema(s.files, s.rowType, s.encoding, s.settings, columns);
+            schemas.put(rt, s2);
+
+          } else {
+            LOG.warn("Default values found for class {}, but no schema existing", rt);
+          }
+        }
+      }
+      System.out.println(def);
+    }
+
   }
   
   public boolean hasExtendedReferences() {

@@ -1,0 +1,8 @@
+Name:
+  code: botanical
+Taxon:
+  extinct: false
+  environment: terrestrial
+Distribution:
+  gazetteer: ISO
+  status: native

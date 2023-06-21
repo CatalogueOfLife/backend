@@ -20,6 +20,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -170,6 +171,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    * Optional URI to a TSV file that contains a mapping of legacy COL IDs to new name usage IDs.
    * First column must be the legacy ID, second column the new name usage ID.
    */
+  @Nullable
   public URI legacyIdMapURI;
 
   /**
