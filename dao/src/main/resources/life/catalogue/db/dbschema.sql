@@ -1855,6 +1855,12 @@ SELECT ARRAY(
 );
 $$ LANGUAGE 'sql' STRICT IMMUTABLE PARALLEL SAFE;
 
+-- return the simple name for the given usage id
+CREATE OR REPLACE FUNCTION build_sn(v_dataset_key INTEGER, v_id TEXT) RETURNS simple_name AS $$
+  SELECT (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage t
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+$$ LANGUAGE SQL;
 
 -- return all parent names as an array
 CREATE OR REPLACE FUNCTION classification(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS TEXT[] AS $$

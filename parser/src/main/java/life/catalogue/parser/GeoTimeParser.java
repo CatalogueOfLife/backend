@@ -103,7 +103,7 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
       
       } else if (reportDuplicate) {
         GeoTime dup = GeoTime.byName(mapping.get(key));
-        LOG.info("GeoTime {} has the same name as existing {}", time, dup);
+        LOG.debug("GeoTime {} has the same name as existing {}", time, dup);
       }
     }
   }

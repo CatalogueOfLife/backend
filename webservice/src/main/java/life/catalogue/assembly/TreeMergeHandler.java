@@ -74,7 +74,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
       nu.getName().setCode(sector.getCode());
     }
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
-    parents.put(matcher.toSimpleName(nu));
+    var nusn = matcher.toSimpleName(nu);
+    try {
+      parents.put(nusn);
+    } catch (RuntimeException e) {
+      // swallow for now to get syncs through
+      LOG.warn("Unable to add {} to parent stack", nusn);
+      // TODO: remove catch if we know why we see this sometimes?
+    }
     LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
     counter++;
     // decisions
@@ -149,8 +156,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
       } else {
         issues = new Issue[0];
       }
-      var sn = create(nu, parent, issues);
-      parents.setMatch(sn);
+      var p = create(nu, parent, issues);
+      parents.setMatch(p);
       matcher.add(nu);
       created++;
     }
@@ -287,7 +294,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     session.close();
     batchSession.commit();
     batchSession.close();
-    LOG.info("Total processed={}, ignored={}, created={}, updated={}", counter, ignored, created, updated);
+    LOG.info("Sector {}: Total processed={}, ignored={}, created={}, updated={}", sector, counter, ignored, created, updated);
   }
 
 }
