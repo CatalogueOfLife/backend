@@ -94,7 +94,7 @@
     <simple-mail.version>8.0.0</simple-mail.version>
     <stax2.version>4.2.1</stax2.version>
     <testcontainers.version>1.17.6</testcontainers.version>
-    <text-tree.version>1.1.2</text-tree.version>
+    <text-tree.version>1.1.5</text-tree.version>
     <tika.version>1.22</tika.version>
     <twelvemonkeys.version>3.9.4</twelvemonkeys.version>
     <validation-api.version>2.0.0.Final</validation-api.version>
