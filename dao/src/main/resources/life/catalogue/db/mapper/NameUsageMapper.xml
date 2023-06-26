@@ -665,7 +665,7 @@
         <include refid="WHERE_UNION"/>
       </where>
     )
-    SELECT id, scientific_name, authorship, x.path as name_phrase, rank, code, status, parent_id
+    SELECT id, scientific_name, authorship, name_phrase, rank, code, status, parent_id
     FROM x ORDER BY x.path, id
   </select>
 
