@@ -146,7 +146,7 @@ public class DatasetInfoCache {
    */
   public int keyOrProjectKey(int datasetKey) throws NotFoundException {
     var info = get(datasetKey, true);
-    return info.origin == DatasetOrigin.RELEASE ? info.sourceKey : datasetKey;
+    return (info.origin == DatasetOrigin.RELEASE || info.origin == DatasetOrigin.XRELEASE) ? info.sourceKey : datasetKey;
   }
 
   /**
