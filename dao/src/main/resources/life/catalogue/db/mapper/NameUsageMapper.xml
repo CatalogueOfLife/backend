@@ -653,11 +653,11 @@
 
   <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     WITH RECURSIVE x AS(
-      SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', n.scientific_name, u.id) AS path
+      SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', n.scientific_name, n.authorship) AS path
       FROM <include refid="FROM_SIMPLE"/>
       WHERE u.dataset_key=#{param.datasetKey} AND <include refid="WHERE_START"/>
     UNION
-      SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', x.path, not is_synonym(u.status), n.scientific_name, u.id)
+      SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', x.path, not is_synonym(u.status), n.scientific_name, n.authorship)
       FROM <include refid="FROM_SIMPLE"/>
         JOIN x ON x.id = u.parent_id
       <where>
@@ -665,8 +665,8 @@
         <include refid="WHERE_UNION"/>
       </where>
     )
-    SELECT id, scientific_name, authorship, rank, code, status, parent_id
-    FROM x ORDER BY x.path
+    SELECT id, scientific_name, authorship, x.path as name_phrase, rank, code, status, parent_id
+    FROM x ORDER BY x.path, id
   </select>
 
   <select id="processTreeIds" parameterType="map" resultMap="idResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
