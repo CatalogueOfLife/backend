@@ -26,6 +26,7 @@ public class TestDataRuleTest {
   @Parameterized.Parameters(name= "{index}: {0}")
   public static Iterable<Object[]> data() {
     List<TestDataRule.TestData> list = List.of(
+      TestDataRule.DRAFT,
       TestDataRule.EMPTY,
       TestDataRule.KEEP,
       TestDataRule.DATASET_MIX,
@@ -92,7 +93,7 @@ public class TestDataRuleTest {
     } else if(data.equals(TestDataRule.TREE)) {
       assertEquals(24, count);
     } else if(data.equals(TestDataRule.DRAFT)) {
-      assertEquals(18, count);
+      assertEquals(21, count);
     } else if(data.equals(TestDataRule.DRAFT_WITH_SECTORS)) {
       assertEquals(23, count);
     } else if(data.equals(TestDataRule.NIDX)) {

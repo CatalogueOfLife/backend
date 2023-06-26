@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper.legacy.mapper;
 
 import life.catalogue.db.LookupTables;
+import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.legacy.LVernacularMapper;
@@ -11,23 +12,25 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class LVernacularMapperTest extends MapperTestBase<LVernacularMapper> {
-
   int datasetKey = TestDataRule.APPLE.key;
+
+  @BeforeClass
+  public static void setupFirst() throws Exception {
+    // we need lookup tables for this mapper
+    try (var con = pgRule.connect()) {
+      LookupTables.recreateTables(con);
+    }
+  }
 
   public LVernacularMapperTest() {
     super(LVernacularMapper.class);
-  }
-
-
-  @Before
-  public void init () throws IOException, SQLException {
-    LookupTables.recreateTables(session().getConnection());
   }
 
   @Test

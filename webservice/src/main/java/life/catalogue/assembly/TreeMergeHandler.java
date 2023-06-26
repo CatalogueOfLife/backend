@@ -67,6 +67,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   @Override
   public void acceptThrows(NameUsageBase nu) throws InterruptedException {
+    try {
+      acceptThrowsNoCatch(nu);
+    } catch (NotFoundException e) {
+      LOG.warn("NotFoundException. Unable to process {} with parent {}", nu, nu.getParentId(), e);
+    }
+  }
+
+  public void acceptThrowsNoCatch(NameUsageBase nu) throws InterruptedException {
     // make rank non null
     if (nu.getName().getRank() == null) nu.getName().setRank(Rank.UNRANKED);
     // sector defaults before we apply a specific decision

@@ -9,6 +9,9 @@ import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
 
+import org.gbif.txtree.SimpleTreeNode;
+import org.gbif.txtree.Tree;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,15 +22,9 @@ import java.util.function.Supplier;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.txtree.SimpleTreeNode;
-import org.gbif.txtree.Tree;
-
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static javax.ws.rs.Priorities.USER;
 
 /**
  * A junit test rule that loads test data from a text tree file into a given dataset.

@@ -30,7 +30,15 @@ public class AcefExportTest extends ExportTest {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
+
+  @BeforeClass
+  public static void setupFirst() throws Exception {
+    // we need lookup tables for this mapper
+    try (var con = pgSetupRule.connect()) {
+      LookupTables.recreateTables(con);
+    }
+  }
+
   @Rule
   public TestDataRule testDataRule = TestDataRule.draftWithSectors();
 

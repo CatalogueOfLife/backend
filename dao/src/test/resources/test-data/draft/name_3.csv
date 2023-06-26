@@ -1,4 +1,8 @@
 id,scientific_name,uninomial,rank
+b,Biota,Biota,UNRANKED
+v,Viruses,Viruses,UNRANKED
+vr,Riboviria,Riboviria,REALM
+va,Adnaviria,Adnaviria,REALM
 k1,Animalia,Animalia,KINGDOM
 k2,Archaea,Archaea,KINGDOM
 k3,Bacteria,Bacteria,KINGDOM
@@ -6,7 +10,6 @@ k4,Chromista,Chromista,KINGDOM
 k5,Fungi,Fungi,KINGDOM
 k6,Plantae,Plantae,KINGDOM
 k7,Protozoa,Protozoa,KINGDOM
-k8,Viruses,Viruses,KINGDOM
 p1,Annelida,Annelida,PHYLUM
 p2,Arthropoda,Arthropoda,PHYLUM
 p3,Chordata,Chordata,PHYLUM
@@ -17,3 +20,4 @@ p7,Basidiomycota,Basidiomycota,PHYLUM
 c1,Arachnida,Arachnida,CLASS
 c2,Insecta,Insecta,CLASS
 c3,Aves,Aves,CLASS
+

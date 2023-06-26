@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
-import java.util.function.Supplier;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
@@ -102,8 +101,6 @@ public class PgSetupRule extends SqlSessionFactoryRule {
       ScriptRunner runner = PgConfig.scriptRunner(con);
       runner.runScript(Resources.getResourceAsReader(InitDbUtils.SCHEMA_FILE));
       con.commit();
-      // this enables autocommit on the connection
-      LookupTables.recreateTables(con);
     }
     setupMybatis(cfg);
     Partitioner.createDefaultPartitions(getSqlSessionFactory(), 2);
