@@ -31,6 +31,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final UsageCache uCache;
   private int counter = 0;  // all source usages
   private int ignored = 0;
+  private int thrown = 0;
   private int created = 0;
   private int updated = 0; // updates
   private final int subjectDatasetKey;
@@ -69,12 +70,22 @@ public class TreeMergeHandler extends TreeBaseHandler {
   public void acceptThrows(NameUsageBase nu) throws InterruptedException {
     try {
       acceptThrowsNoCatch(nu);
-    } catch (NotFoundException e) {
-      LOG.warn("NotFoundException. Unable to process {} with parent {}", nu, nu.getParentId(), e);
+    } catch (InterruptedException e) {
+      throw e; // rethrow real interruptions
+
+    } catch (RuntimeException e) {
+      LOG.warn("Unable to process {} with parent {}. {}:{}", nu, nu.getParentId(), e.getClass().getSimpleName(), e.getMessage(), e);
+      thrown++;
+
+    } catch (Exception e) {
+      LOG.warn("Fatal error. Unable to process {} with parent {}. {}:{}", nu, nu.getParentId(), e.getClass().getSimpleName(), e.getMessage(), e);
+      thrown++;
+      throw new RuntimeException(e);
     }
   }
 
-  public void acceptThrowsNoCatch(NameUsageBase nu) throws InterruptedException {
+  public void acceptThrowsNoCatch(NameUsageBase nu) throws Exception {
+    LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
     // make rank non null
     if (nu.getName().getRank() == null) nu.getName().setRank(Rank.UNRANKED);
     // sector defaults before we apply a specific decision
@@ -83,14 +94,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
     var nusn = matcher.toSimpleName(nu);
-    try {
-      parents.put(nusn);
-    } catch (RuntimeException e) {
-      // swallow for now to get syncs through
-      LOG.warn("Unable to add {} to parent stack", nusn);
-      // TODO: remove catch if we know why we see this sometimes?
-    }
-    LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
+    parents.put(nusn);
     counter++;
     // decisions
     if (decisions.containsKey(nu.getId())) {
@@ -104,14 +108,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     } catch (NotFoundException e) {
       // we have an open batch session that writes new usages to the release which might not be flushed to the database - try that first
       batchSession.commit();
-      try {
-        match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
-      } catch (NotFoundException e2) {
-        // sth else - ignore this usage!!!
-        LOG.warn("Unable to match {}. Ignore usage.", nu.getLabel(), e2);
-        ignored++;
-        return;
-      }
+      match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
     }
     LOG.debug("{} matches {}", nu.getLabel(), match);
     // avoid the case when an accepted name without author is being matched against synonym names with authors from the same source
@@ -302,7 +299,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     session.close();
     batchSession.commit();
     batchSession.close();
-    LOG.info("Sector {}: Total processed={}, ignored={}, created={}, updated={}", sector, counter, ignored, created, updated);
+    LOG.info("Sector {}: Total processed={}, thrown={}, ignored={}, created={}, updated={}", sector, counter, thrown, ignored, created, updated);
   }
 
 }

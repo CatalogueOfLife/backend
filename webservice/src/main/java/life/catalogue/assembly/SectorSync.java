@@ -266,8 +266,7 @@ public class SectorSync extends SectorRunnable {
         String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
         TreeTraversalParameter ttp = TreeTraversalParameter.dataset(subjectDatasetKey, rootID, blockedIds);
         PgUtils.consume(
-          () -> um.processTree(ttp, sector.getMode() == Sector.Mode.MERGE),
-          treeHandler
+          () -> um.processTree(ttp, sector.getMode() == Sector.Mode.MERGE), treeHandler
         );
 
       } else if (sector.getMode() == Sector.Mode.UNION) {

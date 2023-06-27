@@ -148,6 +148,7 @@ public class SciNameNormalizer {
 
   /**
    * Does a stemming of a latin epithet removing any gender carrying suffix.
+   * See https://www.iapt-taxon.org/nomen/pages/main/art_62.html0
    */
   public static String stemEpithet(String epithet) {
     if (!hasContent(epithet)) return "";

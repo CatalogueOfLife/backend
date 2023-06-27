@@ -36,21 +36,24 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
   final static SqlSessionFactoryRule pg = new PgSetupRule(); // new PgConnectionRule("col", "postgres", "postgres");
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
-  final static NameMatchingRule matchingRule = new NameMatchingRule();
-  final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
 
   @ClassRule
   public final static TestRule classRules = RuleChain
       .outerRule(pg)
-      .around(treeRepoRule)
-      .around(matchingRule)
-      .around(syncFactoryRule);
+      .around(treeRepoRule);
+
+  final TestDataRule dataRule = TestDataRule.empty();
+  final NameMatchingRule matchingRule = new NameMatchingRule();
+  final SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
 
   @Rule
-  public final TestDataRule dataRule = TestDataRule.draft();
+  public final TestRule testRules = RuleChain
+    .outerRule(dataRule)
+    .around(matchingRule)
+    .around(syncFactoryRule);
 
   int testNum = 0;
-  String expected;
+  String project;
   List<String> trees;
   List<Sector> sectors = new ArrayList<>();
 
@@ -62,25 +65,28 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
        * Biota macrocarpa hort. ex Gordon
        * Biota macrocarpa Godr.
       */
-      {"Biota", List.of("biota-col", "biota-wcvp", "biota-lcvp", "biota-ipni")},
-      //{"Saccolomataceae", List.of("Saccolomataceae", "Orthiopteris")}
+      {"circular", List.of("src1", "src2", "src3")},
+      {"biota", List.of("wcvp", "lcvp", "ipni")},
+      {"saccolomataceae", List.of("orthiopteris")}
     });
   }
 
-  public SectorSyncMergeIT(String expected, List<String> trees) {
-    this.expected = expected;
+  public SectorSyncMergeIT(String project, List<String> trees) {
+    this.project = project.toLowerCase();
     this.trees = trees;
   }
 
   @Before
   public void init () throws Throwable {
-    LOG.info("Trees: {}", trees);
+    LOG.info("Project {}. Trees: {}", project, trees);
     testNum++;
     // load text trees & create sectors
     Map<Integer, String> data = new HashMap<>();
+    data.put(Datasets.COL, "txtree/"+project + "/project.txtree");
+
     int dkey = 100;
     for (String tree : trees) {
-      data.put(dkey, "txtree/"+tree.toLowerCase()+".txtree");
+      data.put(dkey, "txtree/"+project + "/" + tree.toLowerCase()+".txtree");
       Sector s = new Sector();
       s.setDatasetKey(Datasets.COL);
       s.setSubjectDatasetKey(dkey);
@@ -110,9 +116,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Test
   public void syncAndCompare() throws Exception {
     syncAll();
-    String mtree = expected+"-merge.txtree";
-    System.out.println("Assert merge tree "+mtree);
-    assertTree(Datasets.COL, getClass().getResourceAsStream("/txtree/expected/" + mtree));
+    assertTree(Datasets.COL, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
   }
 
 }
