@@ -96,6 +96,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
     var nusn = matcher.toSimpleName(nu);
     parents.put(nusn);
     counter++;
+    // ignore doubtfully marked usages in classification, e-g- wrong rank ordering
+    if (parents.isDoubtful()) {
+      ignored++;
+      LOG.info("Ignore {} {} [{}] because it has a bad parent classification {}", nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), parents.getDoubtful().usage);
+      return;
+    }
     // decisions
     if (decisions.containsKey(nu.getId())) {
       applyDecision(nu, decisions.get(nu.getId()));

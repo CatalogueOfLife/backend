@@ -5,10 +5,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.*;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.TxtTreeDataRule;
 
@@ -30,11 +27,10 @@ import org.slf4j.LoggerFactory;
  * Before we start any test we prepare the db with imports that can be reused across tests later on.
  */
 @RunWith(Parameterized.class)
-@Ignore("work in progress still fails")
 public class SectorSyncMergeIT extends SectorSyncTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSyncMergeIT.class);
 
-  final static SqlSessionFactoryRule pg = new PgSetupRule(); // new PgConnectionRule("col", "postgres", "postgres");
+  final static SqlSessionFactoryRule pg = new PgConnectionRule("col", "postgres", "postgres"); // PgSetupRule();
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
 
   @ClassRule

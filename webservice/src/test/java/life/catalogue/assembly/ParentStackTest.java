@@ -3,6 +3,8 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.matching.ParentStack;
 
+import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -39,6 +41,72 @@ public class ParentStackTest {
     assertEquals(2, parents.size());
     assertFalse(parents.isDoubtful());
     assertNotNull(parents.last());
+  }
+
+  @Test
+  public void testInvalidRankOrder() throws Exception {
+    SimpleNameWithNidx biota = new SimpleNameWithNidx();
+    biota.setId("0");
+    biota.setName("Biota");
+    biota.setRank(Rank.UNRANKED);
+    ParentStack parents = new ParentStack(biota);
+
+    assertEquals(0, parents.size());
+    assertNull(parents.last());
+    assertEquals(biota, parents.lowestParentMatch());
+
+    parents.put(src(Rank.KINGDOM, 1,0));
+    parents.put(src(Rank.PHYLUM, 2,1));
+    assertEquals(2, parents.size());
+    assertEquals("2", parents.last().usage.getId());
+    assertFalse(parents.isDoubtful());
+
+    parents.put(src(Rank.SUPERPHYLUM, 3,2));
+    assertEquals(3, parents.size());
+    assertEquals("3", parents.last().usage.getId());
+    assertTrue(parents.isDoubtful());
+
+    parents.put(src(Rank.SUPERPHYLUM, 4,1));
+    assertEquals(2, parents.size());
+    assertEquals("4", parents.last().usage.getId());
+    assertFalse(parents.isDoubtful());
+
+    // ambiguous ranks, botany
+    parents.put(src(Rank.GENUS, 5,4));
+    parents.put(src(Rank.SECTION, 6,5));
+    assertEquals(4, parents.size());
+    assertEquals("6", parents.last().usage.getId());
+    assertFalse(parents.isDoubtful());
+
+    parents.put(src(Rank.GENUS, 5,4));
+    parents.put(src(Rank.SECTION, 6,5));
+    assertEquals(4, parents.size());
+    assertEquals("6", parents.last().usage.getId());
+    assertFalse(parents.isDoubtful());
+
+    parents.put(src(Rank.SERIES, 7,6));
+    assertEquals(5, parents.size());
+    assertEquals("7", parents.last().usage.getId());
+    assertFalse(parents.isDoubtful());
+
+    // zoological way
+    parents.put(src(Rank.ORDER, 8,4));
+    parents.put(src(Rank.SECTION, 9,8));
+    parents.put(src(Rank.FAMILY, 10,9));
+    assertEquals(5, parents.size());
+    assertEquals("10", parents.last().usage.getId());
+    assertFalse(parents.isDoubtful());
+
+    parents.put(src(Rank.SUPERFAMILY, 11,10));
+    assertEquals(6, parents.size());
+    assertEquals("11", parents.last().usage.getId());
+    assertTrue(parents.isDoubtful());
+  }
+
+  private SimpleNameWithNidx src(Rank rank, int key, Integer parentKey) {
+    var sn = src(key, parentKey);
+    sn.setRank(rank);
+    return sn;
   }
 
   private SimpleNameWithNidx src(int key, Integer parentKey) {

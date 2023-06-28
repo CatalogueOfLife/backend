@@ -1,7 +1,13 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.SimpleNameWithNidx;
+
+import life.catalogue.assembly.TreeMergeHandler;
+
+import org.gbif.nameparser.api.Rank;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,6 +16,7 @@ import java.util.stream.Collectors;
  * Parent stack that expects breadth first iterations which needs to track more than a depth first one.
  */
 public class ParentStack {
+  private static final Logger LOG = LoggerFactory.getLogger(ParentStack.class);
   private final SimpleNameWithNidx root;
   private final LinkedList<MatchedUsage> parents = new LinkedList<>();
   private String doubtfulUsageID = null;
@@ -83,6 +90,17 @@ public class ParentStack {
     return doubtfulUsageID != null;
   }
 
+  public MatchedUsage getDoubtful() {
+    if (doubtfulUsageID != null) {
+      for (var u : parents) {
+        if (doubtfulUsageID.equals(u.usage.getId())) {
+          return u;
+        }
+      }
+    }
+    return null;
+  }
+
   /**
    * Sets the doubtful flag for the current usage and all its descendants.
    */
@@ -151,9 +169,18 @@ public class ParentStack {
         throw new IllegalStateException("Usage parent " + nu.getParent() + " not found for " + nu.getLabel());
       }
     }
+    // if the classification ordering is wrong, mark it as doubtful
+    Rank pRank = null;
+    if (!parents.isEmpty()) {
+      pRank = parents.getLast().usage.getRank();
+    }
     parents.add(new MatchedUsage(nu));
     if (first) {
       first = false;
+    }
+    if (pRank != null && nu.getRank().higherThan(pRank) && !nu.getRank().isAmbiguous() && !pRank.isAmbiguous()) {
+      LOG.debug("Bad parent rank {}. Mark {} as doubtful", pRank, parents.getLast().usage);
+      markSubtreeAsDoubtful();
     }
   }
 

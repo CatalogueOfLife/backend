@@ -131,7 +131,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   /**
    * Strong normaliztion to just a few rank buckets:
    *
-   * SUPRAGENERIC_NAME for anything above the family group, maybe label as "SUPRAFAMILY" in UI)
+   * SUPRAGENERIC_NAME for anything above the family group as there is no supra family rank yet (better label as "SUPRAFAMILY" in UI)
    * FAMILY for any family group monomials MEGAFAMILY-INFRATRIBE
    * GENUS for genus group monomials GENUS-INFRAGENERIC_NAME
    * SPECIES for binomials SPECIES_AGGREGATE-SPECIES
@@ -240,6 +240,10 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   @Override
   public void setRank(Rank rank) {
     this.rank = normRank(rank);
+  }
+
+  public Rank getCanonicalRank() {
+    return normCanonicalRank(rank);
   }
 
   public void setCanonicalRank(Rank rank) {

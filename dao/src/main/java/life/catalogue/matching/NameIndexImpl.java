@@ -298,10 +298,10 @@ public class NameIndexImpl implements NameIndex {
     return score;
   }
 
-  private IndexName getCanonical(String key) {
+  private IndexName getCanonical(String key, Rank canonicalRank) {
     List<IndexName> matches = store.get(key);
     // make sure the name is a canonical one
-    matches.removeIf(n -> !n.isCanonical());
+    matches.removeIf(n -> !n.isCanonical() || canonicalRank != n.getRank());
     // just in case we have multiple results make sure to have a stable return by selecting the lowest, i.e. oldest key
     IndexName lowest = null;
     for (IndexName n : matches) {
@@ -389,7 +389,7 @@ public class NameIndexImpl implements NameIndex {
 
       } else {
         // make sure there exists a canonical name without authorship and strongly normalised rank already
-        IndexName cn = getCanonical(key);
+        IndexName cn = getCanonical(key, n.getCanonicalRank());
         if (cn == null) {
           // insert new canonical
           cn = IndexName.newCanonical(n);

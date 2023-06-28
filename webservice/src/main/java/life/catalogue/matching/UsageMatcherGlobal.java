@@ -132,7 +132,8 @@ public class UsageMatcherGlobal {
   }
 
   /**
-   *
+   * Matches the given usage by looking up candidates by their canonical names index id
+   * and then filtering them by various properties and the parent classification.
    * @param datasetKey the target dataset to match against
    * @param nu usage to match. Requires a name instance to exist
    * @param parents classification of the usage to be matched
@@ -181,7 +182,7 @@ public class UsageMatcherGlobal {
   /**
    * @param datasetKey the target dataset to match against
    * @param nu usage to be match
-   * @param existing candidates to be matched against
+   * @param existing candidates with the same names index id to be matched against
    * @param parents classification of the usage to be matched
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
@@ -192,7 +193,7 @@ public class UsageMatcherGlobal {
     // make sure we never have bare names - we want usages!
     existing.removeIf(u -> u.getStatus().isBareName());
 
-    // wipe out bad ranks if we have multiple matches
+    // require exact rank match if we have multiple matches and there is an exact rank match
     if (existing.size() > 1 && nu.getRank() != null && contains(existing, nu.getRank())) {
       existing.removeIf(u -> u.getRank() != nu.getRank());
     }

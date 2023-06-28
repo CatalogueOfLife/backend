@@ -105,6 +105,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName>, AutoC
   public final void accept(SimpleName u) {
     try {
       // send end signals
+      System.out.println(u);
       while (!parents.isEmpty() && !parents.peekLast().getId().equals(u.getParent())) {
         SimpleName p = parents.removeLast();
         if (ranks.isEmpty() || ranks.contains(p.getRank())) {
