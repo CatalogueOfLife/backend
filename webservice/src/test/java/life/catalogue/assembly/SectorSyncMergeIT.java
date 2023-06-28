@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 public class SectorSyncMergeIT extends SectorSyncTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSyncMergeIT.class);
 
-  final static SqlSessionFactoryRule pg = new PgConnectionRule("col", "postgres", "postgres"); // PgSetupRule();
+  final static SqlSessionFactoryRule pg = new PgSetupRule(); //PgConnectionRule("col", "postgres", "postgres");
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
 
   @ClassRule

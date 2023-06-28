@@ -66,6 +66,10 @@ public class UsageMatch implements DSID<String> {
     return new UsageMatch(datasetKey, null, null, MatchType.NONE, false, null, null);
   }
 
+  public static UsageMatch unsupported(int datasetKey) {
+    return new UsageMatch(datasetKey, null, null, MatchType.UNSUPPORTED, true, null, null);
+  }
+
   public boolean isMatch() {
     return usage != null;
   }
@@ -76,7 +80,11 @@ public class UsageMatch implements DSID<String> {
 
   @Override
   public String toString() {
-    return String.format("%s [%s] %s", usage, type, datasetKey);
+    if (usage == null) {
+      return String.format("[%s] %s", type, datasetKey);
+    } else {
+      return String.format("%s [%s] %s", usage, type, datasetKey);
+    }
   }
 
   @Override

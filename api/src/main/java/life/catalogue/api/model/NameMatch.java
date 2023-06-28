@@ -20,6 +20,12 @@ public class NameMatch {
     return m;
   }
 
+  public static NameMatch unsupported() {
+    NameMatch m = new NameMatch();
+    m.setType(MatchType.UNSUPPORTED);
+    return m;
+  }
+
   public IndexName getName() {
     return name;
   }

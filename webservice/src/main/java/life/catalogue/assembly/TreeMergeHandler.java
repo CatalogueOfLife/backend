@@ -86,12 +86,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   public void acceptThrowsNoCatch(NameUsageBase nu) throws Exception {
     LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
-    // make rank non null
-    if (nu.getName().getRank() == null) nu.getName().setRank(Rank.UNRANKED);
-    // sector defaults before we apply a specific decision
-    if (sector.getCode() != null) {
-      nu.getName().setCode(sector.getCode());
-    }
+    // apply common changes to the usage
+    processCommon(nu);
+
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
     var nusn = matcher.toSimpleName(nu);
     parents.put(nusn);
@@ -100,16 +97,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (parents.isDoubtful()) {
       ignored++;
       LOG.info("Ignore {} {} [{}] because it has a bad parent classification {}", nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), parents.getDoubtful().usage);
-      return;
-    }
-    // decisions
-    if (decisions.containsKey(nu.getId())) {
-      applyDecision(nu, decisions.get(nu.getId()));
-    }
-
-    if (ignoreUsage(nu, decisions.get(nu.getId()))) {
-      // skip this taxon, but include children
-      ignored++;
       return;
     }
 
@@ -134,9 +121,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
     parents.setMatch(match.usage);
 
+    // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly
     if (match.ignore) {
       ignored++;
       LOG.info("Ignore {} {} [{}] because match ignore result", nu.getName().getRank(), nu.getName().getLabel(), nu.getId());
+      return;
+    } else if (ignoreUsage(nu, decisions.get(nu.getId()))) {
+      // skip this taxon, but include children
+      ignored++;
       return;
     }
 

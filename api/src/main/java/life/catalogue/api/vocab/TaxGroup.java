@@ -2,10 +2,7 @@ package life.catalogue.api.vocab;
 
 import org.gbif.nameparser.api.NomCode;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -62,10 +59,27 @@ public enum TaxGroup {
 
   Other;
 
+  public static final Map<NomCode, Set<TaxGroup>> rootGroupsByCode;
+  static {
+    Map<NomCode, Set<TaxGroup>> map = new HashMap<>();
+    for (NomCode code : NomCode.values()) {
+      var groups = byCode(code);
+      for (var g : groups) {
+        if (g.parent == null) {
+          map.computeIfAbsent(code, k -> new HashSet<>()).add(g);
+        }
+      }
+    }
+    rootGroupsByCode = Map.copyOf(map);
+  }
   public static Set<TaxGroup> byCode(NomCode code) {
     return Arrays.stream(values())
           .filter(tg -> tg.getCode() == code)
           .collect(Collectors.toSet());
+  }
+
+  public static Set<TaxGroup> rootGroupsByCode(NomCode code) {
+    return rootGroupsByCode(code);
   }
 
   private final TaxGroup parent;

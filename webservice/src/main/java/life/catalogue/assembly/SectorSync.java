@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.eventbus.EventBus;
 
 import life.catalogue.api.model.*;
@@ -45,6 +46,7 @@ public class SectorSync extends SectorRunnable {
   private final NameIndex nameIndex;
   private final UsageMatcherGlobal matcher;
   private final boolean project;
+  private boolean disableAutoBlocking;
   private final int targetDatasetKey; // dataset to sync into
   private final Taxon incertae;
   private List<SimpleName> foreignChildren;
@@ -120,29 +122,36 @@ public class SectorSync extends SectorRunnable {
     return s;
   }
 
+  @VisibleForTesting
+  void setDisableAutoBlocking(boolean disableAutoBlocking) {
+    this.disableAutoBlocking = disableAutoBlocking;
+  }
+
   @Override
   void init() throws Exception {
     super.init(true);
     loadForeignChildren();
-    // also load all sector subjects to auto block them
-    try (SqlSession session = factory.openSession()) {
-      AtomicInteger counter = new AtomicInteger();
-      PgUtils.consume(
-        () -> session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey),
-        s -> {
-          if (!s.getId().equals(sectorKey.getId()) && s.getSubject() != null && s.getSubject().getId() != null) {
-            EditorialDecision d = new EditorialDecision();
-            d.setSubject(s.getSubject());
-            d.setDatasetKey(sectorKey.getDatasetKey());
-            d.setSubjectDatasetKey(subjectDatasetKey);
-            d.setMode(EditorialDecision.Mode.BLOCK);
-            d.setNote("Auto blocked subject of sector " + s.getId());
-            decisions.put(s.getSubject().getId(), d);
-            counter.incrementAndGet();
+    if (!disableAutoBlocking) {
+      // also load all sector subjects to auto block them
+      try (SqlSession session = factory.openSession()) {
+        AtomicInteger counter = new AtomicInteger();
+        PgUtils.consume(
+          () -> session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey),
+          s -> {
+            if (!s.getId().equals(sectorKey.getId()) && s.getSubject() != null && s.getSubject().getId() != null) {
+              EditorialDecision d = new EditorialDecision();
+              d.setSubject(s.getSubject());
+              d.setDatasetKey(sectorKey.getDatasetKey());
+              d.setSubjectDatasetKey(subjectDatasetKey);
+              d.setMode(EditorialDecision.Mode.BLOCK);
+              d.setNote("Auto blocked subject of sector " + s.getId());
+              decisions.put(s.getSubject().getId(), d);
+              counter.incrementAndGet();
+            }
           }
-        }
-      );
-      LOG.info("Loaded {} sector subjects for auto blocking", counter);
+        );
+        LOG.info("Loaded {} sector subjects for auto blocking", counter);
+      }
     }
   }
 

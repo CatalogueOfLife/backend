@@ -99,17 +99,8 @@ public class TaxGroupAnalyzer {
       LOG.error("Error analyzing taxonomic group", e);
     }
 
-    // figure out code if missing
-    NomCode code = name.getCode();
-    if (code == null) {
-      code = detectCode(name, classification);
-    } else {
-      // filter by code
-      final var codeFinal = code;
-      groups.removeIf(tg -> tg.getCode() != codeFinal);
-    }
-
     // add group based on code
+    NomCode code = name.getCode();
     if (code != null && groups.isEmpty()) {
       switch (code) {
         case BACTERIAL:
@@ -117,6 +108,11 @@ public class TaxGroupAnalyzer {
           break;
         case ZOOLOGICAL:
           groups.add(TaxGroup.Animals);
+          break;
+        case BOTANICAL:
+          groups.add(Plants);
+          groups.add(Fungi);
+          groups.add(Algae);
           break;
         case VIRUS:
           groups.add(TaxGroup.Viruses);

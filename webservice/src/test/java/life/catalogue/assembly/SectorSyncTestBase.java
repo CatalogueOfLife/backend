@@ -164,7 +164,14 @@ public abstract class SectorSyncTestBase {
    */
   public static SectorImport sync(Sector s) {
     SectorSync ss = SyncFactoryRule.getFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    if (s.getNote() != null && s.getNote().contains("disableAutoBlocking")) {
+      ss.setDisableAutoBlocking(true);
+    }
     return runSync(ss);
+  }
+
+  void disableAutoBlocking(Sector s) {
+    s.setNote("disableAutoBlocking");
   }
 
   private static SectorImport runSync(SectorSync ss) {

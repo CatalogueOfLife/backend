@@ -105,6 +105,22 @@ public abstract class TreeBaseHandler implements TreeHandler {
     nmm= batchSession.getMapper(NameMatchMapper.class);
   }
 
+  protected void processCommon(NameUsageBase nu) {
+    // make rank non null
+    if (nu.getName().getRank() == null) nu.getName().setRank(Rank.UNRANKED);
+    // sector defaults before we apply a specific decision
+    if (sector.getCode() != null) {
+      nu.getName().setCode(sector.getCode());
+    }
+    // decisions
+    if (decisions.containsKey(nu.getId())) {
+      applyDecision(nu, decisions.get(nu.getId()));
+    } else {
+      // apply general rules otherwise
+      SyncNameUsageRules.applyAlways(nu);
+    }
+  }
+
   protected Usage usage(NameUsageBase u) {
     return u == null ? null : new Usage(u.getId(), u.getName().getRank(), u.getStatus());
   }
@@ -126,9 +142,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
     final String origID = u.getId();
     u.setSectorKey(sector.getId());
     u.getName().setSectorKey(sector.getId());
-
-    // apply general COL rules
-    SyncNameUsageRules.applyAlways(u);
 
     // make sure we have a genus for species and a species for infraspecific taxa
     if (u.isTaxon() && u.getName().getRank().isSpeciesOrBelow()) {

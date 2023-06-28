@@ -1,0 +1,17 @@
+ID	parentID	rank	scientificName	uninomial	nameStatus
+1		family	ASTERACEAE		acceptable
+2	1	subfamily	Cichorioideae Chevall.	Cichorioideae	
+3	1	subfamily	Asteraceae incertae sedis		
+4	2	tribe	Cichorieae (Lam. & DC. 1806)	Cichorieae	
+10	4	genus	Crepis L.	Crepis	
+11	4	genus	CICHORIA	CICHORIA	
+12	10	subgenus	Cichoria nom.nud.		
+13	12	species	Crepis acuminata nom.nud.		
+14	12	species	Crepis spec.		
+15	12	species	Crepis alpina sec. Döring 1980		
+16	12	species	I want a hamburger!		
+17	12	species	Crepis sp. 3A		
+18	12	species	Crepis sp. 3A		
+19	12	species	Aaptos sp.KY288		
+20	12	species	BOLD:AAC0545		
+21	12	subspecies	Crepis alpina subsp. alpina Döring 1980

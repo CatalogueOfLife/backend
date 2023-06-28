@@ -12,6 +12,7 @@ import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ import static org.junit.Assert.*;
  */
 public class SectorSyncIT extends SectorSyncTestBase {
   
-  final static SqlSessionFactoryRule pg = new PgSetupRule(); //new PgConnectionRule("col", "postgres", "postgres"); //
+  final static SqlSessionFactoryRule pg = new PgSetupRule(); // PgConnectionRule("col", "postgres", "postgres");
   final static TestDataRule dataRule = TestDataGenerator.syncs();
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   final static NameMatchingRule matchingRule = new NameMatchingRule();
@@ -446,7 +447,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     print(d1key);
     
     NameUsageBase src = getByName(d1key, Rank.KINGDOM, "Viruses");
-    NameUsageBase trg = getByName(Datasets.COL, Rank.KINGDOM, "Viruses");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.UNRANKED, "Viruses");
     createSector(Sector.Mode.UNION, src, trg);
     
     syncAll();
@@ -618,6 +619,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     final NameUsageBase animalia = getByName(Datasets.COL, Rank.KINGDOM, "Animalia");
     createSector(Sector.Mode.MERGE, srcDatasetKey, null, animalia);
 
+    print(Datasets.COL);
     syncAll();
     print(Datasets.COL);
 
@@ -628,6 +630,31 @@ public class SectorSyncIT extends SectorSyncTestBase {
     assertEquals("Plantae", cl.getKingdom());
     var v = getSource(oa);
     assertTrue(v.hasIssue(Issue.SYNC_OUTSIDE_TARGET));
+  }
+
+  @Test
+  public void mergeOddNameTypes() throws Exception {
+    final int srcDatasetKey = dataRule.mapKey(DataFormat.COLDP, 38);
+    print(srcDatasetKey);
+
+    final NameUsageBase plants = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
+    final NameUsageBase asteracea = getByID(srcDatasetKey, "1");
+    // base attachment with just major linnean ranks and scientific names
+    createSector(Sector.Mode.ATTACH, srcDatasetKey, asteracea, plants, s -> {
+      s.setNameTypes(Set.of(NameType.SCIENTIFIC));
+      s.setRanks(Set.of(Rank.FAMILY, Rank.GENUS, Rank.SPECIES));
+    });
+    syncAll();
+    print(Datasets.COL);
+
+    final var sid = createSector(Sector.Mode.MERGE, srcDatasetKey, null, plants, s -> {
+      s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.INFORMAL, NameType.OTU));
+      s.setRanks(null);
+      s.setCode(NomCode.BOTANICAL);
+      disableAutoBlocking(s);
+    });
+    syncMergesOnly();
+    assertTree("cat38.txt");
   }
 
   void mergeAndTest(NameUsageBase plant) throws IOException {

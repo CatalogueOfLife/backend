@@ -120,16 +120,8 @@ public class TreeCopyHandler extends TreeBaseHandler {
   }
 
   private void process(NameUsageBase u) throws InterruptedException {
-    u.setSectorKey(sector.getId());
-    u.getName().setSectorKey(sector.getId());
-    // before we apply a specific decision
-    if (sector.getCode() != null) {
-      u.getName().setCode(sector.getCode());
-    }
-    
-    if (decisions.containsKey(u.getId())) {
-      applyDecision(u, decisions.get(u.getId()));
-    }
+    processCommon(u);
+
     if (ignoreUsage(u, decisions.get(u.getId()))) {
       // skip this taxon, but include children
       // use taxons parent also as the parentID for this so children link one level up

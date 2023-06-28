@@ -15,6 +15,8 @@ import org.gbif.nameparser.api.Rank;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -24,8 +26,6 @@ import org.slf4j.LoggerFactory;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
-
-import javax.annotation.Nullable;
 
 /**
  * Matches usages against a given dataset. Matching is primarily based on names index matches,
@@ -137,16 +137,18 @@ public class UsageMatcherGlobal {
    * @param datasetKey the target dataset to match against
    * @param nu usage to match. Requires a name instance to exist
    * @param parents classification of the usage to be matched
-   * @return
+   * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
   public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<ParentStack.MatchedUsage> parents) throws NotFoundException {
+    // this cannot be null - it would throw UnsupportedNameusageException
     var canonNidx = matchNidxIfNeeded(datasetKey, nu);
-    if (canonNidx != null) {
-      var existing = usages.get(canonNidx);
-      if (existing != null && !existing.isEmpty()) {
-        // we modify the existing list, so use a copy
-        return match(datasetKey, nu, new ArrayList<>(existing), parents);
-      }
+    if (canonNidx == null) {
+      return UsageMatch.unsupported(datasetKey);
+    }
+    var existing = usages.get(canonNidx);
+    if (existing != null && !existing.isEmpty()) {
+      // we modify the existing list, so use a copy
+      return match(datasetKey, nu, new ArrayList<>(existing), parents);
     }
     return UsageMatch.empty(datasetKey);
   }
@@ -195,6 +197,9 @@ public class UsageMatcherGlobal {
 
     // require exact rank match if we have multiple matches and there is an exact rank match
     if (existing.size() > 1 && nu.getRank() != null && contains(existing, nu.getRank())) {
+      existing.removeIf(u -> u.getRank() != nu.getRank());
+    }
+    if (!existing.isEmpty() && nu.getRank() != null) {
       existing.removeIf(u -> u.getRank() != nu.getRank());
     }
 
