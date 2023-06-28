@@ -178,7 +178,10 @@ public class ParentStack {
     if (first) {
       first = false;
     }
-    if (pRank != null && nu.getRank().higherThan(pRank) && !nu.getRank().isAmbiguous() && !pRank.isAmbiguous()) {
+    if (nu.getStatus() != null && nu.getStatus().isTaxon()
+        && pRank != null && nu.getRank().higherThan(pRank)
+        && !nu.getRank().isAmbiguous() && !pRank.isAmbiguous()
+    ) {
       LOG.debug("Bad parent rank {}. Mark {} as doubtful", pRank, parents.getLast().usage);
       markSubtreeAsDoubtful();
     }

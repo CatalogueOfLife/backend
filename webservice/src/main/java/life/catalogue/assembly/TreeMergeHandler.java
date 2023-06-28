@@ -212,18 +212,25 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return nm.getByUsage(targetDatasetKey, usageID);
   }
 
-  private boolean proposedParentDoesNotConflict(SimpleName existingParent, SimpleName proposedParent) {
+  private boolean proposedParentDoesNotConflict(SimpleName existing, SimpleName existingParent, SimpleName proposedParent) {
+    boolean existingParentFound = false;
     if (existingParent.getRank().higherThan(proposedParent.getRank())
-           && !existingParent.getId().equals(proposedParent.getId())) {
+           && !existingParent.getId().equals(proposedParent.getId())
+    ) {
       // now check the newly proposed classification does also contain the current parent to avoid changes - we only want to patch missing ranks
+      // but also make sure the existing name is not part of the proposed classification as this will result in a fatal circular loop!
       var proposedClassification = uCache.getClassification(proposedParent.toDSID(targetDatasetKey), num::getSimplePub);
       for (var propHigherTaxon : proposedClassification) {
+        if (propHigherTaxon.getId().equals(existing.getId())) {
+          LOG.debug("Avoid circular classifications by updating the parent of {} {} to {} {}", existing.getRank(), existing.getLabel(), proposedParent.getRank(), proposedParent.getLabel());
+          return false;
+        }
         if (propHigherTaxon.getId().equals(existingParent.getId())) {
-          return true;
+          existingParentFound = true;
         }
       }
     }
-    return false;
+    return existingParentFound;
   }
 
   private boolean update(NameUsageBase nu, UsageMatch existing) {
@@ -239,7 +246,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         var parent = matchedParents.getLast().match;
         var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
         batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
-        if (parent != null && (existingParent == null || proposedParentDoesNotConflict(existingParent, parent))) {
+        if (parent != null && (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent))) {
           LOG.debug("Updated {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
           num.updateParentId(targetKey, parent.getId(), user.getKey());
           updated.add(InfoGroup.PARENT);
