@@ -2,14 +2,12 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.CatCopy;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.UsageMatch;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.*;
@@ -130,7 +128,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     u.getName().setSectorKey(sector.getId());
 
     // apply general COL rules
-    CoLUsageRules.apply(u);
+    SyncNameUsageRules.applyAlways(u);
 
     // make sure we have a genus for species and a species for infraspecific taxa
     if (u.isTaxon() && u.getName().getRank().isSpeciesOrBelow()) {
@@ -276,13 +274,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
   }
 
-  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, UsageMatch match) {
+  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision) {
     if (decision != null && decision.getMode() == EditorialDecision.Mode.IGNORE) {
       LOG.info("Ignore {} {} [{}] because editorial ignore decision", u.getName().getRank(), u.getName().getLabel(), u.getId());
-      return true;
-    }
-    if (match.ignore) {
-      LOG.info("Ignore {} {} [{}] because match ignore result", u.getName().getRank(), u.getName().getLabel(), u.getId());
       return true;
     }
 
@@ -311,9 +305,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (n.getType().isParsable() && n.isIndetermined()) {
       return incIgnored(IgnoreReason.INDETERMINED, u);
     }
+
     return false;
   }
-
   protected void applyDecision(NameUsageBase u, EditorialDecision ed) {
     try {
       switch (ed.getMode()) {

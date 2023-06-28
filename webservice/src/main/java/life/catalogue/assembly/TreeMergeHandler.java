@@ -107,6 +107,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
       applyDecision(nu, decisions.get(nu.getId()));
     }
 
+    if (ignoreUsage(nu, decisions.get(nu.getId()))) {
+      // skip this taxon, but include children
+      ignored++;
+      return;
+    }
+
     // find out matching - even if we don't include the name in the merge we want the parents matched
     UsageMatch match = null;
     try {
@@ -128,9 +134,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
     parents.setMatch(match.usage);
 
-    if (ignoreUsage(nu, decisions.get(nu.getId()), match)) {
-      // skip this taxon, but include children
+    if (match.ignore) {
       ignored++;
+      LOG.info("Ignore {} {} [{}] because match ignore result", nu.getName().getRank(), nu.getName().getLabel(), nu.getId());
       return;
     }
 

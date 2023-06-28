@@ -130,7 +130,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
     if (decisions.containsKey(u.getId())) {
       applyDecision(u, decisions.get(u.getId()));
     }
-    if (ignoreUsage(u, decisions.get(u.getId()), UsageMatch.empty(targetDatasetKey))) {
+    if (ignoreUsage(u, decisions.get(u.getId()))) {
       // skip this taxon, but include children
       // use taxons parent also as the parentID for this so children link one level up
       ids.put(u.getId(), ids.getOrDefault(u.getParentId(), targetUsage));
