@@ -102,15 +102,15 @@ public class NameIndexImplIT {
       iname("Natting tosee5", Rank.SPECIES),
       // 23
       iname("Rodentia", Rank.GENUS),
-      // 24
+      // 24+25
       iname("Rodentia Bowdich, 1821", Rank.ORDER),
-      // 25
+      // 26
       iname("Aeropyrum coil-shaped virus", Rank.UNRANKED)
     ).forEach(n -> {
       ni.add(n);
     });
     dumpIndex();
-    assertEquals(25, ni.size());
+    assertEquals(26, ni.size());
   }
 
   void setupMemory(boolean erase) throws Exception {
@@ -772,18 +772,18 @@ public class NameIndexImplIT {
     assertMatch(2, "Animalia", Rank.KINGDOM);
 
     assertMatch(23, "Rodentia", Rank.GENUS);
-    assertNoMatch("Rodentia", Rank.ORDER);
+    assertMatch(24, "Rodentia", Rank.ORDER); // canonical match
     assertNoMatch("Rodenti", Rank.ORDER);
     
-    assertMatch(24, "Rodentia Bowdich, 1821", Rank.ORDER);
-    assertMatch(24, "Rodentia Bowdich, 1?21", Rank.ORDER);
-    assertMatch(24, "Rodentia Bowdich", Rank.ORDER);
-    assertMatch(24, "Rodentia 1821", Rank.ORDER);
-    assertMatch(24, "Rodentia Bow.", Rank.ORDER);
-    assertMatch(24, "Rodentia Bow, 1821", Rank.ORDER);
-    assertMatch(24, "Rodentia B 1821", Rank.ORDER);
+    assertMatch(25, "Rodentia Bowdich, 1821", Rank.ORDER);
+    assertMatch(25, "Rodentia Bowdich, 1?21", Rank.ORDER);
+    assertMatch(25, "Rodentia Bowdich", Rank.ORDER);
+    assertMatch(25, "Rodentia 1821", Rank.ORDER);
+    assertMatch(25, "Rodentia Bow.", Rank.ORDER);
+    assertMatch(25, "Rodentia Bow, 1821", Rank.ORDER);
+    assertMatch(25, "Rodentia B 1821", Rank.ORDER);
     assertNoMatch("Rodentia", Rank.FAMILY);
-    assertNoMatch("Rodentia Mill., 1823", Rank.SUBORDER);
+    assertMatch(24, "Rodentia Mill., 1823", Rank.SUBORDER); // canonical match
     
     assertMatch(3, "Oenanthe", Rank.GENUS);
     assertMatch(4, "Oenanthe Vieillot", Rank.GENUS);
@@ -809,8 +809,8 @@ public class NameIndexImplIT {
     // try unparsable names
     assertMatch(17, "Carex cayouettei", Rank.SPECIES);
     assertMatch(18, "Carex comosa × Carex lupulina", Rank.SPECIES);
-    assertMatch(25, "Aeropyrum coil-shaped virus", Rank.UNRANKED);
-    assertMatch(25, "Aeropyrum coil-shaped virus", Rank.SPECIES); // given in index as UNRANKED
+    assertMatch(26, "Aeropyrum coil-shaped virus", Rank.UNRANKED);
+    assertMatch(26, "Aeropyrum coil-shaped virus", Rank.SPECIES); // given in index as UNRANKED
   }
   
   /**
