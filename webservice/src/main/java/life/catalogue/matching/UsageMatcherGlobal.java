@@ -140,7 +140,6 @@ public class UsageMatcherGlobal {
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
   public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<ParentStack.MatchedUsage> parents) throws NotFoundException {
-    // this cannot be null - it would throw UnsupportedNameusageException
     var canonNidx = matchNidxIfNeeded(datasetKey, nu);
     if (canonNidx == null) {
       return UsageMatch.unsupported(datasetKey);

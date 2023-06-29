@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-06-28 add new match type
+```
+ALTER TYPE MATCHTYPE ADD VALUE 'UNSUPPORTED';
+```
+
 ### 2023-06-08 improve import scheduler sql for large import table 
 ```
 -- used by import scheduler:
