@@ -44,14 +44,14 @@ We synchronise ChecklistBank with [checklist datasets in GBIF](https://www.gbif.
 
 ChecklistBank distinguishes 3 kind of datasets indicated by their ```origin``` property:
 
- - **EXTERNAL**: datasets which are maintained outside of ChecklistBank and are imported for read accecss only. This is the vast majority of all datasets
- - **PROJECT**: datasets which are maintained inside ChecklistBank and which often include & sync data from other sources. The Catalogue of Life checklist is such a project with datasetKey=3
- - **RELEASE**: immutable snapshots of a project with stable identifiers
+ - ```external```: datasets which are maintained outside of ChecklistBank and are imported for read accecss only. This is the vast majority of all datasets
+ - ```project```: datasets which are maintained inside ChecklistBank and which often include & sync data from other sources. The Catalogue of Life checklist is such a project with datasetKey=3
+ - ```release```: immutable snapshots of a project with stable identifiers
 
 The API also provides some simple magic dataset keys, that will allow you to access some datasets without knowing the latest key:
 
- - **{KEY}LR**: a substitute for the latest, public release of a project, e.g the latest COL checklist: https://api.checklistbank.org/dataset/3LR 
- - **COL{YEAR}**: a substitute for the annual release of the COL checklist in the given year with 4 digits: https://api.checklistbank.org/dataset/COL2023
+ - ```{KEY}LR```: a substitute for the latest, public release of a project, e.g the latest COL checklist: https://api.checklistbank.org/dataset/3LR 
+ - ```COL{YEAR}```: a substitute for the annual release of the COL checklist in the given year with 4 digits: https://api.checklistbank.org/dataset/COL2023
 
 
 ## Vocabularies
@@ -71,29 +71,34 @@ CLB will actually decline the use of plain *http*.
 
 A simple basic authentication using curl would look like this:
 
-```curl -s -v --user j.smith:passwd1234xyz "https:api.checklistbank.org/user/me"```
+```
+curl -s -v --user j.smith:passwd1234xyz "https:api.checklistbank.org/user/me"```
+```
 
->   > GET /user/me HTTP/2
->   > Host: api.checklistbank.org
->   > authorization: Basic ai5zbWl0aDpwYXNzd2QxMjM0eHl6
->   > user-agent: curl/7.85.0
->   > accept: */*
->   > 
->   < HTTP/2 401 
->   < date: Fri, 30 Jun 2023 07:48:10 GMT
->   < content-type: application/json
->   - Authentication problem. Ignoring this.
->   < www-authenticate: Basic realm="COL"
->   < www-authenticate: Bearer token_type="JWT" realm="COL"
->   < cache-control: must-revalidate,no-cache,no-store
->   < content-length: 52
->   < x-varnish: 296268277
->   < age: 0
->   < via: 1.1 varnish (Varnish/6.0)
->   < x-cache: pass uncacheable
->   < vary: Origin
+```
+ > GET /user/me HTTP/2
+ > Host: api.checklistbank.org
+ > authorization: Basic ai5zbWl0aDpwYXNzd2QxMjM0eHl6
+ > user-agent: curl/7.85.0
+ > accept: */*
+ > 
+ < HTTP/2 401 
+ < date: Fri, 30 Jun 2023 07:48:10 GMT
+ < content-type: application/json
+ - Authentication problem. Ignoring this.
+ < www-authenticate: Basic realm="COL"
+ < www-authenticate: Bearer token_type="JWT" realm="COL"
+ < cache-control: must-revalidate,no-cache,no-store
+ < content-length: 52
+ < x-varnish: 296268277
+ < age: 0
+ < via: 1.1 varnish (Varnish/6.0)
+ < x-cache: pass uncacheable
+ < vary: Origin
+```
 
-Not that this user does not exist and a 401 is therefore returned.
+Note that this user does not exist and a 401 is therefore returned.
+
 
 ## General API features
 The API primarily provides RESTful JSON services documented with OpenAPI: http://api.checklistbank.org/openapi. 
