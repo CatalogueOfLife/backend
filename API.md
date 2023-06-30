@@ -153,6 +153,18 @@ You can filter the search by various options:
  - fuzzy: allow for slightly fuzzy matching 
 
 
+## Taxon info and vernacular names
+You can get the vernacular names for a species, e.g. 4QHKG, through either the full taxon info:
+http://api.checklistbank.org/dataset/COL2023/taxon/4QHKG/info
+
+or individually through the vernacular name resource:
+http://api.checklistbank.org/dataset/COL2023/taxon/4QHKG/vernacular
+
+ChecklistBank also provides a basic vernacular search that finds vernacular names in an entire dataset:
+http://api.checklistbank.org/dataset/COL2023/vernacular?q=Puma
+http://api.checklistbank.org/dataset/COL2023/vernacular?q=Puma&language=spa
+
+
 ## Name matching
 The name matching API in ChecklistBank allows to match against any dataset in CLB which is identified by an integer dataset key. 
 There are different resources for simple & batch matching.
