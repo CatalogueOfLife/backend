@@ -62,7 +62,7 @@
     <elasticsearch.version>8.1.1</elasticsearch.version>
     <fastutil.version>8.5.12</fastutil.version>
     <ganglia.version>1.0.7</ganglia.version>
-    <gbif-api.version>0.174</gbif-api.version>
+    <gbif-api.version>1.4.0</gbif-api.version>
     <hikaricp.version>5.0.1</hikaricp.version>
     <hk2.version>2.5.0-b32</hk2.version>
     <!-- even though managed in DW BOM, it conflicts with ES BOM and we gotta manage this manually -->
