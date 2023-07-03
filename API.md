@@ -264,6 +264,6 @@ A new dataset can be configure with these steps:
    - register the dataset in ChecklistBank and remember its DATASET_KEY for later
    - configure it's access URL to point to the github repo zip archive, e.g. https://github.com/CatalogueOfLife/data-vespoidea/archive/refs/heads/master.zip
  - in Github:
-   - go to the repository settings and add a new webhook that points to http://api.checklistbank.org/importer/{DATASET_KEY}/github
+   - go to the repository settings and add a new webhook that points the payload URL to http://api.checklistbank.org/importer/{DATASET_KEY}/github and uses the `application/json` Content-Type.
    - configure github to use a secret that the CLB admin hands over to you confidently. Please request your secret with mdoering {at} gbif.org
 
