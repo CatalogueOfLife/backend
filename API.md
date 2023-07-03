@@ -249,3 +249,21 @@ Query params for individual matches and column names in bulk input are called th
 
 Authentification in the CLB API works either as plain `BasicAuth` for every request or you can request a `JWToken` which the UI for example does.
 Basic API Docs https://api.checklistbank.org/#/default/match_1  
+
+
+## Github import hooks
+Github repositories are very well suited to to host source data in ColDP or DwC archives if individual files do not exceed the 100MB limit.
+Any changes to the data will be versioned and github automatically provides the archive as a zip package for all files.
+
+For datasets managed in github ChecklistBank also offers a webhook that these github repositories can be configured for.
+If setup correctly and change commit will trigger an import into ChecklistBank so that the data is kept up to date near realtime!
+
+A new dataset can be configure with these steps:
+
+ - in ChecklistBank: 
+   - register the dataset in ChecklistBank and remember its DATASET_KEY for later
+   - configure it's access URL to point to the github repo zip archive, e.g. https://github.com/CatalogueOfLife/data-vespoidea/archive/refs/heads/master.zip
+ - in Github:
+   - go to the repository settings and add a new webhook that points to http://api.checklistbank.org/importer/{DATASET_KEY}/github
+   - configure github to use a secret that the CLB admin hands over to you confidently. Please request your secret with mdoering {at} gbif.org
+
