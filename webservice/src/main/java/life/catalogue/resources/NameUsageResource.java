@@ -113,7 +113,7 @@ public class NameUsageResource {
   @GET
   @Path("{id}/source")
   public VerbatimSource source(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(VerbatimSourceMapper.class).get(DSID.of(datasetKey, id));
+    return session.getMapper(VerbatimSourceMapper.class).getWithSources(DSID.of(datasetKey, id));
   }
 
   @GET
