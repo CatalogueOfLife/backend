@@ -23,10 +23,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * It is also code agnostic.
  *
  * An index name is considered a canonical name when it does not have any authorship
- * and has a strongly standardised rank, see {@link IndexName#normCanonicalRank(Rank)}.
- * All parsed names with an authorship point also to their canonical authorless version.
+ * and the UNRANKED rank.
+ * All other, parsed names point also to their canonical authorless version.
  */
 public class IndexName extends DataEntity<Integer> implements FormattableName {
+  public static final Rank CANONICAL_RANK = Rank.UNRANKED;
 
   @JsonProperty("id")
   private Integer key;
@@ -96,7 +97,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
    */
   public static IndexName newCanonical(IndexName n) {
     IndexName cn = new IndexName();
-    cn.setCanonicalRank(n.getRank());
+    cn.setRank(CANONICAL_RANK);
     if (n.getInfragenericEpithet() != null && n.isInfrageneric()) {
       cn.setUninomial(n.getInfragenericEpithet());
     } else {
@@ -123,7 +124,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
    */
   public static Rank normRank(Rank r) {
     if (r == null || r.otherOrUnranked() || r.isUncomparable()) {
-      return Rank.UNRANKED;
+      return CANONICAL_RANK;
     }
     return r;
   }
@@ -138,7 +139,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
    * SUBSPECIES for trinomials INFRASPECIFIC_NAME-STRAIN
    * UNRANKED
    */
-  public static Rank normCanonicalRank(Rank r) {
+  public static Rank normCanonicalRank2(Rank r) {
     if (r == null || r.otherOrUnranked()) {
       return Rank.UNRANKED;
 
@@ -240,14 +241,6 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   @Override
   public void setRank(Rank rank) {
     this.rank = normRank(rank);
-  }
-
-  public Rank getCanonicalRank() {
-    return normCanonicalRank(rank);
-  }
-
-  public void setCanonicalRank(Rank rank) {
-    this.rank = normCanonicalRank(rank);
   }
 
   @Override
@@ -367,7 +360,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
    */
   @JsonIgnore
   public boolean qualifiesAsCanonical() {
-    return rank == normCanonicalRank(rank) && !hasAuthorship();
+    return rank == CANONICAL_RANK && !hasAuthorship();
   }
 
   /**
@@ -448,11 +441,17 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   @Override
   public String toString() {
-    String label = key + " " + getLabelWithRank();
+    StringBuilder sb = new StringBuilder();
+    sb.append(key);
+    sb.append(" ");
+
     if (isCanonical()) {
-      return label.replaceFirst(" \\[", " [CANON ");
+      sb.append(getLabel());
+      sb.append(" [CANONICAL]");
+    } else {
+      sb.append(getLabelWithRank());
     }
-    return  label;
+    return sb.toString();
   }
   
 }

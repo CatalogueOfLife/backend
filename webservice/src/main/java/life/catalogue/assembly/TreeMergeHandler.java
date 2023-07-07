@@ -16,6 +16,7 @@ import java.util.*;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -177,6 +178,16 @@ public class TreeMergeHandler extends TreeBaseHandler {
       session.commit();
       batchSession.commit();
     }
+  }
+
+  @Override
+  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision) {
+    var ignore =  super.ignoreUsage(u, decision);
+    if (!ignore) {
+      // additional checks - we dont want any unranked
+      ignore = u.getRank() == Rank.UNRANKED;
+    }
+    return ignore;
   }
 
   /**

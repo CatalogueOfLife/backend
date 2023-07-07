@@ -39,7 +39,7 @@ public interface ScientificName {
 
   @JsonIgnore
   default boolean isCanonical() {
-    return getRank() == IndexName.normCanonicalRank(getRank()) && !hasAuthorship();
+    return getRank() == IndexName.CANONICAL_RANK && !hasAuthorship();
   }
 
   @JsonIgnore

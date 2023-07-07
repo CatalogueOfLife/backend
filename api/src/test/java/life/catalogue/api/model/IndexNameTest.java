@@ -23,51 +23,10 @@ public class IndexNameTest {
     assertFalse(cn.hasAuthorship());
     assertTrue(cn.qualifiesAsCanonical());
 
-    n.setAuthorship(null); // now its an unparsable, therefore canonical name
+    n.setAuthorship(null); // canonicals have no authorship and no rank
+    n.setRank(Rank.UNRANKED);
     assertEquals(n, new IndexName(n));
     assertEquals(n, IndexName.newCanonical(n));
-  }
-
-  @Test
-  public void normalizeCanonicalRank() {
-    assertEquals(Rank.SUPRAGENERIC_NAME, IndexName.normCanonicalRank(Rank.DOMAIN));
-    assertEquals(Rank.SUPRAGENERIC_NAME, IndexName.normCanonicalRank(Rank.KINGDOM));
-    assertEquals(Rank.SUPRAGENERIC_NAME, IndexName.normCanonicalRank(Rank.ORDER));
-    assertEquals(Rank.SUPRAGENERIC_NAME, IndexName.normCanonicalRank(Rank.PARVCLASS));
-    assertEquals(Rank.SUPRAGENERIC_NAME, IndexName.normCanonicalRank(Rank.SUBCLASS));
-    assertEquals(Rank.SUPRAGENERIC_NAME, IndexName.normCanonicalRank(Rank.SUPRAGENERIC_NAME));
-
-    assertEquals(Rank.FAMILY, IndexName.normCanonicalRank(Rank.FAMILY));
-    assertEquals(Rank.FAMILY, IndexName.normCanonicalRank(Rank.SUPERFAMILY));
-    assertEquals(Rank.FAMILY, IndexName.normCanonicalRank(Rank.INFRAFAMILY));
-    assertEquals(Rank.FAMILY, IndexName.normCanonicalRank(Rank.TRIBE));
-
-    assertEquals(Rank.GENUS, IndexName.normCanonicalRank(Rank.GENUS));
-    assertEquals(Rank.GENUS, IndexName.normCanonicalRank(Rank.SUBGENUS));
-    assertEquals(Rank.GENUS, IndexName.normCanonicalRank(Rank.SECTION));
-    assertEquals(Rank.GENUS, IndexName.normCanonicalRank(Rank.SERIES));
-
-    assertEquals(Rank.SPECIES, IndexName.normCanonicalRank(Rank.SPECIES));
-    assertEquals(Rank.SPECIES, IndexName.normCanonicalRank(Rank.SPECIES_AGGREGATE));
-
-    assertEquals(Rank.INFRASPECIFIC_NAME, IndexName.normCanonicalRank(Rank.SUBSPECIES));
-    assertEquals(Rank.INFRASPECIFIC_NAME, IndexName.normCanonicalRank(Rank.INFRASPECIFIC_NAME));
-    assertEquals(Rank.INFRASPECIFIC_NAME, IndexName.normCanonicalRank(Rank.CULTIVAR_GROUP));
-    assertEquals(Rank.INFRASPECIFIC_NAME, IndexName.normCanonicalRank(Rank.VARIETY));
-    assertEquals(Rank.INFRASPECIFIC_NAME, IndexName.normCanonicalRank(Rank.FORM));
-    assertEquals(Rank.INFRASPECIFIC_NAME, IndexName.normCanonicalRank(Rank.SUBFORM));
-    assertEquals(Rank.INFRASPECIFIC_NAME, IndexName.normCanonicalRank(Rank.SUBVARIETY));
-    assertEquals(Rank.INFRASPECIFIC_NAME, IndexName.normCanonicalRank(Rank.CULTIVAR));
-    assertEquals(Rank.INFRASPECIFIC_NAME, IndexName.normCanonicalRank(Rank.FORMA_SPECIALIS));
-
-    assertEquals(Rank.UNRANKED, IndexName.normCanonicalRank(Rank.UNRANKED));
-    assertEquals(Rank.UNRANKED, IndexName.normCanonicalRank(Rank.OTHER));
-    assertEquals(Rank.UNRANKED, IndexName.normCanonicalRank(null));
-
-    // make sure we never get an IAE
-    for (Rank r : Rank.values()) {
-      assertNotNull(IndexName.normCanonicalRank(r));
-    }
   }
 
   @Test

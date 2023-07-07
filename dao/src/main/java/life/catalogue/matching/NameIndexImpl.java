@@ -33,6 +33,8 @@ import com.google.common.collect.ImmutableSet;
 /**
  * NameMatching implementation that is backed by a generic store with a list of names keyed to their normalised
  * canonical name using the SciNameNormalizer.normalize() method.
+ *
+ * Ranks are important and kept, apart from uncomparable ranks which are converted to UNRANKED.
  */
 public class NameIndexImpl implements NameIndex {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexImpl.class);
@@ -90,7 +92,7 @@ public class NameIndexImpl implements NameIndex {
     NameMatch m;
 
     List<IndexName> candidates = store.get(key(name));
-    if (candidates != null) {
+    if (candidates != null && !candidates.isEmpty()) {
       m = matchCandidates(name, candidates);
       if (verbose) {
         if (m.hasMatch()) {
@@ -113,13 +115,14 @@ public class NameIndexImpl implements NameIndex {
   }
 
   /**
-   * Checkd
-   * @param m
-   * @param name
-   * @return
+   * Check if a new names index entry is needed which is true when
+   *  a) there was no match
+   *  b) it was a canonical match
    */
   private static boolean needsInsert(NameMatch m, Name name){
-    return (!m.hasMatch() || (name.hasAuthorship() && m.getType() == MatchType.CANONICAL));
+    return (!m.hasMatch()
+            || (m.getType() == MatchType.CANONICAL && (!name.isCanonical()))
+    );
   }
 
   /**
@@ -152,8 +155,7 @@ public class NameIndexImpl implements NameIndex {
    */
   private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
     final Rank rank = IndexName.normRank(query.getRank());
-    final Rank canonRank = IndexName.normCanonicalRank(query.getRank());
-    final boolean compareRank = rank != Rank.UNRANKED;
+    final boolean hasRank = rank != IndexName.CANONICAL_RANK;
     final boolean hasAuthorship = query.hasAuthorship();
     final String canonicalname = NameFormatter.canonicalName(query);
     final String querycanonical = SciNameNormalizer.normalizedAscii(canonicalname);
@@ -164,19 +166,16 @@ public class NameIndexImpl implements NameIndex {
     int bestScore = 0;
     final List<IndexName> matches = new ArrayList<>();
     for (IndexName n : candidates) {
-      boolean isCanon = n.isCanonical();
       // 0 to 6
       int score = 0;
-      
+
       // for non canonical matches ranks need to match up exactly
-      // for canonical matches we only compare the strongly normalised ranks
-      if (compareRank && rank != n.getRank()
-          && n.getRank() != Rank.UNRANKED
-          && (!isCanon || canonRank != n.getRank())) {
+      boolean isCanon = n.isCanonical();
+      if (!isCanon && hasRank && rank != n.getRank()) {
         continue;
       }
       if (rank == n.getRank()) {
-        score += 1;
+        score += 2;
       }
 
       // we only want matches without an authorship if none was given
@@ -185,14 +184,13 @@ public class NameIndexImpl implements NameIndex {
       }
 
       // we only want matches with an authorship if it was given - or a canonical result
-      // a non canonical name can have no authorship if its rank is not a standard one!
       if (hasAuthorship && !n.isCanonical() && !n.hasAuthorship()) {
         continue;
       }
 
-      // exact full name match: =5
-      if (queryfullname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.getLabel()))) {
-        score += 5;
+      // exact full name match incl author = 4
+      if (n.hasAuthorship() && queryfullname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.getLabel()))) {
+        score += 4;
         
       } else {
 
@@ -210,6 +208,9 @@ public class NameIndexImpl implements NameIndex {
             score += 3;
           } else if (aeq == Equality.EQUAL) {
             score += 2;
+          } else if (aeq == Equality.UNKNOWN && n.hasAuthorship()) {
+            // both have authorships, but its unclear if they match - better snap to the canonical in this case
+            score -= 2;
           }
         }
 
@@ -257,8 +258,8 @@ public class NameIndexImpl implements NameIndex {
       }
 
       // log a warning if we still have more than one match so we can maybe refine the algorithm in the future
-      if (compareRank && matches.size() > 1) {
-        LOG.info("Ambiguous match ({} hits) for {} {}", matches.size(), query.getRank(), query.getLabel());
+      if (matches.size() > 1) {
+        LOG.debug("Ambiguous match ({} hits) for {} {}", matches.size(), query.getRank(), query.getLabel());
       }
       // we pick the lowest key to guarantee a stable outcome in all cases - even if we dont have a canonical (should not really happen)
       IndexName earliest = matches.get(0);
@@ -298,10 +299,10 @@ public class NameIndexImpl implements NameIndex {
     return score;
   }
 
-  private IndexName getCanonical(String key, Rank canonicalRank) {
+  private IndexName getCanonical(String key) {
     List<IndexName> matches = store.get(key);
     // make sure the name is a canonical one
-    matches.removeIf(n -> !n.isCanonical() || canonicalRank != n.getRank());
+    matches.removeIf(n -> !n.isCanonical() || !n.qualifiesAsCanonical());
     // just in case we have multiple results make sure to have a stable return by selecting the lowest, i.e. oldest key
     IndexName lowest = null;
     for (IndexName n : matches) {
@@ -370,7 +371,7 @@ public class NameIndexImpl implements NameIndex {
   public void add(IndexName n) {
     final String key = key(n);
 
-    try (SqlSession s = sqlFactory.openSession(true)) {
+    try (SqlSession s = sqlFactory.openSession()) {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
 
       n.setCreatedBy(Users.MATCHER);
@@ -389,7 +390,7 @@ public class NameIndexImpl implements NameIndex {
 
       } else {
         // make sure there exists a canonical name without authorship and strongly normalised rank already
-        IndexName cn = getCanonical(key, n.getCanonicalRank());
+        IndexName cn = getCanonical(key);
         if (cn == null) {
           // insert new canonical
           cn = IndexName.newCanonical(n);
@@ -399,6 +400,7 @@ public class NameIndexImpl implements NameIndex {
         nim.create(n);
         store.add(key, n);
       }
+      s.commit();
     }
   }
 

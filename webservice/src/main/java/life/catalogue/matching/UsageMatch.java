@@ -30,6 +30,10 @@ public class UsageMatch implements DSID<String> {
     this.alternatives = alternatives;
   }
 
+  public static UsageMatch ignore(UsageMatch original) {
+    return new UsageMatch(original.datasetKey, original.usage, original.sourceDatasetKey, original.type, true, original.doubtfulUsage, original.alternatives);
+  }
+
   public static UsageMatch match(SimpleNameClassified<SimpleNameWithPub> usage, int datasetKey) {
     return UsageMatch.match(usage.getNamesIndexMatchType(), usage, datasetKey);
   }

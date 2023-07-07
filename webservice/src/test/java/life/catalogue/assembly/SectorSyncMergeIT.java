@@ -56,13 +56,9 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
-      /**
-       * TODO: should be merged
-       * Biota macrocarpa hort. ex Gordon
-       * Biota macrocarpa Godr.
-      */
+      {"unranked", List.of("palaeo")},
       {"circular", List.of("src1", "src2", "src3")},
-      {"biota", List.of("wcvp", "lcvp", "ipni")},
+      {"biota", List.of("wcvp", "lcvp", "ipni")}, // TODO: should be merged: Biota macrocarpa hort. ex Gordon AND Biota macrocarpa Godr.
       {"saccolomataceae", List.of("orthiopteris")}
     });
   }

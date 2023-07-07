@@ -3,12 +3,12 @@ package life.catalogue.api.vocab;
 public enum MatchType {
 
   /**
-   * The canonical name and authorship (if given) matches exactly
+   * The canonical name, rank and authorship (if given) matches exactly
    */
   EXACT,
   
   /**
-   * The name matches an orthographic variant of the name, authorship and/or rank (for family and above)
+   * The name matches an orthographic variant of the name, authorship and/or rank
    * which is considered to be the same name still.
    */
   VARIANT,

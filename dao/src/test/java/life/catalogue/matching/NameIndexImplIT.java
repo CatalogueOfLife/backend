@@ -7,7 +7,6 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -18,7 +17,9 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.parser.NameParser;
 
-import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,9 +29,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
@@ -140,309 +138,7 @@ public class NameIndexImplIT {
     assertMatch(3, "Larus fuscus", Rank.SPECIES);
   }
 
-  /**
-   * Try to add the same name again and multiple names with the same key
-   */
-  @Test
-  public void add() throws Exception {
-    setupMemory(true);
-    ni.add(create("Abies", "krösus-4-par∂atœs"));
-    ni.add(create("Abies", "alba"));
-    ni.add(create("Abies", "alba", "1873"));
-    // 2 canonical, 1 with author
-    assertEquals(3, ni.size());
-
-    // one more with author, no new canonical
-    ni.add(create("Abies", "alba", "1873", "Miller"));
-    assertEquals(4, ni.size());
-
-    // 2 new records
-    ni.add(create("Abies", "perma", "1901", "Jones"));
-    assertEquals(6, ni.size());
-  }
-
-  @Test
-  public void basionymPlaceholders() throws Exception {
-    setupMemory(true);
-
-    Name n = new Name();
-    n.setRank(Rank.GENUS);
-    n.setUninomial("?");
-    n.setAuthorship("Nardo");
-    n.setCombinationAuthorship(Authorship.authors("Nardo"));
-    n.setCode(NomCode.ZOOLOGICAL);
-    n.setType(NameType.PLACEHOLDER);
-    assertNoInsert(n);
-
-    n = new Name();
-    n.setUninomial("'");
-    n.setCode(NomCode.ZOOLOGICAL);
-    n.setOrigin(Origin.IMPLICIT_NAME);
-    n.setType(NameType.SCIENTIFIC);
-    assertNoInsert(n);
-
-    n = new Name();
-    n.setRank(Rank.UNRANKED);
-    n.setUninomial("..");
-    n.setOrigin(Origin.VERBATIM_ACCEPTED);
-    n.setType(NameType.NO_NAME);
-    assertNoInsert(n);
-
-    n = new Name();
-    n.setRank(Rank.SUBGENUS);
-    n.setInfragenericEpithet("?");
-    n.setAuthorship("Nardo");
-    n.setCombinationAuthorship(Authorship.authors("Nardo"));
-    n.setType(NameType.SCIENTIFIC);
-    assertNoInsert(n);
-
-    n = new Name();
-    n.setUninomial("'");
-    n.setRank(Rank.FAMILY);
-    n.setCode(NomCode.ZOOLOGICAL);
-    n.setType(NameType.SCIENTIFIC);
-    assertNoInsert(n);
-
-    // good infragenerics
-    n = new Name();
-    n.setInfragenericEpithet("Tragulla");
-    n.setRank(Rank.SUBGENUS);
-    n.setType(NameType.SCIENTIFIC);
-    assertInsert(n);
-
-    n = new Name();
-    n.setInfragenericEpithet("Tragulla");
-    n.setAuthorship("Nardo");
-    n.setCombinationAuthorship(Authorship.authors("Nardo"));
-    n.setRank(Rank.SUBGENUS);
-    n.setType(NameType.SCIENTIFIC);
-    assertInsert(n);
-
-    n = new Name();
-    n.setGenus("Triceps");
-    n.setInfragenericEpithet("Tragulla");
-    n.setAuthorship("Nardo");
-    n.setCombinationAuthorship(Authorship.authors("Nardo"));
-    n.setRank(Rank.SECTION);
-    n.setType(NameType.SCIENTIFIC);
-    assertInsert(n);
-  }
-
-  private void assertNoInsert(Name n) {
-    final int origSize = ni.size();
-    n.rebuildScientificName();
-    var idx = ni.match(n, true, true);
-
-    assertEquals(MatchType.NONE, idx.getType());
-    assertEquals(origSize, ni.size());
-  }
-
-  private NameMatch assertInsert(Name n) {
-    final int origSize = ni.size();
-    n.rebuildScientificName();
-    var idx = ni.match(n, true, true);
-
-    assertEquals(MatchType.EXACT, idx.getType());
-    // new index can have 1 or 2 (canonical) records inserted
-    assertTrue(ni.size() > origSize && ni.size() <= origSize+2);
-    return idx;
-  }
-
-  /**
-   * match the same name over and over again to make sure we never insert duplicates
-   */
-  @Test
-  public void avoidDuplicates() throws Exception {
-    setupMemory(true);
-    assertEquals(0, ni.size());
-
-    Name n = new Name();
-    n.setScientificName("Abies alba");
-    n.setGenus("Abies");
-    n.setSpecificEpithet("alba");
-    n.setAuthorship("Mill.");
-    n.setCombinationAuthorship(Authorship.authors("Mill."));
-    n.setRank(Rank.SPECIES);
-    n.setType(NameType.SCIENTIFIC);
-
-    NameMatch m = ni.match(n, true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    final Integer idx = m.getName().getKey();
-    final Integer cidx = m.getName().getCanonicalId();
-    assertNotEquals(idx, cidx);
-    assertEquals(2, ni.size());
-
-    m = ni.match(n, true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(idx, m.getName().getKey());
-    assertEquals(2, ni.size());
-
-    m = ni.match(n, true, false);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(idx, m.getName().getKey());
-    assertEquals(2, ni.size());
-
-    n.setAuthorship("Miller");
-    n.setCombinationAuthorship(Authorship.authors("Miller"));
-    m = ni.match(n, true, true);
-    assertEquals(MatchType.VARIANT, m.getType());
-    assertEquals(idx, m.getName().getKey());
-    assertEquals(2, ni.size());
-
-    n.setAuthorship("Tesla");
-    n.setCombinationAuthorship(Authorship.authors("Tesla"));
-    m = ni.match(n, true, true);
-    final Integer idxTesla = m.getName().getKey();
-    assertNotEquals(idx, cidx);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertNotEquals(idx, idxTesla);
-    assertEquals(cidx, m.getName().getCanonicalId());
-    assertEquals(3, ni.size());
-  }
-
-  @Test
-  public void infraspecifics() throws Exception {
-    setupMemory(true);
-
-    Name n1 = new Name();
-    n1.setScientificName("Abies alba alba");
-    n1.setGenus("Abies");
-    n1.setSpecificEpithet("alba");
-    n1.setInfraspecificEpithet("alba");
-    n1.setAuthorship("Mill.");
-    n1.setCombinationAuthorship(Authorship.authors("Mill."));
-    n1.setRank(Rank.SUBSPECIES);
-    n1.setType(NameType.SCIENTIFIC);
-
-    NameMatch m = ni.match(n1, true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(n1.getScientificName(), m.getName().getScientificName());
-    final int canonID = m.getName().getCanonicalId();
-    final int m1Key = m.getNameKey();
-
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
-      n.setRank(Rank.VARIETY);
-    });
-    assertNotEquals(m1Key, (int) m.getNameKey());
-    assertCanonicalNidx(m, canonID);
-    final int m2Key = m.getNameKey();
-
-    // the scientificName is rebuilt if parsed, so this one is the exact same as above
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
-      n.setRank(Rank.VARIETY);
-      n.setScientificName("Abies alba var. alba");
-    });
-    assertNidx(m, m2Key, canonID);
-
-    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
-      n.setRank(Rank.VARIETY);
-      n.setScientificName("Abies alba × alba");
-      n.setNotho(NamePart.INFRASPECIFIC);
-    });
-    assertNidx(m, m2Key, canonID);
-    final int m4Key = m.getNameKey();
-
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
-      n.setRank(Rank.FORM);
-    });
-    assertNotEquals(m1Key, (int) m.getNameKey());
-    assertNotEquals(m2Key, (int) m.getNameKey());
-    assertCanonicalNidx(m, canonID);
-    final int m5Key = m.getNameKey();
-
-    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
-      n.setRank(Rank.FORM);
-      n.setCombinationAuthorship(Authorship.authors("Miller"));
-      n.setScientificName("Abies alba f. alba");
-      n.setAuthorship("Miller");
-    });
-
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
-      n.setRank(Rank.FORM);
-      n.setCombinationAuthorship(Authorship.authors("Mill"));
-      n.setScientificName("Abies alba f. alba");
-      n.setAuthorship("Mill");
-    });
-
-    m = matchNameCopy(n1, MatchType.CANONICAL, n -> {
-      n.setRank(Rank.FORM);
-      n.setAuthorship(null);
-      n.setCombinationAuthorship(null);
-      n.setScientificName("Abies alba f. alba");
-    });
-    assertNotEquals(m5Key, (int) m.getNameKey());
-    assertCanonicalNidx(m, canonID);
-    final int m6Key = m.getNameKey();
-  }
-
-  @Test
-  public void higher() throws Exception {
-    setupMemory(true);
-
-    Name n1 = new Name();
-    n1.setScientificName("Puma");
-    n1.setUninomial("Puma");
-    n1.setAuthorship("L.");
-    n1.setCombinationAuthorship(Authorship.authors("L."));
-    n1.setRank(Rank.GENUS);
-    n1.setType(NameType.SCIENTIFIC);
-
-    NameMatch m = ni.match(n1, true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(n1.getScientificName(), m.getName().getScientificName());
-    final int canonID = m.getName().getCanonicalId();
-    final int m1Key = m.getNameKey();
-
-    // new insert when the name is given as a subgenus!
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
-      n.setInfragenericEpithet(n.getUninomial());
-      n.setUninomial(null);
-      n.setRank(Rank.SUBGENUS);
-    });
-    assertNotEquals(m1Key, (int) m.getNameKey());
-    assertCanonicalNidx(m, canonID);
-    final int m2Key = m.getNameKey();
-
-    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
-      n.setAuthorship("Linné");
-      n.setCombinationAuthorship(Authorship.authors("Linné"));
-    });
-    assertNidx(m, m1Key, canonID);
-
-    // we query with a canonical, hence exact
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
-      n.setRank(Rank.GENUS);
-      n.setAuthorship(null);
-      n.setCombinationAuthorship(null);
-    });
-    assertCanonicalNidx(m, canonID);
-
-    // we query with a canonical, but rank differ. Not exact
-    m = matchNameCopy(n1, MatchType.CANONICAL, n -> {
-      n.setRank(Rank.SUBGENUS);
-      n.setAuthorship(null);
-      n.setCombinationAuthorship(null);
-    });
-  }
-
-  private NameMatch matchNameCopy(Name original, MatchType matchTypeAssertion, Consumer<Name> modifier) {
-    Name n = new Name(original);
-    modifier.accept(n);
-    NameMatch nm = ni.match(n, true, true);
-    assertEquals("", matchTypeAssertion, nm.getType());
-    return nm;
-  }
-
-  void assertNidx(NameMatch m, int nidx, int canonicalID){
-    assertEquals(nidx, (int)m.getNameKey());
-    assertEquals(canonicalID, (int)m.getName().getCanonicalId());
-  }
-
-  void assertCanonicalNidx(NameMatch m, int canonicalID){
-    assertEquals((int)m.getName().getCanonicalId(), canonicalID);
-  }
-
-  List<Name> prepareTestNames() {
+  public static List<Name> prepareTestNames() {
     Name n1 = new Name();
     n1.setScientificName("Abies alba");
     n1.setGenus("Abies");
@@ -501,7 +197,7 @@ public class NameIndexImplIT {
       assertTrue(m.hasMatch());
       final Integer idx = m.getName().getKey();
       final Integer cidx = m.getName().getCanonicalId();
-      if (n.hasAuthorship()) {
+      if (n.hasAuthorship() || n.getRank() != Rank.UNRANKED) {
         assertNotEquals(idx, cidx);
       } else {
         assertEquals(idx, cidx);
@@ -510,7 +206,7 @@ public class NameIndexImplIT {
 
     dumpIndex();
     assertEquals(repeat, counter.get());
-    assertEquals(2, ni.size());
+    assertEquals(3, ni.size());
     assertCanonicalAbiesAlba();
     ni.close();
   }
@@ -557,37 +253,32 @@ public class NameIndexImplIT {
 
     dumpIndex();
     assertEquals(repeat, counter.get());
-    assertEquals(2, ni.size());
+    assertEquals(3, ni.size());
     assertCanonicalAbiesAlba();
   }
 
   void dumpIndex() {
-    //System.out.println("Names Index from memory:");
-    //ni.all().forEach(System.out::println);
     System.out.println("\nNames Index from postgres:");
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(NamesIndexMapper.class).processAll().forEach(System.out::println);
     }
   }
 
-  @Test
-  public void getCanonical() throws Exception {
-    setupMemory(true);
-    ni.add(create("Abies", "alba", null, "Miller"));
-    assertEquals(2, ni.size());
-    assertCanonicalAbiesAlba();
-  }
-
   public void assertCanonicalAbiesAlba() throws Exception {
     IndexName n1 = ni.get(1);
     assertTrue(n1.isCanonical());
+
     IndexName n2 = ni.get(2);
     assertNotEquals(n1, n2);
+
     assertEquals(n1.getCanonicalId(), n2.getCanonicalId());
     assertEquals(n1.getKey(), n2.getCanonicalId());
     var group = ni.byCanonical(n1.getCanonicalId());
-    assertEquals(1, group.size());
-    assertEquals(n2, group.iterator().next());
+    assertEquals(2, group.size());
+    for (var n : group) {
+      assertFalse(n.isCanonical());
+      assertEquals(n1.getKey(), n.getCanonicalId());
+    }
   }
 
   @Test
@@ -619,98 +310,6 @@ public class NameIndexImplIT {
     assertEquals(3, ni.size());
   }
 
-  @Test
-  public void unparsed() throws Exception {
-    setupMemory(true);
-    assertEquals(0, ni.size());
-
-    var names = Stream.of(
-      // FLOW placeholder
-      Name.newBuilder()
-          .scientificName("Aphaena dives var. [unnamed]")
-          .authorship("Walker, 1851")
-          .rank(Rank.SUBSPECIES)
-          .type(NameType.PLACEHOLDER)
-          .code(NomCode.ZOOLOGICAL),
-      // ICTV virus
-      Name.newBuilder()
-          .scientificName("Abutilon mosaic Bolivia virus")
-          .rank(Rank.SPECIES)
-          .type(NameType.VIRUS)
-          .code(NomCode.VIRUS),
-      Name.newBuilder()
-          .scientificName("Abutilon mosaic Brazil virus")
-          .rank(Rank.SPECIES)
-          .type(NameType.VIRUS)
-          .code(NomCode.VIRUS),
-      // GTDB OTU
-      Name.newBuilder()
-          .scientificName("AABM5-125-24")
-          .rank(Rank.PHYLUM)
-          .type(NameType.OTU),
-      Name.newBuilder()
-          .scientificName("Aureabacteria_A")
-          .rank(Rank.PHYLUM)
-          .type(NameType.OTU)
-          .code(NomCode.BACTERIAL),
-      // GTDB informal
-      Name.newBuilder()
-          .scientificName("Aalborg-Aaw sp.")
-          .genus("Aalborg-Aaw")
-          .rank(Rank.SPECIES)
-          .type(NameType.INFORMAL)
-          .code(NomCode.BACTERIAL),
-      Name.newBuilder()
-          .scientificName("Actinomarina sp.")
-          .genus("Actinomarina")
-          .rank(Rank.SPECIES)
-          .type(NameType.INFORMAL)
-          .code(NomCode.BACTERIAL),
-      // GTDB no name
-      Name.newBuilder()
-          .scientificName("B3-LCP")
-          .rank(Rank.CLASS)
-          .type(NameType.NO_NAME),
-      // VASCAN hybrid
-      Name.newBuilder()
-          .scientificName("Agropyron cristatum × Agropyron fragile")
-          .rank(Rank.SPECIES)
-          .type(NameType.HYBRID_FORMULA)
-          .code(NomCode.BOTANICAL)
-    ).map(Name.Builder::build).collect(Collectors.toList());
-
-    for (int repeat=1; repeat<3; repeat++) {
-      for (Name n : names) {
-        var m = ni.match(n, true, true);
-        if (NameIndexImpl.INDEX_NAME_TYPES.contains(n.getType())) {
-          assertTrue(m.hasMatch());
-          assertNotNull(m.getName().getScientificName());
-          assertFalse(m.getName().isParsed());
-          final Integer idx = m.getName().getKey();
-          final Integer cidx = m.getName().getCanonicalId();
-          if (n.isCanonical()) {
-            assertEquals(idx, cidx);
-          } else {
-            assertNotEquals(idx, cidx);
-            var canon = ni.get(cidx);
-            assertEquals(m.getName().getScientificName(), canon.getScientificName());
-            assertNotEquals(m.getName().getRank(), canon.getRank()); // canonicals with OTU can only appear via rank normalisations
-          }
-        } else {
-          assertFalse(m.hasMatch());
-        }
-      }
-    }
-
-    dumpIndex();
-    // 5 names inserted +2 canonicals because of phylum rank
-    assertEquals(7, ni.size());
-    ni.close();
-  }
-
-  private static IndexName create(String genus, String species){
-    return create(genus, species, null);
-  }
   private static IndexName create(String genus, String species, String year, String... authors){
     Name n = new Name();
     if (authors != null || year != null) {
@@ -756,147 +355,7 @@ public class NameIndexImplIT {
       fIdx.delete();
     }
   }
-  
-  @Test
-  public void insertNewNames() throws Exception {
-    setupMemory(false);
-    assertInsert("Larus fundatus", Rank.SPECIES);
-    assertInsert("Puma concolor", Rank.SPECIES);
-  }
-  
-  @Test
-  public void testLookup() throws Exception {
-    setupMemory(true);
-    addTestNames();
 
-    assertMatch(2, "Animalia", Rank.KINGDOM);
-
-    assertMatch(23, "Rodentia", Rank.GENUS);
-    assertMatch(24, "Rodentia", Rank.ORDER); // canonical match
-    assertNoMatch("Rodenti", Rank.ORDER);
-    
-    assertMatch(25, "Rodentia Bowdich, 1821", Rank.ORDER);
-    assertMatch(25, "Rodentia Bowdich, 1?21", Rank.ORDER);
-    assertMatch(25, "Rodentia Bowdich", Rank.ORDER);
-    assertMatch(25, "Rodentia 1821", Rank.ORDER);
-    assertMatch(25, "Rodentia Bow.", Rank.ORDER);
-    assertMatch(25, "Rodentia Bow, 1821", Rank.ORDER);
-    assertMatch(25, "Rodentia B 1821", Rank.ORDER);
-    assertNoMatch("Rodentia", Rank.FAMILY);
-    assertMatch(24, "Rodentia Mill., 1823", Rank.SUBORDER); // canonical match
-    
-    assertMatch(3, "Oenanthe", Rank.GENUS);
-    assertMatch(4, "Oenanthe Vieillot", Rank.GENUS);
-    assertMatch(4, "Oenanthe V", Rank.GENUS);
-    assertMatch(4, "Oenanthe Vieillot", Rank.GENUS);
-    assertMatch(5, "Oenanthe P", Rank.GENUS);
-    assertMatch(5, "Oenanthe Pal", Rank.GENUS);
-    assertMatch(5, "Œnanthe 1771", Rank.GENUS);
-    assertMatch(3, "Œnanthe", Rank.GENUS);
-    assertCanonMatch(3, "Oenanthe Camelot", Rank.GENUS);
-
-    assertMatch(7, "Oenanthe aquatica", Rank.SPECIES);
-    assertMatch(8, "Oenanthe aquatica Poir", Rank.SPECIES);
-    assertMatch(7, "Œnanthe aquatica", Rank.SPECIES);
-    
-    // it is allowed to add an author to the single current canonical name if it doesnt have an author yet!
-    assertMatch(11, "Abies alba", Rank.SPECIES);
-    assertMatch(13, "Abies alba Döring, 1778", Rank.SPECIES);
-    assertMatch(12, "Abies alba Mumpf.", Rank.SPECIES);
-    assertCanonMatch(11,"Abies alba Mill.", Rank.SPECIES);
-    assertCanonMatch(11,"Abies alba 1789", Rank.SPECIES);
-
-    // try unparsable names
-    assertMatch(17, "Carex cayouettei", Rank.SPECIES);
-    assertMatch(18, "Carex comosa × Carex lupulina", Rank.SPECIES);
-    assertMatch(26, "Aeropyrum coil-shaped virus", Rank.UNRANKED);
-    assertMatch(26, "Aeropyrum coil-shaped virus", Rank.SPECIES); // given in index as UNRANKED
-  }
-  
-  /**
-   * https://github.com/Sp2000/colplus-backend/issues/451
-   */
-  @Test
-  public void testSubgenusLookup() throws Exception {
-    setupMemory(true);
-    List<IndexName> names = List.of(
-      //1+2
-      iname("Animalia", Rank.KINGDOM),
-      //3
-      iname("Zyras", Rank.GENUS),
-      //4
-      iname("Zyras", Rank.SUBGENUS),
-      //5
-      iname("Drusilla", Rank.GENUS),
-      //6+7
-      iname("Drusilla zyrasoides M.Dvořák, 1988", Rank.SPECIES),
-      //8+9
-      iname("Myrmedonia (Zyras) alternans Cameron, 1925", Rank.SPECIES),
-      //10+11
-      iname("Myrmedonia (Zyras) bangae Cameron, 1926", Rank.SPECIES),
-      //12+13
-      iname("Myrmedonia (Zyras) hirsutiventris Champion, 1927", Rank.SPECIES),
-      //14+15
-      iname("Zyras (Zyras) alternans (Cameron, 1925)", Rank.SPECIES),
-      //16+17
-      iname("Zyras bangae (Cameron, 1926)", Rank.SPECIES)
-    );
-    ni.addAll(names);
-
-    assertEquals(17, ni.size());
-    assertEquals(2, (int) names.get(0).getKey());
-    assertEquals("Zyras", names.get(2).getScientificName());
-
-    assertMatch(6, "Drusilla zyrasoides", Rank.SPECIES);
-
-    assertMatch(6, "Drusilla zyrasoides", Rank.SPECIES);
-    assertMatch(8, MatchType.CANONICAL, "Myrmedonia (Zyras) alternans", Rank.SPECIES);
-    assertMatch(8, MatchType.CANONICAL, "Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
-    assertInsert("Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
-    assertInsert("Myrmedonia (Larus) alternans Cameron, 1925", Rank.SPECIES);
-    assertInsert("Myrmedonia alternans Krill, 1925", Rank.SPECIES);
-
-    assertEquals(20, ni.size());
-  }
-
-  @Test
-  public void testMissingAuthorBrackets() throws Exception {
-    setupMemory(true);
-    assertEquals(0, ni.size());
-
-    var m = ni.match(name("Caretta caretta Linnaeus", Rank.SPECIES), true, true);
-    assertEquals("Linnaeus", m.getName().getAuthorship());
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(2, ni.size());
-
-    m = ni.match(name("Caretta caretta (Linnaeus)", Rank.SPECIES), true, true);
-    assertEquals(MatchType.VARIANT, m.getType());
-    assertEquals("Linnaeus", m.getName().getAuthorship());
-    assertEquals(2, ni.size());
-
-    m = ni.match(name("Caretta caretta (Peter)", Rank.SPECIES), true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals("(Peter)", m.getName().getAuthorship());
-    assertEquals(3, ni.size());
-  }
-
-
-  @Test
-  public void testZooAuthors() throws Exception {
-    setupMemory(true);
-    assertEquals(0, ni.size());
-
-    var m = ni.match(name("Chaetocnema belli Jacoby, 1904", Rank.SPECIES), true, true);
-    assertEquals("Jacoby, 1904", m.getName().getAuthorship());
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(2, ni.size());
-
-    var m2 = ni.match(name("Chaetocnema bella (Baly, 1876)", Rank.SPECIES), true, true);
-    assertEquals(MatchType.EXACT, m2.getType());
-    assertNotEquals(m.getNameKey(), m2.getNameKey());
-    assertEquals("(Baly, 1876)", m2.getName().getAuthorship());
-    assertEquals(3, ni.size()); // same stemmed canonical
-  }
 
   static Name name(String name, Rank rank) throws InterruptedException {
     Name n = TestEntityGenerator.setUserDate(NameParser.PARSER.parse(name, rank, null, VerbatimRecord.VOID).get().getName());
@@ -908,19 +367,6 @@ public class NameIndexImplIT {
     return new IndexName(name(name, rank));
   }
 
-  private NameMatch assertCanonMatch(Integer key, String name, Rank rank) throws InterruptedException {
-    NameMatch m = assertMatchType(MatchType.CANONICAL, name, rank);
-    assertTrue(m.hasMatch());
-    assertEquals(key, m.getName().getKey());
-    return m;
-  }
-  
-  private NameMatch assertNoMatch(String name, Rank rank) throws InterruptedException {
-    NameMatch m = assertMatchType(MatchType.NONE, name, rank);
-    assertFalse(m.hasMatch());
-    return m;
-  }
-  
   private NameMatch assertMatchType(MatchType expected, String name, Rank rank) throws InterruptedException {
     NameMatch m = match(name, rank);
     if (expected != m.getType()) {
@@ -948,16 +394,7 @@ public class NameIndexImplIT {
     }
     return m;
   }
-  
-  private NameMatch assertInsert(String name, Rank rank) throws InterruptedException {
-    NameMatch m = ni.match(name(name, rank), false, false);
-    assertNotEquals(MatchType.EXACT, m.getType());
-    assertNotEquals(MatchType.VARIANT, m.getType());
-    m = ni.match(name(name, rank), true, false);
-    assertEquals(MatchType.EXACT, m.getType());
-    return m;
-  }
-  
+
   private NameMatch match(String name, Rank rank) throws InterruptedException {
     NameMatch m = ni.match(name(name, rank), false, true);
     return m;
