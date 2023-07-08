@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.nullness.qual.NonNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,6 +181,11 @@ public class UsageMatcherGlobal {
     return canonNidx(datasetKey, nu.getName().getNamesIndexId());
   }
 
+  private static boolean ranksDiffer(Rank r1, Rank r2) {
+    var eq = RankComparator.compare(r1, r2);
+    return eq == Equality.DIFFERENT;
+  }
+
   /**
    * @param datasetKey the target dataset to match against
    * @param nu usage to be match
@@ -194,12 +200,12 @@ public class UsageMatcherGlobal {
     // make sure we never have bare names - we want usages!
     existing.removeIf(u -> u.getStatus().isBareName());
 
-    // require exact rank match if we have multiple matches and there is an exact rank match
-    if (existing.size() > 1 && nu.getRank() != null && contains(existing, nu.getRank())) {
-      existing.removeIf(u -> u.getRank() != nu.getRank());
-    }
-    if (!existing.isEmpty() && nu.getRank() != null) {
-      existing.removeIf(u -> u.getRank() != nu.getRank());
+    // only allow potentially matching ranks
+    final Rank rank = nu.getRank() == null ? Rank.UNRANKED : nu.getRank();
+    existing.removeIf(u -> ranksDiffer(u.getRank(), rank));
+    // require strict rank match in case it exists at least once
+    if (existing.size() > 1 && contains(existing, rank)) {
+      existing.removeIf(u -> u.getRank() != rank);
     }
 
     // remove canonical matches between 2 qualified, non suprageneric names
