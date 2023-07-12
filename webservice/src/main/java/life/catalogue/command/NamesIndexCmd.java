@@ -128,7 +128,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
     LOG.info("Building postgres indices for new names index");
     try (Connection c = dataSource.getConnection()) {
-      ScriptRunner runner = PgConfig.scriptRunner(c);
+      c.setAutoCommit(true);
+      ScriptRunner runner = PgConfig.scriptRunner(c, false);
       runner.runScript(Resources.getResourceAsReader(SCHEMA_POST));
     }
     LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");

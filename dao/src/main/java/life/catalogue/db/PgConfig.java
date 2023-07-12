@@ -189,11 +189,15 @@ public class PgConfig extends PgDbConfig {
     }
     return hikari;
   }
-  
+
   public static ScriptRunner scriptRunner(Connection con) {
+    return scriptRunner(con, true);
+  }
+
+  public static ScriptRunner scriptRunner(Connection con, boolean sendFullScript) {
     ScriptRunner runner = new ScriptRunner(con);
     // needed to honor the $$ escapes in pg functions
-    runner.setSendFullScript(true);
+    runner.setSendFullScript(sendFullScript);
     runner.setStopOnError(true);
     runner.setLogWriter(null);
     return runner;
