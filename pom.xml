@@ -57,7 +57,7 @@
     <commons-io.version>2.11.0</commons-io.version>
     <copy_down.version>1.1</copy_down.version>
     <dropwizard.version>2.1.5</dropwizard.version>
-    <dwc-api.version>1.45</dwc-api.version>
+    <dwc-api.version>1.47</dwc-api.version>
     <dwca-io.version>2.13</dwca-io.version>
     <elasticsearch.version>8.1.1</elasticsearch.version>
     <fastutil.version>8.5.12</fastutil.version>

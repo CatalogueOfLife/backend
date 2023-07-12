@@ -10,13 +10,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import javax.ws.rs.QueryParam;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
 
 import static life.catalogue.common.tax.SciNameNormalizer.removeDagger;
 import static life.catalogue.common.tax.SciNameNormalizer.removeHybridMarker;
@@ -307,11 +304,20 @@ public class Classification {
       case order:
         setOrder(name);
         return true;
+      case superfamily:
+        setSuperfamily(name);
+        return true;
       case family:
         setFamily(name);
         return true;
       case subfamily:
         setSubfamily(name);
+        return true;
+      case tribe:
+        setTribe(name);
+        return true;
+      case subtribe:
+        setSubtribe(name);
         return true;
       case genus:
         setGenus(name);
