@@ -86,7 +86,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   public void acceptThrowsNoCatch(NameUsageBase nu) throws Exception {
-    LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
     // apply common changes to the usage
     processCommon(nu);
 
@@ -94,6 +93,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     var nusn = matcher.toSimpleName(nu);
     parents.put(nusn);
     counter++;
+    LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
     // ignore doubtfully marked usages in classification, e-g- wrong rank ordering
     if (parents.isDoubtful()) {
       ignored++;
@@ -200,7 +200,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     Taxon t = new Taxon(n);
     try {
       var m = matcher.matchWithParents(targetDatasetKey, t, parents.classification());
-      // make sure rank is correct - canonical matches blend close ranks
+      // make sure rank is correct - canonical matches are across ranks
       if (m.usage == null || m.usage.getRank() != n.getRank()) {
         return null;
       }

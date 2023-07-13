@@ -1,18 +1,16 @@
 package life.catalogue.matching;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import life.catalogue.matching.authorship.AuthorComparator;
-import life.catalogue.matching.authorship.YearComparator;
-
-import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import javax.annotation.Nullable;
 
-import java.util.Objects;
-
 public class RankComparator {
+
+  public static class RankRange {
+    Rank rank;
+    Rank max;
+    Rank min;
+  }
 
   /**
    * Compares two ranks. Returns UNKNOWN for possible, but uncertain matches.

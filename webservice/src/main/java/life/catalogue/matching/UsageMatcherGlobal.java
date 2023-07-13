@@ -183,7 +183,15 @@ public class UsageMatcherGlobal {
 
   private static boolean ranksDiffer(Rank r1, Rank r2) {
     var eq = RankComparator.compare(r1, r2);
+    if (eq == Equality.UNKNOWN && (r1 == Rank.UNRANKED || r2 == Rank.UNRANKED)) {
+      // require suprageneric ranks for unranked matches
+      return !(supraGenericOrUnranked(r1) && supraGenericOrUnranked(r2));
+    }
     return eq == Equality.DIFFERENT;
+  }
+
+  private static boolean supraGenericOrUnranked(Rank r) {
+    return r == Rank.UNRANKED || r.isSuprageneric();
   }
 
   /**

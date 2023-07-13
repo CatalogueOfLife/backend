@@ -58,6 +58,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     return Arrays.asList(new Object[][] {
       {"unranked", List.of("palaeo")},
       {"circular", List.of("src1", "src2", "src3")},
+      {"biota2", List.of("ipni")},
       {"biota", List.of("wcvp", "lcvp", "ipni")}, // TODO: should be merged: Biota macrocarpa hort. ex Gordon AND Biota macrocarpa Godr.
       {"saccolomataceae", List.of("orthiopteris")}
     });

@@ -229,7 +229,15 @@ public abstract class TreeBaseHandler implements TreeHandler {
         Usage existing = findExisting(n, parent);
         if (existing != null) {
           LOG.debug("Found implicit {} {} in project", r, n.getLabel());
-          parent = existing;
+          if (existing.status.isSynonym()) {
+            // use accepted instead
+            var acc = num.getSimpleParent(targetKey.id(existing.id));
+            LOG.debug("Implicit {} {} is a synonym, use accepted name {} as parent and mark new name {} as provisional", r, n.getLabel(), acc, origName);
+            parent = usage(acc);
+            taxon.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+          } else {
+            parent = existing;
+          }
           continue;
         }
         // finally, create missing implicit name
