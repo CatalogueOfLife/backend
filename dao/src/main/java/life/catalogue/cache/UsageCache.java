@@ -59,7 +59,11 @@ public interface UsageCache extends AutoCloseable, Managed {
     var sn = get(key);
     if (sn == null) {
       sn = loader.apply(key);
-      put(key.getDatasetKey(), sn);
+      if (sn != null) {
+        put(key.getDatasetKey(), sn);
+      } else {
+        LOG.warn("Missing usage {}", key);
+      }
     }
     return sn;
   }

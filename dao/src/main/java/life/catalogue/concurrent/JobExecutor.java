@@ -111,7 +111,12 @@ public class JobExecutor implements Managed, Idle {
       }
 
       try {
-        futures.remove(job.getKey()).get();
+        var f = futures.remove(job.getKey());
+        if (f != null) {
+          f.get(); //TODO: what for???
+        } else {
+          LOG.warn("Job {} has no future to remove", job.getKey());
+        }
       } catch (InterruptedException e) {
         // ignore
       } catch (ExecutionException e) {
