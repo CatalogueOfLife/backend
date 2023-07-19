@@ -25,8 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import scala.annotation.meta.setter;
-
 import static life.catalogue.parser.SafeParser.parse;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
@@ -51,21 +49,25 @@ public class NameInterpreter {
 
   public Optional<ParsedNameUsage> interpret(SimpleName sn, IssueContainer issues) {
     return interpret(false, false,
-      sn.getId(), sn.getCode(), sn.getRank(), sn.getName(), sn.getAuthorship(),
+      sn.getId(), sn.getCode(), sn.getRank(), sn.getName(), sn.getAuthorship(), null,
       null, null, null, null, null, null,
       null, null, null, null, issues
     );
   }
 
-  public Optional<ParsedNameUsage> interpret(final boolean preferAtoms, final String id, String vrank, final String sciname, final String authorship,
+  public Optional<ParsedNameUsage> interpret(final boolean preferAtoms, final String id, String vrank, final String sciname,
+                                             final String authorship, final String publishedInYear,
                                              final String uninomial, final String genus, final String infraGenus, final String species, String infraspecies,
                                              final String cultivar,
                                              String nomCode, String nomStatus,
                                              String link, String remarks, String identifiers, VerbatimRecord v) {
-    return interpret(preferAtoms, id, vrank, Rank.UNRANKED, sciname, authorship, uninomial, genus, infraGenus, species, infraspecies, cultivar, nomCode, nomStatus, link, remarks, identifiers, v);
+    return interpret(preferAtoms, id, vrank, Rank.UNRANKED, sciname, authorship, publishedInYear,
+      uninomial, genus, infraGenus, species, infraspecies, cultivar, nomCode, nomStatus, link, remarks, identifiers, v
+    );
   }
 
-  public Optional<ParsedNameUsage> interpret(final boolean preferAtoms, final String id, String vrank, Rank defaultRank, final String sciname, final String authorship,
+  public Optional<ParsedNameUsage> interpret(final boolean preferAtoms, final String id, String vrank, Rank defaultRank, final String sciname,
+                                             final String authorship, final String publishedInYear,
                                              final String uninomial, final String genus, final String infraGenus, final String species, String infraspecies,
                                              final String cultivar,
                                              String nomCode, String nomStatus,
@@ -101,7 +103,7 @@ public class NameInterpreter {
     }
 
     var opt = interpret(preferAtoms, vrank==null,
-      id, code, rank, sciname, authorship,
+      id, code, rank, sciname, authorship, publishedInYear,
       uninomial, genus, infraGenus, species, infraspecies, cultivar,
       nomStatus, link, remarks, identifiers, v
     );
@@ -111,7 +113,7 @@ public class NameInterpreter {
   }
 
   public Optional<ParsedNameUsage> interpret(final boolean preferAtoms, final boolean allowToInferRank,
-                                             final String id, NomCode code, Rank rank, final String sciname, final String authorship,
+                                             final String id, NomCode code, Rank rank, final String sciname, final String authorship, final String publishedInYear,
                                              final String uninomial, final String genus, final String infraGenus, final String species, String infraspecies, final String cultivar,
                                              String nomStatus, String link, String remarks, String identifiers, IssueContainer issues) {
     try {
@@ -239,6 +241,23 @@ public class NameInterpreter {
 
       // try to add an authorship if not yet there
       NameParser.PARSER.parseAuthorshipIntoName(pnu, authorship, issues);
+      // populate name published in through various channels and verify its a real nomenclatural date
+      if (publishedInYear != null){
+        Integer year = InterpreterBase.parseNomenYear(publishedInYear, issues);
+        if (year != null) {
+          pnu.getName().setPublishedInYear(year);
+        }
+      }
+      if (pnu.getName().getCombinationAuthorship() != null && pnu.getName().getCombinationAuthorship().getYear() != null){
+        Integer year = InterpreterBase.parseNomenYear(pnu.getName().getCombinationAuthorship().getYear(), issues);
+        if (year != null) {
+          if (pnu.getName().getPublishedInYear() == null) {
+            pnu.getName().setPublishedInYear(year);
+          } else if (!pnu.getName().getPublishedInYear().equals(year)) {
+            issues.addIssue(Issue.PUBLISHED_YEAR_CONFLICT);
+          }
+        }
+      }
 
       // common basics
       pnu.getName().setId(id);
@@ -277,8 +296,8 @@ public class NameInterpreter {
 
       // look for irregularities and flag issues
       if (pnu.getName().hasAuthorship()) {
-        verifyYear(pnu.getName().getCombinationAuthorship(), issues);
-        verifyYear(pnu.getName().getBasionymAuthorship(), issues);
+        verifyNomenYear(pnu.getName().getCombinationAuthorship(), issues);
+        verifyNomenYear(pnu.getName().getBasionymAuthorship(), issues);
       }
 
       return Optional.of(pnu);
@@ -289,8 +308,8 @@ public class NameInterpreter {
     }
   }
 
-  private static void verifyYear(Authorship authorship, IssueContainer issues) {
-    InterpreterBase.parseYear(authorship.getYear(), issues);
+  private static void verifyNomenYear(Authorship authorship, IssueContainer issues) {
+    InterpreterBase.parseNomenYear(authorship.getYear(), issues);
   }
 
   private static void set(ParsedNameUsage pnu, Consumer<String> setter, String epithet) {

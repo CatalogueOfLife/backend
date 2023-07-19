@@ -41,9 +41,9 @@ public class InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
   static final Pattern SEC_REF = Pattern.compile("\\b(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?)(.{3,})$", Pattern.CASE_INSENSITIVE);
-  private static final int MIN_YEAR = 1500;
-  private static final int MAX_YEAR = Year.now().getValue() + 10;
-  private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
+  private static final int MIN_YEAR = 1753;
+  private static final int MAX_YEAR = Year.now().getValue() + 1;
+  private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3})(\\d|\\s*\\?)(?:-[0-9-]+)?$");
   private static final Pattern SPLIT_COMMA = Pattern.compile("(?<!\\\\),");
   protected final NeoDb store;
   protected final DatasetSettings settings;
@@ -467,26 +467,30 @@ public class InterpreterBase {
     }
   }
   
-  protected static Integer parseYear(Term term, VerbatimRecord v) {
-    return parseYear(v.get(term), v);
+  protected static Integer parseNomenYear(Term term, VerbatimRecord v) {
+    return parseNomenYear(v.get(term), v);
   }
 
-  protected static Integer parseYear(String year, IssueContainer issues) {
+  /**
+   * Parses the nomenclatural year the name was published and flags issues if the year is unparsable or unliklely.
+   */
+  protected static Integer parseNomenYear(String year, IssueContainer issues) {
     if (!StringUtils.isBlank(year)) {
       Matcher m = YEAR_PATTERN.matcher(year.trim());
       if (m.find()) {
         Integer y;
-        if (m.group(2) != null) {
+        if (m.group(2).equals("?")) {
           // convert ? to a zero
           y = Integer.parseInt(m.group(1)+"0");
         } else {
-          y = Integer.parseInt(m.group(1));
+          y = Integer.parseInt(m.group(1)+m.group(2));
         }
         if (y < MIN_YEAR || y > MAX_YEAR) {
           issues.addIssue(Issue.UNLIKELY_YEAR);
+        } else {
+          return y;
         }
-        return y;
-      
+
       } else {
         issues.addIssue(Issue.UNPARSABLE_YEAR);
       }

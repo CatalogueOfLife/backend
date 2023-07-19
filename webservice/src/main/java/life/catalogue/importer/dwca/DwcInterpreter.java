@@ -216,7 +216,7 @@ public class DwcInterpreter extends InterpreterBase {
   interpretName(VerbatimRecord v) {
     Optional<ParsedNameUsage> opt = nameInterpreter.interpret(false, taxonID(v),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
-        v.get(DwcTerm.scientificNameAuthorship),
+        v.get(DwcTerm.scientificNameAuthorship), v.get(DwcTerm.namePublishedInYear),
         null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.getFirst(DwcTerm.infragenericEpithet),
         v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), v.get(DwcTerm.cultivarEpithet),
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),

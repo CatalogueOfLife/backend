@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import life.catalogue.api.vocab.*;
 
 import life.catalogue.common.util.HumanSize;
@@ -136,6 +138,7 @@ public class ImportMetrics implements ImportAttempt {
   /**
    * @return duration between start and finish in milliseconds.
    */
+  @JsonIgnore
   public Long getDuration() {
     if (started != null && finished != null) {
       return 1000 * (finished.toEpochSecond(ZoneOffset.UTC) - started.toEpochSecond(ZoneOffset.UTC));

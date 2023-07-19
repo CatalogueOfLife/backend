@@ -321,12 +321,12 @@ public enum Issue {
   // REFERENCE ISSUES
   //
   
-  UNPARSABLE_YEAR(REFERENCE, Level.WARNING,
-      "The given year of publication cannot be parsed into a sensible integer year."),
+  UNPARSABLE_YEAR(NAME, Level.WARNING,
+      "The given year of publication of the name cannot be parsed into a sensible integer year."),
   
-  UNLIKELY_YEAR(REFERENCE, Level.WARNING,
-      "The given year of publication is unlikely to be real."),
-  
+  UNLIKELY_YEAR(NAME, Level.WARNING,
+      "The given year of publication of the name is impossible, i.e. either before Linnean times or after today."),
+
   MULTIPLE_PUBLISHED_IN_REFERENCES(REFERENCE, Level.WARNING,
       "There are multiple references for the original publication of a name."),
   
@@ -415,6 +415,9 @@ public enum Issue {
 
   MULTIPLE_BASIONYMS(NAME, Level.WARNING,
     "There have been more than one name that appears to be the basionym / original combination. No homotypic consolidation can be performed."),
+
+  PUBLISHED_YEAR_CONFLICT(NAME, Level.WARNING,
+    "The given year of publication of the name conflicts with year of the authorship."),
   ;
 
   /**

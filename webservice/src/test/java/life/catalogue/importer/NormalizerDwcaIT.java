@@ -468,6 +468,59 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   }
 
   @Test
+  public void nomYear() throws Exception {
+    normalize(47);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      store.usages().allIds().forEach( x -> {
+        System.out.println(x);
+        var u = store.usageWithName(x);
+        var n = u.getNeoName().getName();
+        var v = store.getVerbatim(u.getVerbatimKey());
+        int id = Integer.parseInt(u.getId());
+        assertEquals("Lipolexis peregrinus", n.getScientificName());
+        if (id < 10) {
+          if (id==3) {
+            assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
+            assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
+            assertEquals((Integer)2020, n.getPublishedInYear());
+            assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
+            assertEquals(1, v.getIssues().size());
+          } else if (id==4) {
+            assertEquals("Tomanovic & Kavallieratos, 2020", n.getAuthorship());
+            assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
+            assertTrue(v.getIssues().contains(Issue.PUBLISHED_YEAR_CONFLICT));
+            assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
+            assertEquals(2, v.getIssues().size());
+            assertEquals((Integer)2021, n.getPublishedInYear());
+          } else {
+            assertEquals("Tomanovic & Kavallieratos, 2020", n.getAuthorship());
+            assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
+            assertEquals((Integer)2020, n.getPublishedInYear());
+            assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
+            assertEquals(1, v.getIssues().size());
+          }
+
+        } else if (id < 20){
+          assertNull(n.getPublishedInYear());
+          assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
+          assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
+          assertTrue(v.getIssues().contains(Issue.UNLIKELY_YEAR));
+          assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
+          assertEquals(2, v.getIssues().size());
+        } else {
+          assertNull(n.getPublishedInYear());
+          assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
+          assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
+          assertTrue(v.getIssues().contains(Issue.UNPARSABLE_YEAR));
+          assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
+          assertEquals(2, v.getIssues().size());
+        }
+      });
+    }
+  }
+
+  @Test
   @Ignore
   public void testExternal() throws Exception {
 

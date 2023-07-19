@@ -291,7 +291,7 @@ public class ColdpInterpreter extends InterpreterBase {
     }
 
     Optional<ParsedNameUsage> opt = nameInterpreter.interpret(true, v.getRaw(ColdpTerm.ID),
-        v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
+        v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship), v.get(ColdpTerm.publishedInYear),
         v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet),
         v.get(ColdpTerm.code), v.get(nomStatusTerm),
@@ -303,7 +303,7 @@ public class ColdpInterpreter extends InterpreterBase {
       setReference(v, refIdTerm, rid -> {
           n.setPublishedInId(rid);
           n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));
-          n.setPublishedInYear(parseYear(ColdpTerm.publishedInYear, v));
+          n.setPublishedInYear(parseNomenYear(ColdpTerm.publishedInYear, v));
       });
       if (opt.get().getPublishedIn() == null) {
         String pubInAuthorship = opt.get().getPublishedIn();

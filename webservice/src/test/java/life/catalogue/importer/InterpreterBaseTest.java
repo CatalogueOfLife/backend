@@ -162,40 +162,40 @@ public class InterpreterBaseTest {
 
   @Test
   public void yearParser() throws Exception {
-    assertEquals((Integer) 1678, InterpreterBase.parseYear("1678", issues));
+    assertEquals((Integer) 1678, InterpreterBase.parseNomenYear("1678", issues));
     assertFalse(issues.hasIssues());
   
-    assertEquals((Integer) 1678, InterpreterBase.parseYear("1678b", issues));
+    assertEquals((Integer) 1678, InterpreterBase.parseNomenYear("1678b", issues));
     assertFalse(issues.hasIssues());
   
-    assertEquals((Integer) 1678, InterpreterBase.parseYear(" 1678 b", issues));
+    assertEquals((Integer) 1678, InterpreterBase.parseNomenYear(" 1678 b", issues));
     assertFalse(issues.hasIssues());
     
-    assertEquals((Integer) 999, InterpreterBase.parseYear("999", issues));
+    assertEquals((Integer) 999, InterpreterBase.parseNomenYear("999", issues));
     assertTrue(issues.hasIssue(Issue.UNLIKELY_YEAR));
     
     issues.getIssues().clear();
-    assertEquals((Integer) 2112, InterpreterBase.parseYear("2112", issues));
+    assertEquals((Integer) 2112, InterpreterBase.parseNomenYear("2112", issues));
     assertTrue(issues.hasIssue(Issue.UNLIKELY_YEAR));
   
     issues.getIssues().clear();
-    assertEquals((Integer) 2800, InterpreterBase.parseYear("2800", issues));
+    assertEquals((Integer) 2800, InterpreterBase.parseNomenYear("2800", issues));
     assertTrue(issues.hasIssue(Issue.UNLIKELY_YEAR));
 
     issues.getIssues().clear();
-    assertEquals((Integer) 1980, InterpreterBase.parseYear("198?", issues));
+    assertEquals((Integer) 1980, InterpreterBase.parseNomenYear("198?", issues));
     assertFalse(issues.hasIssues());
   
     issues.getIssues().clear();
-    assertNull(InterpreterBase.parseYear("gd2000", issues));
+    assertNull(InterpreterBase.parseNomenYear("gd2000", issues));
     assertTrue(issues.hasIssue(Issue.UNPARSABLE_YEAR));
   
     issues.getIssues().clear();
-    assertNull(InterpreterBase.parseYear("35611", issues));
+    assertNull(InterpreterBase.parseNomenYear("35611", issues));
     assertTrue(issues.hasIssue(Issue.UNPARSABLE_YEAR));
   
     issues.getIssues().clear();
-    assertNull(InterpreterBase.parseYear("january", issues));
+    assertNull(InterpreterBase.parseNomenYear("january", issues));
     assertTrue(issues.hasIssue(Issue.UNPARSABLE_YEAR));
   }
 
