@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-07-20 add new issue
+```
+ALTER TYPE ISSUE ADD VALUE 'PUBLISHED_YEAR_CONFLICT';
+```
+
 ### 2023-06-28 add new match type
 ```
 ALTER TYPE MATCHTYPE ADD VALUE 'UNSUPPORTED';
