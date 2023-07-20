@@ -20,8 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 
-import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
-import static life.catalogue.api.vocab.DatasetOrigin.RELEASE;
+import static life.catalogue.api.vocab.DatasetOrigin.*;
 
 public class DatasetSourceDao {
   private final static Logger LOG = LoggerFactory.getLogger(DatasetSourceDao.class);
@@ -52,7 +51,10 @@ public class DatasetSourceDao {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-      if (PROJECT == info.origin) {
+      if (EXTERNAL == info.origin) {
+        throw new IllegalArgumentException("Dataset "+datasetKey+" is external");
+
+      } else if (PROJECT == info.origin) {
         d = psm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
           // get latest version with patch applied
@@ -60,16 +62,13 @@ public class DatasetSourceDao {
           patch(d, datasetKey, project, session.getMapper(DatasetPatchMapper.class));
         }
 
-      } else if (info.origin.isRelease()) {
+      } else {
         d = psm.getReleaseSource(sourceDatasetKey, datasetKey);
         // if the release was deleted, the source should also be marked as deleted
         if (info.deleted) {
           final Dataset release = dm.get(datasetKey);
           d.setDeleted(release.getDeleted());
         }
-
-      } else {
-        throw new IllegalArgumentException("Dataset "+datasetKey+" is not a project");
       }
     }
     return d;
