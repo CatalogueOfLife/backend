@@ -60,7 +60,7 @@ public class DatasetSourceDao {
           patch(d, datasetKey, project, session.getMapper(DatasetPatchMapper.class));
         }
 
-      } else if (RELEASE == info.origin) {
+      } else if (info.origin.isRelease()) {
         d = psm.getReleaseSource(sourceDatasetKey, datasetKey);
         // if the release was deleted, the source should also be marked as deleted
         if (info.deleted) {

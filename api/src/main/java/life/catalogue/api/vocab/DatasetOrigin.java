@@ -32,4 +32,7 @@ public enum DatasetOrigin {
     return this != EXTERNAL;
   }
 
+  public boolean isRelease() {
+    return this == RELEASE || this == XRELEASE;
+  }
 }
