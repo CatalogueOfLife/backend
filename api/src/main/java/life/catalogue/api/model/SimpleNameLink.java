@@ -2,13 +2,15 @@ package life.catalogue.api.model;
 
 import org.gbif.nameparser.api.Rank;
 
+import javax.annotation.Nullable;
+
 import java.util.Objects;
 
 public class SimpleNameLink extends SimpleName {
   private boolean broken;
 
-  public static SimpleNameLink of(Taxon t) {
-    return t.toSimpleNameLink();
+  public static SimpleNameLink of(@Nullable Taxon t) {
+    return t == null ? null : t.toSimpleNameLink();
   }
 
   public static SimpleNameLink of(SimpleName sn) {

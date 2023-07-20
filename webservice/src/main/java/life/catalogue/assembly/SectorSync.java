@@ -35,6 +35,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 /**
  * Syncs/imports source data for a given sector into the assembled catalogue
  */
@@ -48,10 +50,10 @@ public class SectorSync extends SectorRunnable {
   private final boolean project;
   private boolean disableAutoBlocking;
   private final int targetDatasetKey; // dataset to sync into
-  private final Taxon incertae;
+  private final @Nullable Taxon incertae;
   private List<SimpleName> foreignChildren;
 
-  SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, Taxon incertae,
+  SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, @Nullable Taxon incertae,
              SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBus bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {

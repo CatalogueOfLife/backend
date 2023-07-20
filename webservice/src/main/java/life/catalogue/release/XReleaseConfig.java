@@ -1,5 +1,9 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameClassified;
+
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -36,6 +40,15 @@ public class XReleaseConfig {
    * Selected list of CLB dataset keys to exclude as sectors being created for aboves source publisher keys
    */
   public Set<Integer> sourceDatasetExclusion;
+
+  /**
+   * An optional incertae sedis taxon that should be used by the release to place all names with unknown classifications.
+   * The taxon will be created if necessary, but an existing name will be preferred.
+   * A classification can be given to specify a non root placement.
+   */
+  @Valid
+  @Nullable
+  public SimpleNameClassified<SimpleName> incertaeSedis;
 
   /**
    * If true algorithmic detecting and grouping of basionyms is executed.

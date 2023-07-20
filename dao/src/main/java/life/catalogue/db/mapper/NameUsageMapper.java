@@ -57,6 +57,10 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                               @Param("name") String name
   );
 
+  default List<SimpleName> findSimpleSN(int datasetKey, SimpleName sn){
+    return findSimple(datasetKey, null, sn.getStatus(), sn.getRank(), sn.getName());
+  }
+
   /**
    * Retrieves a simple name usage from a project by using the stable usage ID
    * and the id map table

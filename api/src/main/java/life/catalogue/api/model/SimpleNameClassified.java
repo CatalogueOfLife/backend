@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class SimpleNameClassified<T extends SimpleName> extends SimpleNameWithPub {
-  // classificaiton starting with direct parent
+  // classification starting with direct parent
   private List<T> classification;
 
   public static SimpleNameClassified<SimpleName> snc(String id, Rank rank, NomCode code, TaxonomicStatus status, String name, String authorship) {

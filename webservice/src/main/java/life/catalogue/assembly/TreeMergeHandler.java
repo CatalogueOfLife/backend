@@ -37,7 +37,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int updated = 0; // updates
   private final int subjectDatasetKey;
 
-  TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, User user, Sector sector, SectorImport state, Taxon incertae) {
+  TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
+                   User user, Sector sector, SectorImport state, @Nullable Taxon incertae) {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
     this.matcher = matcher;
     uCache = matcher.getUCache();

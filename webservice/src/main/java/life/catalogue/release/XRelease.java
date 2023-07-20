@@ -13,10 +13,7 @@ import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -25,18 +22,17 @@ import life.catalogue.img.ImageService;
 
 import life.catalogue.matching.UsageMatcherGlobal;
 
-import life.catalogue.matching.decision.SectorRematchRequest;
-import life.catalogue.matching.decision.SectorRematcher;
-
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
 import javax.validation.Validator;
 
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -50,7 +46,7 @@ public class XRelease extends ProjectRelease {
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
   private final UsageMatcherGlobal matcher;
-  private Taxon incertae;
+  private @Nullable Taxon incertae;
   private XReleaseConfig xCfg;
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService,
@@ -203,31 +199,54 @@ public class XRelease extends ProjectRelease {
   }
 
   private Taxon createIncertaeSedisRoot() {
-    //TODO: add project setting that allows to reuse an existing incertae sedis root
-    Name n = Name.newBuilder()
-                 .datasetKey(newDatasetKey)
-                 .id(UUID.randomUUID().toString())
-                 .origin(Origin.OTHER)
-                 .type(NameType.PLACEHOLDER)
-                 .scientificName("Incertae Sedis")
-                 .rank(Rank.KINGDOM)
-                 .nomStatus(NomStatus.NOT_ESTABLISHED)
-                 .createdBy(user)
-                 .modifiedBy(user)
-                 .build();
-    Taxon t = new Taxon(n);
-    t.setDatasetKey(newDatasetKey);
-    t.setId(UUID.randomUUID().toString());
-    t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    t.setOrigin(Origin.OTHER);
-    t.setCreatedBy(user);
-    t.setModifiedBy(user);
-
-    try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(NameMapper.class).create(n);
-      session.getMapper(TaxonMapper.class).create(t);
+    if (xCfg.incertaeSedis != null) {
+      String pID = null;
+      if (xCfg.incertaeSedis.getClassification() != null) {
+        var parents = new ArrayList<>(xCfg.incertaeSedis.getClassification());
+        Collections.reverse(parents);
+        for (var sn : parents) {
+          Taxon p = lookupOrCreateTaxon(sn, pID);
+          pID = p.getId();
+        }
+      }
+      return lookupOrCreateTaxon(xCfg.incertaeSedis, pID);
     }
-    return t;
+    return null;
+  }
+
+  private Taxon lookupOrCreateTaxon(SimpleName sn, String parentID) {
+    // lookup existing name
+    try (SqlSession session = factory.openSession(true)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      var existing = session.getMapper(NameUsageMapper.class).findSimpleSN(newDatasetKey, sn);
+      if (!existing.isEmpty()) {
+        var ex = existing.get(0);
+        LOG.info("Use existing incertae sedis taxon {}", ex);
+        return tm.get(ex.toDSID(newDatasetKey));
+
+      } else {
+        LOG.info("Create new incertae sedis taxon {}", sn);
+        Name n = new Name(sn);
+        n.setDatasetKey(newDatasetKey);
+        n.setId(UUID.randomUUID().toString());
+        n.setOrigin(Origin.OTHER);
+        n.setType(NameType.PLACEHOLDER);
+        n.applyUser(user);
+
+        Taxon t = new Taxon(n);
+        t.setDatasetKey(newDatasetKey);
+        t.setId(UUID.randomUUID().toString());
+        t.setParentId(parentID);
+        t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+        t.setOrigin(Origin.OTHER);
+        t.setCreatedBy(user);
+        t.setModifiedBy(user);
+
+        session.getMapper(NameMapper.class).create(n);
+        tm.create(t);
+        return t;
+      }
+    }
   }
 
   /**

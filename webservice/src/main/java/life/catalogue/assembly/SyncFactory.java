@@ -15,6 +15,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -30,7 +32,9 @@ public class SyncFactory {
   private final NameUsageIndexService indexService;
   private final EventBus bus;
 
-  public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, SectorDao sd, SectorImportDao sid, EstimateDao estimateDao, NameUsageIndexService indexService, EventBus bus) {
+  public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
+                     SectorDao sd, SectorImportDao sid, EstimateDao estimateDao,
+                     NameUsageIndexService indexService, EventBus bus) {
     this.bus = bus;
     this.sd = sd;
     this.sid = sid;
@@ -45,7 +49,7 @@ public class SyncFactory {
     return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao, successCallback, errorCallback, user);
   }
 
-  public SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, Taxon incertae, User user) throws IllegalArgumentException {
+  public SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, @Nullable Taxon incertae, User user) throws IllegalArgumentException {
     return new SectorSync(sectorKey, releaseDatasetKey, false, incertae, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
       x -> {}, (s,e) -> {LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e);}, user);
   }
