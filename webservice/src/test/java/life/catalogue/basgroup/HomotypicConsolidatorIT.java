@@ -51,6 +51,17 @@ public class HomotypicConsolidatorIT {
     .around(matchingRule);
 
   @Test
+  public void synSyns() throws IOException {
+    var hc = HomotypicConsolidator.forTaxa(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key,
+      List.of(SimpleName.sn("pott", Rank.FAMILY, "Pottiaceae", "Hampe")),
+      u -> Integer.parseInt(u.getId())
+    );
+    printTree();
+    hc.consolidate();
+    assertTree("hg-pott.txt", "pott");
+  }
+
+  @Test
   public void consolidateNoPrios() throws IOException {
     var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key);
     hc.consolidate();

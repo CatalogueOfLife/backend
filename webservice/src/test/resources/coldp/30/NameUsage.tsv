@@ -1,5 +1,6 @@
 col:ID	col:parentID	col:status	col:rank	col:scientificName	col:authorship	col:nameStatus
 a		accepted	kingdom	Animalia		
+p		accepted	kingdom	Plantae		
 dip	a	accepted	order	Diptera		
 dfc	dip	accepted	family	Chironomidae		
 dtd	dfc	accepted	tribe	Diamesini		
@@ -71,3 +72,20 @@ mfo	mam	accepted	family	Procyonidae
 100	mfo	accepted	species	Mustela frenata	Lichtenstein, 1831	
 101	100	accepted	subspecies	Mustela frenata olivacea	Howell, 1913	
 102	101	synonym	subspecies	Mustela peninsulae olivacea	Howell, 1913	
+
+bryo	p	accepted	phylum	Bryophyta		
+pott	bryo	accepted	family	Pottiaceae	Hampe	
+110	pott	accepted	species	Streblotrichum commutatum	(Jur.) Hilp.	
+111	110	synonym	species	Barbula commutata	Jur.	
+112	110	synonym	subspecies	Barbula convoluta subsp. commutata	(Jur.) Boulay	
+114	110	synonym	variety	Barbula convoluta var. commutata	(Jur.) Husn.	
+115	110	synonym	variety	Barbula convoluta var. sardoa	Bruch & Schimp.	
+116	110	synonym	variety	Streblotrichum convolutum var. commutatum	(Jur.) J.J. Amann	
+117	110	synonym	subspecies	Streblotrichum convolutum subsp. commutatum	(Jur.) Giacom.	
+118	110	synonym	species	Tortula commutata	(Jur.) Venturi & Bott.	
+119	110	synonym	species	Barbula sardoa	(Bruch & Schimp.) J.-P. Frahm	
+120	110	synonym	variety	Tortula convoluta var. sardoa	(Bruch & Schimp.) Wilson	
+130	pott	accepted	species	Streblotrichum convolutum	(Hedw.) P. Beauv.	
+131	130	synonym	species	Barbula convoluta	Hedw.	
+132	130	synonym	species	Bryum convolutum	(Hedw.) Dicks.	
+133	130	synonym	species	Tortula convoluta	(Hedw.) G. Gaertn., B. Mey. & Scherb.	

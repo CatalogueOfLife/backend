@@ -249,16 +249,25 @@ public class TreeMergeHandler extends TreeBaseHandler {
       Set<InfoGroup> updated = EnumSet.noneOf(InfoGroup.class);
       // set targetKey to the existing usage
       targetKey.id(existing.usage.getId());
-      // patch classification if direct parent adds to it
-      var matchedParents = parents.matchedParentsOnly(existing.usage.getId());
-      if (!matchedParents.isEmpty()) {
-        var parent = matchedParents.getLast().match;
-        var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
-        batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
-        if (parent != null && (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent))) {
-          LOG.debug("Updated {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
-          num.updateParentId(targetKey, parent.getId(), user.getKey());
-          updated.add(InfoGroup.PARENT);
+      // patch classification of accepted names if direct parent adds to it
+      if (existing.usage.getStatus().isTaxon()) {
+        var matchedParents = parents.matchedParentsOnly(existing.usage.getId());
+        if (!matchedParents.isEmpty()) {
+          var parent = matchedParents.getLast().match;
+          if (parent != null) {
+            if (parent.getStatus().isSynonym()) {
+              LOG.info("Do not update {} with a closer synonym parent {} {} from {}", existing.usage, parent.getRank(), parent.getId(), nu);
+
+            } else {
+              var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
+              batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
+              if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
+                LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
+                num.updateParentId(targetKey, parent.getId(), user.getKey());
+                updated.add(InfoGroup.PARENT);
+              }
+            }
+          }
         }
       }
 
