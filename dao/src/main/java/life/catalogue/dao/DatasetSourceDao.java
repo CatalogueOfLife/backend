@@ -217,7 +217,7 @@ public class DatasetSourceDao {
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       AtomicInteger sectorCounter = new AtomicInteger(0);
       // a release? use mother project in that case
-      if (info.origin == DatasetOrigin.RELEASE) {
+      if (info.origin.isRelease()) {
         Integer projectKey = info.sourceKey;
         for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, sourceKey)){
           if (s.getSyncAttempt() != null) {

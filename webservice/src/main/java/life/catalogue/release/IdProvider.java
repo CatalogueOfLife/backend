@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.IdReportType;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -97,7 +98,7 @@ public class IdProvider {
     reportDir.mkdirs();
     dataset2attempt.put(releaseDatasetKey, attempt);
     try (SqlSession session = factory.openSession(true)) {
-      lastReleaseKey = session.getMapper(DatasetMapper.class).latestRelease(projectKey, true);
+      lastReleaseKey = session.getMapper(DatasetMapper.class).latestRelease(projectKey, true, DatasetOrigin.RELEASE);
     }
   }
 

@@ -98,7 +98,10 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
       privateFilter.updateCache(event.key, event.obj.isPrivat());
     }
     // a new dataset, make creator an editor unless it is a release or a bot
-    if (event.isCreated() && event.obj.getCreatedBy() != null && !Users.isBot(event.obj.getCreatedBy()) && event.obj.getOrigin() != DatasetOrigin.RELEASE) {
+    if (event.isCreated()
+        && event.obj.getCreatedBy() != null
+        && !Users.isBot(event.obj.getCreatedBy())
+        && !event.obj.getOrigin().isRelease()) {
       User creator = idService.get(event.obj.getCreatedBy());
       creator.addDatasetRole(User.Role.EDITOR, event.key);
     }

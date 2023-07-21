@@ -1,7 +1,6 @@
 package life.catalogue.command;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
@@ -13,7 +12,6 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
@@ -29,8 +27,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import net.sourceforge.argparse4j.inf.Subparser;
-
-import static life.catalogue.api.vocab.DatasetOrigin.RELEASE;
 
 /**
  * Creates missing sector import metrics for all releases of a given project.
@@ -159,7 +155,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
 
   private void updateDataset(Dataset d) {
     try {
-      final boolean isRelease = DatasetOrigin.RELEASE == d.getOrigin();
+      final boolean isRelease = d.getOrigin().isRelease();
       // the datasetKey to store metrics under - the project in case of a release
       int datasetKey = isRelease ? d.getSourceKey() : d.getKey();
       if (d.getOrigin() == DatasetOrigin.PROJECT || d.getAttempt() == null) {
@@ -219,7 +215,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     final int projectKey;
     final String kind;
     final LocalDateTime createdTime;
-    if (RELEASE == d.getOrigin()) {
+    if (d.getOrigin().isRelease()) {
       projectKey = d.getSourceKey();
       kind = "release";
       createdTime = d.getCreated();

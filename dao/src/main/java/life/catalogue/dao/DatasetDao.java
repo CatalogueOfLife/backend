@@ -390,17 +390,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
-  public Dataset latestRelease(int projectKey) {
-    try (SqlSession session = factory.openSession()){
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      Integer key = dm.latestRelease(projectKey, true);
-      if (key == null) {
-        throw new NotFoundException("Dataset " + projectKey + " was never released");
-      }
-      return dm.get(key);
-    }
-  }
-
   public List<Integer> searchKeys(DatasetSearchRequest req) {
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
@@ -452,7 +441,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     // avoid deletions of annual releases of COL
     if (old != null
-        && old.getOrigin() == DatasetOrigin.RELEASE
+        && old.getOrigin().isRelease()
         && old.getSourceKey().equals(Datasets.COL)
         && !old.isPrivat()
         && old.getVersion().startsWith("Annual")
@@ -490,7 +479,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     // remove id reports only for private releases - we want to keep public releases forever to track ids!!!
     if (old != null
-        && old.getOrigin() == DatasetOrigin.RELEASE
+        && old.getOrigin().isRelease()
         && old.isPrivat()
     ) {
       LOG.info("Delete id reports for private release {}", key);
@@ -615,11 +604,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   @Override
   protected void updateBefore(Dataset obj, @NotNull Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     // changing a private to a public release is only allowed if there is no newer public release already!
-    if (obj.getSourceKey() != null && obj.getOrigin() == DatasetOrigin.RELEASE
+    if (obj.getSourceKey() != null && obj.getOrigin().isRelease()
         && old.isPrivat() // was private before
         && !obj.isPrivat() // but now is public
     ) {
-      var lr = mapper.latestRelease(obj.getSourceKey(), true);
+      var lr = mapper.latestRelease(obj.getSourceKey(), true, obj.getOrigin());
       // we make use of the fact that datasetKeys are sequential numbers
       if (lr != null && lr > obj.getKey()) {
         throw new IllegalArgumentException("A newer public release already exists. You cannot turn this private release public");

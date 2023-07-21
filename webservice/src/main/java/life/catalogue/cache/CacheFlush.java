@@ -1,7 +1,6 @@
 package life.catalogue.cache;
 
 import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.vocab.DatasetOrigin;
 
 import java.net.URI;
 
@@ -35,7 +34,7 @@ public class CacheFlush {
 
     } else if (event.isUpdated()) {
       // did visibility of a releases change?
-      if (event.obj.isPrivat() != event.old.isPrivat() && event.obj.getOrigin() == DatasetOrigin.RELEASE) {
+      if (event.obj.isPrivat() != event.old.isPrivat() && event.obj.getOrigin().isRelease()) {
         int projectKey = event.obj.getSourceKey();
         VarnishUtils.ban(client, projectUrlBuilder.build(projectKey));
         VarnishUtils.ban(client, colseo);

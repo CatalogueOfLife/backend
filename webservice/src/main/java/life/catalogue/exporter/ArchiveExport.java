@@ -146,7 +146,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         Dataset src = null;
         if (DatasetOrigin.PROJECT == dataset.getOrigin()) {
           src = psm.getProjectSource(sk, datasetKey);
-        } else if (DatasetOrigin.RELEASE == dataset.getOrigin()) {
+        } else if (dataset.getOrigin().isRelease()) {
           src = psm.getReleaseSource(sk, datasetKey);
         }
         if (src == null) {

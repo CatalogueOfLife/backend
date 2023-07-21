@@ -142,7 +142,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       }
 
       if (d.getOrigin() == DatasetOrigin.PROJECT) {
-        latestReleaseKey = dm.latestRelease(d.getKey(), true);
+        latestReleaseKey = dm.latestRelease(d.getKey(), true, DatasetOrigin.RELEASE);
         boolean inclPrivate = ns.getBoolean(ARG_PRIVATE);
         DatasetSearchRequest req = new DatasetSearchRequest();
         req.setReleasedFrom(d.getKey());

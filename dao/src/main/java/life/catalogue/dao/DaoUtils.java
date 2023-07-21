@@ -77,7 +77,7 @@ public class DaoUtils {
     Dataset d = dm.get(datasetKey);
     if (d == null || d.hasDeletedDate()) {
       throw NotFoundException.notFound(Dataset.class, datasetKey);
-    } else if (d.getOrigin() == DatasetOrigin.RELEASE) {
+    } else if (d.getOrigin().isRelease()) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be " + action);
     }
     return d;

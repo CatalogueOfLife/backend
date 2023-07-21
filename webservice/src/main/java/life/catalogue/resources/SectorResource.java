@@ -149,7 +149,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     } else if (s.getSyncAttempt() == null) {
       throw new NotFoundException(skey, "Sector " + skey + " was never synced");
     }
-    if (info.origin == DatasetOrigin.RELEASE) {
+    if (info.origin.isRelease()) {
       Integer projectKey = info.sourceKey;
       skey = DSID.of(projectKey, id);
     }

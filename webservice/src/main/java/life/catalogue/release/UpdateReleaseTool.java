@@ -70,7 +70,7 @@ public class UpdateReleaseTool implements AutoCloseable {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       release = dm.get(releaseKey);
-      if (release.getOrigin() != DatasetOrigin.RELEASE) {
+      if (!release.getOrigin().isRelease()) {
         throw new IllegalArgumentException("Dataset key "+releaseKey+" is not a release!");
       }
       project = dm.get(release.getSourceKey());

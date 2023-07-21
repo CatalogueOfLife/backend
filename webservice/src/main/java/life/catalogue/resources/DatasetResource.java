@@ -205,7 +205,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   public void xRelease(@PathParam("key") int key, @Auth User user) {
     Integer releaseKey;
     try (SqlSession session = factory.openSession(true)) {
-      releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true);
+      releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
     }
     if (releaseKey == null) {
       throw new IllegalArgumentException("Project " + key + " was never released in public");

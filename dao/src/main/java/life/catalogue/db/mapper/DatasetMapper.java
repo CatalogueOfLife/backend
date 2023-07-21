@@ -192,13 +192,6 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   Integer latestRelease(@Param("key") int key, @Param("public") boolean publicOnly, @Nullable @Param("origin") DatasetOrigin origin);
 
   /**
-   * Defaults to regular releases, not extended ones.
-   */
-  default Integer latestRelease(int key, boolean publicOnly) {
-    return latestRelease(key, publicOnly, DatasetOrigin.RELEASE);
-  }
-
-  /**
    * This looks up the public release just before the given one, ignoring any intermediate private releases.
    * @param key release dataset key
    */

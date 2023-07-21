@@ -125,7 +125,7 @@ public class ImportJob implements Runnable {
   }
   
   private void validate() {
-    if (dataset.getOrigin() == DatasetOrigin.RELEASE) {
+    if (dataset.getOrigin().isRelease()) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be imported");
 
     } else if (req.reimportAttempt != null && req.hasUpload()) {

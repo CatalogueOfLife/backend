@@ -102,11 +102,15 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
     return null;
   }
 
+  /**
+   * Returns true of the given dataset key is the last release of its kind (regular or extended) of the project.
+   */
   @Override
   public boolean isLatestRelease(int datasetKey) {
     var info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (info.origin == DatasetOrigin.RELEASE && info.sourceKey != null) {
-      return Objects.equals(getLatestRelease(info.sourceKey, false), datasetKey);
+    if (info.origin.isRelease() && info.sourceKey != null) {
+      boolean extended = info.origin == DatasetOrigin.XRELEASE;
+      return Objects.equals(getLatestRelease(info.sourceKey, extended), datasetKey);
     }
     return false;
   }
@@ -118,7 +122,8 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
   private Integer lookupLatest(int projectKey, boolean candidate, boolean extended) throws NotFoundException {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      return dm.latestRelease(projectKey, !candidate);
+      DatasetOrigin origin = extended ? DatasetOrigin.XRELEASE : DatasetOrigin.RELEASE;
+      return dm.latestRelease(projectKey, !candidate, origin);
     }
   }
 

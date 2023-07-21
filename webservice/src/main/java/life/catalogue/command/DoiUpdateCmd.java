@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
@@ -83,7 +84,8 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       // update project DOI
       Dataset project = dm.get(key);
       LOG.info("Update all DOIs for releases of project {}: {}", key, project.getTitle());
-      final var latestReleaseKey = dm.latestRelease(d.getKey(), true);
+      //TODO: what about extended releases?
+      final var latestReleaseKey = dm.latestRelease(d.getKey(), true, DatasetOrigin.RELEASE);
       LOG.info("Latest release of project {} is {}", key, latestReleaseKey);
       updateReleaseOrProject(project, false, null, null, dm);
       // list all releases in chronological order, starting with the very first release

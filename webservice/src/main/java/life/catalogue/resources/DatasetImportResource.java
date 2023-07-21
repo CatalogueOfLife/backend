@@ -39,7 +39,7 @@ public class DatasetImportResource {
                                         @QueryParam("limit") @DefaultValue("1") int limit) {
     // a release? use mother project in that case
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(key);
-    if (info.origin == DatasetOrigin.RELEASE) {
+    if (info.origin.isRelease()) {
       return List.of(diDao.getReleaseAttempt(key));
 
     } else {

@@ -59,7 +59,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
   public void setSqlSessionFactory(SqlSessionFactory factory) {
     cache.setSqlSessionFactory(factory);
     try (SqlSession session = factory.openSession()){
-      ccFilter.addAll(session.getMapper(DatasetMapper.class).keys(DatasetOrigin.RELEASE));
+      ccFilter.addAll(session.getMapper(DatasetMapper.class).keys(DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE));
     }
   }
 
@@ -69,7 +69,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
   @Subscribe
   public void datasetChanged(DatasetChanged d){
-    if (d.obj!=null && d.obj.getOrigin() == DatasetOrigin.RELEASE) {
+    if (d.obj!=null && d.obj.getOrigin().isRelease()) {
       ccFilter.addRelease(d.key);
       if (d.obj.getSourceKey() != null) {
         // refresh the latest release (candidate) of the source project

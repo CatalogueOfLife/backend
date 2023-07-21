@@ -32,6 +32,9 @@ public enum DatasetOrigin {
     return this != EXTERNAL;
   }
 
+  /**
+   * @return true if origin is a regular or extended release
+   */
   public boolean isRelease() {
     return this == RELEASE || this == XRELEASE;
   }
