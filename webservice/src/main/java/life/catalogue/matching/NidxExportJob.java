@@ -2,6 +2,8 @@ package life.catalogue.matching;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
@@ -50,6 +52,9 @@ public class NidxExportJob extends BackgroundJob {
 
   public NidxExportJob(List<Integer> datasetKeys, int minDatasets, int userKey, SqlSessionFactory factory, WsServerConfig cfg) {
     super(JobPriority.LOW, userKey);
+    Preconditions.checkNotNull(datasetKeys, "at least one datasetKey must be requested");
+    Preconditions.checkArgument(!datasetKeys.isEmpty(), "at least one datasetKey must be requested");
+    Preconditions.checkArgument(minDatasets >= 0, "minDatasets must be zero or positive");
     this.cfg = cfg;
     this.minDatasets = minDatasets;
     this.datasetKeys = List.copyOf(datasetKeys);

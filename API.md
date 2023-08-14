@@ -71,11 +71,11 @@ CLB will actually decline the use of plain *http*.
 
 A simple basic authentication using curl would look like this:
 
-```
+```bash
 curl -s -v --user j.smith:passwd1234xyz "https:api.checklistbank.org/user/me"```
 ```
 
-```
+```bash
  > GET /user/me HTTP/2
  > Host: api.checklistbank.org
  > authorization: Basic ai5zbWl0aDpwYXNzd2QxMjM0eHl6
@@ -200,7 +200,7 @@ Bulk matching accepts different inputs for names:
  2) select a source dataset from ChecklistBank that you want to use to supply names for matching. This can then also be filtered by various parameters to just match a subtree, certain ranks, etc
 
  A bulk matching request could look like this:
- ```
+ ```bash
    curl -s --user USERNAME:PASSWORD -H "Content-Type: text/tsv" --data-binary @match.tsv -X POST "https://api.checklistbank.org/dataset/COL2022/match/nameusage/job"
  ```
 with a `match.tsv` input file such as this one:
@@ -249,6 +249,66 @@ Query params for individual matches and column names in bulk input are called th
 
 Authentification in the CLB API works either as plain `BasicAuth` for every request or you can request a `JWToken` which the UI for example does.
 Basic API Docs https://api.checklistbank.org/#/default/match_1  
+
+## Names Index
+The _Names Index_ (nidx) is a ChecklistBank component that automatically tracks all unique names across all datasets. 
+It is the heart of the name matching, but can also be used directly to find related names.
+Every name in the index links back to a _canonical_ version of the name which is unranked and does not have any authorship.
+Otherwise names are considered the same only if the latin name, rank & authorship match up according to a rather strict similarity algorithm.
+As this algorithm is continuously being improved, entries in the index and their related names cluster differ over time 
+and nidx identifiers should not be stored for a longer time as they are not guaranteed to be stable.
+
+Names Index entries should also not be seen as nomenclaturally scrutinized data. Any name present in any of the CLB datasets will be included 
+as long as their Name.type is not one of:
+
+ - `no_name`: 1234
+ - `placeholder`: Asteraceae incertae sedis
+ - `informal`: Abies spec.
+
+A names index entry can be resolved like this:
+https://api.checklistbank.org/nidx/2
+```json
+{
+ "created":"2023-02-22T18:52:01.575189",
+ "modified":"2023-02-22T18:52:01.575189",
+ "canonicalId":1,
+ "scientificName":"Animalia",
+ "rank":"kingdom",
+ "uninomial":"Animalia",
+ "labelHtml":"Animalia",
+ "parsed":true,
+ "id":2,
+}
+```
+
+The `canonicalId` points to the canonical version of the name:
+https://api.checklistbank.org/nidx/1
+
+You can list all index names that share the same canonical name with the group resource:
+https://api.checklistbank.org/nidx/1/group
+
+The names index id also allows to find all name instances in CheckistBank no matter which dataset they belong to:
+https://api.checklistbank.org/nameusage?nidx=1
+
+### Names Index ID mapping exports
+Another feature driven by the names index are exports of ID mappings between different datasets.
+Similar to downloads this is an asynchroneous job that will result in a compressed CSV file with all names from the requested datasets 
+aligned according to their names index match. An optional `min` parameter can be given to only include names that appear in at least the given number of datasets.
+
+For example an export of ID mappings between the [Catalogue of World Gelechiidae](https://www.checklistbank.org/dataset/2362/about) 
+and [LepIndex](https://www.checklistbank.org/dataset/1018/about) can be triggered with
+ ```bash
+curl --user USERNAME:PASSWORD -X POST "https://api.checklistbank.org/nidx/export?datasetKey=1018&datasetKey=2362&min=2"
+ ```
+
+The top of the result file would look like this:
+```
+rank	scientificName	authorship	IDdataset1018	IDdataset2362
+species	Acanthophila piceana	Sulcs, 1968	100532	4263-4266
+species	Acompsia angulifera	Walsingham, 1897	98070	2517-2518
+species	Acompsia dimorpha	Petry, 1904	98076	28
+species	Acompsia fuscella	Duponchel, 1844	103303	7819-7824
+```
 
 
 ## Github import hooks
