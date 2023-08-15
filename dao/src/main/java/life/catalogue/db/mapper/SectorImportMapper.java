@@ -44,6 +44,12 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
                           @Param("states") @Nullable Collection<ImportState> states,
                           @Param("current") @Nullable Boolean current,
                           @Param("page") @Nullable Page page);
+
+  /**
+   * List all unique sector keys from all imports for a given projects dataset key.
+   * @param datasetKey the projects dataset key
+   */
+  List<Integer> listSectors(@Param("datasetKey") @Nullable Integer datasetKey);
   
   void create(@Param("imp") SectorImport sectorImport);
 

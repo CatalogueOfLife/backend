@@ -118,8 +118,7 @@ public class SectorDelete extends SectorRunnable {
 
       // update datasetSectors counts
       SectorDao.incSectorCounts(session, s, -1);
-      // remove imports and sector itself
-      session.getMapper(SectorImportMapper.class).delete(sectorKey);
+      // remove sector itself
       session.getMapper(SectorMapper.class).delete(sectorKey);
       session.commit();
 

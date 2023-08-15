@@ -211,6 +211,18 @@
     ORDER BY target_rank
   </select>
 
+  <select id="listSectorKeys" resultType="integer">
+    WITH d AS (
+        SELECT #{datasetKey} AS key
+      UNION
+        SELECT d.id FROM dataset d WHERE d.source_key = #{datasetKey}
+          AND d.deleted IS NULL
+          AND <include refid="life.catalogue.db.mapper.DatasetMapper.IS_RELEASE"/>
+    )
+    SELECT DISTINCT s.id
+    FROM d JOIN sector s ON s.dataset_key = d.key
+  </select>
+
   <select id="listTargetDatasetKeys" resultType="integer">
     SELECT DISTINCT s.dataset_key
     FROM <include refid="FROM"/>

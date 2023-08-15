@@ -51,7 +51,13 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
    */
   Cursor<Sector> processSectors(@Param("datasetKey") int datasetKey,
                         @Param("subjectDatasetKey") int subjectDatasetKey);
-  
+
+  /**
+   * Returns a list of unique sector keys from the project and all it's releases.
+   * @param projectKey dataset key of the project
+   */
+  List<Integer> listSectorKeys(@Param("datasetKey") int projectKey);
+
   /**
    * Returns a list of unique dataset keys from all catalogues that have at least one sector.
    */

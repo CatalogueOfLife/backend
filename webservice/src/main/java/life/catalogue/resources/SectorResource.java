@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
@@ -14,6 +16,7 @@ import life.catalogue.matching.decision.RematcherBase;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -47,12 +50,14 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
   private final SectorDao dao;
   private final TaxonDao tdao;
+  private final SectorImportDao sid;
   private final FileMetricsSectorDao fmsDao;
   private final SyncManager assembly;
 
-  public SectorResource(SectorDao dao, TaxonDao tdao, FileMetricsSectorDao fmsDao, SyncManager assembly) {
+  public SectorResource(SectorDao dao, TaxonDao tdao, FileMetricsSectorDao fmsDao, SectorImportDao sid, SyncManager assembly) {
     super(Sector.class, dao);
     this.dao = dao;
+    this.sid = sid;
     this.fmsDao = fmsDao;
     this.tdao = tdao;
     this.assembly = assembly;
@@ -107,6 +112,14 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user) {
     DaoUtils.requireManaged(datasetKey);
     assembly.sync(datasetKey, request, user);
+  }
+
+  @DELETE
+  @Path("sync/orphans")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void delete(@PathParam("key") int datasetKey, @Auth User user) throws IOException {
+    LOG.info("Remove orphaned sector imports and metrics from project {} by user {}", datasetKey, user.getName());
+    sid.removeOrphanedImports(datasetKey);
   }
 
   @DELETE

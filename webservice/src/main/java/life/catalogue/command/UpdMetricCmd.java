@@ -31,7 +31,6 @@ import net.sourceforge.argparse4j.inf.Subparser;
 /**
  * Creates missing sector import metrics for all releases of a given project.
  * An optional update flag allows to also rebuilt existing metrics.
- * TODO: merge with MetricsUpdater admin job to also update all metrics if requested (datasets & sector)
  */
 public class UpdMetricCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(UpdMetricCmd.class);
@@ -42,7 +41,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
   private boolean update;
   private SectorImportDao sid;
   private DatasetImportDao did;
-  private Set<SectorAttempt> done = new HashSet<>();
+  private final Set<SectorAttempt> done = new HashSet<>();
 
   public UpdMetricCmd() {
     super("updMetrics", false, "Update all release sector metrics for the given projects dataset key");
@@ -213,20 +212,18 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     }
 
     final int projectKey;
-    final String kind;
     final LocalDateTime createdTime;
     if (d.getOrigin().isRelease()) {
       projectKey = d.getSourceKey();
-      kind = "release";
       createdTime = d.getCreated();
-      LOG.info("Updating sector metrics for project {} release {}#{}", projectKey, d.getKey(), d.getAttempt());
+      LOG.info("Updating sector metrics for project {} {} {}#{}", projectKey, d.getOrigin(), d.getKey(), d.getAttempt());
 
     } else {
       projectKey = d.getKey();
-      kind = "project";
       createdTime = LocalDateTime.now();
       LOG.info("Updating sector metrics for project {}: {}", d.getKey(), d.getAliasOrTitle());
     }
+    final String kind = d.getOrigin().name().toLowerCase();
 
     final AtomicInteger counter = new AtomicInteger(0);
     final AtomicInteger created = new AtomicInteger(0);
