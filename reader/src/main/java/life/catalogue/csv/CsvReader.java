@@ -11,6 +11,8 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
 
@@ -72,8 +74,8 @@ public class CsvReader {
       common.setReadInputOnSeparateThread(false);
       common.trimValues(true);
       common.setNullValue(null);
-      common.setMaxColumns(256);
-      common.setMaxCharsPerColumn(16 * 1024 * 1024);
+      common.setMaxColumns(512);
+      common.setMaxCharsPerColumn(512 * 1024 * 1024);
     }
   }
 
@@ -599,6 +601,8 @@ public class CsvReader {
     private long skippedStartFile;
     private boolean skippedLast;
     private String[] row;
+    private String[] queuedRow;
+    private long lineNumber;
 
     TermRecIterator(Schema schema) throws IOException {
       s = schema;
@@ -642,11 +646,46 @@ public class CsvReader {
     public boolean hasNext() {
       return row != null;
     }
-    
+
+    private String[] readCompleteRow() {
+      String[] newRow;
+      // we might have a leftover from the last multiline join
+      if (queuedRow != null){
+        lineNumber = iter.getContext().currentLine() - 1;
+        newRow = queuedRow;
+        queuedRow = null;
+      } else {
+        lineNumber = iter.getContext().currentLine();
+        newRow = iter.next();
+      }
+      // try to read next line and append it for strayed multiline data if the column numbers match the header
+      while (newRow != null && newRow.length > 1 && newRow.length < maxIdx + 1 && iter.hasNext()) {
+        String[] nextRow = iter.next();
+        // merging 2 rows reduces the columns by 1
+        if (nextRow != null && nextRow.length > 0) {
+          if (newRow.length + nextRow.length - 1 <= maxIdx + 1) {
+            // extend the last column with data from the first columns of the new row
+            if (nextRow[0] != null) {
+              newRow[newRow.length - 1] = newRow[newRow.length - 1] + "\n" + nextRow[0];
+            }
+            if (nextRow.length > 1) {
+              nextRow = Arrays.copyOfRange(nextRow, 1, nextRow.length);
+              newRow = ArrayUtils.addAll(newRow, nextRow);
+            }
+          } else {
+            // save newRow for next round...
+            queuedRow = nextRow;
+            return newRow;
+          }
+        }
+      }
+      return newRow;
+    }
+
     private void nextRow() {
       skippedLast = false;
       if (iter.hasNext()) {
-        while (iter.hasNext() && isEmpty(row = iter.next(), true));
+        while (iter.hasNext() && isEmpty(row = readCompleteRow(), true));
         // if the last rows were empty we would getUsage the last non empty row again, clear it in that case!
         if (!iter.hasNext() && isEmpty(row, false)) {
           row = null;
@@ -673,7 +712,7 @@ public class CsvReader {
         if (log) {
           skippedLast = true;
           skipped++;
-          LOG.info("{} skip line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine(), row.length, maxIdx + 1);
+          LOG.info("{} skip line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine()-1, row.length, maxIdx + 1);
         }
       } else if (isAllNull(row)) {
         if (log) {
@@ -689,7 +728,7 @@ public class CsvReader {
 
     @Override
     public VerbatimRecord next() {
-      VerbatimRecord tr = new VerbatimRecord(iter.getContext().currentLine() - 1, filename, s.rowType);
+      VerbatimRecord tr = new VerbatimRecord(lineNumber, filename, s.rowType);
       for (Schema.Field f : s.columns) {
         if (f != null) {
           String val = null;

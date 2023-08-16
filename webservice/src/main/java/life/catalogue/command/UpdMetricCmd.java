@@ -237,7 +237,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
       PgUtils.consume(()->sm.processDataset(d.getKey()), s -> {
         counter.incrementAndGet();
         if (s.getSyncAttempt() == null) {
-          LOG.warn("Ignore sector {} without last sync attempt from {} {}", s.getId(), kind, d.getKey());
+          LOG.info("Ignore sector {} without last sync attempt from {} {}", s.getId(), kind, d.getKey());
 
         } else {
           SectorAttempt sa = new SectorAttempt(projectKey, s.getId(), s.getSyncAttempt());

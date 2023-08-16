@@ -418,6 +418,9 @@ public enum Issue {
 
   PUBLISHED_YEAR_CONFLICT(NAME, Level.WARNING,
     "The given year of publication of the name conflicts with year of the authorship."),
+
+  MULTILINE_RECORD(ANY, Level.WARNING,
+    "The verbatim record spans multiple lines without escaping or quoting. It has been processed, but should be taken with caution as it does not correspond with the specifications."),
   ;
 
   /**

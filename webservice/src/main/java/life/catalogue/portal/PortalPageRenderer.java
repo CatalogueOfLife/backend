@@ -1,12 +1,12 @@
 package life.catalogue.portal;
 
+import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.io.InputStreamUtils;
-import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
@@ -47,7 +46,7 @@ public class PortalPageRenderer {
   private static final Logger LOG = LoggerFactory.getLogger(PortalPageRenderer.class);
 
   public enum PortalPage {
-    NOT_FOUND, TAXON, DATASET, METADATA, CLB_DATASET;
+    NOT_FOUND, TAXON, TOMBSTONE, DATASET, METADATA, CLB_DATASET;
     public boolean isChecklistBank() {
       return this == CLB_DATASET;
     }
@@ -98,10 +97,10 @@ public class PortalPageRenderer {
    * @param env
    */
   public Response renderTaxon(String id, Environment env) throws TemplateException, IOException {
-    try {
-      final int datasetKey = releaseKey(env);
-      final Map<String, Object> data = buildData(datasetKey);
+    final int datasetKey = releaseKey(env);
+    final Map<String, Object> data = buildData(datasetKey);
 
+    try {
       final var key = new DSIDValue<>(datasetKey, id);
       //TODO: check if we had the id in a previous release...
       Taxon t = tdao.getOr404(key);
@@ -139,8 +138,17 @@ public class PortalPageRenderer {
       URI location = URI.create("/data/taxon/" + e.acceptedKey.getId());
       throw ResourceUtils.redirect(location);
 
+    } catch (ArchivedException e) {
+      // render tombstone page
+      data.put("usage", e.usage);
+      data.put("first", datasetDao.get(e.usage.getFirstReleaseKey()));
+      data.put("last", datasetDao.get(e.usage.getLastReleaseKey()));
+      // load verbatim source from last release
+      data.put("source", e.usage.getLastReleaseKey() == null ? null : tdao.getSource(DSID.of(e.usage.getLastReleaseKey(), id)));
+      return render(env, PortalPage.TAXON, data);
+
     } catch (NotFoundException e) {
-      return render(env, PortalPage.NOT_FOUND, new HashMap<>());
+      return render(env, PortalPage.TOMBSTONE, new HashMap<>());
     }
   }
 

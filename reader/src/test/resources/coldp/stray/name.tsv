@@ -1,0 +1,42 @@
+ID	basionymID	scientificName	authorship	rank	uninomial	genus	infragenericEpithet	specificEpithet	infraspecificEpithet	referenceID	publishedInPage	publishedInYear	original	code	status	link	remarks	modified	modifiedBy
+6	6	Lepidoptera	Linnaeus, 1758	order	Lepidoptera							1758	true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2023-04-08T00:56:34Z	Donald Hobern
+5304	5304	Calliduloidea		superfamily	Calliduloidea								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-16T20:29:50Z	Ian Kitching
+304039	304039	Reaca		genus	Reaca								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:58:52Z	Ian Kitching
+304009	304009	Metaptila		genus	Metaptila								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:44:48Z	Ian Kitching
+304008	304008	Characona		genus	Characona								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:44:47Z	Ian Kitching
+304007	304007	Stichtoptera		genus	Stichtoptera								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:44:27Z	Ian Kitching
+304006	304006	Thelpochares		genus	Thelpochares								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:43:15Z	Ian Kitching
+304005	304005	Berresas		genus	Berresas								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:42:02Z	Ian Kitching
+304004	304004	Arisada		genus	Arisada								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:41:57Z	Ian Kitching
+304003	304003	Phalanea		genus	Phalanea								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:41:49Z	Ian Kitching
+304002	304002	Vupara		genus	Vupara								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:41:40Z	Ian Kitching
+304001	304001	Argotis		genus	Argotis								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:41:20Z	Ian Kitching
+304000	304000	Prodenis		genus	Prodenis								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:41:12Z	Ian Kitching
+303999	303999	Arathisa		genus	Arathisa								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:40:42Z	Ian Kitching
+303998	303998	Perigera		genus	Perigera								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:40:08Z	Ian Kitching
+303997	303997	Oxycestra		genus	Oxycestra								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:39:58Z	Ian Kitching
+303996	303996	Stictioptera		genus	Stictioptera								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:39:08Z	Ian Kitching
+303995	303995	Radinacra		genus	Radinacra								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:38:34Z	Ian Kitching
+303994	303994	Leucocosmia		genus	Leucocosmia								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:38:33Z	Ian Kitching
+303993	303993	Byrophila		genus	Byrophila								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:36:47Z	Ian Kitching
+303992	303992	Nebrissa		genus	Nebrissa								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:36:20Z	Ian Kitching
+303991	303991	Ogu		genus	Ogu								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:35:57Z	Ian Kitching
+303990	303990	Parastictis		genus	Parastictis								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:35:38Z	Ian Kitching
+303989	303989	Ophiuse		genus	Ophiuse								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:35:16Z	Ian Kitching
+23340	23340	Acontia	Ochsenheimer, 1816	genus	Acontia					3478	91		true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224		"269874.00|ORIGINAL GENUS UNDETERMINED|Valid name|241.00|Noctuoidea-Noctuidae-Acontiinae-213A-239081|Q:\Noctuoidea\Noctuidae\Acontiinae\213A\|FC-Noctuoidea-Noctuidae-Acontiinae-213A-239081.JPG|BC-Noctuoidea-Noctuidae-Acontiinae-213A-239081.JPG|Nye (1975) stated:-
+N. solaris is a junior subjective synonym of Phalaena lucida Hufnagel, 1766, Berlin. mag. 3 (3): 302. Incorrect type-species designation: Noctua luctuosa [Denis & Schiffermuller], 1775, in the Ophiderinae, cited by Curtis, 1829 September 1st, Br. Ent. 6: 276. This designation was published five months after that of Duponchel, dated from Biblphie Fr. 1829: 198.
+
+Watson, Fletcher & Nye (1980) stated:-
+Acontia has been used as the original generic name for species now in the Arctiidae.
+
+Poole (1989) included TARACHE Hübner, 1823; DESMOPHORA Stephens, 1829; EUPHASIA Stephens, 1830; HELIOTHERA Sodoffsky, 1837; PORROTHA Gistl, 1848; TIMA Walker, 1858; and TRICHOTARACHE Grote, 1875 as junior synonyms of ACONTIA Ochsenheimer, 1816.
+
+Poole (1989) included 146 species in the genus ACONTIA Ochsenheimer, 1816 and a further 1 species in the genus ACONTIA of authors.
+
+Poole (1989) included a single species in the genus EUPHASIA of aut|13861|2078|Noctua|solaris|Schiffermüller|1775|[AUSTRIA]|Vienna district|Type(s)|Depository unknown|19632|by subsequent designation"	2023-07-26T10:25:02Z	Donald Hobern
+303988	303988	Phaelena		genus	Phaelena								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:35:12Z	Ian Kitching
+303987	303987	Noctuna		genus	Noctuna								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:34:46Z	Ian Kitching
+23341	23341	Porrotha	Gistl, 1848	genus	Porrotha					6952	viii	1848	true	ICZN			269877.00|ORIGINAL GENUS UNDETERMINED|Unnecessary replacement name|269874|23731.00|Noctuoidea-Noctuidae-Acontiinae-213A-239084|Q:\Noctuoidea\Noctuidae\Acontiinae\213A\|FC-Noctuoidea-Noctuidae-Acontiinae-213A-239084.JPG|BC-Noctuoidea-Noctuidae-Acontiinae-213A-239084.JPG|Nye (1975) stated:-
+303986	303986	Corroedia		genus	Corroedia								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:31:10Z	Ian Kitching
+303985	303985	Sideritis		genus	Sideritis								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:28:33Z	Ian Kitching
+303984	303984	Sideridia		genus	Sideridia								true	ICZN	http://purl.obolibrary.org/obo/NOMEN_0000224			2017-07-17T23:28:27Z	Ian Kitching

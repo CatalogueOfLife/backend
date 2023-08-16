@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-08-15 add new issue
+```
+ALTER TYPE ISSUE ADD VALUE 'MULTILINE_RECORD';
+```
+
 ### 2023-07-20 add new issue
 ```
 ALTER TYPE ISSUE ADD VALUE 'PUBLISHED_YEAR_CONFLICT';

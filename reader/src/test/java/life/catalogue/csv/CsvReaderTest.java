@@ -3,15 +3,19 @@ package life.catalogue.csv;
 import com.univocity.parsers.common.CommonParserSettings;
 
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.Resources;
 
-import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -156,7 +160,36 @@ public class CsvReaderTest {
     assertEquals(quote, csv.getFormat().getQuote());
     return csv;
   }
-  
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1242
+   */
+  @Test
+  public void strayLines() throws Exception {
+    CsvReader reader = CsvReader.from(Resources.toFile("coldp/stray").toPath());
+    var s = reader.schemas().iterator().next();
+    AtomicInteger cnt = new AtomicInteger();
+    AtomicInteger skipped = new AtomicInteger();
+    Set<String> ids = new HashSet<>();
+    reader.stream(s.rowType).forEach(r -> {
+      cnt.incrementAndGet();
+      if (r.hasIssue(Issue.PREVIOUS_LINE_SKIPPED)) {
+        skipped.incrementAndGet();
+      }
+      ids.add(r.get(DcTerm.identifier));
+      System.out.println(r);
+    });
+    assertEquals(30, cnt.get());
+    assertEquals(1, skipped.get()); // 23341
+    assertEquals(30, ids.size());
+    assertTrue(ids.contains("6"));
+    assertTrue(ids.contains("303989"));
+    assertTrue(ids.contains("23340"));
+    assertTrue(ids.contains("303988"));
+    assertTrue(ids.contains("303984"));
+    assertFalse(ids.contains("23341")); // skipped
+  }
+
   @Test
   public void discoverFormat() throws Exception {
     assertCsvFormat("csv/15-CommonNames.txt", ',', '"');

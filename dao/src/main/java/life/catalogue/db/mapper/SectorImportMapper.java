@@ -20,7 +20,7 @@ import org.apache.ibatis.annotations.Param;
 public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   
   /**
-   * Retrieves the full import with the entire potentially very large text tree and names id set.
+   * Retrieves the sector import metrics for a given sector and attempt.
    */
   SectorImport get(@Param("key") DSID<Integer> sectorKey, @Param("attempt") int attempt);
 

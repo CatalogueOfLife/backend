@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
@@ -32,6 +33,9 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+
+import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
+import static life.catalogue.api.vocab.DatasetOrigin.RELEASE;
 
 public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
@@ -87,6 +91,15 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
         SimpleName syn = session.getMapper(NameUsageMapper.class).getSimple(key);
         if (syn != null) {
           throw new SynonymException(key, syn.getParent());
+        }
+        // if it is a release, try if we have an archived version in the project
+        var info = DatasetInfoCache.CACHE.info(key.getDatasetKey());
+        if (info.origin.isRelease()) {
+          var projectKey = DSID.of(info.sourceKey, key.getId());
+          var anu= session.getMapper(ArchivedNameUsageMapper.class).get(projectKey);
+          if (anu != null) {
+            throw new ArchivedException(projectKey, anu);
+          }
         }
         // rethrow the original 404
         throw e;
@@ -191,6 +204,12 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     fillTaxonInfo(session, info, null, true, true, true, true, true, true,
       true, true, true, true);
     return info;
+  }
+
+  public VerbatimSource getSource(final DSID<String> key) {
+    try (SqlSession session = factory.openSession(false)) {
+      return session.getMapper(VerbatimSourceMapper.class).getWithSources(key);
+    }
   }
 
   public void fillTaxonInfo(final SqlSession session, final TaxonInfo info,
