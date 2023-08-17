@@ -243,7 +243,7 @@ setInterval(getHealth, interval);
         </div>
       </div>
       <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
-        <span class="Component-content-0-2-3">${usage.id}</span>
+        <span class="Component-content-0-2-3">${usage.getId()}</span>
       </div>
     </div>
     <div class="ant-row Component-formItem-0-2-1">
@@ -253,8 +253,8 @@ setInterval(getHealth, interval);
         </div>
       </div>
       <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
-        <span class="Component-content-0-2-3">First issued in release <a href="https://www.checklistbank.org/dataset/${first.key?c}/taxon/${usage.id}">${first.alias!first.version}</a>.
-        Last used in release <a href="https://www.checklistbank.org/dataset/${last.key?c}/taxon/${usage.id}">${last.alias!last.version}</a></span>
+        <span class="Component-content-0-2-3">First issued in release <a href="https://www.checklistbank.org/dataset/${first.key?c}/taxon/${usage.getId()}">${first.alias!first.version}</a>.
+        Last used in release <a href="https://www.checklistbank.org/dataset/${last.key?c}/taxon/${usage.getId()}">${last.alias!last.version}</a></span>
       </div>
     </div>
     <div class="ant-row Component-formItem-0-2-1">

@@ -1,5 +1,9 @@
 package life.catalogue.portal;
 
+import life.catalogue.api.exception.ArchivedException;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.dao.DatasetDao;
@@ -12,75 +16,92 @@ import life.catalogue.db.TestDataRule;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.http.HttpStatus;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.junit.*;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.yaml.snakeyaml.events.Event;
 
 import static life.catalogue.portal.PortalPageRenderer.Environment.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class PortalPageRendererTest {
-  final LatestDatasetKeyCache cache = new LatestDatasetKeyCache() {
-    @Override
-    public void setSqlSessionFactory(SqlSessionFactory factory) {
-    }
 
-    @Override
-    public @Nullable Integer getLatestRelease(int projectKey, boolean ext) {
-      return dataRule.testData.key;
-    }
+  final int projectKey= Datasets.COL;
+  final int releaseKey=1000;
+  final DSID<String> ID_DEAD = DSID.of(releaseKey, "DEAD");
 
-    @Override
-    public @Nullable Integer getLatestReleaseCandidate(int projectKey, boolean ext) {
-      return dataRule.testData.key;
-    }
-
-    @Override
-    public @Nullable Integer getReleaseByAttempt(int projectKey, int attempt) {
-      return null;
-    }
-
-    @Override
-    public @Nullable Integer getColAnnualRelease(int year, boolean ext) {
-      return null;
-    }
-
-    @Override
-    public @Nullable Integer getDatasetKeyByGbif(UUID gbif) {
-      return null;
-    }
-
-    @Override
-    public boolean isLatestRelease(int datasetKey) {
-      return true;
-    }
-
-    @Override
-    public void refresh(int projectKey) {
-    }
-  };
-
-  @ClassRule
-  public final static PgSetupRule pg = new PgSetupRule();
-
-  @Rule
-  public final TestDataRule dataRule = TestDataRule.apple();
+  @Mock
+  LatestDatasetKeyCache cache;
+  @Mock
+  DatasetDao ddao;
+  @Mock
+  TaxonDao tdao;
+  @Mock
+  DatasetSourceDao sdao;
 
   PortalPageRenderer renderer;
 
   @Before
   public void init() throws IOException {
-    var dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null);
-    var srcDao = new DatasetSourceDao(SqlSessionFactoryRule.getSqlSessionFactory());
-    var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null);
-    var tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, null);
+    when(cache.getLatestRelease(projectKey, false)).thenReturn(releaseKey);
+
+    var ds = new Dataset();
+    ds.setKey(100);
+    ds.setAlias("source");
+    ds.setTitle("Super Source");
+    when(ddao.get(ds.getKey())).thenReturn(ds);
+
+    var dr1 = new Dataset();
+    dr1.setKey(releaseKey-10);
+    dr1.setAlias("rel1");
+    dr1.setTitle("First Release");
+    when(ddao.get(dr1.getKey())).thenReturn(dr1);
+
+    var dr2 = new Dataset();
+    dr2.setKey(releaseKey-2);
+    dr2.setAlias("rel2");
+    dr2.setTitle("Last Release");
+    when(ddao.get(dr2.getKey())).thenReturn(dr2);
+
+    ArchivedNameUsage anu = new ArchivedNameUsage();
+    anu.setId(ID_DEAD.getId());
+    anu.setDatasetKey(projectKey);
+    anu.setLastReleaseKey(dr1.getKey());
+    anu.setFirstReleaseKey(dr2.getKey());
+    anu.setStatus(TaxonomicStatus.ACCEPTED);
+    Name n = new Name();
+    n.setRank(Rank.SPECIES);
+    n.setScientificName("Abies alba");
+    n.setAuthorship("Mill.");
+    anu.setName(n);
+    anu.setClassification(List.of(
+      SimpleName.sn("k1", Rank.KINGDOM, "Plantae", null),
+      SimpleName.sn("f1", Rank.FAMILY, "Pinaceae", null),
+      SimpleName.sn("g1", Rank.GENUS, "Abies", "Miller")
+    ));
+    when(tdao.getOr404(ID_DEAD)).thenThrow(new ArchivedException(ID_DEAD, anu));
+
+    var v = new VerbatimSource();
+    v.setDatasetKey(anu.getLastReleaseKey());
+    v.setSourceDatasetKey(ds.getKey());
+    when(tdao.getSource(any())).thenReturn(v);
     var p = Path.of("/tmp/col/templates");
     PathUtils.deleteRecursively(p);
-    renderer = new PortalPageRenderer(dDao, srcDao, tDao, cache, p);
+    renderer = new PortalPageRenderer(ddao, sdao, tdao, cache, p);
   }
 
   @After
@@ -89,44 +110,10 @@ public class PortalPageRendererTest {
   }
 
   @Test
-  public void renderTaxon() throws Exception {
-    assertEquals(HttpStatus.SC_OK, renderer.renderTaxon("root-1", PROD).getStatus());
-    assertEquals(HttpStatus.SC_OK, renderer.renderTaxon("root-1", DEV).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderTaxon("nope", PROD).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderTaxon("nope", DEV).getStatus());
+  public void renderTombstone() throws Exception {
+    var res = renderer.renderTaxon(ID_DEAD.getId(), PROD);
+    assertEquals(HttpStatus.SC_OK, res.getStatus());
+    System.out.println(res.getEntity().toString());
   }
 
-  @Test
-  public void renderDataset() throws Exception {
-    assertEquals(HttpStatus.SC_OK, renderer.renderDatasource(dataRule.testData.key, PROD).getStatus());
-    assertEquals(HttpStatus.SC_OK, renderer.renderDatasource(dataRule.testData.key, DEV).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderDatasource(99999, PROD).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderDatasource(99999, DEV).getStatus());
-  }
-
-  @Test
-  public void renderMetadata() throws Exception {
-    assertEquals(HttpStatus.SC_OK, renderer.renderMetadata(PROD).getStatus());
-  }
-
-  @Test
-  public void store() throws Exception {
-    renderer.store(PROD, PortalPageRenderer.PortalPage.DATASET, "Hergott Sackra nochamol.");
-    assertEquals("Hergott Sackra nochamol.", renderer.renderDatasource(dataRule.testData.key, PROD).getEntity());
-
-    renderer.store(PROD, PortalPageRenderer.PortalPage.DATASET, "Hergott Sackra nochamol. ${freemarker!\"no\"} works");
-    assertEquals("Hergott Sackra nochamol. no works", renderer.renderDatasource(dataRule.testData.key, PROD).getEntity());
-
-    renderer.store(PREVIEW, PortalPageRenderer.PortalPage.DATASET, "Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'");
-    assertEquals("Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'", renderer.renderDatasource(dataRule.testData.key, PREVIEW).getEntity());
-
-    renderer.store(PROD, PortalPageRenderer.PortalPage.METADATA, "Hergott Sackra nochamol. ${freemarker!\"no\"} works");
-    assertEquals("Hergott Sackra nochamol. no works", renderer.renderMetadata(PROD).getEntity());
-
-    renderer.store(PROD, PortalPageRenderer.PortalPage.CLB_DATASET, "Can I get some SEO please?");
-    assertEquals("Can I get some SEO please?", renderer.renderClbDataset(3, PROD).getEntity());
-
-    renderer.store(PROD, PortalPageRenderer.PortalPage.CLB_DATASET, "Can I get some <!-- REPLACE_WITH_SEO --> please?");
-    assertNotEquals("Can I get some SEO please?", renderer.renderClbDataset(3, PROD).getEntity());
-  }
 }

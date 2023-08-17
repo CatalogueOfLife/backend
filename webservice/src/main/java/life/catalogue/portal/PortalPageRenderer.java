@@ -149,10 +149,10 @@ public class PortalPageRenderer {
         data.put("verbatim", v);
         data.put("source", datasetDao.get(v.getSourceDatasetKey()));
       }
-      return render(env, PortalPage.TAXON, data);
+      return render(env, PortalPage.TOMBSTONE, data);
 
     } catch (NotFoundException e) {
-      return render(env, PortalPage.TOMBSTONE, new HashMap<>());
+      return render(env, PortalPage.NOT_FOUND, new HashMap<>());
     }
   }
 
