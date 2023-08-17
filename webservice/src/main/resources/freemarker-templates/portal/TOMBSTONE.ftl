@@ -7,21 +7,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="DC.identifier" scheme="DCTERMS.URI" content="urn:ISSN:2405-8858" />
 
-    <!-- Begin Jekyll SEO tag v2.6.1 -->
-<title>Not found | COL</title>
-<meta name="generator" content="Jekyll v4.1.1" />
-<meta property="og:title" content="Not found" />
+    <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Deleted | COL</title>
+<meta name="generator" content="Jekyll v4.2.2" />
+<meta property="og:title" content="Deleted" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="The Catalogue of Life" />
 <meta property="og:description" content="The Catalogue of Life" />
-<link rel="canonical" href="http://localhost:4000/404" />
-<meta property="og:url" content="http://localhost:4000/404" />
+<link rel="canonical" href="https://www.catalogueoflife.org/data/tombstone" />
+<meta property="og:url" content="https://www.catalogueoflife.org/data/tombstone" />
 <meta property="og:site_name" content="COL" />
+<meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Not found" />
+<meta property="twitter:title" content="Deleted" />
 <meta name="twitter:site" content="@catalogueoflife" />
 <script type="application/ld+json">
-{"url":"http://localhost:4000/404","headline":"Not found","description":"The Catalogue of Life","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/images/col_square_logo.jpg"}},"@type":"WebPage","@context":"https://schema.org"}</script>
+{"@context":"https://schema.org","@type":"WebPage","description":"The Catalogue of Life","headline":"Deleted","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.catalogueoflife.org/images/col_square_logo.jpg"}},"url":"https://www.catalogueoflife.org/data/tombstone"}</script>
 <!-- End Jekyll SEO tag -->
 
 
@@ -38,7 +39,7 @@
   -->
   <link rel="stylesheet" href="/css/custom.css">
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@v1.1.0/umd/main.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@v1.2.11/umd/main.css">
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script src="/javascripts/libs.js" type="text/javascript"></script>
   <script>
@@ -62,10 +63,10 @@
   <script src="/javascripts/imagesloaded.pkgd.min.js" type="text/javascript"></script>
   <script src="/javascripts/slick.min.js" type="text/javascript"></script>
   <script src="/javascripts/json2.js" type="text/javascript"></script>
-  <link rel="alternate" type="application/rss+xml" title="COL" href="http://localhost:4000/feed.xml" />
+  <link rel="alternate" type="application/rss+xml" title="COL" href="https://www.catalogueoflife.org/feed.xml" />
   <script src="https://unpkg.com/react@16/umd/react.production.min.js" ></script>
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" ></script>
-  <script src="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@v1.1.0/umd/col-browser.min.js" ></script>
+  <script src="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@v1.2.11/umd/col-browser.min.js" ></script>
   <script src="https://kit.fontawesome.com/9660302c12.js" crossorigin="anonymous"></script>
 </head>
 
@@ -100,7 +101,7 @@
 
 
 
-            <li class="has-dropdown ">
+            <li class="has-dropdown active">
               <a href="/data/search">Data</a>
               <ul class='dropdown'>
 
@@ -145,6 +146,10 @@
 
                   <li>
                     <a href="/about/colcommunity">The COL community</a>
+                  </li>
+
+                  <li>
+                    <a href="/about/contributors">The COL contributors</a>
                   </li>
 
                   <li>
@@ -217,7 +222,7 @@ xhr.onload = function () {
 	}
 
 };
-xhr.open('GET', 'https://api.checklistbank.org/admin/settings');
+xhr.open('GET', 'https://download.checklistbank.org/.status.json');
 xhr.send();
 }
 getHealth()
@@ -225,58 +230,100 @@ setInterval(getHealth, interval);
 
 </script>
 
-      <div class='full parallax' style='position: relative; background-image: url(/images/species/Raphus_cucullatus.jpg); color: #fff;'>
-  <div class='row'>
-    <div class='large-12 columns'>
-      <div class="mod modSectionHeader big">
-  <div class="special-title centered-text">
-    <h2 style="color: #fff;">Not found</h2>
-  </div>
-
-    <h3 class='centered-text' style='color: #fff'>This page never existed or was removed</h3>
-
-</div>
-    </div>
-  </div>
-  <div class='four spacing'></div>
-  <div class="caption caption-absolute">
-
-      <p><em>Raphus cucullatus</em> (Linnaeus, 1758) - <a href="https://mczbase.mcz.harvard.edu/MediaSet.cfm?media_id=74781">Photo CC By Museum of Comparative Zoology, Harvard University</a></p>
-
-    </div>
-</div>
-
-
-<div class='full'>
-  <div class='row'>
-
-    <div class='large-12 columns prose'>
-
       <div class="row" style="padding-top: 40px;">
-  <div class="small-2 large-4 columns dodo" style="text-align: right">
-      <img src="/images/dodo.png" alt="Dodo" style="width: 160px" />
-  </div>
-
-  <div class="small-4 large-4 columns">
-   	<p style="padding-top: 60px;">This page might have existed once but we can no longer find it.
-       Please try our <a href="/data/search">search</a> to find the taxa you are looking for.
-	   You are always welcome to contact us at <a href="mailto:support@catalogueoflife.org">support@catalogueoflife.org</a>.
-   	</p>
-
-  </div>
-
-  <div class="small-6 large-4 columns">
-
-  </div>
-</div>
-
-
-      <div class='spacing'></div>
+<div id="taxon">
+  <div class="catalogue-of-life" style="padding: 24px; min-height: 280px; margin: 16px 0px; font-size: 12px;">
+    <div class="ant-row">
+      <div class="ant-col"><h1 style="font-size: 30px; font-weight: 400; padding-left: 10px; display: inline-block; text-transform: none;">${usage.labelHtml}</h1></div>
     </div>
-
+    <div class="ant-row Component-formItem-0-2-1">
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+        <div>
+          <dt class="Component-label-0-2-2">COL Identifier</dt>
+        </div>
+      </div>
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+        <span class="Component-content-0-2-3">${usage.id}</span>
+      </div>
+    </div>
+    <div class="ant-row Component-formItem-0-2-1">
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+        <div>
+          <dt class="Component-label-0-2-2">History</dt>
+        </div>
+      </div>
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+        <span class="Component-content-0-2-3">First issued in release <a href="https://www.checklistbank.org/dataset/${first.key?c}/taxon/${usage.id}">${first.alias!first.version}</a>.
+        Last used in release <a href="https://www.checklistbank.org/dataset/${last.key?c}/taxon/${usage.id}">${last.alias!last.version}</a></span>
+      </div>
+    </div>
+    <div class="ant-row Component-formItem-0-2-1">
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+        <div>
+          <dt class="Component-label-0-2-2">Name</dt>
+        </div>
+      </div>
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+        <span class="Component-content-0-2-3">${usage.labelHtml}</span>
+      </div>
+    </div>
+    <div class="ant-row Component-formItem-0-2-1">
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+        <div>
+          <dt class="Component-label-0-2-2">Checklist status</dt>
+        </div>
+      </div>
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+        <span class="Component-content-0-2-3">${usage.status} ${usage.rank}</span>
+      </div>
+    </div>
+    <div class="ant-row Component-formItem-0-2-1">
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+        <div>
+          <dt class="Component-label-0-2-2">Classification</dt>
+        </div>
+      </div>
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+        <span class="Component-content-0-2-3">
+          <div style="margin-top: -3px; margin-left: -3px;">
+            <#list usage.classification as cl>
+            <div style="float: left; margin-right: 3px;">
+              <span style="color: rgba(0, 0, 0, 0.45); font-size: 11px;">${cl.rank}: </span>
+              <a href="https://www.checklistbank.org/dataset/${last.key?c}/taxon/${cl.id}">${cl.name}</a> &gt;
+            </div>
+            </#list>
+          </div>
+        </span>
+      </div>
+    </div>
+   <#if source??>
+    <div class="ant-row Component-formItem-0-2-1">
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+        <div>
+          <dt class="Component-label-0-2-2">Source dataset</dt>
+        </div>
+      </div>
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+        <span class="Component-content-0-2-3"><a href="https://www.checklistbank.org/dataset/${source.key}">${source.title}</a></span>
+      </div>
+    </div>
+   </#if>
+   <#if usage.link??>
+    <div class="ant-row Component-formItem-0-2-1">
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+        <div>
+          <dt class="Component-label-0-2-2">Link to original resource</dt>
+        </div>
+      </div>
+      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+        <span class="Component-content-0-2-3"><a href="${usage.link}">${usage.link}</a></span>
+      </div>
+    </div>
+   </#if>
   </div>
-  <div class='four spacing'></div>
 </div>
+</div>
+
     </div>
 
     <style>
@@ -347,7 +394,7 @@ gtag('event', 'page_view', {
     <div class='large-3 medium-3 columns'>
       <h1>
         <a href='/index.html'>
-          <img alt="" src="http://localhost:4000/images/col_square_logo.jpg" />
+          <img alt="" src="https://www.catalogueoflife.org/images/col_square_logo.jpg" />
         </a>
       </h1>
 
@@ -358,7 +405,7 @@ gtag('event', 'page_view', {
         <ul>
           <li><a href="/about/colusage#col-api">COL API</a></li>
           <li><a href="/data/browse">Browse the COL Checklist</a></li>
-          <li><a href="https://www.checklistbank.org/">COL ChecklistBank</a></li>
+          <li><a href="https://www.checklistbank.org/">ChecklistBank</a></li>
         </ul>
       <div class='spacing'></div>
       <ul class='socials'>
@@ -381,15 +428,15 @@ gtag('event', 'page_view', {
         <h4>Recent posts</h4>
         <ul>
 
-            <li><a href="/2021/11/09/release">Monthly Release November 2021</a></li>
+            <li><a href="/2023/07/18/release">Monthly Release July 2023</a></li>
 
-            <li><a href="/2021/11/04/20years">20 years Catalogue of Life</a></li>
+            <li><a href="/2023/06/27/release">Annual Release 2023</a></li>
 
-            <li><a href="/2021/10/18/release">Monthly Release October 2021</a></li>
+            <li><a href="/2023/05/15/release">Monthly Release May 2023</a></li>
 
-            <li><a href="/2021/09/21/release">Monthly Release September 2021</a></li>
+            <li><a href="/2023/04/19/release">Monthly Release April 2023</a></li>
 
-            <li><a href="/2021/08/25/release">Monthly Release August 2021</a></li>
+            <li><a href="/2023/03/09/release">Monthly Release March 2023</a></li>
 
         </ul>
       </div>
@@ -406,10 +453,17 @@ gtag('event', 'page_view', {
     </div>
   </div>
   <div class='creativecommons'>
-    <p>COL Checklist 2021-11-09  <a href="https://doi.org/10.48580/d4t4">doi:10.48580/d4t4</a><br>
+    <p>COL Checklist 2023-07-18  <a href="https://doi.org/10.48580/dfsy">doi:10.48580/dfsy</a><br>
       © 2020, Species 2000. This online database is copyrighted by Species 2000 on behalf of the Catalogue of Life partners.<br>
       Unless otherwise indicated, all other content offered under <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>,
-      Catalogue of Life, <a href="/data/metadata">2021-11-09</a>.
+      Catalogue of Life, <a href="/data/metadata">2023-07-18</a>.
+    </p>
+  </div>
+  <div class='spacing'></div>
+  <div class='creativecommons'>
+    <h4>Disclaimer</h4>
+    <p>
+      The Catalogue of Life cannot guarantee the accuracy or completeness of the information in the COL Checklist. <br>Be aware that the COL Checklist is still incomplete and undoubtedly contains errors. <br>Neither Catalogue of Life, Species 2000 nor any contributing database can be made liable for any direct or indirect damage arising out of the use of Catalogue of Life services.
     </p>
   </div>
   <div class='spacing'></div>

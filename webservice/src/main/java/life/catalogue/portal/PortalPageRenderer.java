@@ -144,7 +144,11 @@ public class PortalPageRenderer {
       data.put("first", datasetDao.get(e.usage.getFirstReleaseKey()));
       data.put("last", datasetDao.get(e.usage.getLastReleaseKey()));
       // load verbatim source from last release
-      data.put("source", e.usage.getLastReleaseKey() == null ? null : tdao.getSource(DSID.of(e.usage.getLastReleaseKey(), id)));
+      if (e.usage.getLastReleaseKey() != null) {
+        var v = tdao.getSource(DSID.of(e.usage.getLastReleaseKey(), id));
+        data.put("verbatim", v);
+        data.put("source", datasetDao.get(v.getSourceDatasetKey()));
+      }
       return render(env, PortalPage.TAXON, data);
 
     } catch (NotFoundException e) {
