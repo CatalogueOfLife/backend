@@ -74,8 +74,8 @@ public class CsvReader {
       common.setReadInputOnSeparateThread(false);
       common.trimValues(true);
       common.setNullValue(null);
-      common.setMaxColumns(512);
-      common.setMaxCharsPerColumn(512 * 1024 * 1024);
+      common.setMaxColumns(256);
+      common.setMaxCharsPerColumn(64 * 1024 * 1024);
     }
   }
 
