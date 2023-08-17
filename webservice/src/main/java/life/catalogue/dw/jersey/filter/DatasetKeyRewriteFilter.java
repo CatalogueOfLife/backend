@@ -1,5 +1,7 @@
 package life.catalogue.dw.jersey.filter;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.collection.CollectionUtils;
@@ -30,6 +32,7 @@ import org.slf4j.LoggerFactory;
  *  - the latest release candidate of a project, public or private: {projectKey}LRC
  *  - a specific release attempt of a project, public or private: {projectKey}R{attempt}
  *  - an annual version of COL: COL2021
+ *  - a GBIF UUID key: gbif-a66592b8-63a8-4c2d-9471-e58ddb2c0559
  */
 @PreMatching
 public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
@@ -39,10 +42,15 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   private static final String REL_PATTERN_STR = "(\\d+)(?:LX?RC?|R(\\d+))";
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
   private static final Pattern REL_PATH = Pattern.compile("dataset/" + REL_PATTERN_STR);
+
   private static final String COL_PREFIX = "(X?COL)";
-  private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_PREFIX + "(20\\d\\d)", Pattern.CASE_INSENSITIVE);
   private static final Pattern COL_PATTERN = Pattern.compile("^" + COL_PREFIX + "(20\\d\\d)$");
-  protected static final Pattern GBIF_PATTERN = Pattern.compile("^gbif-([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_PREFIX + "(20\\d\\d)", Pattern.CASE_INSENSITIVE);
+
+  private static final String GBIF_PATTERN_STR = "gbif-([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})";
+  @VisibleForTesting
+  static final Pattern GBIF_PATTERN = Pattern.compile("^" + GBIF_PATTERN_STR + "$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern GBIF_PATH = Pattern.compile("dataset/" + GBIF_PATTERN_STR, Pattern.CASE_INSENSITIVE);
   // all parameters that contain dataset keys and which we check if they need to be rewritten
   private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey", "sourcedatasetkey", "hassourcedataset", "releasedfrom");
   private static final Set<String> METHODS  = Set.of(HttpMethod.POST, HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
@@ -99,13 +107,9 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
         builder.replacePath(m.replaceFirst("dataset/" + rkey));
         req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1) + m.group(2));
       } else {
-        m = GBIF_PATTERN.matcher(req.getUriInfo().getPath());
+        m = GBIF_PATH.matcher(req.getUriInfo().getPath());
         if (m.find()) {
-          UUID gbif = UUID.fromString(m.group(1));
-          Integer datasetKey = cache.getDatasetKeyByGbif(gbif);
-          if (datasetKey == null) {
-            throw new NotFoundException("GBIF dataset key " + m.group() + " not found");
-          }
+          Integer datasetKey = datasetKeyFromGBIF(m.group(1));
           builder.replacePath(m.replaceFirst("dataset/" + datasetKey));
           req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group());
         }
@@ -121,6 +125,15 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     }
   }
 
+  private Integer datasetKeyFromGBIF(String uuid) {
+    UUID gbif = UUID.fromString(uuid);
+    Integer datasetKey = cache.getDatasetKeyByGbif(gbif);
+    if (datasetKey == null) {
+      throw new NotFoundException("GBIF dataset key " + uuid + " not found");
+    }
+    return datasetKey;
+  }
+
   public Optional<Integer> lookupDatasetKey(String datasetKey) {
     if (StringUtils.hasContent(datasetKey)) {
       Matcher m = REL_PATTERN.matcher(datasetKey);
@@ -130,6 +143,11 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
         m = COL_PATTERN.matcher(datasetKey);
         if (m.find()){
           return Optional.of(releaseKeyFromYear(m));
+        } else {
+          m = GBIF_PATTERN.matcher(datasetKey);
+          if (m.find()){
+            return Optional.of(datasetKeyFromGBIF(m.group(1)));
+          }
         }
       }
     }

@@ -57,7 +57,7 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
                                                                         .build(y -> lookupAnnualRelease(y, true));
   private final LoadingCache<UUID, Integer> gbif2clb = Caffeine.newBuilder()
                                                                          .maximumSize(MAX_SIZE)
-                                                                         .build(gbif -> lookupByGbif(gbif));
+                                                                         .build(this::lookupByGbif);
 
   private final LoadingCache<ReleaseAttempt, Integer> releaseAttempt = Caffeine.newBuilder()
                                                                                .maximumSize(MAX_SIZE)
@@ -99,7 +99,7 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
 
   @Override
   public @Nullable Integer getDatasetKeyByGbif(UUID gbif) {
-    return null;
+    return gbif2clb.get(gbif);
   }
 
   /**
