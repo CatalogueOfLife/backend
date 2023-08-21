@@ -51,11 +51,4 @@ public class PartitionerTest {
     }
   }
 
-  @Test
-  public void delete() throws Exception {
-    final var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    Partitioner.delete(factory, 3, DatasetOrigin.PROJECT);
-    Partitioner.delete(factory, 11, DatasetOrigin.EXTERNAL);
-    Partitioner.delete(factory, 3567, DatasetOrigin.EXTERNAL);
-  }
 }

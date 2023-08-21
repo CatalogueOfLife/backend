@@ -69,7 +69,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private SqlSession session;
   private boolean skipAfter = false;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
-  public final DatasetDao.KeyGenerator keyGenerator;
 
   /**
    * NONE does wipe all data so every test starts with an empty db.
@@ -155,14 +154,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       return keys;
     }
 
-    public int maxDatasetKey() {
-      int keyInt = PrimitiveUtils.intDefault(key, 1);
-      if (datasetKeys.isEmpty()) {
-        return keyInt;
-      }
-      return Math.max(keyInt, Collections.max(datasetKeys));
-    }
-
     @Override
     public String toString() {
       return name + " ("+ key +")";
@@ -224,7 +215,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private TestDataRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
     this.testData = testData;
     this.sqlSessionFactorySupplier = sqlSessionFactorySupplier;
-    keyGenerator = new DatasetDao.KeyGenerator(100, 100, testData.maxDatasetKey());
   }
 
   public TestDataRule(TestData testData) {
@@ -243,10 +233,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     return session;
   }
 
-  public DatasetDao.KeyGenerator getKeyGenerator() {
-    return keyGenerator;
-  }
-
   public int mapKey(DataFormat format, int sourceKey) {
     return testData.keyMap.get(Pair.of(format, sourceKey));
   }
@@ -260,8 +246,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       truncate(session);
       // populate dataset table with origins before we partition
       loadGlobalData();
-      // create required partitions to load data
-      partition();
       loadData();
       // populate global tables that refer to partitioned data
       loadGlobalData2();
@@ -306,25 +290,18 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     }
   }
 
-  public void partition() {
-    for (Integer dk : testData.datasetKeys) {
-      MybatisTestUtils.partition(session, dk);
-    }
-    session.commit();
-  }
-
   public void updateSequences() {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
     for (int dk : testData.datasetKeys) {
       pm.createManagedSequences(dk);
-      pm.createIdSequences(dk);
+      pm.createSequences(dk);
       pm.updateIdSequences(dk);
     }
     session.commit();
   }
 
   private void truncate(SqlSession session) throws SQLException {
-    LOG.info("Truncate tables, drop all data partitions");
+    LOG.info("Truncate data tables");
     DatasetInfoCache.CACHE.clear();
     try (java.sql.Statement st = session.getConnection().createStatement()) {
       var dpm = session.getMapper(DatasetPartitionMapper.class);
@@ -350,9 +327,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public void truncateDraft() throws SQLException {
     LOG.info("Truncate draft partition tables");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
-      for (String t : Lists.reverse(DatasetPartitionMapper.PROJECT_TABLES)){
-        st.execute("DELETE FROM " + t + " WHERE dataset_key=" + Datasets.COL);
-      };
       st.execute("DELETE FROM name_match WHERE dataset_key=" + Datasets.COL);
       session.getConnection().commit();
       for (String t : Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES)){

@@ -103,13 +103,14 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO taxon_concept_rel_${newDatasetKey} (dataset_key,taxon_id,related_taxon_id,id,<include refid="COLS_COPY"/>, created, modified)
+    INSERT INTO taxon_concept_rel (dataset_key,taxon_id,related_taxon_id,id,<include refid="COLS_COPY"/>, created, modified)
     SELECT #{newDatasetKey},coalesce(<if test="mapIds">m1.id2,</if>taxon_id),coalesce(<if test="mapIds">m2.id2,</if>related_taxon_id),nextval('taxon_concept_rel_${newDatasetKey}_id_seq'),<include refid="COLS_COPY"/>, created, modified
-    FROM taxon_concept_rel_${datasetKey} r
+    FROM taxon_concept_rel r
     <if test="mapIds">
       LEFT JOIN idmap_name_usage_${datasetKey} m1 ON m1.id=r.taxon_id
       LEFT JOIN idmap_name_usage_${datasetKey} m2 ON m2.id=r.related_taxon_id
     </if>
+    WHERE dataset_key = #{datasetKey}
   </insert>
 
   <select id="processSector" parameterType="map" resultMap="tcRelResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

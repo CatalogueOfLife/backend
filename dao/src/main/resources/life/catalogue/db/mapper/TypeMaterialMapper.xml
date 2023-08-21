@@ -186,4 +186,8 @@
     AND t.dataset_key=#{datasetKey}
   </delete>
 
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM type_material
+    WHERE dataset_key=#{datasetKey}
+  </delete>
 </mapper>

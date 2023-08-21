@@ -104,9 +104,9 @@ public class PgImport implements Callable<Boolean> {
   public Boolean call() throws InterruptedException, InterruptedRuntimeException {
     LOG.info("Start {} insert of dataset {}", this.getClass().getSimpleName(), dataset.getKey());
     // this either (re)creates dataset specific partitions or deletes data and recreates sequences for the shared default partitions
-    Partitioner.partition(sessionFactory, dataset.getKey(), dataset.getOrigin());
-    // now that we share partitions between we cannot attach later, as our insert sql uses the main table names
-    Partitioner.attach(sessionFactory, dataset.getKey(), dataset.getOrigin());
+    try (final SqlSession session = sessionFactory.openSession(true)) {
+      datasetDao.deleteData(dataset.getKey(), session);
+    }
 
     insertVerbatim();
     

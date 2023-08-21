@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
+import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TempNameUsageRelated;
 
@@ -23,7 +24,7 @@ import org.apache.ibatis.cursor.Cursor;
  * <p>
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
-public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyDataset, TempNameUsageRelated {
+public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyDataset, DatasetProcessable<NameUsageBase>, TempNameUsageRelated {
 
   NameUsageBase get(@Param("key") DSID<String> key);
 

@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import com.google.common.collect.Lists;
+
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.model.*;
@@ -83,13 +85,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final DatasetExportDao exportDao;
   private final NameUsageIndexService indexService;
   private final EventBus bus;
-  private final KeyGenerator keyGenerator;
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
-   * @param minExternalDatasetKey The lowest dataset key to use for new external datasets.
    */
-  public DatasetDao(int minExternalDatasetKey, SqlSessionFactory factory,
+  public DatasetDao(SqlSessionFactory factory,
                     NormalizerConfig nCfg, ReleaseConfig rCfg,
                     DownloadUtil downloader,
                     ImageService imgService,
@@ -109,8 +109,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.exportDao = exportDao;
     this.indexService = indexService;
     this.bus = bus;
-    // load existing max keys
-    this.keyGenerator = new KeyGenerator(minExternalDatasetKey, factory);
   }
 
   /**
@@ -119,69 +117,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    */
   @VisibleForTesting
   public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
-    this(100, factory, new NormalizerConfig(), new ReleaseConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
-  }
-
-  public static class KeyGenerator {
-    public final int minExternalDatasetKey;
-    private final LinkedList<Integer> keyGenExternalGaps = new LinkedList<>();
-    private final AtomicInteger keyGenExternal;
-    private final AtomicInteger keyGenProject;
-
-    public KeyGenerator(int minExternalDatasetKey, SqlSessionFactory factory) {
-      this(minExternalDatasetKey, 0, 0);
-      setMax(factory);
-    }
-
-    public KeyGenerator(int minExternalDatasetKey, int maxExternal, int maxProject) {
-      this.minExternalDatasetKey = minExternalDatasetKey;
-      this.keyGenExternal = new AtomicInteger(maxExternal);
-      this.keyGenProject = new AtomicInteger(maxProject);
-    }
-
-    private void setMax(SqlSessionFactory factory) {
-      try (SqlSession session = factory.openSession(true)) {
-        var dm = session.getMapper(DatasetMapper.class);
-        int ext = Math.max(minExternalDatasetKey, intDefault(dm.getMaxKey(null), 0));
-        int proj = intDefault(dm.getMaxKey(minExternalDatasetKey), 10);
-        keyGenExternalGaps.addAll(dm.getKeyGaps(minExternalDatasetKey, 5000));
-        LOG.info("Loaded {} dataset gap keys, starting with {}", keyGenExternalGaps.size(), keyGenExternalGaps.isEmpty() ? "none" : keyGenExternalGaps.getFirst());
-        setMax(ext, proj);
-      }
-    }
-
-    public void setMax(int maxExternal, int maxProject) {
-      this.keyGenExternal.set(maxExternal);
-      this.keyGenProject.set(maxProject);
-      LOG.info("Set dataset key generator to {} for external and {} for others", keyGenExternal.get(), keyGenProject.get());
-    }
-
-    public synchronized int nextExternalKey() {
-      if (!keyGenExternalGaps.isEmpty()) {
-        return keyGenExternalGaps.removeFirst();
-      }
-      return keyGenExternal.incrementAndGet();
-    }
-
-    public int nextProjectKey() {
-      int key = keyGenProject.incrementAndGet();
-      if (key >= minExternalDatasetKey) {
-        throw new IllegalStateException("Project key range used up. Please reconfigure minExternalDatasetKey");
-      }
-      if (minExternalDatasetKey - key < 100) {
-        LOG.warn("Project key range running low, only {} left. Please reconfigure minExternalDatasetKey", minExternalDatasetKey - key);
-      }
-      return key;
-    }
-
-    public int setKey(Dataset d) {
-      if (d.getOrigin().isManagedOrRelease()) {
-        d.setKey(nextProjectKey());
-      } else {
-        d.setKey(nextExternalKey());
-      }
-      return d.getKey();
-    }
+    this(factory, new NormalizerConfig(), new ReleaseConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
   }
 
   public Dataset get(UUID gbifKey) {
@@ -212,20 +148,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       ds = new DatasetWithSettings(d, s);
     }
     return ds;
-  }
-
-  /**
-   * @return the number of gaps keys still listed
-   */
-  public int gapSize() {
-    return keyGenerator.keyGenExternalGaps.size();
-  }
-
-  /**
-   * Updates the key generators sequence values
-   */
-  public void updateKeyGenSequence() {
-    keyGenerator.setMax(factory);
   }
 
   public Dataset patchMetadata(DatasetWithSettings ds, Dataset update) {
@@ -499,10 +421,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.getMapper(SectorImportMapper.class).deleteByDataset(key);
     LOG.info("Delete dataset import history for dataset {}", key);
     session.getMapper(DatasetImportMapper.class).deleteByDataset(key);
-    // delete data partitions
-    if (old != null) {
-      Partitioner.delete(session, key, old.getOrigin());
-    }
+    // delete all partitioned data
+    deleteData(key, session);
     session.commit();
     // now also remove sectors
     session.getMapper(SectorMapper.class).deleteByDataset(key);
@@ -533,6 +453,20 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     dois.forEach(doi -> bus.post(DoiChange.change(doi)));
   }
 
+  /**
+   * Deletes all data from partitioned tables, clears the usage counter
+   */
+  public void deleteData(int key, SqlSession session) {
+    var dpm = session.getMapper(DatasetPartitionMapper.class);
+    // delete usage counter record
+    dpm.deleteUsageCounter(key);
+    // delete data from partitions
+    LOG.info("Delete partitioned data for dataset {}", key);
+    Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES).forEach(t -> dpm.deleteData(t, key));
+    DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dpm.dropTable(t, key));
+    DatasetPartitionMapper.SERIAL_TABLES.forEach(t -> dpm.deleteIdSequence(t, key));
+  }
+
   @Override
   protected boolean deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     // track who did the deletion in modified_by
@@ -556,8 +490,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   public Integer create(Dataset obj, int user) {
     // apply some defaults for required fields
     sanitize(obj);
-    // generate key depending on origin!
-    keyGenerator.setKey(obj);
     return super.create(obj, user);
   }
 
@@ -580,10 +512,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       for (var c : obj.getSource()) {
         cm.create(obj.getKey(), c);
       }
-    }
-    // data partitions
-    if (obj.getOrigin() == DatasetOrigin.PROJECT) {
-      recreatePartition(obj.getKey(), obj.getOrigin());
     }
     session.commit();
     session.close();
@@ -645,11 +573,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         }
       }
     }
-    // data partitions
-    if (obj.getOrigin() == DatasetOrigin.PROJECT && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey(), obj.getOrigin())) {
-      // suspicious. Should there ever be a managed dataset without partitions?
-      recreatePartition(obj.getKey(), obj.getOrigin());
-    }
     session.commit();
     session.close();
     // other non pg stuff
@@ -659,11 +582,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       bus.post(DoiChange.change(old.getDoi()));
     }
     return false;
-  }
-
-  private void recreatePartition(int datasetKey, DatasetOrigin origin) {
-    Partitioner.partition(factory, datasetKey, origin);
-    Partitioner.attach(factory, datasetKey, origin);
   }
 
   private void pullLogo(Dataset d, Dataset old, int user) {

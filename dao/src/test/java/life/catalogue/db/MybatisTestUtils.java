@@ -30,14 +30,6 @@ import static life.catalogue.api.vocab.Datasets.COL;
 public class MybatisTestUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MybatisTestUtils.class);
 
-  public static void partition(SqlSession session, int datasetKey) {
-    DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
-    if (origin.isManagedOrRelease()) {
-      Partitioner.partition(session, datasetKey, origin);
-      Partitioner.attach(session, datasetKey, origin);
-    }
-  }
-
   /**
    * t1
    *   t2
@@ -48,8 +40,6 @@ public class MybatisTestUtils {
    * @param session
    */
   public static void populateTestTree(int datasetKey, SqlSession session) {
-    partition(session, datasetKey);
-    
     NameMapper nm = session.getMapper(NameMapper.class);
   
     Name n1 = uninomial(nm, datasetKey,"n1", "Animalia", Rank.KINGDOM);
@@ -84,7 +74,6 @@ public class MybatisTestUtils {
     d.setKey(key);
     d.applyUser(TestEntityGenerator.USER_USER);
     session.getMapper(DatasetMapper.class).create(d);
-    partition(session, key);
     session.getMapper(DatasetPartitionMapper.class).createManagedSequences(key);
     return d;
   }

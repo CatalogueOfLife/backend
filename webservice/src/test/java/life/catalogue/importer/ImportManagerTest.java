@@ -98,7 +98,6 @@ public class ImportManagerTest {
       d.setType(DatasetType.OTHER);
       d.setCreatedBy(Users.TESTER);
       d.setModifiedBy(Users.TESTER);
-      testDataRule.getKeyGenerator().setKey(d);
       dm.create(d);
       datasetKey = d.getKey();
     }

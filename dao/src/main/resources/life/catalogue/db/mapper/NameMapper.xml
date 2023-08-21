@@ -264,12 +264,13 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO name_${newDatasetKey} (dataset_key,sector_key,id,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    INSERT INTO name (dataset_key,sector_key,id,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
     SELECT #{newDatasetKey},n.sector_key,coalesce(<if test="mapIds">m.id2,</if>n.id),<include refid="COLS_COPY"><property name="alias" value="n."/></include>, n.created, n.modified
-    FROM name_${datasetKey} n
+    FROM name n
     <if test="mapIds">
       LEFT JOIN idmap_name_${datasetKey} m ON m.id=n.id
     </if>
+    WHERE dataset_key = #{datasetKey}
   </insert>
 
   <update id="update" parameterType="Name" keyProperty="id">

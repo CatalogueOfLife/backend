@@ -21,13 +21,9 @@ import life.catalogue.es.EsUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -84,6 +80,14 @@ public class InitCmd extends AbstractPromptCmd {
         InitDbUtils.insertDatasets(InitDbUtils.toPgConnection(con), new FileInputStream(f));
       }
     }
+
+
+    try (var pool = cfg.db.pool()) {
+      var factory = MybatisFactory.configure(pool, "test");
+      // partition tables
+      LOG.info("Create {} partitions", partitions);
+      Partitioner.createPartitions(factory, partitions);
+    }
     
     // cleanup names index
     if (cfg.namesIndexFile != null && cfg.namesIndexFile.exists()) {
@@ -111,18 +115,6 @@ public class InitCmd extends AbstractPromptCmd {
     LOG.info("Clear metrics repo {}", cfg.metricsRepo);
     if (cfg.metricsRepo.exists()) {
       FileUtils.cleanDirectory(cfg.metricsRepo);
-    }
-
-    // create managed & default partitions
-    HikariConfig hikari = cfg.db.hikariConfig();
-    try (HikariDataSource dataSource = new HikariDataSource(hikari)) {
-      // configure single mybatis session factory
-      final SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
-      // default partitions
-      Partitioner.createDefaultPartitions(factory, partitions);
-      InitDbUtils.updateDatasetKeyConstraints(factory, cfg.db.minExternalDatasetKey);
-      // add project partitions & dataset key constraints
-      InitDbUtils.createNonDefaultPartitions(factory);
     }
 
     // create new ES index
