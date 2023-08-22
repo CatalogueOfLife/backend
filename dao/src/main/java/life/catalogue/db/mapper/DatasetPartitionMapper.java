@@ -26,7 +26,6 @@ import com.google.common.collect.Lists;
  */
 public interface DatasetPartitionMapper {
   Logger LOG = LoggerFactory.getLogger(DatasetPartitionMapper.class);
-  int MAX_PARTITION_KEY = 999; // maximum key for manually created individual project partitions like the COL project
 
   List<String> IDMAP_TABLES = Lists.newArrayList(
     "idmap_name",
@@ -110,7 +109,11 @@ public interface DatasetPartitionMapper {
     SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
   }
 
-  default void createManagedSequences(@Param("key") int key) {
+  default void deleteSequences(@Param("key") int key) {
+    SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
+  }
+
+  default void createProjectSequences(@Param("key") int key) {
     PROJECT_SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
   }
 
@@ -118,11 +121,11 @@ public interface DatasetPartitionMapper {
    * Updates the managed sequences for a given datasetKey to the current max of existing keys.
    * @param key datasetKey
    */
-  default void updateManagedSequences(int key) {
+  default void updateProjectSequences(int key) {
     PROJECT_SERIAL_TABLES.forEach(t -> updateIdSequence(t, key));
   }
 
-  default void deleteManagedSequences(@Param("key") int key) {
+  default void deleteProjectSequences(@Param("key") int key) {
     PROJECT_SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
   }
 
@@ -145,9 +148,9 @@ public interface DatasetPartitionMapper {
 
   /**
    * Attaches all required triggers for a given partition suffix.
-   * Currently these are 1 trigger on the name and 2 triggers on the name usage partition.
+   * Currently these are 2 triggers on the name usage partition to track counts.
    * Make sure to call this AFTER the partition table is attached.
-   * @param suffix partition suffix, e.g. datasetkey for external datasets
+   * @param suffix partition suffix, e.g. mod1
    */
   void attachTriggers(@Param("suffix") String suffix);
 

@@ -7,11 +7,8 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.text.CSVUtils;
-import life.catalogue.common.util.PrimitiveUtils;
-import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -266,7 +263,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
         for (Dataset d : session.getMapper(DatasetMapper.class).process(null)) {
           LOG.debug("Remove managed sequences for dataset {}", d.getKey());
-          pm.deleteManagedSequences(d.getKey());
+          pm.deleteProjectSequences(d.getKey());
         }
         session.commit();
       }
@@ -293,7 +290,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public void updateSequences() {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
     for (int dk : testData.datasetKeys) {
-      pm.createManagedSequences(dk);
+      pm.createProjectSequences(dk);
       pm.createSequences(dk);
       pm.updateIdSequences(dk);
     }

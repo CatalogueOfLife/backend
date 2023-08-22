@@ -1055,9 +1055,9 @@ CREATE TABLE sector (
   PRIMARY KEY (dataset_key, id)
 );
 
-CREATE index ON sector (dataset_key);
-CREATE index ON sector (dataset_key, subject_dataset_key, subject_id);
-CREATE index ON sector (dataset_key, target_id);
+CREATE INDEX ON sector (dataset_key);
+CREATE INDEX ON sector (dataset_key, subject_dataset_key, subject_id);
+CREATE INDEX ON sector (dataset_key, target_id);
 
 CREATE TABLE sector_import (
   dataset_key INTEGER NOT NULL,

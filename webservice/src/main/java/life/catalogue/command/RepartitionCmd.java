@@ -90,7 +90,7 @@ public class RepartitionCmd extends AbstractMybatisCmd {
         );
       }
       LOG.info("Detach and rename existing partitions for external data");
-      for (String key : Partitioner.partitionSuffices(con, DatasetOrigin.EXTERNAL)) {
+      for (String key : Partitioner.partitionSuffices(con)) {
         existing.add(key);
         final boolean isDefault = key.startsWith("m");
         for (String t : Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES)) {

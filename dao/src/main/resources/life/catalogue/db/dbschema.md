@@ -12,11 +12,75 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 ### 2023-08-21 migrate partitioning
-This is a serious change, removing the list partitioning and replacing it with just the hash one and a fixed number of partitions.
-First create an empty, brand new database with the new partition scheme. Use the InitCmd to do this, e.g. with 24 partitions.
+This is a serious change, removing the list partitioning and replacing it with just the hash one and 24 fixed partitions.
+First restore the dump of the previous db into the empty public schema;
+> nohup pg_restore -j 12 -U postgres -d clb ~/clb-prod.dump &
 
-Then dump the data of existing database with pg_dump into various pieces as we need to restore them in a specific order
-that pg_restore cannot supply out of the box:
+Then alter its schema to be "old", but reuse its enum types in the public schema (for simpler copying later on witout casts):
+> ALTER SCHEMA public RENAME TO old;
+ CREATE SCHEMA public;
+ ALTER EXTENSION btree_gin SET SCHEMA public;
+ ALTER EXTENSION hstore SET SCHEMA public;
+ ALTER EXTENSION pg_trgm SET SCHEMA public;
+ ALTER EXTENSION unaccent SET SCHEMA public;
+
+>ALTER TYPE old.agent SET SCHEMA public;
+ALTER TYPE old.continent SET SCHEMA public;
+ALTER TYPE old.cslname SET SCHEMA public;
+ALTER TYPE old.dataformat SET SCHEMA public;
+ALTER TYPE old.datasetorigin SET SCHEMA public;
+ALTER TYPE old.datasettype SET SCHEMA public;
+ALTER TYPE old.distributionstatus SET SCHEMA public;
+ALTER TYPE old.editorialdecision_mode SET SCHEMA public;
+ALTER TYPE old.entitytype SET SCHEMA public;
+ALTER TYPE old.environment SET SCHEMA public;
+ALTER TYPE old.estimatetype SET SCHEMA public;
+ALTER TYPE old.gazetteer SET SCHEMA public;
+ALTER TYPE old.idreporttype SET SCHEMA public;
+ALTER TYPE old.importstate SET SCHEMA public;
+ALTER TYPE old.infogroup SET SCHEMA public;
+ALTER TYPE old.issue SET SCHEMA public;
+ALTER TYPE old.jobstatus SET SCHEMA public;
+ALTER TYPE old.kingdom SET SCHEMA public;
+ALTER TYPE old.license SET SCHEMA public;
+ALTER TYPE old.matchingmode SET SCHEMA public;
+ALTER TYPE old.matchtype SET SCHEMA public;
+ALTER TYPE old.mediatype SET SCHEMA public;
+ALTER TYPE old.namecategory SET SCHEMA public;
+ALTER TYPE old.namefield SET SCHEMA public;
+ALTER TYPE old.namepart SET SCHEMA public;
+ALTER TYPE old.nametype SET SCHEMA public;
+ALTER TYPE old.nomcode SET SCHEMA public;
+ALTER TYPE old.nomreltype SET SCHEMA public;
+ALTER TYPE old.nomstatus SET SCHEMA public;
+ALTER TYPE old.origin SET SCHEMA public;
+ALTER TYPE old.rank SET SCHEMA public;
+ALTER TYPE old.sector_mode SET SCHEMA public;
+ALTER TYPE old.sex SET SCHEMA public;
+ALTER TYPE old.simple_name SET SCHEMA public;
+ALTER TYPE old.speciesinteractiontype SET SCHEMA public;
+ALTER TYPE old.taxgroup SET SCHEMA public;
+ALTER TYPE old.taxonconceptreltype SET SCHEMA public;
+ALTER TYPE old.taxonomicstatus SET SCHEMA public;
+ALTER TYPE old.treatmentformat SET SCHEMA public;
+ALTER TYPE old.typestatus SET SCHEMA public;
+ALTER TYPE old.user_role SET SCHEMA public;
+
+
+
+
+# DROP PUBLIC SCHEMA
+> ALTER EXTENSION btree_gin SET SCHEMA old;
+ALTER EXTENSION hstore SET SCHEMA old;
+ALTER EXTENSION pg_trgm SET SCHEMA old;
+ALTER EXTENSION unaccent SET SCHEMA old;
+DROP SCHEMA public CASCADE;
+
+
+
+
+
+> nohup pg_dump -U postgres -d col -Fc -Z 7 --data-only --load-via-partition-root --exclude-table '__*' --exclude-table '_md_*' --exclude-table '*_seq' -f clb.dump &
 
 >pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'user' -f user.dump
 pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'latin29' -t 'parser_config' -f lookups.dump

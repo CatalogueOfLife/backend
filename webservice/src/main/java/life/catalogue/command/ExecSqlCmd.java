@@ -93,10 +93,10 @@ public class ExecSqlCmd extends AbstractPromptCmd {
     execute(sql, origin, silent);
   }
 
-  private void execute(final String template, @Nullable DatasetOrigin originOnly, boolean silent) throws Exception {
+  private void execute(final String template, boolean silent) throws Exception {
     try (Connection con = cfg.db.connect(cfg.db)) {
       ScriptRunner runner = PgConfig.scriptRunner(con);
-      for (String key : Partitioner.partitionSuffices(con, originOnly)) {
+      for (String key : Partitioner.partitionSuffices(con)) {
         execute(runner, template, String.valueOf(key), silent);
         con.commit();
       }

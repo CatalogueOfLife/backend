@@ -26,17 +26,8 @@ public class PartitionerTest {
   @Test
   public void keys() throws Exception {
     try (Connection con = pgSetupRule.connect()) {
-      Set<String> keys = Partitioner.partitionSuffices(con, null);
-      assertEquals(Set.of("3","11", "mod1", "mod0"), keys); // 12 is external, so kept in default partition
-
-      keys = Partitioner.partitionSuffices(con, DatasetOrigin.PROJECT);
-      assertEquals(Set.of("3","11"), keys);
-
-      keys = Partitioner.partitionSuffices(con, DatasetOrigin.EXTERNAL);
+      Set<String> keys = Partitioner.partitionSuffices(con);
       assertEquals(Set.of("mod1", "mod0"), keys);
-
-      keys = Partitioner.partitionSuffices(con, DatasetOrigin.RELEASE);
-      assertEquals(Set.of(), keys);
     }
   }
 

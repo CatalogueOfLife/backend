@@ -30,7 +30,7 @@ public class Partitioner {
   /**
    * @return list of all dataset suffices for which a name data partition exists - no matter if attached or not.
    */
-  public static Set<String> partitionSuffices(Connection con, @Nullable DatasetOrigin origin) throws SQLException {
+  public static Set<String> partitionSuffices(Connection con) throws SQLException {
     try (Statement st = con.createStatement();
          Statement originStmt = con.createStatement()
     ) {

@@ -54,6 +54,9 @@ import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
  * but also indexes the data straight into ES to avoid reading it from Postgres again which is painfully slow
  * because of recursions and large joins.
  *
+ * For associated entity table like vernacular names the mappers expect a postgres sequence to exist.
+ * These are created before the import and removed afterwards again.
+ *
  * See also https://github.com/CatalogueOfLife/backend/issues/918
  */
 public class PgImport implements Callable<Boolean> {
@@ -106,36 +109,57 @@ public class PgImport implements Callable<Boolean> {
     // this either (re)creates dataset specific partitions or deletes data and recreates sequences for the shared default partitions
     try (final SqlSession session = sessionFactory.openSession(true)) {
       datasetDao.deleteData(dataset.getKey(), session);
+      createSequences(session);
     }
 
-    insertVerbatim();
-    
-    insertReferences();
-    
-    insertNames();
-    
-    insertNameRelations();
+    try {
+      insertVerbatim();
 
-    insertTypeMaterial();
+      insertReferences();
 
-    insertUsages();
+      insertNames();
 
-    insertUsageRelations();
+      insertNameRelations();
 
-    updateMetadata();
-		LOG.info("Completed dataset {} insert with {} verbatim records, " +
-        "{} names, {} taxa, {} synonyms, {} references, " +
-        "{} type material, {} vernaculars, {} distributions, {} treatments, {} species estimates, {} media items, " +
-        "{} name relations, {} concept relations, {} species interactions",
-        dataset.getKey(), verbatimKeys.size(),
-        nCounter, tCounter, sCounter, rCounter,
-        tmCounter, vCounter, diCounter, trCounter, eCounter, mCounter,
-        nRelCounter, tRelCounter, sRelCounter
-      );
-		return true;
+      insertTypeMaterial();
+
+      insertUsages();
+
+      insertUsageRelations();
+
+      updateMetadata();
+
+      LOG.info("Completed dataset {} insert with {} verbatim records, " +
+          "{} names, {} taxa, {} synonyms, {} references, " +
+          "{} type material, {} vernaculars, {} distributions, {} treatments, {} species estimates, {} media items, " +
+          "{} name relations, {} concept relations, {} species interactions",
+          dataset.getKey(), verbatimKeys.size(),
+          nCounter, tCounter, sCounter, rCounter,
+          tmCounter, vCounter, diCounter, trCounter, eCounter, mCounter,
+          nRelCounter, tRelCounter, sRelCounter
+        );
+      return true;
+
+    } finally {
+      removeSequences();
+    }
 	}
 
-	@VisibleForTesting
+  private void createSequences(SqlSession session) {
+    LOG.debug("Create import sequences for dataset {}", dataset.getKey());
+    DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
+    pm.createSequences(dataset.getKey());
+  }
+
+  private void removeSequences() {
+    LOG.debug("Delete import sequences for dataset {}", dataset.getKey());
+    try (final SqlSession session = sessionFactory.openSession(true)) {
+      DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
+      pm.deleteSequences(dataset.getKey());
+    }
+  }
+
+  @VisibleForTesting
   void updateMetadata() {
     try (SqlSession session = sessionFactory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);

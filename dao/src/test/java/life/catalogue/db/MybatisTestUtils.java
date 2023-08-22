@@ -7,8 +7,6 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Origin;
-import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.Partitioner;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
@@ -59,7 +57,7 @@ public class MybatisTestUtils {
   }
 
   public static void createManagedSequences(SqlSession session, int datasetKey) {
-    session.getMapper(DatasetPartitionMapper.class).createManagedSequences(datasetKey);
+    session.getMapper(DatasetPartitionMapper.class).createProjectSequences(datasetKey);
   }
 
   public static Dataset createDataset(SqlSessionFactory factor, int key, DatasetOrigin origin) {
@@ -74,7 +72,7 @@ public class MybatisTestUtils {
     d.setKey(key);
     d.applyUser(TestEntityGenerator.USER_USER);
     session.getMapper(DatasetMapper.class).create(d);
-    session.getMapper(DatasetPartitionMapper.class).createManagedSequences(key);
+    session.getMapper(DatasetPartitionMapper.class).createProjectSequences(key);
     return d;
   }
 

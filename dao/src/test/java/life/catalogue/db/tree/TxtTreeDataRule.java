@@ -3,7 +3,6 @@ package life.catalogue.db.tree;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
@@ -200,7 +199,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
     if (origin.isManagedOrRelease()) {
       pm.updateIdSequences(datasetKey);
-      pm.createManagedSequences(datasetKey);
+      pm.createProjectSequences(datasetKey);
     }
     session.commit();
   }

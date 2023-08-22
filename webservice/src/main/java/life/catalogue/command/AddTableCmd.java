@@ -80,7 +80,7 @@ public class AddTableCmd extends AbstractPromptCmd {
          Statement st = con.createStatement();
          PreparedStatement pExists = con.prepareStatement("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name = ? ")
     ) {
-      for (String suffix : Partitioner.partitionSuffices(con, null)) {
+      for (String suffix : Partitioner.partitionSuffices(con)) {
         final String pTable = table+"_"+suffix;
         if (exists(pExists, pTable)) {
           LOG.info("{} already exists", pTable);
