@@ -301,7 +301,7 @@ public class DatasetImportDao {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetImportMapper dim = session.getMapper(DatasetImportMapper.class);
       for (var d : dm.listReleases(projectKey)) {
-        if (d.hasDeletionDate() && !inclDeleted) {
+        if (d.hasDeletedDate() && !inclDeleted) {
           continue;
         }
         metrics.add(dim.get(projectKey, d.getAttempt()));

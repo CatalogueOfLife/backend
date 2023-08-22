@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DoiChange;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
@@ -29,12 +30,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -42,7 +41,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.NotFoundException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,7 +53,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.eventbus.EventBus;
 
-import static life.catalogue.common.util.PrimitiveUtils.intDefault;
 import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 /**
@@ -426,8 +423,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.commit();
     // now also remove sectors
     session.getMapper(SectorMapper.class).deleteByDataset(key);
-      // drop managed id sequences
-    session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
     // now also clear filesystem
     diDao.removeMetrics(key);
     FileUtils.deleteQuietly(nCfg.scratchDir(key));
@@ -464,7 +459,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     LOG.info("Delete partitioned data for dataset {}", key);
     Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES).forEach(t -> dpm.deleteData(t, key));
     DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dpm.dropTable(t, key));
-    DatasetPartitionMapper.SERIAL_TABLES.forEach(t -> dpm.deleteIdSequence(t, key));
+    // drop id sequences
+    dpm.deleteProjectSequences(key);
+    dpm.deleteSequences(key);
   }
 
   @Override
@@ -635,6 +632,27 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     try (SqlSession session = factory.openSession()){
       DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
       return dam.get(key, attempt);
+    }
+  }
+
+  /**
+   * Convenience method to publish a dataset.
+   * Interally this loads the dataset instance, changes its private value and calls an update which does trigger the publication procedures.
+   * @return true if the private flag has changed and the dataset was published
+   */
+  public boolean publish(int key, User user) {
+    try (SqlSession session = factory.openSession(true)){
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      var d = dm.get(key);
+      if (d == null || d.hasDeletedDate()) {
+        throw NotFoundException.notFound(Dataset.class, key);
+      }
+      if (d.isPrivat()) {
+        d.setPrivat(false);
+        update(d, user.getKey());
+        return true;
+      }
+      return false;
     }
   }
 }

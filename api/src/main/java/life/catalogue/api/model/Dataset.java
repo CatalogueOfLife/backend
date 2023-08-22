@@ -754,12 +754,6 @@ public class Dataset extends DataEntity<Integer> {
     this.issn = issn;
   }
 
-
-  @JsonIgnore
-  public boolean hasDeletionDate() {
-    return deleted != null;
-  }
-
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getCitation() {
     if (_citation == null) {
