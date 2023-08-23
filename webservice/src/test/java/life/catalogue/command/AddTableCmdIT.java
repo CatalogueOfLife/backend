@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 public class AddTableCmdIT extends CmdTestBase {
 
     public AddTableCmdIT() {
-        super(AddTableCmd::new);
+        super(PartitionCmd::new);
     }
 
     @Test

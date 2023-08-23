@@ -1,7 +1,6 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.jackson.PermissiveJavaDateSerde;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
@@ -139,7 +138,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.setObjectMapper(om);
 
     // add some cli commands not accessible via the admin interface
-    bootstrap.addCommand(new AddTableCmd());
+    bootstrap.addCommand(new PartitionCmd());
     bootstrap.addCommand(new ExecSqlCmd());
     bootstrap.addCommand(new IndexCmd());
     bootstrap.addCommand(new InitCmd());

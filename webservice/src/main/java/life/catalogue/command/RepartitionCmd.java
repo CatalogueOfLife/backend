@@ -24,11 +24,14 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
- * Command that rebalances the hashed default partitions to a new number of given tables.
+ * Command that rebalances the hashed partitions to a new number of given tables.
  * The command
  *  - detaches the old tables
  *  - renames them by prefixing them with underscore
- *  -
+ *  - creates new tables
+ *  - copies data from old tables
+ *  - attaches new tables
+ *  - removes old tables
  */
 public class RepartitionCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(RepartitionCmd.class);
@@ -41,7 +44,7 @@ public class RepartitionCmd extends AbstractMybatisCmd {
   
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
-    return String.format("Repartition the default, hashed data tables to %s partitions in database %s on %s.\n", getPartitionConfig(namespace), cfg.db.database, cfg.db.host);
+    return String.format("Repartition the hashed tables to %s partitions in database %s on %s.\n", getPartitionConfig(namespace), cfg.db.database, cfg.db.host);
   }
 
   static void configurePartitionNumber(Subparser subparser) {
@@ -89,18 +92,16 @@ public class RepartitionCmd extends AbstractMybatisCmd {
                          .collect(Collectors.joining(","))
         );
       }
-      LOG.info("Detach and rename existing partitions for external data");
-      for (String key : Partitioner.partitionSuffices(con)) {
-        existing.add(key);
-        final boolean isDefault = key.startsWith("m");
-        for (String t : Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES)) {
+      final int existingPartitions = Partitioner.detectPartitionNumber(con);
+      LOG.info("Detach and rename {} existing partitions for external data", existingPartitions);
+      for (String t : Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES)) {
+        for (int mod=0; mod < existingPartitions; mod++) {
           try {
-            final String src = String.format("%s_%s", t, key);
-            String parentTable = t + (isDefault ? "_default" : "");
+            final String src = partitionName(t, mod);
             if (Partitioner.isAttached(con, src)) {
-              st.execute(String.format("ALTER TABLE %s DETACH PARTITION %s", parentTable, src));
+              st.execute(String.format("ALTER TABLE %s DETACH PARTITION %s", t, src));
             } else {
-              LOG.info("  table " +src+ " was not attached");
+              LOG.info("  table {} was not attached", src);
             }
             st.execute(String.format("ALTER TABLE %s RENAME TO _%s", src, src));
           } catch (SQLException e) {
@@ -108,31 +109,40 @@ public class RepartitionCmd extends AbstractMybatisCmd {
           }
         }
       }
-      LOG.info("Create "+partitions+" new partitions");
+
+      LOG.info("Create {} new partitions", partitions);
       dpm.createPartitions(partitions);
       session.commit();
 
       LOG.info("Copy data to new partitions");
       // disable triggers, e.g. usage counting
       st.execute("SET session_replication_role = replica");
-
-      for (String suffix : existing) {
-        LOG.info("  source partition "+suffix);
+      for (int mod=0; mod < existingPartitions; mod++) {
+        // copy partition data
         for (String t : DatasetPartitionMapper.PARTITIONED_TABLES) {
-          final String src = String.format("%s_%s", t, suffix);
-          LOG.info("    copy " + src);
-          String cols = tables.get(t);
-          st.execute(String.format("INSERT INTO %s (%s) SELECT %s FROM _%s", t, cols, cols, src));
-          con.commit();
+          try {
+            final String src = partitionName(t, mod);
+            LOG.info("    copy {}", src);
+            String cols = tables.get(t);
+            st.execute(String.format("INSERT INTO %s (%s) SELECT %s FROM _%s", t, cols, cols, src));
+            con.commit();
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
         }
+        // delete old partitions in reverse order
         for (String t : Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES)) {
-          final String src = String.format("%s_%s", t, suffix);
-          LOG.info("    delete " + src);
+          final String src = partitionName(t, mod);
+          LOG.info("    delete {}", src);
           st.execute(String.format("DROP TABLE _%s", src));
           con.commit();
         }
       }
       con.commit();
     }
+  }
+
+  private static String partitionName(String table, int mod) {
+    return String.format("%s_mod%s", table, mod);
   }
 }

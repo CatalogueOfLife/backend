@@ -73,12 +73,22 @@ public interface DatasetPartitionMapper {
    * @param number of partitions per table
    */
   default void createPartitions(int number) {
+    PARTITIONED_TABLES.forEach(t -> createPartitions(t, number));
+    // create triggers
     for (int i=0; i<number; i++) {
-      int remainder = i;
-      String suffix = "mod"+remainder;
-      PARTITIONED_TABLES.forEach(t -> createPartition(t, number, remainder));
-      // create triggers
+      String suffix = "mod"+i;
       attachTriggers(suffix);
+    }
+  }
+
+  /**
+   * Creates the given number of partitions for all partitioned tables.
+   * @param number of partitions per table
+   * @param table name
+   */
+  default void createPartitions(String table, int number) {
+    for (int i=0; i<number; i++) {
+      createPartition(table, number, i);
     }
   }
 

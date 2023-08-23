@@ -1,18 +1,13 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -25,45 +20,38 @@ import org.slf4j.LoggerFactory;
  */
 public class Partitioner {
   private static final Logger LOG = LoggerFactory.getLogger(Partitioner.class);
-  private static final Pattern TABLE_PATTERN = Pattern.compile("name_(.+)$");
+  private static final Pattern TABLE_PATTERN = Pattern.compile("name_mod(\\d+)$");
 
   /**
-   * @return list of all dataset suffices for which a name data partition exists - no matter if attached or not.
+   * @return number of partitions existing for the name table
    */
-  public static Set<String> partitionSuffices(Connection con) throws SQLException {
-    try (Statement st = con.createStatement();
-         Statement originStmt = con.createStatement()
-    ) {
-      Set<String> suffices = new HashSet<>();
-      st.execute("select table_name from information_schema.tables where table_schema='public' and (table_name ~* '^name_\\d+' OR table_name ~* '^name_mod\\d+')");
+  public static int detectPartitionNumber(Connection con) throws SQLException {
+    try (Statement st = con.createStatement()) {
+      int max = -1;
+      st.execute("select table_name from information_schema.tables where table_schema='public' and (table_name ~* '^name_mod\\d+')");
 
+      int counter = 0;
       try (ResultSet rs = st.getResultSet()) {
         while (rs.next()) {
           String tbl = rs.getString(1);
           Matcher m = TABLE_PATTERN.matcher(tbl);
           if (m.find()) {
-            if (origin != null) {
-              try {
-                int key = Integer.parseInt(m.group(1));
-                originStmt.execute("select origin from dataset where key = "+key + " AND origin='"+origin.name()+"'::datasetorigin");
-                try (var ors = originStmt.getResultSet()) {
-                  if (!ors.next()) {
-                    // no matching origin
-                    continue;
-                  }
-                }
-              } catch (NumberFormatException e) {
-                if (origin != DatasetOrigin.EXTERNAL) {
-                  continue;
-                }
-              }
+            counter++;
+            int n = Integer.parseInt(m.group(1));
+            if (n > max) {
+              max = n;
             }
-            suffices.add( m.group(1) );
+          } else {
+            throw new IllegalStateException("Invalid table name found: "+tbl);
           }
         }
       }
-      LOG.info("Found {} existing name partition tables", suffices.size());
-      return suffices;
+
+      if (counter != max+1) {
+        LOG.warn("Found {} name partition tables, but a maximum suffix of {}", counter, max);
+      }
+      LOG.info("Found {} existing name partition tables", max+1);
+      return max+1;
     }
   }
 
@@ -93,13 +81,22 @@ public class Partitioner {
     }
   }
 
+  public static synchronized void createPartitions(SqlSessionFactory factory, String table, int number) {
+    try (SqlSession session = factory.openSession(false)) {
+      LOG.info("Create {} partitions for table {}", number, table);
+      DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+      mapper.createPartitions(table, number);
+      session.commit();
+    }
+  }
+
   /**
-   * Creates a given number of partitions for the default, hashed partition
-   * including all required sequences.
+   * Creates a given number of hashed partitions for all partitioned tables
+   * and also sets up all required sequences.
    * @param number of partitions to create
    */
   public static synchronized void createPartitions(SqlSession session, int number) {
-    LOG.info("Create default partition with {} subpartitions for external datasets", number);
+    LOG.info("Create {} partitions for all partitioned tables", number);
     DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
     mapper.createPartitions(number);
     session.commit();
