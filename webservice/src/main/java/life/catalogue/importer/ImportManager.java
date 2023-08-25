@@ -308,10 +308,9 @@ public class ImportManager implements Managed, Idle {
     Dataset d = validDataset(datasetKey);
     Path upload;
     if (filename == null) {
-      upload = Files.createTempFile(cfg.normalizer.scratchDir(datasetKey).toPath(), "upload-", "." + Strings.nullToEmpty(suffix));
-    } else {
-      upload = cfg.normalizer.scratchFile(datasetKey, filename).toPath();
+      filename = "upload-" + System.currentTimeMillis() + (suffix == null ? "" : "." + suffix);
     }
+    upload = cfg.normalizer.scratchFile(datasetKey, filename).toPath();
     Files.createDirectories(upload.getParent());
     LOG.info("Upload data for dataset {} to tmp file {}", d.getKey(), upload);
     Files.copy(content, upload, StandardCopyOption.REPLACE_EXISTING);
