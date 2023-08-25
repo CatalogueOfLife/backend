@@ -6,6 +6,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 
@@ -13,6 +14,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
+
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertNotNull;
 
