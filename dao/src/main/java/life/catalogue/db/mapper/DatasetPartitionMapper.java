@@ -53,6 +53,8 @@ public interface DatasetPartitionMapper {
   );
 
   List<String> SERIAL_TABLES = Lists.newArrayList(
+    "sector",
+    "decision",
       "verbatim",
       "name_rel",
       "taxon_concept_rel",
@@ -61,11 +63,6 @@ public interface DatasetPartitionMapper {
       "media",
       "estimate",
       "vernacular_name"
-  );
-
-  List<String> PROJECT_SERIAL_TABLES = Lists.newArrayList(
-    "sector",
-    "decision"
   );
 
   /**
@@ -103,14 +100,6 @@ public interface DatasetPartitionMapper {
    */
   void createIdSequence(@Param("table") String table, @Param("key") int key);
 
-  /**
-   * Updates the sequences for a given datasetKey to the current max of existing keys.
-   * @param key datasetKey
-   */
-  default void updateIdSequences(int key) {
-    SERIAL_TABLES.forEach(t -> updateIdSequence(t, key));
-  }
-  
   void updateIdSequence(@Param("table") String table, @Param("key") int key);
 
   void deleteIdSequence(@Param("table") String table, @Param("key") int key);
@@ -119,24 +108,16 @@ public interface DatasetPartitionMapper {
     SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
   }
 
-  default void deleteSequences(@Param("key") int key) {
-    SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
-  }
-
-  default void createProjectSequences(@Param("key") int key) {
-    PROJECT_SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
-  }
-
   /**
-   * Updates the managed sequences for a given datasetKey to the current max of existing keys.
+   * Updates the sequences for a given datasetKey to the current max of existing keys.
    * @param key datasetKey
    */
-  default void updateProjectSequences(int key) {
-    PROJECT_SERIAL_TABLES.forEach(t -> updateIdSequence(t, key));
+  default void updateSequences(int key) {
+    SERIAL_TABLES.forEach(t -> updateIdSequence(t, key));
   }
 
-  default void deleteProjectSequences(@Param("key") int key) {
-    PROJECT_SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
+  default void deleteSequences(@Param("key") int key) {
+    SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
   }
 
   /**

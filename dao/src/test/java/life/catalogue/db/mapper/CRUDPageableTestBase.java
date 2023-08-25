@@ -38,7 +38,6 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
     mapper(DatasetMapper.class).create(d);
     // create sequences (sth done by the dataset dao normally)
     DatasetPartitionMapper dpm = mapper(DatasetPartitionMapper.class);
-    dpm.createProjectSequences(d.getKey());
     dpm.createSequences(d.getKey());
     return d.getKey();
   }

@@ -630,7 +630,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset cat = TestEntityGenerator.newDataset("cat2");
     TestEntityGenerator.setUser(cat);
     mapper(DatasetMapper.class).create(cat);
-    mapper(DatasetPartitionMapper.class).createProjectSequences(cat.getKey());
+    mapper(DatasetPartitionMapper.class).createSequences(cat.getKey());
     // new sectors
     createSector(cat.getKey(), d1);
     createSector(cat.getKey(), d5);
@@ -707,7 +707,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     ));
     mapper().create(TestEntityGenerator.setUserDate(ds));
 
-    mapper(DatasetPartitionMapper.class).createProjectSequences(ds.getKey());
+    mapper(DatasetPartitionMapper.class).createSequences(ds.getKey());
     return ds.getKey();
   }
 

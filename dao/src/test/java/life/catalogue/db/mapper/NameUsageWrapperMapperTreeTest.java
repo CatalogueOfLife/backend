@@ -127,7 +127,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
       dam.create(d);
       // create sequences (sth done by the dataset dao normally)
       DatasetPartitionMapper dpm = mapper(DatasetPartitionMapper.class);
-      dpm.createProjectSequences(d.getKey());
+      dpm.createSequences(d.getKey());
 
       dm.create(TestEntityGenerator.newDecision(d.getKey(), datasetKey, "t15")); // taxon
       dm.create(TestEntityGenerator.newDecision(d.getKey(), datasetKey, "s22")); // synonym

@@ -56,14 +56,8 @@ public class MybatisTestUtils {
     session.commit();
   }
 
-  public static void createManagedSequences(SqlSession session, int datasetKey) {
-    session.getMapper(DatasetPartitionMapper.class).createProjectSequences(datasetKey);
-  }
-
-  public static Dataset createDataset(SqlSessionFactory factor, int key, DatasetOrigin origin) {
-    try (SqlSession session = factor.openSession(true)) {
-      return createDataset(session, key, origin);
-    }
+  public static void createSequences(SqlSession session, int datasetKey) {
+    session.getMapper(DatasetPartitionMapper.class).createSequences(datasetKey);
   }
 
   public static Dataset createDataset(SqlSession session, int key, DatasetOrigin origin) {
@@ -72,7 +66,7 @@ public class MybatisTestUtils {
     d.setKey(key);
     d.applyUser(TestEntityGenerator.USER_USER);
     session.getMapper(DatasetMapper.class).create(d);
-    session.getMapper(DatasetPartitionMapper.class).createProjectSequences(key);
+    session.getMapper(DatasetPartitionMapper.class).createSequences(key);
     return d;
   }
 

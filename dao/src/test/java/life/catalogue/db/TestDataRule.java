@@ -259,11 +259,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       session.close();
 
       try (SqlSession session = sqlSessionFactorySupplier.get().openSession(false)) {
-        LOG.info("remove managed sequences not bound to a table");
+        LOG.info("remove sequences");
         DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
         for (Dataset d : session.getMapper(DatasetMapper.class).process(null)) {
-          LOG.debug("Remove managed sequences for dataset {}", d.getKey());
-          pm.deleteProjectSequences(d.getKey());
+          LOG.debug("Remove sequences for dataset {}", d.getKey());
+          pm.deleteSequences(d.getKey());
         }
         session.commit();
       }
@@ -290,9 +290,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public void updateSequences() {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
     for (int dk : testData.datasetKeys) {
-      pm.createProjectSequences(dk);
       pm.createSequences(dk);
-      pm.updateIdSequences(dk);
+      pm.updateSequences(dk);
     }
     session.commit();
   }

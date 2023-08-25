@@ -460,7 +460,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES).forEach(t -> dpm.deleteData(t, key));
     DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dpm.dropTable(t, key));
     // drop id sequences
-    dpm.deleteProjectSequences(key);
     dpm.deleteSequences(key);
   }
 
@@ -512,9 +511,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     // sequences for mutable projects - releases and external datasets do not need persistent sequences. Imports generate them on the fly temporarily
     if (obj.getOrigin() == DatasetOrigin.PROJECT) {
-      // sector & decision
-      session.getMapper(DatasetPartitionMapper.class).createProjectSequences(obj.getKey());
-      // other associated data entities
       session.getMapper(DatasetPartitionMapper.class).createSequences(obj.getKey());
     }
     session.commit();
