@@ -139,13 +139,14 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO name_rel_${newDatasetKey} (dataset_key,name_id,related_name_id,id,<include refid="COLS_COPY"/>, created, modified)
+    INSERT INTO name_rel (dataset_key,name_id,related_name_id,id,<include refid="COLS_COPY"/>, created, modified)
     SELECT #{newDatasetKey},coalesce(<if test="mapIds">m1.id2,</if>name_id),coalesce(<if test="mapIds">m2.id2,</if>related_name_id),nextval('name_rel_${newDatasetKey}_id_seq'),<include refid="COLS_COPY"/>, created, modified
-    FROM name_rel_${datasetKey} r
+    FROM name_rel r
     <if test="mapIds">
       LEFT JOIN idmap_name_${datasetKey} m1 ON m1.id=r.name_id
       LEFT JOIN idmap_name_${datasetKey} m2 ON m2.id=r.related_name_id
     </if>
+    WHERE r.dataset_key=#{datasetKey}
   </insert>
 
   <select id="exists" parameterType="map" resultType="boolean">

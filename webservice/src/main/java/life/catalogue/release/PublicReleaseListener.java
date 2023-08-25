@@ -230,36 +230,4 @@ public class PublicReleaseListener {
     return new File(colDownloadDir, "latest_" + format.getFilename() + ".zip");
   }
 
-  public static void main(String[] args) {
-    PgConfig cfg = new PgConfig();
-    cfg.host = "pg1.checklistbank.org";
-    cfg.database = "col";
-    cfg.user = "col";
-    cfg.password = "";
-    DoiConfig doiCfg = new DoiConfig();
-    doiCfg.api = "https://api.datacite.org";
-    doiCfg.prefix = "10.48580";
-    doiCfg.username = "";
-    doiCfg.password = "";
-
-
-    WsServerConfig wcfg = new WsServerConfig();
-    wcfg.db = cfg;
-    wcfg.doi = doiCfg;
-
-    try (var dataSource = cfg.pool()) {
-      var factory = MybatisFactory.configure(dataSource, "releaseListener");
-      DatasetInfoCache.CACHE.setFactory(factory);
-      var doiService = UpdateReleaseTool.buildDoiService(doiCfg);
-      var converter = UpdateReleaseTool.buildConverter(factory);
-
-      PublicReleaseListener listener = new PublicReleaseListener(wcfg, factory, null, doiService, converter);
-      try (SqlSession session = factory.openSession()) {
-        DatasetMapper dm = session.getMapper(DatasetMapper.class);
-        var release = dm.get(9817);
-        listener.publishColSourceDois(release);
-        listener.updateColDoiUrls(release);
-      }
-    }
-  }
 }

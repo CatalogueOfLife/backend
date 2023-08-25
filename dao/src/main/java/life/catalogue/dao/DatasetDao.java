@@ -449,7 +449,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   /**
-   * Deletes all data from partitioned tables, clears the usage counter
+   * Deletes all data from partitioned tables, clears the usage counter and removed sequences if existing
    */
   public void deleteData(int key, SqlSession session) {
     var dpm = session.getMapper(DatasetPartitionMapper.class);
@@ -509,6 +509,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       for (var c : obj.getSource()) {
         cm.create(obj.getKey(), c);
       }
+    }
+    // sequences for mutable projects - releases and external datasets do not need persistent sequences. Imports generate them on the fly temporarily
+    if (obj.getOrigin() == DatasetOrigin.PROJECT) {
+      // sector & decision
+      session.getMapper(DatasetPartitionMapper.class).createProjectSequences(obj.getKey());
+      // other associated data entities
+      session.getMapper(DatasetPartitionMapper.class).createSequences(obj.getKey());
     }
     session.commit();
     session.close();

@@ -36,6 +36,11 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
 
   @Test
   public void copyDataset() throws Exception {
+    // we also need other entities to not validate constraints
+    CopyDatasetTestComponent.copy(mapper(VerbatimRecordMapper.class), datasetKey, false);
+    CopyDatasetTestComponent.copy(mapper(ReferenceMapper.class), datasetKey, false);
+    CopyDatasetTestComponent.copy(mapper(NameMapper.class), datasetKey, false);
+    // now do the real copy
     CopyDatasetTestComponent.copy(mapper(), datasetKey, true);
   }
 

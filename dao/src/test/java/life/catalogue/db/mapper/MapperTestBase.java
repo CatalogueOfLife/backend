@@ -32,7 +32,7 @@ import com.google.common.base.Preconditions;
  */
 public abstract class MapperTestBase<M> {
   static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-  private final Class<M> mapperClazz;
+  protected final Class<M> mapperClazz;
   protected final static int appleKey = TestDataRule.APPLE.key;
 
   @ClassRule

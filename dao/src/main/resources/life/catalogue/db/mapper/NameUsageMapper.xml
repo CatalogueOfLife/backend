@@ -449,17 +449,18 @@
   </update>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO name_usage_${newDatasetKey}
+    INSERT INTO name_usage
       (id, parent_id, name_id, dataset_key,
       <include refid="COLS_COPY"><property name="alias" value=""/></include>)
     SELECT coalesce(<if test="mapIds">mu.id2,</if>u.id), coalesce(<if test="mapIds">mp.id2,</if>u.parent_id), coalesce(<if test="mapIds">mn.id2,</if>u.name_id), #{newDatasetKey},
       <include refid="COLS_COPY"><property name="alias" value="u."/></include>
-    FROM name_usage_${datasetKey} u
+    FROM name_usage u
     <if test="mapIds">
       LEFT JOIN idmap_name_usage_${datasetKey} mu ON mu.id=u.id
       LEFT JOIN idmap_name_usage_${datasetKey} mp ON mp.id=u.parent_id
       LEFT JOIN idmap_name_${datasetKey} mn ON mn.id=u.name_id
     </if>
+    WHERE dataset_key=#{datasetKey}
   </insert>
 
   <select id="processDataset" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

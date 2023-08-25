@@ -18,6 +18,7 @@ import org.apache.ibatis.cursor.Cursor;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static life.catalogue.api.TestEntityGenerator.DATASET12;
 import static life.catalogue.api.TestEntityGenerator.NAME4;
 import static org.junit.Assert.*;
 
@@ -47,7 +48,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
     // broken
     EditorialDecision ed2 = TestEntityGenerator.newDecision(Datasets.COL, NAME4.getDatasetKey(), "t1556");
     dm.create(ed2);
-    EditorialDecision ed3 = TestEntityGenerator.newDecision(12, NAME4.getDatasetKey(), "t15");
+    EditorialDecision ed3 = TestEntityGenerator.newDecision(DATASET12.getKey(), NAME4.getDatasetKey(), "t15");
     dm.create(ed3);
     commit();
     
@@ -124,6 +125,9 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
       d.setKey(10000+x);
       d.applyUser(TestEntityGenerator.USER_USER);
       dam.create(d);
+      // create sequences (sth done by the dataset dao normally)
+      DatasetPartitionMapper dpm = mapper(DatasetPartitionMapper.class);
+      dpm.createProjectSequences(d.getKey());
 
       dm.create(TestEntityGenerator.newDecision(d.getKey(), datasetKey, "t15")); // taxon
       dm.create(TestEntityGenerator.newDecision(d.getKey(), datasetKey, "s22")); // synonym

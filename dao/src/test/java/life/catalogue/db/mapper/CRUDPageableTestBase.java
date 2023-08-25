@@ -36,6 +36,10 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
     d.setOrigin(DatasetOrigin.PROJECT);
     d.applyUser(Users.TESTER);
     mapper(DatasetMapper.class).create(d);
+    // create sequences (sth done by the dataset dao normally)
+    DatasetPartitionMapper dpm = mapper(DatasetPartitionMapper.class);
+    dpm.createProjectSequences(d.getKey());
+    dpm.createSequences(d.getKey());
     return d.getKey();
   }
 
@@ -53,8 +57,13 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
 
   @Test
   public void deleteByDataset() throws Exception {
+    // remove related data beforehand to not break constraints
     removeNameRelated(datasetKey);
     removeNameUsageRelated();
+    if(!mapperClazz.equals(NameMapper.class)) {
+      mapper(NameMapper.class).deleteByDataset(datasetKey);
+    }
+    // now the real thing we wanna test
     mapper().deleteByDataset(datasetKey);
   }
   

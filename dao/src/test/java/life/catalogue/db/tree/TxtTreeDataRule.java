@@ -90,7 +90,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       LOG.info("Loading dataset {} from tree {}", datasetKey, treeName);
       createDataset(datasetKey);
       loadTree(datasetKey, treeName);
-      updateSequences(datasetKey);
+      createSequences(datasetKey);
     }
   }
 
@@ -195,10 +195,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     }
   }
 
-  public void updateSequences(int datasetKey) {
+  public void createSequences(int datasetKey) {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-    if (origin.isManagedOrRelease()) {
-      pm.updateIdSequences(datasetKey);
+    if (origin == DatasetOrigin.PROJECT) {
       pm.createProjectSequences(datasetKey);
     }
     session.commit();

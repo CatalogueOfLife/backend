@@ -31,11 +31,13 @@ public class PgSetupRule extends SqlSessionFactoryRule {
   public static String COL_DB_NAME = "col";
   public static String ADMIN_DB_NAME = "admin";
   private static PostgreSQLContainer<?> PG_CONTAINER;
+  private PgConfig prev;
 
   @Override
   protected void before() throws Throwable {
     PG_CONTAINER = setupPostgres();
     PG_CONTAINER.start();
+    prev = cfg; // we modify static configs here, so we keep them to replace them again to avoid parallel test problems
     cfg = buildContainerConfig(PG_CONTAINER);
     try {
       initDb(PG_CONTAINER, cfg);
@@ -110,6 +112,7 @@ public class PgSetupRule extends SqlSessionFactoryRule {
   public void after() {
     shutdownDbPool();
     PG_CONTAINER.stop();
+    cfg = prev;
   }
 
 }

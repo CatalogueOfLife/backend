@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,13 +33,15 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
   
   private static int userKey = TestEntityGenerator.USER_EDITOR.getKey();
   private Sector sector;
-  
+  private int datasetKeyOriginal;
+
   public TaxonMapperTest() {
     super(TaxonMapper.class);
   }
   
   @Before
   public void init() {
+    datasetKeyOriginal = CRUDTestBase.datasetKey;
     CRUDTestBase.datasetKey = Datasets.COL;
 
     // create a few draft taxa to attach sectors to
@@ -50,7 +53,12 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
 
     mapper(SectorMapper.class).create(sector);
   }
-  
+
+  @After
+  public void destroy() {
+    CRUDTestBase.datasetKey = datasetKeyOriginal;
+  }
+
   @Override
   void updateTestObj(Taxon obj) {
     obj.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);

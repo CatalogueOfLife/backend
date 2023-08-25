@@ -135,13 +135,13 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO type_material_${newDatasetKey} (dataset_key, sector_key, name_id, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    INSERT INTO type_material (dataset_key, sector_key, name_id, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
     SELECT #{newDatasetKey}, t.sector_key, coalesce(<if test="mapIds">m.id2,</if>name_id), <include refid="COLS_COPY"><property name="alias" value="t."/></include>, t.created, t.modified
-    FROM type_material_${datasetKey} t
+    FROM type_material t
     <if test="mapIds">
       LEFT JOIN idmap_name_${datasetKey} m ON m.id=t.name_id
     </if>
-
+    WHERE t.dataset_key=#{datasetKey}
   </insert>
 
   <update id="update" parameterType="TypeMaterial" keyProperty="id">

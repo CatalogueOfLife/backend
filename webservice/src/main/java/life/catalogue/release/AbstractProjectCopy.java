@@ -107,6 +107,11 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     // prepare new tables
     updateState(ImportState.PROCESSING);
 
+    // are sequences in place?
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetPartitionMapper.class).createSequences(newDatasetKey);;
+    }
+
     // is an id mapping table needed?
     if (mapIds) {
       checkIfCancelled();
@@ -142,6 +147,14 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     // subclass specifics
     checkIfCancelled();
     finalWork();
+
+    // remove sequences if not a project
+    if (newDatasetOrigin != DatasetOrigin.PROJECT) {
+      LOG.info("Removing db sequences for {} {}", newDatasetOrigin, newDatasetKey);
+      try (SqlSession session = factory.openSession(true)) {
+        session.getMapper(DatasetPartitionMapper.class).createSequences(newDatasetKey);
+      }
+    }
 
     checkIfCancelled();
     metrics();

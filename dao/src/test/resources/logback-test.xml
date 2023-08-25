@@ -19,8 +19,8 @@
 	<logger name="java.sql" level="INFO" />
 	<logger name="life.catalogue.db" level="INFO" />
 
-  <!--
 	<logger name="life.catalogue.db.mapper" level="DEBUG" />
+  <!--
   <logger name="life.catalogue.dao" level="DEBUG" />
   <logger name="life.catalogue.matching" level="DEBUG" />
 	<logger name="life.catalogue.es" level="TRACE" /> <!- - TRACE if you like to see ES queries and responses - - >

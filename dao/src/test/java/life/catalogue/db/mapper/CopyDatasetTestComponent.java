@@ -17,6 +17,10 @@ public class CopyDatasetTestComponent {
         });
       }
     }
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
+      dmp.createSequences(998);
+    }
     mapper.copyDataset(key, 998, mapIds);
   }
 }

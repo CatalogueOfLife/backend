@@ -148,7 +148,7 @@
           AND <include refid="size"/> >= #{req.minSize}
         </if>
         <if test="req.withoutData">
-          AND NOT EXISTS (SELECT id FROM name_usage_${req.datasetKey} WHERE sector_key=s.id)
+          AND NOT EXISTS (SELECT id FROM name_usage WHERE dataset_key=#{req.datasetKey} AND sector_key=s.id)
         </if>
       </where>
     </if>
