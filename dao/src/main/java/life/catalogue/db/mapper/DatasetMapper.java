@@ -40,6 +40,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
     updateSettings(d.getKey(), d.getSettings(), d.getDataset().getModifiedBy());
   }
 
+  void createWithID(Dataset obj);
+
   DatasetSettings getSettings(@Param("key") int key);
 
   /**

@@ -93,7 +93,7 @@ public class NameUsageProcessorTest extends DaoTestBase {
     try (Connection con = SqlSessionFactoryRule.getSqlSessionFactory().openSession().getConnection();
          Statement st = con.createStatement();
     ) {
-      st.execute("UPDATE name_usage_" + COL + " SET sector_key="+s.getId()+" WHERE id NOT IN ('t1', 't2') ");
+      st.execute("UPDATE name_usage SET sector_key="+s.getId()+" WHERE id NOT IN ('t1', 't2') AND dataset_key=" + COL);
       con.commit();
     }
     

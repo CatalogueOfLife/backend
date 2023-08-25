@@ -102,8 +102,14 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       d.setKey(datasetKey);
       d.applyUser(Users.TESTER);
       d.setOrigin(origin);
-      dm.create(d);
+      dm.createWithID(d);
     }
+    // create sequences
+    if (d.getOrigin() == DatasetOrigin.PROJECT) {
+      session.getMapper(DatasetPartitionMapper.class).createProjectSequences(d.getKey());
+      session.getMapper(DatasetPartitionMapper.class).createSequences(d.getKey());
+    }
+
     session.commit();
   }
 

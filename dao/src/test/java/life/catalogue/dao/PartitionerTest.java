@@ -23,8 +23,8 @@ public class PartitionerTest {
   @Test
   public void attached() throws Exception {
     try (Connection con = pgSetupRule.connect()) {
-      assertTrue( Partitioner.isAttached(con, "name_3") );
-      assertTrue( Partitioner.isAttached(con, "vernacular_name_3") );
+      assertTrue( Partitioner.isAttached(con, "name_mod0") );
+      assertTrue( Partitioner.isAttached(con, "vernacular_name_mod1") );
       assertFalse( Partitioner.isAttached(con, "name_3567") );
       assertFalse( Partitioner.isAttached(con, "x") );
       assertFalse( Partitioner.isAttached(con, "name_dds") );
