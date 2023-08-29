@@ -74,7 +74,7 @@ public interface NameUsageIndexService {
    * Recreates a new search index from scratch
    * and re-indexes all datasets.
    */
-  Stats indexAll();
+  Stats indexAll(int ... excludedDatasetKeys);
 
   /**
    * Removes a single usage document from ES
@@ -181,7 +181,7 @@ public interface NameUsageIndexService {
       }
 
       @Override
-      public Stats indexAll() {
+      public Stats indexAll(int ... excludedDatasetKeys) {
         LOG.info("No Elastic Search configured. Passing through");
         return new Stats();
       }

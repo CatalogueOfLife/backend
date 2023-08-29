@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ public class IndexCmd extends AbstractMybatisCmd {
 
   private static final String ARG_KEY = "key";
   private static final String ARG_ALL = "all";
+  private static final String ARG_KEY_IGNORE = "ignore";
   private static final String ARG_THREADS = "t";
 
   public IndexCmd() {
@@ -50,6 +52,12 @@ public class IndexCmd extends AbstractMybatisCmd {
             .required(false)
             .setDefault(false)
             .help("index all datasets into a new index by date");
+    subparser.addArgument("--"+ ARG_KEY_IGNORE, "-i")
+             .dest(ARG_KEY_IGNORE)
+             .nargs("*")
+             .type(Integer.class)
+             .required(false)
+             .help("Dataset key to be excluded from full indexing");
     subparser.addArgument("-"+ ARG_THREADS)
       .dest(ARG_THREADS)
       .type(Integer.class)
@@ -86,7 +94,12 @@ public class IndexCmd extends AbstractMybatisCmd {
         Preconditions.checkArgument(cfg.es.indexingThreads > 0, "Needs at least one indexing thread");
       }
       if (ns.getBoolean(ARG_ALL)) {
-        svc.indexAll();
+        if (ns.getList(ARG_KEY_IGNORE) != null) {
+          List<Integer> ignore = ns.getList(ARG_KEY_IGNORE);
+          svc.indexAll(ArrayUtils.toPrimitive(ignore.toArray(new Integer[0])));
+        } else {
+          svc.indexAll();
+        }
 
       } else if (ns.getList(ARG_KEY) != null) {
         List<Integer> keys = ns.getList(ARG_KEY);

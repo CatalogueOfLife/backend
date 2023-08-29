@@ -192,7 +192,7 @@ public class DownloadUtil {
           TemporalAccessor serverModified = DateTimeFormatter.RFC_1123_DATE_TIME.parse(modHeader.getValue());
           downloadTo.setLastModified(Instant.from(serverModified).toEpochMilli());
         } catch (Exception e) {
-          LOG.error("Failed to set local file date to {} header {}", modHeader.getName(), modHeader.getValue(), e);
+          LOG.warn("Failed to set local file date to {} header {}", modHeader.getName(), modHeader.getValue(), e);
         }
       }
     }

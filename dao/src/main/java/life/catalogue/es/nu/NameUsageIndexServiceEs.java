@@ -256,7 +256,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public Stats indexAll() {
+  public Stats indexAll(int ... excludedDatasetKeys) {
     createEmptyIndex();
 
     final Stats total = new Stats();
@@ -264,9 +264,11 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     try (SqlSession session = factory.openSession(true)) {
       keys = session.getMapper(DatasetMapper.class).keys();
       int allDatasets = keys.size();
-      // first check if we have data partitions - otherwise all queries below throw
-      NameMapper nm = session.getMapper(NameMapper.class);
-      keys.removeIf(key -> !nm.hasData(key));
+      if (excludedDatasetKeys != null) {
+        for (int ex : excludedDatasetKeys) {
+          keys.remove(ex);
+        }
+      }
       LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
     }
 
