@@ -13,8 +13,12 @@ and done it manually. So we can as well log changes here.
 
 ### 2023-08-21 migrate partitioning
 This is a serious change, removing the list partitioning and replacing it with just the hash one and 24 fixed partitions.
-First restore the dump of the previous db into the empty public schema;
-> nohup pg_restore -j 12 -U postgres -d clb ~/clb-prod.dump &
+First dump the current db:
+> nohup pg_dump -Fc -Z 7 -U postgres -f clb-prod.dump clb &
+
+Then restore it into the empty public schema of a new database;
+> CREATE DATABASE clb OWNER col;
+nohup pg_restore -j 12 -U postgres -d clb ~/clb-prod.dump &
 
 Then alter its schema to be "old", but reuse its enum types in the public schema (for simpler copying later on witout casts):
 > ALTER SCHEMA public RENAME TO old;
@@ -66,130 +70,12 @@ ALTER TYPE old.treatmentformat SET SCHEMA public;
 ALTER TYPE old.typestatus SET SCHEMA public;
 ALTER TYPE old.user_role SET SCHEMA public;
 
+Then run the sql scripts in the given order found in the migration subfolder.
+This takes a long time to complete.
 
+At the end, drop the old schema with:
+>DROP SCHEMA old;
 
-
-# DROP PUBLIC SCHEMA
-> ALTER EXTENSION btree_gin SET SCHEMA old;
-ALTER EXTENSION hstore SET SCHEMA old;
-ALTER EXTENSION pg_trgm SET SCHEMA old;
-ALTER EXTENSION unaccent SET SCHEMA old;
-DROP SCHEMA public CASCADE;
-
-
-
-
-
-> nohup pg_dump -U postgres -d col -Fc -Z 7 --data-only --load-via-partition-root --exclude-table '__*' --exclude-table '_md_*' --exclude-table '*_seq' -f clb.dump &
-
->pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'user' -f user.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'latin29' -t 'parser_config' -f lookups.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'dataset' -f dataset.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'dataset_*' -T '*_seq' -f dataset2.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'sector' -T '*_seq' -f sector.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'sector_*' -T '*_seq' -f sector2.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'usage_count' -T '*_seq' -f ucount.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'decision*' -T '*_seq' -f decision.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'names_index' -T '*_seq' -f nidx.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'verbatim*' -T 'verbatim_source*' -T '*_seq' -f verbatim.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'reference*' -T '*_seq' -f reference.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'name*' -T 'name_usage*' -T 'name_rel*' -T 'name_match*' -T 'names_index' -T '*_seq' -f name.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'name_usage*' -T '*_seq' -f name_usage.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'name_rel*' -t 'name_match*' -t 'type_material*' -T '*_seq' -f name_rels.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'taxon_concept_rel*' -t 'species_interaction*' -t 'distribution*' -t 'media*' -t 'estimate*' -t 'treatment*' -t 'vernacular_name*' -T '*_seq' -f name_usage_rels.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'verbatim_source*' -T '*_seq' -f verbatim_source.dump
-pg_dump -U postgres -d col -Fd -Z7 -j 8 --load-via-partition-root -t 'id_report' -T '*_seq' -f idreport.dump
-
-> nohup pg_dump -U postgres -d col -Fc -Z 7 --data-only --load-via-partition-root --exclude-table '__*' --exclude-table '_md_*' --exclude-table '*_seq' -f clb.dump &
-
-Deactivate all triggers/constraints during import:
->ALTER TABLE dataset DISABLE TRIGGER ALL;
-ALTER TABLE dataset_citation DISABLE TRIGGER ALL;
-ALTER TABLE dataset_archive DISABLE TRIGGER ALL;
-ALTER TABLE dataset_archive_citation DISABLE TRIGGER ALL;
-ALTER TABLE dataset_source DISABLE TRIGGER ALL;
-ALTER TABLE dataset_source_citation DISABLE TRIGGER ALL;
-ALTER TABLE dataset_patch DISABLE TRIGGER ALL;
-ALTER TABLE dataset_export DISABLE TRIGGER ALL;
-ALTER TABLE sector DISABLE TRIGGER ALL;
-ALTER TABLE sector_import DISABLE TRIGGER ALL;
-ALTER TABLE decision DISABLE TRIGGER ALL;
-ALTER TABLE names_index DISABLE TRIGGER ALL;
-ALTER TABLE id_report DISABLE TRIGGER ALL;
-ALTER TABLE name_usage_archive DISABLE TRIGGER ALL;
-ALTER TABLE parser_config DISABLE TRIGGER ALL;
-ALTER TABLE dataset_import DISABLE TRIGGER ALL;
-ALTER TABLE verbatim DISABLE TRIGGER ALL;
-ALTER TABLE reference DISABLE TRIGGER ALL;
-ALTER TABLE name DISABLE TRIGGER ALL;
-ALTER TABLE name_rel DISABLE TRIGGER ALL;
-ALTER TABLE name_match DISABLE TRIGGER ALL;
-ALTER TABLE type_material DISABLE TRIGGER ALL;
-ALTER TABLE name_usage DISABLE TRIGGER ALL;
-ALTER TABLE taxon_concept_rel DISABLE TRIGGER ALL;
-ALTER TABLE species_interaction DISABLE TRIGGER ALL;
-ALTER TABLE distribution DISABLE TRIGGER ALL;
-ALTER TABLE media DISABLE TRIGGER ALL;
-ALTER TABLE estimate DISABLE TRIGGER ALL;
-ALTER TABLE treatment DISABLE TRIGGER ALL;
-ALTER TABLE vernacular_name DISABLE TRIGGER ALL;
-ALTER TABLE verbatim_source DISABLE TRIGGER ALL;
-ALTER TABLE verbatim_source_secondary DISABLE TRIGGER ALL;
-ALTER TABLE name_usage_archive_match DISABLE TRIGGER ALL;
-
-Restore the dump to the newly created database:
->pg_restore -U postgres -d col -j 12 --data-only --exit-on-error user.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error lookups.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error dataset.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error sector.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error dataset2.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error sector2.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error decision.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error ucount.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error nidx.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error verbatim.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error reference.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error name.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error name_usage.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error name_rels.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error name_usage_rels.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error verbatim_source.dump
-pg_restore -U postgres -d col -j 12 --data-only --exit-on-error idreport.dump
-
-enable triggers again
->ALTER TABLE dataset ENABLE TRIGGER ALL;
-ALTER TABLE dataset_citation ENABLE TRIGGER ALL;
-ALTER TABLE dataset_archive ENABLE TRIGGER ALL;
-ALTER TABLE dataset_archive_citation ENABLE TRIGGER ALL;
-ALTER TABLE dataset_source ENABLE TRIGGER ALL;
-ALTER TABLE dataset_source_citation ENABLE TRIGGER ALL;
-ALTER TABLE dataset_patch ENABLE TRIGGER ALL;
-ALTER TABLE dataset_export ENABLE TRIGGER ALL;
-ALTER TABLE sector ENABLE TRIGGER ALL;
-ALTER TABLE sector_import ENABLE TRIGGER ALL;
-ALTER TABLE decision ENABLE TRIGGER ALL;
-ALTER TABLE names_index ENABLE TRIGGER ALL;
-ALTER TABLE id_report ENABLE TRIGGER ALL;
-ALTER TABLE name_usage_archive ENABLE TRIGGER ALL;
-ALTER TABLE parser_config ENABLE TRIGGER ALL;
-ALTER TABLE dataset_import ENABLE TRIGGER ALL;
-ALTER TABLE verbatim ENABLE TRIGGER ALL;
-ALTER TABLE reference ENABLE TRIGGER ALL;
-ALTER TABLE name ENABLE TRIGGER ALL;
-ALTER TABLE name_rel ENABLE TRIGGER ALL;
-ALTER TABLE name_match ENABLE TRIGGER ALL;
-ALTER TABLE type_material ENABLE TRIGGER ALL;
-ALTER TABLE name_usage ENABLE TRIGGER ALL;
-ALTER TABLE taxon_concept_rel ENABLE TRIGGER ALL;
-ALTER TABLE species_interaction ENABLE TRIGGER ALL;
-ALTER TABLE distribution ENABLE TRIGGER ALL;
-ALTER TABLE media ENABLE TRIGGER ALL;
-ALTER TABLE estimate ENABLE TRIGGER ALL;
-ALTER TABLE treatment ENABLE TRIGGER ALL;
-ALTER TABLE vernacular_name ENABLE TRIGGER ALL;
-ALTER TABLE verbatim_source ENABLE TRIGGER ALL;
-ALTER TABLE verbatim_source_secondary ENABLE TRIGGER ALL;
-ALTER TABLE name_usage_archive_match ENABLE TRIGGER ALL;
 
 ### 2023-08-15 add new issue
 ```
