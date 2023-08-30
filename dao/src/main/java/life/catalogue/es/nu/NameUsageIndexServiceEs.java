@@ -265,8 +265,8 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       keys = session.getMapper(DatasetMapper.class).keys();
       int allDatasets = keys.size();
       if (excludedDatasetKeys != null) {
-        for (int ex : excludedDatasetKeys) {
-          keys.remove(ex);
+        for (Integer dk : excludedDatasetKeys) {
+          keys.remove(dk);
         }
       }
       LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
