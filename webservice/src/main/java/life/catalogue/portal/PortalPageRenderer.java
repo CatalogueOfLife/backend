@@ -147,7 +147,7 @@ public class PortalPageRenderer {
       if (e.usage.getLastReleaseKey() != null) {
         var v = tdao.getSource(DSID.of(e.usage.getLastReleaseKey(), id));
         data.put("verbatim", v);
-        data.put("source", datasetDao.get(v.getSourceDatasetKey()));
+        data.put("source", v == null ? null : datasetDao.get(v.getSourceDatasetKey()));
       }
       return render(env, PortalPage.TOMBSTONE, data);
 
