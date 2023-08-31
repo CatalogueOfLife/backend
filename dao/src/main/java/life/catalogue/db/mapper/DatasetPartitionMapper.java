@@ -35,14 +35,14 @@ public interface DatasetPartitionMapper {
   // order is important !!!
   List<String> PARTITIONED_TABLES = Lists.newArrayList(
       "verbatim",
-      "verbatim_source",
-      "verbatim_source_secondary",
       "reference",
       "name",
       "name_rel",
       "name_match",
       "type_material",
       "name_usage",
+      "verbatim_source",
+      "verbatim_source_secondary",
       "taxon_concept_rel",
       "species_interaction",
       "distribution",
