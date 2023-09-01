@@ -42,7 +42,7 @@ public class NameUsageMatchingResource {
   private final JobExecutor exec;
   private final SqlSessionFactory factory;
   private final UsageMatcherGlobal matcher;
-  private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings());
+  private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
   public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, UsageMatcherGlobal matcher) {
     this.cfg = cfg;

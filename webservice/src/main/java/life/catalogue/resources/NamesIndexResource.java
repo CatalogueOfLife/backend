@@ -45,7 +45,7 @@ public class NamesIndexResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexResource.class);
   private final NameIndex ni;
-  private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings());
+  private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   private final SqlSessionFactory factory;
   private final WsServerConfig cfg;
   private final JobExecutor exec;

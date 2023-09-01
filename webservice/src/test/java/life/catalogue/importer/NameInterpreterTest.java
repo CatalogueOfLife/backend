@@ -24,7 +24,7 @@ public class NameInterpreterTest {
 
   @Before
   public void init() {
-    ib = new NameInterpreter(new DatasetSettings());
+    ib = new NameInterpreter(new DatasetSettings(), true);
   }
 
   @Test
@@ -33,7 +33,7 @@ public class NameInterpreterTest {
     Optional<ParsedNameUsage> pnu;
     Name n;
 
-    pnu = ib.interpret(true, "1", null, "Cerastium ligusticum subsp. granulatum", "(Huter et al.) P. D. Sell & Whitehead",
+    pnu = ib.interpret("1", null, "Cerastium ligusticum subsp. granulatum", "(Huter et al.) P. D. Sell & Whitehead",
       null, null, null, null, null, null, null, null, null, null, null, "tpl:234567", v);
     assertNull(pnu.get().getTaxonomicNote());
     n = pnu.get().getName();
@@ -54,7 +54,7 @@ public class NameInterpreterTest {
     assertEquals("Whitehead", n.getCombinationAuthorship().getAuthors().get(1));
     assertEquals(List.of(new Identifier("tpl", "234567")), n.getIdentifier());
 
-    pnu = ib.interpret(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881",null,
+    pnu = ib.interpret("1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881",null,
       null, "Abies", null, "alba", null, null, null, null, null, null, null, v);
     n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
@@ -65,7 +65,7 @@ public class NameInterpreterTest {
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
     // if atoms are given they take precedence over the full name
-    pnu = ib.interpret(true, "1", "species", "Picea arlba Mill. 2121", "",null,
+    pnu = ib.interpret("1", "species", "Picea arlba Mill. 2121", "",null,
       null, "Abies", null, "alba", null, null, null, null, null, null, null, v);
     n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
@@ -76,7 +76,7 @@ public class NameInterpreterTest {
     assertNull(n.getCombinationAuthorship().getYear());
 
     // if no authorahip is given it needs to be rebuild
-    pnu = ib.interpret(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "",null,
+    pnu = ib.interpret("1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "",null,
       "", "", null, null, null, null, null, null, null, null, null, v);
     n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
@@ -87,7 +87,7 @@ public class NameInterpreterTest {
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
     // if no authorahip is given it needs to be rebuild
-    pnu = ib.interpret(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "",null,
+    pnu = ib.interpret("1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "",null,
       "", "", null, null, null, null, null, null, null, null, null, v);
     n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
@@ -98,7 +98,7 @@ public class NameInterpreterTest {
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
     // exclude taxon notes from authorship
-    pnu = ib.interpret(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881 sensu Döring 1999", "",null,
+    pnu = ib.interpret("1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881 sensu Döring 1999", "",null,
       null, "", null, null, null, null, null, null, null, null, null, v);
     assertEquals("sensu Döring 1999", pnu.get().getTaxonomicNote());
     n = pnu.get().getName();
@@ -109,7 +109,7 @@ public class NameInterpreterTest {
     assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
-    pnu = ib.interpret(true, "1", "species", "Abies alba", "Mill. and Desbrochers de Loges, 1881 sensu Döring 1999",null,
+    pnu = ib.interpret("1", "species", "Abies alba", "Mill. and Desbrochers de Loges, 1881 sensu Döring 1999",null,
       null, "", null, null, null, null, null, null, null, null, null, v);
     assertEquals("sensu Döring 1999", pnu.get().getTaxonomicNote());
     n = pnu.get().getName();
@@ -120,7 +120,7 @@ public class NameInterpreterTest {
     assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
-    pnu = ib.interpret(true, "1", "family", "", "Miller",null,
+    pnu = ib.interpret("1", "family", "", "Miller",null,
       "Asteraceae", "", null, null, null, null, null, null, null, null, null, v);
     assertNull(pnu.get().getTaxonomicNote());
     n = pnu.get().getName();
@@ -134,7 +134,7 @@ public class NameInterpreterTest {
     assertNull(n.getCombinationAuthorship().getYear());
 
     // https://github.com/CatalogueOfLife/backend/issues/788
-    pnu = ib.interpret(true, "CIP-82", "species", "Lutzomyia (Helcocyrtomyia) osornoi", "(Ristorcelli & Van ty, 1941)",null,
+    pnu = ib.interpret("CIP-82", "species", "Lutzomyia (Helcocyrtomyia) osornoi", "(Ristorcelli & Van ty, 1941)",null,
       null, "Lutzomyia", "Helcocyrtomyia", "osornoi", null, null, null, null, null, null, null, v);
     assertNull(pnu.get().getTaxonomicNote());
     n = pnu.get().getName();
@@ -152,7 +152,7 @@ public class NameInterpreterTest {
     assertTrue(n.getBasionymAuthorship().getExAuthors().isEmpty());
 
     // https://github.com/CatalogueOfLife/backend/issues/788
-    pnu = ib.interpret(true, "1", "superfamily", "Eucnidoideae ined.", "ined.",null,
+    pnu = ib.interpret("1", "superfamily", "Eucnidoideae ined.", "ined.",null,
       null, null, null, null, null, null, null, null, null, null, null, v);
     assertNull(pnu.get().getTaxonomicNote());
     n = pnu.get().getName();
@@ -169,7 +169,7 @@ public class NameInterpreterTest {
     assertTrue(n.getBasionymAuthorship().isEmpty());
 
     // https://github.com/CatalogueOfLife/backend/issues/788
-    pnu = ib.interpret(true, "1", null, "Cerastium ligusticum subsp. granulatum", "(Huter et al.) P. D. Sell & Whitehead",null,
+    pnu = ib.interpret("1", null, "Cerastium ligusticum subsp. granulatum", "(Huter et al.) P. D. Sell & Whitehead",null,
       null, null, null, null, null, null, null, null, null, null, null, v);
     assertNull(pnu.get().getTaxonomicNote());
     n = pnu.get().getName();
@@ -191,14 +191,14 @@ public class NameInterpreterTest {
 
     // Odonata INCONSISTENT_AUTHORSHIP
     v = new VerbatimRecord();
-    pnu = ib.interpret(true, "957", "species", "Boyeria vinosa (Say, 1840)", "(Say, 1840)",null,
+    pnu = ib.interpret("957", "species", "Boyeria vinosa (Say, 1840)", "(Say, 1840)",null,
       null, "Boyeria", null, "vinosa", null, null, null, null, null, null, null, v);
     assertNull(pnu.get().getTaxonomicNote());
     n = pnu.get().getName();
     assertFalse(v.hasIssues());
 
     // explicit unranked should stay: https://github.com/CatalogueOfLife/backend/issues/1136
-    pnu = ib.interpret(true, "1", "no rank", "cellular organisms", null,null,
+    pnu = ib.interpret("1", "no rank", "cellular organisms", null,null,
       null, null, null, null, null, null, null, null, null, null, null, v);
     n = pnu.get().getName();
     assertEquals("Cellular organisms", n.getScientificName());
@@ -211,7 +211,7 @@ public class NameInterpreterTest {
 
     // daggers should be removed from name parts, not just entire names
     // https://github.com/CatalogueOfLife/data/issues/417
-    pnu = ib.interpret(true, "1", "species", null, "Hamilton, 1990",null,
+    pnu = ib.interpret("1", "species", null, "Hamilton, 1990",null,
       null, "Acixiites†", null, "costalis", null, null, null, "original combination, valid: Yes", null, null, null, v);
     n = pnu.get().getName();
     assertEquals("Acixiites costalis", n.getScientificName());
@@ -221,7 +221,7 @@ public class NameInterpreterTest {
     assertEquals(Authorship.yearAuthors("1990", "Hamilton"), n.getCombinationAuthorship());
     assertTrue(n.getBasionymAuthorship().isEmpty());
 
-    pnu = ib.interpret(true, "1", "species", null, "Hamilton, 1990",null,
+    pnu = ib.interpret("1", "species", null, "Hamilton, 1990",null,
       null, "Acixiites", null, "costalis †", null, null, null, null, null, null, null, v);
     n = pnu.get().getName();
     assertEquals("Acixiites costalis", n.getScientificName());
@@ -231,7 +231,7 @@ public class NameInterpreterTest {
     assertEquals(Authorship.yearAuthors("1990", "Hamilton"), n.getCombinationAuthorship());
     assertTrue(n.getBasionymAuthorship().isEmpty());
 
-    pnu = ib.interpret(true, "1", null, "Leucophyta R. Br.", null, null,null, null, null, null, null, null, "botanical", null, null, null, null, v);
+    pnu = ib.interpret("1", null, "Leucophyta R. Br.", null, null,null, null, null, null, null, null, "botanical", null, null, null, null, v);
     n = pnu.get().getName();
     assertEquals("Leucophyta", n.getScientificName());
     assertEquals("R.Br.", n.getAuthorship());
@@ -242,7 +242,7 @@ public class NameInterpreterTest {
 
     // https://github.com/CatalogueOfLife/testing/issues/195
     ib.settings.enable(Setting.EPITHET_ADD_HYPHEN);
-    pnu = ib.interpret(true, "1", null, null, null, null, null,"Cosmopterix", null, "sancti vincentii", null, null, "botanical", null, null, null, null, v);
+    pnu = ib.interpret("1", null, null, null, null, null,"Cosmopterix", null, "sancti vincentii", null, null, "botanical", null, null, null, null, v);
     n = pnu.get().getName();
     assertEquals("Cosmopterix sancti-vincentii", n.getScientificName());
     assertNull(n.getAuthorship());
@@ -252,7 +252,7 @@ public class NameInterpreterTest {
 
     // https://github.com/CatalogueOfLife/data/issues/431
     ib.settings.disable(Setting.EPITHET_ADD_HYPHEN);
-    pnu = ib.interpret(true, "1", null, "Asplenium × mitsutae Viane & Reichst.", "Viane & Reichst.", null,null, "Asplenium", null, "× mitsutae", null, null, "botanical", null, null, null, null, v);
+    pnu = ib.interpret("1", null, "Asplenium × mitsutae Viane & Reichst.", "Viane & Reichst.", null,null, "Asplenium", null, "× mitsutae", null, null, "botanical", null, null, null, null, v);
     n = pnu.get().getName();
     assertEquals("Asplenium × mitsutae", n.getScientificName());
     assertEquals("Viane & Reichst.", n.getAuthorship());
@@ -260,6 +260,19 @@ public class NameInterpreterTest {
     assertEquals("Asplenium", n.getGenus());
     assertEquals("mitsutae", n.getSpecificEpithet());
     assertEquals(NamePart.SPECIFIC, n.getNotho());
+
+    pnu = ib.interpret("urn:lsid:marinespecies.org:taxname:887642", "Species", "Cambarus Uhleri", "Faxon, 1884", "1884",
+      null, "Cambarus", null, "Uhleri", null, null,
+      "ICZN", null, null, null, null, v
+    );
+    n = pnu.get().getName();
+    assertEquals("Cambarus uhleri", n.getScientificName());
+    assertEquals("Faxon, 1884", n.getAuthorship());
+    assertNull(n.getUninomial());
+    assertEquals("Cambarus", n.getGenus());
+    assertEquals("uhleri", n.getSpecificEpithet());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertNull(n.getNotho());
   }
 
 }

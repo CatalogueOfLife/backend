@@ -36,7 +36,7 @@ public class ColdpInterpreter extends InterpreterBase {
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings(); // for multi value ID fields
 
   ColdpInterpreter(DatasetSettings settings, MappingInfos metadata, ReferenceFactory refFactory, NeoDb store) {
-    super(settings, refFactory, store);
+    super(settings, refFactory, store, true);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }
@@ -290,7 +290,7 @@ public class ColdpInterpreter extends InterpreterBase {
       altIdTerm = ColdpTerm.nameAlternativeID;
     }
 
-    Optional<ParsedNameUsage> opt = nameInterpreter.interpret(true, v.getRaw(ColdpTerm.ID),
+    Optional<ParsedNameUsage> opt = nameInterpreter.interpret(v.getRaw(ColdpTerm.ID),
         v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship), v.get(ColdpTerm.publishedInYear),
         v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet),

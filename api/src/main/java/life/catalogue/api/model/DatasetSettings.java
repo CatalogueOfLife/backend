@@ -57,6 +57,11 @@ public class DatasetSettings extends HashMap<Setting, Object> {
     }
   }
 
+  public boolean getBoolDefault(Setting key, boolean defaultValue) {
+    var bool = getBool(key);
+    return bool == null ? defaultValue : bool;
+  }
+
   public Integer getInt(Setting key) {
     try {
       return (Integer) get(key);

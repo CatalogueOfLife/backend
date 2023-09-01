@@ -151,7 +151,13 @@ public enum Setting {
   /**
    * If true replaces spaces in epithets with hyphens during interpretation, thus replacing multiple words with a single one.
    */
-  EPITHET_ADD_HYPHEN(Boolean.class, false, EXTERNAL);
+  EPITHET_ADD_HYPHEN(Boolean.class, false, EXTERNAL),
+
+  /**
+   * If true prefers the atomised name as given in several terms over the full scientificName string which needs parsing with our name parser.
+   * Default depends on the
+   */
+  PREFER_NAME_ATOMS(Boolean.class, false, EXTERNAL);
 
   private final Class type;
   private final DatasetOrigin[] origin;

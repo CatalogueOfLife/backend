@@ -37,7 +37,7 @@ public class AcefInterpreter extends InterpreterBase {
   private static final int ACEF_AUTHOR_MAX = 100;
 
   AcefInterpreter(DatasetSettings settings, MappingInfos metadata, ReferenceFactory refFactory, NeoDb store) {
-    super(settings, refFactory, store);
+    super(settings, refFactory, store, true);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }
@@ -210,7 +210,7 @@ public class AcefInterpreter extends InterpreterBase {
       opt = Optional.of(nat);
       
     } else {
-      opt = nameInterpreter.interpret(true, v.get(idTerm), vrank, rank, null, authorship,null,
+      opt = nameInterpreter.interpret(v.get(idTerm), vrank, rank, null, authorship,null,
           null, v.get(AcefTerm.Genus), v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet), v.get(AcefTerm.InfraSpeciesEpithet),
           null, null, v.get(AcefTerm.GSDNameStatus), null,null, null, v);
     }

@@ -3,6 +3,7 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.csv.ExcelCsvExtractor;
@@ -87,11 +88,13 @@ abstract class NormalizerITBase {
     InputStream xls = getClass().getResourceAsStream("/xls/"+filename);
     Path dir = java.nio.file.Files.createTempDirectory("col-gsd");
     ExcelCsvExtractor.extract(xls, dir.toFile());
-    normalize(dir, code);
+    var settings = new DatasetSettings();
+    settings.put(Setting.NOMENCLATURAL_CODE, code);
+    normalize(dir, settings);
   }
 
   public void normalize(int datasetKey) throws Exception {
-    normalize(datasetKey, null);
+    normalize(datasetKey, (DatasetSettings) null);
   }
 
   public void assertTree() throws Exception {
@@ -139,14 +142,21 @@ abstract class NormalizerITBase {
    * and checks its printed txt tree against the expected tree
    *
    */
-  public void normalize(int datasetKey, @Nullable NomCode code) throws Exception {
+  public void normalize(int datasetKey, @Nullable DatasetSettings settings) throws Exception {
     this.datasetKey = datasetKey;
     String resourceDir = resourceDir();
     URL url = getClass().getResource(resourceDir);
-    if (code == null) {
-      code = readDatasetCode(resourceDir).orElse(null);
+    var code = readDatasetCode(resourceDir).orElse(null);
+    if (code != null && !settings.has(Setting.NOMENCLATURAL_CODE)) {
+      settings.put(Setting.NOMENCLATURAL_CODE, code);
     }
-    normalize(Paths.get(url.toURI()), code);
+    normalize(Paths.get(url.toURI()), settings);
+  }
+
+  public void normalize(int datasetKey, NomCode code) throws Exception {
+    var settings = new DatasetSettings();
+    settings.put(Setting.NOMENCLATURAL_CODE, code);
+    normalize(datasetKey, settings);
   }
 
   protected static String resourceDir(int datasetKey, DataFormat format) {
@@ -161,22 +171,24 @@ abstract class NormalizerITBase {
     normalize(url, null);
   }
 
-  public void normalize(URI url, @Nullable NomCode code) throws Exception {
+  public void normalize(URI url, @Nullable DatasetSettings settings) throws Exception {
     // download an decompress
-    ExternalSourceUtil.consumeSource(url, p -> normalize(p, code));
+    ExternalSourceUtil.consumeSource(url, p -> normalize(p, settings));
   }
   
   protected void normalize(Path arch) {
     normalize(arch, null);
   }
   
-  protected void normalize(Path arch, @Nullable NomCode code) {
+  protected void normalize(Path arch, @Nullable DatasetSettings settings) {
     try {
       store = NeoDbFactory.create(1, attempt, cfg);
       dws = new DatasetWithSettings();
       dws.setKey(store.getDatasetKey());
+      if (settings != null) {
+        dws.setSettings(settings);
+      }
       dws.setDataFormat(format);
-      dws.setCode(code);
       dws.setNotes("INITIAL dws");
       Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       Normalizer norm = new Normalizer(dws, store, arch, nameIndexSupplier.get(), ImageService.passThru(), validator, null);

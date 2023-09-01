@@ -37,36 +37,38 @@ public class NameInterpreter {
   private static final Logger LOG = LoggerFactory.getLogger(NameInterpreter.class);
 
   protected final DatasetSettings settings;
+  private final boolean preferAtoms;
 
   /**
    * Used settings for interpreting a name:
    * Setting.EPITHET_ADD_HYPHEN
    * Setting.NOMENCLATURAL_CODE
    */
-  public NameInterpreter(DatasetSettings settings) {
+  public NameInterpreter(DatasetSettings settings, boolean preferAtomsDefault) {
     this.settings = settings;
+    preferAtoms = settings.getBoolDefault(Setting.PREFER_NAME_ATOMS, preferAtomsDefault);
   }
 
   public Optional<ParsedNameUsage> interpret(SimpleName sn, IssueContainer issues) {
-    return interpret(false, false,
+    return interpret(false,
       sn.getId(), sn.getCode(), sn.getRank(), sn.getName(), sn.getAuthorship(), null,
       null, null, null, null, null, null,
       null, null, null, null, issues
     );
   }
 
-  public Optional<ParsedNameUsage> interpret(final boolean preferAtoms, final String id, String vrank, final String sciname,
+  public Optional<ParsedNameUsage> interpret(final String id, String vrank, final String sciname,
                                              final String authorship, final String publishedInYear,
                                              final String uninomial, final String genus, final String infraGenus, final String species, String infraspecies,
                                              final String cultivar,
                                              String nomCode, String nomStatus,
                                              String link, String remarks, String identifiers, VerbatimRecord v) {
-    return interpret(preferAtoms, id, vrank, Rank.UNRANKED, sciname, authorship, publishedInYear,
+    return interpret(id, vrank, Rank.UNRANKED, sciname, authorship, publishedInYear,
       uninomial, genus, infraGenus, species, infraspecies, cultivar, nomCode, nomStatus, link, remarks, identifiers, v
     );
   }
 
-  public Optional<ParsedNameUsage> interpret(final boolean preferAtoms, final String id, String vrank, Rank defaultRank, final String sciname,
+  public Optional<ParsedNameUsage> interpret(final String id, String vrank, Rank defaultRank, final String sciname,
                                              final String authorship, final String publishedInYear,
                                              final String uninomial, final String genus, final String infraGenus, final String species, String infraspecies,
                                              final String cultivar,
@@ -102,7 +104,7 @@ public class NameInterpreter {
       rank = Rank.OTHER;
     }
 
-    var opt = interpret(preferAtoms, vrank==null,
+    var opt = interpret(vrank==null,
       id, code, rank, sciname, authorship, publishedInYear,
       uninomial, genus, infraGenus, species, infraspecies, cultivar,
       nomStatus, link, remarks, identifiers, v
@@ -112,7 +114,7 @@ public class NameInterpreter {
     return opt;
   }
 
-  public Optional<ParsedNameUsage> interpret(final boolean preferAtoms, final boolean allowToInferRank,
+  public Optional<ParsedNameUsage> interpret(final boolean allowToInferRank,
                                              final String id, NomCode code, Rank rank, final String sciname, final String authorship, final String publishedInYear,
                                              final String uninomial, final String genus, final String infraGenus, final String species, String infraspecies, final String cultivar,
                                              String nomStatus, String link, String remarks, String identifiers, IssueContainer issues) {

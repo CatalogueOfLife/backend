@@ -520,6 +520,36 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     }
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/xcol/issues/63
+   */
+  @Test
+  public void uppperCaseEpithet() throws Exception {
+    var settings = new DatasetSettings();
+    settings.put(Setting.PREFER_NAME_ATOMS, true); // required to lower case epithets
+
+    normalize(48, settings);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      var u = store.usageWithName("urn:lsid:marinespecies.org:taxname:887642");
+      var n = u.getNeoName().getName();
+      var v = store.getVerbatim(u.getVerbatimKey());
+
+      assertEquals("Cambarus uhleri", n.getScientificName());
+      assertEquals(Rank.SPECIES, n.getRank());
+      assertNull(n.getUninomial());
+      assertEquals("Cambarus", n.getGenus());
+      assertEquals("uhleri", n.getSpecificEpithet());
+      assertNull(n.getNotho());
+
+      assertEquals("Faxon, 1884", n.getAuthorship());
+      assertEquals(Authorship.yearAuthors("1884", "Faxon"), n.getCombinationAuthorship());
+      assertEquals(1884, (int) n.getPublishedInYear());
+
+      assertTrue(v.getIssues().contains(Issue.UPPERCASE_EPITHET));
+    }
+  }
+
   @Test
   @Ignore
   public void testExternal() throws Exception {

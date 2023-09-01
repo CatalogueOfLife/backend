@@ -62,7 +62,7 @@ public class MatchingJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingJob.class);
   private final SqlSessionFactory factory;
   private final UsageMatcherGlobal matcher;
-  private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings());
+  private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   private final WsServerConfig cfg;
   // job specifics
   private final MatchingRequest req;

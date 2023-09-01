@@ -51,11 +51,17 @@ public class InterpreterBase {
   private final Gazetteer distributionStandard;
   protected final ReferenceFactory refFactory;
 
-  public InterpreterBase(DatasetSettings settings, ReferenceFactory refFactory, NeoDb store) {
+  /**
+   * @param settings
+   * @param refFactory
+   * @param store
+   * @param preferAtomsDefault should name atoms be preferred over the scientificName by default, i.e. if no dataset setting exists?
+   */
+  public InterpreterBase(DatasetSettings settings, ReferenceFactory refFactory, NeoDb store, boolean preferAtomsDefault) {
     this.settings = settings;
     this.refFactory = refFactory;
     this.store = store;
-    nameInterpreter = new NameInterpreter(settings);
+    nameInterpreter = new NameInterpreter(settings, preferAtomsDefault);
     if (settings.has(Setting.DISTRIBUTION_GAZETTEER)) {
       distributionStandard = settings.getEnum(Setting.DISTRIBUTION_GAZETTEER);
       LOG.info("Dataset wide distribution standard {} found in settings", distributionStandard);

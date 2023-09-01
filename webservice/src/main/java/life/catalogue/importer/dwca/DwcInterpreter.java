@@ -41,7 +41,7 @@ public class DwcInterpreter extends InterpreterBase {
   private final Map<String, String> dwcaID2taxonID = new HashMap<>();
 
   public DwcInterpreter(DatasetSettings settings, MappingInfos mappingFlags, ReferenceFactory refFactory, NeoDb store) {
-    super(settings, refFactory, store);
+    super(settings, refFactory, store, false);
     this.mappingFlags = mappingFlags;
     idTerm = mappingFlags.hasTaxonId() ? DwcTerm.taxonID : DwcaTerm.ID;
   }
@@ -212,9 +212,8 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private Optional<ParsedNameUsage>
-  interpretName(VerbatimRecord v) {
-    Optional<ParsedNameUsage> opt = nameInterpreter.interpret(false, taxonID(v),
+  private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
+    Optional<ParsedNameUsage> opt = nameInterpreter.interpret(taxonID(v),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship), v.get(DwcTerm.namePublishedInYear),
         null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.getFirst(DwcTerm.infragenericEpithet),

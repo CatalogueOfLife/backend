@@ -44,7 +44,7 @@ public class InterpreterBaseTest {
   public void init() {
     //MockitoAnnotations.initMocks(this);
     when(store.references()).thenReturn(refStore);
-    ib = new InterpreterBase(new DatasetSettings(), new ReferenceFactory(1, refStore, null), store);
+    ib = new InterpreterBase(new DatasetSettings(), new ReferenceFactory(1, refStore, null), store, true);
   }
 
   @Test

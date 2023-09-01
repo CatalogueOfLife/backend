@@ -1,0 +1,1 @@
+Test dwca data for treating upper case and other odd epithets right
