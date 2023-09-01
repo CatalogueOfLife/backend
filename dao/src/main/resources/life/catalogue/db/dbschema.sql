@@ -1896,6 +1896,18 @@ CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v
 $$ LANGUAGE SQL;
 
 
+-- email domain extract function
+create or replace function get_domainname(_value text)
+returns text as $$
+begin
+_value := reverse(_value);
+
+return nullif(reverse(substring(_value, 0, strpos(_value, '@'))), '');
+end;
+$$ language plpgsql
+immutable returns null on null input
+;
+
 -- useful views
 CREATE VIEW table_size AS (
     SELECT oid, TABLE_NAME, row_estimate, pg_size_pretty(total_bytes) AS total

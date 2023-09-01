@@ -11,6 +11,21 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-09-01 email domain extract function
+
+```sql
+create or replace function get_domainname(_value text)
+returns text
+as $$
+begin
+_value := reverse(_value);
+
+return nullif(reverse(substring(_value, 0, strpos(_value, '@'))), '');
+end;
+$$ language plpgsql
+immutable returns null on null input
+;
+```
 ### 2023-08-21 migrate partitioning
 This is a serious change, removing the list partitioning and replacing it with just the hash one and 24 fixed partitions.
 First dump the current db:

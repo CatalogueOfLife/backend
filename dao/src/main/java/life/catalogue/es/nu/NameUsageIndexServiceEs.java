@@ -269,7 +269,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
           keys.remove(dk);
         }
       }
-      LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
+      LOG.info("Index {} datasets out of all {} datasets", keys.size(), allDatasets);
     }
 
     final AtomicInteger counter = new AtomicInteger(0);
