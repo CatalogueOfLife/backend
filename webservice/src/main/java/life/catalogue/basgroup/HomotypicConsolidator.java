@@ -356,6 +356,7 @@ public class HomotypicConsolidator {
         var newStatus = sn.getStatus().isSynonym() ? sn.getStatus() : TaxonomicStatus.SYNONYM;
         if(sn.getStatus().isSynonym()) {
           var prev = loadSN(sn.getParent());
+          if (prev.getParent().equals(accepted.getId())) continue; // the synonym was placed correctly already
           LOG.info("Also move descendant synonym {} from {} to {}", sn, prev, accepted);
         } else {
           LOG.info("Also convert descendant {} into a {} of {}", sn, newStatus, accepted);
