@@ -180,8 +180,9 @@ public class GbifSyncJob extends GlobalBlockingJob {
       if (e instanceof NotUniqueException && gbif.getDataset().getDoi() != null) {
         // treat unique DOI constraints differently as we expect that to happen somtimes
         LOG.warn("Failed to sync GBIF dataset {} >{}<. Non unique DOI {}", gbif.getGbifKey(), gbif.getTitle(), gbif.getDataset().getDoi());
+      } else {
+        LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
       }
-      LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
     }
     return key;
   }
