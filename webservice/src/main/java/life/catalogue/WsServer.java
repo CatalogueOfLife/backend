@@ -144,6 +144,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new InitCmd());
     bootstrap.addCommand(new NamesIndexCmd());
     bootstrap.addCommand(new UpdMetricCmd());
+    bootstrap.addCommand(new UpdSequencesCmd());
     bootstrap.addCommand(new ExportCmd());
     bootstrap.addCommand(new ExportSourcesCmd());
     bootstrap.addCommand(new DoiUpdateCmd());

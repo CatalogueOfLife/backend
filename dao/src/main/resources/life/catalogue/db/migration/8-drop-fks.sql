@@ -37,6 +37,7 @@ ALTER TABLE name_usage DROP CONSTRAINT name_usage_dataset_key_parent_id_fkey;
 ALTER TABLE name_usage DROP CONSTRAINT name_usage_dataset_key_sector_key_fkey;
 ALTER TABLE name_usage DROP CONSTRAINT name_usage_dataset_key_verbatim_key_fkey;
 
+ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_sector_key_fkey;
 ALTER TABLE reference DROP CONSTRAINT reference_dataset_key_sector_key_fkey;
 ALTER TABLE reference DROP CONSTRAINT reference_dataset_key_verbatim_key_fkey;
 
@@ -48,7 +49,6 @@ ALTER TABLE species_interaction DROP CONSTRAINT species_interaction_dataset_key_
 
 ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_reference_id_fkey;
 ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_related_taxon_id_fkey;
-ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_sector_key_fkey;
 ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_taxon_id_fkey;
 ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_verbatim_key_fkey;
 
