@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Creates missing project sequences and updates their current value based on existing data.
+ * For non project dataset key arguments sequences will be removed if existing.
  */
 public class UpdSequencesCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(UpdSequencesCmd.class);
@@ -77,17 +78,19 @@ public class UpdSequencesCmd extends AbstractMybatisCmd {
 
   private void updateDataset(int key) {
     final var info = DatasetInfoCache.CACHE.info(key);
-    if (info.origin != DatasetOrigin.PROJECT) {
-      LOG.warn("Dataset {} is not a project. Ignore", key);
-      return;
-    }
 
     try (SqlSession session = factory.openSession(true)) {
       var dpm = session.getMapper(DatasetPartitionMapper.class);
-      LOG.info("Create and update sequences for project {}", key);
-      // create if not exists
-      dpm.createSequences(key);
-      dpm.updateSequences(key);
+      if (info.origin == DatasetOrigin.PROJECT) {
+        LOG.info("Create and update sequences for project {}", key);
+        // create if not exists
+        dpm.createSequences(key);
+        dpm.updateSequences(key);
+
+      } else {
+        LOG.info("Dataset {} is not a project. Remove sequences if existing", key);
+        dpm.deleteSequences(key);
+      }
     }
   }
 }
