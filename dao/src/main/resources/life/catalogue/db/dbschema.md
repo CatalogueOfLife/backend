@@ -91,6 +91,8 @@ This takes a long time to complete.
 At the end, drop the old schema with:
 >DROP SCHEMA old;
 
+Finally run the new `updSequence --all true` command to create/update required project sequences.
+
 
 ### 2023-08-15 add new issue
 ```
