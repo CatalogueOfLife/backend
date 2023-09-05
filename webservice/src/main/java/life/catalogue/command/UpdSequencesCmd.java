@@ -55,9 +55,6 @@ public class UpdSequencesCmd extends AbstractMybatisCmd {
 
   @Override
   public void execute() throws Exception {
-    Preconditions.checkArgument(user != null, "User argument required to run the updater");
-    Preconditions.checkArgument(user.hasRole(User.Role.ADMIN), "Admin user required to run the updater");
-
     // setup
     if (ns.getBoolean(ARG_ALL)) {
       updateAll();
