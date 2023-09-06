@@ -13,6 +13,7 @@ import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
@@ -20,6 +21,7 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 
+import life.catalogue.matching.ParentStack;
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.NameType;
@@ -27,10 +29,9 @@ import org.gbif.nameparser.api.NameType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
@@ -38,6 +39,8 @@ import javax.validation.Validator;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.Rank;
 
 public class XRelease extends ProjectRelease {
   private final int baseReleaseKey;
@@ -155,19 +158,20 @@ public class XRelease extends ProjectRelease {
 
     updateState(ImportState.PROCESSING);
     // detect and group basionyms
-    final var prios = new SectorPriority(getDatasetKey(), factory);
-    var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
-    hc.setBasionymExclusions(xCfg.basionymExclusions);
-    hc.consolidate();
+    if (xCfg.groupBasionyms) {
+      final var prios = new SectorPriority(getDatasetKey(), factory);
+      var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
+      hc.setBasionymExclusions(xCfg.basionymExclusions);
+      hc.consolidate();
+
+    } else {
+      LOG.warn("Homotypic grouping disabled in xrelease configs");
+    }
 
     // flagging of suspicous usages
-    resolveParentMismatches();
-    resolveEmptyGenera();
+    validateAndCleanTree();
     cleanImplicitTaxa();
     resolveDuplicateAcceptedNames();
-
-    // create missing autonyms
-    manageAutonyms();
 
     updateState(ImportState.ANALYZING);
     // update sector metrics. The entire releases metrics are done later by the superclass
@@ -276,28 +280,92 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  private void manageAutonyms() {
-    LOG.info("Manage autonyms - not implemented");
-  }
-
   private void cleanImplicitTaxa() {
-    LOG.info("Clean implicit taxa - not implemented");
+    LOG.warn("Clean implicit taxa - not implemented");
   }
 
   /**
+   * Iterates over the entire tree of accepted names, validates taxa and resolves data. In particular this is:
+   *
+   *  1) flag parent name mismatches
    * Goes through all accepted species and infraspecies and makes sure the name matches the genus, species classification.
-   * For example an accepted species Picea alba with a parent genus of Abies is taxonomic nonsense.
+   * For example an accepted species Picea alba with a parent genus of Abies is imperfect, but as a result of homotypic grouping
+   * and unresolved taxonomic word in sources a reality.
+   *
    * Badly classified names are assigned the doubtful status and an NameUsageIssue.NAME_PARENT_MISMATCH is flagged
+   *
+   *  2) add missing autonyms if needed
+   *
+   *  3) remove empty genera generated in the xrelease (can be configured to be skipped)
+   *
    */
-  private void resolveParentMismatches() {
-    LOG.info("Resolve names with implicit parent mismatches");
+  private void validateAndCleanTree() {
+    LOG.info("Clean and validate entire xrelease {}", newDatasetKey);
+    try (SqlSession session = factory.openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      TreeTraversalParameter params = new TreeTraversalParameter();
+      params.setDatasetKey(newDatasetKey);
+      params.setSynonyms(false);
+
+      final var consumer = new TreeCleanerAndValidator(factory, newDatasetKey);
+      PgUtils.consume(() -> num.processTreeSimple(params), consumer);
+    }
   }
 
-  /**
-   * Changes empty genera to provisionally accepted or removes them completely if they have an ignorable origin
-   */
-  private void resolveEmptyGenera() {
-    LOG.info("Resolve empty genera");
+  static class TreeCleanerAndValidator implements Consumer<SimpleName> {
+    static final Pattern BINOMEN = Pattern.compile("^([A-Z][^ ]+)(:? ([a-z][^ ]+))?");
+    final SqlSessionFactory factory;
+    final int datasetKey;
+    final ParentStackSimple parents = new ParentStackSimple();
+
+    public TreeCleanerAndValidator(SqlSessionFactory factory, int datasetKey) {
+      this.factory = factory;
+      this.datasetKey = datasetKey;
+    }
+
+    @Override
+    public void accept(SimpleName sn) {
+      final Set<Issue> issues = new HashSet<>();
+      if (sn.getRank().isSpeciesOrBelow()) {
+        // flag parent mismatches
+        var m = BINOMEN.matcher(sn.getName());
+        if (m.find()) {
+          if (sn.getRank().isInfraspecific()) {
+            // we have a trinomial, compare species
+            var sp = parents.find(Rank.SPECIES);
+            if (sp == null) {
+              issues.add(Issue.PARENT_SPECIES_MISSING);
+            } else {
+              if (!m.group().equalsIgnoreCase(sp.getName())) {
+                issues.add(Issue.PARENT_NAME_MISMATCH);
+              }
+            }
+          } else {
+            // we have a binomial, compare genus only
+            var gen = parents.find(Rank.GENUS);
+            if (gen == null) {
+              issues.add(Issue.MISSING_GENUS);
+            } else if (!m.group(1).equalsIgnoreCase(gen.getName())) {
+              issues.add(Issue.PARENT_NAME_MISMATCH);
+            }
+          }
+        }
+
+        // TODO: create missing autonyms
+        // TODO: remove empty genera
+      }
+      parents.push(sn);
+      if (!issues.isEmpty()) {
+        addIssues(sn, issues);
+      }
+    }
+
+    void addIssues(SimpleName sn, Set<Issue> issues) {
+      try (SqlSession session = factory.openSession(true)) {
+        var vsm = session.getMapper(VerbatimSourceMapper.class);
+        vsm.addIssues(sn.toDSID(datasetKey), issues);
+      }
+    }
   }
 
   private void resolveDuplicateAcceptedNames() {

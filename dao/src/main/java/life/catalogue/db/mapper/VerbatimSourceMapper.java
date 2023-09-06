@@ -7,11 +7,12 @@ import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.*;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Mapper that manages the verbatim_source and verbatim_source_secondary tables.
@@ -41,17 +42,27 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   int updateIssues(@Param("key") DSID<String> key, @Param("issues") Set<Issue> issues);
 
-  int _addIssueInternal(@Param("key") DSID<String> key, @Param("issue") Issue issue);
+  int _addIssueInternal(@Param("key") DSID<String> key, @Param("issues") @NotNull Set<Issue> issues);
 
   /**
    * Add an issue to an existing verbatim source record or create a new one.
    */
-  default void addIssue(@Param("key") DSID<String> key, @Param("issue") Issue issue) {
-    int mod = _addIssueInternal(key, issue);
-    if (mod < 1) {
-      VerbatimSource v = new VerbatimSource(key.getDatasetKey(), key.getId(), null, null);
-      v.addIssue(issue);
-      create(v);
+  default void addIssue(@Param("key") DSID<String> key, Issue issue) {
+    if (issue != null) {
+      Set<Issue> issues = new HashSet<>();
+      issues.add(issue);
+      addIssues(key, issues);
+    }
+  }
+
+  default void addIssues(@Param("key") DSID<String> key, Set<Issue> issues) {
+    if (issues != null && !issues.isEmpty()) {
+      int mod = _addIssueInternal(key, issues);
+      if (mod < 1) {
+        VerbatimSource v = new VerbatimSource(key.getDatasetKey(), key.getId(), null, null);
+        v.getIssues().addAll(issues);
+        create(v);
+      }
     }
   }
 

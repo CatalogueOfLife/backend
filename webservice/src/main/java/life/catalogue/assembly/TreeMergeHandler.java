@@ -92,7 +92,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
     var nusn = matcher.toSimpleName(nu);
-    parents.put(nusn);
+    parents.push(nusn);
     counter++;
     LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
     // ignore doubtfully marked usages in classification, e-g- wrong rank ordering

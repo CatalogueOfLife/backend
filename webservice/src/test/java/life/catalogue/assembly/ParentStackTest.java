@@ -21,8 +21,8 @@ public class ParentStackTest {
     assertNull(parents.last());
     assertEquals(king, parents.lowestParentMatch());
 
-    parents.put(src(1, null));
-    parents.put(src(2, 1));
+    parents.push(src(1, null));
+    parents.push(src(2, 1));
     var nub = match("nub#3");
     parents.setMatch(nub);
     assertEquals(nub, parents.lowestParentMatch());
@@ -32,12 +32,12 @@ public class ParentStackTest {
     parents.markSubtreeAsDoubtful(); // doubtful key=2
     assertTrue(parents.isDoubtful());
 
-    parents.put(src(3, 2));
+    parents.push(src(3, 2));
     assertEquals(3, parents.size());
     assertEquals(nub, parents.lowestParentMatch());
     assertTrue(parents.isDoubtful());
 
-    parents.put(src(4, 1)); // this removes all but the first key
+    parents.push(src(4, 1)); // this removes all but the first key
     assertEquals(2, parents.size());
     assertFalse(parents.isDoubtful());
     assertNotNull(parents.last());
@@ -55,49 +55,49 @@ public class ParentStackTest {
     assertNull(parents.last());
     assertEquals(biota, parents.lowestParentMatch());
 
-    parents.put(src(Rank.KINGDOM, 1,0));
-    parents.put(src(Rank.PHYLUM, 2,1));
+    parents.push(src(Rank.KINGDOM, 1,0));
+    parents.push(src(Rank.PHYLUM, 2,1));
     assertEquals(2, parents.size());
     assertEquals("2", parents.last().usage.getId());
     assertFalse(parents.isDoubtful());
 
-    parents.put(src(Rank.SUPERPHYLUM, 3,2));
+    parents.push(src(Rank.SUPERPHYLUM, 3,2));
     assertEquals(3, parents.size());
     assertEquals("3", parents.last().usage.getId());
     assertTrue(parents.isDoubtful());
 
-    parents.put(src(Rank.SUPERPHYLUM, 4,1));
+    parents.push(src(Rank.SUPERPHYLUM, 4,1));
     assertEquals(2, parents.size());
     assertEquals("4", parents.last().usage.getId());
     assertFalse(parents.isDoubtful());
 
     // ambiguous ranks, botany
-    parents.put(src(Rank.GENUS, 5,4));
-    parents.put(src(Rank.SECTION, 6,5));
+    parents.push(src(Rank.GENUS, 5,4));
+    parents.push(src(Rank.SECTION, 6,5));
     assertEquals(4, parents.size());
     assertEquals("6", parents.last().usage.getId());
     assertFalse(parents.isDoubtful());
 
-    parents.put(src(Rank.GENUS, 5,4));
-    parents.put(src(Rank.SECTION, 6,5));
+    parents.push(src(Rank.GENUS, 5,4));
+    parents.push(src(Rank.SECTION, 6,5));
     assertEquals(4, parents.size());
     assertEquals("6", parents.last().usage.getId());
     assertFalse(parents.isDoubtful());
 
-    parents.put(src(Rank.SERIES, 7,6));
+    parents.push(src(Rank.SERIES, 7,6));
     assertEquals(5, parents.size());
     assertEquals("7", parents.last().usage.getId());
     assertFalse(parents.isDoubtful());
 
     // zoological way
-    parents.put(src(Rank.ORDER, 8,4));
-    parents.put(src(Rank.SECTION, 9,8));
-    parents.put(src(Rank.FAMILY, 10,9));
+    parents.push(src(Rank.ORDER, 8,4));
+    parents.push(src(Rank.SECTION, 9,8));
+    parents.push(src(Rank.FAMILY, 10,9));
     assertEquals(5, parents.size());
     assertEquals("10", parents.last().usage.getId());
     assertFalse(parents.isDoubtful());
 
-    parents.put(src(Rank.SUPERFAMILY, 11,10));
+    parents.push(src(Rank.SUPERFAMILY, 11,10));
     assertEquals(6, parents.size());
     assertEquals("11", parents.last().usage.getId());
     assertTrue(parents.isDoubtful());

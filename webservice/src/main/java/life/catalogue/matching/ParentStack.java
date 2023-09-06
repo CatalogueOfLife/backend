@@ -2,8 +2,6 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
 
-import life.catalogue.assembly.TreeMergeHandler;
-
 import org.gbif.nameparser.api.Rank;
 
 import org.slf4j.Logger;
@@ -146,7 +144,7 @@ public class ParentStack {
     return parents.isEmpty() ? null : parents.getLast();
   }
 
-  public void put(SimpleNameWithNidx nu) {
+  public void push(SimpleNameWithNidx nu) {
     if (nu.getParent() == null) {
       // no parent, i.e. a new root!
       clear();
