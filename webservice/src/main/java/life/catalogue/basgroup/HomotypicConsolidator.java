@@ -350,22 +350,20 @@ public class HomotypicConsolidator {
       vsm.addIssue(dsid.id(u.getId()), issue);
     }
 
-    // synonymize all descendants!
+    // move all descendants!
     TreeTraversalParameter treeParams = TreeTraversalParameter.dataset(datasetKey, u.getId());
     treeParams.setSynonyms(true);
     try (var cursor = num.processTreeSimple(treeParams)) {
       for (var sn : cursor) {
         if (sn.getId().equals(u.getId())) continue; // exclude root
-        if (sn.getId().equals(accepted.getId())) continue; // avoid synonymizing the main accepted usage
-
-        var newStatus = sn.getStatus().isSynonym() ? sn.getStatus() : TaxonomicStatus.SYNONYM;
-        if(sn.getStatus().isSynonym()) {
-          if (sn.getParent().equals(accepted.getId())) continue; // the synonym was placed correctly already
-          LOG.info("Also move descendant synonym {} from {} to {}", sn, sn.getParent(), accepted);
-        } else {
-          LOG.info("Also convert descendant {} into a {} of {}", sn, newStatus, accepted);
+        if (sn.getParent().equals(accepted.getId())) continue; // the name was placed correctly already - how can that be?
+        if (sn.getId().equals(accepted.getId())) {
+          // avoid moving the main accepted usage - how can we even end up here?
+          LOG.warn("Trying to move the main accepted name {} to become a child of itself. Avoid!", accepted);
+          continue;
         }
-        updateParentAndStatus(sn.getId(), accepted.getId(), newStatus, num);
+        LOG.info("Also move descendant {} from {} to {}", sn, sn.getParent(), accepted);
+        updateParent(sn.getId(), accepted.getId(), num);
       }
       // persist usage instance changes
       updateParentAndStatus(u.getId(), accepted.getId(), TaxonomicStatus.SYNONYM, num);
@@ -374,18 +372,13 @@ public class HomotypicConsolidator {
     }
   }
 
-  private boolean canBeConvertedToSynonym(LinneanNameUsage u, LinneanNameUsage accepted) {
-    if (!accepted.getStatus().isTaxon()) {
-      LOG.warn("Cannot convert usage {} into a synonym of the {} {}", u.getLabel(), accepted.getStatus(), accepted.getLabel());
-      return false;
-    } else if (u.getId().equals(accepted.getId())) {
-      LOG.warn("Trying to convert {} into a synonym of itself is suspicious. Abort", u);
-      return false;
-    } else if (u.getParentId().equals(accepted.getId()) && u.getStatus().isSynonym()) {
-      LOG.warn("Trying to convert {} into a synonym of it's accepted name. Nothing to be done.", u);
-      return false;
+  private void updateParent(String id, String parentId, NameUsageMapper num) {
+    num.updateParentId(dsid.id(id), parentId, Users.HOMOTYPIC_GROUPER);
+    // track change in our memory instances too
+    if (usages.containsKey(id)) {
+      var u = usages.get(id);
+      u.setParentId(parentId);
     }
-    return true;
   }
 
   private void updateParentAndStatus(String id, String parentId, TaxonomicStatus status, NameUsageMapper num) {

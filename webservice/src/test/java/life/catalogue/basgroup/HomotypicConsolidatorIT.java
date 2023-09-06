@@ -63,6 +63,7 @@ public class HomotypicConsolidatorIT {
 
   @Test
   public void consolidateNoPrios() throws IOException {
+    printTree();
     var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key);
     hc.consolidate();
     assertTree("hg1.txt", null);
