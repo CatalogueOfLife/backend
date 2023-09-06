@@ -23,6 +23,7 @@ public class ProjectCopyFactory {
   private final ExportManager exportManager;
   private final DatasetImportDao diDao;
   private final DatasetDao dDao;
+  private final ReferenceDao rDao;
   private final NameDao nDao;
   private final SectorDao sDao;
   private final SectorImportDao siDao;
@@ -37,7 +38,8 @@ public class ProjectCopyFactory {
   private final UsageMatcherGlobal matcher;
   private final WsServerConfig cfg;
 
-  public ProjectCopyFactory(CloseableHttpClient client, UsageMatcherGlobal matcher, SyncFactory syncFactory, DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
+  public ProjectCopyFactory(CloseableHttpClient client, UsageMatcherGlobal matcher, SyncFactory syncFactory,
+                            DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
                             ExportManager exportManager, NameUsageIndexService indexService, ImageService imageService,
                             DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator, WsServerConfig cfg) {
     this.client = client;
@@ -46,6 +48,7 @@ public class ProjectCopyFactory {
     this.exportManager = exportManager;
     this.diDao = diDao;
     this.dDao = dDao;
+    this.rDao = rDao;
     this.nDao = nDao;
     this.sDao = sDao;
     this.siDao = siDao;
@@ -65,7 +68,7 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not a release
    */
   public XRelease buildExtendedRelease(final int releaseKey, final int userKey) {
-    return new XRelease(factory, syncFactory, matcher, indexService, dDao, diDao, siDao, nDao, sDao, imageService, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    return new XRelease(factory, syncFactory, matcher, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**
@@ -75,7 +78,7 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
-    return new ProjectRelease(factory, indexService, diDao, dDao, nDao, sDao, imageService, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    return new ProjectRelease(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**

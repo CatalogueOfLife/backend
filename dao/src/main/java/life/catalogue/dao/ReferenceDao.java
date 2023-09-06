@@ -116,11 +116,11 @@ public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMap
     }
   }
 
-  public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, User user) {
+  public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, int userKey) {
     try (SqlSession session = factory.openSession()) {
       int cnt = session.getMapper(ReferenceMapper.class).deleteOrphans(datasetKey, before);
       session.commit();
-      LOG.info("Remove {} orphan references from dataset {} by user {}", cnt, datasetKey, user);
+      LOG.info("Remove {} orphan references from dataset {} by user {}", cnt, datasetKey, userKey);
       return cnt;
     }
   }

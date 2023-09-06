@@ -3,10 +3,7 @@ package life.catalogue.release;
 import life.catalogue.WsServerConfig;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetExportDao;
-import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.dao.UserDao;
+import life.catalogue.dao.*;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
@@ -58,6 +55,7 @@ public abstract class ProjectBaseIT {
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     UserDao udao = mock(UserDao.class);
+    ReferenceDao rdao = mock(ReferenceDao.class);
     DoiService doiService = mock(DoiService.class);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
     LatestDatasetKeyCacheImpl lrCache = mock(LatestDatasetKeyCacheImpl.class);
@@ -65,7 +63,7 @@ public abstract class ProjectBaseIT {
     validator = Validation.buildDefaultValidatorFactory().getValidator();
     dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, null, ImageService.passThru(), syncFactoryRule.getDiDao(), exDao, NameUsageIndexService.passThru(), null, bus, validator);
     projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),
-      syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
+      syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, SqlSessionFactoryRule.getSqlSessionFactory(), validator, cfg
     );
   }

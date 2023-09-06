@@ -43,6 +43,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_VERSION_TEMPLATE = "{date}";
 
   protected final WsServerConfig cfg;
+  protected final ReferenceDao rDao;
   protected final NameDao nDao;
   protected final SectorDao sDao;
   private final UriBuilder datasetApiBuilder;
@@ -53,20 +54,21 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
 
-  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, SectorDao sDao,
-                 ImageService imageService,
+  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, ImageService imageService,
+                 DatasetImportDao diDao, DatasetDao dDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    this("releasing", factory, indexService, diDao, dDao, nDao, sDao, imageService, datasetKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    this("releasing", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, datasetKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
-  ProjectRelease(String action, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, NameDao nDao, SectorDao sDao,
-                 ImageService imageService,
+  ProjectRelease(String action, SqlSessionFactory factory, NameUsageIndexService indexService, ImageService imageService,
+                 DatasetImportDao diDao, DatasetDao dDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
                  int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super(action, factory, diDao, dDao, indexService, validator, userKey, datasetKey, true, cfg.release.deleteOnError);
     this.imageService = imageService;
     this.doiService = doiService;
+    this.rDao = rDao;
     this.nDao = nDao;
     this.sDao = sDao;
     this.cfg = cfg;
@@ -109,12 +111,23 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setPrivat(true);
   }
 
+  /**
+   * @param dKey datasetKey to remove name & reference orphans from.
+   */
+  void removeOrphans(int dKey) {
+    LOG.info("Remove bare names from dataset {}", dKey);
+    int num = nDao.deleteOrphans(dKey, null, user);
+    LOG.info("Removed {} bare names from dataset {}", num, dKey);
+
+    LOG.info("Remove orphaned references from dataset {}", dKey);
+    num = rDao.deleteOrphans(dKey, null, user);
+    LOG.info("Removed {} orphaned references from dataset {}", num, dKey);
+  }
+
   @Override
   void prepWork() throws Exception {
     if (settings.isEnabled(Setting.RELEASE_REMOVE_BARE_NAMES)) {
-      LOG.info("Remove bare names from project {}", datasetKey);
-      int num = nDao.deleteOrphans(datasetKey, null, user);
-      LOG.info("Removed {} bare names from project {}", num, datasetKey);
+      removeOrphans(datasetKey);
     }
 
     final Integer prevReleaseKey = createReleaseDOI();

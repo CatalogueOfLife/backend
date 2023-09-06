@@ -47,12 +47,11 @@ public class XRelease extends ProjectRelease {
   private @Nullable Taxon incertae;
   private XReleaseConfig xCfg;
 
-  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService,
-           DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, NameDao nDao, SectorDao sDao,
-           ImageService imageService,
+  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, ImageService imageService,
+           DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
            int releaseKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
            DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super("releasing extended", factory, indexService, diDao, dDao, nDao, sDao, imageService, DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE).sourceKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE).sourceKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
     this.siDao = siDao;
     this.syncFactory = syncFactory;
     this.matcher = matcher;
@@ -169,9 +168,7 @@ public class XRelease extends ProjectRelease {
     resolveDuplicateAcceptedNames();
 
     // remove orphan names and references
-    LOG.info("Remove bare names from release {}", newDatasetKey);
-    int num = nDao.deleteOrphans(newDatasetKey, null, user);
-    LOG.info("Removed {} bare names from release {}", num, newDatasetKey);
+    removeOrphans(newDatasetKey);
 
     updateState(ImportState.ANALYZING);
     // update sector metrics. The entire releases metrics are done later by the superclass

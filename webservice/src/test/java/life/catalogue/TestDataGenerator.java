@@ -10,6 +10,7 @@ import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.common.io.Resources;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.ReferenceDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.*;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -48,6 +49,8 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.postgresql.jdbc.PgConnection;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * Manual tool to generate test data CSV files for the TestDataRule from regular CoLDP or DwC archives which are simpler to craft than sql dumps.
@@ -274,8 +277,9 @@ public class TestDataGenerator {
 
       var validator = Validation.buildDefaultValidatorFactory().getValidator();
       DatasetDao     ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, syncFactoryRule.getDiDao(), validator);
+      ReferenceDao rdao = new ReferenceDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, validator);
       var projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),
-        syncFactoryRule.getDiDao(), ddao, syncFactoryRule.getSiDao(), syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
+        syncFactoryRule.getDiDao(), ddao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
         null, NameUsageIndexService.passThru(), ImageService.passThru(), null, null, SqlSessionFactoryRule.getSqlSessionFactory(),
         validator, wcfg
       );

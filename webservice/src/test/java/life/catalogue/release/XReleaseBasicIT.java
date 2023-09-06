@@ -27,6 +27,7 @@ import life.catalogue.img.ImageService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.sql.Ref;
 import java.util.Map;
 
 import javax.validation.Validation;
@@ -80,6 +81,7 @@ public class XReleaseBasicIT {
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     UserDao udao = mock(UserDao.class);
+    ReferenceDao rdao = mock(ReferenceDao.class);
     DoiService doiService = mock(DoiService.class);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
     LatestDatasetKeyCacheImpl lrCache = mock(LatestDatasetKeyCacheImpl.class);
@@ -91,7 +93,7 @@ public class XReleaseBasicIT {
     var dDao = new DatasetDao(factory, cfg.normalizer, cfg.release, null, imgService, diDao, exDao, nuIdxService, null, bus, validator);
 
     projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),
-      syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
+      syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       exm, nuIdxService, imgService, doiService, doiUpdater, factory, validator, cfg
     );
   }

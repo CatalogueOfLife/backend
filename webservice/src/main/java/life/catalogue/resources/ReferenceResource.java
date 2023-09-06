@@ -76,6 +76,6 @@ public class ReferenceResource extends AbstractDatasetScopedResource<String, Ref
                     @QueryParam("before") LocalDateTimeParam before,
                     @Auth User user,
                     @Context SqlSession session) {
-    return dao.deleteOrphans(datasetKey, before==null ? null : before.get(), user);
+    return dao.deleteOrphans(datasetKey, before==null ? null : before.get(), user.getKey());
   }
 }
