@@ -2,6 +2,7 @@ package life.catalogue.db;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,19 @@ public class PgUtils {
 
   private PgUtils () {
 
+  }
+
+  public static void deferConstraints(SqlSession session) {
+    deferConstraints(session.getConnection());
+  }
+
+  public static void deferConstraints(Connection con) {
+    try (Statement st = con.createStatement()) {
+      LOG.info("Defer all constraints in this session");
+      st.execute("SET CONSTRAINTS ALL DEFERRED");
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static boolean isUniqueConstraint(PersistenceException e) {

@@ -49,7 +49,7 @@
     WHERE nm.dataset_key = #{datasetKey}
   </insert>
 
-  <delete id="deleteOrphaned" parameterType="map">
+  <delete id="deleteOrphans" parameterType="map">
     DELETE FROM name_match nm
     WHERE dataset_key=#{datasetKey} AND NOT EXISTS (
       SELECT NULL FROM name n

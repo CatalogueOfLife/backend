@@ -1391,8 +1391,8 @@ CREATE TABLE name_rel (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name,
-  FOREIGN KEY (dataset_key, related_name_id) REFERENCES name
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED,
+  FOREIGN KEY (dataset_key, related_name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON name_rel (dataset_key, name_id);
@@ -1434,7 +1434,7 @@ CREATE TABLE type_material (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON type_material (dataset_key, name_id);
@@ -1451,7 +1451,7 @@ CREATE TABLE name_match (
   type MATCHTYPE,
   PRIMARY KEY (dataset_key, name_id),
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON name_match (dataset_key, sector_key);

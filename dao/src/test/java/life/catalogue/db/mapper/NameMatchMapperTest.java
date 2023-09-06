@@ -47,7 +47,7 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
   @Test
   public void deleteOrphaned() throws Exception {
     // no real data to delete but tests valid SQL
-    mapper().deleteOrphaned(datasetKey);
+    mapper().deleteOrphans(datasetKey);
   }
 
   @Test

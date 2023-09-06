@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
@@ -108,6 +109,7 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, int userKey) {
     final int cnt;
     try (SqlSession session = factory.openSession(false)) {
+      PgUtils.deferConstraints(session);
       cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
       LOG.info("Removed {} orphan names from dataset {} by user {}", cnt, datasetKey, userKey);
       // also remove orphaned name relations and type material in the same session to not break the FK constraints
@@ -115,6 +117,8 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
       LOG.info("Removed {} orphan name relations from dataset {} by user {}", cnt2, datasetKey, userKey);
       cnt2 = session.getMapper(TypeMaterialMapper.class).deleteOrphans(datasetKey, before);
       LOG.info("Removed {} orphan type materials from dataset {} by user {}", cnt2, datasetKey, userKey);
+      cnt2 = session.getMapper(NameMatchMapper.class).deleteOrphans(datasetKey);
+      LOG.info("Removed {} orphan name matches from dataset {} by user {}", cnt2, datasetKey, userKey);
       session.commit();
     }
     // also remove from ES

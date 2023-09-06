@@ -29,7 +29,7 @@ public interface NameMatchMapper extends CopyDataset, DatasetProcessable<NameMat
   /**
    * Removes all matches that have no related name record for the given dataset.
    */
-  int deleteOrphaned(@Param("datasetKey") int datasetKey);
+  int deleteOrphans(@Param("datasetKey") int datasetKey);
 
   /**
    * Lists all distinct index ids from the name match table.

@@ -80,7 +80,7 @@ ALTER TABLE public.name
     ADD CONSTRAINT name_dataset_key_verbatim_key_fkey FOREIGN KEY (dataset_key, verbatim_key) REFERENCES public.verbatim(dataset_key, id);
 
 ALTER TABLE public.name_match
-    ADD CONSTRAINT name_match_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES public.name(dataset_key, id);
+    ADD CONSTRAINT name_match_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES public.name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE public.name_match
     ADD CONSTRAINT name_match_dataset_key_sector_key_fkey FOREIGN KEY (dataset_key, sector_key) REFERENCES public.sector(dataset_key, id);
@@ -89,13 +89,13 @@ ALTER TABLE public.name_match
     ADD CONSTRAINT name_match_index_id_fkey FOREIGN KEY (index_id) REFERENCES public.names_index(id);
 
 ALTER TABLE public.name_rel
-    ADD CONSTRAINT name_rel_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES public.name(dataset_key, id);
+    ADD CONSTRAINT name_rel_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES public.name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE public.name_rel
     ADD CONSTRAINT name_rel_dataset_key_reference_id_fkey FOREIGN KEY (dataset_key, reference_id) REFERENCES public.reference(dataset_key, id);
 
 ALTER TABLE public.name_rel
-    ADD CONSTRAINT name_rel_dataset_key_related_name_id_fkey FOREIGN KEY (dataset_key, related_name_id) REFERENCES public.name(dataset_key, id);
+    ADD CONSTRAINT name_rel_dataset_key_related_name_id_fkey FOREIGN KEY (dataset_key, related_name_id) REFERENCES public.name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE public.name_rel
     ADD CONSTRAINT name_rel_dataset_key_sector_key_fkey FOREIGN KEY (dataset_key, sector_key) REFERENCES public.sector(dataset_key, id);
@@ -185,7 +185,7 @@ ALTER TABLE public.treatment
     ADD CONSTRAINT treatment_dataset_key_verbatim_key_fkey FOREIGN KEY (dataset_key, verbatim_key) REFERENCES public.verbatim(dataset_key, id);
 
 ALTER TABLE public.type_material
-    ADD CONSTRAINT type_material_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES public.name(dataset_key, id);
+    ADD CONSTRAINT type_material_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES public.name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE public.type_material
     ADD CONSTRAINT type_material_dataset_key_reference_id_fkey FOREIGN KEY (dataset_key, reference_id) REFERENCES public.reference(dataset_key, id);

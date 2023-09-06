@@ -11,6 +11,21 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-09-06 mark name constraints deferred to allow deletion & existance of orphans
+```sql
+ALTER TABLE name_match DROP CONSTRAINT name_match_dataset_key_name_id_fkey; 
+ALTER TABLE name_match ADD CONSTRAINT name_match_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_rel DROP CONSTRAINT name_rel_dataset_key_name_id_fkey;
+ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_rel DROP CONSTRAINT name_rel_dataset_key_related_name_id_fkey; 
+ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_related_name_id_fkey FOREIGN KEY (dataset_key, related_name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE type_material DROP CONSTRAINT type_material_dataset_key_name_id_fkey; 
+ALTER TABLE type_material ADD CONSTRAINT type_material_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+```
+
 ### 2023-09-01 email domain extract function
 
 ```sql
