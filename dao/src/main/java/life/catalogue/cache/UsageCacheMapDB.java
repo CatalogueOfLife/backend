@@ -81,11 +81,11 @@ public class UsageCacheMapDB implements UsageCache {
     this.dbFile = location;
     this.expireMutable = expireMutable;
     this.deleteOnClose = deleteOnClose;
+    LOG.info("Create persistent usage cache at {}", location.getAbsolutePath());
     if (!location.exists()) {
       FileUtils.forceMkdirParent(location);
-      LOG.info("Create persistent usage cache at {}", location.getAbsolutePath());
     } else {
-      LOG.info("Use persistent usage cache at {}", location.getAbsolutePath());
+      FileUtils.deleteQuietly(location);
     }
     this.dbMaker = DBMaker
       .fileDB(location)
@@ -112,7 +112,7 @@ public class UsageCacheMapDB implements UsageCache {
       var store = storeMaker(dkey, expireMutable).open();
       datasets.put(dkey, store);
     }
-    LOG.info("UsageCache opened with cache for {} datasets", datasets.size());
+    LOG.info("UsageCache started with cache for {} datasets", datasets.size());
   }
 
   @Override
