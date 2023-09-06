@@ -256,6 +256,7 @@ public class XRelease extends ProjectRelease {
   private void mergeSectors() throws Exception {
     updateState(ImportState.INSERTING);
     for (Sector s : sectors) {
+      LOG.info("Merge {}", s);
       // the sector might not have been copied to the xrelease yet - we only copied all sectors from the base release, not the project.
       // create only if missing
       try (SqlSession session = factory.openSession(true)) {
