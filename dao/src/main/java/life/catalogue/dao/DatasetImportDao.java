@@ -116,6 +116,8 @@ public class DatasetImportDao {
         throw NotFoundException.notFound(Dataset.class, releaseKey);
       } else if (!release.getOrigin().isRelease()) {
         throw new IllegalArgumentException(releaseKey + " is not a release");
+      } else if (release.getAttempt() == null) {
+        throw new NotFoundException(releaseKey, "Release attempt not found for release dataset key " + releaseKey);
       }
       return session.getMapper(DatasetImportMapper.class).get(release.getSourceKey(), release.getAttempt());
     }
