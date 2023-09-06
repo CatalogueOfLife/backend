@@ -111,7 +111,7 @@
 
   <update id="_addIssueInternal" parameterType="map">
     UPDATE verbatim_source
-    SET issues = array_append(issues, '${issue}'::ISSUE)
+    SET issues = array_cat(issues, ARRAY[<foreach item="iss" collection="issues" separator=",">'${iss}'::ISSUE</foreach>])
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 
