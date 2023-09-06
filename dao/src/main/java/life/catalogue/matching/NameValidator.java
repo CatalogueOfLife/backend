@@ -96,7 +96,7 @@ public class NameValidator {
    * Validates consistency of name properties adding issues to the name if found.
    * This method checks if the given rank matches
    * populated propLabel and available propLabel make sense together.
-   * @return a non null VerbatimRecord if any issue have been added
+   * @return a non null VerbatimRecord if any issue has been added
    */
   public static <T extends IssueContainer> T flagIssues(Name n, Supplier<T> issueSupplier) {
     final LazyVerbatimRecord<T> v = new LazyVerbatimRecord<>(issueSupplier);
@@ -105,7 +105,7 @@ public class NameValidator {
       flagParsedIssues(n, v);
     } else {
       // flag issues on the full name for unparsed names
-      if (hasUnmatchedBrackets(n.getScientificName())) {
+      if (hasUnmatchedBrackets(n.getScientificName()) || hasUnmatchedBrackets(n.getAuthorship())) {
         v.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
       }
     }

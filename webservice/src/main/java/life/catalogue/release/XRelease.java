@@ -21,7 +21,6 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 
-import life.catalogue.matching.ParentStack;
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.NameType;
@@ -30,8 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
@@ -39,8 +36,6 @@ import javax.validation.Validator;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
 
 public class XRelease extends ProjectRelease {
   private final int baseReleaseKey;
@@ -172,6 +167,11 @@ public class XRelease extends ProjectRelease {
     validateAndCleanTree();
     cleanImplicitTaxa();
     resolveDuplicateAcceptedNames();
+
+    // remove orphan names and references
+    LOG.info("Remove bare names from release {}", newDatasetKey);
+    int num = nDao.deleteOrphans(newDatasetKey, null, user);
+    LOG.info("Removed {} bare names from release {}", num, newDatasetKey);
 
     updateState(ImportState.ANALYZING);
     // update sector metrics. The entire releases metrics are done later by the superclass
@@ -307,64 +307,8 @@ public class XRelease extends ProjectRelease {
       params.setDatasetKey(newDatasetKey);
       params.setSynonyms(false);
 
-      final var consumer = new TreeCleanerAndValidator(factory, newDatasetKey);
+      final var consumer = new TreeCleanerAndValidator(factory, newDatasetKey, xCfg.removeEmptyGenera);
       PgUtils.consume(() -> num.processTreeSimple(params), consumer);
-    }
-  }
-
-  static class TreeCleanerAndValidator implements Consumer<SimpleName> {
-    static final Pattern BINOMEN = Pattern.compile("^([A-Z][^ ]+)(:? ([a-z][^ ]+))?");
-    final SqlSessionFactory factory;
-    final int datasetKey;
-    final ParentStackSimple parents = new ParentStackSimple();
-
-    public TreeCleanerAndValidator(SqlSessionFactory factory, int datasetKey) {
-      this.factory = factory;
-      this.datasetKey = datasetKey;
-    }
-
-    @Override
-    public void accept(SimpleName sn) {
-      final Set<Issue> issues = new HashSet<>();
-      if (sn.getRank().isSpeciesOrBelow()) {
-        // flag parent mismatches
-        var m = BINOMEN.matcher(sn.getName());
-        if (m.find()) {
-          if (sn.getRank().isInfraspecific()) {
-            // we have a trinomial, compare species
-            var sp = parents.find(Rank.SPECIES);
-            if (sp == null) {
-              issues.add(Issue.PARENT_SPECIES_MISSING);
-            } else {
-              if (!m.group().equalsIgnoreCase(sp.getName())) {
-                issues.add(Issue.PARENT_NAME_MISMATCH);
-              }
-            }
-          } else {
-            // we have a binomial, compare genus only
-            var gen = parents.find(Rank.GENUS);
-            if (gen == null) {
-              issues.add(Issue.MISSING_GENUS);
-            } else if (!m.group(1).equalsIgnoreCase(gen.getName())) {
-              issues.add(Issue.PARENT_NAME_MISMATCH);
-            }
-          }
-        }
-
-        // TODO: create missing autonyms
-        // TODO: remove empty genera
-      }
-      parents.push(sn);
-      if (!issues.isEmpty()) {
-        addIssues(sn, issues);
-      }
-    }
-
-    void addIssues(SimpleName sn, Set<Issue> issues) {
-      try (SqlSession session = factory.openSession(true)) {
-        var vsm = session.getMapper(VerbatimSourceMapper.class);
-        vsm.addIssues(sn.toDSID(datasetKey), issues);
-      }
     }
   }
 

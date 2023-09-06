@@ -51,6 +51,12 @@ public class XReleaseConfig {
   public SimpleNameClassified<SimpleName> incertaeSedis;
 
   /**
+   * If true remove empty genera created during the xrelease only.
+   */
+  @Valid
+  public boolean removeEmptyGenera = true;
+
+  /**
    * If true algorithmic detecting and grouping of basionyms is executed.
    */
   @Valid

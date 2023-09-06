@@ -5,7 +5,9 @@ import life.catalogue.api.model.SimpleName;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.LinkedList;
-import java.util.List;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,17 +15,31 @@ import org.slf4j.LoggerFactory;
 public class ParentStackSimple {
   private static final Logger LOG = LoggerFactory.getLogger(ParentStackSimple.class);
 
-  private final LinkedList<SimpleName> parents = new LinkedList<>();
+  private final Consumer<SNC> sncConsumer;
+  private final LinkedList<SNC> parents = new LinkedList<>();
   private String doubtfulUsageID = null;
 
-  public List<SimpleName> classification() {
-    return parents;
+  /**
+   * @param sncConsumer function to be called when the usage is removed from the stack and has correct children and synonym counts.
+   */
+  public ParentStackSimple(@Nullable Consumer<SNC> sncConsumer) {
+    this.sncConsumer = sncConsumer;
+  }
+
+  static class SNC {
+    SimpleName sn;
+    int children = 0;
+    int synonyms = 0;
+
+    public SNC(SimpleName nu) {
+      sn = nu;
+    }
   }
 
   public SimpleName find(Rank r) {
-    for (SimpleName p : parents) {
-      if (p.getRank() == r) {
-        return p;
+    for (SNC p : parents) {
+      if (p.sn.getRank() == r) {
+        return p.sn;
       }
     }
     return null;
@@ -36,8 +52,8 @@ public class ParentStackSimple {
   public SimpleName getDoubtful() {
     if (doubtfulUsageID != null) {
       for (var u : parents) {
-        if (doubtfulUsageID.equals(u.getId())) {
-          return u;
+        if (doubtfulUsageID.equals(u.sn.getId())) {
+          return u.sn;
         }
       }
     }
@@ -49,16 +65,16 @@ public class ParentStackSimple {
    */
   public void markSubtreeAsDoubtful() {
     if (!parents.isEmpty() && doubtfulUsageID == null) {
-      doubtfulUsageID = parents.getLast().getId();
+      doubtfulUsageID = parents.getLast().sn.getId();
     }
   }
 
   public SimpleName secondLast() {
-    return parents.isEmpty() ? null : parents.get(parents.size()-2);
+    return parents.isEmpty() ? null : parents.get(parents.size()-2).sn;
   }
 
   public SimpleName last() {
-    return parents.isEmpty() ? null : parents.getLast();
+    return parents.isEmpty() ? null : parents.getLast().sn;
   }
 
   public void push(SimpleName nu) {
@@ -71,14 +87,17 @@ public class ParentStackSimple {
 
     } else {
       while (!parents.isEmpty()) {
-        if (parents.getLast().getId().equals(nu.getParent())) {
+        if (parents.getLast().sn.getId().equals(nu.getParent())) {
           // the last src usage on the parent stack represents the current parentKey, we are in good state!
           break;
         } else {
           // remove last parent until we find the real one
           var p = parents.removeLast();
+          if (sncConsumer != null && p.sn.getStatus().isTaxon()) {
+            sncConsumer.accept(p);
+          }
           // reset doubtful marker if the taxon gets removed from the stack
-          if (doubtfulUsageID != null && doubtfulUsageID.equals(p.getId())) {
+          if (doubtfulUsageID != null && doubtfulUsageID.equals(p.sn.getId())) {
             doubtfulUsageID = null;
           }
         }
@@ -90,9 +109,14 @@ public class ParentStackSimple {
     // if the classification ordering is wrong, mark it as doubtful
     Rank pRank = null;
     if (!parents.isEmpty()) {
-      pRank = parents.getLast().getRank();
+      pRank = parents.getLast().sn.getRank();
+      if (nu.getStatus().isTaxon()) {
+        parents.getLast().children++;
+      } else {
+        parents.getLast().synonyms++;
+      }
     }
-    parents.add(nu);
+    parents.add(new SNC(nu));
     if (nu.getStatus() != null && nu.getStatus().isTaxon()
         && pRank != null && nu.getRank().higherThan(pRank)
         && !nu.getRank().isAmbiguous() && !pRank.isAmbiguous()
