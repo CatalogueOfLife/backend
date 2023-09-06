@@ -325,11 +325,14 @@ public class HomotypicConsolidator {
     if (u.getId().equals(accepted.getId())) {
       LOG.warn("Trying to convert {} into a synonym of itself is suspicious. Abort", u);
       return;
+    } else if (u.getParentId().equals(accepted.getId()) && u.getStatus().isSynonym()) {
+      LOG.warn("Trying to convert {} into a synonym of it's accepted name. Nothing to be done.", u);
+      return;
     }
 
     SimpleName previousParent = loadSN(u.getParentId());
     if(u.getStatus().isSynonym()) {
-      LOG.info("Move synonym {} from {} to {}", u, previousParent, accepted);
+      LOG.info("Move {} from {} to {}", u, previousParent, accepted);
     } else if (u.getRank().isGenusOrSuprageneric()) {
       // pretty high ranks, warn!
       LOG.warn("Trying to convert {} into a synonym of {}, but rank {} is too high. Abort", u, accepted, u.getRank());
@@ -353,11 +356,12 @@ public class HomotypicConsolidator {
     try (var cursor = num.processTreeSimple(treeParams)) {
       for (var sn : cursor) {
         if (sn.getId().equals(u.getId())) continue; // exclude root
+        if (sn.getId().equals(accepted.getId())) continue; // avoid synonymizing the main accepted usage
+
         var newStatus = sn.getStatus().isSynonym() ? sn.getStatus() : TaxonomicStatus.SYNONYM;
         if(sn.getStatus().isSynonym()) {
-          var prev = loadSN(sn.getParent());
-          if (prev.getParent().equals(accepted.getId())) continue; // the synonym was placed correctly already
-          LOG.info("Also move descendant synonym {} from {} to {}", sn, prev, accepted);
+          if (sn.getParent().equals(accepted.getId())) continue; // the synonym was placed correctly already
+          LOG.info("Also move descendant synonym {} from {} to {}", sn, sn.getParent(), accepted);
         } else {
           LOG.info("Also convert descendant {} into a {} of {}", sn, newStatus, accepted);
         }
@@ -368,6 +372,20 @@ public class HomotypicConsolidator {
     } catch (IOException e) {
       LOG.error("Failed to traverse descendants of "+u.getLabel(), e);
     }
+  }
+
+  private boolean canBeConvertedToSynonym(LinneanNameUsage u, LinneanNameUsage accepted) {
+    if (!accepted.getStatus().isTaxon()) {
+      LOG.warn("Cannot convert usage {} into a synonym of the {} {}", u.getLabel(), accepted.getStatus(), accepted.getLabel());
+      return false;
+    } else if (u.getId().equals(accepted.getId())) {
+      LOG.warn("Trying to convert {} into a synonym of itself is suspicious. Abort", u);
+      return false;
+    } else if (u.getParentId().equals(accepted.getId()) && u.getStatus().isSynonym()) {
+      LOG.warn("Trying to convert {} into a synonym of it's accepted name. Nothing to be done.", u);
+      return false;
+    }
+    return true;
   }
 
   private void updateParentAndStatus(String id, String parentId, TaxonomicStatus status, NameUsageMapper num) {

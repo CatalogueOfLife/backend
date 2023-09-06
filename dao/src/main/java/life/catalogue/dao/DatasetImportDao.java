@@ -117,6 +117,7 @@ public class DatasetImportDao {
       } else if (!release.getOrigin().isRelease()) {
         throw new IllegalArgumentException(releaseKey + " is not a release");
       } else if (release.getAttempt() == null) {
+        // deleted releases have no attempt any longer...
         throw new NotFoundException(releaseKey, "Release attempt not found for release dataset key " + releaseKey);
       }
       return session.getMapper(DatasetImportMapper.class).get(release.getSourceKey(), release.getAttempt());
