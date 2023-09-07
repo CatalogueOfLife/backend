@@ -114,26 +114,33 @@ public class LogoUpdateJob extends BackgroundJob {
   private Boolean pullLogo(Dataset dataset) {
     if (dataset.getLogo() != null) {
       if (scratchFileFunc != null && downloader != null && imgService != null) {
-        LOG.info("Pulling logo from {}", dataset.getLogo());
-        String fn = FilenameUtils.getName(dataset.getLogo().getPath());
-        if (Strings.isNullOrEmpty(fn)) {
-          fn = "logo-original";
-        }
-        File logo = scratchFileFunc.apply(dataset.getKey(), fn);
-        try {
-          downloader.download(dataset.getLogo(), logo);
-          // now read image and copy to logo repo for resizing
-          imgService.putDatasetLogo(dataset.getKey(), ImageServiceFS.read(new FileInputStream(logo)));
-          return true;
+        // check if the logo is served from ChecklistBank - don't pull these
+        if (imgService.datasetLogoExists(dataset.getKey()) &&
+            dataset.getLogo().getHost().equalsIgnoreCase(imgService.logoUrl(dataset.getKey()).getHost())
+        ) {
+          LOG.debug("Do not pull logo from the ChecklistBank API: {}", dataset.getLogo());
+        } else {
+          LOG.info("Pulling logo from {}", dataset.getLogo());
+          String fn = FilenameUtils.getName(dataset.getLogo().getPath());
+          if (Strings.isNullOrEmpty(fn)) {
+            fn = "logo-original";
+          }
+          File logo = scratchFileFunc.apply(dataset.getKey(), fn);
+          try {
+            downloader.download(dataset.getLogo(), logo);
+            // now read image and copy to logo repo for resizing
+            imgService.putDatasetLogo(dataset.getKey(), ImageServiceFS.read(new FileInputStream(logo)));
+            return true;
 
-        } catch (DownloadException e) {
-          LOG.error("Failed to download logo from {}", dataset.getLogo(), e);
+          } catch (DownloadException e) {
+            LOG.error("Failed to download logo from {}", dataset.getLogo(), e);
 
-        } catch (IOException e) {
-          LOG.error("Failed to read logo image {} from downloaded file {}", dataset.getLogo(), logo.getAbsolutePath(), e);
+          } catch (IOException e) {
+            LOG.error("Failed to read logo image {} from downloaded file {}", dataset.getLogo(), logo.getAbsolutePath(), e);
 
-        } finally {
-          FileUtils.deleteQuietly(logo);
+          } finally {
+            FileUtils.deleteQuietly(logo);
+          }
         }
       }
       return false;

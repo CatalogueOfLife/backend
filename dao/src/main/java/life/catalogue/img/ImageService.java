@@ -5,6 +5,7 @@ import life.catalogue.api.exception.NotFoundException;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 import javax.imageio.ImageIO;
 
@@ -20,6 +21,8 @@ public interface ImageService {
   void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException;
 
   void copyDatasetLogo(int datasetKey, int toDatasetKey) throws IOException;
+
+  URI logoUrl(int datasetKey);
 
   /**
    * Copies the original logo to a new file, using the image file format as given by the file suffix.
@@ -38,11 +41,11 @@ public interface ImageService {
     }
   }
 
-  void archiveDatasetLogo(int releaseKey, int datasetKey) throws IOException;
+  void datasetLogoArchived(int releaseKey, int datasetKey) throws IOException;
 
   BufferedImage datasetLogo(int datasetKey, ImgConfig.Scale scale) throws NotFoundException;
 
-  BufferedImage archiveDatasetLogo(int datasetKey, int releaseKey, ImgConfig.Scale scale) throws NotFoundException;
+  BufferedImage datasetLogoArchived(int datasetKey, int releaseKey, ImgConfig.Scale scale) throws NotFoundException;
 
   
   static ImageService passThru() {
@@ -66,7 +69,12 @@ public interface ImageService {
       }
 
       @Override
-      public void archiveDatasetLogo(int releaseKey, int datasetKey) throws IOException {
+      public void datasetLogoArchived(int releaseKey, int datasetKey) throws IOException {
+      }
+
+      @Override
+      public URI logoUrl(int datasetKey) {
+        return URI.create("https://api.checklistbank.org/dataset/"+datasetKey+"/logo");
       }
 
       @Override
@@ -75,7 +83,7 @@ public interface ImageService {
       }
 
       @Override
-      public BufferedImage archiveDatasetLogo(int datasetKey, int releaseKey, ImgConfig.Scale scale) {
+      public BufferedImage datasetLogoArchived(int datasetKey, int releaseKey, ImgConfig.Scale scale) {
         return null;
       }
     };

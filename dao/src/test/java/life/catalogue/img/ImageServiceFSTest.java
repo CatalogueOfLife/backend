@@ -53,14 +53,14 @@ public class ImageServiceFSTest {
     assertNotNull(srv.datasetLogo(sourceDatasetKey, ImgConfig.Scale.MEDIUM));
     assertNotNull(srv.datasetLogo(sourceDatasetKey, ImgConfig.Scale.LARGE));
 
-    srv.archiveDatasetLogo(datasetKey, sourceDatasetKey);
-    assertNotNull(srv.archiveDatasetLogo(sourceDatasetKey, datasetKey, ImgConfig.Scale.ORIGINAL));
+    srv.datasetLogoArchived(datasetKey, sourceDatasetKey);
+    assertNotNull(srv.datasetLogoArchived(sourceDatasetKey, datasetKey, ImgConfig.Scale.ORIGINAL));
   }
 
   @Test(expected = NotFoundException.class)
   public void notFound() throws IOException {
     final int datasetKey = 3;
     final int sourceDatasetKey = 1010;
-    srv.archiveDatasetLogo(sourceDatasetKey, datasetKey, ImgConfig.Scale.ORIGINAL);
+    srv.datasetLogoArchived(sourceDatasetKey, datasetKey, ImgConfig.Scale.ORIGINAL);
   }
 }

@@ -159,7 +159,7 @@ public class ProjectRelease extends AbstractProjectCopy {
         cm.createRelease(d.getKey(), newDatasetKey, attempt);
         // archive logos
         try {
-          imageService.archiveDatasetLogo(newDatasetKey, d.getKey());
+          imageService.datasetLogoArchived(newDatasetKey, d.getKey());
         } catch (IOException e) {
           LOG.warn("Failed to archive logo for source dataset {} of release {}", d.getKey(), newDatasetKey, e);
         }

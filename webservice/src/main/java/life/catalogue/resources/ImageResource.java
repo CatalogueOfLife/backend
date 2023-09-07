@@ -2,6 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.img.ImageService;
@@ -11,12 +12,15 @@ import life.catalogue.img.ImgConfig;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +29,11 @@ import org.slf4j.LoggerFactory;
 public class ImageResource {
   private static final Logger LOG = LoggerFactory.getLogger(ImageResource.class);
   private final ImageService imgService;
+  private final SqlSessionFactory factory;
 
-  public ImageResource(ImageService imgService) {
+  public ImageResource(ImageService imgService, SqlSessionFactory factory) {
     this.imgService = imgService;
+    this.factory = factory;
   }
 
   @GET
@@ -44,6 +50,7 @@ public class ImageResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {
     imgService.putDatasetLogo(key, ImageServiceFS.read(img));
+    updateDatasetMetadata(key, imgService.logoUrl(key));
     return Response.ok().build();
   }
   
@@ -51,7 +58,17 @@ public class ImageResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response deleteLogo(@PathParam("key") int key) throws IOException {
     imgService.putDatasetLogo(key, null);
+    updateDatasetMetadata(key, null);
     return Response.ok().build();
+  }
+
+  private void updateDatasetMetadata(int datasetKey, URI logoUrl) {
+    try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var d =dm.get(datasetKey);
+      d.setLogo(logoUrl);
+      dm.update(d);
+    }
   }
 
   @GET
@@ -60,10 +77,11 @@ public class ImageResource {
   public BufferedImage sourceLogo(@PathParam("key") int datasetKey, @PathParam("id") int id, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
     if (!origin.isManagedOrRelease()) {
-      throw new IllegalArgumentException("Dataset "+datasetKey+" is not a project");
+      throw new IllegalArgumentException("Dataset "+datasetKey+" is " + origin);
     } else if (origin.isRelease()) {
-      return imgService.archiveDatasetLogo(id, datasetKey, scale);
+      return imgService.datasetLogoArchived(id, datasetKey, scale);
     }
+    // show the latest for projects
     return imgService.datasetLogo(id, scale);
   }
 }

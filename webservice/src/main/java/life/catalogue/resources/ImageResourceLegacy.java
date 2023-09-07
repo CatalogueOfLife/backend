@@ -65,7 +65,7 @@ public class ImageResourceLegacy {
     if (!origin.isManagedOrRelease()) {
       throw new IllegalArgumentException("Dataset "+datasetKey+" is not a project");
     } else if (origin == DatasetOrigin.PROJECT) {
-      return imgService.archiveDatasetLogo(id, datasetKey, scale);
+      return imgService.datasetLogoArchived(id, datasetKey, scale);
     }
     return imgService.datasetLogo(id, scale);
   }

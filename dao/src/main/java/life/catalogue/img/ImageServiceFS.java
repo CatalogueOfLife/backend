@@ -5,6 +5,7 @@ import life.catalogue.api.exception.NotFoundException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
@@ -21,7 +22,7 @@ public class ImageServiceFS implements ImageService {
   private static final Logger LOG = LoggerFactory.getLogger(ImageServiceFS.class);
   
   private final ImgConfig cfg;
-  
+
   public ImageServiceFS(ImgConfig cfg) {
     this.cfg = cfg;
   }
@@ -71,7 +72,7 @@ public class ImageServiceFS implements ImageService {
   }
 
   @Override
-  public void archiveDatasetLogo(int releaseKey, int datasetKey) throws IOException {
+  public void datasetLogoArchived(int releaseKey, int datasetKey) throws IOException {
     Path src = cfg.datasetLogo(datasetKey, ImgConfig.Scale.ORIGINAL);
     if (Files.exists(src)) {
       LOG.info("Archive logo for dataset {} in release {} from {}", datasetKey, releaseKey, src);
@@ -121,8 +122,12 @@ public class ImageServiceFS implements ImageService {
     LOG.debug("Writing new image {}", p);
     ImageIO.write(img, IMAGE_FORMAT, p.toFile());
   }
-  
-  
+
+  @Override
+  public URI logoUrl(int datasetKey) {
+    return cfg.datasetlogoUrl(datasetKey);
+  }
+
   @Override
   public BufferedImage datasetLogo(int datasetKey, ImgConfig.Scale scale) throws NotFoundException {
     Path p = cfg.datasetLogo(datasetKey, scale);
@@ -130,7 +135,7 @@ public class ImageServiceFS implements ImageService {
   }
 
   @Override
-  public BufferedImage archiveDatasetLogo(int datasetKey, int releaseKey, ImgConfig.Scale scale) throws NotFoundException {
+  public BufferedImage datasetLogoArchived(int datasetKey, int releaseKey, ImgConfig.Scale scale) throws NotFoundException {
     Path p = cfg.datasetLogoArchived(releaseKey, datasetKey);
     BufferedImage img = readImage(p, "Dataset " + datasetKey + " has no logo in release " + releaseKey);
     // we only archive originals, we need to scale now on the fly

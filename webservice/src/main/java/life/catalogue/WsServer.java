@@ -392,7 +392,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DuplicateResource(dupeDao));
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exdao, cfg));
-    j.register(new ImageResource(imgService));
+    j.register(new ImageResource(imgService, getSqlSessionFactory()));
     j.register(new ImageResourceLegacy(imgService));
     j.register(new ImporterResource(cfg, importManager, diDao, ddao));
     j.register(new JobResource(cfg.job, executor));
