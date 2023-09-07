@@ -46,7 +46,7 @@ public class ColdpTermTest {
   public void testNameUsage(){
     for (ColdpTerm t : RESOURCES.get(Name)) {
       if (t == genus) continue;
-      assertTrue(RESOURCES.get(NameUsage).contains(t));
+      assertTrue(t + " missing in NameUsage", RESOURCES.get(NameUsage).contains(t));
     }
     for (ColdpTerm t : RESOURCES.get(Taxon)) {
       if (t == provisional || t == nameID) continue;

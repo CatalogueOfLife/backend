@@ -7,6 +7,8 @@ import life.catalogue.api.model.CslName;
 
 import java.io.IOException;
 
+import life.catalogue.api.util.ObjectUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jbibtex.BibTeXEntry;
 import org.jbibtex.DigitStringValue;
@@ -193,7 +195,7 @@ public class CslDataConverter {
     addField(entry, "pages", data.getPage());
     addField(entry, "url", data.getURL());
     addField(entry, "note", data.getNote());
-    addField(entry, "title", data.getTitle());
+    addField(entry, "title", ObjectUtils.coalesce(data.getTitle(), data.getTitleShort()));
     addField(entry, "author", data.getAuthor());
     addField(entry, "editor", data.getEditor());
 
@@ -203,11 +205,11 @@ public class CslDataConverter {
         case ARTICLE_JOURNAL:
         case ARTICLE_MAGAZINE:
         case ARTICLE_NEWSPAPER:
-          addField(entry, "journal", data.getContainerTitle());
+          addField(entry, "journal", ObjectUtils.coalesce(data.getContainerTitle(), data.getContainerTitleShort()));
           addField(entry, "editor", data.getCollectionEditor());
           break;
         case CHAPTER:
-          addField(entry, "booktitle", data.getContainerTitle());
+          addField(entry, "booktitle", ObjectUtils.coalesce(data.getContainerTitle(), data.getContainerTitleShort()));
           addField(entry, "editor", data.getCollectionEditor());
           break;
       }

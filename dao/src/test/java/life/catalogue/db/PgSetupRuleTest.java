@@ -90,6 +90,7 @@ public class PgSetupRuleTest {
     enums.add(EditorialDecision.Mode.class);
     enums.add(User.Role.class);
     // not needed for persistency
+    enums.remove(Gender.class);
     enums.remove(Country.class);
     enums.remove(TxtTreeTerm.class);
     enums.remove(Frequency.class);
