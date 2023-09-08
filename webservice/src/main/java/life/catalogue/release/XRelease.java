@@ -89,8 +89,26 @@ public class XRelease extends ProjectRelease {
   void prepWork() throws Exception {
     // fail early if components are not ready
     syncFactory.assertComponentsOnline();
-    createReleaseDOI();
+    // ... or licenses of existing sectors are not compatible
+    final License projectLicense = dataset.getLicense();
+    try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var sm = session.getMapper(SectorMapper.class);
+      Set<Integer> sourceKeys = new HashSet<>();
+      for (var s : sm.listByPriority(datasetKey, Sector.Mode.MERGE)) {
+        if (!sourceKeys.contains(s.getSubjectDatasetKey())) {
+          Dataset src = dm.get(s.getSubjectDatasetKey());
+          if (!License.isCompatible(src.getLicense(), projectLicense)) {
+            LOG.warn("License {} of project {} is not compatible with license {} of source {}: {}", projectLicense, datasetKey, src.getLicense(), src.getKey(), src.getTitle());
+            throw new IllegalArgumentException("Source license " +src.getLicense()+ " of " + s + " is not compatible with license " +projectLicense+ " of project " + datasetKey);
+          }
+          sourceKeys.add(s.getSubjectDatasetKey());
+        }
+      }
+    }
+
     if (xCfg.sourcePublisher != null) {
+      // create missing sectors from publishers for compatible licenses only
       for (UUID pubKey : xCfg.sourcePublisher) {
         int newSectors = sDao.createMissingMergeSectorsFromPublisher(datasetKey, fullUser.getKey(), pubKey, xCfg.sourceDatasetExclusion);
         LOG.info("Created {} newly published merge sectors from publisher {}", newSectors, pubKey);
@@ -118,6 +136,7 @@ public class XRelease extends ProjectRelease {
         }
       }
     }
+    createReleaseDOI();
   }
 
   @VisibleForTesting

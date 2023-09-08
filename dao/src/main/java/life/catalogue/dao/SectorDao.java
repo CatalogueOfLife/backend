@@ -6,6 +6,7 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.License;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.*;
@@ -298,11 +299,19 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     int counter = 0;
     if (datasetKeys != null) {
       try (SqlSession session = factory.openSession(true)) {
-        SectorMapper sm = session.getMapper(SectorMapper.class);
+        var dm = session.getMapper(DatasetMapper.class);
+        var sm = session.getMapper(SectorMapper.class);
+        final License projectLicense = dm.get(projectKey).getLicense();
         for (int sourceDatasetKey : datasetKeys) {
           var existing = sm.listByDataset(projectKey, sourceDatasetKey);
           if ((existing == null || existing.isEmpty())) {
             // not yet existing - create a new merge sector!
+            // first check if licenses are compatible
+            Dataset src = dm.get(sourceDatasetKey);
+            if (!License.isCompatible(src.getLicense(), projectLicense)) {
+              LOG.warn("License {} of source {} from publisher {} is not compatible with license {} of project {}. Do not create any sector for: {}", src.getLicense(), src.getKey(), publisherKey, projectLicense, projectKey, src.getTitle());
+              continue;
+            }
             Sector s = new Sector();
             s.setDatasetKey(projectKey);
             s.setSubjectDatasetKey(sourceDatasetKey);

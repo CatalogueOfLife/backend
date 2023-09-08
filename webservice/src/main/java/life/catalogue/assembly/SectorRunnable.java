@@ -99,15 +99,11 @@ abstract class SectorRunnable implements Runnable {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + target.getOrigin() + " dataset");
       }
       if (validateLicenses) {
+        // we throw exceptions when people try to combine incompatible data
         Dataset source = session.getMapper(DatasetMapper.class).get(subjectDatasetKey);
         if (!License.isCompatible(source.getLicense(), target.getLicense())) {
           LOG.warn("Source license {} of {} is not compatible with license {} of project {}", source.getLicense(), sector, target.getLicense(), sectorKey.getDatasetKey());
-          // we should be throwsig exceptions when people try to combine incompatible data
-          // COL unfortunaltey still uses the OTHER license which is always incompatible, so we exclude that from throwing for now
-          //TODO: activate all exception when licensing consultations have been finished
-          if (target.getLicense().isCreativeCommons()) {
-            throw new IllegalArgumentException("Source license " +source.getLicense()+ " of " + sector + " is not compatible with license " +target.getLicense()+ " of project " + sectorKey.getDatasetKey());
-          }
+          throw new IllegalArgumentException("Source license " +source.getLicense()+ " of " + sector + " is not compatible with license " +target.getLicense()+ " of project " + sectorKey.getDatasetKey());
         }
       }
       // finally create the sync metrics record with a new attempt

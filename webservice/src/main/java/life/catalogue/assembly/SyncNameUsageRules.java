@@ -26,20 +26,20 @@ public class SyncNameUsageRules {
         n.setCombinationAuthorship(null);
         n.setBasionymAuthorship(null);
         n.setSanctioningAuthor(null);
-        LOG.info("remove authorship from botanical autonym {}", u.getLabel());
+        LOG.debug("remove authorship from botanical autonym {}", u.getLabel());
       }
     }
     // change tax status of manuscript names
     if (NomStatus.MANUSCRIPT == n.getNomStatus()) {
       if (!u.getStatus().isSynonym()) {
         u.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-        LOG.info("accepted manuscript name found: {}", u.getLabel());
+        LOG.debug("accepted manuscript name found: {}", u.getLabel());
       }
     }
     // fix all caps uninomials
     if (n.getType().isParsable() && n.isParsed() && n.getUninomial() != null && StringUtils.isAllUpperCase(n.getUninomial())) {
       n.setUninomial(StringUtils.capitalize(n.getUninomial().trim().toLowerCase()));
-      LOG.info("All capital {} {} converted to {}", n.getRank(), n.getScientificName(), n.getUninomial());
+      LOG.debug("All capital {} {} converted to {}", n.getRank(), n.getScientificName(), n.getUninomial());
       n.rebuildScientificName();
     }
   }
