@@ -84,6 +84,9 @@ public class UserResource {
   @GET
   @Path("/me")
   public User me(@Auth User user) {
+    // add release keys to editor/reviewer props for the UI only.
+    // See https://github.com/CatalogueOfLife/checklistbank/issues/1268
+    dao.addReleaseKeys(user);
     return user;
   }
   
@@ -113,6 +116,7 @@ public class UserResource {
   @Path("/dataset")
   public List<Dataset> datasets(@Auth User user, @QueryParam("origin") DatasetOrigin origin, @Context SqlSession session) {
     final DatasetMapper dm = session.getMapper(DatasetMapper.class);
+    // this never yields releases
     return user.getEditor().intStream()
                .filter(dk -> {
                  if (origin != null) {
@@ -128,8 +132,14 @@ public class UserResource {
 
   @GET
   @Path("/dataset/{key}")
-  public boolean isAuthorized(@PathParam("key") int key, @Auth User user) {
+  public boolean hasReadAccess(@PathParam("key") int key, @Auth User user) {
     return AuthFilter.hasReadAccess(user, key);
+  }
+
+  @GET
+  @Path("/dataset/{key}/write")
+  public boolean hasWriteAccess(@PathParam("key") int key, @Auth User user) {
+    return AuthFilter.hasWriteAccess(user, key);
   }
 
   @PUT

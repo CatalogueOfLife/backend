@@ -1,19 +1,21 @@
 package life.catalogue.dao;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import life.catalogue.api.event.UserChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
+import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
@@ -120,5 +122,34 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   protected boolean deleteAfter(Integer key, User old, int user, UserMapper mapper, SqlSession session) {
     bus.post(UserChanged.deleted(old));
     return false;
+  }
+
+  public void addReleaseKeys(User user) {
+    var keys = releaseKeys(user.getEditor(), user);
+    user.getEditor().addAll(keys);
+
+    keys = releaseKeys(user.getReviewer(), user);
+    user.getReviewer().addAll(keys);
+  }
+
+  private IntSet releaseKeys(IntSet projectKeys, User user){
+    IntSet keys = new IntOpenHashSet();
+    try (SqlSession session = factory.openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      final var req = new DatasetSearchRequest();
+      req.setOrigin(List.of(DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE));
+      req.setPrivat(null);
+
+      var iter = projectKeys.iterator();
+      while (iter.hasNext()) {
+        int projKey = iter.nextInt();
+        req.setReleasedFrom(projKey);
+        var res = dm.searchKeys(req, user.getKey());
+        if (res != null) {
+          keys.addAll(res);
+        }
+      }
+    }
+    return keys;
   }
 }
