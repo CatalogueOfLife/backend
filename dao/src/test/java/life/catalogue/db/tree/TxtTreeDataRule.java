@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.apache.ibatis.io.Resources;
@@ -44,7 +45,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   private NameMapper nm;
   private TaxonMapper tm;
   private SynonymMapper sm;
+  private ReferenceMapper rm;
   private SectorMapper secm;
+  private AtomicInteger refID = new AtomicInteger(0);
 
   public enum TreeData {
     ANIMALIA, MAMMALIA, TRILOBITA;
@@ -83,6 +86,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   public void before() throws Throwable {
     LOG.info("Load text trees");
     super.before();
+    refID.set(1);
     initSession();
     for (Map.Entry<Integer, String> x : datasets.entrySet()) {
       final String treeName = x.getValue();
@@ -165,7 +169,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     }
   }
 
-  private static void prepUsage(NameUsageBase u, int datasetKey, Integer sectorKey, ParsedNameUsage nat, TaxonomicStatus status, SimpleTreeNode parent, SimpleTreeNode tn) {
+  private void prepUsage(NameUsageBase u, int datasetKey, Integer sectorKey, ParsedNameUsage nat, TaxonomicStatus status, SimpleTreeNode parent, SimpleTreeNode tn) {
       u.setDatasetKey(datasetKey);
       u.setSectorKey(sectorKey);
       u.setId(String.valueOf(nat.getName().getId()));
@@ -173,9 +177,18 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       u.setOrigin(Origin.SOURCE);
       u.applyUser(Users.DB_INIT);
       u.setStatus(status);
-      u.setAccordingToId(nat.getTaxonomicNote());
       if (parent != null) {
         u.setParentId(String.valueOf(parent.id));
+      }
+      if (nat.getTaxonomicNote() != null) {
+        Reference r = new Reference();
+        r.setId(String.valueOf(refID.getAndIncrement()));
+        r.setCitation(nat.getTaxonomicNote());
+        r.setDatasetKey(datasetKey);
+        r.setSectorKey(sectorKey);
+        r.applyUser(Users.DB_INIT);
+        rm.create(r);
+        u.setAccordingToId(r.getId());
       }
   }
 
@@ -197,6 +210,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       tm = session.getMapper(TaxonMapper.class);
       sm = session.getMapper(SynonymMapper.class);
       secm = session.getMapper(SectorMapper.class);
+      rm = session.getMapper(ReferenceMapper.class);
     }
   }
 

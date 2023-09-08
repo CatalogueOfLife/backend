@@ -76,14 +76,10 @@ public class ProjectReleaseIT extends ProjectBaseIT {
   @Test
   public void release() throws Exception {
     ProjectRelease release = buildRelease();
-    Map.of(1, "9999", // pref ID out of sequence range
-      17, "A",
-      9998, "33" // pref ID in sequence range
-    );
     release.run();
     assertEquals(ImportState.FINISHED, release.getMetrics().getState());
 
-    DSID<String> key = DSID.of(release.newDatasetKey, "");
+    DSID<String> key = DSID.root(release.newDatasetKey);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       // canonical match
