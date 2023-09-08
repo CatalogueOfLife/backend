@@ -217,17 +217,25 @@ public abstract class SectorSyncTestBase {
     assertTree(Datasets.COL, openResourceStream(filename));
   }
 
+  public static void assertSameTree(int datasetKey1, int datasetKey2) throws IOException {
+    String tree1 = readTree(datasetKey1, null);
+    System.out.println("\n*** DATASET "+datasetKey1+" TREE ***");
+    System.out.println(tree1);
+
+    String tree2 = readTree(datasetKey2, null);
+    System.out.println("\n*** DATASET "+datasetKey2+" TREE ***");
+    System.out.println(tree2);
+
+    // compare trees
+    assertEquals("Tree not as expected for datasets " + datasetKey1 + " and "+datasetKey2, tree1, tree2);
+  }
+
   public static void assertTree(int datasetKey, InputStream expectedTree) throws IOException {
     assertTree(datasetKey, null, expectedTree);
   }
   public static void assertTree(int datasetKey, @Nullable String rootID, InputStream expectedTree) throws IOException {
     String expected = UTF8IoUtils.readString(expectedTree).trim();
-
-    Writer writer = new StringWriter();
-    TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey, rootID);
-    PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
-    String tree = writer.toString().trim();
-    assertFalse("Empty tree, probably no root node found", tree.isEmpty());
+    String tree = readTree(datasetKey, rootID);
 
     // compare trees
     System.out.println("\n*** DATASET "+datasetKey+" TREE ***");
@@ -235,6 +243,14 @@ public abstract class SectorSyncTestBase {
     assertEquals("Tree not as expected for dataset " + datasetKey, expected, tree);
   }
 
+  public static String readTree(int datasetKey,@Nullable String rootID) throws IOException {
+    Writer writer = new StringWriter();
+    TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey, rootID);
+    PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
+    String tree = writer.toString().trim();
+    assertFalse("Empty tree, probably no root node found", tree.isEmpty());
+    return tree;
+  }
 
   void assertHasVerbatimSource(DSID<String> id, String expectedSourceId) {
     VerbatimSource v = getSource(id);
