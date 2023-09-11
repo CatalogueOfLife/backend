@@ -8,16 +8,19 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
+import life.catalogue.matching.RematchJob;
 import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -173,5 +176,12 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
 
   protected abstract void export() throws Exception;
 
-
+  @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    if (other instanceof DatasetExportJob) {
+      DatasetExportJob job = (DatasetExportJob) other;
+      return job.getReq().equals(this.req) && job.getUserKey() == this.getUserKey();
+    }
+    return false;
+  }
 }

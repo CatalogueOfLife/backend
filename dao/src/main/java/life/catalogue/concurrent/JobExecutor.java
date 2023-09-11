@@ -226,7 +226,7 @@ public class JobExecutor implements Managed, Idle {
     // look for duplicates in the queue
     for (BackgroundJob qj : getQueue()) {
       if (job.isDuplicate(qj)) {
-        throw new IllegalArgumentException("An identical job is queued already");
+        throw new IllegalArgumentException("An identical job " + qj.getKey() + " is queued already");
       }
     }
     // make sure all components needed for the job have started before we even submit the job

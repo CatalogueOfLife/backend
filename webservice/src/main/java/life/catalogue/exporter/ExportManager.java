@@ -5,6 +5,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.EmailNotification;
 import life.catalogue.concurrent.JobExecutor;
@@ -49,19 +50,28 @@ public class ExportManager {
    * Checks whether an export for the given request already exists and returns the key of the latest export
    * or null if there is no exiting export.
    */
-  public DatasetExport exists(ExportRequest req) {
+  public UUID exists(ExportRequest req) {
     DatasetExport prev = dao.current(req);
     if (prev != null) {
       LOG.info("Existing {} export {} found for request {}", prev.getRequest().getFormat(), prev.getKey(), req);
-      return prev;
+      return prev.getKey();
+    }
+    // look for running exports across any user, but with the exact same request
+    for (BackgroundJob qj : executor.getQueue()) {
+      if (qj instanceof DatasetExportJob) {
+        var qej = (DatasetExportJob) qj;
+        if (qej.getReq().equals(req)) {
+          return qej.getKey();
+        }
+      }
     }
     return null;
   }
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
-    DatasetExport prev = exists(req);
+    UUID prev = exists(req);
     if (prev != null && !req.isForce()) {
-      return prev.getKey();
+      return prev;
     }
     validate(req);
     DatasetExportJob job;
