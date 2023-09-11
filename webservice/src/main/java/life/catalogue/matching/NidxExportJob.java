@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.admin.jobs.IndexJob;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.Dataset;
@@ -20,6 +21,7 @@ import life.catalogue.db.mapper.NamesIndexMapper;
 import java.io.File;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -147,4 +149,13 @@ public class NidxExportJob extends BackgroundJob {
     return val == null ? null : PermissiveEnumSerde.enumValueName(val);
   }
 
+  @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    if (other instanceof NidxExportJob) {
+      NidxExportJob job = (NidxExportJob) other;
+      return minDatasets == job.minDatasets &&
+             new HashSet<>(datasetKeys).equals(new HashSet<>(job.datasetKeys));
+    }
+    return false;
+  }
 }
