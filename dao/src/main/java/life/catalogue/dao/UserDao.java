@@ -14,6 +14,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -142,13 +143,15 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
       try (SqlSession session = factory.openSession()) {
         var dm = session.getMapper(DatasetMapper.class);
         for (int projKey : projectKeys) {
-          if (DatasetInfoCache.CACHE.info(projKey).origin == DatasetOrigin.PROJECT) {
+          if (DatasetInfoCache.CACHE.info(projKey, true).origin == DatasetOrigin.PROJECT) {
             var res = dm.listReleaseKeys(projKey);
             if (res != null) {
               keys.addAll(res);
             }
           }
         }
+      } catch (Throwable e) {
+        LOG.warn("Failed to list release keys", e);
       }
     }
     return keys;

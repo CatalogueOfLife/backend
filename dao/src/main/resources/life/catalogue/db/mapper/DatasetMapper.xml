@@ -302,7 +302,7 @@
   <select id="listReleaseKeys" resultType="integer">
     SELECT d.key
     FROM dataset d
-    WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
+    WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey} AND d.deleted IS NULL
   </select>
 
   <select id="listReleases" resultMap="datasetResultMap">

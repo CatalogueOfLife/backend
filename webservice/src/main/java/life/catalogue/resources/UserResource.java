@@ -84,6 +84,12 @@ public class UserResource {
   @GET
   @Path("/me")
   public User me(@Auth User user) {
+    return user;
+  }
+
+  @GET
+  @Path("/me2")
+  public User me2(@Auth User user) {
     // add release keys to editor/reviewer props for the UI only.
     // See https://github.com/CatalogueOfLife/checklistbank/issues/1268
     dao.addReleaseKeys(user);
