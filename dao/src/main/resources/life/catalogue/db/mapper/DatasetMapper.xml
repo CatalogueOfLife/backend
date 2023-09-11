@@ -535,6 +535,10 @@
     WHERE acl_editor @> ARRAY[#{editor}::int]
   </update>
 
+  <update id="clearACL" parameterType="map">
+    UPDATE dataset SET (acl_editor, acl_reviewer, modified_by, modified) = ( null, null, #{userKey}, now() )
+    WHERE key = #{key}
+  </update>
 
   <update id="update" parameterType="Dataset">
     UPDATE dataset SET (<include refid="COLS"/>, modified) = (<include refid="PROPS"/>, now())
@@ -555,11 +559,6 @@
 
   <update id="delete" parameterType="map">
     UPDATE dataset SET deleted = now(), attempt=null, alias=null, gbif_key=null, gbif_publisher_key=null
-    WHERE key = #{key}
-  </update>
-
-  <update id="updateModifiedBy" parameterType="map">
-    UPDATE dataset SET modified = now(), modified_by = #{user}
     WHERE key = #{key}
   </update>
 

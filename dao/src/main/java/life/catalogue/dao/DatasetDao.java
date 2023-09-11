@@ -465,8 +465,18 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected boolean deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    // track who did the deletion in modified_by
-    mapper.updateModifiedBy(key, user);
+    // deletion event to post later
+    var delEvent = DatasetChanged.deleted(old);
+    // remember all ACL users in the deletion event so we can properly invalidate user caches
+    UserMapper um = session.getMapper(UserMapper.class);
+    for (var u : um.datasetEditors(key)) {
+      delEvent.usernamesToInvalidate.add(u.getUsername());
+    }
+    for (var u : um.datasetReviewer(key)) {
+      delEvent.usernamesToInvalidate.add(u.getUsername());
+    }
+    // track who did the deletion in modified_by and remove all access rights
+    mapper.clearACL(key, user);
     session.close();
     // clear search index asynchroneously
     CompletableFuture.supplyAsync(() -> indexService.deleteDataset(key))
@@ -475,7 +485,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         return 0;
       });
     // notify event bus
-    bus.post(DatasetChanged.deleted(old));
+    bus.post(delEvent);
     if (old.getDoi() != null && old.getDoi().isCOL()) {
       bus.post(DoiChange.delete(old.getDoi()));
     }

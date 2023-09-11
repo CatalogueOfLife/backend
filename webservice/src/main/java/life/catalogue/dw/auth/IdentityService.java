@@ -1,11 +1,16 @@
 package life.catalogue.dw.auth;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.gbif.GBIFAuthentication;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -162,5 +167,25 @@ public class IdentityService {
     int num = cache.size();
     cache.clear();
     return num;
+  }
+
+  /**
+   * Invalidates all users which are in the SCL lists of the given dataset
+   * @param datasetKey
+   */
+  public void invalidateByDataset(int datasetKey) {
+    Set<String> usernames = new HashSet<>();
+    try (SqlSession session = sqlSessionFactory.openSession(true)) {
+      UserMapper um = session.getMapper(UserMapper.class);
+      for (var u : um.datasetEditors(datasetKey)) {
+        usernames.add(u.getUsername());
+      }
+      for (var u : um.datasetReviewer(datasetKey)) {
+        usernames.add(u.getUsername());
+      }
+    }
+    for (String u : usernames) {
+      invalidate(u);
+    }
   }
 }

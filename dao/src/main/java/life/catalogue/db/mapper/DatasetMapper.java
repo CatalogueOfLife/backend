@@ -27,12 +27,6 @@ import org.gbif.nameparser.api.Rank;
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset>, DatasetAgentMapper {
   int MAGIC_ADMIN_USER_KEY = -42;
 
-  /**
-   * Updates the modifiedBy to the given user and modified to now.
-   * @param key datasetKey
-   */
-  void updateModifiedBy(@Param("key") int key, @Param("user") int user);
-
   void deletePhysically(@Param("key") int key);
 
   default void createAll(DatasetWithSettings d) {
@@ -71,6 +65,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   void removeEditor(@Param("key") int key, @Param("editor") int editor, @Param("userKey") int userKey);
 
   void removeEditorEverywhere(@Param("editor") int editor, @Param("userKey") int userKey);
+
+  /**
+   * Removes all access control keys for all users to the given dataset
+   * @param key dataset key to clear
+   */
+  void clearACL(@Param("key") int key, @Param("userKey") int userKey);
 
   default void updateAll(DatasetWithSettings d) {
     update(d.getDataset());
