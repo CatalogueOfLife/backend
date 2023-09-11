@@ -299,7 +299,13 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
-  <select id="listReleases" resultMap="datasetResultMap">
+  <select id="listReleaseKeys" resultMap="datasetResultMap">
+    SELECT d.key
+    FROM dataset d
+    WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
+  </select>
+
+  <select id="listReleases" resultType="integer">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}

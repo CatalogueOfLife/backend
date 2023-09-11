@@ -125,28 +125,29 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   }
 
   public void addReleaseKeys(User user) {
-    var keys = releaseKeys(user.getEditor(), user);
+    var keys = releaseKeys(user.getEditor());
     user.getEditor().addAll(keys);
 
-    keys = releaseKeys(user.getReviewer(), user);
+    keys = releaseKeys(user.getReviewer());
     user.getReviewer().addAll(keys);
   }
 
-  private IntSet releaseKeys(IntSet projectKeys, User user){
+  /**
+   * Returns all (x)release dataset keys that belong to a project included in the given projectKeys.
+   * @param projectKeys dataset keys of projects. Other dataset keys, e.g. external, are ignored
+   */
+  private IntSet releaseKeys(IntSet projectKeys){
     IntSet keys = new IntOpenHashSet();
-    try (SqlSession session = factory.openSession()) {
-      var dm = session.getMapper(DatasetMapper.class);
-      final var req = new DatasetSearchRequest();
-      req.setOrigin(List.of(DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE));
-      req.setPrivat(null);
-
-      var iter = projectKeys.iterator();
-      while (iter.hasNext()) {
-        int projKey = iter.nextInt();
-        req.setReleasedFrom(projKey);
-        var res = dm.searchKeys(req, user.getKey());
-        if (res != null) {
-          keys.addAll(res);
+    if (projectKeys != null) {
+      try (SqlSession session = factory.openSession()) {
+        var dm = session.getMapper(DatasetMapper.class);
+        for (int projKey : projectKeys) {
+          if (DatasetInfoCache.CACHE.info(projKey).origin == DatasetOrigin.PROJECT) {
+            var res = dm.listReleaseKeys(projKey);
+            if (res != null) {
+              keys.addAll(res);
+            }
+          }
         }
       }
     }
