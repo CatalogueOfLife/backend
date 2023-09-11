@@ -1,14 +1,10 @@
 package life.catalogue.dw.auth;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.UserChanged;
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Users;
 
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -21,7 +17,6 @@ import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import scala.collection.mutable.OpenHashMap;
 
 /**
  * Wires up authentication against the GBIF registry and authorization based on CoL user roles.

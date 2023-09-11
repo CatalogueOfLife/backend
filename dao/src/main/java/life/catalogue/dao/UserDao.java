@@ -126,10 +126,10 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   }
 
   public void addReleaseKeys(User user) {
-    var keys = releaseKeys(user.getEditor());
+    var keys = releaseKeys(user.getKey(), user.getEditor());
     user.getEditor().addAll(keys);
 
-    keys = releaseKeys(user.getReviewer());
+    keys = releaseKeys(user.getKey(), user.getReviewer());
     user.getReviewer().addAll(keys);
   }
 
@@ -137,7 +137,7 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
    * Returns all (x)release dataset keys that belong to a project included in the given projectKeys.
    * @param projectKeys dataset keys of projects. Other dataset keys, e.g. external, are ignored
    */
-  private IntSet releaseKeys(IntSet projectKeys){
+  private IntSet releaseKeys(int userKey, IntSet projectKeys){
     IntSet keys = new IntOpenHashSet();
     if (projectKeys != null) {
       try (SqlSession session = factory.openSession()) {
@@ -151,7 +151,7 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
           }
         }
       } catch (Throwable e) {
-        LOG.warn("Failed to list release keys", e);
+        LOG.warn("Failed to list release keys for user {}", e, userKey);
       }
     }
     return keys;
