@@ -119,8 +119,9 @@ public class NameInterpreter {
                                              final String uninomial, final String genus, final String infraGenus, final String species, String infraspecies, final String cultivar,
                                              String nomStatus, String link, String remarks, String identifiers, IssueContainer issues) {
     try {
-      // default code?
+      // default code & rank
       code = ObjectUtils.coalesce(code, settings.getEnum(Setting.NOMENCLATURAL_CODE));
+      rank = ObjectUtils.coalesce(rank, Rank.UNRANKED);
 
       // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
       final boolean useAtoms;
