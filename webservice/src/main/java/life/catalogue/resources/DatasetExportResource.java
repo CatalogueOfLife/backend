@@ -95,9 +95,9 @@ public class DatasetExportResource {
 
     // an already existing export in the given format
     ExportRequest req = new ExportRequest(key, format);
-    DatasetExport export = exportManager.exists(req);
-    if (export != null) {
-      return Redirect.temporary(cfg.job.downloadURI(export.getKey()));
+    UUID exportKey = exportManager.exists(req);
+    if (exportKey != null) {
+      return Redirect.temporary(cfg.job.downloadURI(exportKey));
     }
 
     throw new NotFoundException(key, format.getName() + " archive for dataset " + key + " not found");
