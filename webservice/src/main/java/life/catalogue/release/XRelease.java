@@ -6,6 +6,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SyncFactory;
+import life.catalogue.assembly.TreeMergeHandlerConfig;
 import life.catalogue.basgroup.HomotypicConsolidator;
 import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.common.io.InputStreamUtils;
@@ -44,8 +45,8 @@ public class XRelease extends ProjectRelease {
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
   private final UsageMatcherGlobal matcher;
-  private @Nullable Taxon incertae;
   private XReleaseConfig xCfg;
+  private TreeMergeHandlerConfig mergeCfg;
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
@@ -148,7 +149,7 @@ public class XRelease extends ProjectRelease {
   @VisibleForTesting
   protected static XReleaseConfig loadConfig(URI url) {
     if (url == null) {
-      LOG.warn("No XRelease config supplied");
+      LOG.warn("No XRelease config supplied, use defaults");
       return new XReleaseConfig();
     } else {
       try (InputStream in = url.toURL().openStream()) {
@@ -172,7 +173,6 @@ public class XRelease extends ProjectRelease {
 
   @Override
   void finalWork() throws Exception {
-    incertae = createIncertaeSedisRoot();
     mergeSectors();
 
     updateState(ImportState.PROCESSING);
@@ -224,61 +224,12 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  private Taxon createIncertaeSedisRoot() {
-    if (xCfg.incertaeSedis != null) {
-      String pID = null;
-      if (xCfg.incertaeSedis.getClassification() != null) {
-        var parents = new ArrayList<>(xCfg.incertaeSedis.getClassification());
-        Collections.reverse(parents);
-        for (var sn : parents) {
-          Taxon p = lookupOrCreateTaxon(sn, pID);
-          pID = p.getId();
-        }
-      }
-      return lookupOrCreateTaxon(xCfg.incertaeSedis, pID);
-    }
-    return null;
-  }
-
-  private Taxon lookupOrCreateTaxon(SimpleName sn, String parentID) {
-    // lookup existing name
-    try (SqlSession session = factory.openSession(true)) {
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      var existing = session.getMapper(NameUsageMapper.class).findSimpleSN(newDatasetKey, sn);
-      if (!existing.isEmpty()) {
-        var ex = existing.get(0);
-        LOG.info("Use existing incertae sedis taxon {}", ex);
-        return tm.get(ex.toDSID(newDatasetKey));
-
-      } else {
-        LOG.info("Create new incertae sedis taxon {}", sn);
-        Name n = new Name(sn);
-        n.setDatasetKey(newDatasetKey);
-        n.setId(UUID.randomUUID().toString());
-        n.setOrigin(Origin.OTHER);
-        n.setType(NameType.PLACEHOLDER);
-        n.applyUser(user);
-
-        Taxon t = new Taxon(n);
-        t.setDatasetKey(newDatasetKey);
-        t.setId(UUID.randomUUID().toString());
-        t.setParentId(parentID);
-        t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-        t.setOrigin(Origin.OTHER);
-        t.setCreatedBy(user);
-        t.setModifiedBy(user);
-
-        session.getMapper(NameMapper.class).create(n);
-        tm.create(t);
-        return t;
-      }
-    }
-  }
-
   /**
    * We do all extended work here, e.g. sector merging
    */
   private void mergeSectors() throws Exception {
+    // prepare merge handler config instance
+    mergeCfg = new TreeMergeHandlerConfig(factory, xCfg, newDatasetKey, user);
     updateState(ImportState.INSERTING);
     for (Sector s : sectors) {
       LOG.info("Merge {}", s);
@@ -293,7 +244,7 @@ public class XRelease extends ProjectRelease {
         }
       }
       checkIfCancelled();
-      var ss = syncFactory.release(s, newDatasetKey, incertae, fullUser);
+      var ss = syncFactory.release(s, newDatasetKey, mergeCfg, fullUser);
       ss.run();
       if (ss.getState().getState() != ImportState.FINISHED){
         throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());

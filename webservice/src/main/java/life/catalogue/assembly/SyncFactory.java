@@ -11,6 +11,8 @@ import life.catalogue.matching.NameIndex;
 
 import life.catalogue.matching.UsageMatcherGlobal;
 
+import life.catalogue.release.XReleaseConfig;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +51,8 @@ public class SyncFactory {
     return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao, successCallback, errorCallback, user);
   }
 
-  public SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, @Nullable Taxon incertae, User user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, releaseDatasetKey, false, incertae, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
+  public SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, @Nullable TreeMergeHandlerConfig cfg, User user) throws IllegalArgumentException {
+    return new SectorSync(sectorKey, releaseDatasetKey, false, cfg, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
       x -> {}, (s,e) -> {LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e);}, user);
   }
 

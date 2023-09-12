@@ -4,10 +4,9 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.UsageCache;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.*;
 
-import life.catalogue.matching.authorship.AuthorComparator;
+import life.catalogue.release.XReleaseConfig;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -36,14 +35,16 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int created = 0;
   private int updated = 0; // updates
   private final int subjectDatasetKey;
+  private final TreeMergeHandlerConfig cfg;
 
   TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
-                   User user, Sector sector, SectorImport state, @Nullable Taxon incertae) {
+                   User user, Sector sector, SectorImport state, TreeMergeHandlerConfig cfg) {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
+    this.cfg = cfg;
     this.matcher = matcher;
     uCache = matcher.getUCache();
-    if (target == null && incertae != null) {
-      parents = new ParentStack(matcher.toSimpleName(incertae));
+    if (target == null && cfg.incertae != null) {
+      parents = new ParentStack(matcher.toSimpleName(cfg.incertae));
     } else {
       parents = new ParentStack(matcher.toSimpleName(target));
     }
@@ -128,6 +129,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       ignored++;
       LOG.info("Ignore {} {} [{}] because match ignore result", nu.getName().getRank(), nu.getName().getLabel(), nu.getId());
       return;
+
     } else if (ignoreUsage(nu, decisions.get(nu.getId()))) {
       // skip this taxon, but include children
       ignored++;
@@ -191,7 +193,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
     var ignore =  super.ignoreUsage(u, decision);
     if (!ignore) {
       // additional checks - we dont want any unranked unless they are OTU names
-      ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTU;
+      ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTU
+        || cfg.isBlocked(u.getName());
     }
     return ignore;
   }

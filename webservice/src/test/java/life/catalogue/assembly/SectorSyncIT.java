@@ -45,7 +45,7 @@ import static org.junit.Assert.*;
  */
 public class SectorSyncIT extends SectorSyncTestBase {
   
-  final static SqlSessionFactoryRule pg = new PgConnectionRule("col", "postgres", "postgres"); // PgSetupRule();
+  final static SqlSessionFactoryRule pg = new PgSetupRule(); // PgConnectionRule("col", "postgres", "postgres");
   final static TestDataRule dataRule = TestDataGenerator.syncs();
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   final static NameMatchingRule matchingRule = new NameMatchingRule();

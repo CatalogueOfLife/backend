@@ -28,6 +28,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import life.catalogue.release.XReleaseConfig;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -50,10 +52,10 @@ public class SectorSync extends SectorRunnable {
   private final boolean project;
   private boolean disableAutoBlocking;
   private final int targetDatasetKey; // dataset to sync into
-  private final @Nullable Taxon incertae;
+  private final @Nullable TreeMergeHandlerConfig mergeCfg;
   private List<SimpleName> foreignChildren;
 
-  SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, @Nullable Taxon incertae,
+  SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, @Nullable TreeMergeHandlerConfig mergeCfg,
              SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBus bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
@@ -67,7 +69,7 @@ public class SectorSync extends SectorRunnable {
     if (targetDatasetKey != sectorKey.getDatasetKey()) {
       LOG.info("Syncing sector {} into release {}", sectorKey, targetDatasetKey);
     }
-    this.incertae = incertae;
+    this.mergeCfg = mergeCfg;
   }
   
   @Override
@@ -243,7 +245,7 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, incertae);
+      return new TreeMergeHandler(targetDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, mergeCfg);
     }
     return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }

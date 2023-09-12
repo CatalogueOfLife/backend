@@ -1,7 +1,18 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.api.model.Taxon;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.TaxonMapper;
+
+import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.NameType;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
@@ -64,6 +75,7 @@ public class XReleaseConfig {
 
   /**
    * List of scientific names that are globally blocked from any source.
+   * Names are case insensitive and are allowed to be canonical to match all authorships or with a single specific authorship!
    */
   @NotNull
   @Valid
@@ -94,6 +106,5 @@ public class XReleaseConfig {
   @NotNull
   @Valid
   public Map<String, Set<String>> basionymExclusions = new HashMap<>();
-
 
 }
