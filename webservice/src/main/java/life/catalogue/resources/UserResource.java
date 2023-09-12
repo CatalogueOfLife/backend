@@ -89,12 +89,6 @@ public class UserResource {
     dao.addReleaseKeys(user);
     return user;
   }
-
-  @GET
-  @Path("/me2")
-  public User me2(@Auth User user) {
-    return user;
-  }
   
   /**
    * Makes surer a user has authenticated with BasicAuth and then returns a new JWT token if successful.

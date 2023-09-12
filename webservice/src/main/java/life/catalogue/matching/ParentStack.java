@@ -84,6 +84,10 @@ public class ParentStack {
     return sb.toString();
   }
 
+  public boolean hasRoot() {
+    return root != null;
+  }
+
   public boolean isDoubtful() {
     return doubtfulUsageID != null;
   }
@@ -109,7 +113,7 @@ public class ParentStack {
   }
 
   /**
-   * @return the lowest matched parent to be used for newly created usages.
+   * @return the lowest matched parent to be used for newly created usages or the root taxon if no parents exist.
    */
   public SimpleNameWithNidx lowestParentMatch() {
     var it = parents.descendingIterator();

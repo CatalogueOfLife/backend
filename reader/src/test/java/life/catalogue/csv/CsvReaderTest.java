@@ -37,6 +37,8 @@ public class CsvReaderTest {
     assertNull(CsvReader.clean(""));
     assertNull("", CsvReader.clean("null"));
     assertNull("", CsvReader.clean("null  "));
+    assertNull("", CsvReader.clean("\u0000"));
+    assertNull("", CsvReader.clean("\u0000 "));
     assertEquals("hi Pete", CsvReader.clean("hi  Pete "));
     assertEquals("hi Pete", CsvReader.clean("hi  Pete "));
     assertEquals("hi Pete", CsvReader.clean("hi  Pete "));

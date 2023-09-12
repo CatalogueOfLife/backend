@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.type2.StringCount;
@@ -278,6 +279,11 @@ public class DatasetImportDao {
   
   private void update(DatasetImport di, DatasetImportMapper mapper) {
     Preconditions.checkNotNull(di.getDatasetKey(), "datasetKey required for update");
+    // clean error messages to avoid:
+    // PSQLException: ERROR: invalid byte sequence for encoding "UTF8": 0x00
+    if (di.getError() != null) {
+      di.setError(PgUtils.repl0x(di.getError()));
+    }
     mapper.update(di);
   }
   

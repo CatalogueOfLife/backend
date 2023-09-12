@@ -76,12 +76,16 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     LOG.info("Project {}. Trees: {}", project, trees);
     testNum++;
     // load text trees & create sectors
-    Map<Integer, String> data = new HashMap<>();
-    data.put(Datasets.COL, "txtree/"+project + "/project.txtree");
+    List<TxtTreeDataRule.TreeDataset> data = new ArrayList<>();
+    data.add(
+      new TxtTreeDataRule.TreeDataset(Datasets.COL, "txtree/"+project + "/project.txtree", "COL Checklist", DatasetOrigin.PROJECT)
+    );
 
     int dkey = 100;
     for (String tree : trees) {
-      data.put(dkey, "txtree/"+project + "/" + tree.toLowerCase()+".txtree");
+      data.add(
+        new TxtTreeDataRule.TreeDataset(dkey, "txtree/"+project + "/" + tree.toLowerCase()+".txtree", tree, DatasetOrigin.EXTERNAL)
+      );
       Sector s = new Sector();
       s.setDatasetKey(Datasets.COL);
       s.setSubjectDatasetKey(dkey);
@@ -93,7 +97,6 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     }
 
     try (TxtTreeDataRule treeRule = new TxtTreeDataRule(data)) {
-      treeRule.setOrigin(DatasetOrigin.EXTERNAL);
       treeRule.before();
     }
 

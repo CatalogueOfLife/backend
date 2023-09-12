@@ -1,6 +1,6 @@
 id,sector_key,scientific_name,authorship,rank,code,nom_status,type,candidatus,notho,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,published_in_page_link,nomenclatural_note,unparsed,remarks,link
 s3,,Chaetocnema (Chaetocnema) granulicollis,"Jacoby, 1896",SPECIES,ZOOLOGICAL,,SCIENTIFIC,f,,,Chaetocnema,Chaetocnema,granulicollis,,,{},{},,{Jacoby},{},1896,,,,,,,,
-sg1,,Chaetocnema (Chaetocnema),Ruan & Yang & Konstantinov & Prathapan & Zhang,SUBGENUS,ZOOLOGICAL,,SCIENTIFIC,f,,,Chaetocnema,Chaetocnema,,,,{},{},,"{Ruan,Yang,Konstantinov,Prathapan,Zhang}",{},,,,,,,,,
+sg1,,Chaetocnema (Chaetocnema),,SUBGENUS,ZOOLOGICAL,,SCIENTIFIC,f,,,Chaetocnema,Chaetocnema,,,,{},{},,{},{},,,,,,,,,
 c,,Insecta,,CLASS,ZOOLOGICAL,,SCIENTIFIC,f,,Insecta,,,,,,{},{},,{},{},,,,,,,,,
 p,,Arthropoda,,PHYLUM,ZOOLOGICAL,,SCIENTIFIC,f,,Arthropoda,,,,,,{},{},,{},{},,,,,,,,,
 g,,Chaetocnema,"Stephens, 1831",GENUS,ZOOLOGICAL,,SCIENTIFIC,f,,Chaetocnema,,,,,,{},{},,{Stephens},{},1831,,,,,,,,

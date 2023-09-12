@@ -175,7 +175,7 @@ public abstract class BackgroundJob implements Runnable {
       // will cause the dataset sifting appender reach end-of-life. It will linger for a few seconds.
       LOG.info(LoggingUtils.FINALIZE_SESSION_MARKER, "About to end {} {}", getJobName(), key);
       LoggingUtils.removeJobMDC();
-
+      clearMDC();
       // copy job logs to download directory
       if (keepLogFile && cfg != null) {
         File log = cfg.jobLog(key);
@@ -187,6 +187,13 @@ public abstract class BackgroundJob implements Runnable {
         }
       }
     }
+  }
+
+  /**
+   * Override to clear any MDC log values at the end of the job!
+   */
+  protected void clearMDC() {
+
   }
 
   /**

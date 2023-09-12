@@ -114,16 +114,6 @@ public class SectorSync extends SectorRunnable {
     }
   }
 
-  @Override
-  protected Sector loadSectorAndUpdateDatasetImport(boolean validate) {
-    Sector s = super.loadSectorAndUpdateDatasetImport(validate);
-    if (s.getTargetID() == null && incertae != null) {
-      LOG.debug("Use incertae sedis target {}", incertae);
-      s.setTarget(SimpleNameLink.of(incertae));
-    }
-    return s;
-  }
-
   @VisibleForTesting
   void setDisableAutoBlocking(boolean disableAutoBlocking) {
     this.disableAutoBlocking = disableAutoBlocking;

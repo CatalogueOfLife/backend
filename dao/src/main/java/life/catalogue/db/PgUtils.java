@@ -1,5 +1,7 @@
 package life.catalogue.db;
 
+import life.catalogue.common.text.StringUtils;
+
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
@@ -17,6 +19,7 @@ import java.util.function.Supplier;
 
 public class PgUtils {
   private static final Logger LOG = LoggerFactory.getLogger(PgUtils.class);
+  private static final char ZERO_BYTE_CHAR = 0x00;
   public static final String CODE_UNIQUE = "23505";
   public static final String CODE_EXCLUSION = "23P01";
 
@@ -71,5 +74,13 @@ public class PgUtils {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Removes the zero byte character from strings which is not allowed in postgres UTF8:
+   * https://stackoverflow.com/questions/70494658/org-postgresql-util-psqlexception-error-invalid-byte-sequence-for-encoding-ut
+   */
+  public static String repl0x(String x) {
+    return x == null ? null : x.replace(ZERO_BYTE_CHAR, ' ');
   }
 }

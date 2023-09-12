@@ -25,7 +25,6 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 public class StringUtils {
 
   public static String[] EMPTY_STRING_ARRAY = new String[0];
-
   private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
   private static final CharMatcher NON_DIGITLETTER = CharMatcher.javaLetterOrDigit().negate();
   private static final Pattern WHITESPACE = Pattern.compile("\\s+");

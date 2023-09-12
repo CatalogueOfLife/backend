@@ -47,10 +47,11 @@ public class AssemblyCoordinatorTest {
   SyncManager coord;
 
   @Before
-  public void init() {
+  public void init() throws Exception {
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, syncFactoryRule.getDiDao());
 
     coord = new SyncManager(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
+    coord.start();
   }
   
   @Test(expected = IllegalArgumentException.class)

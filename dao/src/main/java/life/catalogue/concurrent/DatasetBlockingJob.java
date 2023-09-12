@@ -92,8 +92,13 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
       onFinishLocked();
     } finally {
       DatasetLock.unlock(datasetKey);
-      LoggingUtils.removeDatasetMDC();
     }
+  }
+
+  @Override
+  protected void clearMDC() {
+    super.clearMDC();
+    LoggingUtils.removeDatasetMDC();
   }
 
   /**

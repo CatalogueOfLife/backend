@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.ParentStack;
 
 import org.gbif.nameparser.api.Rank;
@@ -114,6 +115,7 @@ public class ParentStackTest {
     u.setId(String.valueOf(key));
     u.setParent(parentKey == null ? null : String.valueOf(parentKey));
     u.setName("Sciname #" + key);
+    u.setStatus(TaxonomicStatus.ACCEPTED);
     return u;
   }
 

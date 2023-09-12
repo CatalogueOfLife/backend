@@ -60,6 +60,11 @@ public class XRelease extends ProjectRelease {
     LOG.info("Build extended release for project {} from public release {}", datasetKey, baseReleaseKey);
   }
 
+  @VisibleForTesting
+  void setCfg(XReleaseConfig xCfg) {
+    this.xCfg = xCfg;
+  }
+
   @Override
   protected void modifyDataset(Dataset d, DatasetSettings ds) {
     super.modifyDataset(d, ds);

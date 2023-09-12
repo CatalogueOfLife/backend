@@ -4,12 +4,12 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.UsageCache;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.matching.*;
 
-import life.catalogue.matching.ParentStack;
-import life.catalogue.matching.UsageMatch;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.authorship.AuthorComparator;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -134,15 +134,19 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
-    // parent can be null if no matches exist
     Usage parent;
-    // make sure synonyms have a matched direct parent (second last, cause the last is the synonym itself)
     if (nu.isSynonym()) {
+      // make sure synonyms have a matched direct parent (second last, cause the last is the synonym itself)
+      // parent should never be null as we skip synonyms that have no matched parent in ignoreUsage() above
       parent = usage(parents.secondLast().match);
     } else {
+      // as last resort this yields the parent stacks root taxon, e.g. incertae sedis
       parent = usage(parents.lowestParentMatch());
     }
 
+    if (parent == null && parents.hasRoot()) {
+      LOG.warn("Usage {} with no matched parent", nu);
+    }
     // replace accepted taxa with doubtful ones for all nomenclators and for synonym parents
     // and allow to manually configure a doubtful status
     // http://dev.gbif.org/issues/browse/POR-2780
@@ -163,6 +167,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // track if we are outside of the sector target
       Issue[] issues;
       if (sector.getTarget() != null && !parents.containsMatch(sector.getTarget().getId())) {
+        //TODO: this is wrong. we need to check the actual parents of the parent usage.
         issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
       } else {
         issues = new Issue[0];
@@ -185,8 +190,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision) {
     var ignore =  super.ignoreUsage(u, decision);
     if (!ignore) {
-      // additional checks - we dont want any unranked
-      ignore = u.getRank() == Rank.UNRANKED;
+      // additional checks - we dont want any unranked unless they are OTU names
+      ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTU;
     }
     return ignore;
   }
@@ -274,7 +279,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
       // should we try to update the name? Need to load from db, so check upfront as much as possible to avoid db calls
       Name pn = null;
-      if (!existing.usage.hasAuthorship() && nu.getName().hasAuthorship()) {
+      if (nu.getName().hasAuthorship() && !existing.usage.hasAuthorship()) {
         pn = loadFromDB(existing.usage.getId());
         updated.add(InfoGroup.AUTHORSHIP);
         pn.setCombinationAuthorship(nu.getName().getCombinationAuthorship());
