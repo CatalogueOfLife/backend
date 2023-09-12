@@ -115,13 +115,8 @@ public class ProjectRelease extends AbstractProjectCopy {
    * @param dKey datasetKey to remove name & reference orphans from.
    */
   void removeOrphans(int dKey) {
-    LOG.info("Remove bare names from dataset {}", dKey);
-    int num = nDao.deleteOrphans(dKey, null, user);
-    LOG.info("Removed {} bare names from dataset {}", num, dKey);
-
-    LOG.info("Remove orphaned references from dataset {}", dKey);
-    num = rDao.deleteOrphans(dKey, null, user);
-    LOG.info("Removed {} orphaned references from dataset {}", num, dKey);
+    nDao.deleteOrphans(dKey, null, user);
+    rDao.deleteOrphans(dKey, null, user);
   }
 
   @Override

@@ -108,6 +108,7 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
 
   public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, int userKey) {
     final int cnt;
+    LOG.info("Remove orphaned names data from dataset {}", datasetKey);
     try (SqlSession session = factory.openSession(false)) {
       PgUtils.deferConstraints(session);
       cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
