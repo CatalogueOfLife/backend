@@ -174,7 +174,7 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     try {
       String unescaped = ECMA_UNICODE.matcher(x).replaceAll("\\\\u$1");
       unescaped = ANGLE_UNICODE.matcher(unescaped).replaceAll("\\\\u$1");
-      unescaped = StringEscapeUtils.unescapeEcmaScript(StringEscapeUtils.unescapeHtml4(unescaped));
+      unescaped = StringEscapeUtils.unescapeHtml4(unescaped);
       unescaped = REMOVE_TAGS.matcher(unescaped).replaceAll("");
       if (!x.equals(unescaped)) {
         issues.add(Issue.ESCAPED_CHARACTERS);

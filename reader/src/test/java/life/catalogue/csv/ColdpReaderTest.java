@@ -3,9 +3,13 @@ package life.catalogue.csv;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.Resources;
 
-import org.junit.Test;
-
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
+
+import org.gbif.dwc.terms.Term;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -57,6 +61,25 @@ public class ColdpReaderTest {
 
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1259
+   */
+  @Test
+  public void x00() throws Exception {
+    ColdpReader reader = ColdpReader.from(Resources.toFile("coldp/x00").toPath());
+
+    assertEquals(1, reader.schemas().size());
+    assertTrue(reader.hasSchema(ColdpTerm.Name));
+
+    Pattern x0Pattern = Pattern.compile("\\x00");
+    reader.stream(ColdpTerm.Name).forEach(rec -> {
+      for (Term term : rec.terms()) {
+        String val = rec.get(term);
+        System.out.println(val);
+        assertFalse(x0Pattern.matcher(val).find());
+      }
+    });
+  }
 
   @Test
   public void defaultValues() throws Exception {

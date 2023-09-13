@@ -50,27 +50,27 @@ public class TreeMergeHandlerConfig {
         var parents = new ArrayList<>(xCfg.incertaeSedis.getClassification());
         Collections.reverse(parents);
         for (var sn : parents) {
-          Taxon p = lookupOrCreateTaxon(sn, pID);
+          Taxon p = lookupOrCreateTaxon(sn, pID, true);
           pID = p.getId();
         }
       }
-      return lookupOrCreateTaxon(xCfg.incertaeSedis, pID);
+      return lookupOrCreateTaxon(xCfg.incertaeSedis, pID, false);
     }
     return null;
   }
 
-  private Taxon lookupOrCreateTaxon(SimpleName sn, String parentID) {
+  private Taxon lookupOrCreateTaxon(SimpleName sn, String parentID, boolean classification) {
     // lookup existing name
     try (SqlSession session = factory.openSession(true)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       var existing = session.getMapper(NameUsageMapper.class).findSimpleSN(datasetKey, sn);
       if (!existing.isEmpty()) {
         var ex = existing.get(0);
-        LOG.info("Use existing incertae sedis taxon {}", ex);
+        LOG.info("Use existing taxon {} for incertae sedis {}", ex, classification ? "classificaton" : "taxon");
         return tm.get(ex.toDSID(datasetKey));
 
       } else {
-        LOG.info("Create new incertae sedis taxon {}", sn);
+        LOG.info("Create new taxon {} for incertae sedis {}", sn, classification ? "classificaton" : "taxon");
         Name n = new Name(sn);
         n.setDatasetKey(datasetKey);
         n.setId(UUID.randomUUID().toString());
