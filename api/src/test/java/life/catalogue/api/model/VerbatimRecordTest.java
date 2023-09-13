@@ -37,8 +37,8 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
     rec.put(DwcTerm.scientificName, "Abies alba");
     rec.put(DwcTerm.scientificNameAuthorship, "D&ouml;ring & M&#246;glich");
     rec.put(DwcTerm.verbatimCoordinates, "9-ii-1999\\00°37'55\"S 076°08'39\"W");
-    rec.put(DwcTerm.nameAccordingTo, "D\\u00F6ring &amp; M\\u00F6glich");
-    rec.put(DwcTerm.namePublishedIn, "D\\u{00F6}ring &amp; M\\u{00F6}glich");
+    rec.put(DwcTerm.nameAccordingTo, "D\\u00F6ring &amp; M\\u00f6glich");
+    rec.put(DwcTerm.namePublishedIn, "D\\u{00F6}ring &amp; M\\u{00f6}glich");
     rec.put(AcefTerm.Title, "A new species of <i>Neamia</i> (Perciformes: Apogonidae) from the West Pacific Ocean.");
     // from is-6157 http://api.col.plus/taxon/7/info
     rec.put(DwcTerm.vernacularName, "&#75;&#101;&#105;&#104;&#228;&#115;&#108;&#117;&#117;&#104;&#97;&#117;&#107;&#105;");
