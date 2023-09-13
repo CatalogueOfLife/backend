@@ -32,12 +32,13 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
     v = new VerbatimRecord(11, "myFile.txt", DwcTerm.Taxon);
     initRecord(v);
   }
-  
+
   private static void initRecord(VerbatimRecord rec) {
     rec.put(DwcTerm.scientificName, "Abies alba");
     rec.put(DwcTerm.scientificNameAuthorship, "D&ouml;ring & M&#246;glich");
-    rec.put(DwcTerm.nameAccordingTo, "D\\u00f6ring &amp; M\\366glich");
-    rec.put(DwcTerm.namePublishedIn, "D\\u{00f6}ring &amp; M\\366glich");
+    rec.put(DwcTerm.verbatimCoordinates, "9-ii-1999\\00°37'55\"S 076°08'39\"W");
+    rec.put(DwcTerm.nameAccordingTo, "D\\u00F6ring &amp; M\\u00F6glich");
+    rec.put(DwcTerm.namePublishedIn, "D\\u{00F6}ring &amp; M\\u{00F6}glich");
     rec.put(AcefTerm.Title, "A new species of <i>Neamia</i> (Perciformes: Apogonidae) from the West Pacific Ocean.");
     // from is-6157 http://api.col.plus/taxon/7/info
     rec.put(DwcTerm.vernacularName, "&#75;&#101;&#105;&#104;&#228;&#115;&#108;&#117;&#117;&#104;&#97;&#117;&#107;&#105;");
@@ -48,6 +49,16 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
   
   @Test
   public void getTerm() throws Exception {
+    init();
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertEquals("Döring & Möglich", v.get(DwcTerm.nameAccordingTo));
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+
+    init();
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertEquals("9-ii-1999\\00°37'55\"S 076°08'39\"W", v.get(DwcTerm.verbatimCoordinates));
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+
     assertEquals("Abies alba", v.get(DwcTerm.scientificName));
     assertEquals("Abies alba", v.getRaw(DwcTerm.scientificName));
     assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));

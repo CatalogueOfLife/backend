@@ -4,6 +4,8 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
 
+import org.apache.commons.text.translate.UnicodeUnescaper;
+
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.util.UnicodeUtils;
@@ -13,6 +15,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
@@ -47,10 +50,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimRecord.class);
-  private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
-  private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-f]{4})}", Pattern.CASE_INSENSITIVE);
+  private static final Pattern HEX_UNICODE = Pattern.compile("\\\\u([0-9a-fA-F]{4})");
+  private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-fA-F]{4})}");
   private static final Pattern ANGLE_UNICODE = Pattern.compile("<U\\+?([0-9a-f]{4})>", Pattern.CASE_INSENSITIVE);
-  
+  private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
+
   private Integer id;
   private Integer datasetKey;
   // instance hash created on load to see if the instance has been changed
@@ -167,13 +171,21 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     return false;
   }
 
+  private String replUnicode(MatchResult m) {
+    // create an int primitive cp and assign value
+    int cp = Integer.decode("0x"+m.group(1));
+    // assign result of toChars on cp to ch
+    return String.valueOf(Character.toChars(cp));
+  }
+
   private String unescape(String x) {
     if (Strings.isNullOrEmpty(x)) {
       return null;
     }
     try {
-      String unescaped = ECMA_UNICODE.matcher(x).replaceAll("\\\\u$1");
-      unescaped = ANGLE_UNICODE.matcher(unescaped).replaceAll("\\\\u$1");
+      String unescaped = HEX_UNICODE.matcher(x).replaceAll(this::replUnicode);
+      unescaped = ECMA_UNICODE.matcher(unescaped).replaceAll(this::replUnicode);
+      unescaped = ANGLE_UNICODE.matcher(unescaped).replaceAll(this::replUnicode);
       unescaped = StringEscapeUtils.unescapeHtml4(unescaped);
       unescaped = REMOVE_TAGS.matcher(unescaped).replaceAll("");
       if (!x.equals(unescaped)) {
