@@ -176,16 +176,22 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
   }
 
   public String getLabel() {
-    return appendFullName(new StringBuilder(), false).toString();
+    return strOrNull(appendFullName(new StringBuilder(), false));
   }
 
   public String getLabelHtml() {
-    return appendFullName(new StringBuilder(), true).toString();
+    return strOrNull(appendFullName(new StringBuilder(), true));
   }
 
 
+  private static String strOrNull(StringBuilder sb) {
+    return sb==null || sb.length()<1 ? null : sb.toString();
+  }
+
   private StringBuilder appendFullName(StringBuilder sb, boolean html) {
-    sb.append(html ? NameFormatter.scientificNameHtml(name, rank) : name);
+    if (name != null) {
+      sb.append(html ? NameFormatter.scientificNameHtml(name, rank) : name);
+    }
     if (authorship != null) {
       sb.append(" ");
       sb.append(authorship);
