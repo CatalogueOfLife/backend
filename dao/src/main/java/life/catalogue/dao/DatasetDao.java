@@ -466,7 +466,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   @Override
   protected boolean deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     // deletion event to post later
-    var delEvent = DatasetChanged.deleted(old);
+    var delEvent = DatasetChanged.deleted(old, user);
     // remember all ACL users in the deletion event so we can properly invalidate user caches
     UserMapper um = session.getMapper(UserMapper.class);
     for (var u : um.datasetEditors(key)) {
@@ -527,7 +527,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.close();
     // other non pg stuff
     pullLogo(obj, null, user);
-    bus.post(DatasetChanged.created(obj));
+    bus.post(DatasetChanged.created(obj, user));
     return false;
   }
 
@@ -587,7 +587,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.close();
     // other non pg stuff
     pullLogo(obj, old, user);
-    bus.post(DatasetChanged.changed(obj, old));
+    bus.post(DatasetChanged.changed(obj, old, user));
     if (obj.getDoi() != null && obj.getDoi().isCOL()) {
       bus.post(DoiChange.change(old.getDoi()));
     }

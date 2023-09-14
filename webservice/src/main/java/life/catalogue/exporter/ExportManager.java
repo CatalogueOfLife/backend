@@ -1,6 +1,9 @@
 package life.catalogue.exporter;
 
+import com.google.common.eventbus.Subscribe;
+
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
@@ -150,6 +153,19 @@ public class ExportManager {
   private static void throwIfTooLarge(ColdpTerm type, Integer count){
     if (count > ExcelTermWriter.MAX_ROWS) {
       throw new IllegalArgumentException("Excel format can not be used for datasets that have more than "+ExcelTermWriter.MAX_ROWS + " " +type.simpleName() + " records");
+    }
+  }
+
+  @Subscribe
+  public void datasetDeleted(DatasetChanged event){
+    if (event.isDeletion()) {
+      var jobs = executor.getQueueByDataset(event.key);
+      if (!jobs.isEmpty()) {
+        LOG.info("Cancel {} jobs about deleted dataset {}. User={}", jobs.size(), event.key, event.user);
+        for (var job : jobs) {
+          executor.cancel(job.getKey(), event.user);
+        }
+      }
     }
   }
 }

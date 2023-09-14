@@ -145,7 +145,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteSync(@PathParam("key") int datasetKey, @PathParam("id") int id, @Auth User user) {
     DaoUtils.requireManaged(datasetKey);
-    assembly.cancel(DSID.of(datasetKey, id), user);
+    assembly.cancel(DSID.of(datasetKey, id), user.getKey());
   }
 
   @GET

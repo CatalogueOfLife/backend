@@ -2,7 +2,10 @@ package life.catalogue.importer;
 
 import com.google.common.eventbus.EventBus;
 
+import com.google.common.eventbus.Subscribe;
+
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
@@ -507,5 +510,13 @@ public class ImportManager implements Managed, Idle {
   @Override
   public boolean isIdle() {
     return !hasStarted() || hasEmptyQueue() && !hasRunning();
+  }
+
+  @Subscribe
+  public void datasetDeleted(DatasetChanged event){
+    if (event.isDeletion()) {
+      LOG.debug("Try to cancel import job for deleted dataset {}. User={}", event.key, event.user);
+      cancel(event.key, event.user);
+    }
   }
 }

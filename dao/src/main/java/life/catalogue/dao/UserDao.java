@@ -96,7 +96,7 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
       um.block(key, datetime);
       u = um.get(key);
     }
-    bus.post(UserChanged.created(u));
+    bus.post(UserChanged.created(u, admin.getKey()));
   }
 
   private static Page defaultPage(Page page){
@@ -106,7 +106,7 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   @Override
   protected boolean createAfter(User obj, int user, UserMapper mapper, SqlSession session) {
     session.close();
-    bus.post(UserChanged.created(obj));
+    bus.post(UserChanged.created(obj, user));
     return false;
   }
 
@@ -115,13 +115,13 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
     if (!keepSessionOpen) {
       session.close();
     }
-    bus.post(UserChanged.changed(obj));
+    bus.post(UserChanged.changed(obj, user));
     return keepSessionOpen;
   }
 
   @Override
   protected boolean deleteAfter(Integer key, User old, int user, UserMapper mapper, SqlSession session) {
-    bus.post(UserChanged.deleted(old));
+    bus.post(UserChanged.deleted(old, user));
     return false;
   }
 

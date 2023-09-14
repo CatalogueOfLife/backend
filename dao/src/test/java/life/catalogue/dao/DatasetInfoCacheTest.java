@@ -53,11 +53,11 @@ public class DatasetInfoCacheTest {
       d = session.getMapper(DatasetMapper.class).get(3);
     }
 
-    bus.post(DatasetChanged.created(d));
+    bus.post(DatasetChanged.created(d, 1));
     info = DatasetInfoCache.CACHE.info(3);
     assertFalse(info.deleted);
 
-    bus.post(DatasetChanged.deleted(d));
+    bus.post(DatasetChanged.deleted(d, 1));
     TimeUnit.MILLISECONDS.sleep(10); // give the event a little bit of time
     info = DatasetInfoCache.CACHE.info(3, true);
     assertTrue(info.deleted);

@@ -1,8 +1,12 @@
 package life.catalogue.assembly;
 
+import com.google.common.eventbus.Subscribe;
+
+import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.db.PgUtils;
@@ -275,14 +279,14 @@ public class SyncManager implements Managed, Idle {
     failed.get(sync.sectorKey.getDatasetKey()).incrementAndGet();
   }
 
-  public synchronized void cancel(DSID<Integer> sectorKey, User user) {
+  public synchronized void cancel(DSID<Integer> sectorKey, int user) {
     if (syncs.containsKey(sectorKey)) {
       LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);
       var sync = syncs.remove(sectorKey);
       sync.future.cancel(true);
     }
   }
-  
+
   private int syncAll(int catalogueKey, User user) {
     LOG.warn("Sync all sectors. Triggered by user {}", user);
     final List<Sector> sectors = new ArrayList<>();
@@ -304,6 +308,20 @@ public class SyncManager implements Managed, Idle {
     LOG.info("Scheduled {} sectors for sync, {} failed", queued, failed);
     return queued;
   }
-  
+
+  @Subscribe
+  public void datasetDeleted(DatasetChanged event){
+    if (event.isDeletion()) {
+      var keys = syncs.keySet().stream()
+                      .filter(k -> k.getDatasetKey().equals(event.key))
+                      .collect(Collectors.toSet());
+      if (!keys.isEmpty()) {
+        LOG.info("Cancel {} sector syncs from deleted dataset {}. User={}", keys.size(), event.key, event.user);
+        for (var key : keys) {
+          cancel(key, event.user);
+        }
+      }
+    }
+  }
 
 }

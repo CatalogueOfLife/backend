@@ -361,12 +361,12 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.GBIFRegistrySync, gbifSync);
 
     // assembly
-    SyncManager assembly = new SyncManager(getSqlSessionFactory(), ni, syncFactory, env.metrics());
-    managedService.manage(Component.SectorSynchronizer, assembly);
+    SyncManager syncManager = new SyncManager(getSqlSessionFactory(), ni, syncFactory, env.metrics());
+    managedService.manage(Component.SectorSynchronizer, syncManager);
 
     // link assembly and import manager so they are aware of each other
-    importManager.setAssemblyCoordinator(assembly);
-    assembly.setImportManager(importManager);
+    importManager.setAssemblyCoordinator(syncManager);
+    syncManager.setImportManager(importManager);
 
     // legacy ID map
     IdMap idMap = IdMap.fromURI(cfg.legacyIdMapFile, cfg.legacyIdMapURI);
@@ -374,7 +374,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // resources
     j.register(new AdminResource(
-      getSqlSessionFactory(), managedService, assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService,
+      getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService,
       importManager, ddao, gbifSync, executor, idMap, validator)
     );
     j.register(new DataPackageResource());
@@ -385,7 +385,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetIssuesResource(getSqlSessionFactory()));
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetPatchResource());
-    j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, assembly, copyFactory, executor));
+    j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, syncManager, copyFactory, executor));
     j.register(new DatasetReviewerResource(adao));
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env), LocalDateTime.now()));
@@ -404,7 +404,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new PortalResource(renderer));
     j.register(new ReferenceResource(rdao));
     j.register(new SectorDiffResource(sDiff));
-    j.register(new SectorResource(secdao, tdao, fmsDao, siDao, assembly));
+    j.register(new SectorResource(secdao, tdao, fmsDao, siDao, syncManager));
     j.register(new SynonymResource(sdao));
     j.register(new TaxonResource(tdao));
     j.register(new TreeResource(tdao, trDao));
@@ -436,6 +436,9 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService, converter));
     bus.register(doiUpdater);
     bus.register(uCache);
+    bus.register(exportManager);
+    bus.register(syncManager);
+    bus.register(importManager);
   }
 
   @Override
