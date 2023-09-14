@@ -89,29 +89,34 @@ public class NameIndexImpl implements NameIndex {
 
   @Override
   public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
-    NameMatch m;
-
-    List<IndexName> candidates = store.get(key(name));
-    if (candidates != null && !candidates.isEmpty()) {
-      m = matchCandidates(name, candidates);
-      if (verbose) {
-        if (m.hasMatch()) {
-          candidates.remove(m.getName());
+    NameMatch m = null;
+    try {
+      List<IndexName> candidates = store.get(key(name));
+      if (candidates != null && !candidates.isEmpty()) {
+        m = matchCandidates(name, candidates);
+        if (verbose) {
+          if (m.hasMatch()) {
+            candidates.remove(m.getName());
+          }
+          m.setAlternatives(candidates);
+        } else {
+          m.setAlternatives(null);
         }
-        m.setAlternatives(candidates);
+
       } else {
-        m.setAlternatives(null);
+        m = NameMatch.noMatch();
       }
 
-    } else {
-      m = NameMatch.noMatch();
-    }
+      if (allowInserts && needsInsert(m, name) && eligable(name)) {
+        m = tryToAdd(name, m, verbose);
+      }
+      LOG.debug("Matched {} => {}", name.getLabel(), m);
+      return m;
 
-    if (allowInserts && needsInsert(m, name) && eligable(name)) {
-      m = tryToAdd(name, m, verbose);
+    } catch (Exception e) {
+      LOG.error("Error matching >>{}<< match={}", name, m, e);
+      throw new MatchingException(name, e);
     }
-    LOG.debug("Matched {} => {}", name.getLabel(), m);
-    return m;
   }
 
   /**
