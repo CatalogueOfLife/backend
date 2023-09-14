@@ -113,6 +113,9 @@ public class NameIndexImpl implements NameIndex {
       LOG.debug("Matched {} => {}", name.getLabel(), m);
       return m;
 
+    } catch (UnavailableException e) {
+      throw e; // we want this to be passed through
+
     } catch (Exception e) {
       LOG.error("Error matching >>{}<< match={}", name, m, e);
       throw new MatchingException(name, e);
