@@ -144,13 +144,13 @@
           </foreach>
         </if>
         <if test="req.createdBy != null">
-          di.created_by = #{req.createdBy}
+          AND di.created_by = #{req.createdBy}
         </if>
         <if test="req.job != null">
-          lower(di.job) = lower(#{req.job})
+          AND lower(di.job) = lower(#{req.job})
         </if>
         <if test="req.format != null">
-          di.format = #{req.format}::DATAFORMAT
+          AND di.format = #{req.format}::DATAFORMAT
         </if>
       </if>
     </where>
