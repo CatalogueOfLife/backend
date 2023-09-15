@@ -50,7 +50,7 @@
     #{roles, typeHandler=life.catalogue.db.type.RoleSetTypeHandler},
     #{settings, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
     #{lastLogin},
-    #{publisher, typeHandler=life.catalogue.db.type.UuidSetTypeHandler},
+    #{publisher, typeHandler=life.catalogue.db.type2.UuidSetTypeHandler},
     #{blocked}
   </sql>
 
@@ -73,7 +73,7 @@
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
     <result property="editor" column="editor" typeHandler="life.catalogue.db.type.IntSetTypeHandler"/>
     <result property="reviewer" column="reviewer" typeHandler="life.catalogue.db.type.IntSetTypeHandler"/>
-    <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type.UuidSetTypeHandler"/>
+    <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type2.UuidSetTypeHandler"/>
   </resultMap>
 
 
