@@ -138,8 +138,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected SimpleNameWithNidx create(NameUsageBase u, @Nullable Usage parent, Issue... issues) {
     if (parent == null) {
       if (u.isSynonym()) {
-        LOG.error("Failed to create {} without parent: {} {}", u.getStatus(), u.getRank(), u.getLabel());
-        return null;
+        throw new IllegalStateException("Cannot create synonym without a parent: " + u.getRank() +" "+ u.getLabel());
       } else {
         LOG.warn("Creating new root usage with no parent: {} {}", u.getRank(), u.getLabel());
       }
