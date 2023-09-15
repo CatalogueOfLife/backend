@@ -1,27 +1,23 @@
 package life.catalogue.release;
 
-import com.esotericsoftware.minlog.Log;
-
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-
 import life.catalogue.matching.NameValidator;
 
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.gbif.nameparser.api.Rank;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TreeCleanerAndValidator implements Consumer<SimpleName> {
   static final Logger LOG = LoggerFactory.getLogger(TreeCleanerAndValidator.class);
@@ -45,10 +41,17 @@ public class TreeCleanerAndValidator implements Consumer<SimpleName> {
     // remove empty genera?
     if (taxon.sn.getRank().isGenusGroup() && taxon.children == 0 && fromXSource(taxon.sn)) {
       LOG.info("Remove empty {}", taxon.sn);
+      final var key = taxon.sn.toDSID(datasetKey);
       try (SqlSession session = factory.openSession(true)) {
-        var key = taxon.sn.toDSID(datasetKey);
-        session.getMapper(VerbatimSourceMapper.class).delete(key);
-        session.getMapper(NameUsageMapper.class).delete(key);
+        var vm = session.getMapper(VerbatimSourceMapper.class);
+        var um = session.getMapper(NameUsageMapper.class);
+        // first remove all synonyms
+        for (var c : um.childrenIds(key)) {
+          vm.delete(key.id(c));
+          um.delete(key);
+        }
+        vm.delete(key.id(taxon.sn.getId()));
+        um.delete(key);
         // names, references and related are removed as orphans at the end of the release
       }
     }

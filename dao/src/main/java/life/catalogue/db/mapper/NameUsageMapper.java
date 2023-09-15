@@ -155,6 +155,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<NameUsageBase> children(@Param("key") DSID<String> key, @Nullable @Param("rank") Rank rank);
 
   /**
+   * Lists ids of all children (taxon & synonym) of a given parent
+   * @param key the parent to list the direct children from
+   */
+  List<String> childrenIds(@Param("key") DSID<String> key);
+
+  /**
    * Iterates over all usages for a given dataset, optionally filtered by a minimum/maximum rank to include.
    * Warn: Read only properties are not populated to save excessive joins.
    * In particular this is the accepted Taxon for a Synonym instance

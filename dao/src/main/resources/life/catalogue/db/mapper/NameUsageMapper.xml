@@ -430,6 +430,12 @@
     </if>
   </select>
 
+  <select id="childrenIds" resultType="string">
+    SELECT u.id
+    FROM name_usage u
+    WHERE u.dataset_key = #{key.datasetKey} AND u.parent_id = #{key.id}
+  </select>
+
   <update id="updateParentIds" parameterType="map">
     UPDATE name_usage
     SET (parent_id, modified, modified_by) = (#{newParentId}, now(), #{userKey})

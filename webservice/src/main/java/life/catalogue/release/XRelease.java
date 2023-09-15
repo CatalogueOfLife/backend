@@ -1,7 +1,5 @@
 package life.catalogue.release;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
@@ -15,28 +13,31 @@ import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-
 import life.catalogue.matching.UsageMatcherGlobal;
-
-import org.gbif.nameparser.api.NameType;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
-import javax.annotation.Nullable;
 import javax.validation.Validator;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 public class XRelease extends ProjectRelease {
   private final int baseReleaseKey;
