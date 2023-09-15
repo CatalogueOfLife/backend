@@ -76,7 +76,7 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
       FileUtils.deleteQuietly(zip);
     }
     // notify event bus
-    bus.post(ExportChanged.deleted(old));
+    bus.post(ExportChanged.deleted(old, user));
     return true;
   }
 

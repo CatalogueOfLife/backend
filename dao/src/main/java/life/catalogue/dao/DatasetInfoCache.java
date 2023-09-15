@@ -8,6 +8,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -67,12 +68,14 @@ public class DatasetInfoCache {
     public final int key;
     public final DatasetOrigin origin;
     public final Integer sourceKey;
+    public final UUID publisherKey;
     public final boolean deleted; // this can change, so we listen to deletion events. But once deleted it can never be reverted.
 
-    DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, boolean deleted) {
+    DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, UUID publisherKey, boolean deleted) {
       this.key = key;
       this.origin = Preconditions.checkNotNull(origin, "origin is required");
       this.sourceKey = sourceKey;
+      this.publisherKey = publisherKey;
       this.deleted = deleted;
       if (origin.isRelease()) {
         Preconditions.checkNotNull(sourceKey, "sourceKey is required for release " + key);
@@ -114,7 +117,7 @@ public class DatasetInfoCache {
     if (d == null) {
       throw NotFoundException.notFound(Dataset.class, key);
     }
-    return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.hasDeletedDate());
+    return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getGbifPublisherKey(), d.hasDeletedDate());
   }
 
   public DatasetInfo info(int datasetKey) throws NotFoundException {
@@ -150,6 +153,14 @@ public class DatasetInfoCache {
   }
 
   /**
+   * @return the GBIF publisher key for the given dataset
+   * @throws NotFoundException if dataset does not exist
+   */
+  public UUID publisher(int datasetKey) throws NotFoundException {
+    return get(datasetKey, true).publisherKey;
+  }
+
+  /**
    * Makes sure the dataset key exists and is not deleted.
    * @param datasetKey
    * @throws NotFoundException
@@ -173,7 +184,8 @@ public class DatasetInfoCache {
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       var info = get(event.key, true);
-      infos.put(event.key, new DatasetInfo(info.key, info.origin, info.sourceKey, true));
+      // mark it as deleted in the cache
+      infos.put(event.key, new DatasetInfo(info.key, info.origin, info.sourceKey, info.publisherKey, true));
     }
   }
 

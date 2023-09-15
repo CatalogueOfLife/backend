@@ -10,6 +10,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -188,7 +189,8 @@ public class AuthFilter implements ContainerRequestFilter {
     try {
       // use the project key to evaluate permissions
       int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(datasetKey);
-      return user.isAdmin() || user.isEditor(masterKey);
+      UUID publisherKey = null;
+      return user.isAdmin() || user.isEditor(masterKey) || user.isPublisher(publisherKey);
     } catch (NotFoundException e) {
       return false;
     }

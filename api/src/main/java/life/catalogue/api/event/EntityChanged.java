@@ -20,14 +20,23 @@ public class EntityChanged<K, T> {
   public final int user;
   public final Class<T> objClass;
 
+  /**
+   * Creates a change event for newly created instances with just the new (obj) instance.
+   */
   public static <K, T extends DataEntity<K>>  EntityChanged<K,T> created(T obj, int user){
     return new EntityChanged<>(CREATE, obj.getKey(), obj, null, user, (Class<T>) obj.getClass());
   }
 
+  /**
+   * Creates a change event for updates with both the new (obj) and old property.
+   */
   public static <K, T extends DataEntity<K>>  EntityChanged<K,T> change(T obj, T old, int user){
     return new EntityChanged<>(UPDATE, obj.getKey(), obj, old, user, (Class<T>) obj.getClass());
   }
 
+  /**
+   * Creates a change event for deletions with just the old property, i.e. how the instance was before the deletion.
+   */
   public static <K, T> EntityChanged<K, T> delete(K key, T old, int user, Class<T> objClass){
     return new EntityChanged<>(DELETE, key, null, old, user, objClass);
   }

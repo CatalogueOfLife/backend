@@ -52,6 +52,8 @@ public class User implements Entity<Integer>, Principal {
   private final IntSet editor = new IntOpenHashSet();
   @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
   private final IntSet reviewer = new IntOpenHashSet();
+  @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+  private final Set<UUID> publisher = new HashSet<>();
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> settings = new HashMap<>();
   private LocalDateTime lastLogin;
@@ -95,6 +97,13 @@ public class User implements Entity<Integer>, Principal {
 
   public boolean isReviewer(int datasetKey) {
     return reviewer.contains(datasetKey);
+  }
+
+  /**
+   * @return true if the user is managing datasets on behalf of a given gbif publisher organisation.
+   */
+  public boolean isPublisher(UUID publisherKey) {
+    return publisherKey != null && publisher.contains(publisherKey);
   }
 
   public Integer getKey() {
