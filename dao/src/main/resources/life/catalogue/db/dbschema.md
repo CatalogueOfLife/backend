@@ -12,6 +12,20 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+### 2023-09-15 remove unused enums
+```sql
+DROP TYPE KINGDOM; 
+DROP TYPE MATCHINGMODE; 
+DROP TYPE NAMECATEGORY; 
+DROP TYPE NAMEFIELD; 
+DROP TYPE TAXGROUP; 
+
+CREATE TYPE GENDER AS ENUM (
+  'MASCULINE',
+  'FEMININE',
+  'NEUTER'
+);
+```
 
 ### 2023-09-06 mark name constraints deferred to allow deletion & existance of orphans
 ```sql
