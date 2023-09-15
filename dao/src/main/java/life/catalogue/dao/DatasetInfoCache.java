@@ -148,8 +148,11 @@ public class DatasetInfoCache {
    * @throws NotFoundException
    */
   public int keyOrProjectKey(int datasetKey) throws NotFoundException {
-    var info = get(datasetKey, true);
-    return info.origin.isRelease() ? info.sourceKey : datasetKey;
+    return keyOrProjectKey(get(datasetKey, true));
+  }
+
+  public int keyOrProjectKey(DatasetInfo info) throws NotFoundException {
+    return info.origin.isRelease() ? info.sourceKey : info.key;
   }
 
   /**

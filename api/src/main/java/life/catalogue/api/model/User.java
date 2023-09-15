@@ -62,6 +62,7 @@ public class User implements Entity<Integer>, Principal {
 
   /**
    * Copies properties that are not managed in the GBIF registry to this instance.
+   * Last login is also NOT copied!
    * @param src source user to copy from
    */
   public void copyNonGbifData(User src) {
@@ -69,8 +70,8 @@ public class User implements Entity<Integer>, Principal {
     setRoles(src.roles);
     setEditor(src.editor);
     setReviewer(src.reviewer);
+    setPublisher(src.publisher);
     settings = src.settings;
-    lastLogin = src.lastLogin;
     blocked = src.blocked;
     created = src.created;
   }
@@ -212,6 +213,17 @@ public class User implements Entity<Integer>, Principal {
     if (reviewer != null && !reviewer.isEmpty()) {
       this.reviewer.addAll(reviewer);;
       roles.add(Role.REVIEWER);
+    }
+  }
+
+  public Set<UUID> getPublisher() {
+    return publisher;
+  }
+  public void setPublisher(Set<UUID> publisher) {
+    this.publisher.clear();
+    if (publisher != null && !publisher.isEmpty()) {
+      this.publisher.addAll(publisher);;
+      roles.add(Role.EDITOR);
     }
   }
 

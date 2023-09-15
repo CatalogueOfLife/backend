@@ -12,13 +12,18 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+
+### 2023-09-15 add user publisher rights
+```sql
+ALTER TABLE "user" ADD COLUMN publisher UUID[];
+```
+
 ### 2023-09-15 remove unused enums
 ```sql
 DROP TYPE KINGDOM; 
 DROP TYPE MATCHINGMODE; 
 DROP TYPE NAMECATEGORY; 
 DROP TYPE NAMEFIELD; 
-DROP TYPE TAXGROUP; 
 
 CREATE TYPE GENDER AS ENUM (
   'MASCULINE',

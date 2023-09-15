@@ -129,6 +129,7 @@ public class IdentityService {
     if (cachedPwd == null || !cachedPwd.equals(password)) {
       // no password cached or cached a different one than provided - do a real authentication and invalidate cached password
       passwords.invalidate(username);
+      // this loads the user from gbif or text files, not the CLB DB!
       optUser = authProvider.authenticate(username, password);
       if (optUser.isPresent()) {
         User user = optUser.get();

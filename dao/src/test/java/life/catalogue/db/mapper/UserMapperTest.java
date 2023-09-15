@@ -8,10 +8,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.ibatis.binding.BindingException;
@@ -124,6 +121,8 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
   public void roundtrip() throws Exception {
     User u1 = createTestEntity();
     u1.getEditor().addAll(List.of(1,2,3));
+    u1.getPublisher().add(UUID.randomUUID());
+    u1.getPublisher().add(UUID.randomUUID());
     mapper().create(u1);
     commit();
 

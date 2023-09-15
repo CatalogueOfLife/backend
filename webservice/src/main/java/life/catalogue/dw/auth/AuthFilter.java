@@ -173,8 +173,9 @@ public class AuthFilter implements ContainerRequestFilter {
   public static boolean hasReadAccess(User user, int datasetKey){
     try {
       // use the project key to evaluate permissions
-      int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(datasetKey);
-      return user.isAdmin() || user.isEditor(masterKey) || user.isReviewer(masterKey);
+      var info = DatasetInfoCache.CACHE.info(datasetKey, true);
+      int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(info);
+      return user.isAdmin() || user.isEditor(masterKey) || user.isReviewer(masterKey) || user.isPublisher(info.publisherKey);
     } catch (NotFoundException e) {
       return false;
     }
@@ -188,9 +189,9 @@ public class AuthFilter implements ContainerRequestFilter {
   public static boolean hasWriteAccess(User user, int datasetKey){
     try {
       // use the project key to evaluate permissions
-      int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(datasetKey);
-      UUID publisherKey = null;
-      return user.isAdmin() || user.isEditor(masterKey) || user.isPublisher(publisherKey);
+      var info = DatasetInfoCache.CACHE.info(datasetKey, true);
+      int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(info);
+      return user.isAdmin() || user.isEditor(masterKey) || user.isPublisher(info.publisherKey);
     } catch (NotFoundException e) {
       return false;
     }

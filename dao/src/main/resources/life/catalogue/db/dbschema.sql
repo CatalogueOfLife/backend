@@ -687,6 +687,7 @@ CREATE TABLE "user" (
   orcid TEXT,
   country TEXT,
   roles USER_ROLE[],
+  publisher UUID[],
   settings HSTORE
 );
 
