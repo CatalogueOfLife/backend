@@ -4,6 +4,7 @@ import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.TreeTraversalParameter;
+import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.io.UnixCmdUtils;
@@ -45,10 +46,14 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
 
   @Override
   int[] parseAttempts(Integer datasetKey, String attempts) {
+    final JobSearchRequest req = new JobSearchRequest();
+    req.setDatasetKey(datasetKey);
+    req.setStates(Set.of(ImportState.FINISHED));
+
     return parseAttempts(attempts, () -> {
       try (SqlSession session = factory.openSession(true)) {
         return session.getMapper(DatasetImportMapper.class)
-            .list(datasetKey, Lists.newArrayList(ImportState.FINISHED), new Page(0, 2));
+            .list(req, new Page(0, 2));
       }
     });
   }

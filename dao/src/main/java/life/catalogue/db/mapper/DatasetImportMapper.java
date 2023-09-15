@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
@@ -43,14 +44,13 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   /**
    * Count all imports by their state
    */
-  int count(@Param("key") @Nullable Integer datasetKey, @Param("states") Collection<ImportState> states);
+  int count(@Param("req") @Nullable JobSearchRequest req);
   
   /**
    * List all imports optionally filtered by their datasetKey and state(s).
    * Ordered by starting date from latest to historical.
    */
-  List<DatasetImport> list(@Param("key") @Nullable Integer datasetKey,
-                           @Param("states") @Nullable Collection<ImportState> states,
+  List<DatasetImport> list(@Param("req") @Nullable JobSearchRequest req,
                            @Param("page") Page page);
 
   /**

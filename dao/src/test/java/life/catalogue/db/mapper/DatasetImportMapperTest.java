@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
@@ -147,31 +148,35 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   
   @Test
   public void lastSuccessful() throws Exception {
-    Set<ImportState> FINITO = ImmutableSet.of(ImportState.FINISHED);
+    JobSearchRequest req = new JobSearchRequest();
+    req.setStates(ImmutableSet.of(ImportState.FINISHED));
     Page page = new Page();
     
     DatasetImport d = create();
     mapper().create(d);
-    assertTrue(mapper().list(d.getDatasetKey(), FINITO, page).isEmpty());
+    req.setDatasetKey(d.getDatasetKey());
+    assertTrue(mapper().list(req, page).isEmpty());
     
     d.setState(ImportState.FAILED);
     d.setError("damn error");
     mapper().update(d);
-    assertTrue(mapper().list(d.getDatasetKey(), FINITO, page).isEmpty());
+    assertTrue(mapper().list(req, page).isEmpty());
     
     d = create();
     d.setState(ImportState.DOWNLOADING);
     mapper().create(d);
-    assertTrue(mapper().list(d.getDatasetKey(), FINITO, page).isEmpty());
+    req.setDatasetKey(d.getDatasetKey());
+    assertTrue(mapper().list(req, page).isEmpty());
     
     d.setState(ImportState.FINISHED);
     mapper().update(d);
-    assertFalse(mapper().list(d.getDatasetKey(), FINITO, page).isEmpty());
+    assertFalse(mapper().list(req, page).isEmpty());
     
     d = create();
     d.setState(ImportState.CANCELED);
     mapper().create(d);
-    assertFalse(mapper().list(d.getDatasetKey(), FINITO, page).isEmpty());
+    req.setDatasetKey(d.getDatasetKey());
+    assertFalse(mapper().list(req, page).isEmpty());
     commit();
   }
   
@@ -184,14 +189,19 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     mapper().create(create(ImportState.CANCELED));
     mapper().create(create(ImportState.INSERTING));
     mapper().create(create(ImportState.FINISHED));
-    
-    assertEquals(7, mapper().count(null, null));
-    assertEquals(7, mapper().count(null, new ArrayList<>()));
-    assertEquals(1, mapper().count(null, List.of(ImportState.FAILED)));
-    assertEquals(3, mapper().count(null, List.of(ImportState.FINISHED)));
-    assertEquals(2, mapper().count(null, List.of(ImportState.PROCESSING, ImportState.INSERTING)));
-    
-    assertEquals(2, mapper().list(null, List.of(ImportState.PROCESSING, ImportState.INSERTING), new Page()).size());
+
+    JobSearchRequest req = new JobSearchRequest();
+    assertEquals(7, mapper().count(null));
+    assertEquals(7, mapper().count(req));
+    req.setStates(Set.of(ImportState.FAILED));
+    assertEquals(1, mapper().count(req));
+    req.setStates(Set.of(ImportState.FINISHED));
+    assertEquals(3, mapper().count(req));
+    req.setStates(Set.of(ImportState.PROCESSING, ImportState.INSERTING));
+    assertEquals(2, mapper().count(req));
+    req.setDatasetKey(null);
+    req.setStates(Set.of(ImportState.PROCESSING, ImportState.INSERTING));
+    assertEquals(2, mapper().list(req, new Page()).size());
   }
   
   @Test

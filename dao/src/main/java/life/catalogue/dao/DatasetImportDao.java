@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.db.PgUtils;
@@ -51,18 +52,18 @@ public class DatasetImportDao {
    * Pages through all imports ordered by starting date from most recent ones to historical.
    */
   public ResultPage<DatasetImport> list(Page page) {
-    return list(null, null, page);
+    return list(new JobSearchRequest(), page);
   }
   
   /**
    * List all imports optionally filtered by their datasetKey and state(s).
    * Ordered by starting date from latest to historical.
    */
-  public ResultPage<DatasetImport> list(Integer datasetKey, Collection<ImportState> states, Page page) {
+  public ResultPage<DatasetImport> list(JobSearchRequest req, Page page) {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      List<DatasetImport> result = mapper.list(datasetKey, states, page);
-      return new ResultPage<>(page, result, () -> mapper.count(datasetKey, states));
+      List<DatasetImport> result = mapper.list(req, page);
+      return new ResultPage<>(page, result, () -> mapper.count(req));
     }
   }
 

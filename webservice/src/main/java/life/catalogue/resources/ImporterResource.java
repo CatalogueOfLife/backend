@@ -6,6 +6,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
@@ -69,14 +70,13 @@ public class ImporterResource {
   }
   
   @GET
-  public ResultPage<DatasetImport> list(@QueryParam("datasetKey") Integer datasetKey,
-                                        @QueryParam("state") List<ImportState> states,
-                                        @QueryParam("running") Boolean running,
+  public ResultPage<DatasetImport> list(@QueryParam("running") Boolean running,
+                                        @Valid @BeanParam JobSearchRequest req,
                                         @Valid @BeanParam Page page) {
     if (running != null) {
-      states = running ? ImportState.runningStates() : ImportState.finishedStates();
+      req.setStates(running ? ImportState.runningStates() : ImportState.finishedStates());
     }
-    return importManager.listImports(datasetKey, states, page);
+    return importManager.listImports(req, page);
   }
   
   @POST

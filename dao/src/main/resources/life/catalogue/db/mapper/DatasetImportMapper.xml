@@ -133,14 +133,25 @@
 
   <sql id="WHERE">
     <where>
-      <if test="key != null">
-        di.dataset_key = #{key}
-      </if>
-      <if test="states != null &amp;&amp; !states.isEmpty()">
-        AND di.state IN
-        <foreach item="state" index="idx" collection="states" open="(" separator="," close=")">
-          #{state}::IMPORTSTATE
-        </foreach>
+      <if test="req != null">
+        <if test="req.datasetKey != null">
+          di.dataset_key = #{req.datasetKey}
+        </if>
+        <if test="req.states != null &amp;&amp; !req.states.isEmpty()">
+          AND di.state IN
+          <foreach item="state" index="idx" collection="req.states" open="(" separator="," close=")">
+            #{state}::IMPORTSTATE
+          </foreach>
+        </if>
+        <if test="req.createdBy != null">
+          di.created_by = #{req.createdBy}
+        </if>
+        <if test="req.job != null">
+          lower(di.job) = lower(#{req.job})
+        </if>
+        <if test="req.format != null">
+          di.format = #{req.format}::DATAFORMAT
+        </if>
       </if>
     </where>
   </sql>

@@ -13,6 +13,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-09-15 dataset import indices to support more filters
+```sql
+CREATE INDEX ON dataset_import (format);
+CREATE INDEX ON dataset_import (lower(job));
+CREATE INDEX ON dataset_import (created_by);
+```
+
 ### 2023-09-15 add user publisher rights
 ```sql
 ALTER TABLE "user" ADD COLUMN publisher UUID[];

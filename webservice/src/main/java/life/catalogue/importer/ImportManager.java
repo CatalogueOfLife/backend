@@ -9,6 +9,7 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.PagingUtil;
 import life.catalogue.api.vocab.Datasets;
@@ -142,30 +143,31 @@ public class ImportManager implements Managed, Idle {
   /**
    * Pages through all queued, running and historical imports. See https://github.com/Sp2000/colplus-backend/issues/404
    */
-  public ResultPage<DatasetImport> listImports(Integer datasetKey, List<ImportState> states, Page page) {
-    List<DatasetImport> running = running(datasetKey, states);
+  public ResultPage<DatasetImport> listImports(JobSearchRequest req, Page page) {
+    List<DatasetImport> running = running(req.getDatasetKey(), req.getStates());
     ResultPage<DatasetImport> historical;
 
     // ignore running states in imports stored in the db - otherwise we get duplicates
-    List<ImportState> historicalStates = states == null ? Collections.EMPTY_LIST
-        : states.stream()
+    List<ImportState> historicalStates = req.getStates() == null ? Collections.EMPTY_LIST
+        : req.getStates().stream()
             .filter(ImportState::isFinished)
             .collect(Collectors.toList());
 
-    if (states != null && !states.isEmpty() && historicalStates.isEmpty()) {
+    if (req.getStates() != null && !req.getStates().isEmpty() && historicalStates.isEmpty()) {
       // we originally had a request for only running states. We dont get any of these from the db
       historical = new ResultPage<>(new Page(0, 0), 0, Collections.EMPTY_LIST);
 
     } else {
       // query historical ones at least to get the total
+      req.setStates(historicalStates);
       if (running.size() >= page.getLimitWithOffset()) {
         // we can answer the request from the queue alone, so limit=0 to get the total count!
-        historical = dao.list(datasetKey, historicalStates, new Page(0, 0));
+        historical = dao.list(req, new Page(0, 0));
 
       } else {
         int offset = Math.max(0, page.getOffset() - running.size());
         int limit = Math.min(page.getLimit(), page.getLimitWithOffset() - running.size());
-        historical = dao.list(datasetKey, historicalStates, new Page(offset, limit));
+        historical = dao.list(req, new Page(offset, limit));
       }
     }
     // merge both lists
