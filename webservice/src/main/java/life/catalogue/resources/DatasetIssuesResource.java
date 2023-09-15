@@ -1,46 +1,26 @@
 package life.catalogue.resources;
 
-import com.google.common.collect.Streams;
-
-import io.dropwizard.auth.Auth;
-
-import life.catalogue.WsServerConfig;
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.model.IssueContainer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
-import life.catalogue.db.tree.*;
-import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
-import life.catalogue.es.NameUsageSearchService;
-import life.catalogue.exporter.ExportManager;
+
+import java.util.stream.Stream;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.util.RankUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Stream;
+import com.google.common.collect.Streams;
 
 /**
  * Streams all issues of an entire dataset

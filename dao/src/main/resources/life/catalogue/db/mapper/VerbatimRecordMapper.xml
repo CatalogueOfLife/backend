@@ -157,6 +157,7 @@
       SELECT nu.id, v.issues
       FROM nu JOIN verbatim v ON nu.nvkey=v.id
       WHERE v.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+
     UNION
       SELECT nu.id, v.issues
       FROM nu JOIN taxon_concept_rel x ON x.taxon_id=nu.id   JOIN verbatim v ON x.verbatim_key=v.id
@@ -177,6 +178,7 @@
       SELECT nu.id, v.issues
       FROM nu JOIN vernacular_name x ON x.taxon_id=nu.id     JOIN verbatim v ON x.verbatim_key=v.id
       WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+
     UNION
       SELECT nu.id, v.issues
       FROM nu JOIN type_material x ON x.name_id=nu.name_id   JOIN verbatim v ON x.verbatim_key=v.id
@@ -185,6 +187,11 @@
       SELECT nu.id, v.issues
       FROM nu JOIN name_rel x ON x.name_id=nu.name_id        JOIN verbatim v ON x.verbatim_key=v.id
       WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+
+    UNION
+      SELECT nu.id, v.issues
+      FROM nu JOIN verbatim_source v ON v.id=nu.id
+      WHERE v.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
   </sql>
 
   <update id="createTmpIssuesTable" parameterType="map">
