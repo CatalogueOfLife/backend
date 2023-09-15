@@ -115,6 +115,12 @@ CREATE TYPE GAZETTEER AS ENUM (
   'TEXT'
 );
 
+CREATE TYPE GENDER AS ENUM (
+  'MASCULINE',
+  'FEMININE',
+  'NEUTER'
+);
+
 CREATE TYPE IDREPORTTYPE AS ENUM (
   'DELETED',
   'RESURRECTED',
@@ -279,18 +285,6 @@ CREATE TYPE JOBSTATUS AS ENUM (
   'FAILED'
 );
 
-CREATE TYPE KINGDOM AS ENUM (
-  'INCERTAE_SEDIS',
-  'ANIMALIA',
-  'ARCHAEA',
-  'BACTERIA',
-  'CHROMISTA',
-  'FUNGI',
-  'PLANTAE',
-  'PROTOZOA',
-  'VIRUSES'
-);
-
 CREATE TYPE LICENSE AS ENUM (
   'CC0',
   'CC_BY',
@@ -301,11 +295,6 @@ CREATE TYPE LICENSE AS ENUM (
   'CC_BY_NC_ND',
   'UNSPECIFIED',
   'OTHER'
-);
-
-CREATE TYPE MATCHINGMODE AS ENUM (
-  'STRICT',
-  'FUZZY'
 );
 
 CREATE TYPE MATCHTYPE AS ENUM (
@@ -321,39 +310,6 @@ CREATE TYPE MEDIATYPE AS ENUM (
   'IMAGE',
   'VIDEO',
   'AUDIO'
-);
-
-CREATE TYPE NAMECATEGORY AS ENUM (
-  'UNINOMIAL',
-  'BINOMIAL',
-  'TRINOMIAL'
-);
-
-CREATE TYPE NAMEFIELD AS ENUM (
-  'UNINOMIAL',
-  'GENUS',
-  'INFRAGENERIC_EPITHET',
-  'SPECIFIC_EPITHET',
-  'INFRASPECIFIC_EPITHET',
-  'CULTIVAR_EPITHET',
-  'CANDIDATUS',
-  'NOTHO',
-  'BASIONYM_AUTHORS',
-  'BASIONYM_EX_AUTHORS',
-  'BASIONYM_YEAR',
-  'COMBINATION_AUTHORS',
-  'COMBINATION_EX_AUTHORS',
-  'COMBINATION_YEAR',
-  'SANCTIONING_AUTHOR',
-  'CODE',
-  'NOM_STATUS',
-  'PUBLISHED_IN',
-  'PUBLISHED_IN_PAGE',
-  'NOMENCLATURAL_NOTE',
-  'UNPARSED',
-  'REMARKS',
-  'NAME_PHRASE',
-  'ACCORDING_TO'
 );
 
 CREATE TYPE NAMEPART AS ENUM (
@@ -585,49 +541,6 @@ CREATE TYPE SPECIESINTERACTIONTYPE AS ENUM (
   'HAS_EPIPHYTE',
   'COMMENSALIST_OF',
   'MUTUALIST_OF'
-);
-
-CREATE TYPE TAXGROUP AS ENUM (
-  'Prokaryotes',
-  'Bacteria',
-  'Archaea',
-  'Algae',
-  'Plants',
-  'Bryophytes',
-  'Pteridophytes',
-  'Angiosperms',
-  'Gymnosperms',
-  'Fungi',
-  'Ascomycetes',
-  'Basidiomycetes',
-  'Oomycetes',
-  'OtherFungi',
-  'Animals',
-  'Arthropods',
-  'Insects',
-  'Coleoptera',
-  'Diptera',
-  'Lepidoptera',
-  'Hymenoptera',
-  'Hemiptera',
-  'Orthoptera',
-  'Trichoptera',
-  'OtherInsects',
-  'Arachnids',
-  'Crustacean',
-  'OtherArthropods',
-  'Molluscs',
-  'Chordates',
-  'Amphibians',
-  'Birds',
-  'Mammals',
-  'Reptiles',
-  'Fish',
-  'OtherChordates',
-  'OtherAnimals',
-  'Protists',
-  'Viruses',
-  'Other'
 );
 
 CREATE TYPE TAXONCONCEPTRELTYPE AS ENUM (

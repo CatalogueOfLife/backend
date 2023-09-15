@@ -8,7 +8,14 @@ public class PrintPgEnumSql {
   
   @Test
   public void pgEnumSql() throws Exception {
-    for (Class<? extends Enum<?>> cle : PgSetupRuleTest.listEnums()) {
+    for (Class<? extends Enum<?>> cle : PgSetupRuleTest.listEnums(false)) {
+      printType(cle);
+    }
+  }
+
+  @Test
+  public void pgEnumSqlColdp() throws Exception {
+    for (Class<? extends Enum<?>> cle : PgSetupRuleTest.listEnums(true)) {
       printType(cle);
     }
   }

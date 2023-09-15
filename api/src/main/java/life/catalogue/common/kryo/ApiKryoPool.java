@@ -155,7 +155,6 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(ImportState.class);
     kryo.register(Issue.class);
     kryo.register(JobStatus.class);
-    kryo.register(Kingdom.class);
     kryo.register(License.class);
     kryo.register(Environment.class);
     kryo.register(MatchType.class);

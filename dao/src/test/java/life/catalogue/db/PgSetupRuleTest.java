@@ -7,6 +7,9 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.db.type.BaseEnumSetTypeHandler;
 
+import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -62,7 +65,7 @@ public class PgSetupRuleTest {
   @Test
   public void pgEnums() throws Exception {
     try (Connection c = pgSetupRule.connect()) {
-      for (Class<? extends Enum<?>> cl : listEnums()) {
+      for (Class<? extends Enum<?>> cl : listEnums(false)) {
         final String pgEnumName = BaseEnumSetTypeHandler.pgEnumName(cl);
         // make sure all ranks from our enum are present in postgres
         PreparedStatement pst = c.prepareStatement("SELECT ?::"+pgEnumName);
@@ -81,26 +84,47 @@ public class PgSetupRuleTest {
     }
   }
   
-  static List<Class<? extends Enum<?>>> listEnums() throws IOException {
+  static List<Class<? extends Enum<?>>> listEnums(boolean coldpOnly) throws IOException {
     ClassPath cp = ClassPath.from(DatasetType.class.getClassLoader());
     List<Class<? extends Enum<?>>> enums = new ArrayList<>();
     addPackageEnums(cp, enums, DatasetType.class.getPackage());
     addPackageEnums(cp, enums, Rank.class.getPackage());
-    enums.add(Sector.Mode.class);
-    enums.add(EditorialDecision.Mode.class);
-    enums.add(User.Role.class);
+    if (!coldpOnly) {
+      enums.add(Sector.Mode.class);
+      enums.add(EditorialDecision.Mode.class);
+      enums.add(User.Role.class);
+    }
     // not needed for persistency
-    enums.remove(Gender.class);
     enums.remove(Country.class);
     enums.remove(TxtTreeTerm.class);
     enums.remove(Frequency.class);
     enums.remove(GeoTimeType.class);
     enums.remove(Setting.class);
     enums.remove(IgnoreReason.class);
+    enums.remove(MatchingMode.class);
     enums.remove(MetadataFormat.class);
+    enums.remove(NameCategory.class);
+    enums.remove(NameField.class);
     enums.remove(DoiResolution.class);
     enums.remove(TabularFormat.class);
+    enums.remove(TaxGroup.class);
     enums.remove(TxtTreeDataKey.class);
+    // remove enums not used in coldp
+    if (coldpOnly) {
+      enums.remove(DataFormat.class);
+      enums.remove(DatasetOrigin.class);
+      enums.remove(DatasetType.class);
+      enums.remove(EntityType.class);
+      enums.remove(IdReportType.class);
+      enums.remove(ImportState.class);
+      enums.remove(InfoGroup.class);
+      enums.remove(Issue.class);
+      enums.remove(JobStatus.class);
+      enums.remove(License.class);
+      enums.remove(MatchType.class);
+      enums.remove(NameType.class);
+      enums.remove(Origin.class);
+    }
     // sort and print
     enums.sort(Comparator.comparing(cl -> BaseEnumSetTypeHandler.pgEnumName(cl)));
     return enums;
