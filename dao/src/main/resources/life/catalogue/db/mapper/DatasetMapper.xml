@@ -137,6 +137,9 @@
       <if test="req.modifiedBefore != null">
         AND di.finished &lt; #{req.modifiedBefore}
       </if>
+      <if test="req.createdBy != null">
+        AND d.created_by = #{req.createdBy}
+      </if>
       <if test="req.created != null">
         AND d.created > #{req.created}
       </if>

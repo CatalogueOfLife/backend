@@ -97,12 +97,6 @@ public class DatasetSearchRequest {
   @QueryParam("reviewer")
   private Integer reviewer;
 
-  /**
-   * Filters datasets by the user key that has last modified/created the dataset.
-   */
-  @QueryParam("modifiedBy")
-  private Integer modifiedBy;
-
   @QueryParam("origin")
   private List<DatasetOrigin> origin;
 
@@ -121,12 +115,24 @@ public class DatasetSearchRequest {
   @QueryParam("modifiedBefore")
   private LocalDate modifiedBefore;
 
+  /**
+   * Filters datasets by the user key that has last modified the dataset.
+   */
+  @QueryParam("modifiedBy")
+  private Integer modifiedBy;
+
   @QueryParam("created")
   private LocalDate created;
 
   @QueryParam("createdBefore")
   private LocalDate createdBefore;
-  
+
+  /**
+   * Filters datasets by the user key that has created the dataset.
+   */
+  @QueryParam("createdBy")
+  private Integer createdBy;
+
   @QueryParam("issued")
   private FuzzyDate issued;
 
@@ -341,6 +347,14 @@ public class DatasetSearchRequest {
     this.createdBefore = createdBefore;
   }
 
+  public Integer getCreatedBy() {
+    return createdBy;
+  }
+
+  public void setCreatedBy(Integer createdBy) {
+    this.createdBy = createdBy;
+  }
+
   public SortBy getSortBy() {
     return sortBy;
   }
@@ -383,20 +397,24 @@ public class DatasetSearchRequest {
            && Objects.equals(gbifPublisherKey, that.gbifPublisherKey)
            && Objects.equals(editor, that.editor)
            && Objects.equals(reviewer, that.reviewer)
-           && Objects.equals(modifiedBy, that.modifiedBy)
            && Objects.equals(origin, that.origin)
            && Objects.equals(type, that.type)
            && Objects.equals(license, that.license)
            && Objects.equals(rowType, that.rowType)
            && Objects.equals(modified, that.modified)
+           && Objects.equals(modifiedBefore, that.modifiedBefore)
+           && Objects.equals(modifiedBy, that.modifiedBy)
            && Objects.equals(created, that.created)
+           && Objects.equals(createdBefore, that.createdBefore)
+           && Objects.equals(createdBy, that.createdBy)
            && Objects.equals(issued, that.issued)
+           && Objects.equals(issuedBefore, that.issuedBefore)
            && Objects.equals(minSize, that.minSize)
            && sortBy == that.sortBy;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, alias, code, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, editor, reviewer, modifiedBy, origin, type, license, rowType, modified, created, issued, minSize, sortBy, reverse);
+    return Objects.hash(q, alias, code, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, editor, reviewer, origin, type, license, rowType, modified, modifiedBefore, modifiedBy, created, createdBefore, createdBy, issued, issuedBefore, minSize, sortBy, reverse);
   }
 }
