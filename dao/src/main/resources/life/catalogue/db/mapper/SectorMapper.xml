@@ -24,7 +24,7 @@
     s.target_authorship,
     s.target_rank,
     s.target_code,
-    CASE WHEN coalesce(subject_id, subject_name) IS NULL THEN null ELSE tt.id IS NULL END AS target_broken,
+    CASE WHEN coalesce(target_id, target_name) IS NULL THEN null ELSE tt.id IS NULL END AS target_broken,
     s.mode,
     s.priority,
     s.code,

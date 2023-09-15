@@ -137,7 +137,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
    */
   protected SimpleNameWithNidx create(NameUsageBase u, @Nullable Usage parent, Issue... issues) {
     if (parent == null) {
-      LOG.warn("Creating new root usage with no parent: {} {}", u.getRank(), u.getLabel());
+      if (u.isSynonym()) {
+        LOG.error("Failed to create {} without parent: {} {}", u.getStatus(), u.getRank(), u.getLabel());
+        return null;
+      } else {
+        LOG.warn("Creating new root usage with no parent: {} {}", u.getRank(), u.getLabel());
+      }
     }
     final String origID = u.getId();
     u.setSectorKey(sector.getId());
