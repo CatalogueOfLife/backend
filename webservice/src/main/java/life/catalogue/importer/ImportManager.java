@@ -148,10 +148,10 @@ public class ImportManager implements Managed, Idle {
     ResultPage<DatasetImport> historical;
 
     // ignore running states in imports stored in the db - otherwise we get duplicates
-    List<ImportState> historicalStates = req.getStates() == null ? Collections.EMPTY_LIST
+    Set<ImportState> historicalStates = req.getStates() == null ? Collections.EMPTY_SET
         : req.getStates().stream()
             .filter(ImportState::isFinished)
-            .collect(Collectors.toList());
+            .collect(Collectors.toSet());
 
     if (req.getStates() != null && !req.getStates().isEmpty() && historicalStates.isEmpty()) {
       // we originally had a request for only running states. We dont get any of these from the db
@@ -208,7 +208,7 @@ public class ImportManager implements Managed, Idle {
     return di;
   }
 
-  private List<DatasetImport> running(final Integer datasetKey, final List<ImportState> states) {
+  private List<DatasetImport> running(final Integer datasetKey, final Set<ImportState> states) {
     // make sure we have all running ones in and on top!
     List<DatasetImport> running = futures.values()
         .stream()
@@ -450,7 +450,9 @@ public class ImportManager implements Managed, Idle {
    */
   private void cancelAndReschedule() {
     List<ImportRequest> requests = new ArrayList<>();
-    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, ImportState.runningAndWaitingStates(), p), 100);
+    var req = new JobSearchRequest();
+    req.setStates(Set.copyOf(ImportState.runningAndWaitingStates()));
+    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(req, p), 100);
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
       // only reschedule import jobs, no releases

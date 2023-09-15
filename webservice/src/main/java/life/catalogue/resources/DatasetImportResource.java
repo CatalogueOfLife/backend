@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
@@ -10,8 +11,10 @@ import life.catalogue.dao.DatasetInfoCache;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -35,7 +38,7 @@ public class DatasetImportResource {
 
   @GET
   public List<DatasetImport> getImports(@PathParam("key") int key,
-                                        @QueryParam("state") List<ImportState> states,
+                                        @Valid @BeanParam JobSearchRequest req,
                                         @QueryParam("limit") @DefaultValue("1") int limit) {
     // a release? use mother project in that case
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(key);
@@ -43,7 +46,8 @@ public class DatasetImportResource {
       return List.of(diDao.getReleaseAttempt(key));
 
     } else {
-      return diDao.list(key, states, new Page(0, limit)).getResult();
+      req.setDatasetKey(key);
+      return diDao.list(req, new Page(0, limit)).getResult();
     }
   }
   

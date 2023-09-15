@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -74,7 +75,7 @@ public class ImporterResource {
                                         @Valid @BeanParam JobSearchRequest req,
                                         @Valid @BeanParam Page page) {
     if (running != null) {
-      req.setStates(running ? ImportState.runningStates() : ImportState.finishedStates());
+      req.setStates(running ? Set.copyOf(ImportState.runningStates()) : Set.copyOf(ImportState.finishedStates()));
     }
     return importManager.listImports(req, page);
   }
