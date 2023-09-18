@@ -105,7 +105,7 @@ public class DwcInterpreter extends InterpreterBase {
   }
   
   List<Reference> interpretReference(VerbatimRecord rec) {
-    return Lists.newArrayList(refFactory.fromDC(rec.getRaw(DcTerm.identifier),
+    var r = Lists.newArrayList(refFactory.fromDC(rec.getRaw(DcTerm.identifier),
         rec.get(DcTerm.bibliographicCitation),
         rec.get(DcTerm.creator),
         rec.get(DcTerm.date),
@@ -113,6 +113,7 @@ public class DwcInterpreter extends InterpreterBase {
         rec.get(DcTerm.source),
         rec
     ));
+    return r;
   }
 
   /**

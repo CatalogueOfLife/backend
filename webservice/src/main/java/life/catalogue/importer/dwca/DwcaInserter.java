@@ -97,7 +97,10 @@ public class DwcaInserter extends NeoCsvInserter {
       inter::interpretReference,
       inter::taxonID,
       (t, r) -> {
-        if (store.references().create(r) && t.isNameUsageBase()) {
+        if (r.getId() == null || !store.references().contains(r.getId())) {
+          store.references().create(r);
+        }
+        if (t.isNameUsageBase() && r.getId() != null) {
           t.asNameUsageBase().getReferenceIds().add(r.getId());
         }
       }

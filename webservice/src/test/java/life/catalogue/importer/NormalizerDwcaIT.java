@@ -37,6 +37,34 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     super(DataFormat.DWCA);
   }
 
+  /**
+   * IRMNG dwca test data with same references with same identifier for multiple taxa.
+   * References should get normalised, but all duplicates be present as foreign keys on the taxa.
+   */
+  @Test
+  public void testIrmngRefDupes() throws Exception {
+    normalize(49);
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = usageByID("urn:lsid:irmng.org:taxname:6");
+      var n = u.getNeoName().getName();
+      assertTrue(u.isTaxon());
+      Taxon t = (Taxon)u.usage;
+
+      assertEquals(6, t.getReferenceIds().size());
+      var refIds = Set.copyOf(t.getReferenceIds());
+      assertEquals(6, refIds.size()); // all unique
+
+      assertTrue(refIds.contains("10.1111/j.1469-185x.1998.tb00030.x"));
+      assertTrue(refIds.contains("10.1371/journal.pone.0119248"));
+      assertTrue(refIds.contains("10.1073/pnas.87.12.4576"));
+      assertTrue(refIds.contains("10.1099/00207713-52-1-7"));
+
+      u = usageByID("urn:lsid:irmng.org:taxname:7");
+      n = u.getNeoName().getName();
+      assertEquals("10.1016/0303-2647(81)90050-2", n.getPublishedInId()); // normalised DOI
+    }
+  }
 
   @Test
   public void testFks() throws Exception {

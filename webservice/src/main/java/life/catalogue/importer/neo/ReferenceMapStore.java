@@ -1,5 +1,6 @@
 package life.catalogue.importer.neo;
 
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
@@ -10,6 +11,7 @@ import life.catalogue.dao.ReferenceStore;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import org.bouncycastle.crypto.util.DEROtherInfo;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;
@@ -40,6 +42,10 @@ public class ReferenceMapStore extends MapStore<Reference> implements ReferenceS
         // build default citation from csl
         if (r.getCitation() == null && r.getCsl() != null) {
             r.setCitation(CslUtil.buildCitation(r.getCsl()));
+        }
+        // normalize DOI based identifiers
+        if (r.getId() != null) {
+          DOI.parse(r.getId()).ifPresent(doi -> r.setId(doi.getDoiName()));
         }
         if (!super.create(r)) {
             return false;
