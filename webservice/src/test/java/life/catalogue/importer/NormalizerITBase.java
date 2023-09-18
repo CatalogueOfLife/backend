@@ -147,7 +147,7 @@ abstract class NormalizerITBase {
     String resourceDir = resourceDir();
     URL url = getClass().getResource(resourceDir);
     var code = readDatasetCode(resourceDir).orElse(null);
-    if (code != null && !settings.has(Setting.NOMENCLATURAL_CODE)) {
+    if (code != null && settings != null && !settings.has(Setting.NOMENCLATURAL_CODE)) {
       settings.put(Setting.NOMENCLATURAL_CODE, code);
     }
     normalize(Paths.get(url.toURI()), settings);
