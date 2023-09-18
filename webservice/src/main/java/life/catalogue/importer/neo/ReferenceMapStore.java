@@ -11,7 +11,6 @@ import life.catalogue.dao.ReferenceStore;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import org.bouncycastle.crypto.util.DEROtherInfo;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;
@@ -45,7 +44,7 @@ public class ReferenceMapStore extends MapStore<Reference> implements ReferenceS
         }
         // normalize DOI based identifiers
         if (r.getId() != null) {
-          DOI.parse(r.getId()).ifPresent(doi -> r.setId(doi.getDoiName()));
+          r.setId(normaliseIdentifier(r.getId()));
         }
         if (!super.create(r)) {
             return false;
@@ -53,6 +52,13 @@ public class ReferenceMapStore extends MapStore<Reference> implements ReferenceS
         // update lookup index for title
         updateCitationIndex(r);
         return true;
+    }
+
+    public static String normaliseIdentifier(String identifier) {
+      if (identifier != null) {
+        return DOI.parse(identifier).map(DOI::getDoiName).orElse(identifier);
+      }
+      return null;
     }
 
     private String removeFromCitationIndex(Reference r){

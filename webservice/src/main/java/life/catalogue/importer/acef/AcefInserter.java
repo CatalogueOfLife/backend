@@ -11,6 +11,7 @@ import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
+import life.catalogue.importer.neo.ReferenceMapStore;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
@@ -199,7 +200,7 @@ public class AcefInserter extends NeoCsvInserter {
    */
   private void addReferenceLink(VerbatimRecord rec) {
     String taxonID = emptyToNull(rec.get(AcefTerm.ID));
-    String referenceID = emptyToNull(rec.get(AcefTerm.ReferenceID));
+    String referenceID = ReferenceMapStore.normaliseIdentifier(emptyToNull(rec.get(AcefTerm.ReferenceID)));
     String refTypeRaw = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
     // we default to TaxAccRef, see https://github.com/Sp2000/colplus-repo/issues/33#issuecomment-500610124
     ReferenceTypeParser.ReferenceType refType = SafeParser.parse(ReferenceTypeParser.PARSER, refTypeRaw)
