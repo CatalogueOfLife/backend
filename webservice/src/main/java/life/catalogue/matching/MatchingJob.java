@@ -54,10 +54,6 @@ import com.univocity.parsers.tsv.TsvWriterSettings;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
-import javax.swing.tree.RowMapper;
-
-import static life.catalogue.common.io.PathUtils.getFilename;
-
 public class MatchingJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingJob.class);
   private final SqlSessionFactory factory;
@@ -247,7 +243,7 @@ public class MatchingJob extends DatasetBlockingJob {
     return val == null ? null : PermissiveEnumSerde.enumValueName(val);
   }
 
-  static String str(List<SimpleNameWithPub> classification) {
+  static String str(List<SimpleNameCached> classification) {
     StringBuilder sb = new StringBuilder();
     for (var sn : classification) {
       if (sb.length()>1) {

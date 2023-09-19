@@ -41,15 +41,15 @@ public class UsageMatcherGlobal {
   private final SqlSessionFactory factory;
   private final TaxGroupAnalyzer groupAnalyzer;
   // key = datasetKey + canonical nidx
-  private final LoadingCache<DSID<Integer>, List<SimpleNameWithPub>> usages = Caffeine.newBuilder()
-                                                                                         .maximumSize(100_000)
-                                                                                         .build(this::loadUsagesByNidx);
+  private final LoadingCache<DSID<Integer>, List<SimpleNameCached>> usages = Caffeine.newBuilder()
+                                                                                     .maximumSize(100_000)
+                                                                                     .build(this::loadUsagesByNidx);
 
   /**
    * @param nidx a names index id wrapped by a datasetKey
    * @return list of matching usages for the requested dataset only
    */
-  private List<SimpleNameWithPub> loadUsagesByNidx(@NonNull DSID<Integer> nidx) {
+  private List<SimpleNameCached> loadUsagesByNidx(@NonNull DSID<Integer> nidx) {
     try (SqlSession session = factory.openSession(true)) {
       var result = session.getMapper(NameUsageMapper.class).listByCanonNIDX(nidx.getDatasetKey(), nidx.getId());
       // avoid empty lists which get cached
@@ -57,7 +57,7 @@ public class UsageMatcherGlobal {
     }
   }
 
-  private SimpleNameWithPub loadUsage(@NonNull DSID<String> key) {
+  private SimpleNameCached loadUsage(@NonNull DSID<String> key) {
     try (SqlSession session = factory.openSession(true)) {
       return session.getMapper(NameUsageMapper.class).getSimplePub(key);
     }
@@ -202,7 +202,7 @@ public class UsageMatcherGlobal {
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch match(int datasetKey, NameUsageBase nu, List<SimpleNameWithPub> existing, List<ParentStack.MatchedUsage> parents) throws NotFoundException {
+  private UsageMatch match(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<ParentStack.MatchedUsage> parents) throws NotFoundException {
     final boolean qualifiedName = nu.getName().hasAuthorship();
 
     // make sure we never have bare names - we want usages!
@@ -249,7 +249,7 @@ public class UsageMatcherGlobal {
     if (qualifiedName) {
       boolean matchExact = false;
       boolean onlyUseIfExact = false;
-      SimpleNameClassified<SimpleNameWithPub> match = null;
+      SimpleNameClassified<SimpleNameCached> match = null;
       for (var u : existingWithCl) {
         if (u.getNamesIndexId().equals(nu.getName().getNamesIndexId())) {
           boolean exact = u.getLabel().equalsIgnoreCase(nu.getLabel());
@@ -300,7 +300,7 @@ public class UsageMatcherGlobal {
     }
 
     // all synonyms pointing to the same accepted? then it won't matter much for snapping
-    SimpleNameClassified<SimpleNameWithPub> synonym = null;
+    SimpleNameClassified<SimpleNameCached> synonym = null;
     String parentID = null;
     for (var u : existingWithCl) {
       if (u.getStatus().isTaxon()) {
@@ -353,7 +353,7 @@ public class UsageMatcherGlobal {
   }
 
   // if authors are missing require the classification to not contradict!
-  private boolean classificationMatches(TaxGroup group, SimpleNameClassified<SimpleNameWithPub> candidate) {
+  private boolean classificationMatches(TaxGroup group, SimpleNameClassified<SimpleNameCached> candidate) {
     if (group == null) {
       return true;
     }
@@ -365,7 +365,7 @@ public class UsageMatcherGlobal {
    * The classification comparison below is rather strict
    * require a match to one of the higher rank homonyms (the old code even did not allow for higher rank homonyms at all!)
    */
-  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified<SimpleNameWithPub>> homonyms, List<ParentStack.MatchedUsage> parents) {
+  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified<SimpleNameCached>> homonyms, List<ParentStack.MatchedUsage> parents) {
     if (parents == null || parents.isEmpty()) {
       // pick first
       var first = homonyms.get(0);
@@ -377,7 +377,7 @@ public class UsageMatcherGlobal {
                                       .map(p -> p.match == null ? p.usage.getCanonicalId() : p.match.getCanonicalId())
                                       .filter(Objects::nonNull)
                                       .collect(Collectors.toSet());
-    SimpleNameClassified<SimpleNameWithPub> best = homonyms.get(0);
+    SimpleNameClassified<SimpleNameCached> best = homonyms.get(0);
     int max = 0;
     for (var hom : homonyms) {
       Set<Integer> cNidx = hom.getClassification().stream()
@@ -397,7 +397,7 @@ public class UsageMatcherGlobal {
    * Manually adds a name usage to the cache. Requires the datasetKey to be set correctly.
    * The name will be matched to the names index if it does not have a names index id yet.
    */
-  public SimpleNameWithPub add(NameUsageBase nu) {
+  public SimpleNameCached add(NameUsageBase nu) {
     Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
     var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu);
     if (canonNidx != null) {
@@ -408,7 +408,7 @@ public class UsageMatcherGlobal {
         before = new ArrayList<>();
         usages.put(canonNidx, before);
       }
-      var sn = new SimpleNameWithPub(nu, canonNidx.getId());
+      var sn = new SimpleNameCached(nu, canonNidx.getId());
       before.add(sn);
       return sn;
 

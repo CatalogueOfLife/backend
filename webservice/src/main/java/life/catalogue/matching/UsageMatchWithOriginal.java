@@ -10,7 +10,7 @@ public class UsageMatchWithOriginal extends UsageMatch {
   public final IssueContainer issues;
 
   public UsageMatchWithOriginal(UsageMatch match, IssueContainer issues, SimpleNameClassified<SimpleName> original) {
-    super(match.datasetKey, match.usage, match.sourceDatasetKey, match.type, match.ignore, match.doubtfulUsage, match.alternatives);
+    super(match);
     this.original = original;
     this.issues = issues;
   }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameClassified;
-import life.catalogue.api.model.SimpleNameWithPub;
+import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.MatchType;
 
 import java.util.List;
@@ -12,18 +12,22 @@ import java.util.List;
 public class UsageMatch implements DSID<String> {
   @JsonIgnore
   public final int datasetKey; // dataset key the usage and classification belongs to
-  public final SimpleNameClassified<SimpleNameWithPub> usage;
-  public final Integer sourceDatasetKey; // optional dataset key to identify the source of the usage in a project, i.e. not the projects datasetKey
+  public final SimpleNameClassified<SimpleNameCached> usage;
+  public final Integer sectorKey; // optional sector key to identify the source of the usage in a project
   @JsonIgnore
   public final boolean ignore;
-  public final SimpleNameClassified<SimpleNameWithPub> doubtfulUsage;
+  public final SimpleNameClassified<SimpleNameCached> doubtfulUsage;
   public final MatchType type;
-  public final List<SimpleNameClassified<SimpleNameWithPub>> alternatives;
+  public final List<SimpleNameClassified<SimpleNameCached>> alternatives;
 
-  protected UsageMatch(int datasetKey, SimpleNameClassified<SimpleNameWithPub> usage, Integer sourceDatasetKey, MatchType type, boolean ignore, SimpleNameClassified<SimpleNameWithPub> doubtfulUsage, List<SimpleNameClassified<SimpleNameWithPub>> alternatives) {
+  protected UsageMatch(UsageMatch src) {
+    this(src.datasetKey, src.usage, src.sectorKey, src.type, src.ignore, src.doubtfulUsage, src.alternatives);
+  }
+
+  protected UsageMatch(int datasetKey, SimpleNameClassified<SimpleNameCached> usage, Integer sectorKey, MatchType type, boolean ignore, SimpleNameClassified<SimpleNameCached> doubtfulUsage, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
     this.datasetKey = datasetKey;
     this.usage = usage;
-    this.sourceDatasetKey = sourceDatasetKey;
+    this.sectorKey = sectorKey;
     this.type = type;
     this.ignore = ignore;
     this.doubtfulUsage = doubtfulUsage;
@@ -31,26 +35,26 @@ public class UsageMatch implements DSID<String> {
   }
 
   public static UsageMatch ignore(UsageMatch original) {
-    return new UsageMatch(original.datasetKey, original.usage, original.sourceDatasetKey, original.type, true, original.doubtfulUsage, original.alternatives);
+    return new UsageMatch(original.datasetKey, original.usage, original.sectorKey, original.type, true, original.doubtfulUsage, original.alternatives);
   }
 
-  public static UsageMatch match(SimpleNameClassified<SimpleNameWithPub> usage, int datasetKey) {
+  public static UsageMatch match(SimpleNameClassified<SimpleNameCached> usage, int datasetKey) {
     return UsageMatch.match(usage.getNamesIndexMatchType(), usage, datasetKey);
   }
 
-  public static UsageMatch match(MatchType type, SimpleNameClassified<SimpleNameWithPub> usage, int datasetKey) {
-    return new UsageMatch(datasetKey, usage, null, type, false, null, null);
+  public static UsageMatch match(MatchType type, SimpleNameClassified<SimpleNameCached> usage, int datasetKey) {
+    return new UsageMatch(datasetKey, usage, usage.getSectorKey(), type, false, null, null);
   }
 
 
   /**
    * Snaps to a usage but flag it to be ignored in immediate processing.
    */
-  public static UsageMatch snap(SimpleNameClassified<SimpleNameWithPub> usage, int datasetKey) {
+  public static UsageMatch snap(SimpleNameClassified<SimpleNameCached> usage, int datasetKey) {
     return UsageMatch.snap(usage.getNamesIndexMatchType(), usage, datasetKey);
   }
 
-  public static UsageMatch snap(MatchType type, SimpleNameClassified<SimpleNameWithPub> usage, int datasetKey) {
+  public static UsageMatch snap(MatchType type, SimpleNameClassified<SimpleNameCached> usage, int datasetKey) {
     return new UsageMatch(datasetKey, usage, null, type, true, null, null);
   }
 
@@ -58,11 +62,11 @@ public class UsageMatch implements DSID<String> {
   /**
    * No match
    */
-  public static UsageMatch empty(List<SimpleNameClassified<SimpleNameWithPub>> alternatives, int datasetKey) {
+  public static UsageMatch empty(List<SimpleNameClassified<SimpleNameCached>> alternatives, int datasetKey) {
     return new UsageMatch(datasetKey, null, null, MatchType.AMBIGUOUS, false, null, alternatives);
   }
 
-  public static UsageMatch empty(SimpleNameClassified<SimpleNameWithPub> doubtfulUsage, int datasetKey) {
+  public static UsageMatch empty(SimpleNameClassified<SimpleNameCached> doubtfulUsage, int datasetKey) {
     return new UsageMatch(datasetKey, null, null, doubtfulUsage.getNamesIndexMatchType(), false, doubtfulUsage, null);
   }
 

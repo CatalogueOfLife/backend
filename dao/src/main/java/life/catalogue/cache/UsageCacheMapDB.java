@@ -1,13 +1,11 @@
 package life.catalogue.cache;
 
 import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleNameWithPub;
+import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.Managed;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.dao.DatasetInfoCache;
 
@@ -38,7 +36,7 @@ public class UsageCacheMapDB implements UsageCache {
   private static final Logger LOG = LoggerFactory.getLogger(UsageCacheMapDB.class);
 
   // make this one thread safe
-  private final Int2ObjectMap<Map<String, SimpleNameWithPub>> datasets = Int2ObjectMaps.synchronize(new Int2ObjectOpenHashMap<>());
+  private final Int2ObjectMap<Map<String, SimpleNameCached>> datasets = Int2ObjectMaps.synchronize(new Int2ObjectOpenHashMap<>());
   private final DBMaker.Maker dbMaker;
   private final Pool<Kryo> pool;
   private final File dbFile;
@@ -63,7 +61,7 @@ public class UsageCacheMapDB implements UsageCache {
       Kryo kryo = new Kryo();
       kryo.setRegistrationRequired(true);
       kryo.register(DSID.class);
-      kryo.register(SimpleNameWithPub.class);
+      kryo.register(SimpleNameCached.class);
       kryo.register(Rank.class);
       kryo.register(MatchType.class);
       kryo.register(TaxonomicStatus.class);
@@ -144,11 +142,11 @@ public class UsageCacheMapDB implements UsageCache {
     return Integer.parseInt(dbname.substring(1));
   }
 
-  private DB.HashMapMaker<String, SimpleNameWithPub> storeMaker(int datasetKey, boolean expireMutable) {
+  private DB.HashMapMaker<String, SimpleNameCached> storeMaker(int datasetKey, boolean expireMutable) {
     String dbname = dbname(datasetKey);
     var maker = db.hashMap(dbname)
              .keySerializer(Serializer.STRING)
-             .valueSerializer(new MapDbObjectSerializer<>(SimpleNameWithPub.class, pool, 128))
+             .valueSerializer(new MapDbObjectSerializer<>(SimpleNameCached.class, pool, 128))
              //.counterEnable()
              //.valueInline()
              //.valuesOutsideNodesEnable()
@@ -166,7 +164,7 @@ public class UsageCacheMapDB implements UsageCache {
   }
 
   @Override
-  public SimpleNameWithPub get(DSID<String> key) {
+  public SimpleNameCached get(DSID<String> key) {
     int dkey = key.getDatasetKey();
     if (datasets.containsKey(dkey)) {
       return datasets.get(dkey).get(key.getId());
@@ -175,7 +173,7 @@ public class UsageCacheMapDB implements UsageCache {
   }
 
   @Override
-  public SimpleNameWithPub put(int datasetKey, SimpleNameWithPub usage) {
+  public SimpleNameCached put(int datasetKey, SimpleNameCached usage) {
     if (usage == null || usage.getId() == null) {
       throw new IllegalArgumentException("Usage ID required");
     }
@@ -190,7 +188,7 @@ public class UsageCacheMapDB implements UsageCache {
   }
 
   @Override
-  public SimpleNameWithPub remove(DSID<String> key) {
+  public SimpleNameCached remove(DSID<String> key) {
     int dkey = key.getDatasetKey();
     if (datasets.containsKey(dkey)) {
       return datasets.get(dkey).remove(key.getId());

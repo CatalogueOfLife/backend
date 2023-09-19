@@ -39,7 +39,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   private Rank rank;
   private String uninomial;
   private String genus;
-  private String infragenericEpithet;
+  private String infragenericEpithet; // we only use this for true infrageneric names, not bi-/trinomials!
   private String specificEpithet;
   private String infraspecificEpithet;
   private String cultivarEpithet;
@@ -76,7 +76,10 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     setRank(n.getRank());
     this.uninomial = n.getUninomial();
     this.genus = n.getGenus();
-    this.infragenericEpithet = n.getInfragenericEpithet();
+    // only keep for strict infragenerics
+    if (rank != null && rank.isInfragenericStrictly()) {
+      this.infragenericEpithet = n.getInfragenericEpithet();
+    }
     this.specificEpithet = n.getSpecificEpithet();
     this.infraspecificEpithet = n.getInfraspecificEpithet();
     this.cultivarEpithet = n.getCultivarEpithet();
@@ -98,6 +101,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   public static IndexName newCanonical(IndexName n) {
     IndexName cn = new IndexName();
     cn.setRank(CANONICAL_RANK);
+    // we keep a canonical infrageneric name in uninomial and ignore its genus placement!
     if (n.getInfragenericEpithet() != null && n.isInfrageneric()) {
       cn.setUninomial(n.getInfragenericEpithet());
     } else {
@@ -127,39 +131,6 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
       return CANONICAL_RANK;
     }
     return r;
-  }
-
-  /**
-   * Strong normaliztion to just a few rank buckets:
-   *
-   * SUPRAGENERIC_NAME for anything above the family group as there is no supra family rank yet (better label as "SUPRAFAMILY" in UI)
-   * FAMILY for any family group monomials MEGAFAMILY-INFRATRIBE
-   * GENUS for genus group monomials GENUS-INFRAGENERIC_NAME
-   * SPECIES for binomials SPECIES_AGGREGATE-SPECIES
-   * SUBSPECIES for trinomials INFRASPECIFIC_NAME-STRAIN
-   * UNRANKED
-   */
-  public static Rank normCanonicalRank2(Rank r) {
-    if (r == null || r.otherOrUnranked()) {
-      return Rank.UNRANKED;
-
-    } else if (r.isFamilyGroup()) {
-      return Rank.FAMILY;
-
-    } else if (r.isGenusGroup()) {
-      return Rank.GENUS;
-
-    } else if (r.isSuprageneric()) {
-      return Rank.SUPRAGENERIC_NAME;
-
-    } else if (r == Rank.SPECIES_AGGREGATE || r == Rank.SPECIES) {
-      return Rank.SPECIES;
-
-    } else if (r.isInfraspecific()) {
-      return Rank.INFRASPECIFIC_NAME;
-    }
-    // should never reach here
-    throw new IllegalArgumentException("Unknown rank " + r);
   }
 
   @Override

@@ -35,15 +35,15 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int created = 0;
   private int updated = 0; // updates
   private final int subjectDatasetKey;
-  private final TreeMergeHandlerConfig cfg;
+  private final @Nullable TreeMergeHandlerConfig cfg;
 
   TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
-                   User user, Sector sector, SectorImport state, TreeMergeHandlerConfig cfg) {
+                   User user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg) {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
     this.cfg = cfg;
     this.matcher = matcher;
     uCache = matcher.getUCache();
-    if (target == null && cfg.incertae != null) {
+    if (target == null && cfg != null && cfg.incertae != null) {
       parents = new ParentStack(matcher.toSimpleName(cfg.incertae));
     } else {
       parents = new ParentStack(matcher.toSimpleName(target));
@@ -113,42 +113,45 @@ public class TreeMergeHandler extends TreeBaseHandler {
       match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
     }
     LOG.debug("{} matches {}", nu.getLabel(), match);
-    // avoid the case when an accepted name without author is being matched against synonym names with authors from the same source
-    if (match.isMatch()
-        && nu.getStatus().isTaxon() && !nu.getName().hasAuthorship()
-        && match.usage.getStatus().isSynonym() && match.usage.hasAuthorship()
-        && Objects.equals(subjectDatasetKey, match.sourceDatasetKey)
-    ) {
-      LOG.debug("Ignore match to synonym {}. A canonical homonym from the same source for {}", match.usage.getLabel(), nu.getLabel());
-      match = UsageMatch.empty(targetDatasetKey);
-    }
-    parents.setMatch(match.usage);
 
-    // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly
-    if (match.ignore) {
-      ignored++;
-      LOG.info("Ignore {} {} [{}] because match ignore result", nu.getName().getRank(), nu.getName().getLabel(), nu.getId());
-      return;
-
-    } else if (ignoreUsage(nu, decisions.get(nu.getId()))) {
-      // skip this taxon, but include children
-      ignored++;
-      return;
-    }
-
+    // figure out closest matched parent that we can use to attach to
     Usage parent;
     if (nu.isSynonym()) {
       // make sure synonyms have a matched direct parent (second last, cause the last is the synonym itself)
-      // parent should never be null as we skip synonyms that have no matched parent in ignoreUsage() above
+      // parent can be null here, but we will skip synonyms that have no matched parent in ignoreUsage() below
       parent = usage(parents.secondLast().match);
     } else {
       // as last resort this yields the parent stacks root taxon, e.g. incertae sedis
       parent = usage(parents.lowestParentMatch());
     }
 
-    if (parent == null && parents.hasRoot()) {
-      LOG.warn("Usage {} with no matched parent", nu);
+    // some sources contain the same name multiple times with different status. Good pro parte ones or bad ones...
+    // we allow any number of synonyms as long as they have different parents
+    // but only allow a single accepted name
+    if (match.isMatch() && Objects.equals(sector.getId(), match.sectorKey) &&
+        (match.usage.getStatus().isSynonym() || nu.getStatus().isSynonym())
+    ) {
+      // verify parents are different
+      if (parent == null ||
+          // different parents, but not the same as the match, we dont want synonyms that point to themselves as accepted
+          (!parent.id.equals(match.usage.getParent()) && !parent.id.equals(match.usage.getId()))
+      ) {
+        LOG.debug("Ignore match to potential pro parte synonym complex from the same source: {}", match.usage.getLabel());
+        match = UsageMatch.empty(targetDatasetKey);
+        //TODO: reuse existing name instance for pro parte usages when they are created below
+      }
     }
+
+    // remember the match
+    parents.setMatch(match.usage);
+
+    // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly
+    if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()))) {
+      // skip this taxon, but include children
+      ignored++;
+      return;
+    }
+
     // replace accepted taxa with doubtful ones for all nomenclators and for synonym parents
     // and allow to manually configure a doubtful status
     // http://dev.gbif.org/issues/browse/POR-2780
@@ -194,7 +197,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (!ignore) {
       // additional checks - we dont want any unranked unless they are OTU names
       ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTU
-        || cfg.isBlocked(u.getName());
+        || (cfg != null && cfg.isBlocked(u.getName()));
     }
     return ignore;
   }

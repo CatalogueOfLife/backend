@@ -63,12 +63,12 @@ public class UsageMatcherGlobalTest {
       ((Synonym)origNU).setAccepted(null); // is purposely not populated in matches - parentID is enough
 
       var match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of());
-      var origSN = new SimpleNameWithPub(origNU, match.usage.getCanonicalId());
-      assertEquals(new SimpleNameWithPub(match.usage), origSN);
+      var origSN = new SimpleNameCached(origNU, match.usage.getCanonicalId());
+      assertEquals(new SimpleNameCached(match.usage), origSN);
 
       matcher.clear();
       match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of());
-      assertEquals(new SimpleNameWithPub(match.usage), origSN);
+      assertEquals(new SimpleNameCached(match.usage), origSN);
     }
   }
 
@@ -85,8 +85,8 @@ public class UsageMatcherGlobalTest {
          .build();
 
       var match = matcher.match(datasetKey, num.get(dsid), cl);
-      var origSN = new SimpleNameWithPub(origNU, match.usage.getCanonicalId());
-      assertEquals(new SimpleNameWithPub(match.usage), origSN);
+      var origSN = new SimpleNameCached(origNU, match.usage.getCanonicalId());
+      assertEquals(new SimpleNameCached(match.usage), origSN);
     }
   }
 

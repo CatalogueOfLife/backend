@@ -149,6 +149,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
     // make sure we have a genus for species and a species for infraspecific taxa
     if (u.isTaxon() && u.getName().getRank().isSpeciesOrBelow()) {
+      // remove infrageneric name from accepted bi/trinomials if the sector does not support subgenera
+      if (u.getName().getInfragenericEpithet() != null && !ranks.contains(Rank.SUBGENUS)) {
+        u.getName().setInfragenericEpithet(null);
+        u.getName().rebuildScientificName();
+      }
       parent = createImplicit(parent, (Taxon) u);
     }
 

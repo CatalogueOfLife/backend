@@ -1,7 +1,7 @@
 package life.catalogue.cache;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleNameWithPub;
+import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -35,7 +35,7 @@ public class UsageCacheMapDBTest {
 
   @Test
   public void crud() throws Exception {
-    final SimpleNameWithPub sn = new SimpleNameWithPub();
+    final SimpleNameCached sn = new SimpleNameCached();
     sn.setId("a");
     sn.setName("Abies");
     sn.setRank(Rank.GENUS);

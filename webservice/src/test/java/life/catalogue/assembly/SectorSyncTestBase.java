@@ -105,13 +105,13 @@ public abstract class SectorSyncTestBase {
     return createSector(mode, null, datasetKey, src, target, null);
   }
 
-  public static DSID<Integer> createSector(Sector.Mode mode, Integer priority, int datasetKey, SimpleNameLink src, SimpleNameLink target, Consumer<Sector> modifier) {
+  public static DSID<Integer> createSector(Sector.Mode mode, Integer priority, int subjectDatasetKey, SimpleNameLink src, SimpleNameLink target, Consumer<Sector> modifier) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
       sector.setPriority(priority);
       sector.setDatasetKey(Datasets.COL);
-      sector.setSubjectDatasetKey(datasetKey);
+      sector.setSubjectDatasetKey(subjectDatasetKey);
       sector.setSubject(src);
       sector.setTarget(target);
       sector.setEntities(Set.of(EntityType.values()));

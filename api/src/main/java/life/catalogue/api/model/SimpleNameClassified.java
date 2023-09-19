@@ -8,7 +8,7 @@ import org.gbif.nameparser.api.Rank;
 import java.util.List;
 import java.util.Objects;
 
-public class SimpleNameClassified<T extends SimpleName> extends SimpleNameWithPub {
+public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached {
   // classification starting with direct parent
   private List<T> classification;
 
@@ -30,7 +30,7 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameWithPu
     super(other);
   }
 
-  public SimpleNameClassified(SimpleNameWithPub other) {
+  public SimpleNameClassified(SimpleNameCached other) {
     super(other);
   }
 

@@ -38,7 +38,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * SimpleName.parent=parent.id
    * @param key
    */
-  SimpleNameWithPub getSimplePub(@Param("key") DSID<String> key);
+  SimpleNameCached getSimplePub(@Param("key") DSID<String> key);
 
   /**
    * Retrieve the parent of the given key as a SimpleName with
@@ -136,7 +136,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * List all usages linked to an index name with the given canonical nidx.
    * The parent property is filled with the parent ID, not the name!
    */
-  List<SimpleNameWithPub> listByCanonNIDX(@Param("datasetKey") int datasetKey, @Param("nidx") int canonicalNidx);
+  List<SimpleNameCached> listByCanonNIDX(@Param("datasetKey") int datasetKey, @Param("nidx") int canonicalNidx);
 
   /**
    * Warning, this does not count bare names, only true usages!

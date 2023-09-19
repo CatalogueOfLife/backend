@@ -8,14 +8,13 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleNameClassified;
-import life.catalogue.api.model.SimpleNameWithPub;
+import life.catalogue.api.model.SimpleNameCached;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.Managed;
 
 import org.slf4j.Logger;
@@ -30,11 +29,11 @@ public interface UsageCache extends AutoCloseable, Managed {
 
   boolean contains(DSID<String> key);
 
-  SimpleNameWithPub get(DSID<String> key);
+  SimpleNameCached get(DSID<String> key);
 
-  SimpleNameWithPub put(int datasetKey, SimpleNameWithPub usage);
+  SimpleNameCached put(int datasetKey, SimpleNameCached usage);
 
-  SimpleNameWithPub remove(DSID<String> key);
+  SimpleNameCached remove(DSID<String> key);
 
   void clear(int datasetKey);
 
@@ -55,7 +54,7 @@ public interface UsageCache extends AutoCloseable, Managed {
     clear(event.datasetKey);
   }
 
-  default SimpleNameWithPub getOrLoad(DSID<String> key, Function<DSID<String>, SimpleNameWithPub> loader) {
+  default SimpleNameCached getOrLoad(DSID<String> key, Function<DSID<String>, SimpleNameCached> loader) {
     var sn = get(key);
     if (sn == null) {
       sn = loader.apply(key);
@@ -74,8 +73,8 @@ public interface UsageCache extends AutoCloseable, Managed {
    * @param loader
    * @return
    */
-  default SimpleNameClassified<SimpleNameWithPub> withClassification(int datasetKey, SimpleNameWithPub usage, Function<DSID<String>, SimpleNameWithPub> loader) throws NotFoundException {
-    SimpleNameClassified<SimpleNameWithPub> sncl = new SimpleNameClassified<>(usage);
+  default SimpleNameClassified<SimpleNameCached> withClassification(int datasetKey, SimpleNameCached usage, Function<DSID<String>, SimpleNameCached> loader) throws NotFoundException {
+    SimpleNameClassified<SimpleNameCached> sncl = new SimpleNameClassified<>(usage);
     sncl.setClassification(new ArrayList<>());
     if (usage.getParent() != null) {
       addParents(sncl.getClassification(), DSID.of(datasetKey, usage.getParent()), loader);
@@ -83,18 +82,18 @@ public interface UsageCache extends AutoCloseable, Managed {
     return sncl;
   }
 
-  default List<SimpleNameWithPub> getClassification(DSID<String> start, Function<DSID<String>, SimpleNameWithPub> loader) throws NotFoundException {
-    List<SimpleNameWithPub> classification = new ArrayList<>();
+  default List<SimpleNameCached> getClassification(DSID<String> start, Function<DSID<String>, SimpleNameCached> loader) throws NotFoundException {
+    List<SimpleNameCached> classification = new ArrayList<>();
     addParents(classification, start, loader);
     return classification;
   }
 
-  private void addParents(List<SimpleNameWithPub> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameWithPub> loader) throws NotFoundException {
+  private void addParents(List<SimpleNameCached> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameCached> loader) throws NotFoundException {
     addParents(classification, parentKey, loader, new HashSet<>());
   }
 
-  private void addParents(List<SimpleNameWithPub> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameWithPub> loader, Set<String> visitedIDs) throws NotFoundException {
-    SimpleNameWithPub p;
+  private void addParents(List<SimpleNameCached> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameCached> loader, Set<String> visitedIDs) throws NotFoundException {
+    SimpleNameCached p;
     if (contains(parentKey)) {
       p = get(parentKey);
     } else {
@@ -145,17 +144,17 @@ public interface UsageCache extends AutoCloseable, Managed {
       }
 
       @Override
-      public SimpleNameWithPub get(DSID<String> key) {
+      public SimpleNameCached get(DSID<String> key) {
         return null;
       }
 
       @Override
-      public SimpleNameWithPub put(int datasetKey, SimpleNameWithPub usage) {
+      public SimpleNameCached put(int datasetKey, SimpleNameCached usage) {
         return null;
       }
 
       @Override
-      public SimpleNameWithPub remove(DSID<String> key) {
+      public SimpleNameCached remove(DSID<String> key) {
         return null;
       }
 
@@ -182,7 +181,7 @@ public interface UsageCache extends AutoCloseable, Managed {
       @Override
       public void stop() throws Exception {      }
 
-      private final Map<DSID<String>, SimpleNameWithPub> data = new HashMap<>();
+      private final Map<DSID<String>, SimpleNameCached> data = new HashMap<>();
 
       @Override
       public boolean contains(DSID<String> key) {
@@ -190,17 +189,17 @@ public interface UsageCache extends AutoCloseable, Managed {
       }
 
       @Override
-      public SimpleNameWithPub get(DSID<String> key) {
+      public SimpleNameCached get(DSID<String> key) {
         return data.get(key);
       }
 
       @Override
-      public SimpleNameWithPub put(int datasetKey, SimpleNameWithPub usage) {
+      public SimpleNameCached put(int datasetKey, SimpleNameCached usage) {
         return data.put(DSID.of(datasetKey, usage.getId()), usage);
       }
 
       @Override
-      public SimpleNameWithPub remove(DSID<String> key) {
+      public SimpleNameCached remove(DSID<String> key) {
         return data.remove(key);
       }
 

@@ -56,8 +56,8 @@
     u.id, n.scientific_name, n.authorship, u.name_phrase, n.rank, n.code, u.status, u.parent_id
   </sql>
 
-  <sql id="SELECT_SIMPLE_PUB">
-    u.id, n.scientific_name, n.authorship, u.name_phrase, n.rank, n.code, u.status, u.parent_id, n.published_in_id, nm.index_id, ni.canonical_id, nm.type
+  <sql id="SELECT_SIMPLE_CACHED">
+    u.id, u.sector_key, n.scientific_name, n.authorship, u.name_phrase, n.rank, n.code, u.status, u.parent_id, n.published_in_id, nm.index_id, ni.canonical_id, nm.type
   </sql>
 
   <sql id="COLS_COPY">
@@ -192,8 +192,9 @@
     <result property="namesIndexMatchType" column="type" />
   </resultMap>
 
-  <resultMap id="simplePubResultMap" type="SimpleNameWithPub" autoMapping="true" extends="simpleNidxResultMap">
+  <resultMap id="simpleCachedResultMap" type="SimpleNameCached" autoMapping="true" extends="simpleNidxResultMap">
     <id property="id" column="id"/>
+    <result property="sectorKey" column="sector_key" />
     <result property="publishedInID" column="published_in_id" />
   </resultMap>
 
@@ -229,8 +230,8 @@
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
-  <select id="getSimplePub" resultMap="simplePubResultMap">
-    SELECT <include refid="SELECT_SIMPLE_PUB"/>
+  <select id="getSimplePub" resultMap="simpleCachedResultMap">
+    SELECT <include refid="SELECT_SIMPLE_CACHED"/>
     FROM <include refid="FROM_SIMPLE_PUB"/>
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
@@ -347,8 +348,8 @@
     <include refid="FROM_ACCEPTED"/>
   </sql>
 
-  <select id="listByCanonNIDX" resultMap="simplePubResultMap">
-    SELECT <include refid="SELECT_SIMPLE_PUB"/>
+  <select id="listByCanonNIDX" resultMap="simpleCachedResultMap">
+    SELECT <include refid="SELECT_SIMPLE_CACHED"/>
     FROM <include refid="FROM_NIDX_BASE"/>
     WHERE nm.dataset_key = #{datasetKey} AND ni.canonical_id=#{nidx}
   </select>

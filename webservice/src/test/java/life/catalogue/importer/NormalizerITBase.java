@@ -160,7 +160,7 @@ abstract class NormalizerITBase {
   }
 
   protected static String resourceDir(int datasetKey, DataFormat format) {
-    return "/" + format.name().toLowerCase().replaceAll("_", "-") + "/" + datasetKey;
+    return "/" + format.getFilename().toLowerCase().replaceAll("_", "-") + "/" + datasetKey;
   }
 
   protected String resourceDir() {

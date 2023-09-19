@@ -1,7 +1,7 @@
 package life.catalogue.cache;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleNameWithPub;
+import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
@@ -34,7 +34,7 @@ public class UsageCacheTest {
     assertEquals(6, sncl.getClassification().size());
   }
 
-  private SimpleNameWithPub load(DSID<String> key) {
+  private SimpleNameCached load(DSID<String> key) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       return session.getMapper(NameUsageMapper.class).getSimplePub(key);
     }
