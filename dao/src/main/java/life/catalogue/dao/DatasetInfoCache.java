@@ -4,14 +4,15 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.mapper.DatasetMapper;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -120,10 +121,21 @@ public class DatasetInfoCache {
     return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getGbifPublisherKey(), d.hasDeletedDate());
   }
 
+  /**
+   * Returns the dataset info for a given dataset key
+   * @return the dataset info for a given dataset
+   * @throws NotFoundException if dataset key does not exist or was deleted
+   */
   public DatasetInfo info(int datasetKey) throws NotFoundException {
     return info(datasetKey, false);
   }
 
+  /**
+   * Returns the dataset info for a given dataset key
+   * @return the dataset info for a given dataset
+   * @param allowDeleted if true infos about deleted datasets are included and do not throw an exception
+   * @throws NotFoundException if dataset key does not exist or was deleted if allowDeleted=false
+   */
   public DatasetInfo info(int datasetKey, boolean allowDeleted) throws NotFoundException {
     return get(datasetKey, allowDeleted);
   }
@@ -135,10 +147,14 @@ public class DatasetInfoCache {
    * @throws NotFoundException
    * @throws IllegalArgumentException if the datasetKey does not refer to the given origin
    */
-  public DatasetInfo info(int datasetKey, DatasetOrigin origin) throws NotFoundException, IllegalArgumentException {
+  public DatasetInfo info(int datasetKey, DatasetOrigin... origin) throws NotFoundException, IllegalArgumentException {
     var info = info(datasetKey);
-    if (info.origin != origin) {
-      throw new IllegalArgumentException("Dataset " + datasetKey + " is not a " + origin);
+    if (origin != null) {
+      Set<DatasetOrigin> origins = new HashSet<>();
+      CollectionUtils.addAll(origins, origin);
+      if (!origins.contains(info.origin)) {
+        throw new IllegalArgumentException("Wrong origin " + info.origin + " of dataset " + datasetKey);
+      }
     }
     return info;
   }

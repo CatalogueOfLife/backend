@@ -133,16 +133,17 @@ public class AuthFilter implements ContainerRequestFilter {
         Integer datasetKey = requestedDataset(req.getUriInfo());
         try {
           User.Role r = User.Role.valueOf(role.trim().toUpperCase());
+          // global roles assigned to the user?
           if (user.user.getRoles().contains(r)) {
-            // the editor and reviewer role is scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
-            // Check if the user has permissions. For releases use the project key for evaluation.
-            if (r == User.Role.EDITOR && datasetKey != null) {
-              return hasWriteAccess(user.user, datasetKey);
-            }
-            if (r == User.Role.REVIEWER && datasetKey != null) {
-              return hasReadAccess(user.user, datasetKey);
-            }
             return true;
+          }
+          // the editor and reviewer role is also scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
+          // Check if the user has permissions. For releases use the project key for evaluation.
+          if (r == User.Role.EDITOR && datasetKey != null) {
+            return hasWriteAccess(user.user, datasetKey);
+          }
+          if (r == User.Role.REVIEWER && datasetKey != null) {
+            return hasReadAccess(user.user, datasetKey);
           }
 
         } catch (IllegalArgumentException e) {

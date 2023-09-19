@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import com.google.common.base.Preconditions;
+
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
@@ -8,13 +10,11 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
-import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -58,27 +58,38 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
     }
   }
 
-  public void changeRole(int key, User admin, List<User.Role> roles) {
-    User user;
+  /**
+   * Updates a users set of roles. Dataset specific access control lists are unchanged.
+   */
+  public void changeRoles(int key, User admin, List<User.Role> roles) {
+    Preconditions.checkArgument(admin.isAdmin());
+    User user = getOr404(key);
     final var newRoles = new HashSet<User.Role>(ObjectUtils.coalesce(roles, Collections.EMPTY_SET));
-    try (SqlSession session = factory.openSession(true)) {
-      var dm = session.getMapper(DatasetMapper.class);
-      user = session.getMapper(mapperClass).get(key);
-      if (user == null) {
-        throw NotFoundException.notFound(User.class, key);
-      }
-
-      // if we revoke the editor or reviewer role the user will lose access to all datasets
-      if (user.hasRole(User.Role.EDITOR) && !newRoles.contains(User.Role.EDITOR)) {
-        dm.removeEditorEverywhere(user.getKey(), admin.getKey());
-      }
-      if (user.hasRole(User.Role.REVIEWER) && !newRoles.contains(User.Role.REVIEWER)) {
-        dm.removeReviewerEverywhere(user.getKey(), admin.getKey());
-      }
-    }
     // update user
     user.setRoles(newRoles);
     update(user, admin.getKey());
+  }
+
+  /**
+   * Removes the specified user and role from all datasets held currently by the user.
+   * It does not change the role of the user in general, but modifies the dataset ACLs.
+   * @param key
+   * @param admin
+   * @param role
+   */
+  public void revokeRoleOnAllDatasets(int key, User admin, User.Role role) {
+    Preconditions.checkArgument(admin.isAdmin());
+    User user = getOr404(key);
+    try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      if (role == User.Role.EDITOR) {
+        dm.removeEditorEverywhere(user.getKey(), admin.getKey());
+      } else if (role == User.Role.REVIEWER) {
+        dm.removeReviewerEverywhere(user.getKey(), admin.getKey());
+      } else {
+        throw new IllegalArgumentException("Role " + role + " does not exist on datasets");
+      }
+    }
   }
 
   public void block(int key, User admin) {

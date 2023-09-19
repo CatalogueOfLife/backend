@@ -2,9 +2,11 @@ package life.catalogue.dao;
 
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -61,7 +63,13 @@ public class AuthorizationDao {
     if (role != User.Role.EDITOR && role != User.Role.REVIEWER) {
       throw new IllegalArgumentException("Role " + role + " not allowed on dataset " + datasetKey);
     }
-    if (!actor.hasRole(User.Role.ADMIN) && !actor.isEditor(datasetKey)) {
+    // we cannot change user roles for releases
+    var info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (info.origin.isRelease()) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is a release. Use the project for user role management.");
+    }
+
+    if (!actor.isAdmin() && !actor.isEditor(datasetKey)) {
       throw new WebApplicationException(Response.Status.FORBIDDEN);
     }
     User user;

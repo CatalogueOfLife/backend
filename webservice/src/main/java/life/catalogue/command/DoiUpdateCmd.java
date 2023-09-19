@@ -64,7 +64,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   public void execute() throws Exception {
     Preconditions.checkNotNull(cfg.doi, "DOI configs needed to run the updater");
     Preconditions.checkArgument(user != null, "User argument required to run the updater");
-    Preconditions.checkArgument(user.hasRole(User.Role.ADMIN), "Admin user required to run the updater");
+    Preconditions.checkArgument(user.isAdmin(), "Admin user required to run the updater");
 
     // setup
     doiService = new DataCiteService(cfg.doi, jerseyClient);

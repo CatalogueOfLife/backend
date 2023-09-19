@@ -146,7 +146,14 @@ public class UserResource {
   @Path("/{key}/role")
   @RolesAllowed({Roles.ADMIN})
   public void changeRole(@PathParam("key") int key, @Auth User admin, List<User.Role> roles) {
-    dao.changeRole(key, admin, roles);
+    dao.changeRoles(key, admin, roles);
+  }
+
+  @DELETE
+  @Path("/{key}/role/{role}")
+  @RolesAllowed({Roles.ADMIN})
+  public void changeRole(@PathParam("key") int key, @PathParam("role") User.Role role, @Auth User admin) {
+    dao.revokeRoleOnAllDatasets(key, admin, role);
   }
 
   @POST

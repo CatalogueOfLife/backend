@@ -39,7 +39,7 @@ import com.google.common.collect.ImmutableSet;
 public class NameIndexImpl implements NameIndex {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexImpl.class);
   static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
-      NameType.SCIENTIFIC, NameType.HYBRID_FORMULA, NameType.VIRUS, NameType.OTU
+      NameType.SCIENTIFIC, NameType.HYBRID_FORMULA, NameType.VIRUS, NameType.OTU, NameType.INFORMAL
   );
 
   private final boolean verifyIndex; // if true compares counts from index with postgres counts and reloads if wrong
@@ -135,17 +135,16 @@ public class NameIndexImpl implements NameIndex {
 
   /**
    * Checks if the given name is eligable to be included in the names index.
-   * We do not trust on all given properties and do a sanity check here to avoid bad names in the index
+   * We allow bad names in the index - it is not a reference, just a lookup.
+   * But we exclude no names and placeholders
    */
   private static boolean eligable(Name n){
-    if (INDEX_NAME_TYPES.contains(n.getType())) {
-      IssueContainer issues = IssueContainer.simple();
-      NameValidator.flagIssues(n, issues);
-      if (!issues.hasIssues()) {
-        return true;
-      }
-    }
-    return false;
+    //IssueContainer issues = IssueContainer.simple();
+    //NameValidator.flagIssues(n, issues);
+    //if (!issues.hasIssues()) {
+    //  return true;
+    //}
+    return INDEX_NAME_TYPES.contains(n.getType());
   }
 
   @Override

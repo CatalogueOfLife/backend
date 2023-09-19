@@ -47,13 +47,22 @@ public class User implements Entity<Integer>, Principal {
   private String email; // gbif managed
   private String orcid; // gbif managed
   private Country country; // gbif managed
+
+  // global roles that apply to any dataset
   private final Set<Role> roles = EnumSet.noneOf(Role.class);
+
+  // dataset specific editor role
   @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
   private final IntSet editor = new IntOpenHashSet();
+
+  // dataset specific reviewer role
   @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
   private final IntSet reviewer = new IntOpenHashSet();
+
+  // publisher specific editor role
   @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
   private final Set<UUID> publisher = new HashSet<>();
+
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> settings = new HashMap<>();
   private LocalDateTime lastLogin;
@@ -93,11 +102,11 @@ public class User implements Entity<Integer>, Principal {
   }
 
   public boolean isEditor(int datasetKey) {
-    return editor.contains(datasetKey);
+    return roles.contains(Role.EDITOR) || editor.contains(datasetKey);
   }
 
   public boolean isReviewer(int datasetKey) {
-    return reviewer.contains(datasetKey);
+    return roles.contains(Role.REVIEWER) || reviewer.contains(datasetKey);
   }
 
   /**
@@ -163,10 +172,6 @@ public class User implements Entity<Integer>, Principal {
     this.country = country;
   }
 
-  public boolean hasRole(Role role) {
-    return roles.contains(role);
-  }
-
   public void addRole(Role role) {
     if (role != null) {
       roles.add(role);
@@ -200,7 +205,6 @@ public class User implements Entity<Integer>, Principal {
     this.editor.clear();
     if (editor != null && !editor.isEmpty()) {
       this.editor.addAll(editor);;
-      roles.add(Role.EDITOR);
     }
   }
 
@@ -212,7 +216,6 @@ public class User implements Entity<Integer>, Principal {
     this.reviewer.clear();
     if (reviewer != null && !reviewer.isEmpty()) {
       this.reviewer.addAll(reviewer);;
-      roles.add(Role.REVIEWER);
     }
   }
 
@@ -223,7 +226,6 @@ public class User implements Entity<Integer>, Principal {
     this.publisher.clear();
     if (publisher != null && !publisher.isEmpty()) {
       this.publisher.addAll(publisher);;
-      roles.add(Role.EDITOR);
     }
   }
 
@@ -231,11 +233,9 @@ public class User implements Entity<Integer>, Principal {
     switch (role) {
       case EDITOR:
         editor.add(datasetKey);
-        roles.add(role);
         break;
       case REVIEWER:
         reviewer.add(datasetKey);
-        roles.add(role);
         break;
       default:
         throw new IllegalArgumentException("Unsupported role " + role);
