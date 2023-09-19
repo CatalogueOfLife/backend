@@ -151,6 +151,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (u.isTaxon() && u.getName().getRank().isSpeciesOrBelow()) {
       // remove infrageneric name from accepted bi/trinomials if the sector does not support subgenera
       if (u.getName().getInfragenericEpithet() != null && !ranks.contains(Rank.SUBGENUS)) {
+        // do not create new subgenera, but attach to them if they already exist!
+        if (parent != null && parent.rank.higherThan(Rank.SUBGENUS)) {
+          var subgen = findSubgenus(u.getName().getCode(), u.getName().getGenus(), u.getName().getInfragenericEpithet(), parent);
+          if (subgen != null) {
+            parent = subgen;
+          }
+        }
+        // remove it from the name to be created
         u.getName().setInfragenericEpithet(null);
         u.getName().rebuildScientificName();
       }
@@ -278,6 +286,30 @@ public abstract class TreeBaseHandler implements TreeHandler {
       }
     }
     return parent;
+  }
+
+  protected Usage findUninomial(NomCode code, Rank rank, String uninomial, Usage parent) {
+    Preconditions.checkArgument(rank.isGenusOrSuprageneric());
+    Name n = new Name();
+    n.setCode(code);
+    n.setUninomial(uninomial);
+    n.setRank(rank);
+    n.setType(NameType.SCIENTIFIC);
+    n.setSectorKey(sector.getId());
+    n.rebuildScientificName();
+    return findExisting(n, parent);
+  }
+
+  protected Usage findSubgenus(NomCode code, String genus, String subgenus, Usage parent) {
+    Name n = new Name();
+    n.setCode(code);
+    n.setGenus(genus);
+    n.setInfragenericEpithet(subgenus);
+    n.setRank(Rank.SUBGENUS);
+    n.setType(NameType.SCIENTIFIC);
+    n.setSectorKey(sector.getId());
+    n.rebuildScientificName();
+    return findExisting(n, parent);
   }
 
   protected abstract Usage findExisting(Name n, Usage parent);
