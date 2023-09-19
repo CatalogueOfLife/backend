@@ -71,15 +71,20 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   }
 
   public IndexName(Name n) {
+    boolean removeInfrageneric = n.getInfragenericEpithet() != null && (n.getRank() == null || !n.getRank().isInfragenericStrictly());
+    String infragen = null;
+    if (removeInfrageneric) {
+      // only keep for strict infragenerics
+      infragen = n.getInfragenericEpithet();
+      n.setInfragenericEpithet(null);
+      n.rebuildScientificName();
+    }
     this.scientificName = n.getScientificName();
     this.authorship = n.getAuthorship();
     setRank(n.getRank());
     this.uninomial = n.getUninomial();
     this.genus = n.getGenus();
-    // only keep for strict infragenerics
-    if (rank != null && rank.isInfragenericStrictly()) {
-      this.infragenericEpithet = n.getInfragenericEpithet();
-    }
+    this.infragenericEpithet = n.getInfragenericEpithet();
     this.specificEpithet = n.getSpecificEpithet();
     this.infraspecificEpithet = n.getInfraspecificEpithet();
     this.cultivarEpithet = n.getCultivarEpithet();
@@ -88,6 +93,11 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     this.sanctioningAuthor = n.getSanctioningAuthor();
     this.setCreated(n.getCreated());
     this.setModified(n.getModified());
+    // revert name instance
+    if (removeInfrageneric) {
+      n.setInfragenericEpithet(infragen);
+      n.rebuildScientificName();
+    }
   }
 
   public IndexName(Name n, int key) {

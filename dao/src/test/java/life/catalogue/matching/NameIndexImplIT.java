@@ -36,7 +36,6 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-@Ignore("names index work ongoing")
 public class NameIndexImplIT {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
 
@@ -92,13 +91,10 @@ public class NameIndexImplIT {
     n.setType(NameType.SCIENTIFIC);
 
     var m = ni.match(n, true, true);
-    assertEquals(MatchType.CANONICAL, m.getType());
+    assertEquals(MatchType.VARIANT, m.getType());
+    final int spNidx = m.getNameKey();
     final int canonNidx = m.getCanonicalNameKey();
-    assertEquals(canonNidx, (int) m.getNameKey());
-
-    m = ni.match(n, true, true);
-    assertEquals(MatchType.CANONICAL, m.getType());
-    assertEquals(canonNidx, (int) m.getNameKey());
+    assertNotEquals(canonNidx, spNidx);
 
     n = new Name();
     n.setScientificName("Abies (Pinus) alba");
@@ -110,12 +106,31 @@ public class NameIndexImplIT {
     n.setRank(Rank.SPECIES);
     n.setType(NameType.SCIENTIFIC);
 
-    m = assertMatch(4, "Abies alba", Rank.SPECIES);
-    assertEquals(MatchType.CANONICAL, m.getType());
-    assertEquals(canonNidx, (int) m.getNameKey());
+    m = ni.match(n, true, true);
+    assertEquals(MatchType.VARIANT, m.getType());
+    assertEquals(canonNidx, (int) m.getCanonicalNameKey());
+    assertEquals(spNidx, (int) m.getNameKey());
 
-    assertMatch(4, "Abies alba Mill.", Rank.SPECIES);
-    assertMatch(4, "Larus erfundus", Rank.SPECIES);
+    m = assertMatch(canonNidx, "Abies alba", Rank.UNRANKED);
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals(canonNidx, (int) m.getNameKey());
+    assertEquals(canonNidx, (int) m.getCanonicalNameKey());
+
+
+    // new insert
+    n = new Name();
+    n.setScientificName("Pinella (Argworta) hansa");
+    n.setGenus("Pinella");
+    n.setInfragenericEpithet("Argworta");
+    n.setSpecificEpithet("hansa");
+    n.setAuthorship("DC.");
+    n.setCombinationAuthorship(Authorship.authors("DC."));
+    n.setRank(Rank.SPECIES);
+    n.setType(NameType.SCIENTIFIC);
+
+    m = ni.match(n, true, true);
+    assertEquals(MatchType.VARIANT, m.getType());
+    assertNotEquals(m.getCanonicalNameKey(), m.getNameKey());
   }
 
   @Test

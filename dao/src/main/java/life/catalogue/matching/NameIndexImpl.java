@@ -222,7 +222,7 @@ public class NameIndexImpl implements NameIndex {
         }
 
         // avoid exact matches to different infragenerics - unless the match is a canonical one that does not have infrageneric epithets
-        if (!n.isCanonical() && !Objects.equals(n.getInfragenericEpithet(), query.getInfragenericEpithet())) {
+        if (!n.isCanonical() && n.getRank().isInfragenericStrictly() && !Objects.equals(n.getInfragenericEpithet(), query.getInfragenericEpithet())) {
           continue;
         }
 
@@ -364,7 +364,11 @@ public class NameIndexImpl implements NameIndex {
       IndexName n = new IndexName(orig);
       add(n);
       match.setName(n);
-      match.setType(MatchType.EXACT);
+      if (n.getScientificName().equalsIgnoreCase(orig.getScientificName())) {
+        match.setType(MatchType.EXACT);
+      } else {
+        match.setType(MatchType.VARIANT);
+      }
       return match;
     }
     return match2;

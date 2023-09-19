@@ -30,6 +30,34 @@ public class IndexNameTest {
   }
 
   @Test
+  public void infrageneric() {
+    Name n = new Name();
+    n.setRank(Rank.SUBGENUS);
+    n.setScientificName("Abies (Paxus)");
+    n.setGenus("Abies");
+    n.setInfragenericEpithet("Paxus");
+
+    IndexName in = new IndexName(n);
+    assertEquals("Abies (Paxus)", in.getScientificName());
+    assertEquals("Abies", in.getGenus());
+    assertEquals("Paxus", in.getInfragenericEpithet());
+
+    // we remove the subgenus from binomials
+    n = new Name();
+    n.setRank(Rank.SPECIES);
+    n.setScientificName("Abies (Paxus) petruska");
+    n.setGenus("Abies");
+    n.setInfragenericEpithet("Paxus");
+    n.setSpecificEpithet("petruska");
+
+    in = new IndexName(n);
+    assertEquals("Abies petruska", in.getScientificName());
+    assertEquals("Abies", in.getGenus());
+    assertNull(in.getInfragenericEpithet());
+    assertEquals("petruska", in.getSpecificEpithet());
+  }
+
+  @Test
   public void normalizeRank() {
     assertEquals(Rank.ORDER, IndexName.normRank(Rank.ORDER));
     assertEquals(Rank.PARVCLASS, IndexName.normRank(Rank.PARVCLASS));
