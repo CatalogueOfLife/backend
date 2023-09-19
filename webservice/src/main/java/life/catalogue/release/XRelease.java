@@ -1,8 +1,10 @@
 package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.assembly.SectorSync;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.TreeMergeHandlerConfig;
 import life.catalogue.basgroup.HomotypicConsolidator;
@@ -39,7 +41,11 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class XRelease extends ProjectRelease {
+  private static final Logger LOG = LoggerFactory.getLogger(XRelease.class);
   private final int baseReleaseKey;
   private final SectorImportDao siDao;
   private List<Sector> sectors;
@@ -232,8 +238,11 @@ public class XRelease extends ProjectRelease {
     // prepare merge handler config instance
     mergeCfg = new TreeMergeHandlerConfig(factory, xCfg, newDatasetKey, user);
     updateState(ImportState.INSERTING);
+    final int size = sectors.size();
+    int counter = 0;
+    int failedSyncs = 0;
     for (Sector s : sectors) {
-      LOG.info("Merge {}", s);
+      LOG.info("Merge {}. #{} out of {}", s, counter++, size);
       // the sector might not have been copied to the xrelease yet - we only copied all sectors from the base release, not the project.
       // create only if missing
       try (SqlSession session = factory.openSession(true)) {
@@ -245,14 +254,23 @@ public class XRelease extends ProjectRelease {
         }
       }
       checkIfCancelled();
-      var ss = syncFactory.release(s, newDatasetKey, mergeCfg, fullUser);
-      ss.run();
-      if (ss.getState().getState() != ImportState.FINISHED){
-        throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
+      SectorSync ss;
+      try {
+        ss = syncFactory.release(s, newDatasetKey, mergeCfg, fullUser);
+        ss.run();
+        if (ss.getState().getState() != ImportState.FINISHED){
+          failedSyncs++;
+          LOG.error("Failed to sync {} with error: {}", s, ss.getState().getError());
+        } else {
+          // copy sync attempt to local instances as it finished successfully
+          s.setSyncAttempt(ss.getState().getAttempt());
+        }
+      } catch (NotFoundException e) {
+        failedSyncs++;
+        LOG.error("Sector {} was deleted. No sync possible", s);
       }
-      // copy sync attempt to local instances as it finished successfully
-      s.setSyncAttempt(ss.getState().getAttempt());
     }
+    LOG.error("All {} sectors merged, {} failed", counter, failedSyncs);
   }
 
   private void cleanImplicitTaxa() {
