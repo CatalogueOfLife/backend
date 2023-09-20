@@ -218,13 +218,18 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   void createTempTable();
 
   /**
+   * Builds indices for the usage and name id of the current transactions temp table.
+   */
+  void indexTempTable();
+
+  /**
    * Add usage and name ids for all synonyms of a given sector to the sectors temp table.
    * Make sure the temp table was created in the session before!
    */
   void addSectorSynonymsToTemp(@Param("key") DSID<Integer> key);
 
   /**
-   * Add usage and name ids for all usages of a given sector and below or equal a max rank to the sessions temp table.
+   * Add usage and name ids for all accepted usages of a given sector and below or equal a max rank to the sessions temp table.
    * Make sure the temp table was created in the session before!
    *
    * @param key the sector key

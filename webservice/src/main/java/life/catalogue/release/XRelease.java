@@ -268,6 +268,11 @@ public class XRelease extends ProjectRelease {
       } catch (NotFoundException e) {
         failedSyncs++;
         LOG.error("Sector {} was deleted. No sync possible", s);
+        // remove from release
+        try (SqlSession session = factory.openSession(true)) {
+          SectorMapper sm = session.getMapper(SectorMapper.class);
+          sm.delete(DSID.of(newDatasetKey, s.getId()));
+        }
       }
     }
     LOG.error("All {} sectors merged, {} failed", counter, failedSyncs);

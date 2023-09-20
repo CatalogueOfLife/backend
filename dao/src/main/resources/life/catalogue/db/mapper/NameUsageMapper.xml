@@ -524,6 +524,11 @@
     CREATE TEMP TABLE _tmp_nu (uid text, nid text) ON COMMIT DROP
   </update>
 
+  <update id="indexTempTable" parameterType="map">
+    CREATE INDEX ON _tmp_nu (uid);
+    CREATE INDEX ON _tmp_nu (nid);
+  </update>
+
   <insert id="addSectorSynonymsToTemp" parameterType="map">
     INSERT INTO _tmp_nu
     SELECT u.id, u.name_id FROM name_usage u
@@ -534,9 +539,10 @@
     INSERT INTO _tmp_nu
     SELECT u.id, u.name_id
     FROM name_usage u
-      JOIN name n ON u.dataset_key=#{key.datasetKey} AND u.name_id=n.id
+      JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
     WHERE u.dataset_key=#{key.datasetKey}
       AND u.sector_key = #{key.id}
+      AND NOT is_synonym(u.status)
       AND n.rank >= #{rank}::rank
   </insert>
 

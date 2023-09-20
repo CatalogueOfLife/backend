@@ -79,15 +79,19 @@ public class SectorDelete extends SectorRunnable {
 
       // create a temp table that holds usage and name ids to be deleted - we need to be flexible keeping some
       // temp tables will be visible only to this session and removed by postgres once the session is closed
+      LOG.info("Create temporary deletion table for sector {}", sectorKey);
       um.createTempTable();
       // add all synonyms from the sector to the temp table
       um.addSectorSynonymsToTemp(sectorKey);
-      // add all usages below genus from the sector to the temp table
+      // add all accepted usages below genus from the sector to the temp table
       um.addSectorBelowRankToTemp(sectorKey, Rank.SUBGENUS);
+      // index temp table
+      um.indexTempTable();
       // remove ambiguous zoological ranks from the temp table so they dont get deleted - they might be higher ranks to keep!
       removeZoologicalAmbiguousRanks(sectorKey, session);
 
       // delete usages, names and related records that are listed in the temp table
+      LOG.info("Delete records using temporary deletion table for sector {}", sectorKey);
       for (Class<? extends TempNameUsageRelated> mc : TempNameUsageRelated.MAPPERS) {
         TempNameUsageRelated m = session.getMapper(mc);
         int count = m.deleteByTemp(sectorKey.getDatasetKey());
