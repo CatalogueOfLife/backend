@@ -195,7 +195,7 @@ public class AuthorComparatorTest {
     assertAuth("Schultz-Bip", null, Equality.EQUAL, "Sch.Bip.", null);
     
     assertAuth("Bruand", "1850", Equality.EQUAL, "Bruand", "1850");
-    assertAuth("Bruand", "1850", Equality.DIFFERENT, "Bruand", "1851");
+    assertAuth("Bruand", "1850", Equality.EQUAL, "Bruand", "1851");
     assertAuth("Bruand", "1850", Equality.DIFFERENT, null, "1998");
     assertAuth("Bruand", "1850", Equality.EQUAL, null, "1850");
     assertAuth("Bruand", "1850", Equality.EQUAL, "Bruand", null);

@@ -85,6 +85,11 @@ public class XReleaseIT extends SectorSyncTestBase {
     biotaSedis.setClassification(List.of(SimpleName.sn("Biota")));
 
     return Arrays.asList(new Object[][] {
+      {"abronia", cfg(biotaSedis), List.of(
+        tax("itis"),
+        tax("wcvp"),
+        tax("repdb")
+      )},
       {"unplaced_synonyms", cfg(biotaSedis), List.of(
         tax("wcvp")
       )},

@@ -297,8 +297,9 @@ public class BasionymSorterTest {
         "Heliodoxa rubinoides aequatorialis (Gould, 1860)",
         "Androdon aequatorialis Gould, 1863",
         "Clementoron aequatorialis Gould, 1864",
-      "Campylopterus largipennis aequatorialis Gould, 1861",
-        // this one has a palceholder year so it matches the first recombination on top!
+        "Campylopterus largipennis aequatorialis Gould, 1861",
+        // this one has a placeholder year so it matches the first recombination on top! but prefer the proper year
+        "Campylopterus largipennis aequatorialis Gould, 186?",
         "Campylopterus largipennis aequatorialis Gould, 1860"
     );
 

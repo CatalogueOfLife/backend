@@ -10,23 +10,37 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * String based year comparison, that allows for an acceptable year difference to be still considered the same.
+ */
 public class YearComparator {
   private static final Pattern YEAR = Pattern.compile("(^|[^0-9])([0-9?]{4})([^0-9]|$)");
-  
+
+  private final int diffAllowed;
   private String y1;
   private String y2;
 
-  public YearComparator(String y1, String y2) {
+  /**
+   * @param diffAllowed number of years to be an accepted difference for the "same" year
+   */
+  public YearComparator(int diffAllowed, String y1, String y2) {
     this.y1 = normalizeYear(y1);
     this.y2 = normalizeYear(y2);
+    this.diffAllowed = diffAllowed;
+  }
+  public YearComparator(String y1, String y2) {
+    this(0, y1, y2);
   }
 
   public YearComparator(Authorship a1, Authorship a2) {
-    this.y1 = normalizeYear(a1 == null ? null : a1.getYear());
-    this.y2 = normalizeYear(a2 == null ? null : a2.getYear());
+    this(normalizeYear(a1 == null ? null : a1.getYear()), normalizeYear(a2 == null ? null : a2.getYear()));
   }
 
-  private String normalizeYear(String y) {
+  public YearComparator(int diffAllowed, Authorship a1, Authorship a2) {
+    this(diffAllowed, normalizeYear(a1 == null ? null : a1.getYear()), normalizeYear(a2 == null ? null : a2.getYear()));
+  }
+
+  private static String normalizeYear(String y) {
     if (y == null) return null;
     Matcher m = YEAR.matcher(StringUtils.deleteWhitespace(y));
     if (m.find()) {
@@ -76,7 +90,8 @@ public class YearComparator {
       try {
         int yi1 = Integer.parseInt(y1);
         int yi2 = Integer.parseInt(y2);
-        if (yi1 == yi2) {
+        // allow for one year difference
+        if (yi1 == yi2 || diffAllowed > 0 && Math.abs(yi1-yi2) <= diffAllowed) {
           return Equality.EQUAL;
         }
       } catch (NumberFormatException e) {

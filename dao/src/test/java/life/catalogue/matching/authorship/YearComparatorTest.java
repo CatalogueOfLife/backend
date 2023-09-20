@@ -22,11 +22,17 @@ public class YearComparatorTest {
 
     assertEquals(Equality.EQUAL, new YearComparator(" 1678", "1678 ").compare());
 
-    // 1 year diff is not ok anymore
-    assertEquals(Equality.EQUAL, new YearComparator("2001", "2001").compare());
-    assertEquals(Equality.DIFFERENT, new YearComparator("2001", "2000").compare());
-    assertEquals(Equality.DIFFERENT, new YearComparator("2000", "1999").compare());
-    assertEquals(Equality.DIFFERENT, new YearComparator("189", "190").compare());
+    // 1 year diff is ok
+    assertEquals(Equality.EQUAL, new YearComparator(1, "2001", "2001").compare());
+    assertEquals(Equality.EQUAL, new YearComparator(1, "2001", "2000").compare());
+    assertEquals(Equality.EQUAL, new YearComparator(1, "2000", "1999").compare());
+    assertEquals(Equality.EQUAL, new YearComparator(1, "189", "190").compare());
+
+    // now year diff
+    assertEquals(Equality.EQUAL, new YearComparator( "2001", "2001").compare());
+    assertEquals(Equality.DIFFERENT, new YearComparator( "2001", "2000").compare());
+    assertEquals(Equality.DIFFERENT, new YearComparator( "2000", "1999").compare());
+    assertEquals(Equality.DIFFERENT, new YearComparator( "189", "190").compare());
 
     // placeholders accepted
     assertEquals(Equality.EQUAL, new YearComparator("1878", "187?").compare());

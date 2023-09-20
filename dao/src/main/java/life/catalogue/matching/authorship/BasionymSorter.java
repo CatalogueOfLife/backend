@@ -80,22 +80,33 @@ public class BasionymSorter {
       group.setBasionym(basionyms.get(0));
     } else {
       // check if we have only true duplicates, i.e. the same combination & rank
-      boolean duplicates = true;
+      boolean onlyDuplicates = true;
+      List<FormattableName> duplicates = new ArrayList<>();
       var iter = basionyms.iterator();
       var b1 = func.apply(iter.next());
+      duplicates.add(b1);
       while (iter.hasNext()) {
         var b = func.apply(iter.next());
+        duplicates.add(b);
         if (b1.getRank() != b.getRank()
             || !Objects.equals(b1.getGenus(), b.getGenus())
             || (b1.isTrinomial() && !Objects.equals(b1.getSpecificEpithet(), b.getSpecificEpithet()))
         ) {
-          duplicates = false;
+          onlyDuplicates = false;
           break;
         }
       }
-      if (duplicates) {
+      if (onlyDuplicates) {
+        // prefer exact match of authors, otherwise pick first
+        int idx = 0;
+        for (int i=0; i<duplicates.size(); i++) {
+          if (group.getAuthorship().toString().equalsIgnoreCase(duplicates.get(i).getAuthorship())) {
+            idx = i;
+            break;
+          }
+        }
         // randomly pick first as basionym
-        group.setBasionym(basionyms.remove(0));
+        group.setBasionym(basionyms.remove(idx));
         group.getBasionymDuplicates().addAll(basionyms);
       } else {
         // we have more than one match, dont use it!
