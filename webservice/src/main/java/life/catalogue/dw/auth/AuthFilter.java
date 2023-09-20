@@ -139,7 +139,7 @@ public class AuthFilter implements ContainerRequestFilter {
           }
           // the editor and reviewer role is also scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
           // Check if the user has permissions. For releases use the project key for evaluation.
-          if (r == User.Role.EDITOR && datasetKey != null) {
+          if (r == User.Role.EDITOR) {
             return hasWriteAccess(user.user, datasetKey);
           }
           if (r == User.Role.REVIEWER && datasetKey != null) {
@@ -183,19 +183,25 @@ public class AuthFilter implements ContainerRequestFilter {
   }
 
   /**
-   * Evaluates if a user has write permission on a given dataset.
+   * Evaluates if a user has write permission on a given dataset or can create new datasets, i.e. the datasetKey is null.
    * Admins have access to all datasets. Editors only to the ones explicitly listed in the users property.
    * Project releases are evaluated by the project only, thus an editor of a project always has access to all releases.
    */
-  public static boolean hasWriteAccess(User user, int datasetKey){
-    try {
-      // use the project key to evaluate permissions
-      var info = DatasetInfoCache.CACHE.info(datasetKey, true);
-      int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(info);
-      return user.isAdmin() || user.isEditor(masterKey) || user.isPublisher(info.publisherKey);
-    } catch (NotFoundException e) {
-      return false;
+  public static boolean hasWriteAccess(User user, Integer datasetKey){
+    if (datasetKey == null) {
+      // creating a new dataset requires a global editor role or at least one existing editor right on some dataset
+      return user.isAdmin() || !user.getEditor().isEmpty();
+
+    } else {
+      try {
+        // use the project key to evaluate permissions
+        var info = DatasetInfoCache.CACHE.info(datasetKey, true);
+        int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(info);
+        return user.isAdmin() || user.isEditor(masterKey) || user.isPublisher(info.publisherKey);
+      } catch (NotFoundException e) {
+      }
     }
+    return false;
   }
 
   static Integer requestedDataset(UriInfo uri){

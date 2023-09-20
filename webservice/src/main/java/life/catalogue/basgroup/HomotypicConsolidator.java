@@ -22,6 +22,8 @@ import life.catalogue.matching.authorship.BasionymSorter;
 
 import org.apache.ibatis.annotations.Param;
 
+import org.apache.ibatis.exceptions.PersistenceException;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -316,8 +318,6 @@ public class HomotypicConsolidator {
     VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
 
-    //TODO: enable the strict check below once it never fails!
-    // Preconditions.checkArgument(accepted.getStatus().isTaxon(), String.format("Fail to convert usage %s into a synonym of the non accepted name %s [%s]", u.getLabel(), accepted.getLabel(), accepted.getStatus()));
     if (!accepted.getStatus().isTaxon()) {
       LOG.warn("Cannot convert usage {} into a synonym of the {} {}", u.getLabel(), accepted.getStatus(), accepted.getLabel());
       return;
@@ -367,7 +367,7 @@ public class HomotypicConsolidator {
       }
       // persist usage instance changes
       updateParentAndStatus(u.getId(), accepted.getId(), TaxonomicStatus.SYNONYM, num);
-    } catch (IOException e) {
+    } catch (IOException | PersistenceException e) {
       LOG.error("Failed to traverse descendants of "+u.getLabel(), e);
     }
   }
