@@ -1,34 +1,58 @@
 package life.catalogue.resources;
 
+import com.google.common.base.Preconditions;
+
+import io.dropwizard.auth.Auth;
+
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.db.mapper.ArchivedNameUsageMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
+import life.catalogue.dao.SynonymDao;
+import life.catalogue.dao.TaxonDao;
+import life.catalogue.dao.TxtTreeDao;
+import life.catalogue.db.mapper.*;
+import life.catalogue.db.tree.PrinterFactory;
+import life.catalogue.db.tree.TextTreePrinter;
+import life.catalogue.dw.auth.Roles;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
 
+import life.catalogue.importer.neo.model.NeoRel;
+import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.importer.txttree.TxtTreeInserter;
+
 import org.apache.commons.lang3.StringUtils;
+
+import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.txtree.SimpleTreeNode;
+import org.gbif.txtree.Tree;
+
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +67,10 @@ public class NameUsageResource {
   private final NameUsageSearchService searchService;
   private final NameUsageSuggestionService suggestService;
   private final LatestDatasetKeyCache datasetKeyCache;
+  private final TxtTreeDao txtTreeDao;
 
-  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, LatestDatasetKeyCache datasetKeyCache) {
+  public NameUsageResource(TxtTreeDao txtTreeDao, NameUsageSearchService search, NameUsageSuggestionService suggest, LatestDatasetKeyCache datasetKeyCache) {
+    this.txtTreeDao = txtTreeDao;
     this.searchService = search;
     this.suggestService = suggest;
     this.datasetKeyCache = datasetKeyCache;
@@ -114,6 +140,26 @@ public class NameUsageResource {
   @Path("{id}/source")
   public VerbatimSource source(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(VerbatimSourceMapper.class).getWithSources(DSID.of(datasetKey, id));
+  }
+
+  @GET
+  @Path("{id}/tree")
+  @Produces(MediaType.TEXT_PLAIN)
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR, Roles.REVIEWER})
+  public Response txtree(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    StreamingOutput stream = os -> txtTreeDao.readTxtree(datasetKey, id, os);
+    return Response.ok(stream).build();
+  }
+
+  @POST
+  @Path("{id}/tree")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public int insertTxtree(@PathParam("key") int datasetKey,
+                          @PathParam("id") String id,
+                          @Auth User user,
+                          InputStream txtree) throws IOException {
+    return txtTreeDao.insertTxtree(datasetKey, id, user, txtree);
   }
 
   @GET

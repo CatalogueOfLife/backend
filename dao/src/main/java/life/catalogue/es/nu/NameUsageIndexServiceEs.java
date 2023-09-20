@@ -246,6 +246,24 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
+  public void indexSubtree(DSID<String> taxonId) {
+    boolean setMDC = false;
+    setMDC = LoggingUtils.setDatasetMDC(taxonId.getDatasetKey(), getClass());
+    NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
+    try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
+      LOG.info("Indexing usages from taxon {}", taxonId);
+      processor.processSubtree(taxonId, handler);
+    }
+    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+
+    LOG.info("Successfully indexed {} documents from subtree of taxon {}", indexer.documentsIndexed(), taxonId);
+    // only remove from MDC if we set it in this method before
+    if (setMDC) {
+      LoggingUtils.removeDatasetMDC();
+    }
+  }
+
+  @Override
   public int createEmptyIndex() {
     try {
       EsUtil.deleteIndex(client, esConfig.nameUsage);

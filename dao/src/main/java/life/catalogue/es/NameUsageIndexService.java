@@ -104,6 +104,11 @@ public interface NameUsageIndexService {
   void updateClassification(int datasetKey, String rootTaxonId);
 
   /**
+   * Removes a given root taxon and all its descendants (taxa & synonyms) from ElasticSearch.
+   */
+  void indexSubtree(DSID<String> taxonId);
+
+  /**
    * @return a pass through indexing service that does not do anything. Good for tests
    */
   static NameUsageIndexService passThru() {
@@ -196,6 +201,10 @@ public interface NameUsageIndexService {
         LOG.info("No Elastic Search configured. Passing through");
       }
 
+      @Override
+      public void indexSubtree(DSID<String> root) {
+
+      }
     };
   }
 }

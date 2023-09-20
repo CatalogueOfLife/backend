@@ -306,8 +306,9 @@ public class WsServer extends Application<WsServerConfig> {
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
-    SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), validator);
+    SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), indexService, validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory(), searchService);
+    TxtTreeDao txtTreeDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService);
 
     // usage cache
     UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, true, false, 64);
@@ -398,7 +399,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg, executor));
     j.register(new NameResource(ndao));
-    j.register(new NameUsageResource(searchService, suggestService, coljersey.getCache()));
+    j.register(new NameUsageResource(txtTreeDao, searchService, suggestService, coljersey.getCache()));
     j.register(new NameUsageSearchResource(searchService));
     j.register(new PortalResource(renderer));
     j.register(new ReferenceResource(rdao));

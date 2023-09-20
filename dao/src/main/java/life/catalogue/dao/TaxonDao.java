@@ -369,7 +369,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       info.addTaxa(taxa);
     }
   }
-  
+
   /**
    * Creates a new Taxon including a name instance if no name id is already given.
    *
@@ -379,6 +379,18 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    */
   @Override
   public DSID<String> create(Taxon t, int user) {
+    return create(t, user, true);
+  }
+
+  /**
+   * Creates a new Taxon including a name instance if no name id is already given.
+   * If desired the search index is updated too.
+   * @param t
+   * @param user
+   * @param indexImmediately if true the search index is also updated
+   * @return newly created taxon id
+   */
+  public DSID<String> create(Taxon t, int user, boolean indexImmediately) {
     t.setStatusIfNull(TaxonomicStatus.ACCEPTED);
     if (t.getStatus().isSynonym()) {
       throw new IllegalArgumentException("Taxa cannot have a synonym status");
@@ -414,7 +426,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       session.commit();
 
       // create taxon in ES
-      indexService.update(t.getDatasetKey(), List.of(t.getId()));
+      if (indexImmediately) {
+        indexService.update(t.getDatasetKey(), List.of(t.getId()));
+      }
       return t;
 
     }

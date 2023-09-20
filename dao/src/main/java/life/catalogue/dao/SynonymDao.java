@@ -11,23 +11,29 @@ import life.catalogue.db.mapper.SynonymMapper;
 
 import javax.validation.Validator;
 
+import life.catalogue.es.NameUsageIndexService;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 public class SynonymDao extends DatasetEntityDao<String, Synonym, SynonymMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(SynonymDao.class);
-  
-  public SynonymDao(SqlSessionFactory factory, Validator validator) {
+  private final NameUsageIndexService indexService;
+
+  public SynonymDao(SqlSessionFactory factory, NameUsageIndexService indexService, Validator validator) {
     super(false, factory, Synonym.class, SynonymMapper.class, validator);
+    this.indexService = indexService;
   }
   
   private static String devNull(Reference r) {
     return null;
   }
-  
+
   /**
    * Creates a new Taxon including a name instance if no name id is already given.
    *
@@ -37,6 +43,18 @@ public class SynonymDao extends DatasetEntityDao<String, Synonym, SynonymMapper>
    */
   @Override
   public DSID create(Synonym syn, int user) {
+    return create(syn, user, true);
+  }
+
+  /**
+   * Creates a new Taxon including a name instance if no name id is already given.
+   *
+   * @param syn
+   * @param user
+   * @param indexImmediately if true the search index is also updated
+   * @return newly created taxon id
+   */
+  public DSID create(Synonym syn, int user, boolean indexImmediately) {
     syn.setStatusIfNull(TaxonomicStatus.SYNONYM);
     if (!syn.getStatus().isSynonym()) {
       throw new IllegalArgumentException("Synonym cannot have an accepted status");
@@ -71,7 +89,11 @@ public class SynonymDao extends DatasetEntityDao<String, Synonym, SynonymMapper>
       session.getMapper(SynonymMapper.class).create(syn);
       
       session.commit();
-      
+
+      // create taxon in ES
+      if (indexImmediately) {
+        indexService.update(syn.getDatasetKey(), List.of(syn.getId()));
+      }
       return syn;
     }
   }

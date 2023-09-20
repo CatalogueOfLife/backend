@@ -56,7 +56,13 @@ public class NameUsageProcessor {
     LOG.info("Process dataset {}", datasetKey);
     processTree(datasetKey, null, consumer);
   }
-  
+
+  public void processSubtree(DSID<String> taxonID, Consumer<NameUsageWrapper> consumer) {
+    LOG.info("Process subtree of taxon {}", taxonID);
+    //TODO: implement the real thing!!! this processes the entire dataset !!!
+    processTree(taxonID.getDatasetKey(), null, consumer);
+  }
+
   /**
    * Process all catalogue usages from a given sector
    * @param sectorKey the sector to process
