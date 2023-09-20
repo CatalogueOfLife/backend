@@ -67,10 +67,8 @@ public class NameUsageResource {
   private final NameUsageSearchService searchService;
   private final NameUsageSuggestionService suggestService;
   private final LatestDatasetKeyCache datasetKeyCache;
-  private final TxtTreeDao txtTreeDao;
 
-  public NameUsageResource(TxtTreeDao txtTreeDao, NameUsageSearchService search, NameUsageSuggestionService suggest, LatestDatasetKeyCache datasetKeyCache) {
-    this.txtTreeDao = txtTreeDao;
+  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, LatestDatasetKeyCache datasetKeyCache) {
     this.searchService = search;
     this.suggestService = suggest;
     this.datasetKeyCache = datasetKeyCache;
@@ -140,26 +138,6 @@ public class NameUsageResource {
   @Path("{id}/source")
   public VerbatimSource source(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(VerbatimSourceMapper.class).getWithSources(DSID.of(datasetKey, id));
-  }
-
-  @GET
-  @Path("{id}/tree")
-  @Produces(MediaType.TEXT_PLAIN)
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR, Roles.REVIEWER})
-  public Response txtree(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    StreamingOutput stream = os -> txtTreeDao.readTxtree(datasetKey, id, os);
-    return Response.ok(stream).build();
-  }
-
-  @POST
-  @Path("{id}/tree")
-  @Consumes(MediaType.TEXT_PLAIN)
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public int insertTxtree(@PathParam("key") int datasetKey,
-                          @PathParam("id") String id,
-                          @Auth User user,
-                          InputStream txtree) throws IOException {
-    return txtTreeDao.insertTxtree(datasetKey, id, user, txtree);
   }
 
   @GET

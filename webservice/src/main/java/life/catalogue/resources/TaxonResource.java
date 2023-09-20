@@ -1,24 +1,30 @@
 package life.catalogue.resources;
 
+import io.dropwizard.auth.Auth;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.TreatmentFormat;
 import life.catalogue.dao.TaxonDao;
+import life.catalogue.dao.TxtTreeDao;
 import life.catalogue.db.mapper.*;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.common.ws.MoreMediaTypes;
 
@@ -37,9 +43,11 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
   private final TaxonDao dao;
+  private final TxtTreeDao txtTreeDao;
 
-  public TaxonResource(TaxonDao dao) {
+  public TaxonResource(TaxonDao dao, TxtTreeDao txtTreeDao) {
     super(Taxon.class, dao);
+    this.txtTreeDao = txtTreeDao;
     this.dao = dao;
   }
 
@@ -146,5 +154,25 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Path("{id}/source")
   public VerbatimSource source(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(VerbatimSourceMapper.class).get(DSID.of(datasetKey, id));
+  }
+
+  @GET
+  @Path("{id}/tree")
+  @Produces(MediaType.TEXT_PLAIN)
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR, Roles.REVIEWER})
+  public Response txtree(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    StreamingOutput stream = os -> txtTreeDao.readTxtree(datasetKey, id, os);
+    return Response.ok(stream).build();
+  }
+
+  @POST
+  @Path("{id}/tree")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public int insertTxtree(@PathParam("key") int datasetKey,
+                          @PathParam("id") String id,
+                          @Auth User user,
+                          InputStream txtree) throws IOException {
+    return txtTreeDao.insertTxtree(datasetKey, id, user, txtree);
   }
 }

@@ -17,6 +17,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -59,8 +60,7 @@ public class NameUsageProcessor {
 
   public void processSubtree(DSID<String> taxonID, Consumer<NameUsageWrapper> consumer) {
     LOG.info("Process subtree of taxon {}", taxonID);
-    //TODO: implement the real thing!!! this processes the entire dataset !!!
-    processTree(taxonID.getDatasetKey(), null, consumer);
+    throw new NotImplementedException();
   }
 
   /**
