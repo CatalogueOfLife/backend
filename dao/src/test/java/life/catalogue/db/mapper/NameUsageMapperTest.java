@@ -289,16 +289,24 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
     final AtomicInteger count = new AtomicInteger(0);
     mapper().processSector(s1).forEach(n -> count.incrementAndGet());
-    assertEquals(468, count.get());
+    int left = 468;
+    assertEquals(left, count.get());
 
     // delete
     mapper().createTempTable();
-    mapper().addSectorBelowRankToTemp(s1, Rank.SUBSPECIES);
+    mapper().addSectorSynonymsToTemp(s1);
     int dels = mapper().deleteByTemp(s1.getDatasetKey());
-    assertEquals(450, dels);
+    assertEquals(189, dels);
+    left = left-dels;
+
+    mapper().addSectorBelowRankToTemp(s1, Rank.SUBSPECIES);
+    dels = mapper().deleteByTemp(s1.getDatasetKey());
+    assertEquals(270, dels);
+    left = left-dels;
+
     count.set(0);
     mapper().processSector(s1).forEach(n -> count.incrementAndGet());
-    assertEquals(18, count.get());
+    assertEquals(left, count.get());
   }
 
   void assertIdClassEquals(NameUsageBase o1, NameUsageBase o2) {
