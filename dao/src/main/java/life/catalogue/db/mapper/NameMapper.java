@@ -6,6 +6,7 @@ import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.db.*;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
@@ -89,10 +90,10 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
                          @Param("page") Page page);
 
   /**
-   * List names which have no names index match.
+   * List names of given name types, which have no names index match.
    * @param datasetKey
    * @param limit
    */
-  List<Name> listUnmatch(@Param("datasetKey") int datasetKey, @Param("limit") int limit);
+  List<Name> listUnmatch(@Param("datasetKey") int datasetKey, @Param("types") Set<NameType> types, @Param("limit") int limit);
 
 }

@@ -322,6 +322,9 @@
     SELECT <include refid="SELECT_NIDX"/>
     FROM <include refid="FROM_NIDX"/>
     WHERE n.dataset_key=#{datasetKey} AND nm.name_id IS NULL
+    <if test="types!=null">
+      AND n.type IN <foreach item="t" collection="types" open="(" separator="," close=")">#{t}::NAMETYPE</foreach>
+    </if>
     LIMIT #{limit}
   </select>
 

@@ -23,6 +23,7 @@ import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.DatasetMatcher;
 import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.NameIndexImpl;
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import java.io.IOException;
@@ -216,11 +217,11 @@ public class XRelease extends ProjectRelease {
   private void matchBaseReleaseIfNeeded() throws InterruptedException {
     updateState(ImportState.PROCESSING);
     boolean matched = false;
-    final int testSize = 100;
+    final int testSize = 1000;
     try (SqlSession session = factory.openSession(false)) {
       var nmm = session.getMapper(NameMatchMapper.class);
       var nm = session.getMapper(NameMapper.class);
-      var unmatched = nm.listUnmatch(newDatasetKey, testSize);
+      var unmatched = nm.listUnmatch(newDatasetKey, NameIndexImpl.INDEX_NAME_TYPES, testSize);
       if (unmatched == null || unmatched.size() < testSize) {
         // rematch individually
         if (unmatched != null) {

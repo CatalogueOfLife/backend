@@ -38,7 +38,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class NameIndexImpl implements NameIndex {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexImpl.class);
-  static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
+  public static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
       NameType.SCIENTIFIC, NameType.HYBRID_FORMULA, NameType.VIRUS, NameType.OTU, NameType.INFORMAL
   );
 
