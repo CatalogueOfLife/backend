@@ -138,12 +138,6 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     checkIfCancelled();
     copyData();
 
-    // at last copy name matches - we need an attached table for this to fulfill constraints
-    checkIfCancelled();
-    try (SqlSession session = factory.openSession(true)) {
-      copyTable(NameMatch.class, NameMatchMapper.class, session);
-    }
-
     // subclass specifics
     checkIfCancelled();
     finalWork();
