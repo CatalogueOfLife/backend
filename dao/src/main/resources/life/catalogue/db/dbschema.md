@@ -1,6 +1,7 @@
 
 
 
+
 ## DB Schema Changes
 are to be applied manually to prod.
 Dev can usually be wiped and started from scratch.
@@ -12,6 +13,16 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+### 2023-09-21 changed user roles
+```sql
+UPDATE "user" SET roles = '{}';
+-- we only keep markus as the admin
+UPDATE "user" SET roles = array['ADMIN'::user_role] WHERE key = 101;
+-- we make thomas, yuri, geoff, olaf, donald, camila, diana & tim  global editors
+UPDATE "user" SET roles = array['EDITOR'::user_role] WHERE key in (100,102,103,155,117,728,643,115);
+-- we make walter,daveN & leenv global reviwers
+UPDATE "user" SET roles = array['REVIEWER'::user_role] WHERE key in (737,318,130);
+```
 
 ### 2023-09-15 dataset import indices to support more filters
 ```sql

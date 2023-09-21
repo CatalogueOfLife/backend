@@ -128,6 +128,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<NameUsageBase> listByNamesIndexOrCanonicalID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx, @Param("page") Page page);
 
   /**
+   * List all usages across all datasets with the given names index id.
    * Warning, this does not return bare names, only true usages!
    */
   List<NameUsageBase> listByNamesIndexIDGlobal(@Param("nidx") int nidx, @Param("page") Page page);

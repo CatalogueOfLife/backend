@@ -84,6 +84,10 @@ public class UsageMatcherGlobal {
     return uCache;
   }
 
+  public NameIndex getNameIndex() {
+    return nameIndex;
+  }
+
   private DSID<Integer> canonNidx(int datasetKey, Integer nidx) {
     if (nidx != null) {
       var xn = nameIndex.get(nidx);

@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.db.*;
 
@@ -86,5 +87,12 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   List<Name> listOrphans(@Param("datasetKey") int datasetKey,
                          @Param("before") @Nullable LocalDateTime before,
                          @Param("page") Page page);
+
+  /**
+   * List names which have no names index match.
+   * @param datasetKey
+   * @param limit
+   */
+  List<Name> listUnmatch(@Param("datasetKey") int datasetKey, @Param("limit") int limit);
 
 }

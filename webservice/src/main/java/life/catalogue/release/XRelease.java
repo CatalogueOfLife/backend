@@ -15,14 +15,14 @@ import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
+import life.catalogue.matching.DatasetMatcher;
+import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import java.io.IOException;
@@ -52,6 +52,7 @@ public class XRelease extends ProjectRelease {
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
   private final UsageMatcherGlobal matcher;
+  private final NameIndex ni;
   private XReleaseConfig xCfg;
   private TreeMergeHandlerConfig mergeCfg;
 
@@ -63,6 +64,7 @@ public class XRelease extends ProjectRelease {
     this.siDao = siDao;
     this.syncFactory = syncFactory;
     this.matcher = matcher;
+    this.ni = matcher.getNameIndex();
     baseReleaseKey = releaseKey;
     fullUser.setKey(userKey);
     LOG.info("Build extended release for project {} from public release {}", datasetKey, baseReleaseKey);
@@ -180,6 +182,8 @@ public class XRelease extends ProjectRelease {
 
   @Override
   void finalWork() throws Exception {
+    matchBaseReleaseIfNeeded();
+
     mergeSectors();
 
     updateState(ImportState.PROCESSING);
@@ -207,6 +211,39 @@ public class XRelease extends ProjectRelease {
     buildSectorMetrics();
     // finally also call the shared part
     super.finalWork();
+  }
+
+  private void matchBaseReleaseIfNeeded() throws InterruptedException {
+    updateState(ImportState.PROCESSING);
+    boolean matched = false;
+    final int testSize = 100;
+    try (SqlSession session = factory.openSession(false)) {
+      var nmm = session.getMapper(NameMatchMapper.class);
+      var nm = session.getMapper(NameMapper.class);
+      var unmatched = nm.listUnmatch(newDatasetKey, testSize);
+      if (unmatched == null || unmatched.size() < testSize) {
+        // rematch individually
+        if (unmatched != null) {
+          LOG.warn("Match {} usages from the base release without matching", unmatched.size());
+          for (var n : unmatched) {
+            NameMatch m = ni.match(n, true, false);
+            if (m.hasMatch()) {
+              nmm.create(n, n.getSectorKey(), m.getName().getKey(), m.getType());
+            } else {
+              LOG.info("No match for {}: {}", n.getKey(), n.getLabel());
+            }
+          }
+        }
+        session.commit();
+        matched = true;
+      }
+    }
+    // match outside the session if needed
+    if (!matched) {
+      LOG.warn("Rematch entire base release lacking > {} matches", testSize);
+      DatasetMatcher dm = new DatasetMatcher(factory, ni);
+      dm.match(newDatasetKey, true);
+    }
   }
 
   /**

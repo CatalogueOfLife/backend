@@ -37,6 +37,19 @@ public class DownloadUtilTest {
   }
 
   @Test
+  //@Test(expected = DownloadException.class)
+  @Ignore
+  public void diskFull() throws IOException {
+    DownloadUtil d = new DownloadUtil(hc);
+
+    var f2 = new File("/Volumes/Tiny/down");
+    System.out.println(f2);
+
+    // 7.79MB files
+    d.download(URI.create("https://github.com/CatalogueOfLife/data/raw/master/ACEF/10.tar.gz"), f2);
+  }
+
+  @Test
   @Ignore
   public void downloadFtp() throws IOException {
     DownloadUtil d = new DownloadUtil(hc);

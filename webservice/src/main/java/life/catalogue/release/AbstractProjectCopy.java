@@ -236,6 +236,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       copyTable(Reference.class, ReferenceMapper.class, session);
 
       copyTable(Name.class, NameMapper.class, session);
+      copyTable(NameMatch.class, NameMatchMapper.class, session);
       copyTable(NameRelation.class, NameRelationMapper.class, session);
       copyTable(TypeMaterial.class, TypeMaterialMapper.class, session);
 

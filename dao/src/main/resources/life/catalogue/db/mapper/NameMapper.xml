@@ -318,6 +318,13 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="listUnmatch" parameterType="map" resultMap="nameResultMap">
+    SELECT <include refid="SELECT_NIDX"/>
+    FROM <include refid="FROM_NIDX"/>
+    WHERE n.dataset_key=#{datasetKey} AND nm.name_id IS NULL
+    LIMIT #{limit}
+  </select>
+
   <select id="processSector" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
