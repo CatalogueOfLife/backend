@@ -313,7 +313,7 @@ public class XRelease extends ProjectRelease {
         }
       }
     }
-    LOG.error("All {} sectors merged, {} failed", counter, failedSyncs);
+    LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
   }
 
   /**
