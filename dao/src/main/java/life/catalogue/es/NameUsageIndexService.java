@@ -54,8 +54,9 @@ public interface NameUsageIndexService {
 
   /**
    * Removes a given root taxon and all its descendants (taxa & synonyms) from ElasticSearch.
+   * @param keepRoot if true only deletes all descendants but keeps the root taxon
    */
-  void deleteSubtree(DSID<String> root);
+  void deleteSubtree(DSID<String> root, boolean keepRoot);
 
   /**
    * Indexes an entire dataset from postgres into ElasticSearch using the bulk API.
@@ -132,7 +133,7 @@ public interface NameUsageIndexService {
       }
 
       @Override
-      public void deleteSubtree(DSID<String> root) {
+      public void deleteSubtree(DSID<String> root, boolean keepRoot) {
         LOG.info("No Elastic Search configured, pass through deletion of subtree starting with taxon {}", root);
       }
 

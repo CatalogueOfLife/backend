@@ -187,13 +187,18 @@ public class EsUtil {
   /**
    * Deletes a taxonomic subtree from a single dataset. It deletes all usage documents for a given datasetKey that share the given root
    * taxonID in their classification.
-   * 
+   *
+   * @param keepRoot if true only deletes all descendants but keeps the root taxon
    * @throws IOException
    */
-  public static int deleteSubtree(RestClient client, String index, DSID<String> root) {
+  public static int deleteSubtree(RestClient client, String index, DSID<String> root, boolean keepRoot) {
     BoolQuery query = BoolQuery.withFilters(
-        new TermQuery("datasetKey", root.getDatasetKey()),
-        new TermQuery(NameUsageFieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.TAXON_ID), root.getId()));
+      new TermQuery("datasetKey", root.getDatasetKey()),
+      new TermQuery(NameUsageFieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.TAXON_ID), root.getId())
+    );
+    if (keepRoot) {
+      query.mustNot(new TermQuery("usageId", root.getId()));
+    }
     return deleteByQuery(client, index, query);
   }
 

@@ -572,8 +572,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    * Does a recursive delete to remove an entire subtree.
    * Name usage, name and all associated infos are removed.
    * It also deletes all sectors targeting any taxon in the subtree.
+   * @param keepRoot if true only deletes all descendants but keeps the root taxon
    */
-  public void deleteRecursively(DSID<String> id, User user) {
+  public void deleteRecursively(DSID<String> id, boolean keepRoot, User user) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
@@ -599,7 +600,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       if (delta == null) {
         throw NotFoundException.notFound(Taxon.class, id);
       }
-      LOG.info("Recursively delete taxon {} and its {} nested sectors from dataset {} by user {}", id, delta.size(), id.getDatasetKey(), user);
+      LOG.info("Recursively delete {}taxon {} and its {} nested sectors from dataset {} by user {}", keepRoot ? "descendants of " : "", id, delta.size(), id.getDatasetKey(), user);
 
       List<Integer> sectorKeys = sm.listDescendantSectorKeys(id);
       if (sectorKeys.size() != delta.size()) {
@@ -612,17 +613,20 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       PgUtils.consume(
         () -> num.processTreeIds(id),
         unid -> {
-          final var nuKey = DSID.of(id.getDatasetKey(), unid.usageId);
-          // deletes no longer cascade, remove vernacular, distributions, media and treatments manually
-          taxProcMappers.forEach(m -> m.deleteByTaxon(nuKey));
-          trm.deleteByTaxon(nuKey);
-          // remove usage
-          num.delete(nuKey);
-          vsm.delete(nuKey);
-          // remove name relations and name
-          final var nnKey = nuKey.id(unid.nameId);
-          nameProcMappers.forEach(m -> m.deleteByName(nnKey));
-          nm.delete(nnKey);
+          // should we keep the root taxon?
+          if (!keepRoot || !unid.usageId.equals(id.getId())) {
+            final var nuKey = DSID.of(id.getDatasetKey(), unid.usageId);
+            // deletes no longer cascade, remove vernacular, distributions, media and treatments manually
+            taxProcMappers.forEach(m -> m.deleteByTaxon(nuKey));
+            trm.deleteByTaxon(nuKey);
+            // remove usage
+            num.delete(nuKey);
+            vsm.delete(nuKey);
+            // remove name relations and name
+            final var nnKey = nuKey.id(unid.nameId);
+            nameProcMappers.forEach(m -> m.deleteByName(nnKey));
+            nm.delete(nnKey);
+          }
         }
       );
       session.commit();
@@ -647,7 +651,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     }
     
     // update ES
-    indexService.deleteSubtree(id);
+    indexService.deleteSubtree(id, keepRoot);
   }
   
   /**

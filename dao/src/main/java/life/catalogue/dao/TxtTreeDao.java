@@ -4,7 +4,6 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.tree.PrinterFactory;
@@ -31,14 +30,14 @@ public class TxtTreeDao {
   private final SqlSessionFactory factory;
   private static final int INDEX_BATCH_SIZE = 1000;
   private final NameUsageIndexService indexService;
-  private final TaxonDao tdo;
-  private final SynonymDao sdo;
+  private final TaxonDao tdao;
+  private final SynonymDao sdao;
 
-  public TxtTreeDao(SqlSessionFactory factory, TaxonDao tdo, SynonymDao sdo, NameUsageIndexService indexService) {
+  public TxtTreeDao(SqlSessionFactory factory, TaxonDao tdao, SynonymDao sdao, NameUsageIndexService indexService) {
     this.factory = factory;
     this.indexService = indexService;
-    this.tdo = tdo;
-    this.sdo = sdo;
+    this.tdao = tdao;
+    this.sdao = sdao;
   }
 
   public void readTxtree(int datasetKey, String id, OutputStream os) throws IOException {
@@ -52,10 +51,10 @@ public class TxtTreeDao {
     writer.flush();
   }
 
-  public int insertTxtree(int datasetKey, String id, User user, InputStream txtree) throws IOException {
-    var tree = Tree.simple(txtree);
+  public int insertTxtree(int datasetKey, String id, User user, InputStream txtree, boolean replace) throws IOException {
     final var key = DSID.of(datasetKey, id);
     Taxon parent;
+    Taxon grandparent;
     LinkedList<SimpleName> classification;
     try (SqlSession session = factory.openSession(true)) {
       var tm = session.getMapper(TaxonMapper.class);
@@ -63,9 +62,23 @@ public class TxtTreeDao {
       if (parent == null) {
         throw NotFoundException.notFound(Taxon.class, key);
       }
+      grandparent = parent.getParentId() == null ? null : tm.get(key.id(parent.getParentId()));
       classification = new LinkedList<>(tm.classificationSimple(key));
       Collections.reverse(classification); // we need to start with highest rank down to lowest, incl the taxon itself
       classification.addLast(new SimpleName(parent));
+    }
+    final var tree = Tree.simple(txtree);
+
+    if (replace) {
+      // replace depends on tree content:
+      // if single root and the name incl authorship is the same, replace the root and all its children
+      // otherwise replace only the children
+      boolean keepRoot = grandparent == null || tree.getRoot().size() != 1 || !tree.getRoot().get(0).name.equalsIgnoreCase(parent.getLabel());
+      tdao.deleteRecursively(parent, keepRoot, user);
+      if (!keepRoot) {
+        // we must select a new parent as we just deleted the current one
+        parent = grandparent;
+      }
     }
 
     LOG.info("Insert tree with {} nodes by {} under parent {} ", tree.size(), user, parent);
@@ -98,7 +111,7 @@ public class TxtTreeDao {
     final Name n = tree2name(parent.getDatasetKey(), t);
     final Taxon tax = new Taxon(n);
     tax.setParentId(parent.getId());
-    tdo.create(tax, user.getKey(), false);
+    tdao.create(tax, user.getKey(), false);
     addDoc(docs, tax, classification);
     counter++;
 
@@ -106,7 +119,7 @@ public class TxtTreeDao {
     for (SimpleTreeNode st : t.synonyms){
       final Name sn = tree2name(parent.getDatasetKey(), st);
       final Synonym syn = new Synonym(sn);
-      sdo.create(syn, user.getKey());
+      sdao.create(syn, user.getKey());
       if (st.basionym) {
         try (SqlSession session = factory.openSession(true)) {
           var nrm = session.getMapper(NameRelationMapper.class);

@@ -186,8 +186,8 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void deleteSubtree(DSID<String> root) {
-    int cnt = EsUtil.deleteSubtree(client, esConfig.nameUsage.name, root);
+  public void deleteSubtree(DSID<String> root, boolean keepRoot) {
+    int cnt = EsUtil.deleteSubtree(client, esConfig.nameUsage.name, root, keepRoot);
     LOG.info("Deleted {} documents for entire subtree of root taxon {} from index {}", cnt, root, esConfig.nameUsage.name);
     EsUtil.refreshIndex(client, esConfig.nameUsage.name);
   }

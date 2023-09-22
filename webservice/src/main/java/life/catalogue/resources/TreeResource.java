@@ -74,7 +74,7 @@ public class TreeResource {
   public void deleteRecursively(@PathParam("key") int datasetKey,
                                 @PathParam("id") String id,
                                 @Auth User user) {
-    dao.deleteRecursively(DSID.of(datasetKey, id), user);
+    dao.deleteRecursively(DSID.of(datasetKey, id), false, user);
   }
   
   @GET

@@ -1,21 +1,19 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.TreatmentFormat;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TxtTreeDao;
 import life.catalogue.db.mapper.*;
+import life.catalogue.dw.auth.Roles;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Stream;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
@@ -24,17 +22,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import life.catalogue.dw.auth.Roles;
-import life.catalogue.dw.jersey.MoreHttpHeaders;
-import life.catalogue.common.ws.MoreMediaTypes;
-
-import org.apache.commons.io.Charsets;
-import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
 
 @Path("/dataset/{key}/taxon")
 @Produces(MediaType.APPLICATION_JSON)
@@ -171,8 +164,9 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public int insertTxtree(@PathParam("key") int datasetKey,
                           @PathParam("id") String id,
+                          @QueryParam("replace") boolean replace,
                           @Auth User user,
                           InputStream txtree) throws IOException {
-    return txtTreeDao.insertTxtree(datasetKey, id, user, txtree);
+    return txtTreeDao.insertTxtree(datasetKey, id, user, txtree, replace);
   }
 }

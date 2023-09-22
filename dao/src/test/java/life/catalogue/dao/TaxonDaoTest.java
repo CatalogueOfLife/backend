@@ -362,7 +362,7 @@ public class TaxonDaoTest extends DaoTestBase {
     assertNotNull(sm.get(s1));
     assertNotNull(sm.get(s2));
     assertNotNull(sm.get(s3));
-    tDao.deleteRecursively(key.id("t4"), USER_EDITOR);
+    tDao.deleteRecursively(key.id("t4"), false, USER_EDITOR);
   
     assertNull(tDao.get(key.id("t4")));
     assertNull(tDao.get(key.id("t10")));
