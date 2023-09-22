@@ -3,6 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.TaxonMapper;
@@ -15,6 +16,7 @@ import life.catalogue.matching.NameValidator;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
 
@@ -69,6 +71,8 @@ public class TxtTreeDao {
       Collections.reverse(classification); // we need to start with highest rank down to lowest, incl the taxon itself
       classification.addLast(new SimpleName(parent));
     }
+    // propagate the existing code to all inserted names
+    final NomCode code = ObjectUtils.coalesce(parent.getName().getCode(), grandparent.getName().getCode());
     final var tree = Tree.simple(txtree);
 
     if (replace) {
@@ -87,7 +91,7 @@ public class TxtTreeDao {
     int counter = 0;
     var docs = new ArrayList<NameUsageWrapper>();
     for (SimpleTreeNode t : tree.getRoot()) {
-      counter = counter + insertTaxon(parent, t, classification, user, docs);
+      counter = counter + insertTaxon(parent, t, classification, code, user, docs);
     }
     // push remaining docs to ES
     if (docs.size() >= INDEX_BATCH_SIZE) {
@@ -114,9 +118,9 @@ public class TxtTreeDao {
     }
   }
 
-  private int insertTaxon(Taxon parent, SimpleTreeNode t, LinkedList<SimpleName> classification, User user, List<NameUsageWrapper> docs) {
+  private int insertTaxon(Taxon parent, SimpleTreeNode t, LinkedList<SimpleName> classification, NomCode code, User user, List<NameUsageWrapper> docs) {
     int counter = 0;
-    final Name n = tree2name(parent.getDatasetKey(), t);
+    final Name n = tree2name(parent.getDatasetKey(), t, code);
     final Taxon tax = new Taxon(n);
     tax.setParentId(parent.getId());
     tdao.create(tax, user.getKey(), false);
@@ -125,7 +129,7 @@ public class TxtTreeDao {
 
     // synonyms
     for (SimpleTreeNode st : t.synonyms){
-      final Name sn = tree2name(parent.getDatasetKey(), st);
+      final Name sn = tree2name(parent.getDatasetKey(), st, code);
       final Synonym syn = new Synonym(sn);
       sdao.create(syn, user.getKey());
       if (st.basionym) {
@@ -147,7 +151,7 @@ public class TxtTreeDao {
 
     // accepted children
     for (SimpleTreeNode c : t.children){
-      counter = counter + insertTaxon(tax, c, classification, user, docs);
+      counter = counter + insertTaxon(tax, c, classification, code, user, docs);
     }
 
     // remove taxon from classification again
@@ -156,11 +160,12 @@ public class TxtTreeDao {
     return counter;
   }
 
-  private static Name tree2name(int datasetKey, SimpleTreeNode tree) {
+  private static Name tree2name(int datasetKey, SimpleTreeNode tree, NomCode code) {
     Name n = new Name();
     n.setDatasetKey(datasetKey);
     n.setScientificName(tree.name);
     n.setRank(tree.rank);
+    n.setCode(code);
     return n;
   }
 
