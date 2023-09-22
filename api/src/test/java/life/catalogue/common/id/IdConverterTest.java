@@ -79,6 +79,7 @@ public class IdConverterTest {
     converters.add(IdConverter.LATIN32);
     converters.add(IdConverter.LATIN36);
     converters.add(IdConverter.BASE64);
+    converters.add(IdConverter.URISAFE64);
   
     for (int id : ids) {
       System.out.println("\n" + id);
@@ -276,6 +277,7 @@ public class IdConverterTest {
     converters.add(IdConverter.LATIN29);
     converters.add(IdConverter.LATIN36);
     converters.add(IdConverter.BASE64);
+    converters.add(new IdConverter("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", '-')); // test with prefix
 
     for (int val : vals) {
       System.out.println("\n" + val);

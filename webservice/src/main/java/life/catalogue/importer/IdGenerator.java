@@ -15,7 +15,7 @@ import java.util.stream.Stream;
  * Identifiers can have a shared prefix and are based on pure case sensitive latin alphanumerical characters.
  */
 public class IdGenerator {
-  private static final String availChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  private static final String AVAIL_PREFIX_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   private static final char PREFIX_PAD_CHAR = 'x';
   
   private final Supplier<Integer> intIdSupplier;
@@ -69,7 +69,7 @@ public class IdGenerator {
             .filter(s -> s.startsWith(prefix.toString()))
             .collect(Collectors.toSet());
     while (!ids.isEmpty()) {
-      Set<Character> idchars = StringUtils.charSet(availChars);
+      Set<Character> idchars = StringUtils.charSet(AVAIL_PREFIX_CHARS);
       for (String id : ids) {
         if (id.length() < 1) continue;
         idchars.remove(id.charAt(0));

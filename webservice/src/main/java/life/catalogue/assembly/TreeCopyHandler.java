@@ -3,12 +3,12 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.dao.CatCopy;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.matching.NameIndex;
 
 import java.util.*;
 
-import life.catalogue.matching.UsageMatch;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
 
   TreeCopyHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
-    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
+    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, CatCopy.ID_GENERATOR, CatCopy.ID_GENERATOR, CatCopy.ID_GENERATOR);
   }
 
   @Override

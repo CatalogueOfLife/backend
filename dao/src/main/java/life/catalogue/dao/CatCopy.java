@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
+import life.catalogue.common.id.ShortUUID;
 import life.catalogue.db.mapper.*;
 
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +26,7 @@ public class CatCopy {
   
   // Public so that the ES QMatcher class can us it and be guranteed it transliterates the Q exactly alike.
   public static final Transliterator transLatin = Transliterator.getInstance("Any-Latin; de-ascii; Latin-ASCII");
-  
+  public static final Supplier<String> ID_GENERATOR = () -> ShortUUID.random().toString();
   private static final Map<EntityType, Class<? extends TaxonExtensionMapper<? extends SectorScopedEntity<Integer>>>> extMapper = new HashMap<>();
   static {
     extMapper.put(EntityType.DISTRIBUTION, DistributionMapper.class);
@@ -42,15 +44,20 @@ public class CatCopy {
    *
    * @return the original source taxon id
    */
-  public static <T extends NameUsageBase> DSID<String> copyUsage(final SqlSession batchSession, final T t, @Nullable final DSID<String> targetParent, int user,
+  public static <T extends NameUsageBase> DSID<String> copyUsage(final SqlSession batchSession, final T t,
+                                                                 @Nullable final DSID<String> targetParent,
+                                                                 int user,
                                                                  Set<EntityType> include,
+                                                                 Supplier<String> usageIdSupplier,
+                                                                 Supplier<String> nameIdSupplier,
+                                                                 Supplier<String> typeMaterialIdSupplier,
                                                                  Function<Reference, String> lookupReference,
                                                                  Function<String, String> lookupByIdReference) {
     final DSID<String> origT = new DSIDValue<>(t);
     final DSID<String> origN = new DSIDValue<>(t.getName());
-    copyName(batchSession, t, targetParent.getDatasetKey(), user, lookupReference);
+    copyName(batchSession, t, targetParent.getDatasetKey(), user, lookupReference, nameIdSupplier);
     
-    setKeys(t, targetParent.getDatasetKey());
+    setKeys(t, targetParent.getDatasetKey(), usageIdSupplier);
     t.applyUser(user, true);
     t.setOrigin(Origin.SOURCE);
     t.setParentId(targetParent.getId());
@@ -99,7 +106,7 @@ public class CatCopy {
       } else if (EntityType.TYPE_MATERIAL == type) {
         final var mapper = batchSession.getMapper(TypeMaterialMapper.class);
         mapper.listByName(origN).forEach(tm -> {
-          newKey(tm); // id=UUID & verbatimKey=null
+          newKey(tm, typeMaterialIdSupplier); // id=UUID & verbatimKey=null
           tm.setNameId(t.getName().getId());
           tm.setSectorKey(t.getSectorKey());
           tm.setDatasetKey(targetParent.getDatasetKey());
@@ -112,45 +119,58 @@ public class CatCopy {
     }
     return origT;
   }
-  
+
   /**
-   * Copies the given nam instance, modifying the original and assigning a new id
+   * Usage copy method that uses a UUID generator for all new ids.
    */
+  public static <T extends NameUsageBase> DSID<String> copyUsage(final SqlSession batchSession, final T t,
+                                                                 @Nullable final DSID<String> targetParent,
+                                                                 int user,
+                                                                 Set<EntityType> include,
+                                                                 Function<Reference, String> lookupReference,
+                                                                 Function<String, String> lookupByIdReference) {
+    return copyUsage(batchSession, t, targetParent, user, include, ID_GENERATOR, ID_GENERATOR, ID_GENERATOR, lookupReference, lookupByIdReference);
+  }
+
+
+    /**
+     * Copies the given nam instance, modifying the original and assigning a new id
+     */
   static void copyName(final SqlSession batchSession, final NameUsageBase u, final int targetDatasetKey, int user,
-                       Function<Reference, String> lookupReference) {
+                       Function<Reference, String> lookupReference, Supplier<String> idSupplier) {
     Name n = u.getName();
     n.applyUser(user, true);
     n.setOrigin(Origin.SOURCE);
     if (n.getPublishedInId() != null) {
       ReferenceMapper rm = batchSession.getMapper(ReferenceMapper.class);
-      Reference ref = rm.get(new DSIDValue(n.getDatasetKey(), n.getPublishedInId()));
+      Reference ref = rm.get(new DSIDValue<>(n.getDatasetKey(), n.getPublishedInId()));
       n.setPublishedInId(lookupReference.apply(ref));
     }
-    setKeys(n, targetDatasetKey, u.getSectorKey());
+    setKeys(n, targetDatasetKey, u.getSectorKey(), idSupplier);
     batchSession.getMapper(NameMapper.class).create(n);
   }
   
-  private static NameUsageBase setKeys(NameUsageBase t, int datasetKey) {
+  private static NameUsageBase setKeys(NameUsageBase t, int datasetKey, Supplier<String> idSupplier) {
     t.setDatasetKey(datasetKey);
-    return newKey(t);
+    return newKey(t, idSupplier);
   }
   
-  private static Name setKeys(Name n, int datasetKey, int sectorKey) {
+  private static Name setKeys(Name n, int datasetKey, Integer sectorKey, Supplier<String> idSupplier) {
     n.setDatasetKey(datasetKey);
     n.setSectorKey(sectorKey);
-    newKey(n);
+    newKey(n, idSupplier);
     return n;
   }
   
-  private static Reference setKeys(Reference r, int datasetKey, int sectorKey) {
+  private static Reference setKeys(Reference r, int datasetKey, Integer sectorKey, Supplier<String> idSupplier) {
     r.setDatasetKey(datasetKey);
     r.setSectorKey(sectorKey);
-    return newKey(r);
+    return newKey(r, idSupplier);
   }
   
-  private static <T extends VerbatimEntity & DSID<String>> T newKey(T e) {
+  private static <T extends VerbatimEntity & DSID<String>> T newKey(T e, Supplier<String> idSupplier) {
     e.setVerbatimKey(null);
-    e.setId(UUID.randomUUID().toString());
+    e.setId(idSupplier.get()); // UUID.randomUUID().toString()
     return e;
   }
   

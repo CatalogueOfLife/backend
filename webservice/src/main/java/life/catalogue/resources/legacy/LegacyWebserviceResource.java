@@ -3,7 +3,7 @@ package life.catalogue.resources.legacy;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.common.id.ShortUuid;
+import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.legacy.LNameMapper;
@@ -97,7 +97,7 @@ public class LegacyWebserviceResource {
       return resp;
 
     } catch (Exception e) {
-      String key = ShortUuid.build().toString();
+      String key = ShortUUID.build().toString();
       LOG.error("Legacy API error (ID {})", key, e);
       return new LError(id, name, "Application error (ID "+key+")", version);
     }

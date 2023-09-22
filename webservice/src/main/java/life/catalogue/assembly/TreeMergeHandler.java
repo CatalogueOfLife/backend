@@ -4,12 +4,16 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.UsageCache;
+import life.catalogue.common.id.IdConverter;
 import life.catalogue.matching.*;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.net.URI;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -32,12 +36,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int thrown = 0;
   private int created = 0;
   private int updated = 0; // updates
-  private final int subjectDatasetKey;
   private final @Nullable TreeMergeHandlerConfig cfg;
 
   TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
                    User user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg) {
-    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
+    // we use much smaller ids than UUID which are terriblly long to iterate over the entire tree - which requires to build a path from all parent IDs
+    // this causes postgres to use a lot of memory and creates very large temporary files
+    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, new XIdGen(), new XIdGen(), new XIdGen());
     this.cfg = cfg;
     this.matcher = matcher;
     uCache = matcher.getUCache();
@@ -46,10 +51,29 @@ public class TreeMergeHandler extends TreeBaseHandler {
     } else {
       parents = new MatchedParentStack(matcher.toSimpleName(target));
     }
-    subjectDatasetKey = sector.getSubjectDatasetKey();
   }
 
 
+  static class XIdGen implements Supplier<String> {
+    private final AtomicInteger id = new AtomicInteger(1);
+    private final IdConverter converter;
+
+    /**
+     * Uses tilde as id prefix which is URI safe and not present in ShortUUIDs nor LATIN29 which can be found in project data.
+     */
+    public XIdGen() {
+      this('~');
+    }
+
+    public XIdGen(char prefix) {
+      converter = new IdConverter(IdConverter.URISAFE64, prefix);
+    }
+
+    @Override
+    public String get() {
+      return converter.encode(id.incrementAndGet());
+    }
+  }
 
   @Override
   public void reset() {

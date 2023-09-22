@@ -13,6 +13,7 @@ import life.catalogue.parser.NameParser;
 import org.gbif.nameparser.api.*;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -56,6 +57,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Taxon target;
   // tracker
   protected final Set<String> ignoredTaxa = new HashSet<>(); // usageIDs of skipped accepted names only
+  // id generators
+  protected final Supplier<String> nameIdGen;
+  protected final Supplier<String> usageIdGen;
+  protected final Supplier<String> typeMaterialIdGen;
   // counter
   protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
   private final Map<String, String> refIds = new HashMap<>();
@@ -63,7 +68,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected int tCounter = 0;
   protected int decisionCounter = 0;
 
-  public TreeBaseHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
+  public TreeBaseHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex,
+                         User user, Sector sector, SectorImport state,
+                         Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen) {
     this.targetDatasetKey = targetDatasetKey;
     this.targetKey = DSID.root(targetDatasetKey);
     this.user = user;
@@ -71,7 +78,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
     this.state = state;
     this.decisions = decisions;
     this.nameIndex = nameIndex;
-
+    this.nameIdGen = nameIdGen;
+    this.usageIdGen = usageIdGen;
+    this.typeMaterialIdGen = typeMaterialIdGen;
     this.entities = Preconditions.checkNotNull(sector.getEntities(), "Sector entities required");
     LOG.info("Include taxon extensions: {}", Joiner.on(", ").join(entities));
 

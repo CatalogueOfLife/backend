@@ -9,13 +9,13 @@ import java.util.UUID;
  *
  * @author Harpreet Singh
  */
-public final class ShortUuid {
+public final class ShortUUID {
 
   public static final Builder BUILDER = new Builder();
 
   private final String uuid;
 
-  private ShortUuid(String uuid) {
+  private ShortUUID(String uuid) {
     this.uuid = uuid;
   }
 
@@ -34,42 +34,48 @@ public final class ShortUuid {
     if (o == this)
       return true;
 
-    if (!(o instanceof ShortUuid))
+    if (!(o instanceof ShortUUID))
       return false;
 
-    return ((ShortUuid) o).toString().equals(uuid);
+    return o.toString().equals(uuid);
+  }
+
+  public static ShortUUID random() {
+    return BUILDER.build();
   }
 
   public static class Builder {
-    private char[] alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
-      .toCharArray();
-    private int alphabetSize = alphabet.length;
+    private final char[] alphabet;
+    private final int alphabetSize;
+    private final double factor;
+    private final double length;
 
-    public Builder() {}
-
-    public Builder alphabet(String alphabet) {
-      this.alphabet = alphabet.toCharArray();
-
-      Arrays.sort(this.alphabet);
-      alphabetSize = this.alphabet.length;
-
-      return this;
+    /**
+     * Uses only 64 URI safe characters: https://www.ietf.org/rfc/rfc3986.txt
+    */
+    public Builder() {
+      this("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-");
     }
 
-    public ShortUuid build() {
+    public Builder(String alphabet) {
+      this.alphabet = alphabet.toCharArray();
+      Arrays.sort(this.alphabet);
+      this.alphabetSize = this.alphabet.length;
+      this.factor = Math.log(25d) / Math.log(alphabetSize);
+      this.length = Math.ceil(factor * 16);
+    }
+
+    public ShortUUID build() {
       return build(UUID.randomUUID());
     }
 
-    public ShortUuid build(UUID uuid) {
+    public ShortUUID build(UUID uuid) {
       String uuidStr = uuid.toString().replaceAll("-", "");
 
-      Double factor = Math.log(25d) / Math.log(alphabetSize);
-      Double length = Math.ceil(factor * 16);
-
       BigInteger number = new BigInteger(uuidStr, 16);
-      String encoded = encode(number, alphabet, length.intValue());
+      String encoded = encode(number, alphabet, (int) length);
 
-      return new ShortUuid(encoded);
+      return new ShortUUID(encoded);
     }
 
     public String decode(String shortUuid) {
@@ -128,11 +134,11 @@ public final class ShortUuid {
     }
   }
 
-  public static ShortUuid build() {
+  public static ShortUUID build() {
     return BUILDER.build();
   }
 
-  public static ShortUuid build(UUID uuid) {
+  public static ShortUUID build(UUID uuid) {
     return BUILDER.build(uuid);
   }
 }
