@@ -12,7 +12,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.matching.ParentStack;
+import life.catalogue.matching.MatchedParentStack;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.parser.NameParser;
@@ -151,9 +151,9 @@ public class UsageMatcherGlobalTest {
     return result;
   }
 
-  ParentStack.MatchedUsage fromRankedName(SimpleName sn) {
+  MatchedParentStack.MatchedUsage fromRankedName(SimpleName sn) {
     SimpleNameWithNidx sn2 = new SimpleNameWithNidx(sn);
-    ParentStack.MatchedUsage mu = new ParentStack.MatchedUsage(sn2);
+    MatchedParentStack.MatchedUsage mu = new MatchedParentStack.MatchedUsage(sn2);
     return mu;
   }
 }

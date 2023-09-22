@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Issue;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.time.Year;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -24,6 +25,9 @@ import com.google.common.collect.Lists;
  */
 public class NameValidator {
   private static final Logger LOG = LoggerFactory.getLogger(NameValidator.class);
+  public static final int MIN_YEAR = 1753; // Species Plantarum (1753) and Systema Naturæ (1758)
+  public static final int MAX_YEAR = Year.now().getValue() + 1;
+
   private static final Pattern WHITE = Pattern.compile("\\s");
   @VisibleForTesting
   // ë is exceptionally allowed in botanical code. See Article 60.6
@@ -118,6 +122,11 @@ public class NameValidator {
   
   private static void flagParsedIssues(Name n, IssueContainer issues) {
     final Rank rank = n.getRank();
+
+    if (n.getPublishedInYear() != null && n.getPublishedInYear() < MIN_YEAR || n.getPublishedInYear() > MAX_YEAR) {
+      issues.addIssue(Issue.UNLIKELY_YEAR);
+    }
+
     if (n.getUninomial() != null) {
       if (n.getGenus() != null || n.getInfragenericEpithet() != null || n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null){
         LOG.info("Uninomial with further epithets in name {}", n.toStringComplete());

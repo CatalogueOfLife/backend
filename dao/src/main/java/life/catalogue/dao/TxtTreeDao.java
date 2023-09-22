@@ -10,6 +10,8 @@ import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;
 
+import life.catalogue.matching.NameValidator;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -97,8 +99,14 @@ public class TxtTreeDao {
 
   private void addDoc(List<NameUsageWrapper> docs, NameUsageBase nu, LinkedList<SimpleName> classification) {
     var nuw = new NameUsageWrapper(nu);
+
     classification.addLast(new SimpleName(nu));
     nuw.setClassification(List.copyOf(classification));
+
+    IssueContainer issues = IssueContainer.simple();
+    NameValidator.flagIssues(nu.getName(), issues);
+    nuw.setIssues(issues.getIssues());
+
     docs.add(nuw);
     if (docs.size() >= INDEX_BATCH_SIZE) {
       indexService.add(docs);

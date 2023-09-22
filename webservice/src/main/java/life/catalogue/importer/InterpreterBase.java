@@ -14,7 +14,6 @@ import org.gbif.dwc.terms.Term;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.Year;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -31,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
+import static life.catalogue.matching.NameValidator.MAX_YEAR;
+import static life.catalogue.matching.NameValidator.MIN_YEAR;
 import static life.catalogue.parser.SafeParser.parse;
 
 /**
@@ -41,8 +42,6 @@ public class InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
   static final Pattern SEC_REF = Pattern.compile("\\b(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?)(.{3,})$", Pattern.CASE_INSENSITIVE);
-  private static final int MIN_YEAR = 1753;
-  private static final int MAX_YEAR = Year.now().getValue() + 1;
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3})(\\d|\\s*\\?)(?:-[0-9-]+)?$");
   private static final Pattern SPLIT_COMMA = Pattern.compile("(?<!\\\\),");
   protected final NeoDb store;

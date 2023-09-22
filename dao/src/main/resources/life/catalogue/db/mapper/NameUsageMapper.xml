@@ -60,6 +60,18 @@
     u.id, u.sector_key, n.scientific_name, n.authorship, u.name_phrase, n.rank, n.code, u.status, u.parent_id, n.published_in_id, nm.index_id, ni.canonical_id, nm.type
   </sql>
 
+  <sql id="SELECT_SIMPLE_USAGE">
+    u.id,
+    u.parent_id,
+    u.status,
+    u.name_phrase,
+    u.origin,
+    <include refid="life.catalogue.db.mapper.NameMapper.minimalNameCols">
+      <property name="alias" value="n"/>
+      <property name="prefix" value="n_"/>
+    </include>
+  </sql>
+
   <sql id="COLS_COPY">
     ${alias}sector_key,
     ${alias}verbatim_key,
@@ -172,6 +184,13 @@
     <result property="parent" column="parent_id"/>
     <result property="name" column="scientific_name"/>
     <result property="phrase" column="name_phrase" />
+  </resultMap>
+
+  <resultMap id="simpleUsageResultMap" type="SimpleNameUsage" autoMapping="true">
+    <id property="id" column="id"/>
+    <result property="parentId" column="parent_id"/>
+    <result property="phrase" column="name_phrase" />
+    <association property="name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" notNullColumn="id"/>
   </resultMap>
 
   <resultMap id="simpleDecisionResultMap" type="SimpleNameWithDecision" autoMapping="true">
@@ -681,6 +700,23 @@
     )
     SELECT id, scientific_name, authorship, name_phrase, rank, code, status, parent_id
     FROM x ORDER BY x.path, id
+  </select>
+
+  <select id="processTreeSimpleUsage" parameterType="map" resultMap="simpleUsageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    WITH RECURSIVE x AS(
+      SELECT <include refid="SELECT_SIMPLE_USAGE"/>, concat_ws('|', u.id) AS path
+      FROM <include refid="FROM_SIMPLE"/>
+      WHERE u.dataset_key=#{param.datasetKey} AND <include refid="WHERE_START"/>
+    UNION
+      SELECT <include refid="SELECT_SIMPLE_USAGE"/>, concat_ws('|', x.path, u.id)
+      FROM <include refid="FROM_SIMPLE"/>
+      JOIN x ON x.id = u.parent_id
+      <where>
+        u.dataset_key=#{param.datasetKey}
+        <include refid="WHERE_UNION"/>
+      </where>
+    )
+    SELECT * FROM x ORDER BY x.path
   </select>
 
   <select id="processTreeIds" parameterType="map" resultMap="idResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

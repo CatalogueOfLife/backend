@@ -6,8 +6,6 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.matching.*;
 
-import life.catalogue.release.XReleaseConfig;
-
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -26,7 +24,7 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
  */
 public class TreeMergeHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
-  private final ParentStack parents;
+  private final MatchedParentStack parents;
   private final UsageMatcherGlobal matcher;
   private final UsageCache uCache;
   private int counter = 0;  // all source usages
@@ -44,9 +42,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
     this.matcher = matcher;
     uCache = matcher.getUCache();
     if (target == null && cfg != null && cfg.incertae != null) {
-      parents = new ParentStack(matcher.toSimpleName(cfg.incertae));
+      parents = new MatchedParentStack(matcher.toSimpleName(cfg.incertae));
     } else {
-      parents = new ParentStack(matcher.toSimpleName(target));
+      parents = new MatchedParentStack(matcher.toSimpleName(target));
     }
     subjectDatasetKey = sector.getSubjectDatasetKey();
   }

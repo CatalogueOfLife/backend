@@ -43,7 +43,12 @@ public class BareName implements NameUsage {
   public String getId() {
     return null;
   }
-  
+
+  @Override
+  public String getParentId() {
+    return null;
+  }
+
   @Override
   public void setId(String id) {
     // Do nothing

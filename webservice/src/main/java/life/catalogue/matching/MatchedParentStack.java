@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 /**
  * Parent stack that expects breadth first iterations which needs to track more than a depth first one.
  */
-public class ParentStack {
-  private static final Logger LOG = LoggerFactory.getLogger(ParentStack.class);
+public class MatchedParentStack {
+  private static final Logger LOG = LoggerFactory.getLogger(MatchedParentStack.class);
   private final SimpleNameWithNidx root;
   private final LinkedList<MatchedUsage> parents = new LinkedList<>();
   private String doubtfulUsageID = null;
@@ -23,7 +23,7 @@ public class ParentStack {
   /**
    * @param rootTarget the default attachment point to the target taxonomy
    */
-  public ParentStack(SimpleNameWithNidx rootTarget) {
+  public MatchedParentStack(SimpleNameWithNidx rootTarget) {
     this.root = rootTarget;
   }
 

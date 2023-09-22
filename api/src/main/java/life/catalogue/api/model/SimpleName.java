@@ -19,7 +19,7 @@ import javax.validation.constraints.NotNull;
  * A small class representing a name usage with an id. It can act as a reference to a scientific name in a dataset.
  * It combines the source usage ID with the full scientific name in order to best deal with changing identifiers in sources.
  */
-public class SimpleName implements Comparable<SimpleName>, RankedID {
+public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
   private final static Comparator<String> nullSafeStringComparator = Comparator.nullsLast(String::compareTo);
   private final static Comparator<Enum> nullSafeEnumComparator = Comparator.nullsLast(Enum::compareTo);
 
@@ -151,6 +151,7 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
     this.rank = rank;
   }
 
+  @Override
   public TaxonomicStatus getStatus() {
     return status;
   }
@@ -160,6 +161,11 @@ public class SimpleName implements Comparable<SimpleName>, RankedID {
   }
 
   public String getParent() {
+    return parent;
+  }
+
+  @Override
+  public String getParentId() {
     return parent;
   }
 

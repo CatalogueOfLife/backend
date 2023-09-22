@@ -2,7 +2,7 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.matching.ParentStack;
+import life.catalogue.matching.MatchedParentStack;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -16,7 +16,7 @@ public class ParentStackTest {
   public void testStack() throws Exception {
     SimpleNameWithNidx king = new SimpleNameWithNidx();
     king.setName("MasterTax");
-    ParentStack parents = new ParentStack(king);
+    MatchedParentStack parents = new MatchedParentStack(king);
 
     assertEquals(0, parents.size());
     assertNull(parents.last());
@@ -50,7 +50,7 @@ public class ParentStackTest {
     biota.setId("0");
     biota.setName("Biota");
     biota.setRank(Rank.UNRANKED);
-    ParentStack parents = new ParentStack(biota);
+    MatchedParentStack parents = new MatchedParentStack(biota);
 
     assertEquals(0, parents.size());
     assertNull(parents.last());

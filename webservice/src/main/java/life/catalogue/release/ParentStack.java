@@ -1,6 +1,6 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.NameUsageCore;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -12,32 +12,32 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ParentStackSimple {
-  private static final Logger LOG = LoggerFactory.getLogger(ParentStackSimple.class);
+public class ParentStack<T extends NameUsageCore> {
+  private static final Logger LOG = LoggerFactory.getLogger(ParentStack.class);
 
-  private final Consumer<SNC> sncConsumer;
-  private final LinkedList<SNC> parents = new LinkedList<>();
+  private final Consumer<SNC<T>> removeFunc;
+  private final LinkedList<SNC<T>> parents = new LinkedList<>();
   private String doubtfulUsageID = null;
 
   /**
-   * @param sncConsumer function to be called when the usage is removed from the stack and has correct children and synonym counts.
+   * @param removeFunc function to be called when the usage is removed from the stack and has correct children and synonym counts.
    */
-  public ParentStackSimple(@Nullable Consumer<SNC> sncConsumer) {
-    this.sncConsumer = sncConsumer;
+  public ParentStack(@Nullable Consumer<SNC<T>> removeFunc) {
+    this.removeFunc = removeFunc;
   }
 
-  static class SNC {
-    SimpleName sn;
+  static class SNC<T> {
+    T sn;
     int children = 0;
     int synonyms = 0;
 
-    public SNC(SimpleName nu) {
+    public SNC(T nu) {
       sn = nu;
     }
   }
 
-  public SimpleName find(Rank r) {
-    for (SNC p : parents) {
+  public T find(Rank r) {
+    for (SNC<T> p : parents) {
       if (p.sn.getRank() == r) {
         return p.sn;
       }
@@ -49,7 +49,7 @@ public class ParentStackSimple {
     return doubtfulUsageID != null;
   }
 
-  public SimpleName getDoubtful() {
+  public T getDoubtful() {
     if (doubtfulUsageID != null) {
       for (var u : parents) {
         if (doubtfulUsageID.equals(u.sn.getId())) {
@@ -69,32 +69,32 @@ public class ParentStackSimple {
     }
   }
 
-  public SimpleName secondLast() {
+  public T secondLast() {
     return parents.isEmpty() ? null : parents.get(parents.size()-2).sn;
   }
 
-  public SimpleName last() {
+  public T last() {
     return parents.isEmpty() ? null : parents.getLast().sn;
   }
 
-  public void push(SimpleName nu) {
+  public void push(T nu) {
     if (parents.isEmpty()) {
       // the very first entry can point to a missing parent, e.g. when we iterate over subtrees only
 
-    } else if (nu.getParent() == null) {
+    } else if (nu.getParentId() == null) {
       // no parent, i.e. a new root!
       clear();
 
     } else {
       while (!parents.isEmpty()) {
-        if (parents.getLast().sn.getId().equals(nu.getParent())) {
+        if (parents.getLast().sn.getId().equals(nu.getParentId())) {
           // the last src usage on the parent stack represents the current parentKey, we are in good state!
           break;
         } else {
           // remove last parent until we find the real one
           var p = parents.removeLast();
-          if (sncConsumer != null && p.sn.getStatus().isTaxon()) {
-            sncConsumer.accept(p);
+          if (removeFunc != null && p.sn.getStatus().isTaxon()) {
+            removeFunc.accept(p);
           }
           // reset doubtful marker if the taxon gets removed from the stack
           if (doubtfulUsageID != null && doubtfulUsageID.equals(p.sn.getId())) {
@@ -103,7 +103,7 @@ public class ParentStackSimple {
         }
       }
       if (parents.isEmpty()) {
-        throw new IllegalStateException("Usage parent " + nu.getParent() + " not found for " + nu.getLabel());
+        throw new IllegalStateException("Usage parent " + nu.getParentId() + " not found for " + nu.getId());
       }
     }
     // if the classification ordering is wrong, mark it as doubtful

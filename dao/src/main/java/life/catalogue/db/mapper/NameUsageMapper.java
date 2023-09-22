@@ -292,6 +292,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Depth first only implementation using a much lighter object then above.
    *
    * Iterates over all descendants in a tree in depth-first order for a given start taxon.
+   * Children of the same taxon will be sorted by their status (accepted first, then synonyms) and name & authorship.
+   *
    * If the start taxon is null all root taxa are used.
    *
    * An optional exclusion filter can be used to prevent traversal of subtrees.
@@ -299,9 +301,23 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    *
    * Processed SimpleName instances have the parentID as their parent property, not a scientificName!
    *
-   * @param params various tree traversal request parameters:
+   * @param params various tree traversal request parameters
    */
   Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params);
+
+  /**
+   * Depth first process tree implementation similar to processTreeSimple, but returning a full name instance.
+   * Children of the same taxon will be sorted by their usage id.
+   *
+   * Iterates over all descendants in a tree in depth-first order for a given start taxon.
+   * If the start taxon is null all root taxa are used.
+   *
+   * An optional exclusion filter can be used to prevent traversal of subtrees.
+   * Synonyms are also traversed if includeSynonyms is true.
+   *
+   * @param params various tree traversal request parameters
+   */
+  Cursor<SimpleNameUsage> processTreeSimpleUsage(@Param("param") TreeTraversalParameter params);
 
   /**
    * Very lightweight (sub)tree traversal that only returns the usage and name id of the start usage and any descendant of the start usage.

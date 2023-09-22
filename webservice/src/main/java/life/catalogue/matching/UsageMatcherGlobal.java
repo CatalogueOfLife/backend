@@ -114,7 +114,7 @@ public class UsageMatcherGlobal {
    */
   public UsageMatch match(int datasetKey, NameUsageBase nu, List<? extends SimpleName> classification) {
     // match classification from top down
-    List<ParentStack.MatchedUsage> parents = new ArrayList<>();
+    List<MatchedParentStack.MatchedUsage> parents = new ArrayList<>();
     for (var sn : classification) {
       if (sn.getRank() == Rank.SPECIES) continue; // ignore binomials for now
       Name n = Name.newBuilder()
@@ -126,7 +126,7 @@ public class UsageMatcherGlobal {
                    .build();
       Taxon t = new Taxon(n);
       matchNidxIfNeeded(datasetKey, t);
-      var mu = new ParentStack.MatchedUsage(toSimpleName(t));
+      var mu = new MatchedParentStack.MatchedUsage(toSimpleName(t));
       parents.add(mu);
       var m = matchWithParents(datasetKey, t, parents);
       if (m.isMatch()) {
@@ -144,7 +144,7 @@ public class UsageMatcherGlobal {
    * @param parents classification of the usage to be matched
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
-  public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<ParentStack.MatchedUsage> parents) throws NotFoundException {
+  public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<MatchedParentStack.MatchedUsage> parents) throws NotFoundException {
     var canonNidx = matchNidxIfNeeded(datasetKey, nu);
     if (canonNidx == null) {
       return UsageMatch.unsupported(datasetKey);
@@ -206,7 +206,7 @@ public class UsageMatcherGlobal {
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch match(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<ParentStack.MatchedUsage> parents) throws NotFoundException {
+  private UsageMatch match(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents) throws NotFoundException {
     final boolean qualifiedName = nu.getName().hasAuthorship();
 
     // make sure we never have bare names - we want usages!
@@ -369,7 +369,7 @@ public class UsageMatcherGlobal {
    * The classification comparison below is rather strict
    * require a match to one of the higher rank homonyms (the old code even did not allow for higher rank homonyms at all!)
    */
-  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified<SimpleNameCached>> homonyms, List<ParentStack.MatchedUsage> parents) {
+  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified<SimpleNameCached>> homonyms, List<MatchedParentStack.MatchedUsage> parents) {
     if (parents == null || parents.isEmpty()) {
       // pick first
       var first = homonyms.get(0);

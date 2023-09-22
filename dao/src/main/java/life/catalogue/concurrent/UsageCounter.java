@@ -1,7 +1,7 @@
 package life.catalogue.concurrent;
 
 import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.RankedID;
+import life.catalogue.api.model.NameUsageCore;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
@@ -51,7 +51,7 @@ public class UsageCounter {
     inc(u.getStatus(), u.getRank());
   }
 
-  public void inc(RankedID u) {
+  public void inc(NameUsageCore u) {
     inc(null, u.getRank());
   }
 

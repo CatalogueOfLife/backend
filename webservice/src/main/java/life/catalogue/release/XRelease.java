@@ -316,24 +316,22 @@ public class XRelease extends ProjectRelease {
     LOG.error("All {} sectors merged, {} failed", counter, failedSyncs);
   }
 
+  /**
+   * Goes through all accepted infraspecies and checks if a matching autonym exists,
+   * creating missing autonyms where needed.
+   * An autonym is an infraspecific taxon that has the same species and infraspecific epithet.
+   * We do this last to not persistent autonyms that we dont need after basionyms are grouped or status has changed for some other reason.
+   */
+
+  /**
+   * Updates implicit names to be accepted (not doubtful) and removes implicit taxa with no children if configured to do so.
+   */
   private void cleanImplicitTaxa() {
     LOG.warn("Clean implicit taxa - not implemented");
   }
 
   /**
-   * Iterates over the entire tree of accepted names, validates taxa and resolves data. In particular this is:
-   *
-   *  1) flag parent name mismatches
-   * Goes through all accepted species and infraspecies and makes sure the name matches the genus, species classification.
-   * For example an accepted species Picea alba with a parent genus of Abies is imperfect, but as a result of homotypic grouping
-   * and unresolved taxonomic word in sources a reality.
-   *
-   * Badly classified names are assigned the doubtful status and an NameUsageIssue.NAME_PARENT_MISMATCH is flagged
-   *
-   *  2) add missing autonyms if needed
-   *
-   *  3) remove empty genera generated in the xrelease (can be configured to be skipped)
-   *
+   * Iterates over the entire tree of accepted names, validates taxa and resolves data.
    */
   private void validateAndCleanTree() {
     LOG.info("Clean and validate entire xrelease {}", newDatasetKey);
@@ -344,7 +342,7 @@ public class XRelease extends ProjectRelease {
       params.setSynonyms(false);
 
       final var consumer = new TreeCleanerAndValidator(factory, newDatasetKey, xCfg.removeEmptyGenera);
-      PgUtils.consume(() -> num.processTreeSimple(params), consumer);
+      PgUtils.consume(() -> num.processTreeSimpleUsage(params), consumer);
     }
   }
 
