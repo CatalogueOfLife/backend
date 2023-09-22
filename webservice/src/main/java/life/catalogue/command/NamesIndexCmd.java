@@ -38,6 +38,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final String BUILD_SCHEMA = "nidx";
   private static final String SCHEMA_SETUP = "nidx/rebuild-schema.sql";
   private static final String SCHEMA_POST = "nidx/rebuild-post.sql";
+  private static final String SCHEMA_POST_CONSTRAINTS = "nidx/rebuild-post-constraints.sql";
 
   int threads = 4;
 
@@ -131,6 +132,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       c.setAutoCommit(true);
       ScriptRunner runner = PgConfig.scriptRunner(c, false);
       runner.runScript(Resources.getResourceAsReader(SCHEMA_POST));
+      // keep match constraints separate from indices so indices stay and do not rollback in case users have modified data since we started the command
+      runner.runScript(Resources.getResourceAsReader(SCHEMA_POST_CONSTRAINTS));
     }
     LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");
   }

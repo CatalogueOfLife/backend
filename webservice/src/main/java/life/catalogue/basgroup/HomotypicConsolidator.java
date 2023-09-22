@@ -334,7 +334,7 @@ public class HomotypicConsolidator {
     if(u.getStatus().isSynonym()) {
       LOG.info("Move {} from {} to {}", u, previousParent, accepted);
     } else if (u.getRank().isGenusOrSuprageneric()) {
-      // pretty high ranks, warn!
+      // pretty high ranks, dont do that!
       LOG.warn("Trying to convert {} into a synonym of {}, but rank {} is too high. Abort", u, accepted, u.getRank());
       return;
 
