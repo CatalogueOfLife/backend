@@ -123,7 +123,7 @@ public class NameValidator {
   private static void flagParsedIssues(Name n, IssueContainer issues) {
     final Rank rank = n.getRank();
 
-    if (n.getPublishedInYear() != null && n.getPublishedInYear() < MIN_YEAR || n.getPublishedInYear() > MAX_YEAR) {
+    if (n.getPublishedInYear() != null && (n.getPublishedInYear() < MIN_YEAR || n.getPublishedInYear() > MAX_YEAR)) {
       issues.addIssue(Issue.UNLIKELY_YEAR);
     }
 
