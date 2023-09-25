@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.TaxonMapper;
@@ -56,6 +57,11 @@ public class TxtTreeDao {
   }
 
   public int insertTxtree(int datasetKey, String id, User user, InputStream txtree, boolean replace) throws IOException {
+    var info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (info.origin != DatasetOrigin.PROJECT) {
+      throw new IllegalArgumentException("Text trees can only be inserted into projects.");
+    }
+
     final var key = DSID.of(datasetKey, id);
     Taxon parent;
     Taxon grandparent;
