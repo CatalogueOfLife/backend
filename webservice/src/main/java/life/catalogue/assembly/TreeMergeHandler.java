@@ -28,6 +28,7 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
  */
 public class TreeMergeHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
+  public static final char ID_PREFIX = '~';
   private final MatchedParentStack parents;
   private final UsageMatcherGlobal matcher;
   private final UsageCache uCache;
@@ -39,10 +40,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final @Nullable TreeMergeHandlerConfig cfg;
 
   TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
-                   User user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg) {
-    // we use much smaller ids than UUID which are terriblly long to iterate over the entire tree - which requires to build a path from all parent IDs
+                   User user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
+                   Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen) {
+    // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
     // this causes postgres to use a lot of memory and creates very large temporary files
-    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, new XIdGen(), new XIdGen(), new XIdGen());
+    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, usageIdGen, typeMaterialIdGen);
     this.cfg = cfg;
     this.matcher = matcher;
     uCache = matcher.getUCache();
@@ -53,27 +55,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
   }
 
-
-  static class XIdGen implements Supplier<String> {
-    private final AtomicInteger id = new AtomicInteger(1);
-    private final IdConverter converter;
-
-    /**
-     * Uses tilde as id prefix which is URI safe and not present in ShortUUIDs nor LATIN29 which can be found in project data.
-     */
-    public XIdGen() {
-      this('~');
-    }
-
-    public XIdGen(char prefix) {
-      converter = new IdConverter(IdConverter.URISAFE64, prefix);
-    }
-
-    @Override
-    public String get() {
-      return converter.encode(id.incrementAndGet());
-    }
-  }
 
   @Override
   public void reset() {

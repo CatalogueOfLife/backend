@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
@@ -263,9 +264,11 @@ public class XRelease extends ProjectRelease {
   private void buildSectorMetrics() {
     // sector metrics
     for (Sector s : sectors) {
-      var sim = siDao.getAttempt(s, s.getSyncAttempt());
-      LOG.info("Build metrics for sector {}", s);
-      siDao.updateMetrics(sim, newDatasetKey);
+      if (s.getSyncAttempt() != null) {
+        var sim = siDao.getAttempt(s, s.getSyncAttempt());
+        LOG.info("Build metrics for sector {}", s);
+        siDao.updateMetrics(sim, newDatasetKey);
+      }
     }
   }
 
@@ -275,6 +278,11 @@ public class XRelease extends ProjectRelease {
   private void mergeSectors() throws Exception {
     // prepare merge handler config instance
     mergeCfg = new TreeMergeHandlerConfig(factory, xCfg, newDatasetKey, user);
+    // create id generators for extended records
+    final Supplier<String> nameIdGen = new XIdGen();
+    final Supplier<String> usageIdGen = new XIdGen();
+    final Supplier<String> typeMaterialIdGen = new XIdGen();
+
     updateState(ImportState.INSERTING);
     final int size = sectors.size();
     int counter = 0;
@@ -294,7 +302,7 @@ public class XRelease extends ProjectRelease {
       checkIfCancelled();
       SectorSync ss;
       try {
-        ss = syncFactory.release(s, newDatasetKey, mergeCfg, fullUser);
+        ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, usageIdGen, typeMaterialIdGen, fullUser);
         ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           failedSyncs++;

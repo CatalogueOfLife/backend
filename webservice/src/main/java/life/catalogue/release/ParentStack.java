@@ -27,19 +27,19 @@ public class ParentStack<T extends NameUsageCore> {
   }
 
   static class SNC<T> {
-    T sn;
+    T usage;
     int children = 0;
     int synonyms = 0;
 
     public SNC(T nu) {
-      sn = nu;
+      usage = nu;
     }
   }
 
   public T find(Rank r) {
     for (SNC<T> p : parents) {
-      if (p.sn.getRank() == r) {
-        return p.sn;
+      if (p.usage.getRank() == r) {
+        return p.usage;
       }
     }
     return null;
@@ -52,8 +52,8 @@ public class ParentStack<T extends NameUsageCore> {
   public T getDoubtful() {
     if (doubtfulUsageID != null) {
       for (var u : parents) {
-        if (doubtfulUsageID.equals(u.sn.getId())) {
-          return u.sn;
+        if (doubtfulUsageID.equals(u.usage.getId())) {
+          return u.usage;
         }
       }
     }
@@ -65,16 +65,16 @@ public class ParentStack<T extends NameUsageCore> {
    */
   public void markSubtreeAsDoubtful() {
     if (!parents.isEmpty() && doubtfulUsageID == null) {
-      doubtfulUsageID = parents.getLast().sn.getId();
+      doubtfulUsageID = parents.getLast().usage.getId();
     }
   }
 
   public T secondLast() {
-    return parents.isEmpty() ? null : parents.get(parents.size()-2).sn;
+    return parents.isEmpty() ? null : parents.get(parents.size()-2).usage;
   }
 
   public T last() {
-    return parents.isEmpty() ? null : parents.getLast().sn;
+    return parents.isEmpty() ? null : parents.getLast().usage;
   }
 
   public void push(T nu) {
@@ -87,17 +87,17 @@ public class ParentStack<T extends NameUsageCore> {
 
     } else {
       while (!parents.isEmpty()) {
-        if (parents.getLast().sn.getId().equals(nu.getParentId())) {
+        if (parents.getLast().usage.getId().equals(nu.getParentId())) {
           // the last src usage on the parent stack represents the current parentKey, we are in good state!
           break;
         } else {
           // remove last parent until we find the real one
           var p = parents.removeLast();
-          if (removeFunc != null && p.sn.getStatus().isTaxon()) {
+          if (removeFunc != null && p.usage.getStatus().isTaxon()) {
             removeFunc.accept(p);
           }
           // reset doubtful marker if the taxon gets removed from the stack
-          if (doubtfulUsageID != null && doubtfulUsageID.equals(p.sn.getId())) {
+          if (doubtfulUsageID != null && doubtfulUsageID.equals(p.usage.getId())) {
             doubtfulUsageID = null;
           }
         }
@@ -109,7 +109,7 @@ public class ParentStack<T extends NameUsageCore> {
     // if the classification ordering is wrong, mark it as doubtful
     Rank pRank = null;
     if (!parents.isEmpty()) {
-      pRank = parents.getLast().sn.getRank();
+      pRank = parents.getLast().usage.getRank();
       if (nu.getStatus().isTaxon()) {
         parents.getLast().children++;
       } else {

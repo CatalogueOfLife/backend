@@ -75,26 +75,6 @@ public class EsUtil {
   }
 
   /**
-   * Returns all metadata about an index.
-   * 
-   * @param client
-   * @param name
-   * @return
-   * @throws IOException
-   */
-  public static IndexDefinition getIndexDefinition(RestClient client, String name) throws IOException {
-    try {
-      Response response = client.performRequest(new Request("GET", name));
-      return EsModule.readObject(response.getEntity().getContent(), IndexDefinition.class);
-    } catch (ResponseException e) {
-      if (e.getResponse().getStatusLine().getStatusCode() == 404) {
-        throw new IllegalArgumentException("No such index: \"" + name + "\"");
-      }
-      throw new EsException(e);
-    }
-  }
-
-  /**
    * Deletes the index with the provided name. Will silently do nothing if the index did not exist.
    * 
    * @param client

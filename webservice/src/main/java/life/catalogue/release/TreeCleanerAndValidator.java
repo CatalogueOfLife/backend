@@ -4,21 +4,18 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.SimpleNameUsage;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.assembly.TreeMergeHandler;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.matching.NameValidator;
 
-import org.gbif.api.vocabulary.NameUsageIssue;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,13 +66,13 @@ public class TreeCleanerAndValidator implements Consumer<SimpleNameUsage> {
    */
   void endClassificationStack(ParentStack.SNC<SimpleNameUsage> taxon) {
     // remove tracked genus
-    if (taxon.sn.getRank() == Rank.GENUS) {
+    if (taxon.usage.getRank() == Rank.GENUS) {
       genus = null;
     }
     // remove empty genera?
-    if (taxon.sn.getRank().isGenusGroup() && taxon.children == 0 && fromXSource(taxon.sn)) {
-      LOG.info("Remove empty {}", taxon.sn);
-      final var key = DSID.of(datasetKey, taxon.sn.getId());
+    if (taxon.usage.getRank().isGenusGroup() && taxon.children == 0 && fromXSource(taxon.usage)) {
+      LOG.info("Remove empty {}", taxon.usage);
+      final var key = DSID.of(datasetKey, taxon.usage.getId());
       try (SqlSession session = factory.openSession(true)) {
         var vm = session.getMapper(VerbatimSourceMapper.class);
         var um = session.getMapper(NameUsageMapper.class);
@@ -84,7 +81,7 @@ public class TreeCleanerAndValidator implements Consumer<SimpleNameUsage> {
           vm.delete(key.id(c));
           um.delete(key);
         }
-        vm.delete(key.id(taxon.sn.getId()));
+        vm.delete(key.id(taxon.usage.getId()));
         um.delete(key);
         // names, references and related are removed as orphans at the end of the release
       }
@@ -92,7 +89,7 @@ public class TreeCleanerAndValidator implements Consumer<SimpleNameUsage> {
   }
 
   private boolean fromXSource(SimpleNameUsage sn) {
-    return sn.getId().contains("-"); // a temp UUID identifier!
+    return sn.getId().charAt(0) == TreeMergeHandler.ID_PREFIX; // a temp merge identifier!
   }
 
   @Override

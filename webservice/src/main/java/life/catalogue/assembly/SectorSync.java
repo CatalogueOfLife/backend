@@ -5,6 +5,7 @@ import com.google.common.eventbus.EventBus;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
@@ -26,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import life.catalogue.release.XReleaseConfig;
@@ -54,11 +56,16 @@ public class SectorSync extends SectorRunnable {
   private final int targetDatasetKey; // dataset to sync into
   private final @Nullable TreeMergeHandlerConfig mergeCfg;
   private List<SimpleName> foreignChildren;
+  private final Supplier<String> nameIdGen;
+  private final Supplier<String> usageIdGen;
+  private final Supplier<String> typeMaterialIdGen;
 
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, @Nullable TreeMergeHandlerConfig mergeCfg,
              SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBus bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
-             Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+             Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
+             Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen,
+             User user) throws IllegalArgumentException {
     super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, user);
     this.project = project;
     this.sid = sid;
@@ -69,6 +76,9 @@ public class SectorSync extends SectorRunnable {
     if (targetDatasetKey != sectorKey.getDatasetKey()) {
       LOG.info("Syncing sector {} into release {}", sectorKey, targetDatasetKey);
     }
+    this.nameIdGen = nameIdGen;
+    this.usageIdGen = usageIdGen;
+    this.typeMaterialIdGen = typeMaterialIdGen;
     this.mergeCfg = mergeCfg;
   }
   
@@ -245,7 +255,7 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, mergeCfg);
+      return new TreeMergeHandler(targetDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, mergeCfg, nameIdGen, usageIdGen, typeMaterialIdGen);
     }
     return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }

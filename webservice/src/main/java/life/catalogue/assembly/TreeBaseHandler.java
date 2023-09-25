@@ -175,7 +175,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     // copy usage with all associated information. This assigns a new id !!!
-    CatCopy.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user.getKey(), entities, this::lookupReference, this::lookupReference);
+    CatCopy.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user.getKey(), entities,
+      usageIdGen, nameIdGen, typeMaterialIdGen,
+      this::lookupReference, this::lookupReference
+    );
     // track source
     VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), origID);
     v.addIssues(issues);

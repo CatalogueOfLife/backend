@@ -3,6 +3,7 @@ package life.catalogue.common.id;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * A short, unambiguous and URL-safe UUID
@@ -12,6 +13,7 @@ import java.util.UUID;
 public final class ShortUUID {
 
   public static final Builder BUILDER = new Builder();
+  public static final Supplier<String> ID_GEN = () -> random().toString();
 
   private final String uuid;
 

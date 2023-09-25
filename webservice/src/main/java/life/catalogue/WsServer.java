@@ -218,7 +218,7 @@ public class WsServer extends Application<WsServerConfig> {
         .using(cfg.client)
         .using((ConnectorProvider) (cl,
             runtimeConfig) -> new DropwizardApacheConnector(httpClient, requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()));
-    // build both syncroneous and reactive clients sharing the same thread pool
+    // build both synchroneous and reactive clients sharing the same thread pool
   
     jerseyClient = builder.build(getUserAgent(cfg));
 
