@@ -2,6 +2,7 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.terms.EolDocumentTerm;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
@@ -118,6 +119,28 @@ public class DwcaInserter extends NeoCsvInserter {
 
     interpretTreatment(reader, EolDocumentTerm.Document,
       inter::interpretTreatment
+    );
+
+    insertTaxonEntities(reader, GbifTerm.SpeciesProfile,
+      inter::interpretSpeciesProfile,
+      inter::taxonID,
+      (u, sp) -> {
+        if (u.usage.isTaxon()) {
+          Taxon t = u.asTaxon();
+          // we can get multiple species profile records - aggregate them!
+          if (t.isExtinct() == null) {
+            t.setExtinct(sp.isExtinct());
+          }
+
+          if (sp.getEnvironments() != null) {
+            if (t.getEnvironments() != null) {
+              t.getEnvironments().addAll(sp.getEnvironments());
+            } else {
+              t.setEnvironments(sp.getEnvironments());
+            }
+          }
+        }
+      }
     );
   }
   

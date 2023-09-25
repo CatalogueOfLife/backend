@@ -189,7 +189,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
                                                                 final Function<VerbatimRecord, String> idFunc,
                                                                 final BiConsumer<NeoUsage, T> add
   ) {
-    processVerbatim(reader, classTerm, rec -> {
+    processVerbatim(reader, classTerm, rec ->   {
       List<T> results = interpret.apply(rec);
       if (reader.isEmpty()) return false;
       boolean interpreted = true;

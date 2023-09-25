@@ -4,6 +4,7 @@ import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
@@ -19,6 +20,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
@@ -30,6 +32,33 @@ public class DwcaInserterTest extends InserterBaseTest {
   @Override
   public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException  {
     return new DwcaInserter(store, resource, settings, refFactory);
+  }
+
+  /**
+   * WoRMS species profile with extinct
+   */
+  @Test
+  public void speciesProfiles() throws Exception {
+    NeoInserter ins = setup("/dwca/50");
+    ins.insertAll();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      var t = store.usageWithName("1").asTaxon();
+      assertTrue(t.isExtinct());
+      assertEquals(Set.of(Environment.MARINE, Environment.TERRESTRIAL), t.getEnvironments());
+
+      t = store.usageWithName("2").asTaxon();
+      assertFalse(t.isExtinct());
+      assertEquals(Set.of(Environment.MARINE), t.getEnvironments());
+
+      t = store.usageWithName("3").asTaxon();
+      assertFalse(t.isExtinct());
+      assertEquals(Set.of(), t.getEnvironments());
+
+      t = store.usageWithName("4").asTaxon();
+      assertTrue(t.isExtinct());
+      assertEquals(Set.of(Environment.MARINE), t.getEnvironments());
+    }
   }
 
   /**
@@ -88,13 +117,12 @@ public class DwcaInserterTest extends InserterBaseTest {
 
     Agent markus = Agent.person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
     markus.setOrganisation("GBIF");
-    Agent bouchard = Agent.person("Patrice", "Bouchard");
 
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
     assertEquals("https://github.com/mdoering/famous-organism", d.getUrl().toString());
     assertEquals(markus, d.getContact());
-    assertEquals(List.of(markus, bouchard), d.getCreator());
+    assertEquals(List.of(markus), d.getCreator());
     assertEquals("2017-01-19", d.getIssued().toString());
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
     assertEquals("Famous People", d.getAlias());

@@ -388,6 +388,10 @@ public class InterpreterBase {
     return parse(BooleanParser.PARSER, v.getFirst(terms)).orNull();
   }
 
+  protected boolean bool(VerbatimRecord v, boolean defaultValue, Term... terms) {
+    return parse(BooleanParser.PARSER, v.getFirst(terms)).orElse(defaultValue);
+  }
+
   protected static List<Identifier> interpretIdentifiers(String idsRaw, @Nullable Identifier.Scope defaultScope, IssueContainer issues) {
     if (!StringUtils.isBlank(idsRaw)) {
       List<Identifier> ids = new ArrayList<>();

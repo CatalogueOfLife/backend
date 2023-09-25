@@ -18,6 +18,7 @@ import org.gbif.dwc.terms.*;
 
 import java.util.*;
 
+import org.neo4j.cypher.internal.v3_4.functions.E;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +73,41 @@ public class DwcInterpreter extends InterpreterBase {
       u.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
       return u;
     });
+  }
+
+
+  public List<Taxon> interpretSpeciesProfile(VerbatimRecord v) {
+    Taxon t = new Taxon();
+    boolean hasData = false;
+    if (v.hasTerm(GbifTerm.isExtinct)) {
+      t.setExtinct(bool(v, GbifTerm.isExtinct));
+      hasData = true;
+    }
+    Set<Environment> envs = new HashSet<>();
+    addEnv(v, GbifTerm.isFreshwater, Environment.FRESHWATER, envs);
+    addEnv(v, GbifTerm.isMarine, Environment.MARINE, envs);
+    addEnv(v, GbifTerm.isTerrestrial, Environment.TERRESTRIAL, envs);
+
+    if (v.hasTerm(GbifTerm.livingPeriod)) {
+      t.setTemporalRangeStart(v.get(GbifTerm.livingPeriod));
+      hasData = true;
+    }
+
+    if (hasData || !envs.isEmpty()) {
+      if (!envs.isEmpty()) {
+        t.setEnvironments(envs);
+      }
+      return List.of(t);
+    }
+    return Collections.emptyList();
+  }
+
+  private void addEnv(VerbatimRecord v, GbifTerm term, Environment env, Set<Environment> envs) {
+    if (v.hasTerm(term)) {
+      if (bool(v, false, term)) {
+        envs.add(env);
+      }
+    }
   }
 
   /**

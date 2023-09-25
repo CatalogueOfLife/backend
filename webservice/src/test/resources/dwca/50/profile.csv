@@ -1,0 +1,6 @@
+taxonID,isExtinct,isMarine,isTerrestrial,livingPeriod
+1,true,true,true,Cretaceous
+2,false,true,,
+3,0,,false,
+4,1,1,,
+4,true,,,

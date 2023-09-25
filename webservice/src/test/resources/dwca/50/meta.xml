@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<archive xmlns="http://rs.tdwg.org/dwc/text/">
+  <core encoding="UTF-8" linesTerminatedBy="\r\n" fieldsTerminatedBy="," fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.tdwg.org/dwc/terms/Taxon">
+		<files>
+			<location>taxon.csv</location>
+		</files>
+		<id index="0" />
+    <field index="0" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/taxonRank"/>
+    <field index="2" term="http://rs.tdwg.org/dwc/terms/scientificName"/>
+	</core>
+
+<extension encoding="UTF-8" linesTerminatedBy="\r\n" fieldsTerminatedBy="," fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/SpeciesProfile">
+		<files>
+			<location>profile.csv</location>
+		</files>
+		<coreid index="0" />
+    <field index="0" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
+    <field index="1" term="http://rs.gbif.org/terms/1.0/isExtinct"/>
+    <field index="2" term="http://rs.gbif.org/terms/1.0/isMarine"/>
+    <field index="3" term="http://rs.gbif.org/terms/1.0/isTerrestrial"/>
+    <field index="4" term="http://rs.gbif.org/terms/1.0/livingPeriod"/>
+
+</extension>
+</archive>
