@@ -311,7 +311,7 @@ public class WsServer extends Application<WsServerConfig> {
     TxtTreeDao txtTreeDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService);
 
     // usage cache
-    UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, true, false, 64);
+    UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);
     managedService.manage(Component.UsageCache, uCache);
 
     // matcher

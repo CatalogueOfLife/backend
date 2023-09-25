@@ -99,6 +99,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     parents.push(nusn);
     counter++;
     LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
+
     // ignore doubtfully marked usages in classification, e-g- wrong rank ordering
     if (parents.isDoubtful()) {
       ignored++;
@@ -106,7 +107,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
-    // find out matching - even if we don't include the name in the merge we want the parents matched
+    // find out matching - even if we ignore the name in the merge we want the parents matched for classification comparisons
     UsageMatch match = null;
     try {
       match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());

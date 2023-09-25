@@ -189,7 +189,7 @@ public class NameUsageProcessor {
     return new ObjectCacheMapDB<>(NameUsageWrapper.class, new File(tmpDir, UUID.randomUUID().toString()), new ApiKryoPool(8));
   }
   private UsageCache buildUsageCache() throws Exception {
-    var cache = UsageCache.mapDB(new File(tmpDir, UUID.randomUUID().toString()), true, true, 8);
+    var cache = UsageCache.mapDB(new File(tmpDir, UUID.randomUUID().toString()), true, 8);
     cache.start();
     return cache;
   }

@@ -41,7 +41,6 @@ public class UsageCacheMapDB implements UsageCache {
   private final Pool<Kryo> pool;
   private final File dbFile;
   private final boolean expireMutable;
-  private final boolean deleteOnClose;
   private DB db;
 
   /**
@@ -73,12 +72,10 @@ public class UsageCacheMapDB implements UsageCache {
   /**
    * @param location the db file for storing the values
    * @param expireMutable if true requires mybatis to be setup and the DatasetInfoCache is used to know when mutable datasets should be expired soon (1h?)
-   * @param deleteOnClose if true deletes all persistent data when closed
    */
-  public UsageCacheMapDB(File location, boolean expireMutable, boolean deleteOnClose, int kryoMaxCapacity) throws IOException {
+  public UsageCacheMapDB(File location, boolean expireMutable, int kryoMaxCapacity) throws IOException {
     this.dbFile = location;
     this.expireMutable = expireMutable;
-    this.deleteOnClose = deleteOnClose;
     LOG.info("Create persistent usage cache at {}", location.getAbsolutePath());
     if (!location.exists()) {
       FileUtils.forceMkdirParent(location);
@@ -93,24 +90,11 @@ public class UsageCacheMapDB implements UsageCache {
 
   @Override
   public void start() {
-    try {
-      db = dbMaker.make();
-    } catch (DBException.DataCorruption e) {
-      if (dbFile != null) {
-        LOG.warn("UsageCache mapdb was corrupt. Remove and start from scratch. {}", e.getMessage());
-        dbFile.delete();
-        db = dbMaker.make();
-      } else {
-        throw e;
-      }
+    if (dbFile.exists()) {
+      FileUtils.deleteQuietly(dbFile);
     }
-
-    for (String dbname : db.getAllNames()) {
-      int dkey = keyFromDbName(dbname);
-      var store = storeMaker(dkey, expireMutable).open();
-      datasets.put(dkey, store);
-    }
-    LOG.info("UsageCache started with cache for {} datasets", datasets.size());
+    db = dbMaker.make();
+    LOG.info("UsageCache started with empty cache: {}", dbFile);
   }
 
   @Override
@@ -129,10 +113,6 @@ public class UsageCacheMapDB implements UsageCache {
   @Override
   public void close() {
     stop();
-    if (deleteOnClose) {
-      LOG.info("Removing entire usage cache at {}", dbFile);
-      dbFile.delete();
-    }
   }
 
   private static String dbname(int datasetKey) {

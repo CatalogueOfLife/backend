@@ -118,8 +118,8 @@ public interface UsageCache extends AutoCloseable, Managed {
     }
   }
 
-  static UsageCache mapDB(File location, boolean expireMutable, boolean deleteOnClose, int kryoMaxCapacity) throws IOException {
-    return new UsageCacheMapDB(location, expireMutable, deleteOnClose, kryoMaxCapacity);
+  static UsageCache mapDB(File location, boolean expireMutable, int kryoMaxCapacity) throws IOException {
+    return new UsageCacheMapDB(location, expireMutable, kryoMaxCapacity);
   }
 
   /**
