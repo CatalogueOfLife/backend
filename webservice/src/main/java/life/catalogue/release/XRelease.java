@@ -324,6 +324,11 @@ public class XRelease extends ProjectRelease {
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
   }
 
+  @Override
+  protected void index() {
+    LOG.warn("Skip building the search index for dataset " + newDatasetKey);
+  }
+
   /**
    * Goes through all accepted infraspecies and checks if a matching autonym exists,
    * creating missing autonyms where needed.

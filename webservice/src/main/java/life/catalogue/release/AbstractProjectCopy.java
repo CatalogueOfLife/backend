@@ -257,7 +257,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     }
   }
 
-  private void index() {
+  protected void index() {
     LOG.info("Build search index for dataset " + newDatasetKey);
     indexService.indexDataset(newDatasetKey);
   }
