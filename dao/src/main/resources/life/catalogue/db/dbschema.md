@@ -13,6 +13,79 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+
+### 2023-09-26 provide classification functions a maximum depth to search for to avoid loops 
+```sql
+-- return all parent names as an array
+CREATE OR REPLACE FUNCTION classification(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false, v_max_depth INTEGER default 100) RETURNS TEXT[] AS $$
+WITH RECURSIVE x AS (
+  SELECT t.id, n.scientific_name, t.parent_id, 1 distance FROM name_usage t
+  JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+  WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+UNION ALL
+  SELECT t.id, n.scientific_name, t.parent_id, x.distance+1 FROM x, name_usage t
+  JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+  WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id AND x.distance <= v_max_depth
+) SELECT array_reverse(array_agg(scientific_name)) FROM x WHERE v_inc_self OR id != v_id;
+$$ LANGUAGE SQL;
+
+
+-- return all parent usage ids as an array
+CREATE OR REPLACE FUNCTION classification_id(v_dataset_key INTEGER, v_id TEXT, v_max_depth INTEGER default 100) RETURNS TEXT[] AS $$
+WITH RECURSIVE x AS (
+SELECT t.id, t.parent_id, 1 distance FROM name_usage t
+WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+UNION ALL
+SELECT t.id, t.parent_id, x.distance+1 FROM x, name_usage t
+WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id AND x.distance <= v_max_depth
+) SELECT array_reverse(array_agg(id)) FROM x WHERE id != v_id;
+$$ LANGUAGE SQL;
+
+
+-- return all parent name usages as a simple_name array
+CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false, v_max_depth INTEGER default 100) RETURNS simple_name[] AS $$
+WITH RECURSIVE x AS (
+SELECT t.id, t.parent_id, 1 distance, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage t
+JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+UNION ALL
+SELECT t.id, t.parent_id, x.distance+1, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name FROM x, name_usage t
+JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id AND x.distance <= v_max_depth
+) SELECT array_reverse(array_agg(sn)) FROM x WHERE v_inc_self OR id != v_id;
+$$ LANGUAGE SQL;
+```
+
+
+### 2023-09-26 prevent parents to be the usage itself
+```sql
+ALTER TABLE name_usage ADD CONSTRAINT check_parent_not_self CHECK (parent_id <> id);
+```
+
+For manual cycle detection use this per dataset:
+```sql
+CREATE TABLE _loops AS  
+WITH RECURSIVE parents(id, depth) AS (
+    SELECT u.id, 1
+    FROM name_usage u
+    WHERE u.dataset_key=268159
+  UNION ALL
+    SELECT c.id, p.depth + 1
+    FROM name_usage c, parents p
+    WHERE p.id = c.parent_id AND c.dataset_key=268159
+) CYCLE id SET is_cycle USING path 
+SELECT id FROM parents WHERE is_cycle;
+
+INSERT into name (id,dataset_key,rank,origin,type,scientific_name, scientific_name_normalized, created_by, modified_by) 
+ VALUES ('loop',268159,'UNRANKED','USER','INFORMAL', 'Loop holder', 'loopholder', 102, 102);
+
+INSERT into name_usage (id,name_id,dataset_key,origin,status,created_by, modified_by) 
+ VALUES ('loop','loop',268159,'USER','ACCEPTED', 102,102);
+
+UPDATE name_usage u set parent_id='loop' FROM _loops l WHERE u.dataset_key=268159 and u.id=l.id; 
+
+```
+
 ### 2023-09-21 changed user roles
 ```sql
 UPDATE "user" SET roles = '{}';

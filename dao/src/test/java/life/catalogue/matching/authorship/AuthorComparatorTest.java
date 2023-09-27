@@ -10,6 +10,7 @@ import org.gbif.nameparser.api.ParsedAuthorship;
 
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Strings;
@@ -116,7 +117,55 @@ public class AuthorComparatorTest {
     p2.setBasionymAuthorship(parse("Mill. : Pers."));
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
   }
-  
+
+  /**
+   * Ignore the ex author and allow for swapped authors as ex is used differently in zoology and botany
+   */
+  @Test
+  @Ignore("not implemented")
+  public void compareEx() throws Exception {
+    Name p1 = new Name();
+    Name p2 = new Name();
+
+    p1.setCombinationAuthorship(parse("Döring ex Miller"));
+    p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("Miller"));
+
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+
+    p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("Döring"));
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+  }
+
+  /**
+   * Et al should match to a more extensive list of authors.
+   */
+  @Test
+  public void compareEtAl() throws Exception {
+    Name p1 = new Name();
+    Name p2 = new Name();
+
+    p1.setCombinationAuthorship(Authorship.yearAuthors("1978", "Young", "Dye", "Wilkie"));
+    p2.setCombinationAuthorship(Authorship.yearAuthors("1978", "Young"));
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+
+    p2.setCombinationAuthorship(Authorship.yearAuthors("1978", "Young", "Dye"));
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+
+    p2.setCombinationAuthorship(Authorship.yearAuthors("1978", "Young", "et al."));
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+
+    // without the year
+    p1.setCombinationAuthorship(Authorship.authors("Young", "Dye", "Wilkie"));
+    p2.setCombinationAuthorship(Authorship.authors("Young"));
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+
+    p2.setCombinationAuthorship(Authorship.authors("Young", "Dye"));
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+
+    p2.setCombinationAuthorship(Authorship.authors("Young", "et al."));
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+  }
+
   @Test
   public void testCompareOptYear() throws Exception {
     assertAuth("Pallas, 1771", Equality.DIFFERENT, "Pimbus, 1771");

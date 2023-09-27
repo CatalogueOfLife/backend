@@ -5,5 +5,8 @@ public enum TxtTreeDataKey {
   REF,
   ENV,
   VERN,
-  PRIO
+  SRC,
+  // for testing only
+  PRIO,
+  PROV
 }

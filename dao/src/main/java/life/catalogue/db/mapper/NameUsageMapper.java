@@ -334,4 +334,10 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
 
   Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms);
+
+  /**
+   * Lists all usage ids of a given dataset that are involved in loops of the parent child classification.
+   */
+  List<String> detectLoop(@Param("datasetKey") int datasetKey);
+
 }

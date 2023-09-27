@@ -180,7 +180,12 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       sm.create(s);
     } else {
       Taxon t = new Taxon();
-      prepUsage(t, src.key, sk, nat, TaxonomicStatus.ACCEPTED, parent, tn);
+      var status = TaxonomicStatus.ACCEPTED;
+      if (tn.infos.containsKey(TxtTreeDataKey.PROV.name())) {
+        status = TaxonomicStatus.PROVISIONALLY_ACCEPTED;
+      }
+
+      prepUsage(t, src.key, sk, nat, status, parent, tn);
       tm.create(t);
     }
   }

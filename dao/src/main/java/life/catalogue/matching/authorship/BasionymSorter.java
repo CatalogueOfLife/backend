@@ -12,6 +12,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,17 +50,33 @@ public class BasionymSorter {
     return null;
   }
 
+  private static class FNameWrapper<T> {
+    final T obj;
+    final FormattableName name;
+
+    FNameWrapper(T obj, FormattableName name) {
+      this.obj = obj;
+      this.name = name;
+    }
+
+    @Override
+    public String toString() {
+      return name.toString();
+    }
+  }
+
   /**
    * Tries to set the basionym and basionym duplicates, i.e. same names with the same rank, canonical name & authorship (small variation allowed).
    * @throws MultipleBasionymException when multiple combinations are found that all seem to be the basionym
    */
   private <T> void determineBasionym(BasionymGroup<T> group, List<T> originals, Function<T, FormattableName> func) throws MultipleBasionymException {
     var authorship = group.getAuthorship();
-    List<T> basionyms = new ArrayList<>();
+    List<FNameWrapper<T>> basionyms = new ArrayList<>();
+    // select candidates based on authorship
     for (T obj : originals) {
       FormattableName b = func.apply(obj);
       if (authorComp.compareStrict(authorship, b.getCombinationAuthorship())) {
-        basionyms.add(obj);
+        basionyms.add(new FNameWrapper<>(obj,b));
       }
     }
     if (basionyms.isEmpty()) {
@@ -68,7 +86,7 @@ public class BasionymSorter {
         for (T obj : originals) {
           FormattableName b = func.apply(obj);
           if (authorComp.compareStrict(aNoYear, copyWithoutYear(b.getCombinationAuthorship()))) {
-            basionyms.add(obj);
+            basionyms.add(new FNameWrapper<>(obj,b));
           }
         }
       }
@@ -76,45 +94,48 @@ public class BasionymSorter {
     
     if (basionyms.isEmpty()) {
       group.setBasionym(null);
+
     } else if (basionyms.size() == 1) {
-      group.setBasionym(basionyms.get(0));
+      group.setBasionym(basionyms.get(0).obj);
+
     } else {
       // check if we have only true duplicates, i.e. the same combination & rank
       boolean onlyDuplicates = true;
-      List<FormattableName> duplicates = new ArrayList<>();
+      // compare first name to all others
       var iter = basionyms.iterator();
-      var b1 = func.apply(iter.next());
-      duplicates.add(b1);
+      var first = iter.next().name;
+      FNameWrapper<T> exactAuthorship = null;
       while (iter.hasNext()) {
-        var b = func.apply(iter.next());
-        duplicates.add(b);
-        if (b1.getRank() != b.getRank()
-            || !Objects.equals(b1.getGenus(), b.getGenus())
-            || (b1.isTrinomial() && !Objects.equals(b1.getSpecificEpithet(), b.getSpecificEpithet()))
+        var b = iter.next();
+        if (first.getRank() != b.name.getRank()
+            || !Objects.equals(first.getGenus(), b.name.getGenus())
+            || (first.isTrinomial() && !Objects.equals(first.getSpecificEpithet(), b.name.getSpecificEpithet()))
         ) {
           onlyDuplicates = false;
           break;
+        } else {
+          if (exactAuthorship == null && group.getAuthorship().toString().equalsIgnoreCase(b.name.getAuthorship())) {
+            exactAuthorship = b;
+          }
         }
       }
       if (onlyDuplicates) {
         // prefer exact match of authors, otherwise pick first
-        int idx = 0;
-        for (int i=0; i<duplicates.size(); i++) {
-          if (group.getAuthorship().toString().equalsIgnoreCase(duplicates.get(i).getAuthorship())) {
-            idx = i;
-            break;
-          }
+        if (exactAuthorship != null) {
+          group.setBasionym(exactAuthorship.obj);
+          basionyms.remove(exactAuthorship);
+        } else {
+          // randomly pick first as basionym
+          group.setBasionym(basionyms.remove(0).obj);
         }
-        // randomly pick first as basionym
-        group.setBasionym(basionyms.remove(idx));
-        group.getBasionymDuplicates().addAll(basionyms);
+        basionyms.forEach(b -> group.getBasionymDuplicates().add(b.obj));
       } else {
         // we have more than one match, dont use it!
         throw new MultipleBasionymException();
       }
     }
   }
-  
+
   private static Authorship copyWithoutYear(Authorship a) {
     Authorship a2 = new Authorship();
     a2.setAuthors(a.getAuthors());

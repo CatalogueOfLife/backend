@@ -1409,6 +1409,7 @@ CREATE TABLE name_usage (
   FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
+ALTER TABLE name_usage ADD CONSTRAINT check_parent_not_self CHECK (parent_id <> id);
 CREATE INDEX ON name_usage (dataset_key, name_id);
 CREATE INDEX ON name_usage (dataset_key, parent_id);
 CREATE INDEX ON name_usage (dataset_key, verbatim_key);
@@ -1783,29 +1784,41 @@ CREATE OR REPLACE FUNCTION build_sn(v_dataset_key INTEGER, v_id TEXT) RETURNS si
 $$ LANGUAGE SQL;
 
 -- return all parent names as an array
-CREATE OR REPLACE FUNCTION classification(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS TEXT[] AS $$
+CREATE OR REPLACE FUNCTION classification(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false, v_max_depth INTEGER default 100) RETURNS TEXT[] AS $$
   WITH RECURSIVE x AS (
-  SELECT t.id, n.scientific_name, t.parent_id FROM name_usage t
+  SELECT t.id, n.scientific_name, t.parent_id, 1 distance FROM name_usage t
     JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
     WHERE t.dataset_key=v_dataset_key AND t.id = v_id
    UNION ALL
-  SELECT t.id, n.scientific_name, t.parent_id FROM x, name_usage t
+  SELECT t.id, n.scientific_name, t.parent_id, x.distance+1 FROM x, name_usage t
     JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
-    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id AND x.distance < v_max_depth
   ) SELECT array_reverse(array_agg(scientific_name)) FROM x WHERE v_inc_self OR id != v_id;
 $$ LANGUAGE SQL;
 
 
--- return all parent name usages as a simple_name array
-CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS simple_name[] AS $$
+-- return all parent usage ids as an array
+CREATE OR REPLACE FUNCTION classification_id(v_dataset_key INTEGER, v_id TEXT, v_max_depth INTEGER default 100) RETURNS TEXT[] AS $$
   WITH RECURSIVE x AS (
-  SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage t
+  SELECT t.id, t.parent_id, 1 distance FROM name_usage t
+    WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+   UNION ALL
+  SELECT t.id, t.parent_id, x.distance+1 FROM x, name_usage t
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id AND x.distance < v_max_depth
+  ) SELECT array_reverse(array_agg(id)) FROM x WHERE id != v_id;
+$$ LANGUAGE SQL;
+
+
+-- return all parent name usages as a simple_name array
+CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false, v_max_depth INTEGER default 100) RETURNS simple_name[] AS $$
+  WITH RECURSIVE x AS (
+  SELECT t.id, t.parent_id, 1 distance, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name AS sn FROM name_usage t
     JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
     WHERE t.dataset_key=v_dataset_key AND t.id = v_id
    UNION ALL
-  SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name FROM x, name_usage t
+  SELECT t.id, t.parent_id, x.distance+1, (t.id,n.rank,n.scientific_name,n.authorship)::simple_name FROM x, name_usage t
     JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
-    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id AND x.distance < v_max_depth
   ) SELECT array_reverse(array_agg(sn)) FROM x WHERE v_inc_self OR id != v_id;
 $$ LANGUAGE SQL;
 

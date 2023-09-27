@@ -183,6 +183,20 @@
     WHERE cl.id != #{key.id}
   </select>
 
+  <select id="classificationIds" parameterType="map" resultType="String">
+    WITH RECURSIVE cl AS (
+      SELECT u.id, u.parent_id
+      FROM name_usage u
+      WHERE u.dataset_key=#{key.datasetKey} AND u.id = #{key.id}
+    UNION
+      SELECT u.id, u.parent_id
+      FROM name_usage u, cl
+    WHERE u.dataset_key=#{key.datasetKey} AND u.id = cl.parent_id
+    )
+    SELECT id FROM cl
+    WHERE cl.id != #{key.id}
+  </select>
+
   <select id="getCounts" resultMap="taxonCountResultMap">
     SELECT id, dataset_sectors
     FROM name_usage

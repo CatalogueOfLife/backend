@@ -46,6 +46,7 @@ public class HomotypicConsolidator {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidator.class);
   private static final List<TaxonomicStatus> STATUS_ORDER = List.of(TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED, TaxonomicStatus.SYNONYM, TaxonomicStatus.AMBIGUOUS_SYNONYM);
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_ORDER = Comparator.comparing(u -> STATUS_ORDER.indexOf(u.getStatus()));
+  private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_RANK_ORDER = PREFERRED_STATUS_ORDER.thenComparing(LinneanNameUsage::getRank);
 
   private final SqlSessionFactory factory;
   private final int datasetKey;
@@ -141,7 +142,7 @@ public class HomotypicConsolidator {
           // ignore all supra specific names, autonyms and unparsed OTUs
         } else {
           // we transform it into a smaller object as we keep quite a few of those in memory
-          // consider to implelemt a native mapper method to preocess the tree
+          // consider to implement a native mapper method to process the tree
           final LinneanNameUsage nu = new LinneanNameUsage(nuBIG);
           String epithet = SciNameNormalizer.normalizeEpithet(nu.getTerminalEpithet());
           if (!epithets.containsKey(epithet)) {
@@ -282,7 +283,7 @@ public class HomotypicConsolidator {
         return;
       }
 
-      // get the accepted usage in case of synonyms
+      // get the accepted usage in case of synonyms - caution, this can now be an autonym that is happy to live with its accepted species
       final var primaryAcc = primary.getStatus().isSynonym() ? load(primary.getParentId()) : primary;
       try (SqlSession session = factory.openSession(false)) {
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
@@ -290,10 +291,10 @@ public class HomotypicConsolidator {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Consolidating homotypic group with {} primary usage {}: {}", primary.getStatus(), primary.getLabel(), names(group.getAll()));
         }
-        Set<String> parents = tm.classificationSimple(dsid.id(primaryAcc.getParentId())).stream().map(SimpleName::getId).collect(Collectors.toSet());
+        Set<String> parents = Set.copyOf(tm.classificationIds(dsid.id(primaryAcc.getId())));
         for (LinneanNameUsage u : group.getAll()) {
           if (u.equals(primary)) continue;
-          if (parents.contains(u.getId())) {
+          if (parents.contains(u.getId())) { // this should catch autonym cases with an accepted species above
             LOG.debug("Exclude parent {} from basionym consolidation of {}", u.getLabel(), primary.getLabel());
 
           } else {
@@ -461,7 +462,19 @@ public class HomotypicConsolidator {
           LOG.debug("Prefer single accepted {} in basionym group with {} additional doubtful names out of {} usages from the most trusted sector {}",
             primary.getLabel(), accCounts.size()-1, candidates.size(), sectorKey);
           return primary;
+
         } else if (acceptedStrict.size() > 1) {
+          // as we resolved synonyms to their accepted name we can now have autonyms.
+          // If there are both the species and its autonym accepted prefer the species!
+          var autonym = CollectionUtils.findSingle(acceptedStrict, FormattableName::isAutonym);
+          if (autonym != null) {
+            var species = CollectionUtils.findSingle(acceptedStrict, u -> !u.isTrinomial() && Objects.equals(autonym.getGenus(), u.getGenus()));
+            if (species != null) {
+              LOG.debug("Prefer accepted species {} over its autonym {}", species, autonym);
+              acceptedStrict.remove(autonym);
+            }
+          }
+
           // try to find a single homotypic accepted name with the same epithet
           var primary = CollectionUtils.findSingle(acceptedStrict, u -> isMatching(group.getEpithet(), u));
           if (primary != null) {
@@ -473,8 +486,8 @@ public class HomotypicConsolidator {
         return null;
 
       } else if (candidates.size() > 1){
-        // multiple candidates? Prefer accepted ones
-        candidates.sort(PREFERRED_STATUS_ORDER);
+        // multiple candidates? Prefer accepted ones and species over infraspecifics
+        candidates.sort(PREFERRED_STATUS_RANK_ORDER);
       }
     }
 

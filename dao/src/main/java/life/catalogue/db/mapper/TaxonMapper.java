@@ -46,7 +46,13 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, DatasetProcessab
    * @return list of all parents starting with the immediate parent
    */
   List<SimpleName> classificationSimple(@Param("key") DSID<String> key);
-  
+
+  /**
+   * Same as classification but only returning the usage ids
+   * @return list of all parents starting with the immediate parent
+   */
+  List<String> classificationIds(@Param("key") DSID<String> key);
+
   List<TaxonSectorCountMap> classificationCounts(@Param("key") DSID<String> key);
   
   /**
