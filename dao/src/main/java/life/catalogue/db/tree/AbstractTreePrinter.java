@@ -67,7 +67,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName>, AutoC
 
   Cursor<SimpleName> iterate() {
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    return num.processTreeSimple(params);
+    return num.processTreeSimple(params, true, true);
   }
 
   /**
