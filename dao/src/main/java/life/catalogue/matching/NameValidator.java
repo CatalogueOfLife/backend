@@ -124,7 +124,10 @@ public class NameValidator {
   }
 
   public static Integer parseYear(FormattableName n) throws NumberFormatException {
-    return Integer.parseInt(n.getCombinationAuthorship().getYear().trim());
+    if (n.getCombinationAuthorship() != null && n.getCombinationAuthorship().getYear() != null) {
+      return Integer.parseInt(n.getCombinationAuthorship().getYear().trim());
+    }
+    return null;
   }
 
   private static void flagParsedIssues(FormattableName n, IssueContainer issues) {
