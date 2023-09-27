@@ -1,45 +1,28 @@
 package life.catalogue.orthvar;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.api.vocab.Users;
-import life.catalogue.basgroup.LinneanNameUsage;
+import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.basgroup.SectorPriority;
-import life.catalogue.common.collection.CollectionUtils;
-import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
-import life.catalogue.matching.authorship.BasionymGroup;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
-import it.unimi.dsi.fastutil.Pair;
 
 public class OrthographicVariationConsolidator {
   private static final Logger LOG = LoggerFactory.getLogger(OrthographicVariationConsolidator.class);
@@ -130,7 +113,7 @@ public class OrthographicVariationConsolidator {
 
       TreeTraversalParameter traversal = TreeTraversalParameter.dataset(datasetKey, tax.getId());
       traversal.setSynonyms(true);
-      PgUtils.consume(()->num.processTree(traversal, false), nuBIG -> {
+      PgUtils.consume(()->num.processTree(traversal), nuBIG -> {
         // configured to be ignored?
         if (ignore != null && ignore.contains(nuBIG.getName().getTerminalEpithet())) {
           LOG.info("Ignore epithet {} in {} because of configs", nuBIG.getName().getTerminalEpithet(), tax);

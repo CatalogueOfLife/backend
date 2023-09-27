@@ -282,11 +282,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * An optional exclusion filter can be used to prevent traversal of subtrees.
    * Synonyms are also traversed if includeSynonyms is true.
    *
-   * @param params various tree traveersal request parameters:
+   * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
+   * @param orderByName if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
    */
   Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params,
-                                    @Param("depthFirst") boolean depthFirst);
+                                    @Param("depthFirst") boolean depthFirst,
+                                    @Param("orderByName") boolean orderByName);
+
+  default Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params) {
+    return processTree(params, false, false);
+  }
 
   /**
    * Depth first only implementation using a much lighter object then above.
@@ -302,8 +308,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Processed SimpleName instances have the parentID as their parent property, not a scientificName!
    *
    * @param params various tree traversal request parameters
+   * @param params various tree traversal request parameters:
+   * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
+   * @param orderByName if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
    */
-  Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params);
+  Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params,
+                                       @Param("depthFirst") boolean depthFirst,
+                                       @Param("orderByName") boolean orderByName);
+
+  default Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params) {
+    return processTreeSimple(params, false, false);
+  }
 
   /**
    * Depth first process tree implementation similar to processTreeSimple, but returning a full name instance.
@@ -316,8 +331,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Synonyms are also traversed if includeSynonyms is true.
    *
    * @param params various tree traversal request parameters
+   * @param params various tree traversal request parameters:
+   * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
+   * @param orderByName if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
    */
-  Cursor<SimpleNameUsage> processTreeSimpleUsage(@Param("param") TreeTraversalParameter params);
+  Cursor<LinneanNameUsage> processTreeLinneanUsage(@Param("param") TreeTraversalParameter params,
+                                                 @Param("depthFirst") boolean depthFirst,
+                                                 @Param("orderByName") boolean orderByName);
+
+  default Cursor<LinneanNameUsage> processTreeLinneanUsage(@Param("param") TreeTraversalParameter params) {
+    return processTreeLinneanUsage(params, false, false);
+  }
 
   /**
    * Very lightweight (sub)tree traversal that only returns the usage and name id of the start usage and any descendant of the start usage.

@@ -1,5 +1,6 @@
 package life.catalogue.basgroup;
 
+import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.authorship.BasionymGroup;
 

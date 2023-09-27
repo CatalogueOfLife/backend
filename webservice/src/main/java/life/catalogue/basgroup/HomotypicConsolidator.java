@@ -1,7 +1,6 @@
 package life.catalogue.basgroup;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 
 import it.unimi.dsi.fastutil.Pair;
 
@@ -19,8 +18,6 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.BasionymGroup;
 import life.catalogue.matching.authorship.BasionymSorter;
-
-import org.apache.ibatis.annotations.Param;
 
 import org.apache.ibatis.exceptions.PersistenceException;
 
@@ -134,16 +131,15 @@ public class HomotypicConsolidator {
 
       TreeTraversalParameter traversal = TreeTraversalParameter.dataset(datasetKey, tax.getId());
       traversal.setSynonyms(true);
-      PgUtils.consume(()->num.processTree(traversal, false), nuBIG -> {
+      PgUtils.consume(()->num.processTreeLinneanUsage(traversal, false, false), nu -> {
         // configured to be ignored?
-        if (ignore != null && ignore.contains(nuBIG.getName().getTerminalEpithet())) {
-          LOG.info("Ignore epithet {} in {} because of configs", nuBIG.getName().getTerminalEpithet(), tax);
-        } else if (nuBIG.getName().getType() == NameType.OTU || nuBIG.getName().getRank().isSupraspecific() || nuBIG.getName().isAutonym()){
+        if (ignore != null && ignore.contains(nu.getTerminalEpithet())) {
+          LOG.info("Ignore epithet {} in {} because of configs", nu.getTerminalEpithet(), tax);
+        } else if (nu.getType() == NameType.OTU || nu.getRank().isSupraspecific() || nu.isAutonym()){
           // ignore all supra specific names, autonyms and unparsed OTUs
         } else {
           // we transform it into a smaller object as we keep quite a few of those in memory
           // consider to implement a native mapper method to process the tree
-          final LinneanNameUsage nu = new LinneanNameUsage(nuBIG);
           String epithet = SciNameNormalizer.normalizeEpithet(nu.getTerminalEpithet());
           if (!epithets.containsKey(epithet)) {
             epithets.put(epithet, Lists.newArrayList(nu));

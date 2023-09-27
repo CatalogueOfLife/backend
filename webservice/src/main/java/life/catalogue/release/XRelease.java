@@ -355,7 +355,7 @@ public class XRelease extends ProjectRelease {
       params.setSynonyms(false);
 
       final var consumer = new TreeCleanerAndValidator(factory, newDatasetKey, xCfg.removeEmptyGenera);
-      PgUtils.consume(() -> num.processTreeSimpleUsage(params), consumer);
+      PgUtils.consume(() -> num.processTreeLinneanUsage(params), consumer);
     }
   }
 

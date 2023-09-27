@@ -3,6 +3,7 @@ package life.catalogue.basgroup;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
+import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.model.Sector;
 import life.catalogue.db.mapper.SectorMapper;
 

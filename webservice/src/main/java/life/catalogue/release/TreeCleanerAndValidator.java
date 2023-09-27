@@ -2,7 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.SimpleNameUsage;
+import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -40,14 +40,15 @@ import org.slf4j.LoggerFactory;
  *  5) flag species that have been described before the genus was published
  *
  */
-public class TreeCleanerAndValidator implements Consumer<SimpleNameUsage> {
+public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
   static final Logger LOG = LoggerFactory.getLogger(TreeCleanerAndValidator.class);
 
   final SqlSessionFactory factory;
   final int datasetKey;
-  final ParentStack<SimpleNameUsage> parents;
+  final ParentStack<LinneanNameUsage> parents;
 
-  private SimpleNameUsage genus;
+  private LinneanNameUsage genus;
+  private Integer genusYear;
 
   public TreeCleanerAndValidator(SqlSessionFactory factory, int datasetKey, boolean removeEmptyGenera) {
     this.factory = factory;
@@ -64,10 +65,11 @@ public class TreeCleanerAndValidator implements Consumer<SimpleNameUsage> {
    * It considers to remove empty genera and creates missing autonyms
    * @param taxon
    */
-  void endClassificationStack(ParentStack.SNC<SimpleNameUsage> taxon) {
+  void endClassificationStack(ParentStack.SNC<LinneanNameUsage> taxon) {
     // remove tracked genus
     if (taxon.usage.getRank() == Rank.GENUS) {
       genus = null;
+      genusYear = null;
     }
     // remove empty genera?
     if (taxon.usage.getRank().isGenusGroup() && taxon.children == 0 && fromXSource(taxon.usage)) {
@@ -88,28 +90,32 @@ public class TreeCleanerAndValidator implements Consumer<SimpleNameUsage> {
     }
   }
 
-  private boolean fromXSource(SimpleNameUsage sn) {
+  private boolean fromXSource(LinneanNameUsage sn) {
     return sn.getId().charAt(0) == TreeMergeHandler.ID_PREFIX; // a temp merge identifier!
   }
 
   @Override
-  public void accept(SimpleNameUsage sn) {
+  public void accept(LinneanNameUsage sn) {
     final IssueContainer issues = IssueContainer.simple();
-
     // main parsed name validation
-    NameValidator.flagIssues(sn.getName(), issues);
+    NameValidator.flagIssues(sn, issues);
+    Integer authorYear = null; // TODO: parse year only once and share it with name validator?
+    try {
+      authorYear = NameValidator.parseYear(sn);
+    } catch (NumberFormatException e) {
+    }
 
     if (sn.getRank().isSpeciesOrBelow()) {
       // flag parent mismatches
-      if (sn.getName().isParsed()) {
+      if (sn.isParsed()) {
         if (sn.getRank().isInfraspecific()) {
           // we have a trinomial, compare species
           var sp = parents.find(Rank.SPECIES);
           if (sp == null) {
             issues.addIssue(Issue.PARENT_SPECIES_MISSING);
-          } else if (sp.getName().isParsed()
-                    && !Objects.equals(sn.getName().getGenus(), sp.getName().getGenus())
-                    || !Objects.equals(sn.getName().getSpecificEpithet(), sp.getName().getSpecificEpithet())
+          } else if (sp.isParsed()
+                    && !Objects.equals(sn.getGenus(), sp.getGenus())
+                    || !Objects.equals(sn.getSpecificEpithet(), sp.getSpecificEpithet())
           ) {
             issues.addIssue(Issue.PARENT_NAME_MISMATCH);
           }
@@ -117,8 +123,8 @@ public class TreeCleanerAndValidator implements Consumer<SimpleNameUsage> {
           // we have a binomial, compare genus only
           if (genus == null) {
             issues.addIssue(Issue.MISSING_GENUS);
-          } else if (genus.getName().isParsed()
-                   && !Objects.equals(sn.getName().getGenus(), genus.getName().getGenus())
+          } else if (genus.isParsed()
+                   && !Objects.equals(sn.getGenus(), genus.getGenus())
           ) {
             issues.addIssue(Issue.PARENT_NAME_MISMATCH);
           }
@@ -126,11 +132,10 @@ public class TreeCleanerAndValidator implements Consumer<SimpleNameUsage> {
         // flag if published before the genus
         if (!issues.hasIssue(Issue.PARENT_NAME_MISMATCH)
             && !issues.hasIssue(Issue.MISSING_GENUS)
-            && genus != null
-            && genus.getName().getPublishedInYear() != null
-            && sn.getName().getPublishedInYear() != null
-            && sn.getName().getPublishedInYear() > 1600
-            && genus.getName().getPublishedInYear() > sn.getName().getPublishedInYear()
+            && !issues.hasIssue(Issue.UNLIKELY_YEAR)
+            && genusYear != null
+            && authorYear != null
+            && genusYear > authorYear
         ) {
             // flag if the accepted bi/trinomial the ones that have an earlier publication date!
             issues.addIssue(Issue.PUBLISHED_BEFORE_GENUS);
@@ -141,6 +146,7 @@ public class TreeCleanerAndValidator implements Consumer<SimpleNameUsage> {
     }
     if (sn.getRank() == Rank.GENUS) {
       genus = sn;
+      genusYear = authorYear;
     }
     parents.push(sn);
     if (!issues.hasIssues()) {
@@ -148,11 +154,11 @@ public class TreeCleanerAndValidator implements Consumer<SimpleNameUsage> {
     }
   }
 
-  DSID<String> dsid(SimpleNameUsage u){
+  DSID<String> dsid(LinneanNameUsage u){
     return DSID.of(datasetKey, u.getId());
   }
 
-  void addIssues(SimpleNameUsage sn, IssueContainer issues) {
+  void addIssues(LinneanNameUsage sn, IssueContainer issues) {
     try (SqlSession session = factory.openSession(true)) {
       var vsm = session.getMapper(VerbatimSourceMapper.class);
       vsm.addIssues(dsid(sn), issues.getIssues());

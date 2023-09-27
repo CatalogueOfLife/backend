@@ -1,10 +1,5 @@
-package life.catalogue.basgroup;
+package life.catalogue.api.model;
 
-import life.catalogue.api.model.FormattableName;
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.ScientificName;
-
-import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.*;
@@ -14,7 +9,7 @@ import java.util.Objects;
 /**
  * Stripped down NameUsageBase version with just the name properties and the usage id and parentID
  */
-public class LinneanNameUsage implements FormattableName {
+public class LinneanNameUsage implements FormattableName, NameUsageCore {
   private String id; // usage id, not name!
   private String parentId;
   private Integer sectorKey;

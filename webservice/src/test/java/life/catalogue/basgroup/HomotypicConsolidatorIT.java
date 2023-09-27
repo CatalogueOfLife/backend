@@ -1,5 +1,6 @@
 package life.catalogue.basgroup;
 
+import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;

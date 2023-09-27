@@ -1,17 +1,20 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.model.FormattableName;
 import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.Issue;
 
-import org.gbif.nameparser.api.NameType;
+import life.catalogue.common.tax.AuthorshipNormalizer;
+
 import org.gbif.nameparser.api.Rank;
 
+import java.text.Normalizer;
 import java.time.Year;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +90,7 @@ public class NameValidator {
     }
   }
   
-  public static IssueContainer flagIssues(Name n, IssueContainer v) {
+  public static IssueContainer flagIssues(FormattableName n, IssueContainer v) {
     return flagIssues(n, new Supplier<IssueContainer>() {
       @Override
       public IssueContainer get() {
@@ -102,10 +105,10 @@ public class NameValidator {
    * populated propLabel and available propLabel make sense together.
    * @return a non null VerbatimRecord if any issue has been added
    */
-  public static <T extends IssueContainer> T flagIssues(Name n, Supplier<T> issueSupplier) {
+  public static <T extends IssueContainer> T flagIssues(FormattableName n, Supplier<T> issueSupplier) {
     final LazyVerbatimRecord<T> v = new LazyVerbatimRecord<>(issueSupplier);
-    // only check for type scientific which is parsable
-    if (n.getType() == NameType.SCIENTIFIC && n.isParsed()) {
+    // only check parsed names
+    if (n.isParsed()) {
       flagParsedIssues(n, v);
     } else {
       // flag issues on the full name for unparsed names
@@ -119,26 +122,38 @@ public class NameValidator {
   public static boolean hasUnmatchedBrackets(String x) {
     return !Strings.isNullOrEmpty(x) && OPEN_BRACKETS.countIn(x) != CLOSE_BRACKETS.countIn(x);
   }
-  
-  private static void flagParsedIssues(Name n, IssueContainer issues) {
+
+  public static Integer parseYear(FormattableName n) throws NumberFormatException {
+    return Integer.parseInt(n.getCombinationAuthorship().getYear().trim());
+  }
+
+  private static void flagParsedIssues(FormattableName n, IssueContainer issues) {
     final Rank rank = n.getRank();
 
-    if (n.getPublishedInYear() != null && (n.getPublishedInYear() < MIN_YEAR || n.getPublishedInYear() > MAX_YEAR)) {
-      issues.addIssue(Issue.UNLIKELY_YEAR);
+    if (n.getCombinationAuthorship() != null && !StringUtils.isBlank(n.getCombinationAuthorship().getYear())) {
+      try {
+        int year = parseYear(n);
+        if (year < MIN_YEAR || year > MAX_YEAR) {
+          issues.addIssue(Issue.UNLIKELY_YEAR);
+        }
+      } catch (NumberFormatException e) {
+        // TODO: allow ? in year comparisons and write a proper year parser???
+        issues.addIssue(Issue.UNLIKELY_YEAR);
+      }
     }
 
     if (n.getUninomial() != null) {
       if (n.getGenus() != null || n.getInfragenericEpithet() != null || n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null){
-        LOG.info("Uninomial with further epithets in name {}", n.toStringComplete());
+        LOG.info("Uninomial with further epithets in name {}", n.getLabel());
         issues.addIssue(Issue.INCONSISTENT_NAME);
       }
 
     } else if (n.getGenus() == null && n.getSpecificEpithet() != null) {
-      LOG.info("Missing genus in name {}", n.toStringComplete());
+      LOG.info("Missing genus in name {}", n.getLabel());
       issues.addIssue(Issue.INCONSISTENT_NAME);
 
     } else if (n.getSpecificEpithet() == null && n.getInfraspecificEpithet() != null) {
-      LOG.info("Missing specific epithet in infraspecific name {}", n.toStringComplete());
+      LOG.info("Missing specific epithet in infraspecific name {}", n.getLabel());
       issues.addIssue(Issue.INCONSISTENT_NAME);
     }
     // monomials expected as 1 word in Title case
@@ -175,12 +190,12 @@ public class NameValidator {
     for (String part : n.nameParts()) {
       // no whitespace
       if (WHITE.matcher(part).find()) {
-        LOG.info("{} part contains whitespace: {}", part, n.toStringComplete());
+        LOG.info("{} part contains whitespace: {}", part, n.getLabel());
         issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
       }
       // non ascii chars
       if (NON_LETTER.matcher(part).find()) {
-        LOG.info("{} part contains non ASCII letters: {}", part, n.toStringComplete());
+        LOG.info("{} part contains non ASCII letters: {}", part, n.getLabel());
         issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
       }
     }
@@ -189,35 +204,35 @@ public class NameValidator {
     if (rank != null && rank.notOtherOrUnranked()) {
       if (rank.isGenusOrSuprageneric()) {
         if (n.getGenus() != null || n.getUninomial() == null) {
-          LOG.info("Missing genus or uninomial for {}", n.toStringComplete());
+          LOG.info("Missing genus or uninomial for {}", n.getLabel());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
         
       } else if (rank.isInfragenericStrictly()) {
         if (n.getInfragenericEpithet() == null) {
-          LOG.info("Missing infrageneric epithet for {}", n.toStringComplete());
+          LOG.info("Missing infrageneric epithet for {}", n.getLabel());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
         if (n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null) {
-          LOG.info("Species or infraspecific epithet for {}", n.toStringComplete());
+          LOG.info("Species or infraspecific epithet for {}", n.getLabel());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
         
       } else if (rank.isSpeciesOrBelow()) {
         if (n.getSpecificEpithet() == null) {
-          LOG.info("Missing specific epithet for {}", n.toStringComplete());
+          LOG.info("Missing specific epithet for {}", n.getLabel());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
         
         if (!rank.isInfraspecific() && n.getInfraspecificEpithet() != null) {
-          LOG.info("Infraspecific epithet found for {}", n.toStringComplete());
+          LOG.info("Infraspecific epithet found for {}", n.getLabel());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
       }
       
       if (rank.isInfraspecific()) {
         if (n.getInfraspecificEpithet() == null) {
-          LOG.info("Missing infraspecific epithet for {}", n.toStringComplete());
+          LOG.info("Missing infraspecific epithet for {}", n.getLabel());
           issues.addIssue(Issue.INCONSISTENT_NAME);
         }
       }

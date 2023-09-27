@@ -200,7 +200,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         cursor = num.processDataset(datasetKey, null, null);
       } else {
         var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.getExtinct(), req.isSynonyms());
-        cursor = num.processTree(ttp, true);
+        cursor = num.processTree(ttp);
       }
       PgUtils.consume(() -> cursor, this::consumeUsage);
 

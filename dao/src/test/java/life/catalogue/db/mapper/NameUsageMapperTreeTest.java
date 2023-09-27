@@ -35,50 +35,48 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
     ttp.setTaxonID("t2");
     ttp.setExclusion(Sets.newHashSet("skipID"));
     ttp.setSynonyms(true);
-    mapper().processTree(ttp, false)
+    mapper().processTree(ttp, false, true)
             .forEach(countHandler);
     Assert.assertEquals(23, countHandler.counter.get());
   
     countHandler.reset();
     ttp.setExclusion(Sets.newHashSet("t6"));
-    mapper().processTree(ttp, false)
+    mapper().processTree(ttp, false, true)
             .forEach(countHandler);
     Assert.assertEquals(15, countHandler.counter.get());
   
     countHandler.reset();
     ttp.setExclusion(Sets.newHashSet("t6", "t30"));
-    mapper().processTree(ttp, false)
+    mapper().processTree(ttp, false, true)
             .forEach(countHandler);
     Assert.assertEquals(10, countHandler.counter.get());
   }
 
   @Test
-  public void processTreeSimpleUsage() throws Exception {
-    countHandler = new CountHandler<SimpleNameUsage>(u -> {
-      assertNotNull(u.getName());
-    });
+  public void processTreeLinneanUsage() throws Exception {
+    countHandler = new CountHandler<LinneanNameUsage>();
     var ttp = TreeTraversalParameter.dataset(DATASET11.getKey());
     ttp.setTaxonID("t2");
     ttp.setExclusion(Sets.newHashSet("skipID"));
     ttp.setSynonyms(true);
-    mapper().processTreeSimpleUsage(ttp).forEach(countHandler);
+    mapper().processTreeLinneanUsage(ttp).forEach(countHandler);
     Assert.assertEquals(23, countHandler.counter.get());
 
     countHandler.reset();
     ttp.setExclusion(Sets.newHashSet("t6"));
-    mapper().processTreeSimpleUsage(ttp).forEach(countHandler);
+    mapper().processTreeLinneanUsage(ttp).forEach(countHandler);
     Assert.assertEquals(15, countHandler.counter.get());
 
     countHandler.reset();
     ttp.setExclusion(Sets.newHashSet("t6", "t30"));
-    mapper().processTreeSimpleUsage(ttp).forEach(countHandler);
+    mapper().processTreeLinneanUsage(ttp).forEach(countHandler);
     Assert.assertEquals(10, countHandler.counter.get());
   }
 
   @Test
   public void processTreeOrder() throws Exception {
     CollectIdHandler<NameUsageBase> h = new CollectIdHandler<>();
-    mapper().processTree(TreeTraversalParameter.dataset(DATASET11.getKey()),false)
+    mapper().processTree(TreeTraversalParameter.dataset(DATASET11.getKey()),false, false)
             .forEach(h);
     List<String> bfs = ImmutableList.of("t1","t2","t3","t4",
       "t5","t6","t30",
@@ -89,7 +87,7 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
     assertEquals(bfs, h.list);
   
     h = new CollectIdHandler<>();
-    mapper().processTree(TreeTraversalParameter.dataset(DATASET11.getKey()), true)
+    mapper().processTree(TreeTraversalParameter.dataset(DATASET11.getKey()), true, true)
             .forEach(h);
     List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5",
         "t20","s21","s22","t23","t24","t25",
