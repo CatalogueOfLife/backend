@@ -5,12 +5,16 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.NameValidator;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -20,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Consumer of an entire tree of accepted names, validates taxa and resolves data.
+ * Consumer of an entire tree in depth first order (!) of accepted names, validates taxa and resolves data.
  * It tracks the parent classification as it goes and makes it available for validations.
  * In particular this is:
  *
@@ -40,7 +44,7 @@ import org.slf4j.LoggerFactory;
  *  5) flag species that have been described before the genus was published
  *
  */
-public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
+public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, AutoCloseable {
   static final Logger LOG = LoggerFactory.getLogger(TreeCleanerAndValidator.class);
 
   final SqlSessionFactory factory;
@@ -163,5 +167,10 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
       var vsm = session.getMapper(VerbatimSourceMapper.class);
       vsm.addIssues(dsid(sn), issues.getIssues());
     }
+  }
+
+  @Override
+  public void close() throws IOException {
+    // nothing so far
   }
 }

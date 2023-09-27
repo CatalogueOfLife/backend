@@ -344,14 +344,16 @@ public class XRelease extends ProjectRelease {
    */
   private void validateAndCleanTree() {
     LOG.info("Clean and validate entire xrelease {}", newDatasetKey);
-    try (SqlSession session = factory.openSession(true)) {
+    try (SqlSession session = factory.openSession(true);
+         var consumer = new TreeCleanerAndValidator(factory, newDatasetKey, xCfg.removeEmptyGenera)
+    ) {
       var num = session.getMapper(NameUsageMapper.class);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(newDatasetKey);
       params.setSynonyms(false);
 
-      final var consumer = new TreeCleanerAndValidator(factory, newDatasetKey, xCfg.removeEmptyGenera);
-      PgUtils.consume(() -> num.processTreeLinneanUsage(params), consumer);
+
+      PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), consumer);
     } catch (Exception e) {
       LOG.error("Name validation & cleaning failed", e);
     }

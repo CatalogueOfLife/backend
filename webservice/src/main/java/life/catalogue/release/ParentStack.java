@@ -34,6 +34,11 @@ public class ParentStack<T extends NameUsageCore> {
     public SNC(T nu) {
       usage = nu;
     }
+
+    @Override
+    public String toString() {
+      return usage + " #child=" + children + " #syn=" + synonyms;
+    }
   }
 
   public T find(Rank r) {
