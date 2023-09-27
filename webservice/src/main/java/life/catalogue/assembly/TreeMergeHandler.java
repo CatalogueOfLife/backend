@@ -1,22 +1,24 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
-import life.catalogue.common.id.IdConverter;
-import life.catalogue.matching.*;
+import life.catalogue.matching.MatchedParentStack;
+import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.UsageMatch;
+import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import java.net.URI;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final MatchedParentStack parents;
   private final UsageMatcherGlobal matcher;
   private final UsageCache uCache;
+  private final CacheLoader loader;
   private int counter = 0;  // all source usages
   private int ignored = 0;
   private int thrown = 0;
@@ -53,6 +56,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
     } else {
       parents = new MatchedParentStack(matcher.toSimpleName(target));
     }
+    this.loader = new CacheLoader.Mybatis(batchSession);
+    matcher.registerLoader(targetDatasetKey, loader); // we need to make sure we remove it at the end no matter what!
   }
 
 
@@ -108,14 +113,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
 
     // find out matching - even if we ignore the name in the merge we want the parents matched for classification comparisons
-    UsageMatch match = null;
-    try {
-      match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
-    } catch (NotFoundException e) {
-      // we have an open batch session that writes new usages to the release which might not be flushed to the database - try that first
-      batchSession.commit();
-      match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
-    }
+    // we have a custom usage loader registered that knows about the open batch session
+    // that writes new usages to the release which might not be flushed to the database
+    UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
     LOG.debug("{} matches {}", nu.getLabel(), match);
 
     // figure out closest matched parent that we can use to attach to
@@ -211,21 +211,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
    */
   @Override
   protected Usage findExisting(Name n, Usage parent) {
-    // we need to commit the batch session to see the recent inserts
-    batchSession.commit();
     Taxon t = new Taxon(n);
-    try {
-      var m = matcher.matchWithParents(targetDatasetKey, t, parents.classification());
-      // make sure rank is correct - canonical matches are across ranks
-      if (m.usage == null || m.usage.getRank() != n.getRank()) {
-        return null;
-      }
+    var m = matcher.matchWithParents(targetDatasetKey, t, parents.classification());
+    // make sure rank is correct - canonical matches are across ranks
+    if (m.usage != null && m.usage.getRank() == n.getRank()) {
       return usage(m.usage);
-
-    } catch (NotFoundException e) {
-      LOG.warn("Unable to match {} with classification {}", n.getLabel(), parents.classificationToString(), e);
-      return null;
     }
+    return null;
   }
 
   @Override
@@ -244,7 +236,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     ) {
       // now check the newly proposed classification does also contain the current parent to avoid changes - we only want to patch missing ranks
       // but also make sure the existing name is not part of the proposed classification as this will result in a fatal circular loop!
-      var proposedClassification = uCache.getClassification(proposedParent.toDSID(targetDatasetKey), num::getSimplePub);
+      var proposedClassification = uCache.getClassification(proposedParent.toDSID(targetDatasetKey), loader);
       for (var propHigherTaxon : proposedClassification) {
         if (propHigherTaxon.getId().equals(existing.getId())) {
           LOG.debug("Avoid circular classifications by updating the parent of {} {} to {} {}", existing.getRank(), existing.getLabel(), proposedParent.getRank(), proposedParent.getLabel());
@@ -342,6 +334,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   @Override
   public void close() {
+    matcher.removeLoader(targetDatasetKey);
     session.commit();
     session.close();
     batchSession.commit();

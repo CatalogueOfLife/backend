@@ -29,14 +29,11 @@ public class UsageCacheTest {
     assertFalse(cache.contains(key));
     assertNull(cache.get(key));
 
-    var snp = load(key);
-    var sncl = cache.withClassification(testDataRule.testData.key, snp, this::load);
-    assertEquals(6, sncl.getClassification().size());
-  }
-
-  private SimpleNameCached load(DSID<String> key) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      return session.getMapper(NameUsageMapper.class).getSimplePub(key);
+      var loader = new CacheLoader.Mybatis(session);
+      var snp = loader.load(key);
+      var sncl = cache.withClassification(testDataRule.testData.key, snp, loader);
+      assertEquals(6, sncl.getClassification().size());
     }
   }
 }

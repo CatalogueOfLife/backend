@@ -54,10 +54,15 @@ public interface UsageCache extends AutoCloseable, Managed {
     clear(event.datasetKey);
   }
 
-  default SimpleNameCached getOrLoad(DSID<String> key, Function<DSID<String>, SimpleNameCached> loader) {
+  default SimpleNameCached getOrLoad(DSID<String> key, CacheLoader loader) {
     var sn = get(key);
     if (sn == null) {
-      sn = loader.apply(key);
+      sn = loader.load(key);
+      if (sn == null) {
+        // first try to commmit and see if we can get it then
+        loader.commit();
+        sn = loader.load(key);
+      }
       if (sn != null) {
         put(key.getDatasetKey(), sn);
       } else {
@@ -73,7 +78,7 @@ public interface UsageCache extends AutoCloseable, Managed {
    * @param loader
    * @return
    */
-  default SimpleNameClassified<SimpleNameCached> withClassification(int datasetKey, SimpleNameCached usage, Function<DSID<String>, SimpleNameCached> loader) throws NotFoundException {
+  default SimpleNameClassified<SimpleNameCached> withClassification(int datasetKey, SimpleNameCached usage, CacheLoader loader) throws NotFoundException {
     SimpleNameClassified<SimpleNameCached> sncl = new SimpleNameClassified<>(usage);
     sncl.setClassification(new ArrayList<>());
     if (usage.getParent() != null) {
@@ -82,22 +87,27 @@ public interface UsageCache extends AutoCloseable, Managed {
     return sncl;
   }
 
-  default List<SimpleNameCached> getClassification(DSID<String> start, Function<DSID<String>, SimpleNameCached> loader) throws NotFoundException {
+  default List<SimpleNameCached> getClassification(DSID<String> start, CacheLoader loader) throws NotFoundException {
     List<SimpleNameCached> classification = new ArrayList<>();
     addParents(classification, start, loader);
     return classification;
   }
 
-  private void addParents(List<SimpleNameCached> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameCached> loader) throws NotFoundException {
+  private void addParents(List<SimpleNameCached> classification, DSID<String> parentKey, CacheLoader loader) throws NotFoundException {
     addParents(classification, parentKey, loader, new HashSet<>());
   }
 
-  private void addParents(List<SimpleNameCached> classification, DSID<String> parentKey, Function<DSID<String>, SimpleNameCached> loader, Set<String> visitedIDs) throws NotFoundException {
+  private void addParents(List<SimpleNameCached> classification, DSID<String> parentKey, CacheLoader loader, Set<String> visitedIDs) throws NotFoundException {
     SimpleNameCached p;
     if (contains(parentKey)) {
       p = get(parentKey);
     } else {
-      p = loader.apply(parentKey);
+      p = loader.load(parentKey);
+      if (p == null) {
+        // first try to commit and see if we can get it then
+        loader.commit();
+        p = loader.load(parentKey);
+      }
       if (p != null) {
         put(parentKey.getDatasetKey(), p);
       } else {

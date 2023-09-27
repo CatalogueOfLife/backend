@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.ObjectCache;
 import life.catalogue.cache.ObjectCacheMapDB;
 import life.catalogue.cache.UsageCache;
@@ -77,6 +78,7 @@ public class NameUsageProcessor {
       final NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
       final NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final var sm = session.getMapper(SectorMapper.class);
+      final CacheLoader loader = new CacheLoader.Mybatis(session);
 
       // reusable dsids for this dataset
       final DSID<String> uKey = DSID.of(datasetKey, null);
@@ -135,7 +137,7 @@ public class NameUsageProcessor {
                 acc = taxa.get(syn.getParentId()).getUsage();
               }
               syn.setAccepted((Taxon)acc);
-              addClassification(nuw, taxa, usageCache, num);
+              addClassification(nuw, taxa, usageCache, loader);
             }
             consumer.accept(nuw);
             if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
@@ -147,7 +149,7 @@ public class NameUsageProcessor {
         // now lets do the cached taxa
         LOG.info("Process {} taxa of dataset {}; loaded taxa={}", taxa.size(), datasetKey, loadCounter);
         for (var nuw : taxa) {
-          addClassification(nuw, taxa, usageCache, num);
+          addClassification(nuw, taxa, usageCache, loader);
           consumer.accept(nuw);
           if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
             LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);
@@ -159,7 +161,7 @@ public class NameUsageProcessor {
     }
   }
 
-  private void addClassification(NameUsageWrapper nuw, ObjectCache<NameUsageWrapper> taxa, UsageCache usageCache, NameUsageMapper num) {
+  private void addClassification(NameUsageWrapper nuw, ObjectCache<NameUsageWrapper> taxa, UsageCache usageCache, CacheLoader loader) {
     List<SimpleName> classification = new ArrayList<>();
     DSID<String> uKey = null;
     if (!nuw.getUsage().isBareName()) {
@@ -175,7 +177,7 @@ public class NameUsageProcessor {
           } else {
             uKey.id(curr.getParent());
           }
-          curr = usageCache.getOrLoad(uKey, num::getSimplePub);
+          curr = usageCache.getOrLoad(uKey, loader);
           loadCounter++;
         }
         classification.add(curr);

@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.assembly.TaxGroupAnalyzer;
+import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.db.mapper.NameUsageMapper;
 
@@ -38,6 +39,8 @@ public class UsageMatcherGlobal {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherGlobal.class);
   private final NameIndex nameIndex;
   private final UsageCache uCache;
+  private final CacheLoader defaultLoader;
+  private final Map<Integer, CacheLoader> loaders = new HashMap<>();
   private final SqlSessionFactory factory;
   private final TaxGroupAnalyzer groupAnalyzer;
   // key = datasetKey + canonical nidx
@@ -57,16 +60,11 @@ public class UsageMatcherGlobal {
     }
   }
 
-  private SimpleNameCached loadUsage(@NonNull DSID<String> key) {
-    try (SqlSession session = factory.openSession(true)) {
-      return session.getMapper(NameUsageMapper.class).getSimplePub(key);
-    }
-  }
-
   public UsageMatcherGlobal(NameIndex nameIndex, UsageCache uCache, SqlSessionFactory factory) {
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
     this.factory = Preconditions.checkNotNull(factory);
     this.uCache = uCache;
+    this.defaultLoader = new CacheLoader.MybatisFactory(factory);
     this.groupAnalyzer = new TaxGroupAnalyzer();
   }
 
@@ -86,6 +84,21 @@ public class UsageMatcherGlobal {
 
   public NameIndex getNameIndex() {
     return nameIndex;
+  }
+
+  /**
+   * Registers a usage loader for the specific dataset to be used instead of the default one which opens a new database session each time
+   * @param datasetKey
+   * @param loader
+   */
+  public void registerLoader(int datasetKey, CacheLoader loader) {
+    LOG.info("Registering new usage loader for dataset {}: {}", datasetKey, loader.getClass());
+    loaders.put(datasetKey, loader);
+  }
+
+  public void removeLoader(int datasetKey) {
+    LOG.info("Remove usage loader for dataset {}", datasetKey);
+    loaders.remove(datasetKey);
   }
 
   private DSID<Integer> canonNidx(int datasetKey, Integer nidx) {
@@ -226,8 +239,9 @@ public class UsageMatcherGlobal {
     }
 
     // from here on we need the classification of all candidates
+    var loader = loaders.getOrDefault(datasetKey, defaultLoader);
     final var existingWithCl = existing.stream()
-                                 .map(ex -> uCache.withClassification(datasetKey, ex, this::loadUsage))
+                                 .map(ex -> uCache.withClassification(datasetKey, ex, loader))
                                  .collect(Collectors.toList());
 
     if (nu.getRank().isSuprageneric() && existingWithCl.size() == 1) {

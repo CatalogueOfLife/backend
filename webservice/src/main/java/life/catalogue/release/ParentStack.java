@@ -88,17 +88,18 @@ public class ParentStack<T extends NameUsageCore> {
     } else {
       while (!parents.isEmpty()) {
         if (parents.getLast().usage.getId().equals(nu.getParentId())) {
-          // the last src usage on the parent stack represents the current parentKey, we are in good state!
+          // the last src usage on the parent stack represents the current parentKey, we are in good state, keep adding!
           break;
         } else {
           // remove last parent until we find the real one
           var p = parents.removeLast();
-          if (removeFunc != null && p.usage.getStatus().isTaxon()) {
-            removeFunc.accept(p);
-          }
           // reset doubtful marker if the taxon gets removed from the stack
           if (doubtfulUsageID != null && doubtfulUsageID.equals(p.usage.getId())) {
             doubtfulUsageID = null;
+          }
+          // notify stack user about removal of accepted name
+          if (removeFunc != null && p.usage.getStatus().isTaxon()) {
+            removeFunc.accept(p);
           }
         }
       }
