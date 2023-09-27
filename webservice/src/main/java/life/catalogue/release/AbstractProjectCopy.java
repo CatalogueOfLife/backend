@@ -159,7 +159,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       LOG.info("Index dataset {} into ES", newDatasetKey);
       updateState(ImportState.INDEXING);
       index();
-    } catch (RuntimeException e) {
+    } catch (Exception e) {
       // allow indexing to fail - sth we can do afterwards again
       LOG.error("Error indexing new dataset {} into ES. Source dataset={}", newDatasetKey, datasetKey, e);
     }

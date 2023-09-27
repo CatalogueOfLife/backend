@@ -43,6 +43,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.neo4j.cypher.internal.v3_4.functions.E;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -324,11 +325,6 @@ public class XRelease extends ProjectRelease {
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
   }
 
-  @Override
-  protected void index() {
-    LOG.warn("Skip building the search index for dataset " + newDatasetKey);
-  }
-
   /**
    * Goes through all accepted infraspecies and checks if a matching autonym exists,
    * creating missing autonyms where needed.
@@ -356,6 +352,8 @@ public class XRelease extends ProjectRelease {
 
       final var consumer = new TreeCleanerAndValidator(factory, newDatasetKey, xCfg.removeEmptyGenera);
       PgUtils.consume(() -> num.processTreeLinneanUsage(params), consumer);
+    } catch (Exception e) {
+      LOG.error("Name validation & cleaning failed", e);
     }
   }
 
