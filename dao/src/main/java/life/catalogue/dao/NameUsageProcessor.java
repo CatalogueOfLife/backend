@@ -78,7 +78,7 @@ public class NameUsageProcessor {
       final NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
       final NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final var sm = session.getMapper(SectorMapper.class);
-      final CacheLoader loader = new CacheLoader.Mybatis(session);
+      final CacheLoader loader = new CacheLoader.Mybatis(session, false);
 
       // reusable dsids for this dataset
       final DSID<String> uKey = DSID.of(datasetKey, null);

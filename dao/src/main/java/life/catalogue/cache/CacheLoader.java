@@ -20,8 +20,14 @@ public interface CacheLoader {
   class Mybatis implements CacheLoader {
     private final SqlSession session;
     private final NameUsageMapper num;
+    private final boolean retryWithCommit;
 
-    public Mybatis(SqlSession session) {
+    /**
+     * @param session to use for loading records
+     * @param retryWithCommit if true and the initial load results in a null, issues a commit() before trying it one more time
+     */
+    public Mybatis(SqlSession session, boolean retryWithCommit) {
+      this.retryWithCommit = retryWithCommit;
       this.session = session;
       this.num = session.getMapper(NameUsageMapper.class);
     }
@@ -33,7 +39,9 @@ public interface CacheLoader {
 
     @Override
     public void commit() {
-      session.commit();
+      if (retryWithCommit) {
+        session.commit();
+      }
     }
   }
 

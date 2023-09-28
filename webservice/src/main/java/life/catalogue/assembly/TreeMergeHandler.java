@@ -56,7 +56,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     } else {
       parents = new MatchedParentStack(matcher.toSimpleName(target));
     }
-    this.loader = new CacheLoader.Mybatis(batchSession);
+    this.loader = new CacheLoader.Mybatis(batchSession, true);
     matcher.registerLoader(targetDatasetKey, loader); // we need to make sure we remove it at the end no matter what!
   }
 

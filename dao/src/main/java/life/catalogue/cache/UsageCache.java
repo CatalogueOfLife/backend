@@ -57,7 +57,7 @@ public interface UsageCache extends AutoCloseable, Managed {
     if (sn == null) {
       sn = loader.load(key);
       if (sn == null) {
-        // first try to commmit and see if we can get it then
+        // first try to commit and see if we can get it then
         loader.commit();
         sn = loader.load(key);
       }

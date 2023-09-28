@@ -28,7 +28,7 @@ public class UsageCacheTest {
     assertNull(cache.get(key));
 
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var loader = new CacheLoader.Mybatis(session);
+      var loader = new CacheLoader.Mybatis(session, true);
       var snp = loader.load(key);
       var sncl = cache.withClassification(testDataRule.testData.key, snp, loader);
       assertEquals(6, sncl.getClassification().size());
