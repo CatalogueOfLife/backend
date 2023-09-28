@@ -84,6 +84,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
     this.entities = Preconditions.checkNotNull(sector.getEntities(), "Sector entities required");
     LOG.info("Include taxon extensions: {}", Joiner.on(", ").join(entities));
 
+    if (sector.getNameTypes() != null && !sector.getNameTypes().isEmpty())  {
+      LOG.info("Include only name types: {}", Joiner.on(", ").join(sector.getNameTypes()));
+    }
+
+    if (sector.getNameStatusExclusion() != null && !sector.getNameStatusExclusion().isEmpty())  {
+      LOG.info("Include only name status: {}", Joiner.on(", ").join(sector.getNameStatusExclusion()));
+    }
+
     this.ranks = Preconditions.checkNotNull(sector.getRanks(), "Sector ranks required");
     if (ranks.size() < Rank.values().length) {
       LOG.info("Consider only ranks: {}", Joiner.on(", ").join(ranks));

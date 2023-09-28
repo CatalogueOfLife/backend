@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -193,19 +194,19 @@ abstract class SectorRunnable implements Runnable {
         throw new NotFoundException("Sector "+sectorKey+" does not exist");
       }
       // apply dataset defaults if needed
-      if (s.getEntities() == null || s.getEntities().isEmpty() || s.getRanks() == null || s.getRanks().isEmpty()) {
+      if (s.getEntities() == null || s.getEntities().isEmpty()
+          || s.getRanks() == null || s.getRanks().isEmpty()
+          || s.getNameTypes() == null || s.getNameTypes().isEmpty()
+          || s.getNameStatusExclusion() == null || s.getNameStatusExclusion().isEmpty()
+      ) {
         DatasetSettings ds = ObjectUtils.coalesce(
           session.getMapper(DatasetMapper.class).getSettings(sectorKey.getDatasetKey()),
           new DatasetSettings()
         );
 
-        if (s.getEntities() == null || s.getEntities().isEmpty()) {
-          if (ds.has(Setting.SECTOR_ENTITIES)) {
-            s.setEntities(Set.copyOf(ds.getEnumList(Setting.SECTOR_ENTITIES)));
-          } else {
-            s.setEntities(Collections.emptySet());
-          }
-        }
+        addProjectSettings(ds, Setting.SECTOR_ENTITIES, s::getEntities, s::setEntities);
+        addProjectSettings(ds, Setting.SECTOR_NAME_TYPES, s::getNameTypes, s::setNameTypes);
+        addProjectSettings(ds, Setting.SECTOR_NAME_STATUS_EXCLUSION, s::getNameStatusExclusion, s::setNameStatusExclusion);
 
         if (s.getRanks() == null || s.getRanks().isEmpty()) {
           if(s.getMode() == Sector.Mode.MERGE) {
@@ -237,7 +238,19 @@ abstract class SectorRunnable implements Runnable {
       return s;
     }
   }
-  
+
+  private <T extends Enum> void addProjectSettings(DatasetSettings ds, Setting setting, Supplier<Set<T>> getter, Consumer<Set<T>> setter) {
+    var val = getter.get();
+    if (val == null || val.isEmpty()) {
+      if (ds.has(setting)) {
+        val = Set.copyOf(ds.getEnumList(setting));
+      } else {
+        val = Collections.emptySet();
+      }
+      setter.accept(val);
+    }
+  }
+
   private void loadDecisions() {
     try (SqlSession session = factory.openSession(true)) {
       PgUtils.consume(() -> session.getMapper(DecisionMapper.class).processSearch(DecisionSearchRequest.byDataset(sectorKey.getDatasetKey(), subjectDatasetKey)),
