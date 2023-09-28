@@ -357,9 +357,22 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision) {
-    if (decision != null && decision.getMode() == EditorialDecision.Mode.IGNORE) {
-      LOG.info("Ignore {} {} [{}] because editorial ignore decision", u.getName().getRank(), u.getName().getLabel(), u.getId());
-      return true;
+    // we must ignore synonyms for taxa which have been skipped
+    if (u.isSynonym() && ignoredTaxa.contains(u.getParentId())) {
+      // https://github.com/CatalogueOfLife/backend/issues/1150
+      return incIgnored(IgnoreReason.IGNORED_PARENT, u);
+    }
+
+    if (decision != null) {
+      // a reviewed decision actively overrides any other algorithmic decision below to exclude the usage
+      if (decision.getMode() == EditorialDecision.Mode.REVIEWED) {
+        LOG.info("Include {} {} [{}] because editorial reviewed decision", u.getName().getRank(), u.getName().getLabel(), u.getId());
+        return false;
+      }
+      if (decision.getMode() == EditorialDecision.Mode.IGNORE) {
+        LOG.info("Ignore {} {} [{}] because editorial ignore decision", u.getName().getRank(), u.getName().getLabel(), u.getId());
+        return true;
+      }
     }
 
     Name n = u.getName();
@@ -368,19 +381,16 @@ public abstract class TreeBaseHandler implements TreeHandler {
       if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
         return incIgnored(IgnoreReason.RANK, u);
       }
-    } else if (ignoredTaxa.contains(u.getParentId())) {
-      // we ignore synonyms for taxa which have been skipped
-      // https://github.com/CatalogueOfLife/backend/issues/1150
-      return incIgnored(IgnoreReason.IGNORED_PARENT, u);
     }
-
     // apply name type filter if exists
     if (sector.getNameTypes() != null && !sector.getNameTypes().isEmpty() && !sector.getNameTypes().contains(n.getType())) {
       return incIgnored(IgnoreReason.reasonByNameType(n.getType()), u);
     }
+    // apply name status filter if exists
     if (n.getNomStatus() != null && sector.getNameStatusExclusion() != null && sector.getNameStatusExclusion().contains(n.getNomStatus())) {
       return incIgnored(IgnoreReason.NOMENCLATURAL_STATUS, u);
     }
+    
     if (n.getCultivarEpithet() != null || n.getCode() == NomCode.CULTIVARS || n.getRank().isCultivarRank()) {
       return incIgnored(IgnoreReason.INCONSISTENT_NAME, u);
     }
