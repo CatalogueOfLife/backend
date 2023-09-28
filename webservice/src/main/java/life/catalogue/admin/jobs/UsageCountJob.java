@@ -2,7 +2,6 @@ package life.catalogue.admin.jobs;
 
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.db.mapper.DatasetMapper;

@@ -1,7 +1,5 @@
 package life.catalogue.common.kryo;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
@@ -22,6 +20,8 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
+
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import static org.junit.Assert.assertEquals;
 

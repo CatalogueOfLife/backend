@@ -3,21 +3,11 @@ package life.catalogue.command;
 import life.catalogue.WsServerConfig;
 import life.catalogue.dao.Partitioner;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
-
-import javax.annotation.Nullable;
 
 /**
  * Command to add new partition tables for a given, partitioned master table.

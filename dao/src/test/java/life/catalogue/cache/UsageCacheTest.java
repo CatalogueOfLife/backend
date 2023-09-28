@@ -1,11 +1,9 @@
 package life.catalogue.cache;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;

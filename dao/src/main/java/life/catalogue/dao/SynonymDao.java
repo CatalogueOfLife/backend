@@ -8,18 +8,17 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SynonymMapper;
+import life.catalogue.es.NameUsageIndexService;
+
+import java.util.List;
 
 import javax.validation.Validator;
-
-import life.catalogue.es.NameUsageIndexService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class SynonymDao extends DatasetEntityDao<String, Synonym, SynonymMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(SynonymDao.class);

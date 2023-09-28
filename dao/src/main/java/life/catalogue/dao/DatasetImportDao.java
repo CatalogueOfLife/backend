@@ -19,7 +19,10 @@ import org.gbif.nameparser.api.Rank;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.ibatis.session.SqlSession;

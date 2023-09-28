@@ -10,17 +10,16 @@ import life.catalogue.db.mapper.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 
 import com.ibm.icu.text.Transliterator;
-
-import javax.annotation.Nullable;
 
 public class CatCopy {
   

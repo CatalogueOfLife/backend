@@ -1,25 +1,19 @@
 package life.catalogue.dw.jersey.provider;
 
-import com.google.common.base.Strings;
-
-import life.catalogue.api.jackson.UUIDSerde;
-
 import life.catalogue.parser.NomCodeParser;
-
 import life.catalogue.parser.Parser;
-
 import life.catalogue.parser.UnparsableException;
 
-import org.apache.poi.ss.formula.functions.T;
-
 import org.gbif.nameparser.api.NomCode;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 import javax.ws.rs.ext.Provider;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+import com.google.common.base.Strings;
 
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper

@@ -1,13 +1,13 @@
 package life.catalogue.matching;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.model.SimpleNameCached;
+import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.vocab.MatchType;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class UsageMatch implements DSID<String> {
   @JsonIgnore

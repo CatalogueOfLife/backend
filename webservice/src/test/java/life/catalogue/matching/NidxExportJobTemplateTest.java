@@ -1,11 +1,9 @@
 package life.catalogue.matching;
 
-import java.util.List;
-
 import life.catalogue.api.model.Dataset;
-import life.catalogue.dao.DatasetImportDao;
-
 import life.catalogue.db.mapper.DatasetMapper;
+
+import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -17,7 +15,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)

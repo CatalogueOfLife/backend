@@ -11,8 +11,6 @@ import life.catalogue.es.nu.NameUsageFieldLookup;
 import life.catalogue.es.query.*;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -25,8 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-
-import javax.ws.rs.PUT;
 
 import static life.catalogue.common.text.StringUtils.EMPTY_STRING_ARRAY;
 

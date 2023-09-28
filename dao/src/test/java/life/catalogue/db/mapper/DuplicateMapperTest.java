@@ -8,7 +8,6 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.db.PgConnectionRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;

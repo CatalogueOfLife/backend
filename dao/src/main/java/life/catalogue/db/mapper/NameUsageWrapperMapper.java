@@ -3,8 +3,6 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;

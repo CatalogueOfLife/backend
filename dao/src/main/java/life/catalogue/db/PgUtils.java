@@ -1,6 +1,11 @@
 package life.catalogue.db;
 
-import life.catalogue.common.text.StringUtils;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.exceptions.PersistenceException;
@@ -8,14 +13,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLTransientConnectionException;
-import java.sql.Statement;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class PgUtils {
   private static final Logger LOG = LoggerFactory.getLogger(PgUtils.class);

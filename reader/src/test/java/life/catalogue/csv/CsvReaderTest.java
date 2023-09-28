@@ -1,13 +1,11 @@
 package life.catalogue.csv;
 
-import com.univocity.parsers.common.CommonParserSettings;
-
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.Resources;
 
-import org.gbif.dwc.terms.*;
+import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.DcTerm;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,6 +21,7 @@ import org.junit.Test;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
+import com.univocity.parsers.common.CommonParserSettings;
 import com.univocity.parsers.csv.CsvParserSettings;
 
 import static org.junit.Assert.*;

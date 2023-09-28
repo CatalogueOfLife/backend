@@ -7,7 +7,6 @@ import java.sql.Statement;
 import java.util.Objects;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.postgresql.jdbc.PgConnection;

@@ -1,10 +1,11 @@
 package life.catalogue.dw.jersey.filter;
 
-import org.junit.Test;
-
 import java.util.UUID;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DatasetKeyRewriteFilterTest {
 

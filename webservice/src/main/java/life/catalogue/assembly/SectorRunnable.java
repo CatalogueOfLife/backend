@@ -17,8 +17,6 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.UsageMatcherGlobal;
 
-import org.apache.commons.lang3.time.DurationFormatUtils;
-
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
@@ -27,6 +25,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;

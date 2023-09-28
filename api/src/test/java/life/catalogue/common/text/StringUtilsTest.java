@@ -4,9 +4,9 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 
 import org.gbif.nameparser.api.Rank;
 
-import org.junit.Test;
-
 import java.util.List;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

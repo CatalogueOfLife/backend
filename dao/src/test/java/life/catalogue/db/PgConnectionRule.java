@@ -1,9 +1,9 @@
 package life.catalogue.db;
 
-import com.zaxxer.hikari.HikariDataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * A junit test rule that creates a {@link HikariDataSource} and SqlSessionFactory for the clb postgres db and stops it the end.

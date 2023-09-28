@@ -6,7 +6,6 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.*;
-import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;

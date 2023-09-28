@@ -4,19 +4,14 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 
-import java.util.List;
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.SqlSession;
@@ -24,10 +19,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import com.google.common.collect.Lists;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  *

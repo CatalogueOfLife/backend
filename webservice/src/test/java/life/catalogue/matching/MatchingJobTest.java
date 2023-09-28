@@ -1,34 +1,24 @@
 package life.catalogue.matching;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.Classification;
 import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.concurrent.BackgroundJob;
-import life.catalogue.concurrent.EmailNotification;
 import life.catalogue.concurrent.EmailNotificationTemplateTest;
-import life.catalogue.config.MailConfig;
-import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
-
 import life.catalogue.db.TestDataRule;
 
-import org.apache.batik.ext.awt.image.spi.JDKRegistryEntry;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.List;
-
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;

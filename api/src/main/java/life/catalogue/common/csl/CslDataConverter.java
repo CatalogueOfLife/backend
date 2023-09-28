@@ -4,10 +4,9 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
 import life.catalogue.api.model.CslName;
+import life.catalogue.api.util.ObjectUtils;
 
 import java.io.IOException;
-
-import life.catalogue.api.util.ObjectUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jbibtex.BibTeXEntry;

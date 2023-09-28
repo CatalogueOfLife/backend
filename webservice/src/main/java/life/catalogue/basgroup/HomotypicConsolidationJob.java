@@ -12,13 +12,13 @@ import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class HomotypicConsolidationJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidationJob.class);

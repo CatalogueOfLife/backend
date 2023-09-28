@@ -1,10 +1,10 @@
 package life.catalogue.img;
 
-import org.junit.Test;
-
 import java.net.URI;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class ImgConfigTest {
 

@@ -2,11 +2,9 @@ package life.catalogue.dao;
 
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 

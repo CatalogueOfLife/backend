@@ -7,7 +7,6 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
@@ -15,16 +14,12 @@ import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
+import life.catalogue.metadata.coldp.ColdpMetadataParser;
 
 import java.net.URI;
-import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import life.catalogue.metadata.MetadataFactory;
-import life.catalogue.metadata.coldp.ColdpMetadataParser;
-import life.catalogue.metadata.eml.EmlParser;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -3,32 +3,24 @@ package life.catalogue.assembly;
 import life.catalogue.TestDataGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.*;
-import life.catalogue.db.mapper.*;
-import life.catalogue.db.tree.PrinterFactory;
-import life.catalogue.db.tree.TextTreePrinter;
+import life.catalogue.db.NameMatchingRule;
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.TypeMaterialMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;

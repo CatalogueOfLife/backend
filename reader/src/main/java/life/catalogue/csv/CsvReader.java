@@ -1,22 +1,18 @@
 package life.catalogue.csv;
 
-import com.univocity.parsers.common.*;
-
-import com.univocity.parsers.tsv.TsvParser;
-import com.univocity.parsers.tsv.TsvParserSettings;
-
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,6 +27,7 @@ import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +39,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.univocity.parsers.common.*;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import com.univocity.parsers.tsv.TsvParser;
+import com.univocity.parsers.tsv.TsvParserSettings;
 
 /**
  * A reader giving access to a set of delimited text files in a folder

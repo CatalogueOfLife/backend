@@ -1,9 +1,9 @@
 package life.catalogue.config;
 
-import javax.validation.constraints.NotNull;
-
 import java.util.Set;
 import java.util.UUID;
+
+import javax.validation.constraints.NotNull;
 
 /**
  *

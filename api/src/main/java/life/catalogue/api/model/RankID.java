@@ -5,11 +5,11 @@ import org.gbif.nameparser.api.Rank;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 public class RankID extends DSIDValue<String> {
   private static final Logger LOG = LoggerFactory.getLogger(RankID.class);

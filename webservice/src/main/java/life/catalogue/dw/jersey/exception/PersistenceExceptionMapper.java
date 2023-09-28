@@ -1,13 +1,13 @@
 package life.catalogue.dw.jersey.exception;
 
+import life.catalogue.db.PgUtils;
+
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-
-import life.catalogue.db.PgUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.exceptions.PersistenceException;

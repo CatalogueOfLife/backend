@@ -4,8 +4,6 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
 
-import org.apache.commons.text.translate.UnicodeUnescaper;
-
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.util.UnicodeUtils;

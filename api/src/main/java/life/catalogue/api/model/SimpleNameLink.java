@@ -2,9 +2,9 @@ package life.catalogue.api.model;
 
 import org.gbif.nameparser.api.Rank;
 
-import javax.annotation.Nullable;
-
 import java.util.Objects;
+
+import javax.annotation.Nullable;
 
 public class SimpleNameLink extends SimpleName {
   private boolean broken;

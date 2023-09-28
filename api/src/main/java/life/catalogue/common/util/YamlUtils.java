@@ -1,22 +1,17 @@
 package life.catalogue.common.util;
 
-import com.sun.source.doctree.TextTree;
-
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.common.io.UTF8IoUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-
-import life.catalogue.api.vocab.terms.TxtTreeTerm;
-import life.catalogue.common.io.UTF8IoUtils;
-
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Text;
 
 /**
  *

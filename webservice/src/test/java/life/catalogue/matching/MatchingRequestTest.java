@@ -2,11 +2,11 @@ package life.catalogue.matching;
 
 import life.catalogue.api.vocab.TabularFormat;
 
-import org.junit.Test;
-
 import java.io.File;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class MatchingRequestTest {
 

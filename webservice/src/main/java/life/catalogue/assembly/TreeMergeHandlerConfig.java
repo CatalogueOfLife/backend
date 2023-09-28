@@ -1,6 +1,9 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.FormattableName;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.NameMapper;
@@ -8,16 +11,14 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.release.XReleaseConfig;
 
-import org.apache.ibatis.session.SqlSession;
-
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.gbif.nameparser.api.NameType;
 
+import java.util.*;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 public class TreeMergeHandlerConfig {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandlerConfig.class);

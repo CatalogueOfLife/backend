@@ -1,7 +1,5 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-
 import life.catalogue.api.jackson.LabelPropertyFilter;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -18,6 +16,7 @@ import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 

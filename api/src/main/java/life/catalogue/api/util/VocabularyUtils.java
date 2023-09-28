@@ -16,12 +16,11 @@ import life.catalogue.api.jackson.PermissiveEnumSerde;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
+import org.gbif.dwc.terms.UnknownTerm;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import org.gbif.dwc.terms.UnknownTerm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

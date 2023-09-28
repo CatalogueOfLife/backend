@@ -1,24 +1,13 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.TaxonMapper;
 
-import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.nameparser.api.NameType;
+import java.util.*;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
-import java.util.*;
 
 public class XReleaseConfig {
 

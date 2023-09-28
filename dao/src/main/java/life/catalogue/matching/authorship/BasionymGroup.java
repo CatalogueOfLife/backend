@@ -1,21 +1,13 @@
 package life.catalogue.matching.authorship;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import life.catalogue.api.model.FormattableName;
-
-import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.common.text.StringUtils;
-
 import org.gbif.nameparser.api.Authorship;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
-
-import org.gbif.nameparser.api.LinneanName;
 
 
 /**

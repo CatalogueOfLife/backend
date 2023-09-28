@@ -7,9 +7,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.db.type.BaseEnumSetTypeHandler;
 
-import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;

@@ -1,41 +1,21 @@
 package life.catalogue.resources.parser;
 
 import life.catalogue.api.model.Classification;
-import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.assembly.TaxGroupAnalyzer;
-import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.matching.UsageMatchWithOriginal;
-import life.catalogue.matching.authorship.AuthorComparator;
-import life.catalogue.matching.authorship.BasionymGroup;
-import life.catalogue.matching.authorship.BasionymSorter;
-import life.catalogue.parser.NameParser;
-
-import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/parser/taxgroup")
 @Produces(MediaType.APPLICATION_JSON)

@@ -1,16 +1,15 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.License;
-import life.catalogue.api.vocab.Setting;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -23,9 +22,6 @@ import javax.validation.Validator;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

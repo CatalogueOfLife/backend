@@ -8,7 +8,6 @@ import life.catalogue.db.CRUD;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
-import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;

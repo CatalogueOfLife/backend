@@ -3,7 +3,6 @@ package life.catalogue.db.tree;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgUtils;

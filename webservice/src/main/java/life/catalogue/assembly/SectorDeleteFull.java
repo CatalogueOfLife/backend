@@ -1,7 +1,5 @@
 package life.catalogue.assembly;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.Sector;
@@ -11,6 +9,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.UsageMatcherGlobal;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,11 +17,12 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import life.catalogue.matching.UsageMatcherGlobal;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.eventbus.EventBus;
 
 /**
  * Deletes a sector, all its data and recursively deletes also all included, nested sectors!

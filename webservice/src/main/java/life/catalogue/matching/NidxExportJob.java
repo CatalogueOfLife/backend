@@ -1,11 +1,6 @@
 package life.catalogue.matching;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import com.google.common.base.Preconditions;
-
 import life.catalogue.WsServerConfig;
-import life.catalogue.admin.jobs.IndexJob;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.Dataset;
@@ -17,6 +12,7 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
+import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
 import java.io.File;
 import java.io.Writer;
@@ -26,16 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import life.catalogue.metadata.MetadataFactory;
-
-import life.catalogue.metadata.coldp.DatasetYamlWriter;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Preconditions;
 import com.univocity.parsers.common.AbstractWriter;
 import com.univocity.parsers.tsv.TsvWriter;
 import com.univocity.parsers.tsv.TsvWriterSettings;

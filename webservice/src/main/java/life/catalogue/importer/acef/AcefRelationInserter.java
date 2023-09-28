@@ -4,7 +4,6 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.Setting;
 import life.catalogue.importer.NameInterpreter;
 import life.catalogue.importer.RelationInserterBase;
 import life.catalogue.importer.neo.NeoDb;

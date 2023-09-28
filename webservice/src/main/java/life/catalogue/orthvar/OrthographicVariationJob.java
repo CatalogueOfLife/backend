@@ -10,16 +10,15 @@ import life.catalogue.concurrent.JobPriority;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.gbif.nameparser.api.Rank;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OrthographicVariationJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(OrthographicVariationJob.class);

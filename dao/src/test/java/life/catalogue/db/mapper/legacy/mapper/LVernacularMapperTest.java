@@ -1,7 +1,6 @@
 package life.catalogue.db.mapper.legacy.mapper;
 
 import life.catalogue.db.LookupTables;
-import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.legacy.LVernacularMapper;
@@ -11,7 +10,6 @@ import life.catalogue.db.mapper.legacy.model.LName;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

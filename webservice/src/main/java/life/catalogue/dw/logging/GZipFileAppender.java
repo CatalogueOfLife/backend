@@ -1,13 +1,12 @@
 package life.catalogue.dw.logging;
 
-import ch.qos.logback.core.FileAppender;
-import ch.qos.logback.core.util.FileUtil;
-
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
+
+import ch.qos.logback.core.FileAppender;
+import ch.qos.logback.core.util.FileUtil;
 
 /**
  * File appender that uses a GZIPOutputStream to write to the file.

@@ -1,10 +1,5 @@
 package life.catalogue.metadata.zenodo;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.License;
@@ -12,13 +7,16 @@ import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.parser.LicenseParser;
 import life.catalogue.parser.SafeParser;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.ObjectReader;
 
 public class ZenodoParser {
   private static final Logger LOG = LoggerFactory.getLogger(ZenodoParser.class);

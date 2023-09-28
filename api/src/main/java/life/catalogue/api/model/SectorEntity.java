@@ -1,8 +1,8 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  *

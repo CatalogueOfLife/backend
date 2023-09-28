@@ -1,26 +1,12 @@
 package life.catalogue.dao;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DuplicateMapper;
-
 import life.catalogue.db.mapper.SectorMapper;
-
-import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-
-import org.checkerframework.checker.units.qual.K;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -36,9 +22,14 @@ import javax.ws.rs.QueryParam;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
 
 public class DuplicateDao {

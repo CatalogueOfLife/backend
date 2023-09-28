@@ -5,7 +5,6 @@ import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 
-import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;

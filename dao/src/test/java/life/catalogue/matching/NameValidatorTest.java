@@ -4,7 +4,6 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 
-import life.catalogue.matching.NameValidator;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 

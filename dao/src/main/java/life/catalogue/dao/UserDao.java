@@ -1,12 +1,6 @@
 package life.catalogue.dao;
 
-import com.google.common.base.Preconditions;
-
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.event.UserChanged;
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
@@ -16,7 +10,10 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
@@ -26,7 +23,11 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.eventbus.EventBus;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class UserDao extends EntityDao<Integer, User, UserMapper> {
 

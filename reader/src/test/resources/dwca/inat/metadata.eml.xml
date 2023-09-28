@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <eml:eml
-    xmlns:eml="eml://ecoinformatics.org/eml-2.1.1"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:dc="http://purl.org/dc/terms/"
-    xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.0.1/eml-gbif-profile.xsd"
-    xml:lang="en"
-    packageId="iNaturalist.observations.eml.1662040817"
-    system="http://gbif.org"
-    scope="system">
+  xmlns:eml="eml://ecoinformatics.org/eml-2.1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.0.1/eml-gbif-profile.xsd"
+  xml:lang="en"
+  packageId="iNaturalist.observations.eml.1662040817"
+  system="http://gbif.org"
+  scope="system">
   <dataset>
     <alternateIdentifier><![CDATA[https://www.inaturalist.org/taxa]]></alternateIdentifier>
     <title xml:lang="en">

@@ -1,16 +1,15 @@
 package life.catalogue.concurrent;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
-import com.google.common.base.Preconditions;
-
-import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.JobResult;
 
 import java.io.File;
 import java.net.URI;
 import java.util.UUID;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Background job configuration for processing of asynchroneous tasks.

@@ -7,7 +7,6 @@ import life.catalogue.csv.DwcaReader;
 import life.catalogue.importer.proxy.DistributedArchiveService;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;

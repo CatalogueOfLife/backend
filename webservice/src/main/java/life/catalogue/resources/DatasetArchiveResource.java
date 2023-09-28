@@ -2,20 +2,16 @@ package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.FileStreamingOutput;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
-import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-
-import org.apache.commons.io.IOUtils;
 
 @Path("/dataset/{key}/archive")
 // there are many unofficial mime types around for zip

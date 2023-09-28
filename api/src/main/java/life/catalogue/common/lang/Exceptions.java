@@ -1,10 +1,10 @@
 package life.catalogue.common.lang;
 
-import javax.annotation.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 public class Exceptions {
 

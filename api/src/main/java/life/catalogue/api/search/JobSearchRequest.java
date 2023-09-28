@@ -4,12 +4,12 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.JobStatus;
 
-import javax.print.attribute.standard.JobPriority;
-import javax.ws.rs.QueryParam;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.print.attribute.standard.JobPriority;
+import javax.ws.rs.QueryParam;
 
 public class JobSearchRequest {
 

@@ -4,14 +4,11 @@ import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.JobSearchRequest;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.validation.Valid;

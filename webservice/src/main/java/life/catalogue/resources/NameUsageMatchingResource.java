@@ -10,8 +10,6 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.importer.NameInterpreter;
 import life.catalogue.matching.*;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -25,6 +23,7 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

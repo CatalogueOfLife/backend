@@ -1,10 +1,10 @@
 package life.catalogue.dw.logging;
 
+import life.catalogue.common.util.LoggingUtils;
+
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.filter.Filter;
 import ch.qos.logback.core.spi.FilterReply;
-
-import life.catalogue.common.util.LoggingUtils;
 
 /**
  * Filter that makes sure the MDC dataset property is set.

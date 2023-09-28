@@ -1,6 +1,5 @@
 package life.catalogue.api.model;
 
-import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
 import java.util.List;

@@ -11,24 +11,22 @@ import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;
-
 import life.catalogue.matching.NameValidator;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TxtTreeDao {
   private static final Logger LOG = LoggerFactory.getLogger(TxtTreeDao.class);

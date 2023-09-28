@@ -1,7 +1,5 @@
 package life.catalogue.db.tree;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
@@ -24,6 +22,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A junit test rule that loads test data from a text tree file into a given dataset.

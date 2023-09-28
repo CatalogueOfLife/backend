@@ -1,18 +1,18 @@
 package life.catalogue.dw.managed;
 
+import life.catalogue.common.Idle;
+import life.catalogue.common.Managed;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
-
-import life.catalogue.common.Idle;
-import life.catalogue.common.Managed;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 
 /**
  * Service for all components that need to be started & stopped by the application.

@@ -2,13 +2,13 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -17,8 +17,6 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
-
-import org.gbif.nameparser.api.Rank;
 
 /**
  * The dataset mappers create method expects the key to be provided.

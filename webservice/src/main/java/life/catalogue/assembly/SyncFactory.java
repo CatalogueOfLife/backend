@@ -1,28 +1,26 @@
 package life.catalogue.assembly;
 
-import com.google.common.eventbus.EventBus;
-
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.User;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndex;
-
 import life.catalogue.matching.UsageMatcherGlobal;
 
-import life.catalogue.release.XReleaseConfig;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import com.google.common.eventbus.EventBus;
 
 public class SyncFactory {
   private static final Logger LOG = LoggerFactory.getLogger(SyncFactory.class);

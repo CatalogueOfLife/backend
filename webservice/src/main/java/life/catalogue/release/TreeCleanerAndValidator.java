@@ -5,16 +5,13 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.NameValidator;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Objects;
 import java.util.function.Consumer;
 

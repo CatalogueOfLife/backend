@@ -16,10 +16,6 @@ import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
 
-import org.apache.commons.lang3.StringUtils;
-
-import org.apache.poi.ss.formula.functions.T;
-
 import org.gbif.dwc.terms.Term;
 
 import java.io.File;
@@ -32,6 +28,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -39,7 +36,6 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Timer;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 

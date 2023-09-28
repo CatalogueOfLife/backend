@@ -1,18 +1,19 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.vocab.InfoGroup;
-import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.VerbatimSource;
+import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.*;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.validation.constraints.NotNull;
 
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * Mapper that manages the verbatim_source and verbatim_source_secondary tables.

@@ -1,17 +1,13 @@
 package life.catalogue.db.type2;
 
 import life.catalogue.api.model.Identifier;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.common.text.CSVUtils;
-
-import org.apache.commons.lang3.StringUtils;
-import org.postgresql.util.PGobject;
 
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * PG Array type handler that supports reads & writes for lists of identifier objects into a pg text array.

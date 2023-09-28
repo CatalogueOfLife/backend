@@ -30,8 +30,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Timer;
-
 public class DwcaExport extends ArchiveExport {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaExport.class);
   private static final String EML_FILENAME = "eml.xml";

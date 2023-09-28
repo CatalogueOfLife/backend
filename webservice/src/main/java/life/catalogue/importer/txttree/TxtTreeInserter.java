@@ -1,8 +1,5 @@
 package life.catalogue.importer.txttree;
 
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.VerbatimRecord;
@@ -23,14 +20,8 @@ import life.catalogue.metadata.MetadataFactory;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.txtree.SimpleTreeNode;
-
 import org.gbif.txtree.Tree;
 import org.gbif.txtree.TreeLine;
-
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,6 +29,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
+
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
 /**
  *

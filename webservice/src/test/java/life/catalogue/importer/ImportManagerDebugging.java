@@ -1,7 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetWithSettings;
@@ -9,7 +7,6 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
@@ -36,6 +33,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.eventbus.EventBus;
 import com.google.common.io.Files;
 
 import io.dropwizard.client.HttpClientBuilder;

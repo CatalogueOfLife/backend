@@ -1,7 +1,5 @@
 package life.catalogue.release;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
@@ -12,11 +10,13 @@ import life.catalogue.assembly.SyncFactory;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.*;
-import life.catalogue.db.*;
+import life.catalogue.db.NameMatchingRule;
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.TxtTreeDataRule;
-
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -25,13 +25,17 @@ import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
 
+import org.gbif.nameparser.api.Rank;
+
+import java.util.*;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -40,10 +44,8 @@ import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import com.google.common.eventbus.EventBus;
 
-import java.util.*;
 import static org.mockito.Mockito.mock;
 
 /**

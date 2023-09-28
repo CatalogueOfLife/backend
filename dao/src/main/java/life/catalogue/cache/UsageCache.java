@@ -1,24 +1,22 @@
 package life.catalogue.cache;
 
-import com.google.common.eventbus.Subscribe;
-
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.model.SimpleNameCached;
+import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.common.Managed;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
-
-import life.catalogue.common.Managed;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.eventbus.Subscribe;
 
 /**
  * Simple KVP style cache for name usages in the form of SimpleNameWithPub instances.

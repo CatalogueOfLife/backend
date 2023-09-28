@@ -7,8 +7,8 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MetadataFormat;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.provider.DatasetMessageBodyReader;
-import life.catalogue.metadata.datacite.DataciteParser;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
+import life.catalogue.metadata.datacite.DataciteParser;
 import life.catalogue.metadata.eml.EmlParser;
 import life.catalogue.metadata.zenodo.ZenodoParser;
 

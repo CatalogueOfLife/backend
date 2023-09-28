@@ -10,7 +10,6 @@ import life.catalogue.db.type.UuidTypeHandler;
 import life.catalogue.db.type2.StringCount;
 
 import org.gbif.nameparser.api.ParsedName;
-import org.gbif.nameparser.utils.Closer;
 
 import java.sql.Connection;
 import java.sql.SQLException;

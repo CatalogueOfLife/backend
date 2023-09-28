@@ -3,7 +3,6 @@ package life.catalogue.matching;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
-import life.catalogue.matching.UsageMatch;
 
 public class UsageMatchWithOriginal extends UsageMatch {
   public final SimpleNameClassified<SimpleName> original;

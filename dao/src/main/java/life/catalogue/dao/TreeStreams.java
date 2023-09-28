@@ -6,15 +6,11 @@ import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.db.mapper.NameUsageMapper;
 
-import org.gbif.nameparser.api.Rank;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import javax.annotation.Nullable;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;

@@ -1,9 +1,9 @@
 package life.catalogue.dw.health;
 
 
-import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Rank;

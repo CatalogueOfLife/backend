@@ -1,7 +1,6 @@
 package life.catalogue.command;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 

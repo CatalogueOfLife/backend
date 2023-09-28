@@ -1,7 +1,5 @@
 package life.catalogue.db;
 
-import it.unimi.dsi.fastutil.Pair;
-
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
@@ -39,6 +37,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+
+import it.unimi.dsi.fastutil.Pair;
 
 /**
  * A junit test rule that truncates all CoL tables, potentially loads some test

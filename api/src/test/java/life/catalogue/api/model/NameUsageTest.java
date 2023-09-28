@@ -1,12 +1,12 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.TestEntityGenerator;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class NameUsageTest {
 

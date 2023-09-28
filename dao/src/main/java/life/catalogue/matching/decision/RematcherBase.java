@@ -9,7 +9,6 @@ import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.BaseDecisionMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import java.util.List;
 import java.util.Objects;

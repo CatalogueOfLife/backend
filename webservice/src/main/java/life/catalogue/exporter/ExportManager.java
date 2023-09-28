@@ -1,7 +1,5 @@
 package life.catalogue.exporter;
 
-import com.google.common.eventbus.Subscribe;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.model.DSID;
@@ -10,7 +8,6 @@ import life.catalogue.api.model.ExportRequest;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
-import life.catalogue.concurrent.EmailNotification;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
@@ -21,13 +18,11 @@ import java.util.UUID;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.simplejavamail.api.mailer.Mailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.eventbus.Subscribe;
 
 public class ExportManager {
   private static final Logger LOG = LoggerFactory.getLogger(ExportManager.class);

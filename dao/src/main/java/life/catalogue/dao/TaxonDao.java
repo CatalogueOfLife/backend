@@ -34,9 +34,6 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
-import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
-import static life.catalogue.api.vocab.DatasetOrigin.RELEASE;
-
 public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   private final NameUsageIndexService indexService;

@@ -9,7 +9,10 @@ import java.io.Writer;
 import java.net.URI;
 
 import javax.ws.rs.RedirectionException;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;

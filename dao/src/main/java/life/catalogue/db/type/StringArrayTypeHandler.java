@@ -17,7 +17,6 @@ import life.catalogue.db.type2.AbstractArrayTypeHandler;
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

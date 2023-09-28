@@ -1,58 +1,33 @@
 package life.catalogue.resources;
 
-import com.google.common.base.Preconditions;
-
-import io.dropwizard.auth.Auth;
-
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.SynonymDao;
-import life.catalogue.dao.TaxonDao;
-import life.catalogue.dao.TxtTreeDao;
-import life.catalogue.db.mapper.*;
-import life.catalogue.db.tree.PrinterFactory;
-import life.catalogue.db.tree.TextTreePrinter;
-import life.catalogue.dw.auth.Roles;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
 
-import life.catalogue.importer.neo.model.NeoRel;
-import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.neo.model.RelType;
-import life.catalogue.importer.txttree.TxtTreeInserter;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.gbif.nameparser.api.Rank;
 
-import java.io.*;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.txtree.SimpleTreeNode;
-import org.gbif.txtree.Tree;
-
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

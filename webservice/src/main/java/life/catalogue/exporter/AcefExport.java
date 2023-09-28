@@ -1,7 +1,5 @@
 package life.catalogue.exporter;
 
-import com.zaxxer.hikari.pool.HikariProxyConnection;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
@@ -33,7 +31,6 @@ import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Timer;
 import com.google.common.io.Files;
 
 /**

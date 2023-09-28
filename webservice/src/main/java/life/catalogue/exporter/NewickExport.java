@@ -2,7 +2,6 @@ package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.tree.NewickPrinter;
@@ -15,8 +14,6 @@ import java.io.Writer;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.codahale.metrics.Timer;
 
 public class NewickExport extends DatasetExportJob {
   private static final Logger LOG = LoggerFactory.getLogger(NewickExport.class);

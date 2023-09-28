@@ -4,7 +4,6 @@ import life.catalogue.api.model.HasID;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;

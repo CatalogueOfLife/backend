@@ -5,7 +5,6 @@ import life.catalogue.common.io.DownloadException;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.io.File;
@@ -16,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;

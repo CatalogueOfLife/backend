@@ -1,15 +1,11 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonView;
-
 import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
-
-import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.*;
 
@@ -18,15 +14,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.common.annotations.VisibleForTesting;
 
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 

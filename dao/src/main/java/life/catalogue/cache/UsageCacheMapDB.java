@@ -1,7 +1,5 @@
 package life.catalogue.cache;
 
-import it.unimi.dsi.fastutil.ints.*;
-
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.MatchType;
@@ -19,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.mapdb.DB;
-import org.mapdb.DBException;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;
@@ -27,6 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
+
+import it.unimi.dsi.fastutil.ints.*;
 
 /**
  * UsageCache implementation that is backed by a mapdb using kryo serialization.

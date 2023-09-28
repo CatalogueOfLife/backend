@@ -5,19 +5,23 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.*;
+import life.catalogue.db.NameMatchingRule;
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.TxtTreeDataRule;
+
+import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.RankUtils;
 
 import java.util.*;
 
 import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.nameparser.api.Rank;
-
-import org.gbif.nameparser.util.RankUtils;
-
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;

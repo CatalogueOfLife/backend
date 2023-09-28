@@ -3,7 +3,6 @@ package life.catalogue.matching.decision;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.SectorMapper;

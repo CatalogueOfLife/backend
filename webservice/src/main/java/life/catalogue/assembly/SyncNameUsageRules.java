@@ -3,13 +3,11 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.NomStatus;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
-
-import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.NomCode;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

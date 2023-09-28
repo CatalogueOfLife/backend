@@ -11,8 +11,6 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.parser.NameParser;
 
-import org.apache.ibatis.cursor.Cursor;
-
 import org.gbif.nameparser.api.*;
 
 import java.io.IOException;
@@ -23,6 +21,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.After;

@@ -1,7 +1,5 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-
 import life.catalogue.api.jackson.LabelPropertyFilter;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -11,6 +9,8 @@ import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonFilter;
 
 /**
  * A name without any associated name usage, i.e. no {@link Taxon} nor {@link Synonym}.

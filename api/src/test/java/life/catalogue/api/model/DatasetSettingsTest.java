@@ -12,7 +12,6 @@ import org.gbif.nameparser.api.Rank;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.Test;
 

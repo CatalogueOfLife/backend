@@ -15,6 +15,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.FileUtils;
 import org.mapdb.DB;
@@ -23,8 +24,6 @@ import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 public class IdMap implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(IdMap.class);

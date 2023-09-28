@@ -1,20 +1,18 @@
 package life.catalogue.dw.jersey.exception;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import io.dropwizard.jersey.errors.ErrorMessage;
-
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameUsage;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import io.dropwizard.jersey.errors.ErrorMessage;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 

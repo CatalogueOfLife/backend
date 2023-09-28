@@ -8,13 +8,12 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.GlobalPageable;
+import life.catalogue.db.PgUtils;
 
 import java.util.List;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
-
-import life.catalogue.db.PgUtils;
 
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;

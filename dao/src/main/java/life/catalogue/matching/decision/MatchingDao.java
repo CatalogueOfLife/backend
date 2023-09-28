@@ -5,8 +5,6 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 
-import life.catalogue.matching.authorship.AuthorComparator;
-
 import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;

@@ -4,7 +4,7 @@ import org.gbif.nameparser.api.NameType;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 public class IgnoreReasonTest {
 

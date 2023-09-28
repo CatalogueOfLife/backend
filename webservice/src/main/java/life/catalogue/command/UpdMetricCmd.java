@@ -1,6 +1,9 @@
 package life.catalogue.command;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;

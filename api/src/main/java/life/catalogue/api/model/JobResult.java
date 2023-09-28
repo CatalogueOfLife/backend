@@ -3,14 +3,15 @@ package life.catalogue.api.model;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.text.StringUtils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Objects;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JobResult extends DataEntity<UUID> {
   private static final Logger LOG = LoggerFactory.getLogger(JobResult.class);

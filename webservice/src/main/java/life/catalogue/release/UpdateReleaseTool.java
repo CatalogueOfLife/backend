@@ -5,7 +5,6 @@ import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dao.*;
 import life.catalogue.db.MybatisFactory;

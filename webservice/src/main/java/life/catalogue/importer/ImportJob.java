@@ -1,7 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.model.DatasetImport;
@@ -10,7 +8,6 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
@@ -58,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.eventbus.EventBus;
 
 /**
  * Asynchronous import job that orchestrates the entire import process including download,

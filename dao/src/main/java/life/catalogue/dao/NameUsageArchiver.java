@@ -1,19 +1,22 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.ArchivedNameUsage;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.IdReportType;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Service that builds the name usage archive for projects based on their existing id_reports.

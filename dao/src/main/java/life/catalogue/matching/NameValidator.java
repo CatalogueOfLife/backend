@@ -4,11 +4,8 @@ import life.catalogue.api.model.FormattableName;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.vocab.Issue;
 
-import life.catalogue.common.tax.AuthorshipNormalizer;
-
 import org.gbif.nameparser.api.Rank;
 
-import java.text.Normalizer;
 import java.time.Year;
 import java.util.Set;
 import java.util.function.Supplier;

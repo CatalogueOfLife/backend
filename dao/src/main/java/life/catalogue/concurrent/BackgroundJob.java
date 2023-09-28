@@ -1,13 +1,10 @@
 package life.catalogue.concurrent;
 
-import com.codahale.metrics.Timer;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.config.MailConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,12 +14,12 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.config.MailConfig;
-
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.Timer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class BackgroundJob implements Runnable {

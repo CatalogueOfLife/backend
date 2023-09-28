@@ -1,19 +1,16 @@
 package life.catalogue.assembly;
 
-import com.google.common.eventbus.Subscribe;
-
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.Users;
+import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.common.Idle;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.NameIndex;
 
@@ -32,12 +29,12 @@ import java.util.stream.Collectors;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.neo4j.helpers.collection.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.eventbus.Subscribe;
 
 public class SyncManager implements Managed, Idle {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));

@@ -3,12 +3,10 @@ package life.catalogue.concurrent;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.db.mapper.DatasetMapper;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

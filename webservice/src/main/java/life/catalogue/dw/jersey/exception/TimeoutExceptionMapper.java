@@ -1,10 +1,8 @@
 package life.catalogue.dw.jersey.exception;
 
 import life.catalogue.api.exception.TimeoutException;
-import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.dw.jersey.MoreStatus;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
 /**

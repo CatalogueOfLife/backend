@@ -2,10 +2,9 @@ package life.catalogue.command;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.parser.NameParser;
 
 import java.util.concurrent.TimeUnit;
-
-import life.catalogue.parser.NameParser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

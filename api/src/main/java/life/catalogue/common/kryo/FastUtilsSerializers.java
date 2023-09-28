@@ -1,7 +1,5 @@
 package life.catalogue.common.kryo;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import life.catalogue.common.kryo.jdk.JdkImmutableSetSerializer;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -11,11 +9,7 @@ import com.esotericsoftware.kryo.io.Output;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.List;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
  * We only need IntSet so far, so we create an efficient manual class here.

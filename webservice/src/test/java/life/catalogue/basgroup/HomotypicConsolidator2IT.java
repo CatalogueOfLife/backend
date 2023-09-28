@@ -10,21 +10,12 @@ import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
-
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
 
-import org.apache.ibatis.session.SqlSession;
-
 import org.gbif.nameparser.api.Rank;
-
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +25,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.*;
+import org.apache.ibatis.session.SqlSession;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
+
+import static org.junit.Assert.assertTrue;
 
 public class HomotypicConsolidator2IT {
 

@@ -1,8 +1,10 @@
 package life.catalogue.orthvar;
 
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.LinneanNameUsage;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.TreeTraversalParameter;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;

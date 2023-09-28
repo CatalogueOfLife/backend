@@ -1,7 +1,6 @@
 package life.catalogue.parser;
 
 import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.util.ObjectUtils;

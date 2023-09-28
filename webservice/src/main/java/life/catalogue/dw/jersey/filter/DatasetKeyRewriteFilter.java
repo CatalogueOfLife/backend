@@ -1,7 +1,5 @@
 package life.catalogue.dw.jersey.filter;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.collection.CollectionUtils;
@@ -24,6 +22,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Filter that parses dataset keys given as path or query parameters

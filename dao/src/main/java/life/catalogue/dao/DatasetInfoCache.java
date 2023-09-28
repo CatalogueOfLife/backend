@@ -4,7 +4,6 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.util.*;
@@ -12,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;

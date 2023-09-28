@@ -2,9 +2,9 @@ package life.catalogue.matching.authorship;
 
 import org.gbif.nameparser.api.Authorship;
 
-import org.junit.Test;
-
 import java.util.List;
+
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

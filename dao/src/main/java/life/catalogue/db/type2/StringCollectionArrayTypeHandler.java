@@ -12,14 +12,13 @@
  */
 package life.catalogue.db.type2;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
  * String array handler that avoids nulls and uses empty arrays instead.

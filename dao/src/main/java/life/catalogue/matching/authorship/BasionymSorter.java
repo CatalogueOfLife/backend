@@ -1,9 +1,6 @@
 package life.catalogue.matching.authorship;
 
-import it.unimi.dsi.fastutil.Pair;
-
 import life.catalogue.api.model.FormattableName;
-
 import life.catalogue.api.model.ScientificName;
 
 import org.gbif.nameparser.api.Authorship;
@@ -12,12 +9,12 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.gbif.nameparser.api.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Functions;
+
+import it.unimi.dsi.fastutil.Pair;
 
 /**
  * A utility to sort a queue of parsed names into sets sharing the same basionym judging only the authorship not epithets.

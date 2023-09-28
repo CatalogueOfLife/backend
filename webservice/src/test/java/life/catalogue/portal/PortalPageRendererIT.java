@@ -10,14 +10,14 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.UUID;
+
 import org.apache.http.HttpStatus;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.*;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.UUID;
 
 import static life.catalogue.portal.PortalPageRenderer.Environment.*;
 import static org.junit.Assert.assertEquals;

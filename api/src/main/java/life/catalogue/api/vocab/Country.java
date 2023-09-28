@@ -12,7 +12,6 @@
  */
 package life.catalogue.api.vocab;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -22,8 +21,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import javax.ws.rs.core.UriBuilder;
 
 /**
  * Enumeration for all current ISO 3166-1 ALPHA2 country codes using 2 letters,

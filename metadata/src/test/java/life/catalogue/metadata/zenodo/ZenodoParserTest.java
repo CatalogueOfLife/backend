@@ -5,13 +5,13 @@ import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.common.io.Resources;
-import life.catalogue.metadata.eml.EmlParser;
-
-import org.junit.Test;
 
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ZenodoParserTest {
 

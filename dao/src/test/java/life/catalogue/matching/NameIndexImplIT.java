@@ -32,7 +32,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
-import org.junit.*;
+import org.junit.After;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

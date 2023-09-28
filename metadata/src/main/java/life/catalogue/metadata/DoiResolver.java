@@ -4,7 +4,6 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.parser.CSLTypeParser;

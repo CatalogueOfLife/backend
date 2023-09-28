@@ -4,7 +4,6 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.mapper.SectorImportMapper;
-
 import life.catalogue.db.mapper.SectorMapper;
 
 import org.gbif.nameparser.api.NameType;

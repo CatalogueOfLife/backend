@@ -42,12 +42,10 @@ import javax.validation.Validator;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import org.neo4j.cypher.internal.v3_4.functions.E;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 public class XRelease extends ProjectRelease {
   private static final Logger LOG = LoggerFactory.getLogger(XRelease.class);

@@ -1,14 +1,11 @@
 package life.catalogue.importer;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.vocab.*;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
@@ -37,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.eventbus.EventBus;
 import com.google.common.io.Files;
 
 import io.dropwizard.client.HttpClientBuilder;

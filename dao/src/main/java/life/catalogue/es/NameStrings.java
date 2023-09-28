@@ -4,9 +4,9 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.es.ddl.Analyzers;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Objects;
+
+import org.apache.commons.lang3.StringUtils;
 
 import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
 import static life.catalogue.es.ddl.Analyzer.SCINAME_IGNORE_CASE;

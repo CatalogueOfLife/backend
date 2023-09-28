@@ -1,8 +1,5 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.annotations.Hidden;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
@@ -14,10 +11,7 @@ import life.catalogue.importer.NameInterpreter;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexImpl;
 import life.catalogue.matching.NameIndexMapDBStore;
-
 import life.catalogue.matching.NidxExportJob;
-
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -33,10 +27,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.annotation.Timed;
+import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
 
 @Path("/nidx")
 @Produces(MediaType.APPLICATION_JSON)

@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.ibatis.annotations.Param;
-
 import javax.annotation.Nullable;
+
+import org.apache.ibatis.annotations.Param;
 
 public interface NameRelationMapper extends Create<NameRelation>,
   DatasetProcessable<NameRelation>, SectorProcessable<NameRelation>, NameProcessable<NameRelation>, CopyDataset {

@@ -4,7 +4,6 @@ package life.catalogue.csv;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.PathUtils;
-
 import life.catalogue.common.util.YamlUtils;
 
 import org.gbif.dwc.terms.Term;

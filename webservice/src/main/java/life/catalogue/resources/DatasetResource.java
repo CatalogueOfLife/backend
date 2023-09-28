@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -9,12 +7,12 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
 import life.catalogue.basgroup.HomotypicConsolidationJob;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.release.AuthorlistGenerator;
 import life.catalogue.release.ProjectCopyFactory;
@@ -31,6 +29,8 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import com.google.common.base.Preconditions;
 
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;

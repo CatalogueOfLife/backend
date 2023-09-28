@@ -1,11 +1,7 @@
 package life.catalogue.matching;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.TabularFormat;
-
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.util.Objects;
@@ -13,6 +9,10 @@ import java.util.Objects;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
+
+import org.apache.commons.io.FilenameUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class MatchingRequest extends TreeTraversalParameter {
 

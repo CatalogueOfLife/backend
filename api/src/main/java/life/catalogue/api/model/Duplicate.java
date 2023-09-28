@@ -1,10 +1,9 @@
 package life.catalogue.api.model;
 
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class Duplicate {
   private String key;

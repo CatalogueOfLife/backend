@@ -18,7 +18,6 @@ import org.gbif.dwc.terms.*;
 
 import java.util.*;
 
-import org.neo4j.cypher.internal.v3_4.functions.E;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

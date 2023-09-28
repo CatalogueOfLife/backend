@@ -2,7 +2,6 @@ package life.catalogue.db.tree;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.TimeoutException;
-import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.ImportAttempt;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.io.UTF8IoUtils;

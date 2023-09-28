@@ -1,12 +1,11 @@
 package life.catalogue.api.vocab;
 
+import java.net.URI;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.net.URI;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class GazetteerTest {
 

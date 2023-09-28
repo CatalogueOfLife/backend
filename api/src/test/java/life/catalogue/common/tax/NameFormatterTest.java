@@ -8,12 +8,11 @@ import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import org.junit.Test;
-
 import java.util.regex.Matcher;
 
+import org.junit.Test;
+
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
 
 public class NameFormatterTest {
 

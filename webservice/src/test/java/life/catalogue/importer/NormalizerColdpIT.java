@@ -20,7 +20,6 @@ import org.gbif.nameparser.api.Rank;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 

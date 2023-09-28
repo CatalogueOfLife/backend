@@ -2,7 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.db.*;
 

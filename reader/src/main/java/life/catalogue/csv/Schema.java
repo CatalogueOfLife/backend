@@ -1,14 +1,9 @@
 package life.catalogue.csv;
 
-import com.univocity.parsers.common.CommonParserSettings;
-
-import com.univocity.parsers.tsv.TsvParserSettings;
-
 import life.catalogue.common.io.PathUtils;
 
 import org.gbif.dwc.terms.Term;
 
-import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
@@ -18,7 +13,8 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.univocity.parsers.csv.CsvParserSettings;
+import com.univocity.parsers.common.CommonParserSettings;
+import com.univocity.parsers.tsv.TsvParserSettings;
 
 /**
  *

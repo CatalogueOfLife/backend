@@ -3,7 +3,6 @@ package life.catalogue.command;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;

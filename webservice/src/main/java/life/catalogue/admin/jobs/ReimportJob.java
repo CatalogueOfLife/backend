@@ -3,7 +3,6 @@ package life.catalogue.admin.jobs;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -12,8 +11,6 @@ import life.catalogue.importer.ImportRequest;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;

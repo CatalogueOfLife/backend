@@ -10,7 +10,10 @@ import org.gbif.nameparser.utils.NamedThreadFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.client.Client;
 

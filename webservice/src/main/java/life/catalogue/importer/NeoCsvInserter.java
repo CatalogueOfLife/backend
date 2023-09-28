@@ -1,8 +1,5 @@
 package life.catalogue.importer;
 
-import com.univocity.parsers.common.CommonParserSettings;
-import com.univocity.parsers.csv.CsvFormat;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
@@ -34,6 +31,9 @@ import java.util.function.Predicate;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.univocity.parsers.common.CommonParserSettings;
+import com.univocity.parsers.csv.CsvFormat;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;

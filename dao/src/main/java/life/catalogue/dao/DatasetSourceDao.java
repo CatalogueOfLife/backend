@@ -1,7 +1,6 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.*;
 
 import java.util.List;
@@ -78,7 +77,7 @@ public class DatasetSourceDao {
     source.applyUser(user);
 
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (RELEASE != info.origin) {
+    if (!info.origin.isRelease()) {
       throw new IllegalArgumentException("source has to be from a release");
     }
 
@@ -103,16 +102,16 @@ public class DatasetSourceDao {
    * @param rebuild if true force to rebuild source metadata and not take it from the source archive. Only relevant for release.
    */
   public List<Dataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild){
-    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, PROJECT);
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
     List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-      if (RELEASE == info.origin && !rebuild) {
+      if (info.origin.isRelease() && !rebuild) {
         sources = psm.listReleaseSources(datasetKey);
 
       } else {
         // get latest version with patch applied
-        final int projectKey = RELEASE == info.origin ? info.sourceKey : datasetKey;
+        final int projectKey = info.origin.isRelease() ? info.sourceKey : datasetKey;
         final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(datasetKey);
         DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
 

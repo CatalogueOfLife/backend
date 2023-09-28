@@ -1,8 +1,5 @@
 package life.catalogue.basgroup;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-
 import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.model.Sector;
 import life.catalogue.db.mapper.SectorMapper;
@@ -11,6 +8,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 /**
  * Simple class to map sector priorities for a given dataset.

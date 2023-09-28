@@ -1,12 +1,13 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
-
-import org.apache.ibatis.cursor.Cursor;
 
 import org.gbif.dwc.terms.Term;
 
@@ -18,6 +19,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
 
 /**
  *

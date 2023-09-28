@@ -1,7 +1,5 @@
 package life.catalogue.dw.jersey;
 
-import org.checkerframework.checker.units.qual.A;
-
 import javax.ws.rs.core.Response;
 
 /**

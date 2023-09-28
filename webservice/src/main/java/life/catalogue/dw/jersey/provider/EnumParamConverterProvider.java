@@ -2,6 +2,9 @@ package life.catalogue.dw.jersey.provider;
 
 import life.catalogue.api.util.VocabularyUtils;
 
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Optional;
@@ -12,9 +15,6 @@ import javax.ws.rs.ext.ParamConverterProvider;
 import javax.ws.rs.ext.Provider;
 
 import com.google.common.base.Strings;
-
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper

@@ -1,8 +1,5 @@
 package life.catalogue.metadata.eml;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import life.catalogue.api.constraints.AbsoluteURIValidator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetType;
@@ -29,9 +26,10 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import static life.catalogue.metadata.MetadataFactory.stripHtml;
 

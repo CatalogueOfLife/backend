@@ -4,11 +4,11 @@ import life.catalogue.api.model.SimpleNameWithNidx;
 
 import org.gbif.nameparser.api.Rank;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Parent stack that expects breadth first iterations which needs to track more than a depth first one.

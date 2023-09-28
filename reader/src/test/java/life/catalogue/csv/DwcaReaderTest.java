@@ -1,9 +1,5 @@
 package life.catalogue.csv;
 
-import com.univocity.parsers.csv.CsvFormat;
-
-import com.univocity.parsers.tsv.TsvFormat;
-
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.common.io.Resources;
 
@@ -13,6 +9,8 @@ import java.net.URI;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
+
+import com.univocity.parsers.tsv.TsvFormat;
 
 import static org.junit.Assert.*;
 

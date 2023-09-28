@@ -1,12 +1,6 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import life.catalogue.api.vocab.*;
-
-import life.catalogue.common.util.HumanSize;
-
-import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -14,12 +8,11 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoField;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;

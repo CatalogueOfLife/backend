@@ -1,10 +1,5 @@
 package life.catalogue.matching;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.FastUtilsSerializers;
@@ -16,7 +11,6 @@ import org.gbif.nameparser.api.Rank;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.TemporalField;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,6 +24,10 @@ import org.slf4j.LoggerFactory;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
  * NameIndexStore implementation that is backed by a mapdb using kryo serialization.

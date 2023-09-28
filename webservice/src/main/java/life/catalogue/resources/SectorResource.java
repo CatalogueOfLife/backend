@@ -1,11 +1,8 @@
 package life.catalogue.resources;
 
-import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.dao.*;
@@ -15,6 +12,8 @@ import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.decision.RematcherBase;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,9 +29,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

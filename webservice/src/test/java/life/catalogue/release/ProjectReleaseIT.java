@@ -15,7 +15,6 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import java.io.File;
 import java.sql.Connection;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Rule;

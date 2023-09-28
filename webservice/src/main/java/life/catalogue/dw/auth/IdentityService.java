@@ -1,8 +1,5 @@
 package life.catalogue.dw.auth;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.gbif.GBIFAuthentication;

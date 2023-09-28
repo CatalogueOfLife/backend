@@ -1,8 +1,6 @@
 package life.catalogue.common.tax;
 
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.model.FormattableName;
 
 import org.gbif.nameparser.api.Authorship;
@@ -16,6 +14,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 
 /**

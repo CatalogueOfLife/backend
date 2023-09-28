@@ -1,16 +1,15 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import life.catalogue.api.jackson.IdentifierSerde;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import org.apache.commons.lang3.StringUtils;
 
 @JsonSerialize(using = IdentifierSerde.Serializer.class)
 @JsonDeserialize(using = IdentifierSerde.Deserializer.class)

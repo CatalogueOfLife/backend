@@ -1,9 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.eventbus.EventBus;
-
-import com.google.common.eventbus.Subscribe;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
@@ -16,7 +12,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.SyncManager;
-import life.catalogue.cache.UsageCache;
+import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
@@ -26,14 +22,11 @@ import life.catalogue.concurrent.PBQThreadPoolExecutor;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.common.Idle;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.release.AbstractProjectCopy;
-
-import org.apache.commons.io.FileUtils;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;
 
@@ -52,6 +45,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.Validator;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -63,7 +57,8 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 
 /**
  * Manages import task scheduling, removing and listing

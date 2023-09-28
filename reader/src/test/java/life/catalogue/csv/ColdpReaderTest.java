@@ -3,11 +3,10 @@ package life.catalogue.csv;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.Resources;
 
-import java.util.List;
+import org.gbif.dwc.terms.Term;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-
-import org.gbif.dwc.terms.Term;
 
 import org.junit.Test;
 

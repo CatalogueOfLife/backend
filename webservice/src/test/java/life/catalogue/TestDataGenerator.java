@@ -1,18 +1,18 @@
 package life.catalogue;
 
-import it.unimi.dsi.fastutil.Pair;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
-import life.catalogue.common.io.Resources;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.*;
+import life.catalogue.db.NameMatchingRule;
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorMapper;
@@ -21,10 +21,7 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.PgImportRule;
 import life.catalogue.postgres.PgCopyUtils;
-
 import life.catalogue.release.ProjectCopyFactory;
-
-import life.catalogue.release.ProjectRelease;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -50,7 +47,7 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.postgresql.jdbc.PgConnection;
 
-import static org.mockito.Mockito.mock;
+import it.unimi.dsi.fastutil.Pair;
 
 /**
  * Manual tool to generate test data CSV files for the TestDataRule from regular CoLDP or DwC archives which are simpler to craft than sql dumps.

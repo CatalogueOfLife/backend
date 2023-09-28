@@ -2,12 +2,11 @@ package life.catalogue.common.io;
 
 import life.catalogue.coldp.ColdpTerm;
 
+import org.gbif.dwc.terms.Term;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.gbif.dwc.terms.Term;
-
-import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

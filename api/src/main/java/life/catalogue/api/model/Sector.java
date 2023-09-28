@@ -1,7 +1,6 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.EntityType;
-
 import life.catalogue.api.vocab.NomStatus;
 
 import org.gbif.nameparser.api.NameType;

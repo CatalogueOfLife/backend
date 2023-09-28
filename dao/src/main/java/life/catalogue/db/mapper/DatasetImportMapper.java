@@ -9,7 +9,6 @@ import life.catalogue.db.type2.StringCount;
 
 import org.gbif.dwc.terms.Term;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;

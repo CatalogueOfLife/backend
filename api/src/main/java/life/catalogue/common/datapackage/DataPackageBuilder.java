@@ -8,6 +8,7 @@ import life.catalogue.common.text.StringUtils;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -22,8 +23,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.undercouch.citeproc.csl.CSLType;
-
-import org.gbif.nameparser.util.UnicodeUtils;
 
 public class DataPackageBuilder {
 

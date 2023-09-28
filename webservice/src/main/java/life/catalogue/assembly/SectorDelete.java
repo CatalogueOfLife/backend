@@ -1,17 +1,16 @@
 package life.catalogue.assembly;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TempNameUsageRelated;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
-
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.Rank;
@@ -26,6 +25,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.eventbus.EventBus;
 
 /**
  * Deletes a sector but keeps its imports so we can still show historical releases properly which access the sync history of projects.

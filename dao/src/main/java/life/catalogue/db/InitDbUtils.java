@@ -1,10 +1,6 @@
 package life.catalogue.db;
 
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.dao.Partitioner;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.postgres.PgCopyUtils;
 
 import java.io.IOException;
@@ -13,16 +9,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.pool.HikariProxyConnection;
-
-import static life.catalogue.common.util.PrimitiveUtils.intDefault;
 
 public class InitDbUtils {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbUtils.class);

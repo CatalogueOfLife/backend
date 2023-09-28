@@ -6,7 +6,10 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.*;
+import life.catalogue.db.NameMatchingRule;
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
 
 import org.gbif.nameparser.api.NameType;

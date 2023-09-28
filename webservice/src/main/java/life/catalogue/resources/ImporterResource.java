@@ -10,22 +10,18 @@ import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;

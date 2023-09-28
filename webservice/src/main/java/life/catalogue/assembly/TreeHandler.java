@@ -4,14 +4,12 @@ import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import life.catalogue.common.func.ThrowingConsumer;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 /**
  * Consumers should not expect the accepted property of a Synonym to exist!

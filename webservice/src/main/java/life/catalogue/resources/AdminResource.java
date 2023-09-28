@@ -32,8 +32,10 @@ import life.catalogue.resources.legacy.IdMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;

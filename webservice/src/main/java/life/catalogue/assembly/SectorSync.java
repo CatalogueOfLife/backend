@@ -1,11 +1,7 @@
 package life.catalogue.assembly;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
@@ -30,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import life.catalogue.release.XReleaseConfig;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.ExecutorType;
@@ -39,7 +35,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.eventbus.EventBus;
 
 /**
  * Syncs/imports source data for a given sector into the assembled catalogue

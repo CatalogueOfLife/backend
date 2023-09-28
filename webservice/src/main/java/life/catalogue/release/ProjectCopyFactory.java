@@ -8,12 +8,9 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
+import life.catalogue.matching.UsageMatcherGlobal;
 
 import javax.validation.Validator;
-
-import life.catalogue.matching.NameIndex;
-
-import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;

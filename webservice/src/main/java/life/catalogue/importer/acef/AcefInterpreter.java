@@ -8,9 +8,9 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
-import life.catalogue.matching.NameValidator;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
 

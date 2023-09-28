@@ -6,17 +6,15 @@ import life.catalogue.dao.Partitioner;
 import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
+import life.catalogue.db.PgUtils;
+import life.catalogue.es.EsClientFactory;
+import life.catalogue.es.EsNameUsage;
+import life.catalogue.es.EsUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.Reader;
 import java.sql.Connection;
-
-import life.catalogue.db.PgUtils;
-
-import life.catalogue.es.EsClientFactory;
-import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.EsUtil;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;

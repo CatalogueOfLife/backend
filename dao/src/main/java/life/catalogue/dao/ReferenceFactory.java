@@ -16,6 +16,8 @@ import life.catalogue.parser.DateParser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.UnparsableException;
 
+import org.gbif.dwc.terms.DcTerm;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,9 +26,6 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;
-
-import org.gbif.dwc.terms.DcTerm;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

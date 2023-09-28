@@ -8,32 +8,24 @@ import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
-import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.http.HttpStatus;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-import org.gbif.nameparser.api.Rank;
-
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.yaml.snakeyaml.events.Event;
 
-import static life.catalogue.portal.PortalPageRenderer.Environment.*;
+import static life.catalogue.portal.PortalPageRenderer.Environment.PROD;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 

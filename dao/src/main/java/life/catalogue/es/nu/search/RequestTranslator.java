@@ -3,16 +3,12 @@ package life.catalogue.es.nu.search;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.DownwardConverter;
-import life.catalogue.es.nu.FilterTranslator;
 import life.catalogue.es.nu.FiltersTranslator;
 import life.catalogue.es.nu.SortByTranslator;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.MatchAllQuery;
 import life.catalogue.es.query.Query;
-
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
 
 /**
  * Translates a {@link NameUsageSearchRequest} into a native Elasticsearch search request. Mostly manages the other translators in this

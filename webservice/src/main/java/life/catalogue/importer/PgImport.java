@@ -9,7 +9,6 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.Partitioner;
 import life.catalogue.db.Create;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;

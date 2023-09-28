@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+
 import static life.catalogue.api.vocab.TaxGroup.*;
 
 public class TaxGroupAnalyzer {

@@ -23,8 +23,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Timer;
-
 /**
  * ColDP exporter using a merged NameUsage entity and usageIDs instead of nameIDs for linking.
  */

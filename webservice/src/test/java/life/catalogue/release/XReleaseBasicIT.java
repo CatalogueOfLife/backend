@@ -27,7 +27,6 @@ import life.catalogue.img.ImageService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.sql.Ref;
 import java.util.Map;
 
 import javax.validation.Validation;

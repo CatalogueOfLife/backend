@@ -11,12 +11,8 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.PrinterFactory;
 import life.catalogue.db.tree.TextTreePrinter;
 
-import org.apache.ibatis.session.SqlSession;
-
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-
-import javax.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +24,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
+import org.apache.ibatis.session.SqlSession;
+
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 public abstract class SectorSyncTestBase {
 

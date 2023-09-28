@@ -7,7 +7,6 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.PgConnectionRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;

@@ -10,7 +10,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

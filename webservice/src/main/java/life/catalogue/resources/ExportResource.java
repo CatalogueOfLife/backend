@@ -7,10 +7,10 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.search.ExportSearchRequest;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
-import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.util.UUID;
 

@@ -1,33 +1,28 @@
 package life.catalogue.dw.logging;
 
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.concurrent.JobConfig;
 
 import java.io.File;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.sift.MDCBasedDiscriminator;
-import ch.qos.logback.classic.sift.SiftingAppender;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.Context;
-import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.sift.AppenderFactory;
 import io.dropwizard.logging.AbstractAppenderFactory;
 import io.dropwizard.logging.async.AsyncAppenderFactory;
 import io.dropwizard.logging.filter.LevelFilterFactory;
 import io.dropwizard.logging.layout.LayoutFactory;
-
-import life.catalogue.concurrent.JobConfig;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A sifting file appender that writes logs separated by their MDC job key to individual files

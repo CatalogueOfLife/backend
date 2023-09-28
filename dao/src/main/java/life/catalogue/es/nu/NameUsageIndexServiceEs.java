@@ -11,7 +11,9 @@ import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.NameUsageProcessor;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameUsageWrapperMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.*;
 
 import java.io.File;
@@ -29,8 +31,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Iterables;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;

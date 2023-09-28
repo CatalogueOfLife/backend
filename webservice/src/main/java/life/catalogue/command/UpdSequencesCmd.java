@@ -1,29 +1,19 @@
 package life.catalogue.command;
 
-import com.google.common.base.Preconditions;
-
-import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.SectorImportDao;
-import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 
-import net.sourceforge.argparse4j.inf.Subparser;
+import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.google.common.base.Preconditions;
+
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * Creates missing project sequences and updates their current value based on existing data.

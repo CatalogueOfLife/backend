@@ -1,11 +1,7 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import life.catalogue.common.tax.NameFormatter;
-import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -14,6 +10,10 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A small class representing a name usage with an id. It can act as a reference to a scientific name in a dataset.
