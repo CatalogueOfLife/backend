@@ -138,7 +138,7 @@ abstract class SectorRunnable implements Runnable {
       updateSearchIndex();
 
       state.setState( ImportState.FINISHED);
-      LOG.info("Completed {} for sector {}", this.getClass().getSimpleName(), sectorKey);
+      LOG.info("Completed {} for sector {} with {} names and {} usages", this.getClass().getSimpleName(), sectorKey, state.getNameCount(), state.getUsagesCount());
       failed = false;
       successCallback.accept(this);
 

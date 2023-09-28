@@ -583,6 +583,14 @@ public class Dataset extends DataEntity<Integer> {
     this.notes = notes;
   }
 
+  public void appendNotes(String notes) {
+    if (this.notes == null) {
+      this.notes = notes;
+    } else {
+      this.notes = this.notes + " " + notes;
+    }
+  }
+
   public Map<String, String> getIdentifier() {
     return identifier;
   }

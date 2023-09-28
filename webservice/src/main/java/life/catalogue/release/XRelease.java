@@ -9,6 +9,7 @@ import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.TreeMergeHandlerConfig;
 import life.catalogue.basgroup.HomotypicConsolidator;
 import life.catalogue.basgroup.SectorPriority;
+import life.catalogue.common.date.DateUtils;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.YamlUtils;
@@ -29,6 +30,7 @@ import life.catalogue.matching.UsageMatcherGlobal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -85,6 +87,7 @@ public class XRelease extends ProjectRelease {
       xCfg = loadConfig(ds.getURI(Setting.XRELEASE_CONFIG));
     }
     d.setOrigin(DatasetOrigin.XRELEASE);
+    d.appendNotes(String.format("Base release %s.", baseReleaseKey));
     if (xCfg.alias != null) {
       String alias = CitationUtils.fromTemplate(d, xCfg.alias);
       d.setAlias(alias);
@@ -192,10 +195,12 @@ public class XRelease extends ProjectRelease {
     updateState(ImportState.PROCESSING);
     // detect and group basionyms
     if (xCfg.groupBasionyms) {
+      final LocalDateTime start = LocalDateTime.now();
       final var prios = new SectorPriority(getDatasetKey(), factory);
       var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
       hc.setBasionymExclusions(xCfg.basionymExclusions);
       hc.consolidate();
+      DateUtils.logDuration(LOG, hc.getClass(), start);
 
     } else {
       LOG.warn("Homotypic grouping disabled in xrelease configs");
@@ -217,6 +222,7 @@ public class XRelease extends ProjectRelease {
   }
 
   private void matchBaseReleaseIfNeeded() throws InterruptedException {
+    final LocalDateTime start = LocalDateTime.now();
     updateState(ImportState.PROCESSING);
     boolean matched = false;
     final int testSize = 10000;
@@ -247,6 +253,7 @@ public class XRelease extends ProjectRelease {
       DatasetMatcher dm = new DatasetMatcher(factory, ni);
       dm.match(newDatasetKey, true);
     }
+    DateUtils.logDuration(LOG, "Base release matching", start);
   }
 
   /**
@@ -263,6 +270,7 @@ public class XRelease extends ProjectRelease {
    * We do this at the very end as homotypic grouping and other final changes have impact on the sectors.
    */
   private void buildSectorMetrics() {
+    final LocalDateTime start = LocalDateTime.now();
     // sector metrics
     for (Sector s : sectors) {
       if (s.getSyncAttempt() != null) {
@@ -271,12 +279,14 @@ public class XRelease extends ProjectRelease {
         siDao.updateMetrics(sim, newDatasetKey);
       }
     }
+    DateUtils.logDuration(LOG, "Building sector metrics", start);
   }
 
   /**
    * We do all extended work here, e.g. sector merging
    */
   private void mergeSectors() throws Exception {
+    final LocalDateTime start = LocalDateTime.now();
     // prepare merge handler config instance
     mergeCfg = new TreeMergeHandlerConfig(factory, xCfg, newDatasetKey, user);
     // create id generators for extended records
@@ -323,6 +333,7 @@ public class XRelease extends ProjectRelease {
       }
     }
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
+    DateUtils.logDuration(LOG, getClass(), start);
   }
 
   /**
@@ -344,6 +355,7 @@ public class XRelease extends ProjectRelease {
    */
   private void validateAndCleanTree() {
     LOG.info("Clean and validate entire xrelease {}", newDatasetKey);
+    final LocalDateTime start = LocalDateTime.now();
     try (SqlSession session = factory.openSession(true);
          var consumer = new TreeCleanerAndValidator(factory, newDatasetKey, xCfg.removeEmptyGenera)
     ) {
@@ -357,6 +369,7 @@ public class XRelease extends ProjectRelease {
     } catch (Exception e) {
       LOG.error("Name validation & cleaning failed", e);
     }
+    DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
   }
 
   private void resolveDuplicateAcceptedNames() {

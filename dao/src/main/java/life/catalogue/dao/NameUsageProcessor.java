@@ -167,17 +167,15 @@ public class NameUsageProcessor {
     if (!nuw.getUsage().isBareName()) {
       SimpleName curr = new SimpleName((NameUsageBase) nuw.getUsage());
       classification.add(curr);
-      while (curr.getParent() != null) {
+      while (curr != null && curr.getParent() != null) {
         if (taxa.contains(curr.getParent())) {
           curr = new SimpleName((NameUsageBase) taxa.get(curr.getParent()).getUsage());
         } else {
           // need to fetch usage which lies outside the scope of this processor, e.g. a merge sector with parents outside of the sector
           if (uKey == null) {
-            uKey = DSID.of(nuw.getUsage().getDatasetKey(), curr.getParent());
-          } else {
-            uKey.id(curr.getParent());
+            uKey = DSID.root(nuw.getUsage().getDatasetKey());
           }
-          curr = usageCache.getOrLoad(uKey, loader);
+          curr = usageCache.getOrLoad(uKey.id(curr.getParent()), loader);
           loadCounter++;
         }
         classification.add(curr);

@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.cache.VarnishUtils;
+import life.catalogue.common.date.DateUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.*;
@@ -25,6 +26,7 @@ import life.catalogue.img.ImageService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -118,12 +120,15 @@ public class ProjectRelease extends AbstractProjectCopy {
    * @param dKey datasetKey to remove name & reference orphans from.
    */
   void removeOrphans(int dKey) {
+    final LocalDateTime start = LocalDateTime.now();
     nDao.deleteOrphans(dKey, null, user);
     rDao.deleteOrphans(dKey, null, user);
+    DateUtils.logDuration(LOG, "Removing orphans", start);
   }
 
   @Override
   void prepWork() throws Exception {
+    LocalDateTime start = LocalDateTime.now();
     if (settings.isEnabled(Setting.RELEASE_REMOVE_BARE_NAMES)) {
       removeOrphans(datasetKey);
     }
@@ -165,11 +170,14 @@ public class ProjectRelease extends AbstractProjectCopy {
       });
       LOG.info("Archived metadata for {} source datasets of release {}", counter.get(), newDatasetKey);
     }
+    DateUtils.logDuration(LOG, "Preparing release", start);
 
     // map ids
+    start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
     IdProvider idProvider = new IdProvider(datasetKey, attempt, newDatasetKey, cfg.release, factory);
     idProvider.run();
+    DateUtils.logDuration(LOG, "ID provider", start);
   }
 
   @Override

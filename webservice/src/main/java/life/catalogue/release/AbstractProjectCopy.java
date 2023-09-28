@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 
 import javax.validation.Validator;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -77,7 +78,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     d.setDoi(null);
     // use the current attempt which gets written into the dataset table only at the end of the (successful) job
     d.setAttempt(attempt);
-    d.setNotes(String.format("Created by %s %s", getJobName(), getKey()));
+    d.appendNotes(String.format("Created by %s %s.", getJobName(), getKey()));
   }
 
   public int getDatasetKey() {
@@ -192,6 +193,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   @Override
   protected void onFinishLocked() throws Exception {
     metrics.setFinished(LocalDateTime.now());
+    LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDuration(metrics.getDuration(), "HH:mm:ss"));
     diDao.update(metrics);
     if (mapIds) {
       LOG.info("Remove id mapping tables for project {}", datasetKey);
