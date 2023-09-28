@@ -178,7 +178,9 @@ public class NameUsageProcessor {
           curr = usageCache.getOrLoad(uKey.id(curr.getParent()), loader);
           loadCounter++;
         }
-        classification.add(curr);
+        if (curr != null) {
+          classification.add(curr);
+        }
       }
     }
     Collections.reverse(classification);
