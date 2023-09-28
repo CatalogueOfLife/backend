@@ -103,6 +103,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
       List<String> ids = new ArrayList<>(sz);
       List<EsMonomial> monomials = new ArrayList<>(sz);
       for (SimpleName sn : classification.getClassification()) {
+        if (sn==null) continue; // shouldnt happen, but better be safe
         ids.add(sn.getId());
         monomials.add(new EsMonomial(sn.getRank(), sn.getName()));
       }
