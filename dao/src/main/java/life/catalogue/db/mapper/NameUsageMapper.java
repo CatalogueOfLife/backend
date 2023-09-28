@@ -364,4 +364,9 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   List<String> detectLoop(@Param("datasetKey") int datasetKey);
 
+  /**
+   * Lists all parent ids of a given dataset that are breaking constraints and have no matching parent record.
+   */
+  List<String> listMissingParentIds(@Param("datasetKey") int datasetKey);
+
 }

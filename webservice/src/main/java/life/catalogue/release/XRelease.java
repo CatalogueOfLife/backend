@@ -42,6 +42,11 @@ import javax.validation.Validator;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.NameType;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,10 +218,66 @@ public class XRelease extends ProjectRelease {
     removeOrphans(newDatasetKey);
 
     updateState(ImportState.ANALYZING);
+    // flag loops and nonexisting parents
+    flagLoops();
     // update sector metrics. The entire releases metrics are done later by the superclass
     buildSectorMetrics();
     // finally also call the shared part
     super.finalWork();
+  }
+
+  /**
+   * flag loops and nonexisting parents
+   */
+  private void flagLoops() {
+    // cut potential cycles in the tree?
+    try (SqlSession session = factory.openSession(true)) {
+      var cycles = session.getMapper(NameUsageMapper.class).detectLoop(datasetKey);
+      if (cycles != null && !cycles.isEmpty()) {
+        LOG.error("{} cycles found in the parent-child classification of dataset {}", cycles.size(),datasetKey);
+        var tm = session.getMapper(TaxonMapper.class);
+        var num = session.getMapper(NameUsageMapper.class);
+        var vsm = session.getMapper(VerbatimSourceMapper.class);
+
+        Name n = Name.newBuilder()
+                     .id("cycleParentPlaceholder")
+                     .datasetKey(datasetKey)
+                     .scientificName("Cycle parent holder")
+                     .rank(Rank.UNRANKED)
+                     .type(NameType.PLACEHOLDER)
+                     .origin(Origin.OTHER)
+                     .build();
+        n.applyUser(user);
+        Taxon cycleParent = new Taxon(n);
+        cycleParent.setId("cycleParentPlaceholder");
+        cycleParent.setParentId(mergeCfg.incertae.getId());
+        tm.create(cycleParent);
+
+        final DSID<String> key = DSID.root(datasetKey);
+        for (String id : cycles) {
+          vsm.addIssue(key.id(id), Issue.PARENT_CYCLE);
+          num.updateParentId(key, cycleParent.getId(), user);
+        }
+        LOG.warn("Resolved {} cycles found in the parent-child classification of dataset {}", cycles.size(),datasetKey);
+      }
+    }
+
+    // look for non existing parents
+    try (SqlSession session = factory.openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+      var missing = num.listMissingParentIds(datasetKey);
+      if (missing != null && !missing.isEmpty()) {
+        LOG.error("{} usages found with a non existing parentID", missing.size());
+        final String incSedis = mergeCfg.incertae.getId();
+        final DSID<String> key = DSID.root(datasetKey);
+        for (String id : missing) {
+          vsm.addIssue(key.id(id), Issue.PARENT_ID_INVALID);
+          num.updateParentId(key, incSedis, user);
+        }
+        LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),datasetKey);
+      }
+    }
   }
 
   private void matchBaseReleaseIfNeeded() throws InterruptedException {

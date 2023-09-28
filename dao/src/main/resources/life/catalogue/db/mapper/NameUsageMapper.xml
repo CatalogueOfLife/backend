@@ -801,4 +801,13 @@
       ) CYCLE id SET is_cycle USING path
     SELECT id FROM parents WHERE is_cycle;
   </select>
+
+  <select id="listMissingParentIds" parameterType="map" resultType="string">
+    SELECT u.id
+    FROM name_usage u
+    WHERE u.dataset_key=#{datasetKey} AND NOT EXISTS (
+      SELECT TRUE FROM name_usage p WHERE p.dataset_key=#{datasetKey} AND p.id=u.parent_id
+    )
+  </select>
+
 </mapper>

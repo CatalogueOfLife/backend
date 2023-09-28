@@ -76,6 +76,7 @@ WITH RECURSIVE parents(id, depth) AS (
 ) CYCLE id SET is_cycle USING path 
 SELECT id FROM parents WHERE is_cycle;
 
+
 INSERT into name (id,dataset_key,rank,origin,type,scientific_name, scientific_name_normalized, created_by, modified_by) 
  VALUES ('loop',268159,'UNRANKED','USER','INFORMAL', 'Loop holder', 'loopholder', 102, 102);
 
@@ -83,6 +84,15 @@ INSERT into name_usage (id,name_id,dataset_key,origin,status,created_by, modifie
  VALUES ('loop','loop',268159,'USER','ACCEPTED', 102,102);
 
 UPDATE name_usage u set parent_id='loop' FROM _loops l WHERE u.dataset_key=268159 and u.id=l.id; 
+
+
+INSERT into name (id,dataset_key,rank,origin,type,scientific_name, scientific_name_normalized, created_by, modified_by) 
+ VALUES ('missingParent',268557,'UNRANKED','USER','INFORMAL', 'missing parent', 'missing parent', 102, 102);
+
+INSERT into name_usage (id,name_id,dataset_key,origin,status,created_by, modified_by) 
+ VALUES ('missingParent','missingParent',268557,'USER','ACCEPTED', 102,102);
+
+UPDATE name_usage set parent_id='missingParent' WHERE dataset_key=268557 and id IN (); 
 
 ```
 
