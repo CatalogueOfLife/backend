@@ -390,7 +390,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (n.getNomStatus() != null && sector.getNameStatusExclusion() != null && sector.getNameStatusExclusion().contains(n.getNomStatus())) {
       return incIgnored(IgnoreReason.NOMENCLATURAL_STATUS, u);
     }
-    
+
     if (n.getCultivarEpithet() != null || n.getCode() == NomCode.CULTIVARS || n.getRank().isCultivarRank()) {
       return incIgnored(IgnoreReason.INCONSISTENT_NAME, u);
     }

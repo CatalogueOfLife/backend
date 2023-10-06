@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
@@ -93,6 +94,10 @@ public class MatchingJob extends DatasetBlockingJob {
     return result;
   }
 
+  public MatchingRequest getRequest() {
+    return req;
+  }
+
   private File matchResultFile() {
     return cfg.normalizer.scratchFile(getKey());
   }
@@ -120,6 +125,7 @@ public class MatchingJob extends DatasetBlockingJob {
                                    new TsvWriter(zos, StandardCharsets.UTF_8, new TsvWriterSettings());
         // match
         if (req.getUpload() != null) {
+          LOG.info("Match uploaded names from {}", req.getUpload());
           writeMatches(writer, streamUpload());
           // delete file upload
           FileUtils.deleteQuietly(req.getUpload());
@@ -182,6 +188,8 @@ public class MatchingJob extends DatasetBlockingJob {
     );
 
     // match & write to file
+    AtomicLong counter = new AtomicLong(0);
+    AtomicLong none = new AtomicLong(0);
     names.map(this::match).forEach(m -> {
       var row = new String[13];
       row[0] = m.original.getId();
@@ -202,10 +210,16 @@ public class MatchingJob extends DatasetBlockingJob {
         }
         row[11] = str(m.usage.getClassification());
         row[12] = concat(m.issues);
+      } else {
+        none.incrementAndGet();
       }
       writer.writeRow(row);
+      if (counter.incrementAndGet() % 100 == 0) {
+        LOG.debug("Matched {} out of {} names so far", counter.get()-none.get(), counter);
+      }
     });
     writer.flush();
+    LOG.info("Matched {} out of {} names", counter.get()-none.get(), counter);
   }
 
   private UsageMatchWithOriginal match(IssueName n) {

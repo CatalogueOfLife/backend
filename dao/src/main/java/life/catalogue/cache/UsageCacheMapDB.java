@@ -157,7 +157,7 @@ public class UsageCacheMapDB implements UsageCache {
       throw new IllegalArgumentException("Usage ID required");
     }
     var store = datasets.computeIfAbsent(datasetKey, (dk) -> {
-      LOG.info("Creating new usage cache for dataset {}", datasetKey);
+      LOG.info("Adding usage cache for dataset {}", datasetKey);
       var map = storeMaker(datasetKey, expireMutable).createOrOpen();
       // we create or open the map store in case the same dataset key was used on disk before and clear the map instead
       map.clear();
