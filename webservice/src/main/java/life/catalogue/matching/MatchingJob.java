@@ -229,7 +229,7 @@ public class MatchingJob extends DatasetBlockingJob {
         none.incrementAndGet();
       }
       writer.writeRow(row);
-      if (counter.incrementAndGet() % 100 == 0) {
+      if (counter.incrementAndGet() % 1000 == 0) {
         LOG.debug("Matched {} out of {} names so far", counter.get()-none.get(), counter);
       }
     });

@@ -252,6 +252,7 @@ public class JobExecutor implements Managed, Idle {
     if (job.maxPerUser() > 0 && byUser.getOrDefault(job.getUserKey(), 0) >= job.maxPerUser()) {
       throw new TooManyRequestsException(user.getUsername() + " already runs the maximum allowed number of " + job.getClass().getSimpleName() + " jobs");
     }
+
     LOG.info("Scheduling new {} job {} by user {}: {}<{}>", job.getJobName(), job.getKey(), job.getUserKey(), user.getName(), user.getEmail());
     job.setUser(user);
     job.setEmailer(emailer);
