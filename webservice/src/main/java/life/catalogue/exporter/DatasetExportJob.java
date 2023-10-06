@@ -179,6 +179,11 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
   protected abstract void export() throws Exception;
 
   @Override
+  public int maxPerUser() {
+    return 8;
+  }
+
+  @Override
   public boolean isDuplicate(BackgroundJob other) {
     if (other instanceof DatasetExportJob) {
       DatasetExportJob job = (DatasetExportJob) other;

@@ -114,6 +114,14 @@ public abstract class BackgroundJob implements Runnable {
   }
 
   /**
+   * Override to restrict the number of queued and running jobs per user.
+   * Defaults to no restriction.
+   */
+  public int maxPerUser() {
+    return -1;
+  }
+
+  /**
    * Determine if all components needed to run this job are currently online.
    *
    * @throws UnavailableException if some component has not yet started

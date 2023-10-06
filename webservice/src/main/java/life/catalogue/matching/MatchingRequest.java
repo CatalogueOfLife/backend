@@ -71,12 +71,13 @@ public class MatchingRequest extends TreeTraversalParameter {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof MatchingRequest)) return false;
+    if (!super.equals(o)) return false;
     MatchingRequest that = (MatchingRequest) o;
-    return Objects.equals(sourceDatasetKey, that.sourceDatasetKey) && Objects.equals(upload, that.upload) && format == that.format;
+    return format == that.format && Objects.equals(sourceDatasetKey, that.sourceDatasetKey) && Objects.equals(upload, that.upload);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(sourceDatasetKey, upload, format);
+    return Objects.hash(super.hashCode(), format, sourceDatasetKey, upload);
   }
 }

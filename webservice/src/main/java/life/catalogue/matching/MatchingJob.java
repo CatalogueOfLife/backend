@@ -12,6 +12,7 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.concurrent.UsageCounter;
@@ -110,6 +111,20 @@ public class MatchingJob extends DatasetBlockingJob {
   @Override
   public void assertComponentsOnline() throws UnavailableException {
     matcher.assertComponentsOnline();
+  }
+
+  @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    if (other instanceof MatchingJob) {
+      var mj = (MatchingJob) other;
+      return req.equals(mj.req);
+    }
+    return super.isDuplicate(other);
+  }
+
+  @Override
+  public int maxPerUser() {
+    return 1;
   }
 
   @Override

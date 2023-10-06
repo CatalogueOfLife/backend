@@ -1,18 +1,24 @@
 package life.catalogue.concurrent;
 
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+
+import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.dao.UserDao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.NotAllowedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -223,10 +229,16 @@ public class JobExecutor implements Managed, Idle {
       throw new NullPointerException();
     }
     assertOnline();
-    // look for duplicates in the queue
+    // look for duplicates in the queue and count by user
+    var byUser = new Int2IntOpenHashMap();
     for (BackgroundJob qj : getQueue()) {
       if (job.isDuplicate(qj)) {
         throw new IllegalArgumentException("An identical job " + qj.getKey() + " is queued already");
+      }
+      if (byUser.containsKey(job.getUserKey())) {
+        byUser.put(job.getUserKey(), byUser.get(job.getUserKey())+1);
+      } else {
+        byUser.put(job.getUserKey(), 1);
       }
     }
     // make sure all components needed for the job have started before we even submit the job
@@ -235,6 +247,10 @@ public class JobExecutor implements Managed, Idle {
     User user = udao.get(job.getUserKey());
     if (user == null) {
       throw new IllegalArgumentException("No user "+job.getUserKey()+" existing");
+    }
+    // are number of jobs per user restricted?
+    if (job.maxPerUser() > 0 && byUser.getOrDefault(job.getUserKey(), 0) >= job.maxPerUser()) {
+      throw new TooManyRequestsException(user.getUsername() + " already runs the maximum allowed number of " + job.getClass().getSimpleName() + " jobs");
     }
     LOG.info("Scheduling new {} job {} by user {}: {}<{}>", job.getJobName(), job.getKey(), job.getUserKey(), user.getName(), user.getEmail());
     job.setUser(user);
