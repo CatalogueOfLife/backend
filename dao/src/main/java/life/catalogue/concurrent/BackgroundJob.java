@@ -114,11 +114,10 @@ public abstract class BackgroundJob implements Runnable {
   }
 
   /**
-   * Override to restrict the number of queued and running jobs per user.
-   * Defaults to no restriction.
+   * Indicate the class to group running jobs by when checking for max user limits.
    */
-  public int maxPerUser() {
-    return -1;
+  public Class<? extends BackgroundJob> maxPerUserClass() {
+    return getClass();
   }
 
   /**

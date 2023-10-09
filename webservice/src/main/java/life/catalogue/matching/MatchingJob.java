@@ -123,11 +123,6 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   @Override
-  public int maxPerUser() {
-    return 1;
-  }
-
-  @Override
   public final void runWithLock() throws Exception {
     try (TempFile tmp = TempFile.created(matchResultFile())) {
       try (ZipOutputStream zos = UTF8IoUtils.zipStreamFromFile(tmp.file)) {

@@ -1,12 +1,18 @@
 package life.catalogue.concurrent;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
+import life.catalogue.common.collection.CountMap;
 import life.catalogue.dao.UserDao;
 
 import java.util.HashMap;
@@ -230,15 +236,13 @@ public class JobExecutor implements Managed, Idle {
     }
     assertOnline();
     // look for duplicates in the queue and count by user
-    var byUser = new Int2IntOpenHashMap();
+    var jobCnt = new CountMap<Class<?>>();
     for (BackgroundJob qj : getQueue()) {
       if (job.isDuplicate(qj)) {
         throw new IllegalArgumentException("An identical job " + qj.getKey() + " is queued already");
       }
-      if (byUser.containsKey(job.getUserKey())) {
-        byUser.put(job.getUserKey(), byUser.get(job.getUserKey())+1);
-      } else {
-        byUser.put(job.getUserKey(), 1);
+      if (qj.getUserKey() == job.getUserKey()) {
+        jobCnt.inc(job.maxPerUserClass());
       }
     }
     // make sure all components needed for the job have started before we even submit the job
@@ -249,7 +253,7 @@ public class JobExecutor implements Managed, Idle {
       throw new IllegalArgumentException("No user "+job.getUserKey()+" existing");
     }
     // are number of jobs per user restricted?
-    if (job.maxPerUser() > 0 && byUser.getOrDefault(job.getUserKey(), 0) >= job.maxPerUser()) {
+    if (!user.isAdmin() && jobCnt.getOrDefault(job.maxPerUserClass(), 0) >= jobUserLimit(job)) {
       throw new TooManyRequestsException(user.getUsername() + " already runs the maximum allowed number of " + job.getClass().getSimpleName() + " jobs");
     }
 
@@ -261,6 +265,10 @@ public class JobExecutor implements Managed, Idle {
     var ftask = new ComparableFutureTask(job);
     futures.put(job.getKey(), ftask);
     exec.execute(ftask);
+  }
+
+  private int jobUserLimit(BackgroundJob job) {
+    return cfg.userLimit.getOrDefault(job.getClass().getSimpleName(), Integer.MAX_VALUE);
   }
   
 }

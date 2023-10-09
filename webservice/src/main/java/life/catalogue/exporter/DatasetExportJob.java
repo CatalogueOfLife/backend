@@ -179,8 +179,8 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
   protected abstract void export() throws Exception;
 
   @Override
-  public int maxPerUser() {
-    return 8;
+  public Class<? extends BackgroundJob> maxPerUserClass() {
+    return DatasetExportJob.class;
   }
 
   @Override

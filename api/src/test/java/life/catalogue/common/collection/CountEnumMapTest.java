@@ -7,11 +7,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class CountMapTest {
+public class CountEnumMapTest {
 
   @Test
   public void testCounter(){
-    CountMap<Rank> cnt = new CountMap<>();
+    CountEnumMap<Rank> cnt = new CountEnumMap<>(Rank.class);
 
     assertNull(cnt.get(Rank.FAMILY));
     cnt.inc(Rank.FAMILY);
@@ -22,5 +22,4 @@ public class CountMapTest {
     cnt.inc(Rank.FAMILY, -21);
     assertEquals(0, (int) cnt.get(Rank.FAMILY));
   }
-
 }

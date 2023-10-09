@@ -4,6 +4,8 @@ import life.catalogue.api.model.JobResult;
 
 import java.io.File;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.validation.constraints.Min;
@@ -55,6 +57,12 @@ public class JobConfig {
    */
   @Min(1)
   public int queue = 1000;
+
+  /**
+   * Maximum amount of jobs that a user can run or queue for a specific job class
+   * Keys should be just the simple names of java job classes.
+   */
+  public Map<String, Integer> userLimit = new HashMap<>();
 
   public String onErrorTo;
 
