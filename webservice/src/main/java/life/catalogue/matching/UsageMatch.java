@@ -82,10 +82,6 @@ public class UsageMatch implements DSID<String> {
     return usage != null;
   }
 
-  public DSID<String> asDSID(){
-    return DSID.of(datasetKey, usage.getId());
-  }
-
   @Override
   public String toString() {
     if (usage == null) {
@@ -97,7 +93,7 @@ public class UsageMatch implements DSID<String> {
 
   @Override
   public String getId() {
-    return usage.getId();
+    return usage == null ? null : usage.getId();
   }
 
   @Override
