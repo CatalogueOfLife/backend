@@ -7,6 +7,7 @@ import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.vocab.MatchType;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -79,8 +80,9 @@ public class UsageMatch implements DSID<String> {
 
   private static List<SimpleNameClassified<SimpleNameCached>> rmFromAlt(SimpleName usage, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
     if (usage != null && alternatives != null) {
-      alternatives.removeIf(u -> u.getId().equals(usage.getId()));
-      return List.copyOf(alternatives);
+      return alternatives.stream()
+                         .filter(u -> !u.getId().equals(usage.getId()))
+                         .collect(Collectors.toList());
     }
     return alternatives;
   }
