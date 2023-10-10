@@ -56,6 +56,10 @@ import com.univocity.parsers.tsv.TsvWriterSettings;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
+/**
+ * Matching job for users that does not the power to insert names into the names index.
+ * Rematching of datasets is done by the DatasetMatcher instead.
+ */
 public class MatchingJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingJob.class);
   private final SqlSessionFactory factory;
@@ -237,7 +241,7 @@ public class MatchingJob extends DatasetBlockingJob {
     var opt = interpreter.interpret(n.name, n.issues);
     if (opt.isPresent()) {
       NameUsageBase nu = (NameUsageBase) NameUsage.create(n.name.getStatus(), opt.get().getName());
-      match = matcher.match(datasetKey, nu, n.name.getClassification(), true, false);
+      match = matcher.match(datasetKey, nu, n.name.getClassification(), false, false);
     } else {
       match = UsageMatch.empty(0);
       n.issues.addIssue(Issue.UNPARSABLE_NAME);
