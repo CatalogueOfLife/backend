@@ -87,8 +87,7 @@ public class UsageMatch implements DSID<String> {
 
   @Override
   public String getId() {
-    return usage.getId();
-    //return usage == null ? null : usage.getId();
+    return usage == null ? null : usage.getId();
   }
 
   @Override

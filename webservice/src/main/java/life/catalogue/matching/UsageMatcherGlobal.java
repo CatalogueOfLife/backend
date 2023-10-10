@@ -196,7 +196,7 @@ public class UsageMatcherGlobal {
     var eq = RankComparator.compare(r1, r2);
     if (eq == Equality.UNKNOWN && (r1 == Rank.UNRANKED || r2 == Rank.UNRANKED)) {
       // require suprageneric ranks for unranked matches
-      //TODO: disabled during TWDG as this blocks the regular name matching - but is needed for good xcol builds!!!
+      //TODO: disabled during TDWG as this blocks the regular name matching - but is needed for good xcol builds!!!
       //return !(supraGenericOrUnranked(r1) && supraGenericOrUnranked(r2));
     }
     return eq == Equality.DIFFERENT;
@@ -244,12 +244,13 @@ public class UsageMatcherGlobal {
     // make sure we never have bare names - we want usages!
     existing.removeIf(u -> u.getStatus().isBareName());
 
-    // only allow potentially matching ranks
-    final Rank rank = nu.getRank() == null ? Rank.UNRANKED : nu.getRank();
-    existing.removeIf(u -> ranksDiffer(u.getRank(), rank));
-    // require strict rank match in case it exists at least once
-    if (existing.size() > 1 && contains(existing, rank)) {
-      existing.removeIf(u -> u.getRank() != rank);
+    // only allow potentially matching ranks if a rank was supplied (external queries often have no rank!)
+    if (nu.getRank() != null) {
+      existing.removeIf(u -> ranksDiffer(u.getRank(), nu.getRank()));
+      // require strict rank match in case it exists at least once
+      if (existing.size() > 1 && contains(existing, nu.getRank())) {
+        existing.removeIf(u -> u.getRank() != nu.getRank());
+      }
     }
 
     // remove canonical matches between 2 qualified, non suprageneric names
