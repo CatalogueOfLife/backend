@@ -1,6 +1,7 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.vocab.MatchType;
@@ -39,18 +40,18 @@ public class UsageMatch implements DSID<String> {
   }
 
   public static UsageMatch match(SimpleNameClassified<SimpleNameCached> usage, int datasetKey, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
-    return UsageMatch.match(usage.getNamesIndexMatchType(), usage, datasetKey, alternatives);
+    return UsageMatch.match(usage.getNamesIndexMatchType(), usage, datasetKey, rmFromAlt(usage, alternatives));
   }
 
   public static UsageMatch match(MatchType type, SimpleNameClassified<SimpleNameCached> usage, int datasetKey, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
-    return new UsageMatch(datasetKey, usage, usage.getSectorKey(), type, false, null, alternatives);
+    return new UsageMatch(datasetKey, usage, usage.getSectorKey(), type, false, null, rmFromAlt(usage, alternatives));
   }
 
   /**
    * Snaps to a usage but flag it to be ignored in immediate processing.
    */
   public static UsageMatch snap(SimpleNameClassified<SimpleNameCached> usage, int datasetKey, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
-    return new UsageMatch(datasetKey, usage, null, usage.getNamesIndexMatchType(), true, null, alternatives);
+    return new UsageMatch(datasetKey, usage, null, usage.getNamesIndexMatchType(), true, null, rmFromAlt(usage, alternatives));
   }
 
   /**
@@ -74,6 +75,14 @@ public class UsageMatch implements DSID<String> {
 
   public boolean isMatch() {
     return usage != null;
+  }
+
+  private static List<SimpleNameClassified<SimpleNameCached>> rmFromAlt(SimpleName usage, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
+    if (usage != null && alternatives != null) {
+      alternatives.removeIf(u -> u.getId().equals(usage.getId()));
+      return List.copyOf(alternatives);
+    }
+    return alternatives;
   }
 
   @Override

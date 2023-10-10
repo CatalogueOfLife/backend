@@ -29,7 +29,9 @@ import com.google.common.annotations.VisibleForTesting;
  * Filter that parses dataset keys given as path or query parameters
  * and rewrites them if needed to support conventions to refer to
  *  - the latest public release of a project: {projectKey}LR
- *  - the latest release candidate of a project, public or private: {projectKey}LRC
+ *  - the latest private release candidate of a project: {projectKey}LRC
+ *  - the latest public extended release of a project: {projectKey}LXR
+ *  - the latest private extended release candidate of a project: {projectKey}LXRC
  *  - a specific release attempt of a project, public or private: {projectKey}R{attempt}
  *  - an annual version of COL: COL2021
  *  - a GBIF UUID key: gbif-a66592b8-63a8-4c2d-9471-e58ddb2c0559
