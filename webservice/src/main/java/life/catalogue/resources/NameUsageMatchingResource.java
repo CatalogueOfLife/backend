@@ -50,20 +50,20 @@ public class NameUsageMatchingResource {
     this.matcher = matcher;
   }
 
-  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn) {
+  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, boolean verbose) {
     if (StringUtils.isBlank(sn.getName())) {
       throw new IllegalArgumentException("Missing name");
     }
     IssueContainer issues = new IssueContainer.Simple();
-    return match(datasetKey, sn, issues);
+    return match(datasetKey, sn, issues, verbose);
   }
 
-  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, IssueContainer issues) {
+  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, IssueContainer issues, boolean verbose) {
     UsageMatch match;
     var opt = interpreter.interpret(sn, issues);
     if (opt.isPresent()) {
       NameUsageBase nu = (NameUsageBase) NameUsage.create(sn.getStatus(), opt.get().getName());
-      match = matcher.match(datasetKey, nu, sn.getClassification());
+      match = matcher.match(datasetKey, nu, sn.getClassification(), false, verbose);
     } else {
       match = UsageMatch.empty(0);
       issues.addIssue(Issue.UNPARSABLE_NAME);
@@ -82,6 +82,7 @@ public class NameUsageMatchingResource {
                                       @QueryParam("code") NomCode code,
                                       @QueryParam("rank") Rank rank,
                                       @QueryParam("status") @DefaultValue("ACCEPTED") TaxonomicStatus status,
+                                      @QueryParam("verbose") boolean verbose,
                                       @BeanParam Classification classification
   ) throws InterruptedException {
     if (status == TaxonomicStatus.BARE_NAME) {
@@ -91,7 +92,7 @@ public class NameUsageMatchingResource {
     if (classification != null) {
       orig.setClassification(classification.asSimpleNames());
     }
-    return match(datasetKey, orig);
+    return match(datasetKey, orig, verbose);
   }
 
   private MatchingJob submit(MatchingRequest req, User user) {

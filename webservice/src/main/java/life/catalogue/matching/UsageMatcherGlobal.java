@@ -3,6 +3,7 @@ package life.catalogue.matching;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -115,16 +116,8 @@ public class UsageMatcherGlobal {
    * @param nu usage to match. Requires a name instance to exist
    * @param classification of the usage to be matched
    */
-  public UsageMatch match(int datasetKey, NameUsageBase nu, @Nullable Classification classification) {
-    return match(datasetKey, nu, classification == null ? Collections.emptyList() : classification.asSimpleNames());
-  }
-
-  /**
-   * @param datasetKey the target dataset to match against
-   * @param nu usage to match. Requires a name instance to exist
-   * @param classification of the usage to be matched
-   */
-  public UsageMatch match(int datasetKey, NameUsageBase nu, List<? extends SimpleName> classification) {
+  public UsageMatch match(int datasetKey, NameUsageBase nu, @Nullable List<? extends SimpleName> classification, boolean allowInserts, boolean verbose) {
+    classification = ObjectUtils.coalesce(classification, List.of()); // no nulls
     // match classification from top down
     List<MatchedParentStack.MatchedUsage> parents = new ArrayList<>();
     for (var sn : classification) {
@@ -137,15 +130,15 @@ public class UsageMatcherGlobal {
                    .code(nu.getName().getCode())
                    .build();
       Taxon t = new Taxon(n);
-      matchNidxIfNeeded(datasetKey, t);
+      matchNidxIfNeeded(datasetKey, t, allowInserts);
       var mu = new MatchedParentStack.MatchedUsage(toSimpleName(t));
       parents.add(mu);
-      var m = matchWithParents(datasetKey, t, parents);
+      var m = matchWithParents(datasetKey, t, parents, allowInserts, false);
       if (m.isMatch()) {
         mu.match = m.usage;
       }
     }
-    return matchWithParents(datasetKey, nu, parents);
+    return matchWithParents(datasetKey, nu, parents, allowInserts, verbose);
   }
 
   /**
@@ -156,22 +149,24 @@ public class UsageMatcherGlobal {
    * @param parents classification of the usage to be matched
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
-  public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<MatchedParentStack.MatchedUsage> parents) throws NotFoundException {
-    var canonNidx = matchNidxIfNeeded(datasetKey, nu);
+  public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<MatchedParentStack.MatchedUsage> parents,
+                                     boolean allowInserts, boolean verbose
+  ) throws NotFoundException {
+    var canonNidx = matchNidxIfNeeded(datasetKey, nu, allowInserts);
     if (canonNidx == null) {
       return UsageMatch.unsupported(datasetKey);
     }
     var existing = usages.get(canonNidx);
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
-      return match(datasetKey, nu, new ArrayList<>(existing), parents);
+      return match(datasetKey, nu, new ArrayList<>(existing), parents, allowInserts, verbose);
     }
     return UsageMatch.empty(datasetKey);
   }
 
   public SimpleNameWithNidx toSimpleName(NameUsageBase nu) {
     if (nu != null) {
-      var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu);
+      var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu, true);
       return new SimpleNameWithNidx(nu, canonNidx == null ? null : canonNidx.getId());
     }
     return null;
@@ -181,9 +176,9 @@ public class UsageMatcherGlobal {
    * @param datasetKey the dataset key of the DSID to be returned
    * @return the canonical names index id or null if it cant be matched
    */
-  private DSID<Integer> matchNidxIfNeeded(int datasetKey, NameUsageBase nu) {
+  private DSID<Integer> matchNidxIfNeeded(int datasetKey, NameUsageBase nu, boolean allowInserts) {
     if (nu.getName().getNamesIndexId() == null) {
-      var match = nameIndex.match(nu.getName(), true, false);
+      var match = nameIndex.match(nu.getName(), allowInserts, false);
       if (match.hasMatch()) {
         nu.getName().setNamesIndexId(match.getName().getKey());
         nu.getName().setNamesIndexType(match.getType());
@@ -201,13 +196,35 @@ public class UsageMatcherGlobal {
     var eq = RankComparator.compare(r1, r2);
     if (eq == Equality.UNKNOWN && (r1 == Rank.UNRANKED || r2 == Rank.UNRANKED)) {
       // require suprageneric ranks for unranked matches
-      return !(supraGenericOrUnranked(r1) && supraGenericOrUnranked(r2));
+      //TODO: disabled during TWDG as this blocks the regular name matching - but is needed for good xcol builds!!!
+      //return !(supraGenericOrUnranked(r1) && supraGenericOrUnranked(r2));
     }
     return eq == Equality.DIFFERENT;
   }
 
   private static boolean supraGenericOrUnranked(Rank r) {
     return r == Rank.UNRANKED || r.isSuprageneric();
+  }
+
+  private static List<SimpleNameClassified<SimpleNameCached>> buildAlternatives(List<SimpleNameCached> alt) {
+    return alt == null ? null : alt.stream()
+                                     .map(sn -> new SimpleNameClassified<SimpleNameCached>(sn))
+                                     .collect(Collectors.toList());
+  }
+
+  private static void updateAlt(List<SimpleNameClassified<SimpleNameCached>> alt, List<SimpleNameClassified<SimpleNameCached>> existingWithCl) {
+    if (alt != null && existingWithCl != null) {
+      Map<String, SimpleNameClassified<SimpleNameCached>> exByKey = new HashMap<>();
+      for (var snc : existingWithCl) {
+        exByKey.put(snc.getId(), snc);
+      }
+      for (int i = 0; i < alt.size(); i++) {
+        var snc = exByKey.get( alt.get(i).getId() );
+        if (snc != null) {
+          alt.set(i, snc);
+        }
+      }
+    }
   }
 
   /**
@@ -218,7 +235,10 @@ public class UsageMatcherGlobal {
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch match(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents) throws NotFoundException {
+  private UsageMatch match(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents,
+                           boolean allowInserts, boolean verbose
+  ) throws NotFoundException {
+    final List<SimpleNameClassified<SimpleNameCached>> alt = verbose ? buildAlternatives(existing) : null;
     final boolean qualifiedName = nu.getName().hasAuthorship();
 
     // make sure we never have bare names - we want usages!
@@ -248,9 +268,11 @@ public class UsageMatcherGlobal {
       // snap to that single higher taxon right away!
 
     } else if (nu.getRank().isSuprageneric() && existingWithCl.size() > 1){
-      return matchSupragenerics(datasetKey, existingWithCl, parents);
+      return matchSupragenerics(datasetKey, existingWithCl, parents, alt);
 
     } else {
+      // replace alternatives with instances that have a classification
+      updateAlt(alt, existingWithCl);
       // check classification for all others
       if (parents != null && !existingWithCl.isEmpty()) {
         List<SimpleName> parentsSN = parents.stream()
@@ -298,12 +320,12 @@ public class UsageMatcherGlobal {
         match = null;
       }
       if (match != null) {
-        return UsageMatch.match(match, datasetKey);
+        return UsageMatch.match(match, datasetKey, alt);
       }
     }
 
     if (existingWithCl.size() == 1) {
-      return UsageMatch.match(existingWithCl.get(0), datasetKey);
+      return UsageMatch.match(existingWithCl.get(0), datasetKey, alt);
     }
 
     // we have at least 2 match candidates here, maybe more
@@ -312,7 +334,7 @@ public class UsageMatcherGlobal {
     if (qualifiedName && existingWithCl.size() - canonMatches == 1) {
       for (var u : existingWithCl) {
         if (u.hasAuthorship()) {
-          return UsageMatch.match(u, datasetKey);
+          return UsageMatch.match(u, datasetKey, alt);
         }
       }
     }
@@ -334,13 +356,13 @@ public class UsageMatcherGlobal {
       }
     }
     if (synonym != null) {
-      return UsageMatch.snap(synonym, datasetKey);
+      return UsageMatch.snap(synonym, datasetKey, alt);
     }
 
     // remove provisional usages
     existingWithCl.removeIf(u -> u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     if (existingWithCl.size() == 1) {
-      return UsageMatch.snap(existingWithCl.get(0), datasetKey);
+      return UsageMatch.snap(existingWithCl.get(0), datasetKey, alt);
     }
 
     // prefer accepted over synonyms
@@ -348,14 +370,14 @@ public class UsageMatcherGlobal {
     if (accMatches == 1) {
       existingWithCl.removeIf(u -> !u.getStatus().isTaxon());
       LOG.debug("{} ambiguous homonyms encountered for {} in source {}, picking single accepted name", existingWithCl.size(), nu.getLabel(), datasetKey);
-      return UsageMatch.snap(existingWithCl.get(0), datasetKey);
+      return UsageMatch.snap(existingWithCl.get(0), datasetKey, alt);
     }
 
     if (existingWithCl.isEmpty()) {
-      return UsageMatch.empty(datasetKey);
+      return UsageMatch.empty(alt, datasetKey);
     } else {
       LOG.debug("{} ambiguous names matched for {} in source {}", existingWithCl.size(), nu.getLabel(), datasetKey);
-      return UsageMatch.empty(existingWithCl, datasetKey);
+      return UsageMatch.empty(alt, datasetKey);
     }
   }
 
@@ -383,12 +405,15 @@ public class UsageMatcherGlobal {
    * The classification comparison below is rather strict
    * require a match to one of the higher rank homonyms (the old code even did not allow for higher rank homonyms at all!)
    */
-  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified<SimpleNameCached>> homonyms, List<MatchedParentStack.MatchedUsage> parents) {
+  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified<SimpleNameCached>> homonyms,
+                                        List<MatchedParentStack.MatchedUsage> parents,
+                                        List<SimpleNameClassified<SimpleNameCached>> alt
+  ) {
     if (parents == null || parents.isEmpty()) {
       // pick first
       var first = homonyms.get(0);
       LOG.debug("No parent given for homomym match {}. Pick first", first);
-      return UsageMatch.match(MatchType.AMBIGUOUS, first, datasetKey);
+      return UsageMatch.match(MatchType.AMBIGUOUS, first, datasetKey, alt);
     }
     // count number of equal parent names and pick most matching homonym by comparing canonical names index ids
     Set<Integer> parentCNidx = parents.stream()
@@ -408,7 +433,7 @@ public class UsageMatcherGlobal {
         max = cNidx.size();
       }
     }
-    return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey);
+    return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey, alt);
   }
 
   /**
@@ -417,7 +442,7 @@ public class UsageMatcherGlobal {
    */
   public SimpleNameCached add(NameUsageBase nu) {
     Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
-    var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu);
+    var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu, true);
     if (canonNidx != null) {
 
       var before = usages.get(canonNidx);

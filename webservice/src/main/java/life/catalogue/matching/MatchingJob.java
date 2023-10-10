@@ -237,7 +237,7 @@ public class MatchingJob extends DatasetBlockingJob {
     var opt = interpreter.interpret(n.name, n.issues);
     if (opt.isPresent()) {
       NameUsageBase nu = (NameUsageBase) NameUsage.create(n.name.getStatus(), opt.get().getName());
-      match = matcher.match(datasetKey, nu, n.name.getClassification());
+      match = matcher.match(datasetKey, nu, n.name.getClassification(), true, false);
     } else {
       match = UsageMatch.empty(0);
       n.issues.addIssue(Issue.UNPARSABLE_NAME);

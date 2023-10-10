@@ -62,12 +62,12 @@ public class UsageMatcherGlobalTest {
       var origNU = num.get(dsid.id("oen3"));
       ((Synonym)origNU).setAccepted(null); // is purposely not populated in matches - parentID is enough
 
-      var match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of());
+      var match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of(), false, false);
       var origSN = new SimpleNameCached(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameCached(match.usage), origSN);
 
       matcher.clear();
-      match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of());
+      match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of(), false, false);
       assertEquals(new SimpleNameCached(match.usage), origSN);
     }
   }
@@ -84,7 +84,7 @@ public class UsageMatcherGlobalTest {
          .kingdom("Plantae")
          .build();
 
-      var match = matcher.match(datasetKey, num.get(dsid), cl);
+      var match = matcher.match(datasetKey, num.get(dsid), cl.asSimpleNames(), false, false);
       var origSN = new SimpleNameCached(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameCached(match.usage), origSN);
     }
@@ -147,7 +147,7 @@ public class UsageMatcherGlobalTest {
     var matchedParents = Arrays.stream(parents)
                               .map(this::fromRankedName)
                               .collect(Collectors.toList());
-    var result = matcher.matchWithParents(datasetKey, u, matchedParents);
+    var result = matcher.matchWithParents(datasetKey, u, matchedParents, false, true);
     return result;
   }
 

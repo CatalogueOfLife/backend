@@ -115,7 +115,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // find out matching - even if we ignore the name in the merge we want the parents matched for classification comparisons
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
-    UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification());
+    UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification(), true, false);
     LOG.debug("{} matches {}", nu.getLabel(), match);
 
     // figure out closest matched parent that we can use to attach to
@@ -212,7 +212,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   @Override
   protected Usage findExisting(Name n, Usage parent) {
     Taxon t = new Taxon(n);
-    var m = matcher.matchWithParents(targetDatasetKey, t, parents.classification());
+    var m = matcher.matchWithParents(targetDatasetKey, t, parents.classification(), true, false);
     // make sure rank is correct - canonical matches are across ranks
     if (m.usage != null && m.usage.getRank() == n.getRank()) {
       return usage(m.usage);

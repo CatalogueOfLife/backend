@@ -40,7 +40,7 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   public void setUp() throws Exception {
     matcher = mock(UsageMatcherGlobal.class);
     int dkey = dataRule.testData.key;
-    doReturn(UsageMatch.empty(dkey)).when(matcher).match(anyInt(), any(), (List<? extends SimpleName>) any());
+    doReturn(UsageMatch.empty(dkey)).when(matcher).match(anyInt(), any(), (List<? extends SimpleName>) any(), any(), any());
   }
 
   @Override

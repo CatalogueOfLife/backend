@@ -38,26 +38,20 @@ public class UsageMatch implements DSID<String> {
     return new UsageMatch(original.datasetKey, original.usage, original.sectorKey, original.type, true, original.doubtfulUsage, original.alternatives);
   }
 
-  public static UsageMatch match(SimpleNameClassified<SimpleNameCached> usage, int datasetKey) {
-    return UsageMatch.match(usage.getNamesIndexMatchType(), usage, datasetKey);
+  public static UsageMatch match(SimpleNameClassified<SimpleNameCached> usage, int datasetKey, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
+    return UsageMatch.match(usage.getNamesIndexMatchType(), usage, datasetKey, alternatives);
   }
 
-  public static UsageMatch match(MatchType type, SimpleNameClassified<SimpleNameCached> usage, int datasetKey) {
-    return new UsageMatch(datasetKey, usage, usage.getSectorKey(), type, false, null, null);
+  public static UsageMatch match(MatchType type, SimpleNameClassified<SimpleNameCached> usage, int datasetKey, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
+    return new UsageMatch(datasetKey, usage, usage.getSectorKey(), type, false, null, alternatives);
   }
-
 
   /**
    * Snaps to a usage but flag it to be ignored in immediate processing.
    */
-  public static UsageMatch snap(SimpleNameClassified<SimpleNameCached> usage, int datasetKey) {
-    return UsageMatch.snap(usage.getNamesIndexMatchType(), usage, datasetKey);
+  public static UsageMatch snap(SimpleNameClassified<SimpleNameCached> usage, int datasetKey, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
+    return new UsageMatch(datasetKey, usage, null, usage.getNamesIndexMatchType(), true, null, alternatives);
   }
-
-  public static UsageMatch snap(MatchType type, SimpleNameClassified<SimpleNameCached> usage, int datasetKey) {
-    return new UsageMatch(datasetKey, usage, null, type, true, null, null);
-  }
-
 
   /**
    * No match
@@ -93,7 +87,8 @@ public class UsageMatch implements DSID<String> {
 
   @Override
   public String getId() {
-    return usage == null ? null : usage.getId();
+    return usage.getId();
+    //return usage == null ? null : usage.getId();
   }
 
   @Override

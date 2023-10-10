@@ -150,7 +150,7 @@ public class XRelease extends ProjectRelease {
         if (s.getTarget() != null){
           s.getTarget().setStatus(TaxonomicStatus.ACCEPTED);
           NameUsageBase nu = new Taxon(s.getTarget());
-          var m = matcher.match(baseReleaseKey, nu, (Classification)null);
+          var m = matcher.match(baseReleaseKey, nu, null, true, false);
           if (m.isMatch()) {
             s.getTarget().setBroken(false);
             s.getTarget().setId(m.getId());
