@@ -190,6 +190,11 @@ public class WsServer extends Application<WsServerConfig> {
   public void run(WsServerConfig cfg, Environment env) throws Exception {
     final JerseyEnvironment j = env.jersey();
 
+    // remove SSL defaults that prevent correct use of TLS1.3
+    if (cfg.client != null && cfg.client.getTlsConfiguration() != null) {
+      cfg.client.getTlsConfiguration().setProtocol(null);
+    }
+
     cfg.logDirectories();
     if (cfg.mkdirs()) {
       LOG.info("Created config repository directories");
