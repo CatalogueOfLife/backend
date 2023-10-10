@@ -4,6 +4,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
@@ -63,6 +64,8 @@ public class NameUsageMatchingResource {
     var opt = interpreter.interpret(sn, issues);
     if (opt.isPresent()) {
       NameUsageBase nu = (NameUsageBase) NameUsage.create(sn.getStatus(), opt.get().getName());
+      // replace name parsers unranked with null to let the matcher know its coming from outside
+      nu.setOrigin(Origin.OTHER);
       match = matcher.match(datasetKey, nu, sn.getClassification(), false, verbose);
     } else {
       match = UsageMatch.empty(0);

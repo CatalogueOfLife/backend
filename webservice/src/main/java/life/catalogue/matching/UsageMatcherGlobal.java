@@ -5,6 +5,7 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.assembly.TaxGroupAnalyzer;
@@ -159,7 +160,7 @@ public class UsageMatcherGlobal {
     var existing = usages.get(canonNidx);
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
-      return match(datasetKey, nu, new ArrayList<>(existing), parents, allowInserts, verbose);
+      return filterCandidates(datasetKey, nu, new ArrayList<>(existing), parents, verbose);
     }
     return UsageMatch.empty(datasetKey);
   }
@@ -196,8 +197,7 @@ public class UsageMatcherGlobal {
     var eq = RankComparator.compare(r1, r2);
     if (eq == Equality.UNKNOWN && (r1 == Rank.UNRANKED || r2 == Rank.UNRANKED)) {
       // require suprageneric ranks for unranked matches
-      //TODO: disabled during TDWG as this blocks the regular name matching - but is needed for good xcol builds!!!
-      //return !(supraGenericOrUnranked(r1) && supraGenericOrUnranked(r2));
+      return !(supraGenericOrUnranked(r1) && supraGenericOrUnranked(r2));
     }
     return eq == Equality.DIFFERENT;
   }
@@ -235,9 +235,7 @@ public class UsageMatcherGlobal {
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch match(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents,
-                           boolean allowInserts, boolean verbose
-  ) throws NotFoundException {
+  private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents, boolean verbose) throws NotFoundException {
     final List<SimpleNameClassified<SimpleNameCached>> alt = verbose ? buildAlternatives(existing) : null;
     final boolean qualifiedName = nu.getName().hasAuthorship();
 
@@ -245,11 +243,15 @@ public class UsageMatcherGlobal {
     existing.removeIf(u -> u.getStatus().isBareName());
 
     // only allow potentially matching ranks if a rank was supplied (external queries often have no rank!)
-    if (nu.getRank() != null) {
-      existing.removeIf(u -> ranksDiffer(u.getRank(), nu.getRank()));
+    final Rank rank = nu.getRank() == null ? Rank.UNRANKED : nu.getRank();
+    // name match requests from outside often come with no rank
+    // we dont want them to be filtered by rank, so we check fot the usage origin OTHER which the matching resource sets!
+    //TODO: consider a specific origin for external requests
+    if (rank != Rank.UNRANKED || nu.getOrigin() != Origin.OTHER) {
+      existing.removeIf(u -> ranksDiffer(u.getRank(), rank));
       // require strict rank match in case it exists at least once
-      if (existing.size() > 1 && contains(existing, nu.getRank())) {
-        existing.removeIf(u -> u.getRank() != nu.getRank());
+      if (existing.size() > 1 && contains(existing, rank)) {
+        existing.removeIf(u -> u.getRank() != rank);
       }
     }
 
