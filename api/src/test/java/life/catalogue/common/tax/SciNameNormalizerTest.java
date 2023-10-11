@@ -78,6 +78,7 @@ public class SciNameNormalizerTest {
     assertEquals("Macrozamia platirach", SciNameNormalizer.normalizeAll("Macrozamia platyrhachis"));
     assertEquals("Cicas circinal", SciNameNormalizer.normalizeAll("Cycas circinalis"));
     assertEquals("Cicas circinal", SciNameNormalizer.normalizeAll("Cycas circinnalis"));
+    assertEquals("Isolona perier", SciNameNormalizer.normalizeAll("Isolona perieri"));
     assertEquals("Isolona perier", SciNameNormalizer.normalizeAll("Isolona perrieri"));
     assertEquals("Isolona perier", SciNameNormalizer.normalizeAll("Isolona perrierii"));
 
@@ -99,6 +100,7 @@ public class SciNameNormalizerTest {
     assertEquals("Carex xcaiouet", SciNameNormalizer.normalize("xCarex xcayouettei"));
     assertEquals("Carex caiouet", SciNameNormalizer.normalize("XCarex cayouettei"));
     assertEquals("Carex caiouet", SciNameNormalizer.normalize("xCarex ×cayouettei"));
+    assertEquals("Carex caiouet", SciNameNormalizer.normalize("xCarex ×caiouettei"));
 
     assertEquals("Platanus hispanic", SciNameNormalizer.normalize("Platanus x hispanica"));
 

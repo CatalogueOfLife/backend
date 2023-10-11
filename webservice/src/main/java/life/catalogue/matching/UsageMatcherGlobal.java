@@ -102,16 +102,6 @@ public class UsageMatcherGlobal {
     loaders.remove(datasetKey);
   }
 
-  private DSID<Integer> canonNidx(int datasetKey, Integer nidx) {
-    if (nidx != null) {
-      var xn = nameIndex.get(nidx);
-      if (xn != null) {
-        return DSID.of(datasetKey, xn.getCanonicalId());
-      }
-    }
-    return null;
-  }
-
   /**
    * @param datasetKey the target dataset to match against
    * @param nu usage to match. Requires a name instance to exist
@@ -131,7 +121,7 @@ public class UsageMatcherGlobal {
                    .code(nu.getName().getCode())
                    .build();
       Taxon t = new Taxon(n);
-      matchNidxIfNeeded(datasetKey, t, allowInserts);
+      canonNidxAndMatchIfNeeded(datasetKey, t, allowInserts);
       var mu = new MatchedParentStack.MatchedUsage(toSimpleName(t));
       parents.add(mu);
       var m = matchWithParents(datasetKey, t, parents, allowInserts, false);
@@ -153,9 +143,9 @@ public class UsageMatcherGlobal {
   public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<MatchedParentStack.MatchedUsage> parents,
                                      boolean allowInserts, boolean verbose
   ) throws NotFoundException {
-    var canonNidx = matchNidxIfNeeded(datasetKey, nu, allowInserts);
-    if (canonNidx == null) {
-      return UsageMatch.unsupported(datasetKey);
+    var canonNidx = canonNidxAndMatchIfNeeded(datasetKey, nu, allowInserts);
+    if (!canonNidx.hasNidx()) {
+      return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey, canonNidx.matchType);
     }
     var existing = usages.get(canonNidx);
     if (existing != null && !existing.isEmpty()) {
@@ -167,30 +157,51 @@ public class UsageMatcherGlobal {
 
   public SimpleNameWithNidx toSimpleName(NameUsageBase nu) {
     if (nu != null) {
-      var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu, true);
-      return new SimpleNameWithNidx(nu, canonNidx == null ? null : canonNidx.getId());
+      var canonNidx = canonNidxAndMatchIfNeeded(nu.getDatasetKey(), nu, true);
+      return new SimpleNameWithNidx(nu, canonNidx.getId());
     }
     return null;
   }
 
+  private static class CanonNidxMatch extends DSIDValue<Integer> {
+    public MatchType matchType;
+
+    public CanonNidxMatch(int datasetKey, Integer id, MatchType matchType) {
+      super(datasetKey, id);
+      this.matchType = matchType;
+    }
+
+    public boolean hasNidx() {
+      return getId() != null;
+    }
+  }
+
   /**
    * @param datasetKey the dataset key of the DSID to be returned
-   * @return the canonical names index id or null if it cant be matched
+   * @return a wrapper class that is never null. It holds the canonical names index id or null if it cant be matched
    */
-  private DSID<Integer> matchNidxIfNeeded(int datasetKey, NameUsageBase nu, boolean allowInserts) {
-    if (nu.getName().getNamesIndexId() == null) {
+  private CanonNidxMatch canonNidxAndMatchIfNeeded(int datasetKey, NameUsageBase nu, boolean allowInserts) {
+    // we check for match type not id because we might have matched to None or ambiguous before already
+    if (nu.getName().getNamesIndexType() == null) {
+      // try to match
       var match = nameIndex.match(nu.getName(), allowInserts, false);
       if (match.hasMatch()) {
         nu.getName().setNamesIndexId(match.getName().getKey());
         nu.getName().setNamesIndexType(match.getType());
-        // we know the canonical id, return it right here
-        return DSID.of(datasetKey, match.getName().getCanonicalId());
-
-      } else {
-        LOG.info("No name match for {}", nu.getName());
       }
+      return new CanonNidxMatch(datasetKey, match.hasMatch() ? match.getName().getCanonicalId() : null, match.getType());
+
+    } else {
+      // lookup canonical nidx
+      var xn = nameIndex.get(nu.getName().getNamesIndexId());
+      if (xn == null) {
+        // how did that happen?
+        // TODO: Should we rather throw an exception here?
+        LOG.warn("Missing names index entry {}", nu.getName().getNamesIndexId());
+        return new CanonNidxMatch(datasetKey, null, nu.getName().getNamesIndexType());
+      }
+      return new CanonNidxMatch(datasetKey, xn.getCanonicalId(), nu.getName().getNamesIndexType());
     }
-    return canonNidx(datasetKey, nu.getName().getNamesIndexId());
   }
 
   private static boolean ranksDiffer(Rank r1, Rank r2) {
@@ -445,9 +456,8 @@ public class UsageMatcherGlobal {
    */
   public SimpleNameCached add(NameUsageBase nu) {
     Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
-    var canonNidx = matchNidxIfNeeded(nu.getDatasetKey(), nu, true);
-    if (canonNidx != null) {
-
+    var canonNidx = canonNidxAndMatchIfNeeded(nu.getDatasetKey(), nu, true);
+    if (canonNidx.hasNidx()) {
       var before = usages.get(canonNidx);
       if (before == null) {
         // nothing existing, even after loading the cache from the db. Create a new list

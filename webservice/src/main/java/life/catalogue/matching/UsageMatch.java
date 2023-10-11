@@ -66,6 +66,10 @@ public class UsageMatch implements DSID<String> {
     return new UsageMatch(datasetKey, null, null, doubtfulUsage.getNamesIndexMatchType(), false, doubtfulUsage, null);
   }
 
+  public static UsageMatch empty(int datasetKey, MatchType type) {
+    return new UsageMatch(datasetKey, null, null, type, false, null, null);
+  }
+
   public static UsageMatch empty(int datasetKey) {
     return new UsageMatch(datasetKey, null, null, MatchType.NONE, false, null, null);
   }
