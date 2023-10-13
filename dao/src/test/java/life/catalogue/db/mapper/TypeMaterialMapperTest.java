@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class TypeMaterialMapperTest extends CRUDTestBase<DSID<String>, TypeMaterial, TypeMaterialMapper> {
+public class TypeMaterialMapperTest extends CRUDEntityTestBase<DSID<String>, TypeMaterial, TypeMaterialMapper> {
 
   public TypeMaterialMapperTest() {
     super(TypeMaterialMapper.class);

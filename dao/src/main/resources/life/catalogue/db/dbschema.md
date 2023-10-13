@@ -14,6 +14,25 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-10-13 add api analytics table
+```sql
+CREATE TABLE api_analytics(
+  key bigserial NOT NULL PRIMARY KEY,
+  from_datetime TIMESTAMP NOT NULL,
+  to_datetime TIMESTAMP NOT NULL,
+  request_count INTEGER NOT NULL,
+  country_agg HSTORE,
+  response_code_agg HSTORE,
+  agent_agg HSTORE,
+  request_pattern_agg HSTORE,
+  other_metrics HSTORE
+);
+
+CREATE UNIQUE INDEX unique_date_range ON api_analytics(from_datetime, to_datetime);
+CREATE INDEX api_analytics_from_idx ON api_analytics(from_datetime);
+CREATE INDEX api_analytics_to_idx ON api_analytics(to_datetime);
+```
+
 ### 2023-09-26 provide classification functions a maximum depth to search for to avoid loops 
 ```sql
 -- return all parent names as an array

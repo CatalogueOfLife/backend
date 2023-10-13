@@ -17,7 +17,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, NamesIndexMapper> {
+public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName, NamesIndexMapper> {
 
   public NamesIndexMapperTest() {
     super(NamesIndexMapper.class, TestDataRule.NIDX);

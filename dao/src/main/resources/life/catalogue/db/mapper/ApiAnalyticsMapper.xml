@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="life.catalogue.db.mapper.ApiAnalyticsMapper">
+
+  <resultMap id="ANALYTICS_MAP" type="life.catalogue.api.model.ApiAnalytics" autoMapping="true">
+    <id property="key" column="key"/>
+    <result property="from" column="from_datetime"/>
+    <result property="to" column="to_datetime"/>
+    <result property="countryAgg" column="country_agg" typeHandler="life.catalogue.db.type2.HstoreCountryCountTypeHandler"/>
+    <result property="responseCodeAgg" column="response_code_agg" typeHandler="life.catalogue.db.type2.HstoreIntegerCountTypeHandler"/>
+    <result property="agentAgg" column="agent_agg" typeHandler="life.catalogue.db.type2.HstoreStringCountTypeHandler"/>
+    <result property="requestPatternAgg" column="request_pattern_agg" typeHandler="life.catalogue.db.type2.HstoreStringCountTypeHandler"/>
+    <result property="otherMetrics" column="other_metrics" typeHandler="life.catalogue.db.type2.HstoreStringCountTypeHandler"/>
+  </resultMap>
+
+  <sql id="SELECT">
+    key, <include refid="COLS"/>
+  </sql>
+
+  <sql id="COLS">
+    from_datetime,
+    to_datetime,
+    request_count,
+    country_agg,
+    response_code_agg,
+    agent_agg,
+    request_pattern_agg,
+    other_metrics
+  </sql>
+
+  <sql id="PROPS">
+    #{from},
+    #{to},
+    #{requestCount},
+    #{countryAgg, jdbcType=OTHER,typeHandler=life.catalogue.db.type2.HstoreCountryCountTypeHandler}::hstore,
+    #{responseCodeAgg, jdbcType=OTHER,typeHandler=life.catalogue.db.type2.HstoreIntegerCountTypeHandler}::hstore,
+    #{agentAgg, jdbcType=OTHER,typeHandler=life.catalogue.db.type2.HstoreStringCountTypeHandler}::hstore,
+    #{requestPatternAgg, jdbcType=OTHER,typeHandler=life.catalogue.db.type2.HstoreStringCountTypeHandler}::hstore,
+    #{otherMetrics, jdbcType=OTHER,typeHandler=life.catalogue.db.type2.HstoreStringCountTypeHandler}::hstore
+  </sql>
+
+  <!-- QUERIES FROM HERE -->
+  <insert id="create" parameterType="ApiAnalytics" useGeneratedKeys="true" keyProperty="key" keyColumn="key">
+    INSERT INTO api_analytics (<include refid="COLS"/>) VALUES (<include refid="PROPS"/>)
+  </insert>
+
+  <update id="update" parameterType="ApiAnalytics">
+    UPDATE api_analytics
+    SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
+    WHERE key = #{key}
+  </update>
+
+  <select id="get" resultMap="ANALYTICS_MAP">
+    SELECT <include refid="SELECT"/>
+    FROM api_analytics
+    WHERE key = #{key}
+  </select>
+
+  <select id="list" resultMap="ANALYTICS_MAP">
+    SELECT <include refid="SELECT"/>
+    FROM api_analytics
+    <where>
+      <if test="onlyEmptyResults">
+        request_count = 0
+      </if>
+    </where>
+    ORDER BY from_datetime DESC
+    <include refid="life.catalogue.db.Common.limit"/>
+    <!-- be safe -->
+    <if test="page == null">
+      LIMIT 10000
+    </if>
+  </select>
+
+  <select id="exists" resultType="Boolean">
+    SELECT EXISTS(
+      SELECT 1
+      FROM api_analytics
+      WHERE from_datetime = #{fromDateTime} AND to_datetime = #{toDateTime}
+    )
+  </select>
+
+  <select id="getLatest" resultMap="ANALYTICS_MAP">
+    SELECT <include refid="SELECT"/>
+    FROM api_analytics
+    ORDER BY from_datetime DESC
+    LIMIT 1
+  </select>
+
+  <delete id="delete">
+    DELETE FROM api_analytics
+    WHERE key = #{key}
+  </delete>
+
+</mapper>

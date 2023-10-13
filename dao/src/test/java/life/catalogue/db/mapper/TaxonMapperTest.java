@@ -41,8 +41,8 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
   
   @Before
   public void init() {
-    datasetKeyOriginal = CRUDTestBase.datasetKey;
-    CRUDTestBase.datasetKey = Datasets.COL;
+    datasetKeyOriginal = CRUDEntityTestBase.datasetKey;
+    CRUDEntityTestBase.datasetKey = Datasets.COL;
 
     // create a few draft taxa to attach sectors to
     MybatisTestUtils.populateDraftTree(session());
@@ -56,7 +56,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
 
   @After
   public void destroy() {
-    CRUDTestBase.datasetKey = datasetKeyOriginal;
+    CRUDEntityTestBase.datasetKey = datasetKeyOriginal;
   }
 
   @Override

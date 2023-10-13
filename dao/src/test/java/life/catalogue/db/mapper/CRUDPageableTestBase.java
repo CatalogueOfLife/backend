@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M extends CRUD<DSID<K>, T> & DatasetPageable<T> & DatasetProcessable<T>>
-    extends CRUDTestBase<DSID<K>, T, M> {
+    extends CRUDEntityTestBase<DSID<K>, T, M> {
 
   public CRUDPageableTestBase(Class<M> mapperClazz) {
     super(mapperClazz);

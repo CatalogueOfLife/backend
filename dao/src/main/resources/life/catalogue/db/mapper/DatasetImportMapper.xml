@@ -110,7 +110,7 @@
     #{imp.typeMaterialByStatusCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
     #{imp.usagesByOriginCount, typeHandler=life.catalogue.db.type2.HstoreOriginCountTypeHandler}::hstore,
     #{imp.usagesByStatusCount, typeHandler=life.catalogue.db.type2.HstoreTaxStatusCountTypeHandler}::hstore,
-    #{imp.vernacularsByLanguageCount, typeHandler=life.catalogue.db.type2.HstoreLanguageCountTypeHandler}::hstore
+    #{imp.vernacularsByLanguageCount, typeHandler=life.catalogue.db.type2.HstoreStringCountTypeHandler}::hstore
   </sql>
 
   <sql id="PROPS">
@@ -180,7 +180,7 @@
     <result property="typeMaterialByStatusCount" column="type_material_by_status_count" typeHandler="life.catalogue.db.type2.HstoreTypeStatusCountTypeHandler"/>
     <result property="usagesByOriginCount" column="usages_by_origin_count" typeHandler="life.catalogue.db.type2.HstoreOriginCountTypeHandler"/>
     <result property="usagesByStatusCount" column="usages_by_status_count" typeHandler="life.catalogue.db.type2.HstoreTaxStatusCountTypeHandler"/>
-    <result property="vernacularsByLanguageCount" column="vernaculars_by_language_count" typeHandler="life.catalogue.db.type2.HstoreLanguageCountTypeHandler"/>
+    <result property="vernacularsByLanguageCount" column="vernaculars_by_language_count" typeHandler="life.catalogue.db.type2.HstoreStringCountTypeHandler"/>
   </resultMap>
 
   <select id="get" resultMap="datasetImportResultMap">

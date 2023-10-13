@@ -225,13 +225,19 @@
 
 		<!-- Elasticsearch / Lucene -->
 		<dependency>
-			<groupId>org.elasticsearch.client</groupId>
-			<artifactId>elasticsearch-rest-client</artifactId>
-			<version>${elasticsearch.version}</version>
+          <groupId>org.elasticsearch.client</groupId>
+          <artifactId>elasticsearch-rest-client</artifactId>
 		</dependency>
+        <dependency>
+          <groupId>org.elasticsearch</groupId>
+          <artifactId>elasticsearch-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.elasticsearch</groupId>
+          <artifactId>elasticsearch</artifactId>
+        </dependency>
 
-
-		<!-- TEST SCOPE -->
+      <!-- TEST SCOPE -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

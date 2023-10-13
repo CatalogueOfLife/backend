@@ -148,7 +148,15 @@ public class SciNameNormalizer {
 
   /**
    * Does a stemming of a latin epithet removing any gender carrying suffix.
-   * See https://www.iapt-taxon.org/nomen/pages/main/art_62.html0
+   * See https://www.iapt-taxon.org/nomen/pages/main/art_62.html
+   *
+   * For generic latin stemming see the Schinke Latin stemming algorithm is described in:
+   * Schinke R, Greengrass M, Robertson AM and Willett P (1996) A stemming algorithm for Latin text databases. Journal of Documentation, 52: 172-187.
+   *
+   * http://snowballstem.org/otherapps/schinke/
+   * http://caio.ueberalles.net/a_stemming_algorithm_for_latin_text_databases-schinke_et_al.pdf
+   *
+   * See also https://github.com/gnames/gnparser/blob/master/ent/stemmer/stemmer.go
    */
   public static String stemEpithet(String epithet) {
     if (!hasContent(epithet)) return "";

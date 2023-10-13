@@ -1179,6 +1179,21 @@ CREATE TABLE parser_config (
   remarks TEXT
 );
 
+CREATE TABLE api_analytics(
+  key bigserial NOT NULL PRIMARY KEY,
+  from_datetime TIMESTAMP NOT NULL,
+  to_datetime TIMESTAMP NOT NULL,
+  request_count INTEGER NOT NULL,
+  country_agg HSTORE,
+  response_code_agg HSTORE,
+  agent_agg HSTORE,
+  request_pattern_agg HSTORE,
+  other_metrics HSTORE
+);
+
+CREATE UNIQUE INDEX unique_date_range ON api_analytics(from_datetime, to_datetime);
+CREATE INDEX ON api_analytics(from_datetime);
+CREATE INDEX ON api_analytics(to_datetime);
 
 --
 -- PARTITIONED DATA TABLES

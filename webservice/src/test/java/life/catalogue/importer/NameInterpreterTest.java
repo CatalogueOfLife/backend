@@ -27,12 +27,48 @@ public class NameInterpreterTest {
     ib = new NameInterpreter(new DatasetSettings(), true);
   }
 
+  void assertOenantheL(Optional<ParsedNameUsage> pnu) {
+    var n = pnu.get().getName();
+    assertEquals("Oenanthe", n.getScientificName());
+    assertEquals("L.", n.getAuthorship());
+    assertEquals(Rank.UNRANKED, n.getRank());
+    assertEquals("Oenanthe", n.getUninomial());
+    assertNull(n.getGenus());
+    assertNull(n.getInfragenericEpithet());
+    assertNull(n.getSpecificEpithet());
+    assertNull(n.getInfraspecificEpithet());
+  }
+
   @Test
   public void interpretName() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
     Optional<ParsedNameUsage> pnu;
     Name n;
 
+    // test various ways to supply the authorship
+    pnu = ib.interpret(SimpleName.sn("Oenanthe L."), v);
+    assertOenantheL(pnu);
+
+    pnu = ib.interpret(SimpleName.sn("Oenanthe", "L."), v);
+    assertOenantheL(pnu);
+
+    pnu = ib.interpret("1", null, "Oenanthe L.", null,
+      null, null, null, null, null, null, null, null, null, null, null, null, v);
+    assertOenantheL(pnu);
+
+    pnu = ib.interpret("1", null, "Oenanthe L.", "",
+      null, null, null, null, null, null, null, null, null, null, null, null, v);
+    assertOenantheL(pnu);
+
+    pnu = ib.interpret("1", null, "Oenanthe L.", "L.",
+      null, null, null, null, null, null, null, null, null, null, null, null, v);
+    assertOenantheL(pnu);
+
+    pnu = ib.interpret("1", null, "Oenanthe", "L.",
+      null, null, null, null, null, null, null, null, null, null, null, null, v);
+    assertOenantheL(pnu);
+
+    // other
     pnu = ib.interpret("1", null, "Cerastium ligusticum subsp. granulatum", "(Huter et al.) P. D. Sell & Whitehead",
       null, null, null, null, null, null, null, null, null, null, null, "tpl:234567", v);
     assertNull(pnu.get().getTaxonomicNote());

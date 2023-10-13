@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class DatasetExportMapperTest extends CRUDTestBase<UUID, DatasetExport, DatasetExportMapper> {
+public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExport, DatasetExportMapper> {
 
   public DatasetExportMapperTest() {
     super(DatasetExportMapper.class);
