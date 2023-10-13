@@ -85,7 +85,7 @@ public class IndexCmd extends AbstractMybatisCmd {
   }
 
   @Override
-  void execute() throws Exception {
+  public void execute() throws Exception {
     try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
       NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("nuproc"), factory);
       if (ns.getInt(ARG_THREADS) != null) {

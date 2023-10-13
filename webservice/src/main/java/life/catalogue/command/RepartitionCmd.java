@@ -69,7 +69,7 @@ public class RepartitionCmd extends AbstractMybatisCmd {
   }
 
   @Override
-  void execute() throws Exception {
+  public void execute() throws Exception {
     partitions = getPartitionConfig(ns);
     System.out.println(describeCmd(ns, cfg));
 

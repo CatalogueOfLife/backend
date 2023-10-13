@@ -125,7 +125,7 @@ public class ExportCmd extends AbstractMybatisCmd {
   }
 
   @Override
-  void execute() throws Exception {
+  public void execute() throws Exception {
     if (userKey == null) {
       throw new IllegalArgumentException("--user argument required");
     }

@@ -12,6 +12,7 @@ import life.catalogue.dw.cors.CorsConfiguration;
 import life.catalogue.dw.mail.MailBundleConfig;
 import life.catalogue.dw.metrics.GangliaBundleConfiguration;
 import life.catalogue.dw.metrics.GangliaConfiguration;
+import life.catalogue.es.AnalyticsEsConfig;
 import life.catalogue.es.EsConfig;
 import life.catalogue.img.ImgConfig;
 
@@ -45,7 +46,10 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   
   @Valid
   public EsConfig es;
-  
+
+  @Valid
+  public EsConfig analytics;
+
   @Valid
   @NotNull
   public PgDbConfig adminDb = new PgDbConfig();

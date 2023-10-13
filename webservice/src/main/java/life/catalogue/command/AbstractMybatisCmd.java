@@ -36,11 +36,11 @@ import net.sourceforge.argparse4j.inf.Subparser;
 public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractMybatisCmd.class);
   private static final String ARG_USER = "user";
-  WsServerConfig cfg;
-  Namespace ns;
-  Integer userKey;
-  User user;
-  SqlSessionFactory factory;
+  protected WsServerConfig cfg;
+  protected Namespace ns;
+  protected Integer userKey;
+  protected User user;
+  protected SqlSessionFactory factory;
   HikariDataSource dataSource;
   Client jerseyClient;
   ExecutorService exec;
@@ -123,5 +123,5 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
     }
   }
 
-  abstract void execute() throws Exception;
+  public abstract void execute() throws Exception;
 }

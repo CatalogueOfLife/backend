@@ -37,7 +37,7 @@ public class ArchiveCmd extends AbstractMybatisCmd {
   }
 
   @Override
-  void execute() throws Exception {
+  public void execute() throws Exception {
     archiver = new NameUsageArchiver(factory);
 
     Integer projectKey = ns.get(ARG_KEY);

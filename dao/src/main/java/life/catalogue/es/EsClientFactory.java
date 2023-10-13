@@ -23,6 +23,10 @@ public class EsClientFactory {
   }
 
   public RestClient createClient() {
+    return createClientBuilder().build();
+  }
+
+  public RestClientBuilder createClientBuilder() {
     String[] hosts = cfg.hosts == null ? new String[]{"localhost"} : cfg.hosts.split(",");
     String[] ports = cfg.ports == null ? new String[]{"9200"} : cfg.ports.split(",");
     HttpHost[] httpHosts = new HttpHost[hosts.length];
@@ -46,8 +50,7 @@ public class EsClientFactory {
                 .setConnectTimeout(cfg.connectTimeout)
                 .setSocketTimeout(cfg.socketTimeout);
           }
-        })
-        .build();
+        });
   }
 
 }

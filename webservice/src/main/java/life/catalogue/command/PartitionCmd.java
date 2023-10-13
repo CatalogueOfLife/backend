@@ -44,7 +44,7 @@ public class PartitionCmd extends AbstractMybatisCmd {
   }
 
   @Override
-  void execute() throws Exception {
+  public void execute() throws Exception {
     String table = ns.getString(ARG_TABLE);
     Integer num = ns.getInt(RepartitionCmd.ARG_NUMBERS);
     LOG.info("Start adding partition tables for {}", table);
