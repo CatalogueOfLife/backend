@@ -191,16 +191,20 @@ public class UsageMatcherGlobal {
       }
       return new CanonNidxMatch(datasetKey, match.hasMatch() ? match.getName().getCanonicalId() : null, match.getType());
 
+    } else if (nu.getName().getNamesIndexType() == MatchType.NONE) {
+      return new CanonNidxMatch(datasetKey, null, nu.getName().getNamesIndexType());
+
+    } else if (nu.getName().getNamesIndexId() == null) {
+      throw new IllegalStateException("Name without names index key but with match type " + nu.getName().getNamesIndexType() + ": " + nu.getName());
+
     } else {
       // lookup canonical nidx
       var xn = nameIndex.get(nu.getName().getNamesIndexId());
-      if (xn == null) {
-        // how did that happen?
-        // TODO: Should we rather throw an exception here?
-        LOG.warn("Missing names index entry {}", nu.getName().getNamesIndexId());
-        return new CanonNidxMatch(datasetKey, null, nu.getName().getNamesIndexType());
+      if (xn == null) { // this is impossible unless data is out of sync
+        throw new IllegalStateException("Missing names index entry " + nu.getName().getNamesIndexId());
       }
       return new CanonNidxMatch(datasetKey, xn.getCanonicalId(), nu.getName().getNamesIndexType());
+
     }
   }
 
