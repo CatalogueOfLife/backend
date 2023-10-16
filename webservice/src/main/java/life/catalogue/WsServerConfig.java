@@ -12,7 +12,6 @@ import life.catalogue.dw.cors.CorsConfiguration;
 import life.catalogue.dw.mail.MailBundleConfig;
 import life.catalogue.dw.metrics.GangliaBundleConfiguration;
 import life.catalogue.dw.metrics.GangliaConfiguration;
-import life.catalogue.es.AnalyticsEsConfig;
 import life.catalogue.es.EsConfig;
 import life.catalogue.img.ImgConfig;
 
