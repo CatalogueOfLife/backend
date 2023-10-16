@@ -251,14 +251,15 @@ public class UsageMatcherGlobal {
    * @throws NotFoundException if parent classifications do not resolve
    */
   private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents, boolean verbose) throws NotFoundException {
+    // if we need to set alternatives keep them before we modify the candidates list
     final List<SimpleNameClassified<SimpleNameCached>> alt = verbose ? buildAlternatives(existing) : null;
-    final boolean qualifiedName = nu.getName().hasAuthorship();
 
     // make sure we never have bare names - we want usages!
     existing.removeIf(u -> u.getStatus().isBareName());
 
     // only allow potentially matching ranks if a rank was supplied (external queries often have no rank!)
     final Rank rank = nu.getRank() == null ? Rank.UNRANKED : nu.getRank();
+    final boolean qualifiedName = nu.getName().hasAuthorship() && nu.getRank() != Rank.UNRANKED;
     // name match requests from outside often come with no rank
     // we dont want them to be filtered by rank, so we check fot the usage origin OTHER which the matching resource sets!
     //TODO: consider a specific origin for external requests
