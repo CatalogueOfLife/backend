@@ -256,7 +256,7 @@ public class WsServer extends Application<WsServerConfig> {
     NameUsageIndexService indexService;
     NameUsageSearchService searchService;
     NameUsageSuggestionService suggestService;
-    if (cfg.es == null) {
+    if (cfg.es == null || cfg.es.isEmpty()) {
       LOG.warn("No Elastic Search configured, use pass through indexing & searching");
       indexService = NameUsageIndexService.passThru();
       searchService = NameUsageSearchService.passThru();

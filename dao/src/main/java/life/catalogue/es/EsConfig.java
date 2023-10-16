@@ -1,5 +1,6 @@
 package life.catalogue.es;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -22,7 +23,7 @@ public class EsConfig {
   /**
    * Configuration settings for the name usage index
    */
-  @NotNull
+  @Nullable
   public IndexConfig nameUsage;
 
   /**
