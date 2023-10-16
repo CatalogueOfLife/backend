@@ -226,8 +226,8 @@
   </select>
 
   <select id="listByIds" resultMap="nameResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
+    SELECT <include refid="SELECT_NIDX"/>
+    FROM <include refid="FROM_NIDX"/>
     WHERE n.dataset_key=#{datasetKey} AND n.id IN
     <foreach item="k" collection="ids" open="(" separator="," close=")">#{k}</foreach>
   </select>
