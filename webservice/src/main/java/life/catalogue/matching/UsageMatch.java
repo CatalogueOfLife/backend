@@ -26,6 +26,10 @@ public class UsageMatch implements DSID<String> {
     this(src.datasetKey, src.usage, src.sectorKey, src.type, src.ignore, src.doubtfulUsage, src.alternatives);
   }
 
+  protected UsageMatch(UsageMatch src, MatchType type) {
+    this(src.datasetKey, src.usage, src.sectorKey, type, src.ignore, src.doubtfulUsage, src.alternatives);
+  }
+
   protected UsageMatch(int datasetKey, SimpleNameClassified<SimpleNameCached> usage, Integer sectorKey, MatchType type, boolean ignore, SimpleNameClassified<SimpleNameCached> doubtfulUsage, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
     this.datasetKey = datasetKey;
     this.usage = usage;

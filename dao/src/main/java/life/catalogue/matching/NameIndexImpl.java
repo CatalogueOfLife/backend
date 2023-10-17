@@ -85,6 +85,10 @@ public class NameIndexImpl implements NameIndex {
     store.add(key, name);
   }
 
+  public AuthorComparator getAuthComp() {
+    return authComp;
+  }
+
   @Override
   public LocalDateTime created() {
     return store.created();

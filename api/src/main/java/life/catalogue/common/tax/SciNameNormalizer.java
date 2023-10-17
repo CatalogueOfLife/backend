@@ -74,13 +74,22 @@ public class SciNameNormalizer {
     // Normalize letters and ligatures to their ASCII equivalent
     s = foldToAscii(s);
     
-    // normalize whitespace
+    // normalize hyphens, apostrophes, punctuation and whitespace
     s = empty.matcher(s).replaceAll("");
+    return normalizeWhitespaceAndPunctuation(s);
+  }
+
+  /**
+   * Replaces all punctuation with space and trims and normalizes whitespace to a single ASCII space.
+   */
+  public static String normalizeWhitespaceAndPunctuation(String s) {
+    if (s == null) return null;
+    // normalize whitespace
     s = punct.matcher(s).replaceAll(" ");
     s = white.matcher(s).replaceAll(" ");
     return s.trim();
   }
-  
+
   /**
    * Normalizes the entire scientific name, keeping monomials or the first genus part rather unchanged,
    * applying the more drastic normalization incl stemming to the remainder of the name only.

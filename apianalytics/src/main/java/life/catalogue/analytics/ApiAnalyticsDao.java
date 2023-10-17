@@ -150,9 +150,12 @@ public class ApiAnalyticsDao {
   }
 
   private static <T> Map<T, Integer> toInt(Map<T, Long> cnt) {
-    Map<T, Integer> cntInt = new HashMap<>();
-    cnt.forEach((k,v) -> cntInt.put(k, v.intValue()));
-    return cntInt;
+    if (cnt != null) {
+      Map<T, Integer> cntInt = new HashMap<>();
+      cnt.forEach((k,v) -> cntInt.put(k, v.intValue()));
+      return cntInt;
+    }
+    return null;
   }
 
   private String getIndexName(LocalDateTime startDate) {

@@ -65,7 +65,9 @@ public class NameUsageMatchingResource {
     if (opt.isPresent()) {
       NameUsageBase nu = (NameUsageBase) NameUsage.create(sn.getStatus(), opt.get().getName());
       // replace name parsers unranked with null to let the matcher know its coming from outside
-      nu.setOrigin(Origin.OTHER);
+      if (nu.getRank() == Rank.UNRANKED) {
+        nu.getName().setRank(null);
+      }
       match = matcher.match(datasetKey, nu, sn.getClassification(), false, verbose);
     } else {
       match = UsageMatch.empty(0);

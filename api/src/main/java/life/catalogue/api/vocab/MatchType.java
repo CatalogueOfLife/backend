@@ -3,7 +3,8 @@ package life.catalogue.api.vocab;
 public enum MatchType {
 
   /**
-   * The canonical name, rank and authorship (if given) matches exactly
+   * The canonical name, rank and authorship (if given) matches exactly,
+   * allowing only for whitespace and punctuation differences.
    */
   EXACT,
   

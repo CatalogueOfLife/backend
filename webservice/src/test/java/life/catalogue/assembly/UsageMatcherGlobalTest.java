@@ -33,6 +33,7 @@ import org.junit.rules.TestRule;
 
 import static life.catalogue.api.model.SimpleName.sn;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class UsageMatcherGlobalTest {
 
@@ -94,9 +95,50 @@ public class UsageMatcherGlobalTest {
   public void oenanthe() throws Exception {
     var match = match(Rank.GENUS, "Oenanthe", "L.", null, null);
     assertEquals("oen1", match.usage.getId());
+    assertEquals(MatchType.EXACT, match.type);
+
+    match = match(Rank.GENUS, "Oenanthe", "L", null, null);
+    assertEquals("oen1", match.usage.getId());
+    assertEquals(MatchType.EXACT, match.type); // we allow whitespace and punctuation differences
+
+    match = match(Rank.GENUS, "Oenanthe", "Lin.", null, null);
+    assertEquals("oen1", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
+
+    match = match(Rank.GENUS, "Oenanthe", "Linné", null, null);
+    assertEquals("oen1", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
+
+    match = match(Rank.GENUS, "Oenanthe", "Linus", null, null);
+    assertFalse(match.isMatch());
 
     match = match(Rank.GENUS, "Oenanthe", "V.", null, null);
     assertEquals("oen2", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
+
+    match = match(Rank.GENUS, "Œnanthe", "Vieil.", null, null);
+    assertEquals("oen2", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
+
+    match = match(Rank.GENUS, "Œnanthe", "1816", null, null);
+    assertEquals("oen2", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
+
+    match = match(Rank.GENUS, "Oenanthe", "Vieillot", null, null);
+    assertEquals("oen2", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
+
+    match = match(null, "Oenanthe", "Vieillot", null, null);
+    assertEquals("oen2", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
+
+    match = match(Rank.GENUS, "Oenanthe", "Vieillot, 1816", null, null);
+    assertEquals("oen2", match.usage.getId());
+    assertEquals(MatchType.EXACT, match.type);
+
+    match = match(Rank.GENUS, "Oenanthe", "Vieillot 1816", null, null);
+    assertEquals("oen2", match.usage.getId());
+    assertEquals(MatchType.EXACT, match.type);
 
     // without author and classification we should get non
     match = match(Rank.GENUS, "Oenanthe", null, null, null);
@@ -132,7 +174,7 @@ public class UsageMatcherGlobalTest {
     var opt = NameParser.PARSER.parse(name, authors, rank, code, VerbatimRecord.VOID);
     Name n = opt.get().getName();
     n.setDatasetKey(Datasets.COL);
-    n.setRank(ObjectUtils.coalesce(rank, opt.get().getName().getRank(), Rank.UNRANKED));
+    n.setRankAllowNull(rank); // overwrite name parser rank
     n.setScientificName(name);
     n.setAuthorship(authors);
     n.setCode(code);
@@ -144,16 +186,7 @@ public class UsageMatcherGlobalTest {
     u.setStatus(status);
     u.setNamePhrase(opt.get().getTaxonomicNote());
 
-    var matchedParents = Arrays.stream(parents)
-                              .map(this::fromRankedName)
-                              .collect(Collectors.toList());
-    var result = matcher.matchWithParents(datasetKey, u, matchedParents, false, true);
+    var result = matcher.match(datasetKey, u, List.of(parents), false, true);
     return result;
-  }
-
-  MatchedParentStack.MatchedUsage fromRankedName(SimpleName sn) {
-    SimpleNameWithNidx sn2 = new SimpleNameWithNidx(sn);
-    MatchedParentStack.MatchedUsage mu = new MatchedParentStack.MatchedUsage(sn2);
-    return mu;
   }
 }

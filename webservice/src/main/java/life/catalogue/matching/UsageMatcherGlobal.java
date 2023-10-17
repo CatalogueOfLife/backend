@@ -11,7 +11,13 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.assembly.TaxGroupAnalyzer;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
+import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
+
+import life.catalogue.matching.authorship.AuthorComparator;
+
+import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -39,6 +45,7 @@ import com.google.common.base.Preconditions;
 public class UsageMatcherGlobal {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherGlobal.class);
   private final NameIndex nameIndex;
+  private final AuthorComparator authComp;
   private final UsageCache uCache;
   private final CacheLoader defaultLoader;
   private final Map<Integer, CacheLoader> loaders = new HashMap<>();
@@ -63,6 +70,11 @@ public class UsageMatcherGlobal {
 
   public UsageMatcherGlobal(NameIndex nameIndex, UsageCache uCache, SqlSessionFactory factory) {
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
+    if (nameIndex instanceof NameIndexImpl) {
+      this.authComp = ((NameIndexImpl)nameIndex).getAuthComp();
+    } else {
+      this.authComp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
+    }
     this.factory = Preconditions.checkNotNull(factory);
     this.uCache = uCache;
     this.defaultLoader = new CacheLoader.MybatisFactory(factory);
@@ -150,7 +162,22 @@ public class UsageMatcherGlobal {
     var existing = usages.get(canonNidx);
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
-      return filterCandidates(datasetKey, nu, new ArrayList<>(existing), parents, verbose);
+      var match = filterCandidates(datasetKey, nu, new ArrayList<>(existing), parents, verbose);
+      if (match.isMatch()) {
+        // decide about usage match type - the match type we have so far is from names index matching only!
+        if (match.type == MatchType.VARIANT || match.type == MatchType.EXACT) {
+          String label = SciNameNormalizer.normalizeWhitespaceAndPunctuation(nu.getLabel());
+          String matchLabel = SciNameNormalizer.normalizeWhitespaceAndPunctuation(match.usage.getLabel());
+          if (match.type == MatchType.VARIANT && matchLabel.equals(label)) {
+            match = new UsageMatch(match, MatchType.EXACT);
+          } else if (match.type == MatchType.EXACT && !matchLabel.equals(label)) {
+            match = new UsageMatch(match, MatchType.VARIANT);
+          }
+        }
+        // CANONICAL match type remains
+        // no matches also: AMBIGUOUS, NONE, UNSUPPORTED
+      }
+      return match;
     }
     return UsageMatch.empty(datasetKey);
   }
@@ -251,6 +278,8 @@ public class UsageMatcherGlobal {
    * @throws NotFoundException if parent classifications do not resolve
    */
   private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents, boolean verbose) throws NotFoundException {
+    final boolean qualifiedName = nu.getName().hasAuthorship() && nu.getRank() != null && nu.getRank() != Rank.UNRANKED;
+
     // if we need to set alternatives keep them before we modify the candidates list
     final List<SimpleNameClassified<SimpleNameCached>> alt = verbose ? buildAlternatives(existing) : null;
 
@@ -258,16 +287,13 @@ public class UsageMatcherGlobal {
     existing.removeIf(u -> u.getStatus().isBareName());
 
     // only allow potentially matching ranks if a rank was supplied (external queries often have no rank!)
-    final Rank rank = nu.getRank() == null ? Rank.UNRANKED : nu.getRank();
-    final boolean qualifiedName = nu.getName().hasAuthorship() && nu.getRank() != Rank.UNRANKED;
     // name match requests from outside often come with no rank
-    // we dont want them to be filtered by rank, so we check fot the usage origin OTHER which the matching resource sets!
-    //TODO: consider a specific origin for external requests
-    if (rank != Rank.UNRANKED || nu.getOrigin() != Origin.OTHER) {
-      existing.removeIf(u -> ranksDiffer(u.getRank(), rank));
+    // we dont want them to be filtered by rank, so we check for the usage origin OTHER which the matching resource sets!
+    if (nu.getRank() != null && nu.getRank() != Rank.UNRANKED) {
+      existing.removeIf(u -> ranksDiffer(u.getRank(), nu.getRank()));
       // require strict rank match in case it exists at least once
-      if (existing.size() > 1 && contains(existing, rank)) {
-        existing.removeIf(u -> u.getRank() != rank);
+      if (existing.size() > 1 && contains(existing, nu.getRank())) {
+        existing.removeIf(u -> u.getRank() != nu.getRank());
       }
     }
 
@@ -282,11 +308,11 @@ public class UsageMatcherGlobal {
                                  .map(ex -> uCache.withClassification(datasetKey, ex, loader))
                                  .collect(Collectors.toList());
 
-    if (nu.getRank().isSuprageneric() && existingWithCl.size() == 1) {
+    if (nu.getRank() != null && nu.getRank().isSuprageneric() && existingWithCl.size() == 1) {
       // no homonyms above genus level unless given in configured homonym sources (e.g. backbone patch, col)
       // snap to that single higher taxon right away!
 
-    } else if (nu.getRank().isSuprageneric() && existingWithCl.size() > 1){
+    } else if (nu.getRank() != null && nu.getRank().isSuprageneric() && existingWithCl.size() > 1){
       return matchSupragenerics(datasetKey, existingWithCl, parents, alt);
 
     } else {
@@ -341,6 +367,28 @@ public class UsageMatcherGlobal {
       if (match != null) {
         return UsageMatch.match(match, datasetKey, alt);
       }
+    }
+
+    // qualified matches require authorship AND rank
+    // we might not have a rank, but an authorship alone. Test for it and remove other authorships
+    if (existingWithCl.size() > 1 && !qualifiedName && nu.getName().hasAuthorship()) {
+      existingWithCl.removeIf(u -> {
+        if (u.hasAuthorship()) {
+          try {
+            var optAuthor = NameParser.PARSER.parseAuthorship(u.getAuthorship());
+            if (optAuthor.isPresent()) {
+              var a = optAuthor.get();
+              Name n = new Name();
+              n.setCombinationAuthorship(a.getCombinationAuthorship());
+              n.setBasionymAuthorship(a.getBasionymAuthorship());
+              return authComp.compare(n, nu.getName()) == Equality.DIFFERENT;
+            }
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+        return false;
+      });
     }
 
     if (existingWithCl.size() == 1) {

@@ -539,7 +539,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setRank(Rank rank) {
     this.rank = rank == null ? Rank.UNRANKED : rank;
   }
-  
+
+  public void setRankAllowNull(Rank rank) {
+    this.rank = rank;
+  }
+
   public NomCode getCode() {
     return code;
   }

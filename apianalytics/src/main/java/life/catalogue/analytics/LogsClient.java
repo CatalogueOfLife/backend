@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 import static life.catalogue.analytics.EsConstants.*;
 
-public class LogsClient implements Closeable {
+public class LogsClient implements AutoCloseable {
 
   private final RestHighLevelClient highLevelClient;
 
@@ -128,41 +128,35 @@ public class LogsClient implements Closeable {
     BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
     // timestamp range
-    boolQueryBuilder
-      .filter()
-      .add(QueryBuilders.rangeQuery(TIMESTAMP_FIELD).gte(startDatetime).lt(endDatetime));
+    boolQueryBuilder.filter().add(QueryBuilders.rangeQuery(TIMESTAMP_FIELD).gte(startDatetime).lt(endDatetime));
 
     // filters
-    boolQueryBuilder.filter().add(QueryBuilders.termQuery(HOST_FIELD, "prodapicache-vh.gbif.org"));
-    boolQueryBuilder.filter().add(QueryBuilders.wildcardQuery(REQUEST_FIELD, "*api.gbif.org*"));
+    boolQueryBuilder.filter().add(QueryBuilders.termQuery(HOST_FIELD, "colprodcache-vh.catalogueoflife.org"));
+    // CLB or COL API
+    BoolQueryBuilder requestOR = QueryBuilders.boolQuery();
+    requestOR.minimumShouldMatch(1);
+    requestOR.should().add(QueryBuilders.wildcardQuery(REQUEST_FIELD, "*api.checklistbank.org*"));
+    requestOR.should().add(QueryBuilders.wildcardQuery(REQUEST_FIELD, "*api.catalogueoflife.org*"));
+    boolQueryBuilder.filter().add(requestOR);
 
     // must_not
     boolQueryBuilder.mustNot().add(QueryBuilders.wildcardQuery(CLIENT_IP_FIELD, "130.225.43.*"));
-    boolQueryBuilder.mustNot().add(QueryBuilders.wildcardQuery(REQUEST_FIELD, "*robots.txt"));
+    boolQueryBuilder.mustNot().add(QueryBuilders.wildcardQuery(REQUEST_FIELD, "*dataset/*/assembly"));
     boolQueryBuilder.mustNot().add(QueryBuilders.wildcardQuery(REQUEST_FIELD, "*favicon.ico"));
-    boolQueryBuilder
-      .mustNot()
-      .add(QueryBuilders.termQuery(REFERRER_FIELD, "https://www.gbif.org/"));
+    boolQueryBuilder.mustNot().add(QueryBuilders.termQuery(REFERRER_FIELD, "http://www.catalogueoflife.org/"));
     boolQueryBuilder.mustNot().add(QueryBuilders.termsQuery(AGENT_NAME_FIELD, BOTS));
     searchSourceBuilder.query(boolQueryBuilder);
 
     // aggs
-    searchSourceBuilder.aggregation(
-      AggregationBuilders.terms(COUNTRY_AGG).field(COUNTRY_FIELD).size(AGG_SIZE));
-    searchSourceBuilder.aggregation(
-      AggregationBuilders.terms(RESPONSE_AGG).field(RESPONSE_FIELD).size(AGG_SIZE));
+    searchSourceBuilder.aggregation(AggregationBuilders.terms(COUNTRY_AGG).field(COUNTRY_FIELD).size(AGG_SIZE));
+    searchSourceBuilder.aggregation(AggregationBuilders.terms(RESPONSE_AGG).field(RESPONSE_FIELD).size(AGG_SIZE));
 
-    searchSourceBuilder.aggregation(
-      AggregationBuilders.terms(AGENT_AGG)
-                         .script(
-                           new Script(ScriptType.STORED, null, AGENT_AGG_SCRIPT_ID, Collections.emptyMap()))
+    searchSourceBuilder.aggregation(AggregationBuilders.terms(AGENT_AGG)
+                         .script(new Script(ScriptType.STORED, null, AGENT_AGG_SCRIPT_ID, Collections.emptyMap()))
                          .size(AGG_SIZE));
 
-    searchSourceBuilder.aggregation(
-      AggregationBuilders.terms(REQUEST_PATTERN_AGG)
-                         .script(
-                           new Script(
-                             ScriptType.STORED, null, REQUEST_PATTERN_SCRIPT_ID, Collections.emptyMap()))
+    searchSourceBuilder.aggregation(AggregationBuilders.terms(REQUEST_PATTERN_AGG)
+                         .script(new Script(ScriptType.STORED, null, REQUEST_PATTERN_SCRIPT_ID, Collections.emptyMap()))
                          .size(AGG_SIZE));
 
     return esRequest;

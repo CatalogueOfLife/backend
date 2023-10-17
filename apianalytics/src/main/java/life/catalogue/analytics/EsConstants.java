@@ -29,25 +29,26 @@ public class EsConstants {
   // Values
   static final String[] BOTS =
     new String[] {
-      "Slackbot",
-      "Googlebot",
-      "robots.txt",
-      "YandexBot",
-      "PetalBot",
-      "bingbot",
-      "archive.org_bot",
-      "FacebookBot",
-      "Googlebot-Image",
-      "SemrushBot",
-      "Applebot",
-      "MJ12bot",
       "AhrefsBot",
+      "Applebot",
+      "FacebookBot",
+      "Googlebot",
+      "Googlebot-Image",
+      "IABot",
+      "MJ12bot",
+      "PetalBot",
+      "SemrushBot",
+      "Slackbot",
+      "Superfeedr bot",
+      "YandexBot",
+      "archive.org_bot",
+      "bingbot",
       "coccocbot",
-      "Superfeedr bot"
+      "robots.txt",
     };
 
   static final String SCRIPT_LANG = "painless";
-  static final String REQUEST_PATTERN_SCRIPT_ID = "request-pattern-query";
+  static final String REQUEST_PATTERN_SCRIPT_ID = "col-request-pattern-query";
 
   static final String REQUEST_PATTERN_SCRIPT_CODE =
     "if(doc['request.keyword'].size()>0){ "
@@ -97,7 +98,7 @@ public class EsConstants {
     + " }"
     + "}";
 
-  static final String AGENT_AGG_SCRIPT_ID = "agent-agg-query";
+  static final String AGENT_AGG_SCRIPT_ID = "col-agent-agg-query";
 
   static final String AGENT_AGG_SCRIPT_CODE =
     "if(doc['name.keyword'].size()>0 && doc['request_agent.keyword'].size()>0){"
@@ -110,6 +111,8 @@ public class EsConstants {
     + "    'pygbif'"
     + "  } else if(reqAgentLowerCase.contains('python')){"
     + "    'python'"
+    + "  } else if(reqAgentLowerCase.contains('ruby')){"
+    + "    'ruby'"
     + "  } else if(reqAgentLowerCase.contains('qgis')){"
     + "    'qgis'"
     + "  } else if(reqAgentLowerCase.contains('axios')){"
