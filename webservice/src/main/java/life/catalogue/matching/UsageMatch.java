@@ -62,8 +62,8 @@ public class UsageMatch implements DSID<String> {
   /**
    * No match
    */
-  public static UsageMatch empty(List<SimpleNameClassified<SimpleNameCached>> alternatives, int datasetKey) {
-    return new UsageMatch(datasetKey, null, null, MatchType.AMBIGUOUS, false, null, alternatives);
+  public static UsageMatch empty(MatchType type, List<SimpleNameClassified<SimpleNameCached>> alternatives, int datasetKey) {
+    return new UsageMatch(datasetKey, null, null, type, false, null, alternatives);
   }
 
   public static UsageMatch empty(SimpleNameClassified<SimpleNameCached> doubtfulUsage, int datasetKey) {

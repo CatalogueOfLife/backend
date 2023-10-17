@@ -441,10 +441,10 @@ public class UsageMatcherGlobal {
     }
 
     if (existingWithCl.isEmpty()) {
-      return UsageMatch.empty(alt, datasetKey);
+      return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
     } else {
       LOG.debug("{} ambiguous names matched for {} in source {}", existingWithCl.size(), nu.getLabel(), datasetKey);
-      return UsageMatch.empty(alt, datasetKey);
+      return UsageMatch.empty(MatchType.AMBIGUOUS, alt, datasetKey);
     }
   }
 

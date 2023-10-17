@@ -140,6 +140,15 @@ public class UsageMatcherGlobalTest {
     assertEquals("oen2", match.usage.getId());
     assertEquals(MatchType.EXACT, match.type);
 
+    // entirely different author
+    match = match(Rank.GENUS, "Oenanthe", "Döring", null, null);
+    assertFalse(match.isMatch());
+    assertEquals(MatchType.NONE, match.type);
+
+    match = match(null, "Oenanthe", "Döring", null, null);
+    assertFalse(match.isMatch());
+    assertEquals(MatchType.NONE, match.type);
+
     // without author and classification we should get non
     match = match(Rank.GENUS, "Oenanthe", null, null, null);
     assertEquals(MatchType.AMBIGUOUS, match.type);
