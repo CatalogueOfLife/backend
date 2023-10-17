@@ -2,7 +2,10 @@ package life.catalogue.analytics;
 
 import com.google.common.base.Preconditions;
 
+import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.command.AbstractMybatisCmd;
+
+import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 
 import net.sourceforge.argparse4j.inf.Subparser;
 
@@ -50,7 +53,9 @@ public class ApiAnalyticsCmd extends AbstractMybatisCmd {
 
     var exec = Executors.newSingleThreadScheduledExecutor();
     try (var client = new LogsClient(cfg.analytics)) {
-      dao = new ApiAnalyticsDao(client, factory);
+      var cache = new LatestDatasetKeyCacheImpl(factory);
+      var lrFilter = new DatasetKeyRewriteFilter(cache);
+      dao = new ApiAnalyticsDao(client, factory, lrFilter);
       // fill gaps since last start?
       dao.fillTimeGap(range);
       // start scheduled analytics job

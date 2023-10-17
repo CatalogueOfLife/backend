@@ -9,6 +9,7 @@
     <result property="countryAgg" column="country_agg" typeHandler="life.catalogue.db.type2.HstoreCountryCountTypeHandler"/>
     <result property="responseCodeAgg" column="response_code_agg" typeHandler="life.catalogue.db.type2.HstoreIntegerCountTypeHandler"/>
     <result property="agentAgg" column="agent_agg" typeHandler="life.catalogue.db.type2.HstoreStringCountTypeHandler"/>
+    <result property="datasetAgg" column="dataset_agg" typeHandler="life.catalogue.db.type2.HstoreIntegerCountTypeHandler"/>
     <result property="requestPatternAgg" column="request_pattern_agg" typeHandler="life.catalogue.db.type2.HstoreStringCountTypeHandler"/>
     <result property="otherMetrics" column="other_metrics" typeHandler="life.catalogue.db.type2.HstoreStringCountTypeHandler"/>
   </resultMap>
@@ -25,6 +26,7 @@
     response_code_agg,
     agent_agg,
     request_pattern_agg,
+    dataset_agg,
     other_metrics
   </sql>
 
@@ -36,6 +38,7 @@
     #{responseCodeAgg, jdbcType=OTHER,typeHandler=life.catalogue.db.type2.HstoreIntegerCountTypeHandler}::hstore,
     #{agentAgg, jdbcType=OTHER,typeHandler=life.catalogue.db.type2.HstoreStringCountTypeHandler}::hstore,
     #{requestPatternAgg, jdbcType=OTHER,typeHandler=life.catalogue.db.type2.HstoreStringCountTypeHandler}::hstore,
+    #{datasetAgg, jdbcType=OTHER,typeHandler=life.catalogue.db.type2.HstoreIntegerCountTypeHandler}::hstore,
     #{otherMetrics, jdbcType=OTHER,typeHandler=life.catalogue.db.type2.HstoreStringCountTypeHandler}::hstore
   </sql>
 

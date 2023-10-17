@@ -202,6 +202,14 @@ public class LogsClient implements AutoCloseable {
             MultiBucketsAggregation.Bucket::getKeyAsString,
             MultiBucketsAggregation.Bucket::getDocCount)));
 
+    externalRequestsMetrics.setDatasetPatternAgg(
+      ((Terms) aggs.get(REQUEST_PATTERN_AGG))
+        .getBuckets().stream()
+        .collect(
+          Collectors.toMap(
+            MultiBucketsAggregation.Bucket::getKeyAsString,
+            MultiBucketsAggregation.Bucket::getDocCount)));
+
     return externalRequestsMetrics;
   }
 

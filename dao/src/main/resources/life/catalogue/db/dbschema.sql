@@ -1188,6 +1188,7 @@ CREATE TABLE api_analytics(
   response_code_agg HSTORE,
   agent_agg HSTORE,
   request_pattern_agg HSTORE,
+  dataset_agg HSTORE,
   other_metrics HSTORE
 );
 

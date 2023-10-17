@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -19,6 +20,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,30 +95,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     }
 
     // rewrite path params
-    Matcher m = REL_PATH.matcher(req.getUriInfo().getPath());
-    if (m.find()) {
-      Integer rkey = releaseKeyFromMatch(m);
-      builder.replacePath(m.replaceFirst("dataset/" + rkey));
-      if (m.group().endsWith("C")) {
-        req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1)+"LRC");
-      } else {
-        req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1)+"LR");
-      }
-    } else {
-      m = COL_PATH.matcher(req.getUriInfo().getPath());
-      if (m.find()) {
-        Integer rkey = releaseKeyFromYear(m);
-        builder.replacePath(m.replaceFirst("dataset/" + rkey));
-        req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1) + m.group(2));
-      } else {
-        m = GBIF_PATH.matcher(req.getUriInfo().getPath());
-        if (m.find()) {
-          Integer datasetKey = datasetKeyFromGBIF(m.group(1));
-          builder.replacePath(m.replaceFirst("dataset/" + datasetKey));
-          req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group());
-        }
-      }
-    }
+    lookupPath(req.getUriInfo().getPath(), builder, req);
 
     // change request
     URI rewritten = builder.build();
@@ -125,6 +104,47 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
       req.setRequestUri( rewritten );
       req.setProperty(ORIGINAL_URI_PROPERTY, original);
     }
+  }
+
+  public Optional<Integer> lookupPath(String path) {
+    return lookupPath(path, null, null);
+  }
+
+  private Optional<Integer> lookupPath(String path, @Nullable UriBuilder builder, @Nullable ContainerRequestContext req){
+    Integer key = null;
+    Matcher m = REL_PATH.matcher(path);
+    if (m.find()) {
+      key = releaseKeyFromMatch(m);
+      if (builder != null && req != null) {
+        builder.replacePath(m.replaceFirst("dataset/" + key));
+        if (m.group().endsWith("C")) {
+          req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1)+"LRC");
+        } else {
+          req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1)+"LR");
+        }
+      }
+
+    } else {
+      m = COL_PATH.matcher(path);
+      if (m.find()) {
+        key = releaseKeyFromYear(m);
+        if (builder != null && req != null) {
+          builder.replacePath(m.replaceFirst("dataset/" + key));
+          req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1) + m.group(2));
+        }
+
+      } else {
+        m = GBIF_PATH.matcher(path);
+        if (m.find()) {
+          key = datasetKeyFromGBIF(m.group(1));
+          if (builder != null && req != null) {
+            builder.replacePath(m.replaceFirst("dataset/" + key));
+            req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group());
+          }
+        }
+      }
+    }
+    return Optional.ofNullable(key);
   }
 
   private Integer datasetKeyFromGBIF(String uuid) {

@@ -13,6 +13,7 @@ public class ExternalRequestsMetrics {
   private Map<Integer, Long> responseCodeAgg;
   private Map<String, Long> agentAgg;
   private Map<String, Long> requestPatternAgg;
+  private Map<String, Long> datasetPatternAgg;
 
   public long getRequestsCount() {
     return requestsCount;
@@ -54,6 +55,14 @@ public class ExternalRequestsMetrics {
     this.requestPatternAgg = requestPatternAgg;
   }
 
+  public Map<String, Long> getDatasetPatternAgg() {
+    return datasetPatternAgg;
+  }
+
+  public void setDatasetPatternAgg(Map<String, Long> datasetPatternAgg) {
+    this.datasetPatternAgg = datasetPatternAgg;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -63,11 +72,12 @@ public class ExternalRequestsMetrics {
            && Objects.equals(geolocationAgg, that.geolocationAgg)
            && Objects.equals(responseCodeAgg, that.responseCodeAgg)
            && Objects.equals(agentAgg, that.agentAgg)
-           && Objects.equals(requestPatternAgg, that.requestPatternAgg);
+           && Objects.equals(requestPatternAgg, that.requestPatternAgg)
+           && Objects.equals(datasetPatternAgg, that.datasetPatternAgg);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(requestsCount, geolocationAgg, responseCodeAgg, agentAgg, requestPatternAgg);
+    return Objects.hash(requestsCount, geolocationAgg, responseCodeAgg, agentAgg, requestPatternAgg, datasetPatternAgg);
   }
 }

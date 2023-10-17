@@ -2,11 +2,7 @@ package life.catalogue.analytics;
 
 import life.catalogue.api.model.ApiAnalytics;
 import life.catalogue.db.mapper.ApiAnalyticsMapper;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -16,16 +12,23 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ApiAnalyticsDao {
   private static final Logger LOG = LoggerFactory.getLogger(ApiAnalyticsDao.class);
   private static final String GBIF_PORTAL_REQUESTS_COUNT = "gbifPortalRequestsCount";
 
   private final LogsClient logsClient;
   private final SqlSessionFactory factory;
+  private final DatasetKeyRewriteFilter datasetKeyRewriteFilter;
 
-  public ApiAnalyticsDao(LogsClient logsClient, SqlSessionFactory factory) {
+  public ApiAnalyticsDao(LogsClient logsClient, SqlSessionFactory factory, DatasetKeyRewriteFilter datasetKeyRewriteFilter) {
     this.logsClient = logsClient;
     this.factory = factory;
+    this.datasetKeyRewriteFilter = datasetKeyRewriteFilter;
   }
 
   /**
@@ -145,6 +148,21 @@ public class ApiAnalyticsDao {
     analytics.setAgentAgg(toInt(externalRequestsMetrics.getAgentAgg()));
     analytics.setCountryAgg(toInt(externalRequestsMetrics.getGeolocationAgg()));
     analytics.setResponseCodeAgg(toInt(externalRequestsMetrics.getResponseCodeAgg()));
+    // extract & lookup dataset keys
+    final var dsAgg = new HashMap<Integer, Integer>();
+    analytics.setDatasetAgg(dsAgg);
+    for (var entry : externalRequestsMetrics.getDatasetPatternAgg().entrySet()) {
+      Integer key;
+      try {
+        key = Integer.parseInt(entry.getKey());
+      } catch (NumberFormatException e) {
+        // try magic keys
+        key = datasetKeyRewriteFilter.lookupPath(entry.getKey()).orElse(null);
+      }
+      if (key != null) {
+        dsAgg.put(key, entry.getValue().intValue());
+      }
+    }
     analytics.setOtherMetrics(toInt(Collections.singletonMap(GBIF_PORTAL_REQUESTS_COUNT, gbifPortalRequestsCount)));
     return analytics;
   }

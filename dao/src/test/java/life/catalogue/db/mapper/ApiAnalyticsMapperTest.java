@@ -24,6 +24,7 @@ public class ApiAnalyticsMapperTest extends CRUDTestBase<Long, ApiAnalytics, Api
     a.setCountryAgg(Map.of(Country.GERMANY, 10, Country.DENMARK, 12, Country.ISRAEL, 4110));
     a.setResponseCodeAgg(Map.of(200, 345678, 201, 3456, 404, 3456789, 500, 13));
     a.setRequestPatternAgg(Map.of("pat1", 100, "pattern2", 345));
+    a.setDatasetAgg(Map.of(3, 56789, 1010, 456789));
     a.setOtherMetrics(Map.of("safari", 100, "chrome", 345));
     return a;
   }

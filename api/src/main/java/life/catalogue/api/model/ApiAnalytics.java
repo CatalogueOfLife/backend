@@ -16,6 +16,7 @@ public class ApiAnalytics implements Entity<Long> {
   private Map<Integer, Integer> responseCodeAgg;
   private Map<String, Integer> agentAgg;
   private Map<String, Integer> requestPatternAgg;
+  private Map<Integer, Integer> datasetAgg;
   private Map<String, Integer> otherMetrics;
 
   @Override
@@ -84,6 +85,14 @@ public class ApiAnalytics implements Entity<Long> {
     this.requestPatternAgg = requestPatternAgg;
   }
 
+  public Map<Integer, Integer> getDatasetAgg() {
+    return datasetAgg;
+  }
+
+  public void setDatasetAgg(Map<Integer, Integer> datasetAgg) {
+    this.datasetAgg = datasetAgg;
+  }
+
   public Map<String, Integer> getOtherMetrics() {
     return otherMetrics;
   }
@@ -105,11 +114,12 @@ public class ApiAnalytics implements Entity<Long> {
            && Objects.equals(responseCodeAgg, that.responseCodeAgg)
            && Objects.equals(agentAgg, that.agentAgg)
            && Objects.equals(requestPatternAgg, that.requestPatternAgg)
+           && Objects.equals(datasetAgg, that.datasetAgg)
            && Objects.equals(otherMetrics, that.otherMetrics);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, from, to, requestCount, countryAgg, responseCodeAgg, agentAgg, requestPatternAgg, otherMetrics);
+    return Objects.hash(key, from, to, requestCount, countryAgg, responseCodeAgg, agentAgg, requestPatternAgg, datasetAgg, otherMetrics);
   }
 }
