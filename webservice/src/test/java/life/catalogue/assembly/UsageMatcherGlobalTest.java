@@ -149,6 +149,15 @@ public class UsageMatcherGlobalTest {
     assertFalse(match.isMatch());
     assertEquals(MatchType.NONE, match.type);
 
+    match = match(Rank.GENUS, "Oenanthe", "1918", null, null);
+    assertFalse(match.isMatch());
+    assertEquals(MatchType.NONE, match.type);
+
+    //TODO: this doesn't work - it matches to the plant as thats the only name without a year and could potentially match
+    match = match(null, "Oenanthe", "1918", null, null);
+    //assertFalse(match.isMatch());
+    //assertEquals(MatchType.NONE, match.type);
+
     // without author and classification we should get non
     match = match(Rank.GENUS, "Oenanthe", null, null, null);
     assertEquals(MatchType.AMBIGUOUS, match.type);
