@@ -161,6 +161,34 @@ public class InterpreterBaseTest {
   }
 
   @Test
+  public void interpretAtomUsage() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+
+    Name n = new Name();
+    n.setGenus("[Abies]");
+    n.setSpecificEpithet("alba");
+    n.setAuthorship("Miller 1876");
+    n.setCombinationAuthorship(Authorship.yearAuthors("1876", "Miller"));
+    n.rebuildScientificName();
+
+    ParsedNameUsage pnu = new ParsedNameUsage(n);
+    NeoUsage u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
+
+    assertTrue(u.usage.isTaxon());
+    assertEquals(TaxonomicStatus.PROVISIONALLY_ACCEPTED, u.usage.getStatus());
+    Taxon t = u.asTaxon();
+
+    assertFalse(t.isExtinct());
+    assertNull(t.getNamePhrase());
+
+    n = t.getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Abies", n.getGenus());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertEquals("Miller 1876", n.getAuthorship());
+  }
+
+  @Test
   public void yearParser() throws Exception {
     assertEquals((Integer) 1678, InterpreterBase.parseNomenYear("1678", issues));
     assertFalse(issues.hasIssues());

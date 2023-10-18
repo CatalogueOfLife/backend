@@ -427,8 +427,12 @@ public class InterpreterBase {
       }
     } else {
       u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
+      var t = (Taxon) u.usage;
       if (pnu.isExtinct()) {
-        ((Taxon) u.usage).setExtinct(true);
+        t.setExtinct(true);
+      }
+      if (pnu.isDoubtful()) {
+        t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
       }
     }
 

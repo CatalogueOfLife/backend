@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 
 import org.gbif.nameparser.api.Authorship;
@@ -308,7 +309,39 @@ public class NameInterpreterTest {
     assertEquals("Cambarus", n.getGenus());
     assertEquals("uhleri", n.getSpecificEpithet());
     assertEquals(Rank.SPECIES, n.getRank());
+    assertNull(n.isOriginalSpelling());
     assertNull(n.getNotho());
-  }
+
+    // [sic] and corrig.
+    v.clear();
+    pnu = ib.interpret("x", null, "[Cambarus] uhleri", "Faxon, 1884", null,
+      null, null, null, null, null, null,
+      null, null, null, null, null, v
+    );
+    n = pnu.get().getName();
+    assertEquals("Cambarus uhleri", n.getScientificName());
+    assertEquals("Faxon, 1884", n.getAuthorship());
+    assertNull(n.getUninomial());
+    assertEquals("Cambarus", n.getGenus());
+    assertEquals("uhleri", n.getSpecificEpithet());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertTrue(v.hasIssue(Issue.DOUBTFUL_NAME));
+    assertNull(n.getNotho());
+
+    // atomised
+    v.clear();
+    pnu = ib.interpret("x", null, "[Cambarus] uhleri", "Faxon, 1884", null,
+      null, "[Cambarus]", null, "uhleri", null, null,
+      "ICZN", null, null, null, null, v
+    );
+    n = pnu.get().getName();
+    assertEquals("Cambarus uhleri", n.getScientificName());
+    assertEquals("Faxon, 1884", n.getAuthorship());
+    assertNull(n.getUninomial());
+    assertEquals("Cambarus", n.getGenus());
+    assertEquals("uhleri", n.getSpecificEpithet());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertTrue(v.hasIssue(Issue.DOUBTFUL_NAME));
+    assertNull(n.getNotho());  }
 
 }

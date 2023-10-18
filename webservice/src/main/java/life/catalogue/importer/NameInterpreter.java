@@ -186,22 +186,28 @@ public class NameInterpreter {
         // parse the reconstructed name without authorship to detect name type and potential problems
         Optional<ParsedNameUsage> pnuFromAtom = NameParser.PARSER.parse(atom.getLabel(), rank, code, issues);
         if (pnuFromAtom.isPresent()) {
-          final Name pn = pnuFromAtom.get().getName();
+          final var atomPNU = pnuFromAtom.get();
+          final Name atomN = atomPNU.getName();
 
           // check name type if its parsable - otherwise we should not use name atoms
-          if (!pn.getType().isParsable()) {
-            LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.getLabel(), pn.getType());
-            pnu.setName(pn);
-          } else if (pn.isParsed()) {
+          if (!atomN.getType().isParsable()) {
+            LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.getLabel(), atomN.getType());
+            pnu.setName(atomN);
+          } else if (atomN.isParsed()) {
+            if (atomPNU.isDoubtful()) { // we might found brackets in the parsed genus
+              pnu.setDoubtful(true);
+              atom.setGenus(atomN.getGenus());
+              atom.rebuildScientificName();
+            }
             // if parsed compare with original atoms
             if (
-                !Objects.equals(atom.getUninomial(), pn.getUninomial()) ||
-                    !Objects.equals(atom.getGenus(), pn.getGenus()) ||
-                    !Objects.equals(atom.getInfragenericEpithet(), pn.getInfragenericEpithet()) ||
-                    !Objects.equals(atom.getSpecificEpithet(), pn.getSpecificEpithet()) ||
-                    !Objects.equals(atom.getInfraspecificEpithet(), pn.getInfraspecificEpithet())
+                !Objects.equals(atom.getUninomial(), atomN.getUninomial()) ||
+                    !Objects.equals(atom.getGenus(), atomN.getGenus()) ||
+                    !Objects.equals(atom.getInfragenericEpithet(), atomN.getInfragenericEpithet()) ||
+                    !Objects.equals(atom.getSpecificEpithet(), atomN.getSpecificEpithet()) ||
+                    !Objects.equals(atom.getInfraspecificEpithet(), atomN.getInfraspecificEpithet())
             ) {
-              LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", pn.getLabel(), atom.getLabel());
+              LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", atomN.getLabel(), atom.getLabel());
               issues.addIssue(Issue.PARSED_NAME_DIFFERS);
             }
           }

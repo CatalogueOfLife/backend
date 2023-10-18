@@ -58,6 +58,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       .put(Warnings.QUESTION_MARKS_REMOVED, Issue.QUESTION_MARKS_REMOVED)
       .put(Warnings.REPL_ENCLOSING_QUOTE, Issue.REPL_ENCLOSING_QUOTE)
       .put(Warnings.MISSING_GENUS, Issue.MISSING_GENUS)
+      .put(Warnings.DOUBTFUL_GENUS, Issue.DOUBTFUL_NAME)
       .put(Warnings.HTML_ENTITIES, Issue.ESCAPED_CHARACTERS)
       .put(Warnings.XML_TAGS, Issue.ESCAPED_CHARACTERS)
       .put(Warnings.BLACKLISTED_EPITHET, Issue.BLACKLISTED_EPITHET)
@@ -284,6 +285,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     }
 
     if (pn.isDoubtful()) {
+      pnu.setDoubtful(true);
       issues.addIssue(Issue.DOUBTFUL_NAME);
     }
     // translate warnings into issues

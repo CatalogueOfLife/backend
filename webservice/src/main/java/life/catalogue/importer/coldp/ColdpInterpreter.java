@@ -14,6 +14,8 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.parser.*;
 
+import org.apache.poi.ss.formula.functions.T;
+
 import org.gbif.dwc.terms.Term;
 
 import java.util.Collections;
@@ -152,6 +154,9 @@ public class ColdpInterpreter extends InterpreterBase {
       setReferences(v, ColdpTerm.referenceID, COMMA_SPLITTER, nub::setReferenceIds);
       nub.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
       nub.setIdentifier(interpretIdentifiers(v.getRaw(ColdpTerm.alternativeID), null, v));
+    }
+    if (n.pnu.isDoubtful() && u.usage.isTaxon()) {
+      u.usage.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     }
 
     u.usage.setName(n.getName());

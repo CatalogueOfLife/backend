@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 public class ParsedNameUsage {
   private Name name;
   private boolean extinct;
+  private boolean doubtful;
   private String taxonomicNote;
   private String publishedIn;
 
@@ -43,6 +44,14 @@ public class ParsedNameUsage {
     this.extinct = extinct;
   }
 
+  public boolean isDoubtful() {
+    return doubtful;
+  }
+
+  public void setDoubtful(boolean doubtful) {
+    this.doubtful = doubtful;
+  }
+
   public String getTaxonomicNote() {
     return taxonomicNote;
   }
@@ -70,14 +79,15 @@ public class ParsedNameUsage {
     if (this == o) return true;
     if (!(o instanceof ParsedNameUsage)) return false;
     ParsedNameUsage that = (ParsedNameUsage) o;
-    return extinct == that.extinct &&
-      Objects.equals(name, that.name) &&
-      Objects.equals(taxonomicNote, that.taxonomicNote) &&
-      Objects.equals(publishedIn, that.publishedIn);
+    return extinct == that.extinct
+           && doubtful == that.doubtful
+           && Objects.equals(name, that.name)
+           && Objects.equals(taxonomicNote, that.taxonomicNote)
+           && Objects.equals(publishedIn, that.publishedIn);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, extinct, taxonomicNote, publishedIn);
+    return Objects.hash(name, extinct, doubtful, taxonomicNote, publishedIn);
   }
 }
