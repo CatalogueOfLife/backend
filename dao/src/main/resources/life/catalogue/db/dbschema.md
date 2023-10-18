@@ -14,6 +14,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+original_spelling BOOLEAN,
+### 2023-10-18 add original spelling flag
+```sql
+ALTER TABLE name ADD COLUMN original_spelling BOOLEAN;
+ALTER TABLE name_usage_archive ADD COLUMN n_original_spelling BOOLEAN;
+```
+
 ### 2023-10-13 add api analytics table
 ```sql
 CREATE TABLE api_analytics(

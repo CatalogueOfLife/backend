@@ -129,7 +129,17 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * Current nomenclatural status of the name taking into account all known nomenclatural acts.
    */
   private NomStatus nomStatus;
-  
+
+  /**
+   * If true indicates that the name is given it the original spelling when an emendation exists.
+   * This is usually indicated by placing [sic] after the name.
+   *
+   * If false instead it indicates that the name is a corrected spelling, usually indicated by placing corrig. after the name.
+   *
+   * If null it is unknown or the original spelling was never revised.
+   */
+  private Boolean originalSpelling;
+
   /**
    * The reference the name was originally published in.
    */
@@ -212,6 +222,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.sanctioningAuthor = n.sanctioningAuthor;
     this.code = n.code;
     this.nomStatus = n.nomStatus;
+    this.originalSpelling = n.originalSpelling;
     this.publishedInId = n.publishedInId;
     this.publishedInPage = n.publishedInPage;
     this.publishedInYear = n.publishedInYear;
@@ -255,6 +266,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setSanctioningAuthor(builder.sanctioningAuthor);
     setCode(builder.code);
     setNomStatus(builder.nomStatus);
+    setOriginalSpelling(builder.originalSpelling);
     setPublishedInId(builder.publishedInId);
     setPublishedInPage(builder.publishedInPage);
     publishedInPageLink = builder.publishedInPageLink;
@@ -323,6 +335,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.sanctioningAuthor = copy.getSanctioningAuthor();
     builder.code = copy.getCode();
     builder.nomStatus = copy.getNomStatus();
+    builder.originalSpelling = copy.isOriginalSpelling();
     builder.publishedInId = copy.getPublishedInId();
     builder.publishedInPage = copy.getPublishedInPage();
     builder.publishedInPageLink = copy.getPublishedInPageLink();
@@ -496,7 +509,15 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setNomStatus(NomStatus nomStatus) {
     this.nomStatus = nomStatus;
   }
-  
+
+  public Boolean isOriginalSpelling() {
+    return originalSpelling;
+  }
+
+  public void setOriginalSpelling(Boolean originalSpelling) {
+    this.originalSpelling = originalSpelling;
+  }
+
   public URI getLink() {
     return link;
   }
@@ -730,6 +751,13 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     if (name != null) {
       sb.append(name);
     }
+    if (originalSpelling != null) {
+      if (Boolean.TRUE.equals(originalSpelling)) {
+        sb.append(" [sic]");
+      } else if (Boolean.FALSE.equals(originalSpelling)) {
+        sb.append(" corrig.");
+      }
+    }
     if (preAuthorship != null) {
       sb.append(" ");
       sb.append(preAuthorship);
@@ -768,6 +796,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
            && Objects.equals(sanctioningAuthor, name.sanctioningAuthor)
            && code == name.code
            && nomStatus == name.nomStatus
+           && Objects.equals(originalSpelling, name.originalSpelling)
            && Objects.equals(publishedInId, name.publishedInId)
            && Objects.equals(publishedInPage, name.publishedInPage)
            && Objects.equals(publishedInPageLink, name.publishedInPageLink)
@@ -782,7 +811,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, remarks);
   }
 
   @Override
@@ -859,6 +888,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private String sanctioningAuthor;
     private NomCode code;
     private NomStatus nomStatus;
+    private Boolean originalSpelling;
     private String publishedInId;
     private String publishedInPage;
     private String publishedInPageLink;
@@ -1001,6 +1031,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder nomStatus(NomStatus val) {
       nomStatus = val;
+      return this;
+    }
+
+    public Builder originalSpelling(Boolean val) {
+      originalSpelling = val;
       return this;
     }
 

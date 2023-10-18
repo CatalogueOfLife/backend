@@ -50,6 +50,28 @@ public class NameParserTest {
   }
 
   @Test
+  public void sic() throws Exception {
+    Name n = new Name();
+    n.setScientificName("Boyeria vinosa [sic] (Say, 1840)");
+    n.setRank(Rank.SPECIES);
+    n.setId("957");
+    assertNull(n.isOriginalSpelling());
+
+    IssueContainer issues = new IssueContainer.Simple();
+    NameParser.PARSER.parse(n, issues);
+    assertFalse(issues.hasIssues());
+    assertTrue(n.isOriginalSpelling());
+
+    n = new Name();
+    n.setScientificName("Boyeria vinosa corrig. (Say, 1840)");
+    n.setRank(Rank.SPECIES);
+    n.setId("957");
+    NameParser.PARSER.parse(n, issues);
+    assertFalse(issues.hasIssues());
+    assertFalse(n.isOriginalSpelling());
+  }
+
+  @Test
   public void inconsistentAuthorship() throws Exception {
     Name n = new Name();
     n.setScientificName("Boyeria vinosa (Say, 1840)");

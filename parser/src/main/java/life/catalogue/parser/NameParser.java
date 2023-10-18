@@ -404,6 +404,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     n.setCode(pn.getCode());
     n.setCandidatus(pn.isCandidatus());
     n.setNotho(pn.getNotho());
+    n.setOriginalSpelling(pn.isOriginalSpelling());
     n.setType(pn.getType());
 
     if (pn.isIncomplete()) {

@@ -88,6 +88,7 @@ public class NameTest extends SerdeTestBase<Name> {
   @Test
   public void copy() throws Exception {
     Name n1 = TestEntityGenerator.newName();
+    n1.setOriginalSpelling(true);
     Name n2 = new Name(n1);
     assertEquals(n1, n2);
   }
@@ -221,6 +222,14 @@ public class NameTest extends SerdeTestBase<Name> {
     var jsonU = ApiModule.MAPPER.writeValueAsString(u);
     System.out.println(jsonU);
     assertEquals(2, StringUtils.countMatches(jsonU, "\"label"));
+
+    n.setOriginalSpelling(true);
+    assertEquals("Hieracium brevifolium subsp. malyi-caroli [sic] (Gus. Schneid.) Zahn", n.getLabel());
+    assertEquals("<i>Hieracium brevifolium</i> subsp. <i>malyi-caroli</i> [sic] (Gus. Schneid.) Zahn", n.getLabelHtml());
+
+    n.setOriginalSpelling(false);
+    assertEquals("Hieracium brevifolium subsp. malyi-caroli corrig. (Gus. Schneid.) Zahn", n.getLabel());
+    assertEquals("<i>Hieracium brevifolium</i> subsp. <i>malyi-caroli</i> corrig. (Gus. Schneid.) Zahn", n.getLabelHtml());
   }
 
   @Test

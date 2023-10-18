@@ -39,6 +39,7 @@
     ${alias}.published_in_page AS ${prefix}published_in_page,
     ${alias}.published_in_page_link AS ${prefix}published_in_page_link,
     ${alias}.nom_status AS ${prefix}nom_status,
+    ${alias}.original_spelling AS ${prefix}original_spelling,
     ${alias}.origin AS ${prefix}origin,
     ${alias}.type AS ${prefix}type,
     ${alias}.link AS ${prefix}link,
@@ -108,6 +109,7 @@
 
     ${alias}code,
     ${alias}nom_status,
+    ${alias}original_spelling,
     ${alias}origin,
     ${alias}type,
     ${alias}link,
@@ -149,6 +151,7 @@
     #{publishedInPageLink},
     #{code}::NOMCODE,
     #{nomStatus}::NOMSTATUS,
+    #{originalSpelling},
     #{origin}::ORIGIN,
     #{type}::NAMETYPE,
     #{link},

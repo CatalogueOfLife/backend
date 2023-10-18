@@ -34,11 +34,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   public void initMappers() {
     nameMapper = testDataRule.getMapper(NameMapper.class);
   }
-  
-  static Name create(final String id, final Name basionym) throws Exception {
-    Name n = TestEntityGenerator.newName(id);
-    return n;
-  }
 
   @Test
   public void copyDataset() throws Exception {

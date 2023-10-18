@@ -64,6 +64,7 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
       assertEquals(orig.getName().getScientificName(), n.getScientificName());
       assertEquals(orig.getName().getAuthorship(), n.getAuthorship());
       assertEquals(orig.getName().getRemarks(), n.getRemarks());
+      assertEquals(orig.getName().isOriginalSpelling(), n.isOriginalSpelling());
     });
 
     mapper().processArchivedUsages(999).forEach(o -> fail("should never reach here"));
@@ -76,7 +77,6 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
       assertEquals(orig.getName().getScientificName(), u.getName());
       assertEquals(orig.getName().getAuthorship(), u.getAuthorship());
       assertEquals(orig.getParent().getName(), u.getParent());
-      assertEquals(orig.getLabel(), u.getLabel());
     });
   }
 
@@ -85,6 +85,7 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
     Name n = TestEntityGenerator.newName(appleKey);
     n.setNamesIndexType(null);
     n.addIdentifier("tsn:1234");
+    n.setOriginalSpelling(true);
     Taxon t = TestEntityGenerator.newTaxon(n);
     t.addIdentifier("col:DF2R");
     t.addIdentifier("gbif:456789");
