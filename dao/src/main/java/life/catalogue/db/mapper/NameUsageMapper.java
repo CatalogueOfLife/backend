@@ -199,7 +199,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param parentId the new parentId to assign
    */
   void updateParentId(@Param("key") DSID<String> key,
-                      @Param("parentId") String parentId,
+                      @Param("parentId") @Nullable String parentId,
                       @Param("userKey") int userKey);
 
   /**

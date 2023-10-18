@@ -103,4 +103,8 @@ public class TreeMergeHandlerConfig {
     return blockedNames.contains(n.getLabel().trim().toUpperCase())
            || blockedNames.contains(n.getScientificName().trim().toUpperCase());
   }
+
+  public boolean hasIncertae() {
+    return incertae != null;
+  }
 }

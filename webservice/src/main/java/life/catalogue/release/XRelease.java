@@ -269,11 +269,16 @@ public class XRelease extends ProjectRelease {
       var missing = num.listMissingParentIds(datasetKey);
       if (missing != null && !missing.isEmpty()) {
         LOG.error("{} usages found with a non existing parentID", missing.size());
-        final String incSedis = mergeCfg.incertae.getId();
+        final String parent;
+        if (mergeCfg.hasIncertae()) {
+          parent = mergeCfg.incertae.getId();
+        } else {
+          parent = null;
+        }
         final DSID<String> key = DSID.root(datasetKey);
         for (String id : missing) {
           vsm.addIssue(key.id(id), Issue.PARENT_ID_INVALID);
-          num.updateParentId(key, incSedis, user);
+          num.updateParentId(key, parent, user);
         }
         LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),datasetKey);
       }
