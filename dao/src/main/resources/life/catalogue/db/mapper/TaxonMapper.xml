@@ -7,6 +7,7 @@
 
   <sql id="taxonCols">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.usageCols"/>,
+    ${alias}.ordinal AS ${prefix}ordinal,
     ${alias}.scrutinizer AS ${prefix}scrutinizer,
     ${alias}.scrutinizer_date AS ${prefix}scrutinizer_date,
     ${alias}.extinct AS ${prefix}extinct,
@@ -32,6 +33,7 @@
 
   <sql id="COLS">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.COLS"/>,
+    ordinal,
     scrutinizer,
     scrutinizer_date,
     extinct,
@@ -43,6 +45,7 @@
 
   <sql id="PROPS">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.PROPS"/>,
+    #{ordinal},
     #{scrutinizer},
     #{scrutinizerDate},
     #{extinct},

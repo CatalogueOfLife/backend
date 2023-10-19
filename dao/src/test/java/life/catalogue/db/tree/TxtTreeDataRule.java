@@ -36,6 +36,7 @@ import com.google.common.base.Preconditions;
 public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TxtTreeDataRule.class);
 
+  final private boolean keepOrder;
   final private List<TreeDataset> datasets;
   final private Set<Integer> sectors = new HashSet<>();
   private SqlSession session;
@@ -48,7 +49,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   private AtomicInteger refID = new AtomicInteger(0);
 
   public enum TreeData {
-    ANIMALIA, MAMMALIA, TRILOBITA;
+    ANIMALIA, MAMMALIA, TRILOBITA, AVES;
 
     public String resource() {
       return "trees/" + name().toLowerCase()+".tree";
@@ -60,8 +61,16 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   }
 
   public TxtTreeDataRule(List<TreeDataset> treeData) {
+    this(treeData, false);
+  }
+
+  /**
+   * @param keepOrder if true stores the original txtree child order as the usages ordinal property
+   */
+  public TxtTreeDataRule(List<TreeDataset> treeData, boolean keepOrder) {
     this.datasets = treeData;
     sqlSessionFactorySupplier = SqlSessionFactoryRule::getSqlSessionFactory;
+    this.keepOrder = keepOrder;
   }
 
   public static class TreeDataset {
@@ -93,11 +102,15 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   }
 
   public static TxtTreeDataRule create(Map<Integer, TreeData> treeData) {
+    return create(treeData, false);
+  }
+
+  public static TxtTreeDataRule create(Map<Integer, TreeData> treeData, boolean keepOrder) {
     var data = new ArrayList<TreeDataset>();
     for (Map.Entry<Integer, TreeData> x : treeData.entrySet()) {
       data.add(new TreeDataset(x.getKey(), x.getValue().resource(), x.getValue().name()));
     }
-    return new TxtTreeDataRule(data);
+    return new TxtTreeDataRule(data, keepOrder);
   }
 
   @Override
@@ -136,22 +149,24 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     var stream = Resources.getResourceAsStream(src.resource);
     Tree<SimpleTreeNode> tree = Tree.simple(stream);
     LOG.debug("Inserting {} usages for dataset {}", tree.size(), src.key);
+    int ordinal = 1;
     for (SimpleTreeNode n : tree.getRoot()) {
-      insertSubtree(src, null, n);
+      insertSubtree(src, null, n, ordinal++);
     }
   }
 
-  private void insertSubtree(TreeDataset src, SimpleTreeNode parent, SimpleTreeNode t) throws InterruptedException {
-    insertNode(src, parent, t, false);
+  private void insertSubtree(TreeDataset src, SimpleTreeNode parent, SimpleTreeNode t, int ordinal) throws InterruptedException {
+    insertNode(src, parent, t, false, ordinal);
     for (SimpleTreeNode syn : t.synonyms) {
-      insertNode(src, t, syn, true);
+      insertNode(src, t, syn, true, null);
     }
+    int childOrdinal = 1;
     for (SimpleTreeNode c : t.children) {
-      insertSubtree(src, t, c);
+      insertSubtree(src, t, c, childOrdinal++);
     }
   }
 
-  private void insertNode(TreeDataset src, SimpleTreeNode parent, SimpleTreeNode tn, boolean synonym) throws InterruptedException {
+  private void insertNode(TreeDataset src, SimpleTreeNode parent, SimpleTreeNode tn, boolean synonym, Integer ordinal) throws InterruptedException {
     ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, VerbatimRecord.VOID).get();
     Name n = nat.getName();
     n.setDatasetKey(src.key);
@@ -180,6 +195,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       sm.create(s);
     } else {
       Taxon t = new Taxon();
+      if (keepOrder) {
+        t.setOrdinal(ordinal);
+      }
       var status = TaxonomicStatus.ACCEPTED;
       if (tn.infos.containsKey(TxtTreeDataKey.PROV.name())) {
         status = TaxonomicStatus.PROVISIONALLY_ACCEPTED;

@@ -96,7 +96,7 @@
     WHERE t.dataset_key=#{key.datasetKey}
       AND <include refid="equalsParent"/>
       AND NOT is_synonym(t.status) <include refid="EXTINCT"/>
-    ORDER BY n.rank, n.scientific_name
+    ORDER BY t.ordinal, n.rank, n.scientific_name
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 

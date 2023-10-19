@@ -433,6 +433,9 @@ public enum Issue {
 
   INFRAGENERIC_FIELD_MISPLACED(NAME, Level.INFO,
     "The name of an infrageneric name is misplaced in the wrong field, e.g. uninomial."),
+
+  ORDINAL_INVALID(NAME_USAGE, Level.WARNING,
+    "The ordinal to sort taxon children is not a valid integer number."),
   ;
 
   /**

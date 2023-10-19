@@ -10,6 +10,18 @@ import static org.junit.Assert.*;
 public class CollectionUtilsTest {
 
   @Test
+  public void range() {
+    var r = CollectionUtils.range(1,2, 1);
+    assertEquals(List.of(1,2), r);
+
+    r = CollectionUtils.range(1,4, 2);
+    assertEquals(List.of(1,3), r);
+
+    r = CollectionUtils.range(1,5, 2);
+    assertEquals(List.of(1,3,5), r);
+  }
+
+  @Test
   public void testEquals() {
     List<String> o1 = new ArrayList<>();
     String[] o2 = new String[5];

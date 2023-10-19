@@ -94,6 +94,7 @@ public class ColdpInterpreter extends InterpreterBase {
   private void interpretTaxonInfos(NeoUsage u, NeoName n, VerbatimRecord v){
     if (!u.isSynonym()) {
       Taxon t = u.asTaxon();
+      t.setOrdinal(v.getInt(ColdpTerm.ordinal, Issue.ORDINAL_INVALID));
       t.setScrutinizer(v.get(ColdpTerm.scrutinizer));
       t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, ColdpTerm.scrutinizerDate));
       if (v.hasTerm(ColdpTerm.extinct)) {

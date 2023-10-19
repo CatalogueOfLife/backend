@@ -206,6 +206,18 @@ public class CollectionUtils {
     return result;
   }
 
+  public static List<Integer> range(int first, int last) {
+    return range(first, last, 1);
+  }
+
+  public static List<Integer> range(int first, int last, int step) {
+    var range = new ArrayList<Integer>();
+    for (int i = first; i <= last; i=i+step) {
+      range.add(i);
+    }
+    return range;
+  }
+
   private CollectionUtils() {
   }
 

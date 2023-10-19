@@ -16,6 +16,7 @@ import com.google.common.base.Preconditions;
  *
  */
 public class Taxon extends NameUsageBase {
+  private Integer ordinal;
   private String scrutinizer;
   private FuzzyDate scrutinizerDate;
   private Boolean extinct;
@@ -36,6 +37,7 @@ public class Taxon extends NameUsageBase {
 
   public Taxon(Taxon other) {
     super(other);
+    this.ordinal = other.ordinal;
     this.scrutinizer = other.scrutinizer;
     this.scrutinizerDate = other.scrutinizerDate;
     this.extinct = other.extinct;
@@ -65,7 +67,15 @@ public class Taxon extends NameUsageBase {
     }
     super.setStatus(status);
   }
-  
+
+  public Integer getOrdinal() {
+    return ordinal;
+  }
+
+  public void setOrdinal(Integer ordinal) {
+    this.ordinal = ordinal;
+  }
+
   @JsonIgnore
   public boolean isProvisional() {
     return getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
@@ -126,23 +136,24 @@ public class Taxon extends NameUsageBase {
   public void setEnvironments(Set<Environment> environments) {
     this.environments = environments == null ? EnumSet.noneOf(Environment.class) : EnumSet.copyOf(environments);
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof Taxon)) return false;
     if (!super.equals(o)) return false;
     Taxon taxon = (Taxon) o;
-    return Objects.equals(scrutinizerDate, taxon.scrutinizerDate) &&
-        Objects.equals(scrutinizer, taxon.scrutinizer) &&
-        Objects.equals(extinct, taxon.extinct) &&
-        Objects.equals(temporalRangeStart, taxon.temporalRangeStart) &&
-        Objects.equals(temporalRangeEnd, taxon.temporalRangeEnd) &&
-        Objects.equals(environments, taxon.environments);
+    return Objects.equals(ordinal, taxon.ordinal)
+           && Objects.equals(scrutinizer, taxon.scrutinizer)
+           && Objects.equals(scrutinizerDate, taxon.scrutinizerDate)
+           && Objects.equals(extinct, taxon.extinct)
+           && Objects.equals(temporalRangeStart, taxon.temporalRangeStart)
+           && Objects.equals(temporalRangeEnd, taxon.temporalRangeEnd)
+           && Objects.equals(environments, taxon.environments);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), scrutinizer, scrutinizerDate, extinct, temporalRangeStart, temporalRangeEnd, environments);
+    return Objects.hash(super.hashCode(), ordinal, scrutinizer, scrutinizerDate, extinct, temporalRangeStart, temporalRangeEnd, environments);
   }
 }
