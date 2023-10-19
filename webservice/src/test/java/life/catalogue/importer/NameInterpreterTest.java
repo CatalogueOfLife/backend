@@ -4,11 +4,16 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 
+import life.catalogue.coldp.ColdpTerm;
+
+import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Before;
@@ -28,8 +33,8 @@ public class NameInterpreterTest {
     ib = new NameInterpreter(new DatasetSettings(), true);
   }
 
-  void assertOenantheL(Optional<ParsedNameUsage> pnu) {
-    var n = pnu.get().getName();
+  void assertOenantheL(ParsedNameUsage pnu) {
+    var n = pnu.getName();
     assertEquals("Oenanthe", n.getScientificName());
     assertEquals("L.", n.getAuthorship());
     assertEquals(Rank.UNRANKED, n.getRank());
@@ -40,40 +45,132 @@ public class NameInterpreterTest {
     assertNull(n.getInfraspecificEpithet());
   }
 
+  ParsedNameUsage interpret(String rank, String sciname, String authorship, VerbatimRecord v){
+    return ib.interpret("1", rank, null,
+      sciname, authorship,null,
+      null, null, null, null, null, null,
+      null,null,null,null,null,null,
+      null, null, null, null,
+      null, null, null, v
+      ).get();
+  }
+
+  ParsedNameUsage interpret(String rank, String sciname, String authorship,
+                            String link, String remarks, String identifiers, VerbatimRecord v){
+    v.setTerms(vmap(
+      ColdpTerm.link, link,
+      ColdpTerm.remarks, remarks,
+      ColdpTerm.alternativeID, identifiers
+    ));
+    return ib.interpret("1", rank, null,
+      sciname, authorship,null,
+      null, null, null, null, null, null,
+      null,null,null,null,null,null,
+      null, null, null, null,
+      ColdpTerm.link, ColdpTerm.remarks, ColdpTerm.alternativeID, v
+    ).get();
+  }
+
+  ParsedNameUsage interpret(String rank, String sciname, String authorship, String publishedInYear,
+                            String uninomial, String genus, String infraGenus, String species, String infraspecies, VerbatimRecord v
+  ){
+    return interpret(rank, sciname, authorship, publishedInYear, uninomial, genus, infraGenus, species, infraspecies, null,
+      null,null,null,null,null,null,
+      null, null, null, null, v);
+  }
+
+  ParsedNameUsage interpret(String rank, String sciname, String authorship, String publishedInYear,
+                            String uninomial, String genus, String infraGenus, String species, String infraspecies, String cultivar,
+                            String notho, String originalSpelling, String nomCode, String nomStatus, VerbatimRecord v
+  ){
+    return interpret(rank, sciname, authorship, publishedInYear, uninomial, genus, infraGenus, species, infraspecies, cultivar,
+      null,null,null,null,null,null,
+      notho, originalSpelling, nomCode, nomStatus, v);
+  }
+
+  ParsedNameUsage interpret(String rank, String sciname, String authorship, String publishedInYear,
+                            String uninomial, String genus, String infraGenus, String species, String infraspecies, String cultivar,
+                            String combAuthors, String combExAuthors, String combAuthorsYear, String basAuthors, String basExAuthors, String basAuthorsYear,
+                            String notho, String originalSpelling, String nomCode, String nomStatus, VerbatimRecord v
+  ){
+    v.setTerms(vmap(
+      ColdpTerm.combinationAuthorship, combAuthors,
+      ColdpTerm.combinationExAuthorship, combExAuthors,
+      ColdpTerm.combinationAuthorshipYear, combAuthorsYear,
+      ColdpTerm.basionymAuthorship, basAuthors,
+      ColdpTerm.basionymExAuthorship, basExAuthors,
+      ColdpTerm.basionymAuthorshipYear, basAuthorsYear,
+      ColdpTerm.notho, notho,
+      ColdpTerm.originalSpelling, originalSpelling,
+      ColdpTerm.code, nomCode,
+      ColdpTerm.status, nomStatus
+    ));
+    v.clear();
+    return ib.interpret("1", rank, null,
+      sciname, authorship,publishedInYear,
+      uninomial, genus, infraGenus, species, infraspecies, cultivar,
+      ColdpTerm.combinationAuthorship, ColdpTerm.combinationExAuthorship, ColdpTerm.combinationAuthorshipYear, ColdpTerm.basionymAuthorship, ColdpTerm.basionymExAuthorship, ColdpTerm.basionymAuthorshipYear,
+      ColdpTerm.notho, ColdpTerm.originalSpelling, ColdpTerm.code, ColdpTerm.status,
+      null, null, null, v
+    ).get();
+  }
+
+  Map<Term, String> vmap(Object ... args) {
+    var map = new HashMap<Term, String>();
+    for (int i = 0; i < args.length; i=i+2) {
+      Object val = args[i+1];
+      if (val != null) {
+        map.put((Term)args[i], (String)val);
+      }
+    }
+    return map;
+  }
+
   @Test
   public void interpretName() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
-    Optional<ParsedNameUsage> pnu;
+    ParsedNameUsage pnu;
     Name n;
 
     // test various ways to supply the authorship
-    pnu = ib.interpret(SimpleName.sn("Oenanthe L."), v);
+    pnu = ib.interpret(SimpleName.sn("Oenanthe L."), v).get();
     assertOenantheL(pnu);
 
-    pnu = ib.interpret(SimpleName.sn("Oenanthe", "L."), v);
+    pnu = ib.interpret(SimpleName.sn("Oenanthe", "L."), v).get();
     assertOenantheL(pnu);
 
-    pnu = ib.interpret("1", null, "Oenanthe L.", null,
-      null, null, null, null, null, null, null, null, null, null, null, null, v);
+    pnu = interpret(null, "Oenanthe L.", null, v);
     assertOenantheL(pnu);
 
-    pnu = ib.interpret("1", null, "Oenanthe L.", "",
-      null, null, null, null, null, null, null, null, null, null, null, null, v);
+    pnu = interpret(null, "Oenanthe L.", "", v);
     assertOenantheL(pnu);
 
-    pnu = ib.interpret("1", null, "Oenanthe L.", "L.",
-      null, null, null, null, null, null, null, null, null, null, null, null, v);
+    pnu = interpret(null, "Oenanthe L.", "L.", v);
     assertOenantheL(pnu);
 
-    pnu = ib.interpret("1", null, "Oenanthe", "L.",
-      null, null, null, null, null, null, null, null, null, null, null, null, v);
+    pnu = interpret(null, "Oenanthe", "L.", v);
     assertOenantheL(pnu);
+
+    // genus given wrongly - but corrected
+    pnu = interpret("genus", "Picea", "Mill.", null,
+      null, "Abies", null, null, null, v
+    );
+    n = pnu.getName();
+    assertEquals("Abies", n.getScientificName());
+    assertEquals("Abies", n.getUninomial());
+    assertEquals("Mill.", n.getAuthorship());
+    assertNull(n.getGenus());
+    assertNull(n.getSpecificEpithet());
+    assertEquals(List.of("Mill."), n.getCombinationAuthorship().getAuthors());
+    assertNull("1881", n.getCombinationAuthorship().getYear());
+    assertTrue(n.getBasionymAuthorship().isEmpty());
+    assertTrue(v.contains(Issue.UNINOMIAL_FIELD_MISPLACED));
 
     // other
-    pnu = ib.interpret("1", null, "Cerastium ligusticum subsp. granulatum", "(Huter et al.) P. D. Sell & Whitehead",
-      null, null, null, null, null, null, null, null, null, null, null, "tpl:234567", v);
-    assertNull(pnu.get().getTaxonomicNote());
-    n = pnu.get().getName();
+    pnu = interpret(null, "Cerastium ligusticum subsp. granulatum", "(Huter et al.) P. D. Sell & Whitehead",
+      null, null, "tpl:234567", v);
+    assertNull(pnu.getTaxonomicNote());
+    n = pnu.getName();
     assertEquals("Cerastium ligusticum subsp. granulatum", n.getScientificName());
     assertEquals("(Huter et al.) P. D. Sell & Whitehead", n.getAuthorship());
     assertNull(n.getNomenclaturalNote());
@@ -91,9 +188,10 @@ public class NameInterpreterTest {
     assertEquals("Whitehead", n.getCombinationAuthorship().getAuthors().get(1));
     assertEquals(List.of(new Identifier("tpl", "234567")), n.getIdentifier());
 
-    pnu = ib.interpret("1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881",null,
-      null, "Abies", null, "alba", null, null, null, null, null, null, null, v);
-    n = pnu.get().getName();
+    pnu = interpret("species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881", null,
+      null, "Abies", null, "alba", null, v
+    );
+    n = pnu.getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -102,9 +200,10 @@ public class NameInterpreterTest {
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
     // if atoms are given they take precedence over the full name
-    pnu = ib.interpret("1", "species", "Picea arlba Mill. 2121", "",null,
-      null, "Abies", null, "alba", null, null, null, null, null, null, null, v);
-    n = pnu.get().getName();
+    pnu = interpret("species", "Picea arlba Mill. 2121", "",null,
+      null, "Abies", null, "alba", null, v
+    );
+    n = pnu.getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -112,10 +211,10 @@ public class NameInterpreterTest {
     assertTrue(n.getCombinationAuthorship().isEmpty());
     assertNull(n.getCombinationAuthorship().getYear());
 
-    // if no authorahip is given it needs to be rebuild
-    pnu = ib.interpret("1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "",null,
-      "", "", null, null, null, null, null, null, null, null, null, v);
-    n = pnu.get().getName();
+    // if no authorship is given it needs to be rebuild
+    pnu = interpret("species", "Abies alba Mill. and Desbrochers de Loges, 1881", "", "",
+      "", "", null, null, null, v);
+    n = pnu.getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -124,9 +223,9 @@ public class NameInterpreterTest {
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
     // if no authorahip is given it needs to be rebuild
-    pnu = ib.interpret("1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "",null,
-      "", "", null, null, null, null, null, null, null, null, null, v);
-    n = pnu.get().getName();
+    pnu = interpret("species", "Abies alba Mill. and Desbrochers de Loges, 1881", "",null,
+      "", "", null, null, null, v);
+    n = pnu.getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -135,10 +234,10 @@ public class NameInterpreterTest {
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
     // exclude taxon notes from authorship
-    pnu = ib.interpret("1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881 sensu Döring 1999", "",null,
-      null, "", null, null, null, null, null, null, null, null, null, v);
-    assertEquals("sensu Döring 1999", pnu.get().getTaxonomicNote());
-    n = pnu.get().getName();
+    pnu = interpret("species", "Abies alba Mill. and Desbrochers de Loges, 1881 sensu Döring 1999", "",null,
+      null, "", null, null, null, v);
+    assertEquals("sensu Döring 1999", pnu.getTaxonomicNote());
+    n = pnu.getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -146,10 +245,10 @@ public class NameInterpreterTest {
     assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
-    pnu = ib.interpret("1", "species", "Abies alba", "Mill. and Desbrochers de Loges, 1881 sensu Döring 1999",null,
-      null, "", null, null, null, null, null, null, null, null, null, v);
-    assertEquals("sensu Döring 1999", pnu.get().getTaxonomicNote());
-    n = pnu.get().getName();
+    pnu = interpret("species", "Abies alba", "Mill. and Desbrochers de Loges, 1881 sensu Döring 1999", null,
+      null, "", null, null, null, v);
+    assertEquals("sensu Döring 1999", pnu.getTaxonomicNote());
+    n = pnu.getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -157,10 +256,10 @@ public class NameInterpreterTest {
     assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
-    pnu = ib.interpret("1", "family", "", "Miller",null,
-      "Asteraceae", "", null, null, null, null, null, null, null, null, null, v);
-    assertNull(pnu.get().getTaxonomicNote());
-    n = pnu.get().getName();
+    pnu = interpret("family", "", "Miller", null,
+      "Asteraceae", "", null, null, null, v);
+    assertNull(pnu.getTaxonomicNote());
+    n = pnu.getName();
     assertEquals("Asteraceae", n.getScientificName());
     assertEquals("Asteraceae", n.getUninomial());
     assertEquals(Rank.FAMILY, n.getRank());
@@ -171,10 +270,10 @@ public class NameInterpreterTest {
     assertNull(n.getCombinationAuthorship().getYear());
 
     // https://github.com/CatalogueOfLife/backend/issues/788
-    pnu = ib.interpret("CIP-82", "species", "Lutzomyia (Helcocyrtomyia) osornoi", "(Ristorcelli & Van ty, 1941)",null,
-      null, "Lutzomyia", "Helcocyrtomyia", "osornoi", null, null, null, null, null, null, null, v);
-    assertNull(pnu.get().getTaxonomicNote());
-    n = pnu.get().getName();
+    pnu = interpret("species", "Lutzomyia (Helcocyrtomyia) osornoi", "(Ristorcelli & Van ty, 1941)", null,
+      null, "Lutzomyia", "Helcocyrtomyia", "osornoi", null, v);
+    assertNull(pnu.getTaxonomicNote());
+    n = pnu.getName();
     assertEquals("Lutzomyia (Helcocyrtomyia) osornoi", n.getScientificName());
     assertNull(n.getUninomial());
     assertEquals(Rank.SPECIES, n.getRank());
@@ -189,10 +288,9 @@ public class NameInterpreterTest {
     assertTrue(n.getBasionymAuthorship().getExAuthors().isEmpty());
 
     // https://github.com/CatalogueOfLife/backend/issues/788
-    pnu = ib.interpret("1", "superfamily", "Eucnidoideae ined.", "ined.",null,
-      null, null, null, null, null, null, null, null, null, null, null, v);
-    assertNull(pnu.get().getTaxonomicNote());
-    n = pnu.get().getName();
+    pnu = interpret("superfamily", "Eucnidoideae ined.", "ined.", v);
+    assertNull(pnu.getTaxonomicNote());
+    n = pnu.getName();
     assertEquals("Eucnidoideae", n.getScientificName());
     assertEquals("ined.", n.getAuthorship());
     assertEquals("ined.", n.getNomenclaturalNote());
@@ -206,10 +304,9 @@ public class NameInterpreterTest {
     assertTrue(n.getBasionymAuthorship().isEmpty());
 
     // https://github.com/CatalogueOfLife/backend/issues/788
-    pnu = ib.interpret("1", null, "Cerastium ligusticum subsp. granulatum", "(Huter et al.) P. D. Sell & Whitehead",null,
-      null, null, null, null, null, null, null, null, null, null, null, v);
-    assertNull(pnu.get().getTaxonomicNote());
-    n = pnu.get().getName();
+    pnu = interpret(null, "Cerastium ligusticum subsp. granulatum", "(Huter et al.) P. D. Sell & Whitehead", v);
+    assertNull(pnu.getTaxonomicNote());
+    n = pnu.getName();
     assertEquals("Cerastium ligusticum subsp. granulatum", n.getScientificName());
     assertEquals("(Huter et al.) P. D. Sell & Whitehead", n.getAuthorship());
     assertNull(n.getNomenclaturalNote());
@@ -228,16 +325,15 @@ public class NameInterpreterTest {
 
     // Odonata INCONSISTENT_AUTHORSHIP
     v = new VerbatimRecord();
-    pnu = ib.interpret("957", "species", "Boyeria vinosa (Say, 1840)", "(Say, 1840)",null,
-      null, "Boyeria", null, "vinosa", null, null, null, null, null, null, null, v);
-    assertNull(pnu.get().getTaxonomicNote());
-    n = pnu.get().getName();
+    pnu = interpret("species", "Boyeria vinosa (Say, 1840)", "(Say, 1840)",null,
+      null, "Boyeria", null, "vinosa", null, v);
+    assertNull(pnu.getTaxonomicNote());
+    n = pnu.getName();
     assertFalse(v.hasIssues());
 
     // explicit unranked should stay: https://github.com/CatalogueOfLife/backend/issues/1136
-    pnu = ib.interpret("1", "no rank", "cellular organisms", null,null,
-      null, null, null, null, null, null, null, null, null, null, null, v);
-    n = pnu.get().getName();
+    pnu = interpret("no rank", "cellular organisms", null, v);
+    n = pnu.getName();
     assertEquals("Cellular organisms", n.getScientificName());
     assertEquals(Rank.UNRANKED, n.getRank());
     assertEquals("Cellular", n.getGenus());
@@ -248,28 +344,33 @@ public class NameInterpreterTest {
 
     // daggers should be removed from name parts, not just entire names
     // https://github.com/CatalogueOfLife/data/issues/417
-    pnu = ib.interpret("1", "species", null, "Hamilton, 1990",null,
-      null, "Acixiites†", null, "costalis", null, null, null, "original combination, valid: Yes", null, null, null, v);
-    n = pnu.get().getName();
+    pnu = interpret("species", null, "Hamilton, 1990",null,
+      null, "Acixiites†", null, "costalis", null, null,
+      null, null, null, "original combination, valid: Yes", v);
+    n = pnu.getName();
     assertEquals("Acixiites costalis", n.getScientificName());
     assertEquals("Acixiites", n.getGenus());
     assertEquals("costalis", n.getSpecificEpithet());
     assertEquals("Hamilton, 1990", n.getAuthorship());
     assertEquals(Authorship.yearAuthors("1990", "Hamilton"), n.getCombinationAuthorship());
     assertTrue(n.getBasionymAuthorship().isEmpty());
+    assertTrue(pnu.isExtinct());
 
-    pnu = ib.interpret("1", "species", null, "Hamilton, 1990",null,
-      null, "Acixiites", null, "costalis †", null, null, null, null, null, null, null, v);
-    n = pnu.get().getName();
+    pnu = interpret("species", null, "Hamilton, 1990",null,
+      null, "Acixiites", null, "costalis †", null, v);
+    n = pnu.getName();
     assertEquals("Acixiites costalis", n.getScientificName());
     assertEquals("Acixiites", n.getGenus());
     assertEquals("costalis", n.getSpecificEpithet());
     assertEquals("Hamilton, 1990", n.getAuthorship());
     assertEquals(Authorship.yearAuthors("1990", "Hamilton"), n.getCombinationAuthorship());
     assertTrue(n.getBasionymAuthorship().isEmpty());
+    assertTrue(pnu.isExtinct());
 
-    pnu = ib.interpret("1", null, "Leucophyta R. Br.", null, null,null, null, null, null, null, null, "botanical", null, null, null, null, v);
-    n = pnu.get().getName();
+    pnu = interpret(null, "Leucophyta R. Br.", null, null,
+      null, null, null, null, null, null,
+      null, null,"botanical", null, v);
+    n = pnu.getName();
     assertEquals("Leucophyta", n.getScientificName());
     assertEquals("R.Br.", n.getAuthorship());
     assertEquals("Leucophyta", n.getUninomial());
@@ -279,8 +380,10 @@ public class NameInterpreterTest {
 
     // https://github.com/CatalogueOfLife/testing/issues/195
     ib.settings.enable(Setting.EPITHET_ADD_HYPHEN);
-    pnu = ib.interpret("1", null, null, null, null, null,"Cosmopterix", null, "sancti vincentii", null, null, "botanical", null, null, null, null, v);
-    n = pnu.get().getName();
+    pnu = interpret(null, null, null, null,
+      null,"Cosmopterix", null, "sancti vincentii", null, null,
+      null, null,"botanical", null,v);
+    n = pnu.getName();
     assertEquals("Cosmopterix sancti-vincentii", n.getScientificName());
     assertNull(n.getAuthorship());
     assertNull(n.getUninomial());
@@ -289,8 +392,10 @@ public class NameInterpreterTest {
 
     // https://github.com/CatalogueOfLife/data/issues/431
     ib.settings.disable(Setting.EPITHET_ADD_HYPHEN);
-    pnu = ib.interpret("1", null, "Asplenium × mitsutae Viane & Reichst.", "Viane & Reichst.", null,null, "Asplenium", null, "× mitsutae", null, null, "botanical", null, null, null, null, v);
-    n = pnu.get().getName();
+    pnu = interpret(null, "Asplenium × mitsutae Viane & Reichst.", "Viane & Reichst.", null,
+      null, "Asplenium", null, "× mitsutae", null, null,
+      null, null, "botanical", null, v);
+    n = pnu.getName();
     assertEquals("Asplenium × mitsutae", n.getScientificName());
     assertEquals("Viane & Reichst.", n.getAuthorship());
     assertNull(n.getUninomial());
@@ -298,11 +403,11 @@ public class NameInterpreterTest {
     assertEquals("mitsutae", n.getSpecificEpithet());
     assertEquals(NamePart.SPECIFIC, n.getNotho());
 
-    pnu = ib.interpret("urn:lsid:marinespecies.org:taxname:887642", "Species", "Cambarus Uhleri", "Faxon, 1884", "1884",
+    pnu = interpret("Species", "Cambarus Uhleri", "Faxon, 1884", "1884",
       null, "Cambarus", null, "Uhleri", null, null,
-      "ICZN", null, null, null, null, v
+      null, null, "ICZN", null, v
     );
-    n = pnu.get().getName();
+    n = pnu.getName();
     assertEquals("Cambarus uhleri", n.getScientificName());
     assertEquals("Faxon, 1884", n.getAuthorship());
     assertNull(n.getUninomial());
@@ -312,36 +417,131 @@ public class NameInterpreterTest {
     assertNull(n.isOriginalSpelling());
     assertNull(n.getNotho());
 
-    // [sic] and corrig.
-    v.clear();
-    pnu = ib.interpret("x", null, "[Cambarus] uhleri", "Faxon, 1884", null,
-      null, null, null, null, null, null,
+    // doubtful genus
+    pnu = interpret(null, "[Cambarus] uhleri", "Faxon, 1884", null,
       null, null, null, null, null, v
     );
-    n = pnu.get().getName();
+    n = pnu.getName();
     assertEquals("Cambarus uhleri", n.getScientificName());
     assertEquals("Faxon, 1884", n.getAuthorship());
     assertNull(n.getUninomial());
     assertEquals("Cambarus", n.getGenus());
     assertEquals("uhleri", n.getSpecificEpithet());
     assertEquals(Rank.SPECIES, n.getRank());
-    assertTrue(v.hasIssue(Issue.DOUBTFUL_NAME));
+    assertTrue(v.contains(Issue.DOUBTFUL_NAME));
     assertNull(n.getNotho());
 
     // atomised
-    v.clear();
-    pnu = ib.interpret("x", null, "[Cambarus] uhleri", "Faxon, 1884", null,
+    pnu = interpret(null, "[Cambarus] uhleri", "Faxon, 1884", null,
       null, "[Cambarus]", null, "uhleri", null, null,
-      "ICZN", null, null, null, null, v
+      null, null, "ICZN", null, v
     );
-    n = pnu.get().getName();
+    n = pnu.getName();
     assertEquals("Cambarus uhleri", n.getScientificName());
     assertEquals("Faxon, 1884", n.getAuthorship());
     assertNull(n.getUninomial());
     assertEquals("Cambarus", n.getGenus());
     assertEquals("uhleri", n.getSpecificEpithet());
     assertEquals(Rank.SPECIES, n.getRank());
-    assertTrue(v.hasIssue(Issue.DOUBTFUL_NAME));
-    assertNull(n.getNotho());  }
+    assertTrue(v.contains(Issue.DOUBTFUL_NAME));
+    assertNull(n.getNotho());
 
+    // [sic] and corrig.
+    // fully parsed
+    pnu = interpret(null, "Cambarus uhleri [sic]", "Faxon, 1884", v);
+    n = pnu.getName();
+    assertEquals("Cambarus uhleri", n.getScientificName());
+    assertEquals("Faxon, 1884", n.getAuthorship());
+    assertNull(n.getUninomial());
+    assertEquals("Cambarus", n.getGenus());
+    assertEquals("uhleri", n.getSpecificEpithet());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertTrue(n.isOriginalSpelling());
+    assertNull(n.getNotho());
+
+    // atoms
+    pnu = interpret(null, "Cambarus uhleri [sic]", "Faxon, 1884", null,
+      null, "Cambarus", null, "uhleri", null, v
+    );
+    n = pnu.getName();
+    assertEquals("Cambarus uhleri", n.getScientificName());
+    assertEquals("Faxon, 1884", n.getAuthorship());
+    assertNull(n.getUninomial());
+    assertEquals("Cambarus", n.getGenus());
+    assertEquals("uhleri", n.getSpecificEpithet());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertNull(n.isOriginalSpelling()); // not present in atoms
+    assertNull(n.getNotho());
+
+    pnu = interpret(null, "Cambarus uhleri [sic]", "Faxon, 1884", null,
+      null, "Cambarus", null, "uhleri", null,
+      null,null,"true",null,null, v
+    );
+    n = pnu.getName();
+    assertEquals("Cambarus uhleri", n.getScientificName());
+    assertEquals("Faxon, 1884", n.getAuthorship());
+    assertNull(n.getUninomial());
+    assertEquals("Cambarus", n.getGenus());
+    assertEquals("uhleri", n.getSpecificEpithet());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertTrue(n.isOriginalSpelling());
+    assertNull(n.getNotho());
+
+    pnu = interpret(null, "Cambarus uhleri", "Faxon, 1884", null,
+      null, null, null, null, null,
+      null,null,"true",null,null, v
+    );
+    n = pnu.getName();
+    assertEquals("Cambarus uhleri", n.getScientificName());
+    assertEquals("Faxon, 1884", n.getAuthorship());
+    assertNull(n.getUninomial());
+    assertEquals("Cambarus", n.getGenus());
+    assertEquals("uhleri", n.getSpecificEpithet());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertTrue(n.isOriginalSpelling());
+    assertNull(n.getNotho());
+
+    // various degree of author atomisations for: Abies alba (Bring. ex DC) Miller & TC Jordan, 1849
+    pnu = interpret("species", "Picea", "(Bring. ex DC) Miller & TC Jordan, 1849", null,
+      null, "Abies", null, "alba", null,null,
+      null, null, null, null, null, null,
+      null, null, null, null, v
+    );
+    assertAbiesAlba(pnu, v);
+
+    pnu = interpret("species", null, null, null,
+      null, "Abies", null, "alba", null, null,
+      "Miller|TC Jordan", null, "1849", "DC", "Bring.", null,
+      null, null, null, null, v
+    );
+    assertAbiesAlba(pnu, v);
+
+    pnu = interpret("species", null, null, null,
+      null, "Abies", null, "alba", null, null,
+      "Miller | TC  Jordan", null, "1849", "DC", "Bring.", null,
+      null, null, null, null, v
+    );
+    assertAbiesAlba(pnu, v);
+  }
+
+  /**
+   * Abies alba (Bring. ex DC) Miller & TC Jordan, 1849
+   */
+  void assertAbiesAlba(ParsedNameUsage pnu, IssueContainer v) {
+    var n = pnu.getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Abies", n.getGenus());
+    assertNull(n.getInfragenericEpithet());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertNull(n.getInfraspecificEpithet());
+
+    assertEquals("(Bring. ex DC) Miller & TC Jordan, 1849", n.getAuthorship());
+    assertEquals(List.of("Miller", "TC Jordan"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("1849", n.getCombinationAuthorship().getYear());
+    assertEquals(List.of("DC"), n.getBasionymAuthorship().getAuthors());
+    assertEquals(List.of("Bring."), n.getBasionymAuthorship().getExAuthors());
+    assertNull(n.getBasionymAuthorship().getYear());
+
+    assertFalse(v.hasIssues());
+  }
 }

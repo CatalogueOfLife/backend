@@ -45,6 +45,36 @@ public class ColdpInserterTest extends InserterBaseTest {
   }
 
   @Test
+  public void nameInterpretations() throws Exception {
+    NeoInserter ins = setup("/coldp/39");
+    ins.insertAll();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      store.usages().allIds().forEach(id -> {
+        var u = store.usageWithName(id);
+        var n = u.usage.getName();
+
+        assertEquals("Toleria aegerides", n.getScientificName());
+        assertEquals("(Strand, 1916)", n.getAuthorship());
+        assertEquals(Rank.SPECIES, n.getRank());
+        assertTrue(u.asTaxon().isProvisional());
+
+        if (id.length()==1) {
+          assertNull(n.isOriginalSpelling());
+
+        } else if (id.length()==2) {
+          assertTrue(n.isOriginalSpelling());
+          assertEquals("Toleria aegerides [sic] (Strand, 1916)", u.usage.getLabel());
+
+        } else if (id.length()==3) {
+          assertFalse(n.isOriginalSpelling());
+          assertEquals("Toleria aegerides corrig. (Strand, 1916)", u.usage.getLabel());
+        }
+      });
+    }
+  }
+
+  @Test
   public void bareNamesWithAccordingToID() throws Exception {
     NeoInserter ins = setup("/coldp/20");
     ins.insertAll();

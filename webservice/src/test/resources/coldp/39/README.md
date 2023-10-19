@@ -1,0 +1,1 @@
+Make sure doubtfully placed species are interpreted as such no matter if the name is given as one or as atoms

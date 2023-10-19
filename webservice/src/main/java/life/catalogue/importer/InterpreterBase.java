@@ -84,7 +84,7 @@ public class InterpreterBase {
   /**
    * Strips all html tags if they exist and optionally converts link to markdown links.
    */
-  protected String replaceHtml(String x, boolean useMarkdownLinks) {
+  protected static String replaceHtml(String x, boolean useMarkdownLinks) {
     if (StringUtils.isBlank(x)) return null;
 
     var doc = Jsoup.parse(x);

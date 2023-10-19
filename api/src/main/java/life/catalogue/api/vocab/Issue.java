@@ -71,7 +71,7 @@ public enum Issue {
           "E.g. the rank of the name does not match the given name parts or suffices."),
   
   PARSED_NAME_DIFFERS(NAME, Level.WARNING,
-      "The parsed scientific name string results in a different name then was given as already atomized parts."),
+      "The parsed scientific name string results in a different name then was given as the preferred atomized parts."),
   
   UNUSUAL_NAME_CHARACTERS(NAME, Level.WARNING,
       "The name parts contain unusual characters."),
@@ -421,6 +421,18 @@ public enum Issue {
 
   MULTILINE_RECORD(ANY, Level.WARNING,
     "The verbatim record spans multiple lines without escaping or quoting. It has been processed, but should be taken with caution as it does not correspond with the specifications."),
+
+  NOTHO_INVALID(NAME, Level.WARNING,
+    "The notho name property could not be interpreted"),
+
+  ORIGINAL_SPELLING_INVALID(NAME, Level.WARNING,
+    "The original spelling name property could not be interpreted"),
+
+  UNINOMIAL_FIELD_MISPLACED(NAME, Level.INFO,
+    "The name of a uninomial is misplaced in the wrong field, e.g. genus."),
+
+  INFRAGENERIC_FIELD_MISPLACED(NAME, Level.INFO,
+    "The name of an infrageneric name is misplaced in the wrong field, e.g. uninomial."),
   ;
 
   /**

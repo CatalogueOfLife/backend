@@ -39,6 +39,11 @@ public interface IssueContainer {
     getIssues().clear();
   }
 
+  default boolean contains(Issue issue) {
+    return getIssues().contains(issue);
+  }
+
+  @Deprecated
   default boolean hasIssue(Issue issue) {
     return getIssues().contains(issue);
   }

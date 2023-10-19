@@ -228,14 +228,6 @@
           <groupId>org.elasticsearch.client</groupId>
           <artifactId>elasticsearch-rest-client</artifactId>
 		</dependency>
-        <dependency>
-          <groupId>org.elasticsearch</groupId>
-          <artifactId>elasticsearch-core</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.elasticsearch</groupId>
-          <artifactId>elasticsearch</artifactId>
-        </dependency>
 
       <!-- TEST SCOPE -->
 		<dependency>

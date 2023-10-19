@@ -27,6 +27,8 @@ import java.util.function.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
+import org.gbif.nameparser.api.Rank;
+
 import static life.catalogue.parser.SafeParser.parse;
 
 /**
@@ -295,12 +297,13 @@ public class ColdpInterpreter extends InterpreterBase {
       altIdTerm = ColdpTerm.nameAlternativeID;
     }
 
-    Optional<ParsedNameUsage> opt = nameInterpreter.interpret(v.getRaw(ColdpTerm.ID),
-        v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship), v.get(ColdpTerm.publishedInYear),
-        v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
-        v.get(ColdpTerm.cultivarEpithet),
-        v.get(ColdpTerm.code), v.get(nomStatusTerm),
-        v.get(ColdpTerm.link), replaceHtml(v.get(remarksTerm), true), v.getRaw(altIdTerm), v);
+    Optional<ParsedNameUsage> opt = nameInterpreter.interpret(v.getRaw(ColdpTerm.ID), v.get(ColdpTerm.rank), Rank.UNRANKED,
+        v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship), v.get(ColdpTerm.publishedInYear),
+        v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet), v.get(ColdpTerm.cultivarEpithet),
+        ColdpTerm.combinationAuthorship, ColdpTerm.combinationExAuthorship, ColdpTerm.combinationAuthorshipYear,
+        ColdpTerm.basionymAuthorship, ColdpTerm.basionymExAuthorship,ColdpTerm.basionymAuthorshipYear,
+        ColdpTerm.notho, ColdpTerm.originalSpelling, ColdpTerm.code, nomStatusTerm,
+        ColdpTerm.link, remarksTerm, altIdTerm, v);
     if (opt.isPresent()) {
       // publishedIn
       Name n = opt.get().getName();

@@ -85,6 +85,15 @@ public class ObjectUtils {
   }
 
   /**
+   * Call setter with value only if the value is not null.
+   */
+  public static <V> void setIfNotNull(Consumer<V> setter, V value) {
+    if (value != null) {
+      setter.accept(value);
+    }
+  }
+
+  /**
    * Similar to Guavas Preconditions.checkNotNull() but raising IllegalArgumentException instead.
    */
   public static <T> T checkNotNull(@Nullable T obj) {

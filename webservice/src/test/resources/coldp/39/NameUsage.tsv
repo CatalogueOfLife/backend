@@ -1,0 +1,10 @@
+ID	rank	scientificName	authorship	genus	specificEpithet	originalSpelling
+1	species	[Toleria] aegerides	(Strand, 1916)	[Toleria]	aegerides	
+2	species	[Toleria] aegerides	(Strand, 1916)			
+3	species		(Strand, 1916)	[Toleria]	aegerides	
+10	species	[Toleria] aegerides [sic] (Strand, 1916)				
+11	species	[Toleria] aegerides [sic]	(Strand, 1916)	[Toleria]	aegerides	
+12	species	[Toleria] aegerides	(Strand, 1916)	[Toleria]	aegerides	true
+100	species	[Toleria] aegerides corrig. (Strand, 1916)		[Toleria]	aegerides	
+101	species	[Toleria] aegerides corrig.	(Strand, 1916)	[Toleria]	aegerides	
+102	species	[Toleria] aegerides	(Strand, 1916)	[Toleria]	aegerides	false

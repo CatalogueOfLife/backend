@@ -18,6 +18,8 @@ import org.gbif.dwc.terms.*;
 
 import java.util.*;
 
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -249,14 +251,15 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
-    Optional<ParsedNameUsage> opt = nameInterpreter.interpret(taxonID(v),
-        v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
-        v.get(DwcTerm.scientificNameAuthorship), v.get(DwcTerm.namePublishedInYear),
-        null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.getFirst(DwcTerm.infragenericEpithet),
-        v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), v.get(DwcTerm.cultivarEpithet),
-        v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
-        v.getRaw(DcTerm.references), null, v.getRaw(DwcTerm.scientificNameID), v);
-    
+    Optional<ParsedNameUsage> opt = nameInterpreter.interpret(taxonID(v), v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), Rank.UNRANKED,
+      v.get(DwcTerm.scientificName),v.get(DwcTerm.scientificNameAuthorship), v.get(DwcTerm.namePublishedInYear),
+      null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.getFirst(DwcTerm.infragenericEpithet),
+      v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), v.get(DwcTerm.cultivarEpithet),
+      null, null,null, null,null, null,
+      null, null, DwcTerm.nomenclaturalCode, DwcTerm.nomenclaturalStatus,
+      DcTerm.references, null, DwcTerm.scientificNameID, v
+    );
+
     // publishedIn
     if (opt.isPresent()) {
       Name n = opt.get().getName();

@@ -247,18 +247,21 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
    * @return the raw value without any unescaping
    */
   public String getRaw(Term term) {
-    checkNotNull(term, "term can't be null");
-    return terms.get(term);
+    if (term != null) {
+      return terms.get(term);
+    }
+    return null;
   }
   
   /**
    * @return the potentially unescaped value, replacing empty strings with true nulls
    */
   public String get(Term term) {
-    checkNotNull(term, "term can't be null");
-    String val = terms.get(term);
-    if (val != null) {
-      return flagIssues(cleanInvisible(unescape(val)));
+    if (term != null) {
+      String val = terms.get(term);
+      if (val != null) {
+        return flagIssues(cleanInvisible(unescape(val)));
+      }
     }
     return null;
   }
